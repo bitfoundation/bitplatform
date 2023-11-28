@@ -1,11 +1,11 @@
 ﻿//-:cnd:noEmit
 
 using System.Reflection;
-using Boilerplate.Client.App.Services;
+using Boilerplate.Client.Maui.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Microsoft.Extensions.FileProviders;
 
-namespace Boilerplate.Client.App;
+namespace Boilerplate.Client.Maui;
 
 public static class MauiProgram
 {

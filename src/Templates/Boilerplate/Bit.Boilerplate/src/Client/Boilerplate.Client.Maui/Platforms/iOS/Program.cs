@@ -1,6 +1,6 @@
 ﻿using UIKit;
 
-namespace Boilerplate.Client.App.Platforms.MacCatalyst;
+namespace Boilerplate.Client.Maui.Platforms.iOS;
 
 public class Program
 {

@@ -1,6 +1,6 @@
 ﻿//-:cnd:noEmit
-using Boilerplate.Client.App;
-using Boilerplate.Client.App.Services;
+using Boilerplate.Client.Maui;
+using Boilerplate.Client.Maui.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

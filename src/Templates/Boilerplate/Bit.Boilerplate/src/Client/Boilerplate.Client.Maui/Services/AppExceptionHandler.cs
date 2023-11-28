@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.App.Services;
+﻿namespace Boilerplate.Client.Maui.Services;
 
 /// <summary>
 /// You can easily install AppCenter, Firebase Crashlytics, and other exception tracking libraries in your Client.App project.

@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace Boilerplate.Client.App.Platforms.iOS;
+namespace Boilerplate.Client.Maui.Platforms.MacCatalyst;
 
 [Register(nameof(AppDelegate))]
 public class AppDelegate : MauiUIApplicationDelegate

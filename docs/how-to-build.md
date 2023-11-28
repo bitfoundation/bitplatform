@@ -113,7 +113,7 @@ dotnet workload install maui-android
 dotnet workload install maui
 ```
 
-To build the App project run the following command in the `Boilerplate.Client.App` project folder (`src/Client/Boilerplate.Client.App`):
+To build the App project run the following command in the `Boilerplate.Client.Maui` project folder (`src/Client/Boilerplate.Client.Maui`):
 
 ```bash
 dotnet build

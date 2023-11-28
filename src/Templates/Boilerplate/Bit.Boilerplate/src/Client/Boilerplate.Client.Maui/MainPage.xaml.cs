@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace Boilerplate.Client.App;
+namespace Boilerplate.Client.Maui;
 
 public partial class MainPage
 {

@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace Boilerplate.Client.App.Services;
+namespace Boilerplate.Client.Maui.Services;
 
 /// <summary>
 /// More info at <see cref="IBitDeviceCoordinator"/>

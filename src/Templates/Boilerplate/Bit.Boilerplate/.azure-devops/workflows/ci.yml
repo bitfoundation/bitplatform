@@ -59,7 +59,7 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android'
 
 - job: build_blazor_hybrid_windows
   displayName: 'build blazor hybrid (windows)'
@@ -89,7 +89,7 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-windows10.0.19041.0'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-windows10.0.19041.0'
 
 - job: build_blazor_hybrid_iOS
   displayName: 'build blazor hybrid (iOS)'
@@ -119,7 +119,7 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios'
 
 - job: build_blazor_hybrid_maccatalyst
   displayName: 'build blazor hybrid (maccatalyst)'
@@ -149,7 +149,7 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst'
 
 - job: build_blazor_api_wasm
   displayName: 'build blazor api + web assembly'

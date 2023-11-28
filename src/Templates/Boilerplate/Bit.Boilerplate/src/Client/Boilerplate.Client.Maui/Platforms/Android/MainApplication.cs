@@ -5,7 +5,7 @@ using Android.Runtime;
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]
 [assembly: UsesPermission(Android.Manifest.Permission.AccessNetworkState)]
 
-namespace Boilerplate.Client.App.Platforms.Android;
+namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [Application(
 #if DEBUG

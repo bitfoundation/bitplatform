@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.App.Platforms.Windows;
+﻿namespace Boilerplate.Client.Maui.Platforms.Windows;
 
 public partial class App
 {

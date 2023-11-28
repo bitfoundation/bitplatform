@@ -183,12 +183,12 @@ jobs:
     displayName: 'Build exe'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
     inputs:
-      targetPath: 'src/Client/Boilerplate.Client.App/bin/release/net8.0-windows10.0.19041.0/win10-x86'
+      targetPath: 'src/Client/Boilerplate.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86'
       artifact: 'win-exe-bundle'
       publishLocation: 'pipeline'
 
@@ -223,7 +223,7 @@ jobs:
       secureFile: 'Boilerplate.keystore'
 
   - script: |
-      cp $(AndroidKeyStore.secureFilePath) src/Client/Boilerplate.Client.App/Boilerplate.keystore
+      cp $(AndroidKeyStore.secureFilePath) src/Client/Boilerplate.Client.Maui/Boilerplate.keystore
     failOnStderr: true
     displayName: Copy keystore to app project folder
 
@@ -244,17 +244,17 @@ jobs:
     displayName: 'Build aab'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
 
   - task: Bash@3
     displayName: 'Build apk'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
 
   - script: |
       mkdir drop
-      cp ./src/Client/Boilerplate.Client.App/bin/Release/net8.0-android/*-Signed.* drop/
+      cp ./src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.* drop/
     failOnStderr: true
     displayName: Copy apk/aab files to drop folder
 
@@ -306,11 +306,11 @@ jobs:
     displayName: 'Build pkg'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst'
 
   - script: |
       mkdir drop
-      cp ./src/Client/Boilerplate.Client.App/bin/Release/net8.0-maccatalyst/*.pkg drop/
+      cp ./src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-maccatalyst/*.pkg drop/
     failOnStderr: true
     displayName: Copy pkg file to drop folder
 

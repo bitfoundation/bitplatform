@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Core", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Web", "src\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj", "{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.App", "src\Client\Boilerplate.Client.App\\Boilerplate.Client.App.csproj", "{22816913-64D5-4AE8-9B34-6F188B71FAD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Maui", "src\Client\Boilerplate.Client.Maui\\Boilerplate.Client.Maui.csproj", "{22816913-64D5-4AE8-9B34-6F188B71FAD1}"
 EndProject
 #if (pipeline == "Azure")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{AEE266C3-9E0B-4C41-A491-54D339708C06}"

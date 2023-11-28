@@ -1,6 +1,6 @@
 ﻿[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
-namespace Boilerplate.Client.App;
+namespace Boilerplate.Client.Maui;
 
 public partial class App
 {

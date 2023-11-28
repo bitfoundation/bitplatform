@@ -23,7 +23,7 @@
         "DebugTarget": "Boilerplate.Server-Swagger"
       },
       {
-        "Name": "src\\Client\\Boilerplate.Client.App\\Boilerplate.Client.App.csproj",
+        "Name": "src\\Client\\Boilerplate.Client.Maui\\Boilerplate.Client.Maui.csproj",
         "Action": "Start",
         "DebugTarget": "Windows Machine"
       }

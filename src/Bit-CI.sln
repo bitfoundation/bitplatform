@@ -222,7 +222,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{EEAF80
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Shared", "Templates\Boilerplate\Bit.Boilerplate\src\Boilerplate.Shared\Boilerplate.Shared.csproj", "{91D0FEF4-872C-4DEF-AC93-E7D088B1A145}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.App", "Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.App\Boilerplate.Client.App.csproj", "{CA4A30E2-F844-4026-9CC2-6839FD28BF44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Maui", "Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Maui\Boilerplate.Client.Maui.csproj", "{CA4A30E2-F844-4026-9CC2-6839FD28BF44}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Core", "Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj", "{EA92A298-A595-4405-BB55-B0844237DFFF}"
 EndProject

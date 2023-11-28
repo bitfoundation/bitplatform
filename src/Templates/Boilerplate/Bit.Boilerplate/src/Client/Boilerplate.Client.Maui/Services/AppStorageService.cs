@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.App.Services;
+﻿namespace Boilerplate.Client.Maui.Services;
 
 public class AppStorageService : IStorageService
 {
