@@ -37,7 +37,7 @@ jobs:
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
-        cd ../../../../
+        cd ../../../
         dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -p:BlazorMode=BlazorServer -p:WebAppDeploymentType="SpaPrerendered" -p:Configuration=Release
 
     - name: Release build empty sample + Blazor hybrid + no database
