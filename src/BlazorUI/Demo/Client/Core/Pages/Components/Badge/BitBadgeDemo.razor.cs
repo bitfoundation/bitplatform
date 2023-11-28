@@ -309,6 +309,20 @@ public partial class BitBadgeDemo
 
 
 
+    private BitBadgePosition badgePosition;
+    private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValues(typeof(BitBadgePosition))
+        .Cast<BitBadgePosition>()
+        .Select(enumValue => new BitDropdownItem<BitBadgePosition>
+        {
+            Value = enumValue,
+            Text = enumValue.ToString()
+        })
+        .ToList();
+
+    private int counter;
+
+
+
     private readonly string example1RazorCode = @"
 <BitBadge Content=""5"">
     <BitIcon IconName=""@BitIconName.Mail"" />
@@ -347,65 +361,51 @@ public partial class BitBadgeDemo
 </BitBadge>";
 
     private readonly string example5RazorCode = @"
-<BitBadge Max=""85"" Content=""95"">
+<BitBadge Content=""7"" Overlap>
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>";
 
     private readonly string example6RazorCode = @"
-<BitBadge IconName=""Clock"">
-    Icon
-</BitBadge>
-
-<BitBadge Content=""@(""Text"")"" Appearance=""BitAppearance.Standard"">
-    <BitIcon IconName=""Clock"" />
+<BitBadge Dot>
+    <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>";
 
     private readonly string example7RazorCode = @"
-<BitBadge Content=""@(badgeClickCounter)"" OnClick=""() => badgeClickCounter++"">
+<BitBadge Max=""50"" Content=""100"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>";
-    private readonly string example7CsharpCode = @"
-private int badgeClickCounter;";
 
     private readonly string example8RazorCode = @"
-<BitBadge Dot=""@isDot"" Content=""100"">
-<BitToggleButton @bind-IsChecked=""@isDot""
-                 OnText=""Show Dot""
-                 OffText=""Hide Dot""
-                 ButtonStyle=""BitButtonStyle.Standard"" />
+<BitBadge Content=""@(""Text"")"">
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"">String content</BitButton>
+</BitBadge>
+
+<BitBadge IconName=""Clock"">
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"">IconName</BitButton>
 </BitBadge>";
-    private readonly string example8CsharpCode = @"
-private bool isDot = true;";
 
     private readonly string example9RazorCode = @"
-<BitBadge Hidden=""@isHidden"" Content=""100"">
-<BitToggleButton @bind-IsChecked=""@isHidden""
-                 OnText=""Show Badge""
-                 OffText=""Hide Badge""
-                 ButtonStyle=""BitButtonStyle.Standard"" />
+<BitBadge Hidden>
+    <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>";
-    private readonly string example9CsharpCode = @"
-private bool isHidden = true;";
 
     private readonly string example10RazorCode = @"
-<BitBadge Overlap=""@isOverlap"" Content=""100"" Position=""@badgePostion"">
-    <BitToggleButton @bind-IsChecked=""@isOverlap"" ButtonStyle=""BitButtonStyle.Standard"">Toggle overlap</BitToggleButton>
+<BitBadge Content=""100"" Position=""badgePosition"">
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Position</BitButton>
 </BitBadge>
-<BitDropdown Items=""@badgePositionList""
-             @bind-Value=""@badgePostion""
-             Style=""width: 10rem;"" />";
+
+<BitDropdown Items=""badgePositionList"" @bind-Value=""badgePosition"" />";
     private readonly string example10CsharpCode = @"
-private bool isOverlap = true;
-private BitBadgePosition badgePostion;
+private BitBadgePosition badgePosition;
 
 private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValues(typeof(BitBadgePosition))
-.Cast<BitBadgePosition>()
-.Select(enumValue => new BitDropdownItem<BitBadgePosition>
-{
-    Value = enumValue,
-    Text = enumValue.ToString()
-})
-.ToList();";
+    .Cast<BitBadgePosition>()
+    .Select(enumValue => new BitDropdownItem<BitBadgePosition>
+    {
+        Value = enumValue,
+        Text = enumValue.ToString()
+    })
+    .ToList();";
 
     private readonly string example11RazorCode = @"
 <BitBadge Content=""100"" Color=""BitBadgeColor.Info"">
@@ -494,20 +494,20 @@ private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValu
     .custom-class {
         border-radius: 1rem;
         box-shadow: aqua 0 0 0.5rem;
+    }
 
-        div {
-            padding: 0.5rem;
-            color: blueviolet;
-        }
+    .custom-class div {
+        padding: 0.5rem;
+        color: blueviolet;
     }
 
     .custom-root {
-        margin-left: 1rem;
+        margin-left: 2rem;
         text-shadow: aqua 0 0 0.5rem;
     }
 
     .custom-wrapper {
-        text-shadow: aqua 0 0 0.5rem;
+        padding: 1.25rem;
     }
 
     .custom-badge {
@@ -521,7 +521,6 @@ private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValu
         color: dodgerblue;
     }
 </style>
-
 
 <BitBadge Content=""100"" Style=""color: dodgerblue;"">
     <BitIcon IconName=""@BitIconName.Mail"" />
@@ -548,5 +547,12 @@ private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValu
                              Icon = ""custom-icon"" })"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>";
+
+    private readonly string example14RazorCode = @"
+<BitBadge Content=""counter"" OnClick=""() => counter++"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>";
+    private readonly string example14CsharpCode = @"
+private int counter;";
 
 }

@@ -8,6 +8,7 @@ public partial class BitBadge
     private BitBadgeColor? color;
     private BitAppearance appearance = BitAppearance.Primary;
     private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
+
     
     private string? _content;
 
@@ -85,7 +86,7 @@ public partial class BitBadge
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Overlaps the child content on top of the content.
+    /// Overlaps the badge content on top of the child content.
     /// </summary>
     [Parameter] public bool Overlap { get; set; }
 
