@@ -10,17 +10,16 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
     public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
-        string exceptionMessage = (exception as KnownException)?.Message ??
-#if DEBUG
-            exception.ToString();
-#else
-            Localizer[nameof(AppStrings.UnknownException)];
-#endif
+        var isDebug = BuildConfigurationModeDetector.Current.IsDebug();
 
-#if DEBUG
-        _ = Console.Out.WriteLineAsync(exceptionMessage);
-        Debugger.Break();
-#endif
+        string exceptionMessage = (exception as KnownException)?.Message ??
+            (isDebug ? exception.ToString() : Localizer[nameof(AppStrings.UnknownException)]);
+
+        if (isDebug)
+        {
+            _ = Console.Out.WriteLineAsync(exceptionMessage);
+            Debugger.Break();
+        }
 
         _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
     }

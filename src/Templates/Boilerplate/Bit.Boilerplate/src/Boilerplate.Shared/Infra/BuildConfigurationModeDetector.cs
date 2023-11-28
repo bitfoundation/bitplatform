@@ -11,7 +11,7 @@ public class BuildConfigurationModeDetector
     }
 
 
-    public virtual bool Release()
+    public virtual bool IsRelease()
     {
         return Mode == BuildConfigurationMode.Release;
     }

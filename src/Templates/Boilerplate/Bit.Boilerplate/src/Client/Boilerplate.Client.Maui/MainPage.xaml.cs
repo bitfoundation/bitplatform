@@ -33,13 +33,14 @@ public partial class MainPage
 
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
-#if DEBUG
-            if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
-                || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
+            if (BuildConfigurationModeDetector.Current.IsDebug())
             {
-                handler.PlatformView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
+                if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
+                    || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
+                {
+                    handler.PlatformView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
+                }
             }
-#endif
 #elif ANDROID
             handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 
@@ -55,9 +56,10 @@ public partial class MainPage
                 settings.JavaScriptCanOpenWindowsAutomatically =
                 settings.DomStorageEnabled = true;
 
-#if DEBUG
-            settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
-#endif
+            if (BuildConfigurationModeDetector.Current.IsDebug())
+            {
+                settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
+            }
 
             settings.BlockNetworkLoads =
                 settings.BlockNetworkImage = false;

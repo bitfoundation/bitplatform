@@ -76,9 +76,9 @@ jobs:
       artifact: 'migrations-bundle'
       publishLocation: 'pipeline'
 
-- job: deploy_blazor_api_wasm
+- job: deploy_api_blazor
   dependsOn: build_api_blazor
-  displayName: 'deploy blazor api + web assembly'
+  displayName: 'deploy api + blazor'
 
   pool:
     vmImage: 'ubuntu-22.04'

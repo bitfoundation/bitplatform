@@ -674,7 +674,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to BlazorWeb Home.
+        ///   Looks up a localized string similar to Boilerplate Home.
         /// </summary>
         public static string HomeTitle {
             get {

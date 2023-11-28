@@ -13,12 +13,10 @@ public partial class AppErrorBoundary
 
     [AutoInject] private NavigationManager navigationManager = default!;
 
-#if DEBUG
     protected override void OnInitialized()
     {
-        showException = true;
+        showException = BuildConfigurationModeDetector.Current.IsDebug();
     }
-#endif
 
     protected override async Task OnErrorAsync(Exception exception)
     {

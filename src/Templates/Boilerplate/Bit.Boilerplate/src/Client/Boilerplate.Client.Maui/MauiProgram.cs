@@ -1,9 +1,8 @@
 ﻿//-:cnd:noEmit
 
 using System.Reflection;
-using Boilerplate.Client.Maui.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
-using Microsoft.Extensions.FileProviders;
+using Boilerplate.Client.Maui.Services;
 
 namespace Boilerplate.Client.Maui;
 
@@ -21,9 +20,11 @@ public static class MauiProgram
         var services = builder.Services;
 
         services.AddMauiBlazorWebView();
-#if DEBUG
-        services.AddBlazorWebViewDeveloperTools();
-#endif
+
+        if (BuildConfigurationModeDetector.Current.IsDebug())
+        {
+            services.AddBlazorWebViewDeveloperTools();
+        }
 
         Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
 
@@ -36,10 +37,10 @@ public static class MauiProgram
             };
             return httpClient;
         });
+
         services.AddTransient<IStorageService, MauiStorageService>();
-        services.AddSharedServices();
-        services.AddClientSharedServices();
-        services.AddClientAppServices();
+
+        services.AddClientMauiServices();
 
         var mauiApp = builder.Build();
 

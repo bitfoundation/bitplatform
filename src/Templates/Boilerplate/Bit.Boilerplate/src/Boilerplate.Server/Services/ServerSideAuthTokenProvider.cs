@@ -2,7 +2,7 @@
 using System.Reflection;
 using Microsoft.JSInterop;
 
-namespace Boilerplate.Client.Web.Services;
+namespace Boilerplate.Server.Services;
 
 /// <summary>
 /// The <see cref="ClientSideAuthTokenProvider"/> reads the token from the local storage,

@@ -4,8 +4,8 @@ trigger:
 # https://bitplatform.dev/templates/devops
 
 jobs:
-- job: build_blazor_server
-  displayName: 'build blazor server'
+- job: build_api_blazor
+  displayName: 'build api + blazor'
 
   pool:
     vmImage: 'ubuntu-22.04'
@@ -26,7 +26,7 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -p:Configuration=Release'
+      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release'
 
 - job: build_blazor_hybrid_android
   displayName: 'build blazor hybrid (android)'
@@ -147,33 +147,3 @@ jobs:
     inputs:
       targetType: 'inline'
       script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -f net8.0-maccatalyst'
-
-- job: build_api_blazor
-  displayName: 'build api + blazor'
-
-  pool:
-    vmImage: 'ubuntu-22.04'
-
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Setup .NET'
-    inputs:
-      useGlobalJson: true
-      workingDirectory: 'src'
-
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '18.x'
-    displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Install wasm'
-    inputs:
-      targetType: 'inline'
-      script: 'cd src && dotnet workload install wasm-tools wasm-experimental'
-
-  - task: Bash@3
-    displayName: 'Build'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release'

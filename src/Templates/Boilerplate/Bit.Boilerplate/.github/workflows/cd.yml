@@ -67,8 +67,8 @@ jobs:
         name: api-web-bundle
         path: ${{env.DOTNET_ROOT}}/api-web
 
-  deploy_blazor_api_wasm:
-    name: deploy blazor api + web assembly
+  deploy_api_blazor:
+    name: deploy api + blazor
     needs: build_api_blazor
     runs-on: ubuntu-22.04
     environment:

@@ -1,8 +1,10 @@
-﻿@inherits AppComponentBase
+﻿@page "/not-authorized"
+
+@inherits AppComponentBase
 
 <AuthorizeView>
     <div class="main">
-        <div><img src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" /></div>
+        <div><img src="images/icons/error-triangle.svg" /></div>
         <h2 class="title">@Localizer[nameof(AppStrings.ForbiddenException)]</h2>
         <h4 class="description">@Localizer[nameof(AppStrings.YouAreSignInAs)] @user.GetUserName()</h4>
         <div class="buttons">

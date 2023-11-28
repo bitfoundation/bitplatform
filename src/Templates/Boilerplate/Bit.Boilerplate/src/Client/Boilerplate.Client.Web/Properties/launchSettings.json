@@ -1,13 +1,12 @@
 {
-    "profiles": {
-        "Boilerplate.Client.Web": {
-            "commandName": "Project",
-            "dotnetRunMessages": true,
-            "launchBrowser": true,
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "applicationUrl": "https://localhost:4031;http://localhost:4030"
-        }
+  "profiles": {
+    "Boilerplate.Client.Web": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:59614;http://localhost:59615"
     }
+  }
 }

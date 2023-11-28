@@ -1,10 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Boilerplate.Server;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Server.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -14,6 +13,34 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
+    public static void AddBlazor(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+
+        services.AddClientWebServices();
+
+        services.AddTransient(sp =>
+        {
+            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+
+            if (apiServerAddress!.IsAbsoluteUri is false)
+            {
+                apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
+            }
+
+            return new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>())
+            {
+                BaseAddress = apiServerAddress
+            };
+        });
+
+        services.AddRazorComponents()
+            .AddInteractiveServerComponents()
+            .AddInteractiveWebAssemblyComponents();
+
+        services.AddMvc();
+    }
+
     public static void AddIdentity(this IServiceCollection services, IConfiguration configuration)
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;

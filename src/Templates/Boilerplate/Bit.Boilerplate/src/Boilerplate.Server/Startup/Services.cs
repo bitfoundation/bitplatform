@@ -7,14 +7,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
-#if BlazorWebAssembly
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
-using Boilerplate.Client.Web.Services;
-using Boilerplate.Client.Core.Services;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.JSInterop;
-#endif
 
 namespace Boilerplate.Server.Startup;
 
@@ -26,33 +18,11 @@ public static class Services
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        services.AddSharedServices();
-
         services.AddExceptionHandler<ServerExceptionHandler>();
 
-#if BlazorWebAssembly
-        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+        services.AddBlazor(configuration);
+
         services.AddClientSharedServices();
-        services.AddClientWebServices();
-
-        services.AddTransient(sp =>
-        {
-            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
-
-            if (apiServerAddress!.IsAbsoluteUri is false)
-            {
-                apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
-            }
-
-            return new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>())
-            {
-                BaseAddress = apiServerAddress
-            };
-        });
-
-        services.AddTransient<LazyAssemblyLoader>();
-        services.AddRazorPages();
-#endif
 
         //+:cnd:noEmit
 

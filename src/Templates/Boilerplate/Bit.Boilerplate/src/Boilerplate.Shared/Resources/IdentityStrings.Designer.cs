@@ -115,33 +115,6 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Type {0} must derive from {1}&lt;{2}&gt;..
-        /// </summary>
-        public static string InvalidManagerType {
-            get {
-                return ResourceManager.GetString("InvalidManagerType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The provided PasswordHasherCompatibilityMode is invalid..
-        /// </summary>
-        public static string InvalidPasswordHasherCompatibilityMode {
-            get {
-                return ResourceManager.GetString("InvalidPasswordHasherCompatibilityMode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The iteration count must be a positive integer..
-        /// </summary>
-        public static string InvalidPasswordHasherIterationCount {
-            get {
-                return ResourceManager.GetString("InvalidPasswordHasherIterationCount", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Role name &apos;{0}&apos; is invalid..
         /// </summary>
         public static string InvalidRoleName {
@@ -174,51 +147,6 @@ namespace Boilerplate.Shared.Resources {
         public static string LoginAlreadyAssociated {
             get {
                 return ResourceManager.GetString("LoginAlreadyAssociated", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AddIdentity must be called on the service collection..
-        /// </summary>
-        public static string MustCallAddIdentity {
-            get {
-                return ResourceManager.GetString("MustCallAddIdentity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No IPersonalDataProtector service was registered, this is required when ProtectPersonalData = true..
-        /// </summary>
-        public static string NoPersonalDataProtector {
-            get {
-                return ResourceManager.GetString("NoPersonalDataProtector", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No RoleType was specified, try AddRoles&lt;TRole&gt;()..
-        /// </summary>
-        public static string NoRoleType {
-            get {
-                return ResourceManager.GetString("NoRoleType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No IUserTwoFactorTokenProvider&lt;{0}&gt; named &apos;{1}&apos; is registered..
-        /// </summary>
-        public static string NoTokenProvider {
-            get {
-                return ResourceManager.GetString("NoTokenProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User security stamp cannot be null..
-        /// </summary>
-        public static string NullSecurityStamp {
-            get {
-                return ResourceManager.GetString("NullSecurityStamp", resourceCulture);
             }
         }
         
@@ -295,168 +223,6 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Role {0} does not exist..
-        /// </summary>
-        public static string RoleNotFound {
-            get {
-                return ResourceManager.GetString("RoleNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IProtectedUserStore&lt;TUser&gt; which is required when ProtectPersonalData = true..
-        /// </summary>
-        public static string StoreNotIProtectedUserStore {
-            get {
-                return ResourceManager.GetString("StoreNotIProtectedUserStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IQueryableRoleStore&lt;TRole&gt;..
-        /// </summary>
-        public static string StoreNotIQueryableRoleStore {
-            get {
-                return ResourceManager.GetString("StoreNotIQueryableRoleStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IQueryableUserStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIQueryableUserStore {
-            get {
-                return ResourceManager.GetString("StoreNotIQueryableUserStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IRoleClaimStore&lt;TRole&gt;..
-        /// </summary>
-        public static string StoreNotIRoleClaimStore {
-            get {
-                return ResourceManager.GetString("StoreNotIRoleClaimStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserAuthenticationTokenStore&lt;User&gt;..
-        /// </summary>
-        public static string StoreNotIUserAuthenticationTokenStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserAuthenticationTokenStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserAuthenticatorKeyStore&lt;User&gt;..
-        /// </summary>
-        public static string StoreNotIUserAuthenticatorKeyStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserAuthenticatorKeyStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserClaimStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserClaimStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserClaimStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserConfirmationStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserConfirmationStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserConfirmationStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserEmailStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserEmailStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserEmailStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserLockoutStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserLockoutStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserLockoutStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserLoginStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserLoginStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserLoginStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserPasswordStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserPasswordStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserPasswordStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserPhoneNumberStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserPhoneNumberStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserPhoneNumberStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserRoleStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserRoleStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserRoleStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserSecurityStampStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserSecurityStampStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserSecurityStampStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserTwoFactorRecoveryCodeStore&lt;User&gt;..
-        /// </summary>
-        public static string StoreNotIUserTwoFactorRecoveryCodeStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserTwoFactorRecoveryCodeStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Store does not implement IUserTwoFactorStore&lt;TUser&gt;..
-        /// </summary>
-        public static string StoreNotIUserTwoFactorStore {
-            get {
-                return ResourceManager.GetString("StoreNotIUserTwoFactorStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to User already has a password set..
         /// </summary>
         public static string UserAlreadyHasPassword {
@@ -475,29 +241,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User is locked out..
-        /// </summary>
-        public static string UserLockedOut {
-            get {
-                return ResourceManager.GetString("UserLockedOut", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Lockout is not enabled for this user..
         /// </summary>
         public static string UserLockoutNotEnabled {
             get {
                 return ResourceManager.GetString("UserLockoutNotEnabled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User {0} does not exist..
-        /// </summary>
-        public static string UserNameNotFound {
-            get {
-                return ResourceManager.GetString("UserNameNotFound", resourceCulture);
             }
         }
         

@@ -1,15 +1,14 @@
-﻿namespace Boilerplate.Client.Core.Shared;
+﻿namespace Boilerplate.Client.Core.Pages;
 
-public partial class NotAuthorizedComponent
+public partial class NotAuthorizedPage
 {
     private ClaimsPrincipal user = default!;
 
-    [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; } = default!;
     [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
 
     protected override async Task OnParamsSetAsync()
     {
-        user = (await AuthenticationState).User;
+        user = (await AuthenticationStateTask).User;
 
         await base.OnParamsSetAsync();
     }

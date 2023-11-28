@@ -9,8 +9,8 @@ on:
 
 jobs:
 
-  build-blazor-server:
-    name: build blazor server
+  build_blazor_server:
+    name: build blazor
     runs-on: ubuntu-22.04
 
     steps:
@@ -125,30 +125,3 @@ jobs:
       
     - name: Build
       run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -f net8.0-maccatalyst
-
-  build-blazor-api-wasm:
-    name: build api + blazor
-    runs-on: ubuntu-22.04
-
-    steps:
-    
-    - name: Checkout source code
-      uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: global.json
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Switch to blazor wasm
-      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj
-
-    - name: Install wasm
-      run: cd src && dotnet workload install wasm-tools wasm-experimental
-      
-    - name: Build
-      run: dotnet build src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release

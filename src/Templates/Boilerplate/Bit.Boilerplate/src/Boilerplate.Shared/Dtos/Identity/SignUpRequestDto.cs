@@ -16,7 +16,7 @@ public class SignUpRequestDto
     [MinLength(6, ErrorMessage = nameof(AppStrings.MinLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
-    
+
     /// <example>true</example>
     [NotMapped]
     [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]

@@ -43,6 +43,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="7.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.Network" Version="7.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="3.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -62,6 +63,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Shared\Boilerplate.Shared.csproj" />
+        <ProjectReference Include="..\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
+        <ProjectReference Include="..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
     </ItemGroup>
 
     <ItemGroup>

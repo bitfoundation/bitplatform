@@ -1,15 +1,26 @@
-﻿//-:cnd:noEmit
-namespace Boilerplate.Client.Web;
+﻿using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-public partial class Program
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Configuration.AddClientConfigurations();
+
+Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+
+if (apiServerAddress!.IsAbsoluteUri is false)
 {
-    public static async Task Main(string[] args)
-    {
-#if !BlazorWebAssembly && !BlazorServer
-        throw new InvalidOperationException("Please switch to either blazor web assembly or server as described in https://bitplatform.dev/templates/hosting-models");
-#else
-        await CreateHostBuilder(args)
-            .RunAsync();
-#endif
-    }
+    apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
 }
+
+builder.Services.AddTransient(sp => new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>()) { BaseAddress = apiServerAddress });
+
+builder.Services.AddClientWebServices();
+
+var host = builder.Build();
+
+#if MultilingualEnabled
+var culture = await host.Services.GetRequiredService<IStorageService>().GetItem("Culture");
+CultureInfoManager.SetCurrentCulture(culture);
+#endif
+
+await host.RunAsync();

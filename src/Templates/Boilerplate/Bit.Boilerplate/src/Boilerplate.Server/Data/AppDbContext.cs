@@ -1,17 +1,17 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Models.Identity;
-//#if (sample == "Todo")
-using Boilerplate.Server.Models.Todo;
-//#elif (sample == "AdminPanel")
+//#if (sample == "AdminPanel")
 using Boilerplate.Server.Models.Categories;
+using Boilerplate.Server.Models.Identity;
 using Boilerplate.Server.Models.Products;
+//#elif (sample == "Todo")
+using Boilerplate.Server.Models.Todo;
 //#endif
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Boilerplate.Server.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) 
+public class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, int>(options), IDataProtectionKeyContext
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }

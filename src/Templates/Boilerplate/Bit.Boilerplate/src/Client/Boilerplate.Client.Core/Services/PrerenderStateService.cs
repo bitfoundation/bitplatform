@@ -5,7 +5,6 @@ namespace Boilerplate.Client.Core.Services;
 /// <summary>
 /// For more information <see cref="IPrerenderStateService"/> docs.
 /// </summary>
-#if (BlazorWebAssembly || BlazorServer) && (SpaPrerendered || PwaPrerendered)
 public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? subscription;
@@ -15,7 +14,7 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
     public PrerenderStateService(PersistentComponentState state)
     {
         applicationState = state;
-        subscription = applicationState.RegisterOnPersisting(PersistAsJson);
+        subscription = applicationState.RegisterOnPersisting(PersistAsJson, RenderModeProvider.Current);
     }
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
@@ -46,12 +45,11 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
         subscription?.Dispose();
     }
 }
-#else
-public class PrerenderStateService : IPrerenderStateService
+
+public class NoPrerenderStateService : IPrerenderStateService
 {
     public Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
         return factory();
     }
 }
-#endif

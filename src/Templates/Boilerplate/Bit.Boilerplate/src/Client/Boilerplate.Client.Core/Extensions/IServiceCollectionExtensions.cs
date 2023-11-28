@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
-using OS = OperatingSystem;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -9,9 +9,15 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientSharedServices(this IServiceCollection services)
     {
-        // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, macOS and Linux)
+        // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, macOS)
 
-        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.AddSharedServices();
+
+        if (RenderModeProvider.PrerenderEnabled && RenderModeProvider.IsHybridRender() is false)
+            services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
+        else
+            services.TryAddTransient<IPrerenderStateService, NoPrerenderStateService>();
+
         services.TryAddSessioned<IPubSubService, PubSubService>();
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IStorageService, BrowserStorageService>();
@@ -23,10 +29,12 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddTransient<HttpClientHandler>();
 
-        services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>();
-        services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddScoped<AuthenticationStateProvider, AuthenticationManager>();
+        services.AddScoped(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.TryAddTransient<MessageBoxService>();
+
+        services.TryAddTransient<LazyAssemblyLoader>();
 
         return services;
     }
@@ -39,7 +47,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (IsBlazorHybrid() || OperatingSystem.IsBrowser())
+        if (RenderModeProvider.IsHybridRender() || OperatingSystem.IsBrowser())
         {
             return services.AddSingleton<TService, TImplementation>();
         }
@@ -56,7 +64,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (IsBlazorHybrid() || OperatingSystem.IsBrowser())
+        if (RenderModeProvider.IsHybridRender() || OperatingSystem.IsBrowser())
         {
             services.TryAddSingleton<TService, TImplementation>();
         }
@@ -66,28 +74,5 @@ public static class IServiceCollectionExtensions
         }
 
         return services;
-    }
-
-    /// <summary>
-    /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
-    /// </summary>
-    public static IServiceCollection TryAddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
-        where TService : class
-    {
-        if (IsBlazorHybrid() || OperatingSystem.IsBrowser())
-        {
-            services.TryAddSingleton(implementationFactory);
-        }
-        else
-        {
-            services.TryAddScoped(implementationFactory);
-        }
-
-        return services;
-    }
-
-    private static bool IsBlazorHybrid()
-    {
-        return OS.IsAndroid() || OS.IsIOS() || OS.IsMacOS() || OS.IsMacCatalyst() || OS.IsWindows();
     }
 }
