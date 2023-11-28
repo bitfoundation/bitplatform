@@ -71,25 +71,14 @@
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
 
-    <ItemGroup Condition=" '$(UseElectron)' == 'true' ">
-        <Content Update="electron.manifest.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <PackageReference Include="ElectronNET.API" Version="23.6.1" />
-    </ItemGroup>
-
     <ItemGroup>
       <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Condition="'$(UseElectron)' == 'true'" Command="dotnet electronize version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCodeElectronDotNet" />
-        </Exec>
-        <Exec Condition="'$(UseElectron)' == 'true' AND '$(ErrorCodeElectronDotNet)' != '0'" Command="dotnet tool restore"></Exec>
         <Error Text="Pwa is not supported in BlazorServer mode." Condition="$(WebAppDeploymentType.Contains('Pwa')) AND '$(BlazorMode)' == 'BlazorServer'" />
         <Error Text="To run in BlazorWebAssembly mode, change the sdk of the Boilerplate.Client.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
-        <Error Text="To run in BlazorServer or BlazorElectron modes, change the sdk of the Boilerplate.Client.Web.csproj to Microsoft.NET.Sdk.Web." Condition=" ('$(BlazorMode)' == 'BlazorServer' OR '$(BlazorMode)' == 'BlazorElectron') AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != '' " />
+        <Error Text="To run in BlazorServer mode, change the sdk of the Boilerplate.Client.Web.csproj to Microsoft.NET.Sdk.Web." Condition=" '$(BlazorMode)' == 'BlazorServer' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != '' " />
     </Target>
     
 </Project>

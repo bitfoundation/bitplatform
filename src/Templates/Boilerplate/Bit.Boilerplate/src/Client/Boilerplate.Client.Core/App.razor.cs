@@ -73,10 +73,6 @@ public partial class App
                 cssClasses.Add("bit-android");
             }
         }
-        else if (BlazorModeDetector.Current.IsBlazorElectron())
-        {
-            cssClasses.Add("bit-blazor-electron");
-        }
 
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = bitDeviceCoordinator.GetStatusBarHeight();

@@ -4,17 +4,12 @@
     <PropertyGroup>
         
         <BlazorMode>BlazorServer</BlazorMode>
-        <!-- You can use either BlazorServer, BlazorWebAssembly, BlazorHybrid or BlazorElectron -->
+        <!-- You can use either BlazorServer, BlazorWebAssembly, BlazorHybrid -->
         <!-- Learn more about blazor modes at https://bitplatform.dev/templates/hosting-models -->
 
         <WebAppDeploymentType>Spa</WebAppDeploymentType>
         <!-- You can choose either Spa, Pwa, SpaPrerendered, PwaPrerendered or PrerenderedOnly -->
         <!-- Learn more about deployment types at https://bitplatform.dev/templates/deployment-type -->
-
-        <UseElectron Condition=" '$(BlazorMode)' == 'BlazorElectron' ">true</UseElectron>
-        <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorElectron' ">$(DefineConstants);BlazorElectron</DefineConstants>
-        <WebAppDeploymentType Condition=" '$(BlazorMode)' == 'BlazorElectron' ">Spa</WebAppDeploymentType>
-        <BlazorMode Condition=" '$(BlazorMode)' == 'BlazorElectron' ">BlazorServer</BlazorMode>
         
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' ">$(DefineConstants);BlazorWebAssembly</DefineConstants>
         <DefineConstants Condition=" '$(BlazorMode)' == 'BlazorServer' ">$(DefineConstants);BlazorServer</DefineConstants>

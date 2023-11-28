@@ -43,7 +43,7 @@ public class Middlewares
             }
         });
 
-        app.UseCors(options => options.WithOrigins("https://localhost:4031" /*BlazorServer*/, "http://localhost:8001" /*BlazorElectron*/, "https://0.0.0.0" /*BlazorHybrid*/, "app://0.0.0.0" /*BlazorHybrid*/)
+        app.UseCors(options => options.WithOrigins("https://localhost:4031" /*BlazorServer*/, "https://0.0.0.0" /*BlazorHybrid*/, "app://0.0.0.0" /*BlazorHybrid*/)
             .AllowAnyHeader().AllowAnyMethod());
 
         app.UseResponseCaching();

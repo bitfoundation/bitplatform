@@ -9,7 +9,6 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
-    var isElectron = BlazorModeDetector.Current.IsBlazorElectron();
     var isBlazorServer = BlazorModeDetector.Current.IsBlazorServer();
     var isSpa = WebAppDeploymentTypeDetector.Current.IsSpa();
     var isPwa = WebAppDeploymentTypeDetector.Current.IsPwa();

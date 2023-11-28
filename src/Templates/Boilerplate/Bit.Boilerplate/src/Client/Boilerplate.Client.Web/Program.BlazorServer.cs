@@ -4,7 +4,7 @@ namespace Boilerplate.Client.Web;
 
 public partial class Program
 {
-#if BlazorServer && !BlazorElectron
+#if BlazorServer
     public static WebApplication CreateHostBuilder(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
