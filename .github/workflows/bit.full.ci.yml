@@ -68,7 +68,7 @@ jobs:
     - name: Release build bit blazor ui demo - Blazor webassembly - Pwa prerendered
       run: |
         sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
-        dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:Configuration=Release -p:RunAOTCompilation=false
+        dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PwaPrerendered" -p:Configuration=Release -p:RunAOTCompilation=false
 
     - name: Create projects from BlazorEmpty project template with different parameters
       run: |
