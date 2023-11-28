@@ -153,43 +153,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Shared
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Careers.Client", "Websites\Careers\src\Bit.Websites.Careers.Client\Bit.Websites.Careers.Client.csproj", "{9CF8208A-AE33-43B2-8E41-BD7D6B0FDF40}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWeb", "BlazorWeb", "{0C76F4C8-8FB3-42A0-B06F-0F94828AC7F3}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\BlazorWeb\Bit.BlazorWeb\.gitignore = Templates\BlazorWeb\Bit.BlazorWeb\.gitignore
-		Templates\BlazorWeb\Bit.BlazorWeb\Clean.bat = Templates\BlazorWeb\Bit.BlazorWeb\Clean.bat
-		Templates\BlazorWeb\Bit.BlazorWeb\src\Directory.Build.props = Templates\BlazorWeb\Bit.BlazorWeb\src\Directory.Build.props
-		Templates\BlazorWeb\Bit.BlazorWeb\global.json = Templates\BlazorWeb\Bit.BlazorWeb\global.json
-		Templates\BlazorWeb\Readme.md = Templates\BlazorWeb\Readme.md
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{61F29363-08F1-430B-8CFC-7CCCE044D25E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{EF6EF35E-9612-4B2A-8BFE-41234BFCAD78}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{DE6B5E70-1959-42F9-8447-FB4C8B1ADF33}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\BlazorWeb\Bit.BlazorWeb\.azure-devops\workflows\cd.yml = Templates\BlazorWeb\Bit.BlazorWeb\.azure-devops\workflows\cd.yml
-		Templates\BlazorWeb\Bit.BlazorWeb\.azure-devops\workflows\ci.yml = Templates\BlazorWeb\Bit.BlazorWeb\.azure-devops\workflows\ci.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{0C50EC36-667E-4382-A4FC-2F805BD17DFE}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\BlazorWeb\Bit.BlazorWeb\.github\workflows\cd.yml = Templates\BlazorWeb\Bit.BlazorWeb\.github\workflows\cd.yml
-		Templates\BlazorWeb\Bit.BlazorWeb\.github\workflows\ci.yml = Templates\BlazorWeb\Bit.BlazorWeb\.github\workflows\ci.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".template.config", ".template.config", "{59B8A201-87D6-4A9B-BA1A-CA569D60295F}"
-	ProjectSection(SolutionItems) = preProject
-		Templates\BlazorWeb\Bit.BlazorWeb\.template.config\template.json = Templates\BlazorWeb\Bit.BlazorWeb\.template.config\template.json
-	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorWeb.ProjectTemplate", "Templates\BlazorWeb\Bit.BlazorWeb.ProjectTemplate.csproj", "{E59E9558-5BE7-4EF3-AA5A-948011F92356}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Client", "Templates\BlazorWeb\Bit.BlazorWeb\src\BlazorWeb.Client\BlazorWeb.Client.csproj", "{27B44C39-A85B-4B4C-84D4-01B3B5D9532C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Server", "Templates\BlazorWeb\Bit.BlazorWeb\src\BlazorWeb.Server\BlazorWeb.Server.csproj", "{6784B849-0F4E-42D2-AE0B-7E92C603152F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Shared", "Templates\BlazorWeb\Bit.BlazorWeb\src\BlazorWeb.Shared\BlazorWeb.Shared.csproj", "{41016CF0-FBEA-4054-B992-9B893F6BC912}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Boilerplate", "Boilerplate", "{B07A45DA-F7B7-4AF0-BE64-54DAE906FC01}"
 	ProjectSection(SolutionItems) = preProject
@@ -235,8 +201,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Websites.Platform.Server", "Websites\Platform\src\Bit.Websites.Platform.Server\Bit.Websites.Platform.Server.csproj", "{FB1E2F03-F064-4B14-9B51-A5F39AB47E9F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Iac", "Templates\Boilerplate\Bit.Boilerplate\src\Boilerplate.Iac\Boilerplate.Iac.csproj", "{8DD94797-A476-4E69-85B5-6B2069EBDAF5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Iac", "Templates\BlazorWeb\Bit.BlazorWeb\src\BlazorWeb.Iac\BlazorWeb.Iac.csproj", "{BABC6F52-88E5-4D2F-810E-FD51879458C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

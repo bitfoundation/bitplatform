@@ -13,10 +13,6 @@
         <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
         <WasmEnableSIMD>false</WasmEnableSIMD>
         <!--/+:msbuild-conditional:noEmit -->
-        <ResolveStaticWebAssetsInputsDependsOn>
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -53,10 +49,5 @@
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
-
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Error Text="To run in BlazorWebAssembly mode, change the sdk of the Boilerplate.Client.Web.csproj to Microsoft.NET.Sdk.BlazorWebAssembly." Condition=" '$(BlazorMode)' == 'BlazorWebAssembly' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == '' " />
-        <Error Text="To run in BlazorServer mode, change the sdk of the Boilerplate.Client.Web.csproj to Microsoft.NET.Sdk.Web." Condition=" '$(BlazorMode)' == 'BlazorServer' AND '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != '' " />
-    </Target>
     
 </Project>

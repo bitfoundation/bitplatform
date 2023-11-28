@@ -97,9 +97,6 @@ jobs:
     - name: dotnet pack Boilerplate
       run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output . --configuration Release
 
-    - name: dotnet pack BlazorWeb
-      run: dotnet pack src/Templates/BlazorWeb/Bit.BlazorWeb.ProjectTemplate.csproj --output . --configuration Release
-
     - name: dotnet pack BlazorEmpty
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
     

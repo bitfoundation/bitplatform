@@ -50,7 +50,6 @@ jobs:
       run: |
         dotnet workload install wasm-tools wasm-experimental
         dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample adminpanel --pipeline github
-        sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' AdminBPBlazorWasmSqlServer/src/Client/AdminBPBlazorWasmSqlServer.Client.Web/AdminBPBlazorWasmSqlServer.Client.Web.csproj
         dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -p:Configuration=Release
 
     - name: Release build bit blazor ui + bit blazor ui demo (blazor server) + butil + bswu + bup + code analyzers + source generators
@@ -72,24 +71,6 @@ jobs:
       run: |
         sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
         dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:Configuration=Release
-
-    - name: Create projects from BlazorWeb project template with different parameters
-      run: |
-        cd src/Templates/BlazorWeb && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.BlazorWeb.0.0.0.nupkg && cd ../../../
-        dotnet new bit-web --name TodoWebSqlite --database sqlite --sample todo --pipeline other
-        dotnet new bit-web --name AdminWebSqlServer --database sqlserver --sample adminpanel --pipeline github
-        dotnet new bit-web --name EmptyWeb --database other --sample none --pipeline azure
-
-    - name: Release build blazor web based projects
-      run: |
-        cd TodoWebSqlite/src/TodoWebSqlite.Server/ && dotnet tool restore
-        dotnet ef migrations add InitialMigration && dotnet ef database update
-        cd ../../../
-        dotnet build TodoWebSqlite/TodoWebSqlite.sln -p:Configuration=Release
-        dotnet build AdminWebSqlServer/AdminWebSqlServer.sln -p:Configuration=Release
-        dotnet build EmptyWeb/EmptyWeb.sln -p:Configuration=Release
 
     - name: Create projects from BlazorEmpty project template with different parameters
       run: |
