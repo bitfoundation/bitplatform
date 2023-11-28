@@ -22,13 +22,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Watch Include="..\Core\**\*.razor" />
-        <Watch Include="..\Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
+        <Watch Include="..\Boilerplate.Client.Core\**\*.razor" />
+        <Watch Include="..\Boilerplate.Client.Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
     </ItemGroup>
 
     <ItemGroup>
         <!--/-:msbuild-conditional:noEmit -->
-        <!-- In the Blazor Web Assembly mode, the API project will host the web client app itself -->
+        <!-- In the Blazor Web Assembly mode, the Server project will host the web client app itself -->
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Host.cshtml" />
         <Content Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Pages\_Layout.cshtml" />
         <Compile Condition=" '$(BlazorMode)' != 'BlazorServer' " Remove="Services\ServerSideAuthTokenProvider.cs" />
@@ -55,7 +55,7 @@
 
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" Condition="$(WebAppDeploymentType.Contains('Pwa'))" />
-        <ProjectReference Include="..\Core\Boilerplate.Client.Core.csproj" />
+        <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
 
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />

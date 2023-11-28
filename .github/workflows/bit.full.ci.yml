@@ -33,7 +33,7 @@ jobs:
       run: |
         dotnet workload install maui-tizen
         dotnet new bit-bp --name TodoBPBlazorServerSqlite --database sqlite --sample todo --pipeline other
-        cd TodoBPBlazorServerSqlite/src/Server/
+        cd TodoBPBlazorServerSqlite/src/TodoBPBlazorServerSqlite.Server/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
@@ -50,7 +50,7 @@ jobs:
       run: |
         dotnet workload install wasm-tools wasm-experimental
         dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample adminpanel --pipeline github
-        sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' AdminBPBlazorWasmSqlServer/src/Client/Web/AdminBPBlazorWasmSqlServer.Client.Web.csproj
+        sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' AdminBPBlazorWasmSqlServer/src/Client/AdminBPBlazorWasmSqlServer.Client.Web/AdminBPBlazorWasmSqlServer.Client.Web.csproj
         dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PwaPrerendered" -p:Configuration=Release
 
     - name: Release build bit blazor ui + bit blazor ui demo (blazor server) + butil + bswu + bup + code analyzers + source generators

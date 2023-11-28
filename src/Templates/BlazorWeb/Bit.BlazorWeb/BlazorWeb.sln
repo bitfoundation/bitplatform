@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Server", "src\Bla
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Client", "src\BlazorWeb.Client\BlazorWeb.Client.csproj", "{2B84944A-F323-4F0D-9D70-7FF99B0F7EA7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Iac", "src\BlazorWeb.Infra\BlazorWeb.Iac.csproj", "{F63859EB-108D-48FA-9F3D-5232E2A12184}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb.Iac", "src\BlazorWeb.Iac\BlazorWeb.Iac.csproj", "{F63859EB-108D-48FA-9F3D-5232E2A12184}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

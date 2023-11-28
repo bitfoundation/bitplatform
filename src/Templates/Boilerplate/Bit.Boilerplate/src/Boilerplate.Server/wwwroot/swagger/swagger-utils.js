@@ -2,13 +2,13 @@
 based on: https://www.codedesigntips.com/2021/06/28/swagger-ui-with-login-form-and-role-based-api-visibility/
 */
 (() => {
-    window.addEventListener('load', () => setTimeout(initLoginForm, 0), false);
+    window.addEventListener('load', () => setTimeout(initSignInForm, 0), false);
 })();
 
 const ACCESS_TOKEN_COOKIE_NAME = 'access_token';
 let accessTokenExpiresIn = 0;
 
-const initLoginForm = () => {
+const initSignInForm = () => {
     const swagger = window.ui;
     if (!swagger) {
         console.error('Swagger wasn\'t found');
@@ -18,7 +18,7 @@ const initLoginForm = () => {
     overrideSwaggerAuthorizeEvent(swagger);
     overrideSwaggerLogoutEvent(swagger);
     tryAuthorizeWithLocalData(swagger);
-    showLoginUI(swagger);
+    showSignInUI(swagger);
 }
 
 const tryAuthorizeWithLocalData = (swagger) => {
@@ -57,15 +57,15 @@ const overrideSwaggerLogoutEvent = (swagger) => {
     };
 }
 
-const showLoginUI = (swagger) => {
+const showSignInUI = (swagger) => {
     new MutationObserver(function (mutations, self) {
-        const descriptionDiv = isLoginFormMustShow(swagger);
+        const descriptionDiv = isSignInFormMustShow(swagger);
         if (descriptionDiv)
-            createLoginUI(swagger, descriptionDiv);
-    }).observe(document, { childList: true, subtree: true });
+            createSignInUI(swagger, descriptionDiv);
+    }).observe(document, {childList: true, subtree: true});
 }
 
-const isLoginFormMustShow = (swagger) => {
+const isSignInFormMustShow = (swagger) => {
     const rootDiv = document.querySelector("#swagger-ui > section > div.swagger-ui > div:nth-child(2)");
     if (rootDiv == null)
         return false;
@@ -78,8 +78,8 @@ const isLoginFormMustShow = (swagger) => {
     if (descriptionDiv == null)
         return false;
 
-    const loginDiv = descriptionDiv.querySelector("div.login");
-    if (loginDiv != null)
+    const signInDiv = descriptionDiv.querySelector("div.signIn");
+    if (signInDiv != null)
         return false;
 
     if (isAuthorized(swagger))
@@ -88,9 +88,9 @@ const isLoginFormMustShow = (swagger) => {
     return descriptionDiv;
 }
 
-const createLoginUI = function (swagger, rootDiv) {
+const createSignInUI = function (swagger, rootDiv) {
     const div = document.createElement("div");
-    div.className = "login";
+    div.className = "signIn";
 
     rootDiv.appendChild(div);
 
@@ -122,16 +122,16 @@ const createLoginUI = function (swagger, rootDiv) {
     passwordInput.style = "margin-left: 10px; margin-right: 10px;";
     passwordLabel.appendChild(passwordInput);
 
-    //Login button
-    const loginButton = document.createElement("button")
-    loginButton.type = "submit";
-    loginButton.type = "button";
-    loginButton.classList.add("btn");
-    loginButton.classList.add("auth");
-    loginButton.classList.add("authorize");
-    loginButton.classList.add("button");
-    loginButton.innerText = "Login";
-    loginButton.onclick = function () {
+    //Sign in button
+    const signInButton = document.createElement("button")
+    signInButton.type = "submit";
+    signInButton.type = "button";
+    signInButton.classList.add("btn");
+    signInButton.classList.add("auth");
+    signInButton.classList.add("authorize");
+    signInButton.classList.add("button");
+    signInButton.innerText = "Sign in";
+    signInButton.onclick = function () {
         const userName = userNameInput.value;
         const password = passwordInput.value;
 
@@ -140,13 +140,13 @@ const createLoginUI = function (swagger, rootDiv) {
             return;
         }
 
-        login(swagger, userName, password);
+        signIn(swagger, userName, password);
     };
 
-    div.appendChild(loginButton);
+    div.appendChild(signInButton);
 }
 
-const login = async (swagger, userName, password) => {
+const signIn = async (swagger, userName, password) => {
     const response = await fetch('/api/Identity/SignIn', {
         headers: { "Content-Type": "application/json; charset=utf-8" },
         method: 'POST',

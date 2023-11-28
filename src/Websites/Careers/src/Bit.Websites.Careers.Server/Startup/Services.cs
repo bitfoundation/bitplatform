@@ -10,7 +10,7 @@ public static class Services
 {
     public static void Add(IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
     {
-        // Services being registered here can get injected into controllers and services in Api project.
+        // Services being registered here can get injected into controllers and services in Server project.
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 

@@ -137,25 +137,25 @@
                     "exclude": [ "src/Shared/Dtos/Categories/**",
 						"src/Shared/Dtos/Dashboard/**",
 						"src/Shared/Dtos/Products/**",
-						"src/Server/Controllers/Categories/**",
-						"src/Server/Controllers/Products/**",
-						"src/Server/Data/Configurations/Category/**",
-						"src/Server/Data/Configurations/Product/**",
-						"src/Server/Mappers/CategoriesMapper.cs",
-						"src/Server/Mappers/ProductsMapper.cs",
-						"src/Server/Models/Categories/**",
-						"src/Server/Models/Products/**",
-						"src/Client/Core/Pages/Categories/**",
-						"src/Client/Core/Pages/Dashboard/**",
-						"src/Client/Core/Pages/Products/**"]
+						"src/Boilerplate.Server/Controllers/Categories/**",
+						"src/Boilerplate.Server/Controllers/Products/**",
+						"src/Boilerplate.Server/Data/Configurations/Category/**",
+						"src/Boilerplate.Server/Data/Configurations/Product/**",
+						"src/Boilerplate.Server/Mappers/CategoriesMapper.cs",
+						"src/Boilerplate.Server/Mappers/ProductsMapper.cs",
+						"src/Boilerplate.Server/Models/Categories/**",
+						"src/Boilerplate.Server/Models/Products/**",
+						"src/Client/Boilerplate.Client.Core/Pages/Categories/**",
+						"src/Client/Boilerplate.Client.Core/Pages/Dashboard/**",
+						"src/Client/Boilerplate.Client.Core/Pages/Products/**"]
                 },
                 {
                     "condition": "(sample != Todo)",
                     "exclude": [ "src/Shared/Dtos/Todo/**",
-						"src/Server/Controllers/Todo/**",
-						"src/Server/Mappers/TodoMapper.cs",
-						"src/Server/Models/Todo/**",
-						"src/Client/Core/Pages/Todo/**"]
+						"src/Boilerplate.Server/Controllers/Todo/**",
+						"src/Boilerplate.Server/Mappers/TodoMapper.cs",
+						"src/Boilerplate.Server/Models/Todo/**",
+						"src/Client/Boilerplate.Client.Core/Pages/Todo/**"]
                 }
             ]
         }

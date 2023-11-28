@@ -68,7 +68,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Shared\Boilerplate.Shared.csproj" />
+        <ProjectReference Include="..\..\Boilerplate.Shared\Boilerplate.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

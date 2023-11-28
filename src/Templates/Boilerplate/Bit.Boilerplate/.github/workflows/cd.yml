@@ -39,31 +39,31 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
     - name: Switch to blazor web assembly
-      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/Boilerplate.Client.Web.csproj
+      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
       
     - name: Generate CSS/JS files
-      run: dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      run: dotnet publish src/Server/Boilerplate.Server.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Build migrations bundle
       run: |
-        cd src/Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj
+        cd src/Boilerplate.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj
 
     - name: Upload ef migrations bundle
       uses: actions/upload-artifact@v3
       with:
         name: migrations-bundle
-        path: src/Server/efbundle
+        path: src/Boilerplate.Server/efbundle
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
@@ -146,7 +146,7 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
@@ -154,16 +154,16 @@ jobs:
       run: cd src && dotnet workload install maui
   
     - name: Generate CSS/JS files
-      run: dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build exe
-      run: dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+      run: dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: src/Client/App/bin/release/net8.0-windows10.0.19041.0/win10-x86
+        path: src/Client/Boilerplate.Client.App/bin/release/net8.0-windows10.0.19041.0/win10-x86
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -186,14 +186,14 @@ jobs:
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
       with:
-          fileDir: './src/Client/App/'
+          fileDir: './src/Client/Boilerplate.Client.App/'
           fileName: 'Boilerplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
@@ -201,19 +201,19 @@ jobs:
       run: cd src && dotnet workload install maui-android
   
     - name: Generate CSS/JS files
-      run: dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build aab
-      run: dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
+      run: dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
   
     - name: Build apk
-      run: dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
+      run: dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: android-bundle
-        path: src/Client/App/bin/Release/net8.0-android/*-Signed.*
+        path: src/Client/Boilerplate.Client.App/bin/Release/net8.0-android/*-Signed.*
   
   build_blazor_hybrid_maccatalyst:
      name: build blazor hybrid (maccatalyst)
@@ -236,7 +236,7 @@ jobs:
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
        with:
-         files: 'src/Client/Core/appsettings.json'
+         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -244,16 +244,16 @@ jobs:
        run: cd src && dotnet workload install maui
    
      - name: Generate CSS/JS files
-       run: dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
    
      - name: Build pkg
-       run: dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst
+       run: dotnet build src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -f net8.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
          name: mac-pkg-bundle
-         path: src/Client/App/bin/release/net8.0-maccatalyst/*.pkg
+         path: src/Client/Boilerplate.Client.App/bin/release/net8.0-maccatalyst/*.pkg
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
@@ -280,7 +280,7 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -309,16 +309,16 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Generate CSS/JS files
-      run: dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build ipa
-      run: dotnet publish src/Client/App/Boilerplate.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
+      run: dotnet publish src/Client/Boilerplate.Client.App/Boilerplate.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: iOS-bundle
-        path: src/Client/App/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
+        path: src/Client/Boilerplate.Client.App/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
 
   build_blazor_electron_linux:
      name: build blazor electron (linux)
@@ -346,7 +346,7 @@ jobs:
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
        with:
-         files: 'src/Client/Core/appsettings.json'
+         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -354,16 +354,16 @@ jobs:
        run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/Directory.Build.props > temp.xml && mv temp.xml src/Directory.Build.props
    
      - name: Generate CSS/JS files
-       run: dotnet build src/Client/Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
      - name: Restore electron .net
-       run: dotnet build src/Client/Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks
+       run: dotnet build src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj -t:BeforeBuildTasks
    
      - name: Build app image
-       run: cd src/Client/Web/ && dotnet electronize build /target linux
+       run: cd src/Client/Boilerplate.Client.Web/ && dotnet electronize build /target linux
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
          name: linux-app-image
-         path: src/Client/Web/bin/Desktop/linux-unpacked
+         path: src/Client/Boilerplate.Client.Web/bin/Desktop/linux-unpacked
