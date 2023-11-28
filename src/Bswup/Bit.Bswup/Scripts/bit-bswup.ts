@@ -135,7 +135,7 @@ class BitBswup {
             }
 
             if (type === 'bypass') {
-                const firstInstall = true; // !(navigator.serviceWorker.controller);
+                const firstInstall = data?.firstTime || !(navigator.serviceWorker.controller);
                 handle(BswupMessage.downloadFinished, { reload, firstInstall });
             }
 
