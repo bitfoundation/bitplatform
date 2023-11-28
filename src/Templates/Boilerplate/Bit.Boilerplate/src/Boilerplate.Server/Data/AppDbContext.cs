@@ -1,11 +1,11 @@
 ﻿//+:cnd:noEmit
 //#if (sample == "Admin")
 using Boilerplate.Server.Models.Categories;
-using Boilerplate.Server.Models.Identity;
 using Boilerplate.Server.Models.Products;
 //#elif (sample == "Todo")
 using Boilerplate.Server.Models.Todo;
 //#endif
+using Boilerplate.Server.Models.Identity;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
