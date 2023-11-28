@@ -7,8 +7,11 @@ To start using `Butil` you first need to add its services like this:
 
 ```csharp
 using Bit.Butil;
+
 ...
+
 builder.Services.AddBitButilServices();
+
 ...
 ```
 
