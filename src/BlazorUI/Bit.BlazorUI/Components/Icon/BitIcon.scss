@@ -1,3 +1,6 @@
-﻿.bit-ico {
+﻿@import "../../Styles/functions.scss";
+
+.bit-ico {
     display: inline-block;
+    font-size: spacing(3);
 }
