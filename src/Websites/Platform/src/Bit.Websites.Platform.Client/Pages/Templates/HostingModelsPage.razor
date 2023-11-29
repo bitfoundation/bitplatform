@@ -19,8 +19,6 @@
         Blazor can be hosted on server-side in ASP.NET Core (Blazor Server), on client-side in the browser on a WebAssembly-based .NET runtime (Blazor WebAssembly, Blazor WASM),
         and in native mobile and desktop apps that render to an embedded Web View control (Blazor Hybrid).
         <br />
-        Additionally, bit project templates have added support for a new mode, Blazor Electron, which allows for building desktop apps with Blazor.
-        <br />
         Regardless of the hosting model, the approach and tools used to build Blazor apps are the same and the same Blazor source code can be used for any of the hosting models.
     </BitTypography>
     <br />
@@ -109,41 +107,11 @@
         </div>
         <br />
         <div>
-            3. Change <b>ApiServerAddress</b> in <b>Client/Core/appsettings.json</b> to make sure your Android / iOS device can reach the server.
+            3. Change <b>ApiServerAddress</b> in <b>Client/Boilerplate.Client.Core/appsettings.json</b> to make sure your Android / iOS device can reach the server.
         </div>
         <br />
         <div>
             4. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, App projects to start)
-        </div>
-    </section>
-
-    <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Electron</BitTypography>
-        <div class="section-card-txt">
-            Blazor can also be used to build native client apps using another approach similar to Blazor Hybrid with different supported platforms (Windows, macOS and Linux)
-            <br />
-            To switch to Blazor Electron mode:
-        </div>
-        <div class="section-card-txt">
-            1. Change value of <b>@("<BlazorMode>")</b> on <b>src/Directory.build.props</b> file in <b>Solution Items</b> root folder.
-        </div>
-        <div class="code-box">@("<BlazorMode>BlazorElectron</BlazorMode>")</div>
-        <div class="section-card-txt">
-            2. Set <b>Client.Web</b> as the startup project and choose Electron as the <b>launch profile</b> as shown in the following image:
-        </div>
-        <div class="image-container">
-            <img class="image small" alt="Debug target" src="/images/templates/electron-target.webp" />
-        </div>
-        <br />
-        <div>
-            3. Set solution on Multi-startup project, by right click on solution name and selecting properties from right-click menu (change the action of the Api, Web projects to start)
-        </div>
-        <div class="section-card-txt">
-            <br />
-            <b>Note</b>: This only runs the project. To debug the project, switch to other modes or consult the
-            <a target="_blank" href="https://github.com/ElectronNET/Electron.NET">Electron.NET</a> documentation.
-            <br />
-            <b>Note</b>: In order to debug in Blazor Server mode, set the Web project as startup and switch back to the default <b>launch profile</b>.
         </div>
     </section>
 </div>

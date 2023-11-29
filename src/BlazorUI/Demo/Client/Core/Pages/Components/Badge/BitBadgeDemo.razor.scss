@@ -7,27 +7,7 @@
     max-width: max-content;
 }
 
-.badges-container-grid {
-    display: grid;
-    padding: 1rem;
-}
-
-.custom-loading {
-    display: flex;
-    gap: 0.3125rem;
-    align-items: center;
-    justify-content: center;
-}
-
-.form-container {
-    max-width: 20rem;
-}
-
 ::deep {
-    .validation-message {
-        color: red;
-    }
-
     .custom-class {
         border-radius: 1rem;
         box-shadow: aqua 0 0 0.5rem;
@@ -39,12 +19,12 @@
     }
 
     .custom-root {
-        margin-left: 1rem;
+        margin-left: 2rem;
         text-shadow: aqua 0 0 0.5rem;
     }
 
     .custom-wrapper {
-        text-shadow: aqua 0 0 0.5rem;
+        padding: 1.25rem;
     }
 
     .custom-badge {

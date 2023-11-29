@@ -5,7 +5,9 @@
       id="@_Id"
       style="@StyleBuilder.Value"
       class="@ClassBuilder.Value">
+
     @ChildContent
+
     @if (Hidden is false)
     {
         <span style="@Styles?.BadgeWrapper" class="bit-bdg-wrp @GetBadgePositionClasses() @Classes?.BadgeWrapper">

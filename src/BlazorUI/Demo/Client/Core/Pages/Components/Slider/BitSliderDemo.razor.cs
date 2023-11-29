@@ -57,7 +57,7 @@ public partial class BitSliderDemo
         },
         new()
         {
-            Name = "IsReadonly",
+            Name = "IsReadOnly",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to render the Slider as readonly.",
