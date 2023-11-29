@@ -11,14 +11,20 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
     private readonly PersistentComponentState applicationState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
-    public PrerenderStateService(PersistentComponentState state)
+    public PrerenderStateService(IServiceProvider serviceProvider)
     {
-        applicationState = state;
-        subscription = applicationState.RegisterOnPersisting(PersistAsJson, RenderModeProvider.Current);
+        if (AppRenderMode.PrerenderEnabled)
+        {
+            applicationState = serviceProvider.GetRequiredService<PersistentComponentState>();
+            subscription = applicationState.RegisterOnPersisting(PersistAsJson, AppRenderMode.Current);
+        }
     }
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
+        if (AppRenderMode.PrerenderEnabled is false)
+            return await factory();
+
         if (applicationState.TryTakeFromJson(key, out T? value)) return value;
 
         var result = await factory();
@@ -28,6 +34,9 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 
     void Persist<T>(string key, T value)
     {
+        if (AppRenderMode.PrerenderEnabled is false)
+            return;
+
         values.TryRemove(key, out object? _);
         values.TryAdd(key, value);
     }
@@ -42,14 +51,9 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        subscription?.Dispose();
-    }
-}
+        if (AppRenderMode.PrerenderEnabled is false)
+            return;
 
-public class NoPrerenderStateService : IPrerenderStateService
-{
-    public Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
-    {
-        return factory();
+        subscription?.Dispose();
     }
 }
