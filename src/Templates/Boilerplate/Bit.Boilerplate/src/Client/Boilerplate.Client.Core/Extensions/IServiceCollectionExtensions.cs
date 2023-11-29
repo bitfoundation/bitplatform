@@ -13,10 +13,7 @@ public static class IServiceCollectionExtensions
 
         services.AddSharedServices();
 
-        if (RenderModeProvider.PrerenderEnabled && RenderModeProvider.IsHybridRender() is false)
-            services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
-        else
-            services.TryAddTransient<IPrerenderStateService, NoPrerenderStateService>();
+        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
 
         services.TryAddSessioned<IPubSubService, PubSubService>();
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
@@ -47,7 +44,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (RenderModeProvider.IsHybridRender() || OperatingSystem.IsBrowser())
+        if (AppRenderMode.IsHybrid() || OperatingSystem.IsBrowser())
         {
             return services.AddSingleton<TService, TImplementation>();
         }
@@ -64,7 +61,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (RenderModeProvider.IsHybridRender() || OperatingSystem.IsBrowser())
+        if (AppRenderMode.IsHybrid() || OperatingSystem.IsBrowser())
         {
             services.TryAddSingleton<TService, TImplementation>();
         }

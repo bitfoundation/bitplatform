@@ -11,6 +11,9 @@
         <NeutralLanguage>en</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
         <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
+        
+        <PwaEnabled>false</PwaEnabled>
+        <DefineConstants Condition=" '$(PwaEnabled)' == 'true' ">$(DefineConstants);PwaEnabled</DefineConstants>
 
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">14.2</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">14.0</SupportedOSPlatformVersion>
