@@ -134,6 +134,11 @@ class BitBswup {
                 }
             }
 
+            if (type === 'bypass') {
+                const firstInstall = data?.firstTime || !(navigator.serviceWorker.controller);
+                handle(BswupMessage.downloadFinished, { reload, firstInstall });
+            }
+
             if (type === 'activate') {
                 handle(BswupMessage.activate, data);
             }
