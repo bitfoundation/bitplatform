@@ -57,7 +57,7 @@ jobs:
       run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      run: dotnet publish TodoTemplate/src/TodoTemplate.Server/TodoTemplate.Server.Api.csproj -p:Configuration=Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish TodoTemplate/src/TodoTemplate.Server/TodoTemplate.Server.csproj -p:Configuration=Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3

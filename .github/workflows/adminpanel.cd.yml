@@ -55,7 +55,7 @@ jobs:
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      run: dotnet publish AdminPanel/src/AdminPanel.Server/AdminPanel.Server.Api.csproj -p:Configuration=Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish AdminPanel/src/AdminPanel.Server/AdminPanel.Server.csproj -p:Configuration=Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
 
     - name: Upload api-web artifact
       uses: actions/upload-artifact@v3
