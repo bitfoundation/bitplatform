@@ -17,4 +17,14 @@ public class Window(IJSRuntime js)
     {
         await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
     }
+
+    public async Task AddBeforeUnload()
+    {
+        await js.AddBeforeUnload();
+    }
+
+    public async Task RemoveBeforeUnload()
+    {
+        await js.RemoveBeforeUnload();
+    }
 }

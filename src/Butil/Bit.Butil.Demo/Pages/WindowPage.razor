@@ -16,18 +16,29 @@
 }
 </pre>
 
-<h3>Open the DevTools and start pressing keys on your keyboard</h3>
-
-<button @onclick=AddEventListener>AddEventListener</button>
-&nbsp;
-<button @onclick=RemoveEventListener>RemoveEventListener</button>
-
+<br />
 <hr />
+<br />
 
-<div>Is Registered: @isRegistered</div>
+<h4>Open the DevTools and start pressing keys on your keyboard</h4>
+<br />
+<button @onclick=AddEventListener>AddEventListener</button>&nbsp;<button @onclick=RemoveEventListener>RemoveEventListener</button>
+<br />
+<br />
+<div>Is KeyDown Registered? @isKeyDownRegistered</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=AddBeforeUnload>AddBeforeUnload</button>&nbsp;<button @onclick=RemoveBeforeUnload>RemoveBeforeUnload</button>
+<br />
+<br />
+<div>Is BeforeUnload Registered? @isBeforeUnloadRegistered</div>
 
 @code {
-    private bool isRegistered = false;
+    private bool isKeyDownRegistered;
+    private bool isBeforeUnloadRegistered;
 
     private Action<ButilKeyboardEventArgs> _handler = default!;
 
@@ -41,12 +52,24 @@
     private void AddEventListener()
     {
         _ = window.AddEventListener(ButilEvents.KeyDown, _handler);
-        isRegistered = true;
+        isKeyDownRegistered = true;
     }
 
     private void RemoveEventListener()
     {
         _ = window.RemoveEventListener(ButilEvents.KeyDown, _handler);
-        isRegistered = false;
+        isKeyDownRegistered = false;
+    }
+
+    private void AddBeforeUnload()
+    {
+        _ = window.AddBeforeUnload();
+        isBeforeUnloadRegistered = true;
+    }
+
+    private void RemoveBeforeUnload()
+    {
+        _ = window.RemoveBeforeUnload();
+        isBeforeUnloadRegistered = false;
     }
 }
