@@ -56,7 +56,7 @@
     <ItemGroup>
 
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
-        <Using Include="Boilerplate.Client.Core.Shared" />
+        <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
 

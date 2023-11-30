@@ -1,0 +1,117 @@
+﻿@import "../../../Styles/abstracts/_functions.scss";
+@import "../../../Styles/abstracts/_media-queries.scss";
+@import "../../../Styles/abstracts/_bit-css-variables.scss";
+
+.card-container {
+    width: 100%;
+    display: flex;
+    gap: rem2(24px);
+    flex-flow: row wrap;
+    align-items: flex-start;
+    margin-bottom: rem2(56px);
+    justify-content: space-between;
+
+    @include md {
+        margin-bottom: rem2(40px);
+    }
+
+    @include sm {
+        gap: rem2(16px);
+        margin-bottom: rem2(24px);
+    }
+}
+
+.card {
+    height: 100%;
+    display: flex;
+    padding: rem2(24px);
+    min-height: rem2(168px);
+    width: calc(25% - 18px);
+    align-items: flex-start;
+    border-radius: rem2(8px);
+    flex-flow: column nowrap;
+    transition: 0.3s all linear;
+    justify-content: flex-start;
+    background-repeat: no-repeat;
+    background-size: rem2(84px) 100%;
+    background-position: center right;
+    background-image: url('images/stat-card-bg.svg');
+    background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+
+    @include sm {
+        height: 204px;
+    }
+
+    .card-num {
+        font-weight: 600;
+        font-size: rem2(32px);
+        line-height: rem2(40px);
+        margin-bottom: rem2(24px);
+        color: $bit-color-primary-main;
+
+        @include md {
+            font-size: rem2(28px);
+            line-height: rem2(36px);
+        }
+
+        @include sm {
+            font-size: rem2(28px);
+            line-height: rem2(36px);
+        }
+    }
+
+    .no-border {
+        border-bottom: none;
+    }
+
+    .card-title {
+        font-weight: 400;
+        font-size: rem2(20px);
+        line-height: rem2(28px);
+
+        @include md {
+            font-size: rem2(18px);
+            line-height: rem2(24px);
+        }
+
+        @include sm {
+            font-size: rem2(16px);
+            line-height: rem2(22px);
+        }
+    }
+
+    &:hover {
+        background-size: rem2(128px) 100%;
+        background-color: $bit-color-primary-main;
+        background-image: url('images/stat-card-bg-hover.svg');
+
+        .card-num {
+            color: $bit-color-secondary-main;
+        }
+
+        .card-title {
+            color: $bit-color-secondary-main;
+        }
+    }
+
+    @include md {
+        min-height: rem2(160px);
+        padding: rem2(24px) rem2(16px);
+        background-position: center right rem2(-3px);
+
+        &:hover {
+            background-position: center right rem2(-10px);
+        }
+    }
+
+    @include sm {
+        width: calc(50% - 8px);
+        min-height: rem2(144px);
+        background-position: center right rem2(-7px);
+
+        &:hover {
+            background-position: center right rem2(-10px);
+        }
+    }
+}

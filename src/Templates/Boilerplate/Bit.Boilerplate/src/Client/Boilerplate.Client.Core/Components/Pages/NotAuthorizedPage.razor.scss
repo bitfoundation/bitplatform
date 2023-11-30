@@ -1,0 +1,28 @@
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.main {
+    width: 100%;
+    display: flex;
+    padding: rem2(8px);
+    text-align: center;
+    max-width: rem2(800px);
+    flex-direction: column;
+    max-height: rem2(600px);
+    border-radius: rem2(4px);
+    background-color: $bit-color-background-primary;
+}
+
+.title {
+    color: $bit-color-state-error;
+}
+
+.description {
+    overflow: auto;
+    white-space: pre;
+    margin: rem2(24px);
+}
+
+.buttons {
+    margin-bottom: rem2(24px);
+}

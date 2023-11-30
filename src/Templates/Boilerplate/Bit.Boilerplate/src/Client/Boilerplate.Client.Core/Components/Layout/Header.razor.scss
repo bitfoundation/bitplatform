@@ -1,0 +1,69 @@
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.header {
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    display: flex;
+    position: fixed;
+    align-items: center;
+    flex-flow: row nowrap;
+    min-height: rem2(48px);
+    padding-left: rem2(16px);
+    padding-right: rem2(16px);
+    padding-bottom: rem2(7px);
+    justify-content: space-between;
+    box-shadow: $bit-box-shadow-callout;
+    background-color: $bit-color-background-primary;
+    padding-top: calc(rem2(7px) + var(--bit-status-bar-height));
+}
+
+.bit-ios {
+    .header {
+        padding-top: calc(rem2(7px) + env(safe-area-inset-top));
+    }
+}
+
+.logo-lnk {
+    cursor: pointer;
+    width: rem2(24px);
+    height: rem2(24px);
+    min-width: rem2(24px);
+    border-radius: rem2(4px);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('images/bit-logo.svg');
+}
+
+.header-contact {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+}
+
+::deep {
+    .header-menu {
+        display: none;
+        margin-right: rem2(12px);
+
+        @include lt-lg {
+            display: block;
+        }
+    }
+
+    .header-item {
+        padding: rem2(4px) rem2(16px);
+
+        @include lt-lg {
+            padding: rem2(4px) rem2(8px);
+        }
+
+        @include lt-md {
+            padding: rem2(4px) rem2(4px);
+        }
+    }
+}
