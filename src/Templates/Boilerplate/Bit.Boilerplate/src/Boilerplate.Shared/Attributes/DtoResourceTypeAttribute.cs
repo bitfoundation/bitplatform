@@ -1,7 +1,8 @@
 ﻿namespace Boilerplate.Shared.Attributes;
 
 /// <summary>
-/// Gets or sets the resource type to use for error message and localizations lookups.
+/// Instead of repeatedly applying the ErrorMessageResourceType to properties featuring validation attributes like [Required] or [StringLength],
+/// you can streamline the process by applying this attribute to the class just once.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class DtoResourceTypeAttribute(Type resourceType) : Attribute
