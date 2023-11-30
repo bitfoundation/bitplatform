@@ -21,7 +21,7 @@
             1. Install the project template from the NuGet package manager with the following command:
         </div>
         <pre class="code-box">
-dotnet new install Bit.Boilerplate::8.2.0-pre-03</pre>
+dotnet new install Bit.Boilerplate</pre>
         <div class="section-card-txt">
             2. Create a new project using dotnet new command or Visual Studio create new project wizard:
         </div>
@@ -36,14 +36,14 @@ dotnet new install Bit.Boilerplate::8.2.0-pre-03</pre>
         </div>
         Examples:
         <pre class="code-box">
-1- Create a web based admin panel with SQL Server, using Azure DevOps for CI/CD:
-dotnet new bit-web --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin
+1- Create a cross-platform AdminPanel app for mobile, desktop, and web with Azure DevOps pipelines and a SQLite database.
+dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin
 
 2- Create a cross-platform Todo app for mobile, desktop, and web with GitHub Actions and a SQLite database.
 dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo
 
 3- Create a mobile, desktop, and web app without sample pages, integrating GitHub Actions and a SQL Server database.
-dotnet new bit-web --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None</pre>
+dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None</pre>
         <div class="section-card-txt">
             <b>Note</b>: We recommend to create the project in a path that is not too long without space character in the folder names.
         </div>
