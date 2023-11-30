@@ -277,7 +277,7 @@ public partial class BitPaginationDemo
                 },
                 new()
                 {
-                    Name = "Elipsis",
+                    Name = "Ellipsis",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the ellipsis of the BitPagination."
