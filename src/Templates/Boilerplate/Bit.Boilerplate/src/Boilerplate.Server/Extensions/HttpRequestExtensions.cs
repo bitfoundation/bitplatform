@@ -1,4 +1,5 @@
-﻿using Microsoft.Net.Http.Headers;
+﻿using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -20,23 +21,20 @@ public static class HttpRequestExtensions
 
     public static bool IsCrawlerClient(this HttpRequest request)
     {
-        var agent = GetLoweredUserAgent(request);
+        if (request.Headers.TryGetValue(HeaderNames.UserAgent, out StringValues userAgentHeaderValue) is false)
+            return false;
 
-        if (agent.Contains("google")) return true;
+        string? userAgent = userAgentHeaderValue.FirstOrDefault();
 
-        if (agent.Contains("bing")) return true;
+        if (userAgent is null)
+            return false;
 
-        if (agent.Contains("lighthouse")) return true;
+        if (userAgent.Contains("google", StringComparison.InvariantCultureIgnoreCase)) return true;
+
+        if (userAgent.Contains("bing", StringComparison.InvariantCultureIgnoreCase)) return true;
+
+        if (userAgent.Contains("lighthouse", StringComparison.InvariantCultureIgnoreCase)) return true;
 
         return false;
-    }
-
-    private static string GetLoweredUserAgent(HttpRequest request)
-    {
-        var userAgent = request.Headers[HeaderNames.UserAgent].ToString();
-
-        if (string.IsNullOrEmpty(userAgent)) return string.Empty;
-
-        return userAgent.ToLowerInvariant();
     }
 }
