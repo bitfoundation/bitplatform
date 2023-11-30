@@ -4,8 +4,8 @@ trigger:
 # https://bitplatform.dev/templates/devops
 
 jobs:
-- job: build_api_blazor
-  displayName: 'build api + blazor'
+- job: build
+  displayName: 'CI build'
 
   pool:
     vmImage: 'ubuntu-22.04'
@@ -26,124 +26,4 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release'
-
-- job: build_blazor_hybrid_android
-  displayName: 'build blazor hybrid (android)'
-
-  pool:
-    vmImage: 'windows-2022'
-
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Setup .NET'
-    inputs:
-      useGlobalJson: true
-      workingDirectory: 'src'
-
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '18.x'
-    displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Install maui'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install maui
-  
-  - task: Bash@3
-    displayName: 'Build'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RunAOTCompilation=false -p:Configuration=Release -f net8.0-android'
-
-- job: build_blazor_hybrid_windows
-  displayName: 'build blazor hybrid (windows)'
-
-  pool:
-    vmImage: 'windows-2022'
-
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Setup .NET'
-    inputs:
-      useGlobalJson: true
-      workingDirectory: 'src'
-
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '18.x'
-    displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Install maui'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install maui
-  
-  - task: Bash@3
-    displayName: 'Build'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -f net8.0-windows10.0.19041.0'
-
-- job: build_blazor_hybrid_iOS
-  displayName: 'build blazor hybrid (iOS)'
-
-  pool:
-    vmImage: 'macos-13'
-
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Setup .NET'
-    inputs:
-      useGlobalJson: true
-      workingDirectory: 'src'
-
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '18.x'
-    displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Install maui'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install maui
-  
-  - task: Bash@3
-    displayName: 'Build'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -f net8.0-ios'
-
-- job: build_blazor_hybrid_maccatalyst
-  displayName: 'build blazor hybrid (maccatalyst)'
-
-  pool:
-    vmImage: 'macos-13'
-
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Setup .NET'
-    inputs:
-      useGlobalJson: true
-      workingDirectory: 'src'
-
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '18.x'
-    displayName: 'Install Node.js'
-
-  - task: Bash@3
-    displayName: 'Install maui'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install maui
-  
-  - task: Bash@3
-    displayName: 'Build'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:Configuration=Release -f net8.0-maccatalyst'
+      script: 'dotnet build Boilerplate.sln -p:Configuration=Release'
