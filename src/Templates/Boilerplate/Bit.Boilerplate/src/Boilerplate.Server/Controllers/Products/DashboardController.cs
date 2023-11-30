@@ -21,35 +21,35 @@ public partial class DashboardController : AppControllerBase
     }
 
     [HttpGet]
-    public async Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategotyStats()
+    public async Task<IAsyncEnumerable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategotyStats()
     {
-        return await DbContext.Categories
+        return DbContext.Categories
             .Select(c => new ProductsCountPerCategoryResponseDto()
             {
                 CategoryName = c.Name,
                 CategoryColor = c.Color,
                 ProductCount = c.Products!.Count()
-            }).ToListAsync();
+            }).AsAsyncEnumerable();
     }
 
     [HttpGet]
-    public async Task<List<ProductSaleStatResponseDto>> GetProductsSalesStats()
+    public async Task<IAsyncEnumerable<ProductSaleStatResponseDto>> GetProductsSalesStats()
     {
         Random rand = new Random();
-        return await DbContext.Products.Include(p => p.Category)
+        return DbContext.Products.Include(p => p.Category)
              .Select(p => new ProductSaleStatResponseDto()
              {
                  ProductName = p.Name,
                  CategoryColor = p.Category!.Color,
                  SaleAmount = rand.Next(1, 10) * p.Price
-             }).ToListAsync();
+             }).AsAsyncEnumerable();
     }
 
 
     [HttpGet]
-    public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats()
+    public async Task<ProductPercentagePerCategoryResponseDto[]> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
     {
-        var productsTotalCount = await DbContext.Products.CountAsync();
+        var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
 
         if (productsTotalCount == 0)
         {
@@ -62,6 +62,6 @@ public partial class DashboardController : AppControllerBase
                  CategoryName = c!.Name,
                  CategoryColor = c.Color,
                  ProductPercentage = (float)decimal.Divide(c.Products!.Count(), productsTotalCount) * 100
-             }).ToListAsync();
+             }).ToArrayAsync(cancellationToken);
     }
 }
