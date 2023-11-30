@@ -12,6 +12,10 @@ public static class IServiceCollectionExtensions
 
         services.AddClientSharedServices();
 
+        services.TryAddTransient<MainPage>();
+        services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
+        services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
+
 #if ANDROID
         services.AddClientAndroidServices();
 #elif iOS
@@ -21,10 +25,6 @@ public static class IServiceCollectionExtensions
 #elif Windows
         services.AddClientWindowsServices();
 #endif
-
-        services.AddTransient<MainPage>();
-        services.AddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, MauiExceptionHandler>();
 
         return services;
     }
