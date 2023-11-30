@@ -27,12 +27,6 @@ public class Middlewares
             app.UseResponseCompression();
         }
 
-        if (env.IsDevelopment() is false)
-        {
-            app.UseHttpsRedirection();
-            app.UseResponseCompression();
-        }
-
         Configure_401_403_404_Pages(app);
 
         app.UseStaticFiles(new StaticFileOptions
