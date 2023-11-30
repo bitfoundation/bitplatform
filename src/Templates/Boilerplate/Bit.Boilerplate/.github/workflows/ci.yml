@@ -28,4 +28,4 @@ jobs:
         node-version: 18
       
     - name: Build
-      run: dotnet build Boilerplate.sln -c Release
+      run: dotnet build Boilerplate.sln -c Release-c Release-c Release-c Release-c Release-c Release
