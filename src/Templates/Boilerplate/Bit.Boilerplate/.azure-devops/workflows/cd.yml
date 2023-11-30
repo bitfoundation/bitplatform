@@ -54,13 +54,13 @@ jobs:
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release --self-contained -r linux-x64 -o api-web'
+      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release --self-contained -r linux-x64 -o server'
 
   - task: PublishPipelineArtifact@1
-    displayName: Upload api-web artifact
+    displayName: Upload server artifact
     inputs:
-      targetPath: 'api-web'
-      artifact: 'api-web-bundle'
+      targetPath: 'server'
+      artifact: 'server-bundle'
       publishLocation: 'pipeline'
 
   - task: Bash@3
@@ -86,9 +86,9 @@ jobs:
   steps:
 
   - task: DownloadPipelineArtifact@2
-    displayName: Retrieve api-web bundle
+    displayName: Retrieve server bundle
     inputs:
-      artifact: 'api-web-bundle'
+      artifact: 'server-bundle'
       path: ./
 
   - task: DownloadPipelineArtifact@2

@@ -49,7 +49,7 @@ jobs:
       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      run: dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
     - name: Build migrations bundle
       run: |
@@ -61,11 +61,11 @@ jobs:
         name: migrations-bundle
         path: src/Boilerplate.Server/efbundle
 
-    - name: Upload api-web artifact
+    - name: Upload server artifact
       uses: actions/upload-artifact@v3
       with:
-        name: api-web-bundle
-        path: ${{env.DOTNET_ROOT}}/api-web
+        name: server-bundle
+        path: ${{env.DOTNET_ROOT}}/server
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -77,10 +77,10 @@ jobs:
 
     steps:
 
-      - name: Retrieve api-web bundle
+      - name: Retrieve server bundle
         uses: actions/download-artifact@v2
         with:
-          name: api-web-bundle
+          name: server-bundle
 
       - name: Retrieve migrations bundle
         uses: actions/download-artifact@v2

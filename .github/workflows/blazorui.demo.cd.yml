@@ -52,13 +52,13 @@ jobs:
       run: dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
 
     - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
-    - name: Upload api-web artifact
+    - name: Upload server artifact
       uses: actions/upload-artifact@v3
       with:
-        name: api-web-bundle
-        path: ${{env.DOTNET_ROOT}}/api-web
+        name: server-bundle
+        path: ${{env.DOTNET_ROOT}}/server
 
   deploy_blazor_api_wasm:
     name: deploy blazor api + web assembly
@@ -70,10 +70,10 @@ jobs:
 
     steps:
 
-      - name: Retrieve api-web bundle
+      - name: Retrieve server bundle
         uses: actions/download-artifact@v2
         with:
-          name: api-web-bundle
+          name: server-bundle
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
