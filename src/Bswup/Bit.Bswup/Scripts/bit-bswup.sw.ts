@@ -134,9 +134,11 @@ async function handleFetch(e) {
     let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
 
     if (!asset) { // for assets that has asp-append-version or similar type of url versioning
-        const url = new URL(requestUrl);
-        const reqUrl = `${url.origin}${url.pathname}`;
-        asset = UNIQUE_ASSETS.find(a => a.reqUrl[caseMethod]() === reqUrl[caseMethod]());
+        try {
+            const url = new URL(requestUrl);
+            const reqUrl = `${url.origin}${url.pathname}`;
+            asset = UNIQUE_ASSETS.find(a => a.reqUrl[caseMethod]() === reqUrl[caseMethod]());
+        } catch { }
     }
 
     if (!asset?.url) {
@@ -269,6 +271,11 @@ async function createAssetsCache(ignoreProgressReport = false) {
             newCache.delete(key.url);
             updatedAssets.push(foundAsset);
         }
+    }
+
+    const defaultAsset = UNIQUE_ASSETS.find(a => a.url === DEFAULT_URL);
+    if (!updatedAssets.includes(defaultAsset)) {
+        updatedAssets.push(defaultAsset); // get the latest version of the default doc in each update!
     }
 
     diag('oldUrls:', oldUrls);
