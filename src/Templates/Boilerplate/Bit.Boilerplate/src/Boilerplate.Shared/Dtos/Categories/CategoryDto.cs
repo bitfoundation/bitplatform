@@ -10,5 +10,6 @@ public class CategoryDto
     [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
     public string? Name { get; set; }
 
+    [Display(Name = nameof(AppStrings.Color))]
     public string? Color { get; set; } = "#FFFFFF";
 }

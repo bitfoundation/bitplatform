@@ -1,7 +1,6 @@
 ﻿
 namespace Boilerplate.Shared.Dtos.Identity;
 
-[DtoResourceType(typeof(AppStrings))]
 public class TokenResponseDto
 {
     public string? TokenType { get; set; }
