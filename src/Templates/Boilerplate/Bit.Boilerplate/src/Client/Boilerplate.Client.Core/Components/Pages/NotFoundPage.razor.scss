@@ -1,0 +1,30 @@
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
+}
+
+.title {
+    font-weight: 600;
+    font-size: rem2(120px);
+    line-height: rem2(168px);
+
+    @include lt-xl {
+        font-size: rem2(100px);
+    }
+}
+
+.description {
+    font-weight: 400;
+    font-size: rem2(18px);
+    line-height: rem2(28px);
+
+    @include lt-xl {
+        font-size: rem2(16px);
+        line-height: rem2(24px);
+    }
+}

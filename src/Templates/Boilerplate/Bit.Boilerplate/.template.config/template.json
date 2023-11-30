@@ -145,9 +145,9 @@
 						"src/Boilerplate.Server/Mappers/ProductsMapper.cs",
 						"src/Boilerplate.Server/Models/Categories/**",
 						"src/Boilerplate.Server/Models/Products/**",
-						"src/Client/Boilerplate.Client.Core/Pages/Categories/**",
-						"src/Client/Boilerplate.Client.Core/Pages/Dashboard/**",
-						"src/Client/Boilerplate.Client.Core/Pages/Products/**"]
+						"src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
+						"src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
+						"src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"]
                 },
                 {
                     "condition": "(sample != Todo)",
@@ -155,7 +155,7 @@
 						"src/Boilerplate.Server/Controllers/Todo/**",
 						"src/Boilerplate.Server/Mappers/TodoMapper.cs",
 						"src/Boilerplate.Server/Models/Todo/**",
-						"src/Client/Boilerplate.Client.Core/Pages/Todo/**"]
+						"src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"]
                 }
             ]
         }

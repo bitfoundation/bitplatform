@@ -10,7 +10,9 @@ public static class IServiceCollectionExtensions
     {
         // Services registered in this class can be injected in Android, iOS, Windows, and macOS.
 
-        services.AddClientSharedServices();
+        services.TryAddTransient<MainPage>();
+        services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
+        services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
 
 #if ANDROID
         services.AddClientAndroidServices();
@@ -22,9 +24,7 @@ public static class IServiceCollectionExtensions
         services.AddClientWindowsServices();
 #endif
 
-        services.AddTransient<MainPage>();
-        services.AddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, MauiExceptionHandler>();
+        services.AddClientSharedServices();
 
         return services;
     }

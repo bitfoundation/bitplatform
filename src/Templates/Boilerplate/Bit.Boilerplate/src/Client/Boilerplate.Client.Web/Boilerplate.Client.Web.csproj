@@ -46,7 +46,7 @@
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
-        <Using Include="Boilerplate.Client.Core.Shared" />
+        <Using Include="Boilerplate.Client.Core.Components.Layout" />
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->

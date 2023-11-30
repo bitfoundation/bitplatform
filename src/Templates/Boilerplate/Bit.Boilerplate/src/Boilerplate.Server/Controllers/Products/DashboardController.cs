@@ -7,9 +7,9 @@ namespace Boilerplate.Server.Controllers;
 public partial class DashboardController : AppControllerBase
 {
     [HttpGet]
-    public async Task<OverallAnalyticsStatsDataDto> GetOverallAnalyticsStatsData()
+    public async Task<OverallAnalyticsStatsDataResponseDto> GetOverallAnalyticsStatsData()
     {
-        var result = new OverallAnalyticsStatsDataDto();
+        var result = new OverallAnalyticsStatsDataResponseDto();
 
         var last30DaysDate = DateTimeOffset.UtcNow.AddDays(-30);
 
@@ -21,35 +21,35 @@ public partial class DashboardController : AppControllerBase
     }
 
     [HttpGet]
-    public async Task<List<ProductsCountPerCategoryDto>> GetProductsCountPerCategotyStats()
+    public async Task<IAsyncEnumerable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategotyStats()
     {
-        return await DbContext.Categories
-            .Select(c => new ProductsCountPerCategoryDto()
+        return DbContext.Categories
+            .Select(c => new ProductsCountPerCategoryResponseDto()
             {
                 CategoryName = c.Name,
                 CategoryColor = c.Color,
                 ProductCount = c.Products!.Count()
-            }).ToListAsync();
+            }).AsAsyncEnumerable();
     }
 
     [HttpGet]
-    public async Task<List<ProductSaleStatDto>> GetProductsSalesStats()
+    public async Task<IAsyncEnumerable<ProductSaleStatResponseDto>> GetProductsSalesStats()
     {
         Random rand = new Random();
-        return await DbContext.Products.Include(p => p.Category)
-             .Select(p => new ProductSaleStatDto()
+        return DbContext.Products.Include(p => p.Category)
+             .Select(p => new ProductSaleStatResponseDto()
              {
                  ProductName = p.Name,
                  CategoryColor = p.Category!.Color,
                  SaleAmount = rand.Next(1, 10) * p.Price
-             }).ToListAsync();
+             }).AsAsyncEnumerable();
     }
 
 
     [HttpGet]
-    public async Task<List<ProductPercentagePerCategoryDto>> GetProductsPercentagePerCategoryStats()
+    public async Task<ProductPercentagePerCategoryResponseDto[]> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
     {
-        var productsTotalCount = await DbContext.Products.CountAsync();
+        var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
 
         if (productsTotalCount == 0)
         {
@@ -57,11 +57,11 @@ public partial class DashboardController : AppControllerBase
         }
 
         return await DbContext.Categories
-             .Select(c => new ProductPercentagePerCategoryDto()
+             .Select(c => new ProductPercentagePerCategoryResponseDto()
              {
                  CategoryName = c!.Name,
                  CategoryColor = c.Color,
                  ProductPercentage = (float)decimal.Divide(c.Products!.Count(), productsTotalCount) * 100
-             }).ToListAsync();
+             }).ToArrayAsync(cancellationToken);
     }
 }

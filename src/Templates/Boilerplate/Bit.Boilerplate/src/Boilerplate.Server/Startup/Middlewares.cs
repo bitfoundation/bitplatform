@@ -7,7 +7,6 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Net.Http.Headers;
 
 namespace Boilerplate.Server.Startup;
 
@@ -27,12 +26,6 @@ public class Middlewares
             app.UseResponseCompression();
         }
 
-        if (env.IsDevelopment() is false)
-        {
-            app.UseHttpsRedirection();
-            app.UseResponseCompression();
-        }
-
         Configure_401_403_404_Pages(app);
 
         app.UseStaticFiles(new StaticFileOptions
@@ -40,7 +33,7 @@ public class Middlewares
             OnPrepareResponse = ctx =>
             {
                 // https://bitplatform.dev/templates/cache-mechanism
-                ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+                ctx.Context.Response.GetTypedHeaders().CacheControl = new()
                 {
                     MaxAge = TimeSpan.FromDays(7),
                     Public = true

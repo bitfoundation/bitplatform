@@ -9,8 +9,10 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [Application(
 #if DEBUG
-    UsesCleartextTraffic = true
+    UsesCleartextTraffic = true,
 #endif
+    AllowBackup = true,
+    SupportsRtl = true
 )]
 public class MainApplication : MauiApplication
 {

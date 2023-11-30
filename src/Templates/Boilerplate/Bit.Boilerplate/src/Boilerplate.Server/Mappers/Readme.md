@@ -1,6 +1,6 @@
 When you have an IQueryable of an Entity or Model classes from EntityFrameworkCore, 
 you ultimately need to convert it into an IQueryable of DTO classes and return it to the client.
-The client can also implement pagination during the API call by sending values for $top, $skip and sort by $orderby in query string.
+The client can also implement pagination during the API call by sending values for $top, $skip and sort by $orderby in request query string.
 Ultimately, the query is executed by aspnetcore and the data gets streamed from the database to the client, which is the most optimal case.
 For this, you need to write a `Project` for each Entity you intend to return a query of DTO class from.
 

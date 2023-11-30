@@ -17,15 +17,13 @@ public static class IServiceCollectionExtensions
     {
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
-        services.AddClientWebServices();
-
         services.AddTransient(sp =>
         {
             Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
             if (apiServerAddress!.IsAbsoluteUri is false)
             {
-                apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
+                apiServerAddress = new Uri(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl(), apiServerAddress);
             }
 
             return new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>())
@@ -39,6 +37,8 @@ public static class IServiceCollectionExtensions
             .AddInteractiveWebAssemblyComponents();
 
         services.AddMvc();
+
+        services.AddClientWebServices();
     }
 
     public static void AddIdentity(this IServiceCollection services, IConfiguration configuration)

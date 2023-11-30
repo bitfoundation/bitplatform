@@ -21,7 +21,7 @@ public class ODataOperationFilter : IOperationFilter
 
         if (descriptor != null && descriptor.FilterDescriptors.Any(filter => filter.Filter is EnableQueryAttribute) || odataQueryOptionsParameter is not null)
         {
-            operation.Parameters.Add(new OpenApiParameter()
+            operation.Parameters.Add(new()
             {
                 Name = "$select",
                 In = ParameterLocation.Query,
@@ -33,7 +33,7 @@ public class ODataOperationFilter : IOperationFilter
                 Required = false
             });
 
-            operation.Parameters.Add(new OpenApiParameter()
+            operation.Parameters.Add(new()
             {
                 Name = "$expand",
                 In = ParameterLocation.Query,
@@ -45,7 +45,7 @@ public class ODataOperationFilter : IOperationFilter
                 Required = false
             });
 
-            operation.Parameters.Add(new OpenApiParameter()
+            operation.Parameters.Add(new()
             {
                 Name = "$filter",
                 In = ParameterLocation.Query,
@@ -57,7 +57,7 @@ public class ODataOperationFilter : IOperationFilter
                 Required = false
             });
 
-            operation.Parameters.Add(new OpenApiParameter()
+            operation.Parameters.Add(new()
             {
                 Name = "$search",
                 In = ParameterLocation.Query,
@@ -69,7 +69,7 @@ public class ODataOperationFilter : IOperationFilter
                 Required = false
             });
 
-            operation.Parameters.Add(new OpenApiParameter()
+            operation.Parameters.Add(new()
             {
                 Name = "$top",
                 In = ParameterLocation.Query,
@@ -81,7 +81,7 @@ public class ODataOperationFilter : IOperationFilter
                 Required = false
             });
 
-            operation.Parameters.Add(new OpenApiParameter()
+            operation.Parameters.Add(new()
             {
                 Name = "$skip",
                 In = ParameterLocation.Query,
@@ -93,7 +93,7 @@ public class ODataOperationFilter : IOperationFilter
                 Required = false
             });
 
-            operation.Parameters.Add(new OpenApiParameter()
+            operation.Parameters.Add(new()
             {
                 Name = "$orderby",
                 In = ParameterLocation.Query,

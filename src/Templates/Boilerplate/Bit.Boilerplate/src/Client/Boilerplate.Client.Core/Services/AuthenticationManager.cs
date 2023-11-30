@@ -10,6 +10,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private HttpClient httpClient = default;
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
     public async Task SignIn(SignInRequestDto signInModel)
     {
@@ -67,7 +68,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 catch (ResourceValidationException exp) // refresh_token in invalid or expired
                 {
                     await storageService.RemoveItem("refresh_token");
-                    throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn), exp);
+                    throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)], exp);
                 }
             }
         }
