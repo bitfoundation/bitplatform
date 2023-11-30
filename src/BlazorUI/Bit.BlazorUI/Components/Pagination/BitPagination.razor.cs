@@ -33,9 +33,9 @@ public partial class BitPagination
     }
 
     /// <summary>
-    /// Icon of before button.
+    /// Icon of previous button.
     /// </summary>
-    [Parameter] public string BeforeIcon { get; set; } = "ChevronLeft";
+    [Parameter] public string PreviousIcon { get; set; } = "ChevronLeft";
 
     /// <summary>
     /// The number of items at the start and end of the pagination.

@@ -23,7 +23,7 @@
                 disabled="@(SelectedPage == 1 || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.PreviousButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.PreviousButton @GetButtonClasses()">
-            <i style="@Styles?.PreviousButtonIcon" class="bit-icon bit-icon--@BeforeIcon @Classes?.PreviousButtonIcon" />
+            <i style="@Styles?.PreviousButtonIcon" class="bit-icon bit-icon--@PreviousIcon @Classes?.PreviousButtonIcon" />
         </button>
     }
 
@@ -32,7 +32,7 @@
         var currentPage = page;
         if (currentPage == -1)
         {
-            <div class="bit-pgn-elp" disabled="@(IsEnabled is false)">...</div>
+            <div style="@Styles?.Elipsis" class="bit-pgn-elp @Classes?.Elipsis" disabled="@(IsEnabled is false)">...</div>
         }
         else if (currentPage == SelectedPage)
         {

@@ -18,6 +18,11 @@ public class BitPaginationClassStyles
     public string? Button { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the elipsis of the BitPagination.
+    /// </summary>
+    public string? Elipsis { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the selected button container of the BitPagination.
     /// </summary>
     public string? SelectedButtonContainer { get; set; }
