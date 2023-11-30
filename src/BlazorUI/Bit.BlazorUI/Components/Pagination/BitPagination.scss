@@ -5,7 +5,9 @@
     gap: spacing(0.5);
     align-items: center;
     display: inline-flex;
-    font-size: spacing(1.5);
+    font-size: var(--bit-pgn-font-size);
+    --bit-pgn-btn-size: #{spacing(4)};
+    --bit-pgn-font-size: #{spacing(1.75)};
 
     &.bit-dis {
         cursor: default;
@@ -15,20 +17,25 @@
 }
 
 .bit-pgn-elp {
-    width: spacing(3);
-    height: spacing(3);
+    display: flex;
+    font-size: inherit;
     text-align: center;
+    align-items: center;
+    justify-content: center;
+    width: var(--bit-pgn-btn-size);
+    height: var(--bit-pgn-btn-size);
     border-radius: $shape-border-radius;
 }
 
 .bit-pgn-btn {
     cursor: pointer;
-    width: spacing(3);
-    height: spacing(3);
     text-align: center;
+    font-size: inherit;
     align-items: center;
     display: inline-flex;
     justify-content: center;
+    width: var(--bit-pgn-btn-size);
+    height: var(--bit-pgn-btn-size);
     border-style: $shape-border-style;
     border-width: $shape-border-width;
     border-radius: $shape-border-radius;
@@ -200,14 +207,13 @@
     --bit-pgn-sec-active-bg-clr: #{$color-action-active-state-error-bg};
 }
 
+
 .bit-pgn-sm {
-    width: spacing(2.25);
-    height: spacing(2.25);
-    font-size: spacing(1.25);
+    --bit-pgn-btn-size: #{spacing(3)};
+    --bit-pgn-font-size: #{spacing(1.5)};
 }
 
 .bit-pgn-lg {
-    width: spacing(4);
-    height: spacing(4);
-    font-size: spacing(2);
+    --bit-pgn-btn-size: #{spacing(5)};
+    --bit-pgn-font-size: #{spacing(2)};
 }

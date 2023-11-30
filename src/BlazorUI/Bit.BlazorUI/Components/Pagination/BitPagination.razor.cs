@@ -188,6 +188,14 @@ public partial class BitPagination
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitPaginationSize.Small => "bit-pgn-sm",
+            BitPaginationSize.Medium => "bit-pgn-md",
+            BitPaginationSize.Large => "bit-pgn-lg",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -297,14 +305,6 @@ public partial class BitPagination
             BitPaginationColor.Warning => "bit-pgn-wrn",
             BitPaginationColor.SevereWarning => "bit-pgn-swr",
             BitPaginationColor.Error => "bit-pgn-err",
-            _ => string.Empty
-        });
-
-        className.Append(' ').Append(Size switch
-        {
-            BitPaginationSize.Small => "bit-pgn-sm",
-            BitPaginationSize.Medium => "bit-pgn-md",
-            BitPaginationSize.Large => "bit-pgn-lg",
             _ => string.Empty
         });
 
