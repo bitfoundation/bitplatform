@@ -8,10 +8,10 @@ public static class IServiceCollectionExtensions
     {
         // Services being registered here can get injected in web (blazor web assembly & blazor server)
 
-        services.AddClientSharedServices();
-
         services.AddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
         services.AddTransient<IExceptionHandler, WebExceptionHandler>();
+
+        services.AddClientSharedServices();
 
         return services;
     }
