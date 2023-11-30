@@ -348,6 +348,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Pagination/BitPaginationDemo.razor.css",
+        "inputFile": "Pages/Components/Pagination/BitPaginationDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Panel/BitPanelDemo.razor.css",
         "inputFile": "Pages/Components/Panel/BitPanelDemo.razor.scss",
         "minify": { "enabled": false },
