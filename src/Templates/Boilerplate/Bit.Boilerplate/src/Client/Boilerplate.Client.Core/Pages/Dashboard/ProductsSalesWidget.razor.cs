@@ -31,7 +31,7 @@ public partial class ProductsSalesWidget
 
             var data = await PrerenderStateService.GetValue($"{nameof(DashboardPage)}-{nameof(ProductsSalesWidget)}",
                                 async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats",
-                                    AppJsonContext.Default.ListProductSaleStatDto)) ?? [];
+                                    AppJsonContext.Default.ListProductSaleStatResponseDto)) ?? [];
 
             BitChartBarDataset<decimal> chartDataSet = [.. data.Select(d => d.SaleAmount)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();

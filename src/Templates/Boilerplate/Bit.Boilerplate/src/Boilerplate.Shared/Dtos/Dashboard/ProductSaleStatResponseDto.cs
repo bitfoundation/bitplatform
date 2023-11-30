@@ -1,5 +1,6 @@
 ﻿namespace Boilerplate.Shared.Dtos.Dashboard;
-public class ProductSaleStatDto
+
+public class ProductSaleStatResponseDto
 {
     public string? ProductName { get; set; }
 

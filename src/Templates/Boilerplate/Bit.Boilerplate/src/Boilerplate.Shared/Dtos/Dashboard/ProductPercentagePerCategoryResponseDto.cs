@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Dtos.Dashboard;
 
-public class ProductPercentagePerCategoryDto
+public class ProductPercentagePerCategoryResponseDto
 {
     public string? CategoryName { get; set; }
 

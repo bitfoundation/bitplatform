@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Core.Pages.Dashboard;
 public partial class OverallStatsWidget
 {
     private bool isLoading;
-    private OverallAnalyticsStatsDataDto data = new();
+    private OverallAnalyticsStatsDataResponseDto data = new();
 
     protected override async Task OnInitAsync()
     {
@@ -20,7 +20,7 @@ public partial class OverallStatsWidget
         {
             data = await PrerenderStateService.GetValue($"{nameof(DashboardPage)}-{nameof(OverallStatsWidget)}",
                             async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData",
-                                AppJsonContext.Default.OverallAnalyticsStatsDataDto)) ?? new();
+                                AppJsonContext.Default.OverallAnalyticsStatsDataResponseDto)) ?? new();
         }
         finally
         {

@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Dtos.Dashboard;
 
-public class ProductsCountPerCategoryDto
+public class ProductsCountPerCategoryResponseDto
 {
     public string? CategoryName { get; set; }
 

@@ -7,9 +7,9 @@ namespace Boilerplate.Server.Controllers;
 public partial class DashboardController : AppControllerBase
 {
     [HttpGet]
-    public async Task<OverallAnalyticsStatsDataDto> GetOverallAnalyticsStatsData()
+    public async Task<OverallAnalyticsStatsDataResponseDto> GetOverallAnalyticsStatsData()
     {
-        var result = new OverallAnalyticsStatsDataDto();
+        var result = new OverallAnalyticsStatsDataResponseDto();
 
         var last30DaysDate = DateTimeOffset.UtcNow.AddDays(-30);
 
@@ -21,10 +21,10 @@ public partial class DashboardController : AppControllerBase
     }
 
     [HttpGet]
-    public async Task<List<ProductsCountPerCategoryDto>> GetProductsCountPerCategotyStats()
+    public async Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategotyStats()
     {
         return await DbContext.Categories
-            .Select(c => new ProductsCountPerCategoryDto()
+            .Select(c => new ProductsCountPerCategoryResponseDto()
             {
                 CategoryName = c.Name,
                 CategoryColor = c.Color,
@@ -33,11 +33,11 @@ public partial class DashboardController : AppControllerBase
     }
 
     [HttpGet]
-    public async Task<List<ProductSaleStatDto>> GetProductsSalesStats()
+    public async Task<List<ProductSaleStatResponseDto>> GetProductsSalesStats()
     {
         Random rand = new Random();
         return await DbContext.Products.Include(p => p.Category)
-             .Select(p => new ProductSaleStatDto()
+             .Select(p => new ProductSaleStatResponseDto()
              {
                  ProductName = p.Name,
                  CategoryColor = p.Category!.Color,
@@ -47,7 +47,7 @@ public partial class DashboardController : AppControllerBase
 
 
     [HttpGet]
-    public async Task<List<ProductPercentagePerCategoryDto>> GetProductsPercentagePerCategoryStats()
+    public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats()
     {
         var productsTotalCount = await DbContext.Products.CountAsync();
 
@@ -57,7 +57,7 @@ public partial class DashboardController : AppControllerBase
         }
 
         return await DbContext.Categories
-             .Select(c => new ProductPercentagePerCategoryDto()
+             .Select(c => new ProductPercentagePerCategoryResponseDto()
              {
                  CategoryName = c!.Name,
                  CategoryColor = c.Color,
