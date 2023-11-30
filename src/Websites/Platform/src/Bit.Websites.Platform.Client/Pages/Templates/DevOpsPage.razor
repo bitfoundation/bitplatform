@@ -19,20 +19,7 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>CI</BitTypography>
         <div class="section-card-txt">
             <b>CI</b> pipeline which is located in <b>.github/workflows/ci.yml</b> ensures that every change that is committed into
-            <b>develop branch</b> won't break projects build in the following modes:
-        </div>
-        <div class="section-card-txt">
-            <ul>
-                <li>Blazor Server</li>
-                <li>Blazor WebAssembly</li>
-                <li>Blazor Hybrid - Android</li>
-                <li>Blazor Hybrid - iOS</li>
-                <li>Blazor Hybrid - Windows</li>
-                <li>Blazor Hybrid - Mac</li>
-            </ul>
-        </div>
-        <div class="section-card-txt">
-            The CI pipeline only has one variable called <b>WEB_APP_DEPLOYMENT_TYPE</b> that you can read more about it <a href="templates/deployment-type">here</a>.
+            <b>develop branch</b> won't break project build.
         </div>
     </section>
 
@@ -43,19 +30,18 @@
         </div>
         <div class="section-card-txt">
             By default, the CD pipeline produces <b>.aab</b> and <b>.apk</b> for android, <b>.ipa</b> for iOS, <b>.exe</b> for Windows and, <b>.pkg</b> for macOS.
-            It also creates a zip folder that contains API+WebAssembly projects and an
+            It also creates a zip folder that contains Server + Blazor (WebAssembly/Server/Auto) required files and an
             <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">EF core migrations bundle</a>
             to migrate your database. This pipeline also uploads all of the produced artifacts to the GitHub Actions artifacts.
         </div>
         <div class="section-card-txt">
             You can manually deploy the artifacts into corresponding locations (App Stores, Virtual Private Servers), or you can write more scripts to automate these processes.
-            For example, we've created a deploy phase for API+WebAssembly that updates the database using the migrations bundle and optionally deploy artifacts to azure web apps.
+            For example, we've created a deploy phase for Server + Blazor that updates the database using the migrations bundle and optionally deploy artifacts to azure web apps.
         </div>
         <div class="section-card-txt">
             The CD pipeline includes the following variables:
         </div>
         <pre class="code-box">env:
-  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
   API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/api/' # The API backend URL that clients use to connect to the server.
   APP_SERVICE_NAME: 'app-service-td-test' # Azure Web App name (If you want to deploy your project to the Azure Web App)</pre>
         <div class="section-card-txt">

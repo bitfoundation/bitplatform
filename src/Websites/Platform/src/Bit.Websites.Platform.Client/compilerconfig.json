@@ -120,8 +120,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/HostingModelsPage.razor.css",
-        "inputFile": "Pages/Templates/HostingModelsPage.razor.scss",
+        "outputFile": "Pages/Templates/AppModelsPage.razor.css",
+        "inputFile": "Pages/Templates/AppModelsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
