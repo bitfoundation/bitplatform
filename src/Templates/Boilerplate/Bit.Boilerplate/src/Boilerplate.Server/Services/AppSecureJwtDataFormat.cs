@@ -26,10 +26,15 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
             }, IdentityConstants.BearerScheme);
             return data;
         }
-        catch (Exception exp)
+        catch
         {
-            throw new UnauthorizedException(nameof(AppStrings.UnauthorizedException), exp);
+            return NotSignedIn();
         }
+    }
+
+    private AuthenticationTicket NotSignedIn()
+    {
+        return new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity()), string.Empty);
     }
 
     public string Protect(AuthenticationTicket data) => Protect(data, null);
