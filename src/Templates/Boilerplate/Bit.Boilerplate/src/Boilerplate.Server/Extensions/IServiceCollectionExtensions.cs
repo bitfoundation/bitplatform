@@ -25,7 +25,7 @@ public static class IServiceCollectionExtensions
 
             if (apiServerAddress!.IsAbsoluteUri is false)
             {
-                apiServerAddress = new Uri($"{sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl()}{apiServerAddress}");
+                apiServerAddress = new Uri(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl(), apiServerAddress);
             }
 
             return new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>())

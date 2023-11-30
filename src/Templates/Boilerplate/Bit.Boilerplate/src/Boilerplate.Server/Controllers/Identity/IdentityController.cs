@@ -104,10 +104,10 @@ public partial class IdentityController : AppControllerBase
                 {   nameof(EmailConfirmationTemplate.Model),
                     new EmailConfirmationModel
                     {
-                        ConfirmationLink = confirmationLink,
-                        HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
+                        ConfirmationLink = confirmationLink
                     }
-                }
+                },
+                { nameof(HttpContext), HttpContext }
             }));
 
             return renderedComponent.ToHtmlString();
@@ -213,9 +213,7 @@ public partial class IdentityController : AppControllerBase
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
-        var resetPasswordLink = $"reset-password?email={HttpUtility.UrlEncode(user.Email)}&token={HttpUtility.UrlEncode(token)}";
-
-        resetPasswordLink = $"{new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")}{resetPasswordLink}";
+        var resetPasswordLink = new Uri(HttpContext.Request.GetBaseUrl(), $"reset-password?email={HttpUtility.UrlEncode(user.Email)}&token={HttpUtility.UrlEncode(token)}");
 
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
@@ -225,10 +223,10 @@ public partial class IdentityController : AppControllerBase
                     new ResetPasswordModel
                     {
                         DisplayName = user.DisplayName,
-                        ResetPasswordLink = resetPasswordLink,
-                        HostUri = new Uri($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}")
+                        ResetPasswordLink = resetPasswordLink
                     }
-                }
+                },
+                { nameof(HttpContext) , HttpContext }
             }));
 
             return renderedComponent.ToHtmlString();
