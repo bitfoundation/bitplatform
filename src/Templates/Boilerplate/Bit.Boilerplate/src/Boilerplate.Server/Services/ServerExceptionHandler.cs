@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Net.Http.Headers;
 
 namespace Boilerplate.Server.Services;
 
@@ -12,7 +13,7 @@ public partial class ServerExceptionHandler : IExceptionHandler
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception e, CancellationToken cancellationToken)
     {
         // Using the Request-Id header, one can find the log for server-related exceptions
-        httpContext.Response.Headers.Append("Request-ID", httpContext.TraceIdentifier);
+        httpContext.Response.Headers.Append(HeaderNames.RequestId, httpContext.TraceIdentifier);
 
         var exception = UnWrapException(e);
         var knownException = exception as KnownException;
