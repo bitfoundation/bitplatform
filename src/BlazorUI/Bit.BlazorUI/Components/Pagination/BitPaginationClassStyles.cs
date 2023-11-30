@@ -8,11 +8,6 @@ public class BitPaginationClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the button container of the BitPagination.
-    /// </summary>
-    public string? ButtonContainer { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the button of the BitPagination.
     /// </summary>
     public string? Button { get; set; }
@@ -23,19 +18,9 @@ public class BitPaginationClassStyles
     public string? Elipsis { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the selected button container of the BitPagination.
-    /// </summary>
-    public string? SelectedButtonContainer { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the selected button of the BitPagination.
     /// </summary>
     public string? SelectedButton { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the first button container of the BitPagination.
-    /// </summary>
-    public string? FirstButtonContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the first button of the BitPagination.
@@ -48,11 +33,6 @@ public class BitPaginationClassStyles
     public string? FirstButtonIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the previous button container of the BitPagination.
-    /// </summary>
-    public string? PreviousButtonContainer { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the previous button of the BitPagination.
     /// </summary>
     public string? PreviousButton { get; set; }
@@ -63,11 +43,6 @@ public class BitPaginationClassStyles
     public string? PreviousButtonIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the next button container of the BitPagination.
-    /// </summary>
-    public string? NextButtonContainer { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the next button of the BitPagination.
     /// </summary>
     public string? NextButton { get; set; }
@@ -76,11 +51,6 @@ public class BitPaginationClassStyles
     /// Custom CSS classes/styles for the next button icon of the BitPagination.
     /// </summary>
     public string? NextButtonIcon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the last button container of the BitPagination.
-    /// </summary>
-    public string? LastButtonContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the last button of the BitPagination.

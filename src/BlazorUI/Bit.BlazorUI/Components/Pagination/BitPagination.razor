@@ -49,7 +49,7 @@
             <button @onclick="@(() => ChangePage(currentPage))"
                     disabled="@(IsEnabled is false)"
                     aria-label="@($"Page {currentPage}")"
-                    style="@Styles?.Button @Styles?.SelectedButton"
+                    style="@Styles?.Button"
                     class="bit-pgn-btn @Classes?.Button @GetButtonClasses()">
                 @currentPage
             </button>

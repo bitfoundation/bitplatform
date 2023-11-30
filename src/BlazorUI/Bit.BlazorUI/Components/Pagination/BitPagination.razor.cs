@@ -6,14 +6,14 @@ public partial class BitPagination
 {
     private bool SelectedPageHasBeenSet;
 
+    private int count = 1;
     private int selectedPage;
+    private int middleCount = 3;
+    private int boundaryCount = 2;
     private BitPaginationSize? size;
     private BitPaginationColor? color;
     private BitAppearance appearance = BitAppearance.Primary;
 
-    private int _count = 1;
-    private int _middleCount = 3;
-    private int _boundaryCount = 2;
 
 
     /// <summary>
@@ -33,20 +33,15 @@ public partial class BitPagination
     }
 
     /// <summary>
-    /// Icon of previous button.
-    /// </summary>
-    [Parameter] public string PreviousIcon { get; set; } = "ChevronLeft";
-
-    /// <summary>
     /// The number of items at the start and end of the pagination.
     /// </summary>
     [Parameter]
     public int BoundaryCount
     {
-        get => _boundaryCount;
+        get => boundaryCount;
         set
         {
-            _boundaryCount = Math.Max(1, value);
+            boundaryCount = Math.Max(1, value);
         }
     }
 
@@ -77,11 +72,11 @@ public partial class BitPagination
     [Parameter]
     public int Count
     {
-        get => _count;
+        get => count;
         set
         {
-            _count = Math.Max(1, value);
-            SelectedPage = Math.Min(SelectedPage, _count);
+            count = Math.Max(1, value);
+            SelectedPage = Math.Min(SelectedPage, count);
         }
     }
 
@@ -106,10 +101,10 @@ public partial class BitPagination
     [Parameter]
     public int MiddleCount
     {
-        get => _middleCount;
+        get => middleCount;
         set
         {
-            _middleCount = Math.Max(1, value);
+            middleCount = Math.Max(1, value);
         }
     }
 
@@ -124,6 +119,11 @@ public partial class BitPagination
     [Parameter] public EventCallback<int> OnChange { get; set; }
 
     /// <summary>
+    /// Icon of previous button.
+    /// </summary>
+    [Parameter] public string PreviousIcon { get; set; } = "ChevronLeft";
+
+    /// <summary>
     /// The selected page number.
     /// </summary>
     [Parameter]
@@ -135,7 +135,6 @@ public partial class BitPagination
             if (selectedPage == value) return;
 
             selectedPage = value;
-
             _ = SelectedPageChanged.InvokeAsync(selectedPage);
         }
     }
