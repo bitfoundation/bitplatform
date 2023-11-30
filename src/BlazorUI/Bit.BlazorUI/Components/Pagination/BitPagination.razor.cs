@@ -4,15 +4,16 @@ namespace Bit.BlazorUI;
 
 public partial class BitPagination
 {
+    private bool SelectedPageHasBeenSet;
+
+    private int selectedPage;
     private BitPaginationSize? size;
     private BitPaginationColor? color;
     private BitAppearance appearance = BitAppearance.Primary;
 
     private int _count = 1;
-    private int _selected = 1;
     private int _middleCount = 3;
     private int _boundaryCount = 2;
-    private bool _selectedFirstSet;
 
 
     /// <summary>
@@ -85,6 +86,11 @@ public partial class BitPagination
     }
 
     /// <summary>
+    /// The default selected page number.
+    /// </summary>
+    [Parameter] public int DefaultSelectedPage { get; set; }
+
+    /// <summary>
     /// Icon of first button.
     /// </summary>
     [Parameter] public string FirstIcon { get; set; } = "ChevronLeftEnd6";
@@ -113,14 +119,9 @@ public partial class BitPagination
     [Parameter] public string NextIcon { get; set; } = "ChevronRight";
 
     /// <summary>
-    /// Invokes the callback when a control button is clicked.
-    /// </summary>
-    [Parameter] public EventCallback<BitPage> OnControlButtonClick { get; set; }
-
-    /// <summary>
     /// Invokes the callback when selected page changes.
     /// </summary>
-    [Parameter] public EventCallback<int> OnSelectedChanged { get; set; }
+    [Parameter] public EventCallback<int> OnChange { get; set; }
 
     /// <summary>
     /// The selected page number.
@@ -128,25 +129,18 @@ public partial class BitPagination
     [Parameter]
     public int SelectedPage
     {
-        get => _selected;
+        get => selectedPage;
         set
         {
-            if (_selected == value)
-                return;
+            if (selectedPage == value) return;
 
-            if (_selectedFirstSet is false)
-            {
-                _selected = value;
-                _selectedFirstSet = true;
-            }
-            else
-            {
-                _selected = Math.Max(1, Math.Min(value, Count));
-            }
+            selectedPage = value;
 
-            OnSelectedChanged.InvokeAsync(_selected);
+            _ = SelectedPageChanged.InvokeAsync(selectedPage);
         }
     }
+
+    [Parameter] public EventCallback<int> SelectedPageChanged { get; set; }
 
     /// <summary>
     /// If true, the navigate to first page button is shown.
@@ -190,24 +184,6 @@ public partial class BitPagination
     [Parameter] public BitPaginationClassStyles? Styles { get; set; }
 
 
-    public void NavigateTo(BitPage page)
-    {
-        SelectedPage = page switch
-        {
-            BitPage.First => 1,
-            BitPage.Last => Math.Max(1, Count),
-            BitPage.Next => Math.Min(SelectedPage + 1, Count),
-            BitPage.Previous => Math.Max(1, SelectedPage - 1),
-            _ => SelectedPage
-        };
-    }
-
-    public void NavigateTo(int pageIndex)
-    {
-        SelectedPage = pageIndex + 1;
-    }
-
-
     protected override string RootElementClass => "bit-pgn";
 
     protected override void RegisterCssClasses()
@@ -220,8 +196,23 @@ public partial class BitPagination
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (SelectedPageHasBeenSet is false && DefaultSelectedPage != 0)
+        {
+            SelectedPage = DefaultSelectedPage;
+        }
 
-    private IEnumerable<int> GeneratePagination()
+        if (SelectedPage == 0)
+        {
+            SelectedPage = 1;
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+
+    private IEnumerable<int> GeneratePages()
     {
         if (Count <= 4 || Count <= 2 * BoundaryCount + MiddleCount + 2)
         {
@@ -275,10 +266,17 @@ public partial class BitPagination
         return pages;
     }
 
-    private void OnClickControlButton(BitPage page)
+    private async Task ChangePage(int page)
     {
-        OnControlButtonClick.InvokeAsync(page);
-        NavigateTo(page);
+        if (SelectedPageHasBeenSet && SelectedPageChanged.HasDelegate is false) return;
+
+        if (page > Count) page = Count;
+
+        if (page < 1) page = 1;
+
+        SelectedPage = page;
+
+        await OnChange.InvokeAsync(page);
     }
 
     private string GetButtonClasses()
