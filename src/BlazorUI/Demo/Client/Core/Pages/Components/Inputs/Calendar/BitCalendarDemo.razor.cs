@@ -85,6 +85,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "GoToNowTitle",
+            Type = "string",
+            DefaultValue = "Go to now",
+            Description = "The title of the GoToNow button (tooltip)."
+        },
+        new()
+        {
             Name = "HighlightCurrentMonth",
             Type = "bool",
             DefaultValue = "false",
@@ -99,6 +106,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "HideTimePickerTitle",
+            Type = "string",
+            DefaultValue = "Hide time picker",
+            Description = "The title of the HideTimePicker button (tooltip)."
+        },
+        new()
+        {
             Name = "InvalidErrorMessage",
             Type = "string?",
             DefaultValue = "null",
@@ -106,7 +120,7 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "IsMonthPickerVisible",
+            Name = "ShowMonthPicker",
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the month picker is shown or hidden."
@@ -141,12 +155,10 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "MonthPickerPosition",
-            Type = "BitCalendarMonthPickerPosition",
-            DefaultValue = "BitCalendarMonthPickerPosition.Besides",
-            Description = "Used to set the month picker position.",
-            LinkType = LinkType.Link,
-            Href ="#month-position-enum"
+            Name = "ShowMonthPickerAsOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Show month picker on top of date picker when visible."
         },
         new()
         {
@@ -177,10 +189,24 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "ShowTimePickerTitle",
+            Type = "string",
+            DefaultValue = "Show time picker",
+            Description = "The title of the ShowTimePicker button (tooltip)."
+        },
+        new()
+        {
             Name = "ShowWeekNumbers",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the week number (weeks 1 to 53) should be shown before each week row."
+        },
+        new()
+        {
+            Name = "ShowGoToNow",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the GoToNow button should be shown or not."
         },
         new()
         {
@@ -190,6 +216,15 @@ public partial class BitCalendarDemo
             Description = "Custom CSS styles for different parts of the BitCalendar.",
             Href = "#calendar-class-styles",
             LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "TimeFormat",
+            Type = "BitTimeFormat",
+            DefaultValue = "BitTimeFormat.TwentyFourHours",
+            Description = "The time format of the time-picker, 24H or 12H.",
+            LinkType = LinkType.Link,
+            Href = "#time-format-enum"
         },
         new()
         {
@@ -225,22 +260,49 @@ public partial class BitCalendarDemo
     {
         new()
         {
-            Id = "month-position-enum",
-            Name = "BitCalendarMonthPickerPosition",
+            Id = "component-visibility-enum",
+            Name = "BitVisibility",
             Description = "",
             Items = new()
             {
                 new()
                 {
-                    Name = "Beside",
-                    Description = "Show the month picker besides the calendar.",
-                    Value = "0",
+                    Name = "Visible",
+                    Description = "Show content of the component.",
+                    Value = "0"
                 },
                 new()
                 {
-                    Name = "Overlay",
-                    Description = "Show the month picker as overlay.",
-                    Value = "1",
+                    Name = "Hidden",
+                    Description = "Hide content of the component,though the space it takes on the page remains.",
+                    Value = "1"
+                },
+                new()
+                {
+                    Name = "Collapsed",
+                    Description = "Hide content of the component,though the space it takes on the page gone.",
+                    Value = "2"
+                }
+            }
+        },
+        new()
+        {
+            Id = "time-format-enum",
+            Name = "BitTimeFormat",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "TwentyFourHours",
+                    Description="Show time pickers in 24 hours format.",
+                    Value="0"
+                },
+                new()
+                {
+                    Name= "TwelveHours",
+                    Description="Show time pickers in 12 hours format.",
+                    Value="1"
                 }
             }
         }
@@ -573,8 +635,8 @@ public partial class BitCalendarDemo
 
     private CultureInfo culture = CultureInfo.CurrentUICulture;
 
-    private bool isMonthPickerVisible = true;
-    private BitCalendarMonthPickerPosition monthPickerPosition;
+    private bool showMonthPicker = true;
+    private bool showMonthPickerAsOverlay;
 
     private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
 
@@ -664,6 +726,14 @@ public partial class BitCalendarDemo
         border-end-end-radius: 0.5rem;
         border-start-end-radius: 0.5rem;
     }
+
+    .custom-increase-btn {
+        background-color: #48900f;
+    }
+
+    .custom-decrease-btn {
+        background-color: #c70505;
+    }
 </style>
 
 
@@ -676,16 +746,21 @@ public partial class BitCalendarDemo
                                TodayDayButton = ""background-color: red;"",
                                SelectedDayButton = ""background-color: purple;"",
                                YearPickerToggleButton = ""color: blue;"" })"" />
-<BitCalendar Classes=""@(new() { Root = ""custom-root"",
-                                DayPickerWrapper = ""custom-day-picker"",
-                                DayButton = ""custom-day"",
-                                TodayDayButton = ""custom-today-day"",
-                                PrevMonthNavButton = ""custom-prev-month"",
-                                NextMonthNavButton = ""custom-next-month"",
-                                DayPickerMonth = ""custom-day-month"",
-                                DayPickerHeader = ""custom-day-header"",
-                                WeekNumbersHeader = ""custom-week-header"",
-                                YearMonthPickerWrapper = ""custom-year-picker""})"" />";
+<BitCalendar ShowTimePicker=""true""
+             Classes=""@(new() { Root = ""custom-root"",
+                             DayPickerWrapper = ""custom-day-picker"",
+                             DayButton = ""custom-day"",
+                             TodayDayButton = ""custom-today-day"",
+                             PrevMonthNavButton = ""custom-prev-month"",
+                             NextMonthNavButton = ""custom-next-month"",
+                             DayPickerMonth = ""custom-day-month"",
+                             DayPickerHeader = ""custom-day-header"",
+                             WeekNumbersHeader = ""custom-week-header"",
+                             YearMonthPickerWrapper = ""custom-year-picker"",
+                             TimePickerIncreaseHourButton = ""custom-increase-btn"",
+                             TimePickerIncreaseMinuteButton = ""custom-increase-btn"",
+                             TimePickerDecreaseHourButton = ""custom-decrease-btn"",
+                             TimePickerDecreaseMinuteButton = ""custom-decrease-btn"" })"" />";
 
     private readonly string example4RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDate"" />
@@ -760,15 +835,14 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, 
 </BitCalendar>";
 
     private readonly string example7RazorCode = @"
-<BitCalendar IsMonthPickerVisible=""@isMonthPickerVisible"" />
-<BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker invisible"" @bind-IsChecked=""@isMonthPickerVisible"" />
+<BitCalendar ShowMonthPicker=""@showMonthPicker"" />
+<BitToggleButton OnText=""MonthPicker visible"" OffText=""MonthPicker invisible"" @bind-IsChecked=""@showMonthPicker"" />
 
-<BitCalendar MonthPickerPosition=""@monthPickerPosition"" />
-<BitToggleButton OnText=""Position Overlay"" OffText=""Position Besides""
-                 OnChange=""v => monthPickerPosition = v ? BitCalendarMonthPickerPosition.Overlay : BitCalendarMonthPickerPosition.Besides"" />";
+<BitCalendar ShowMonthPickerAsOverlay=""@showMonthPickerAsOverlay"" />
+<BitToggleButton OnText=""Position Overlay"" OffText=""Position Besides"" @bind-IsChecked=""@showMonthPickerAsOverlay"" />";
     private readonly string example7CsharpCode = @"
-private bool isMonthPickerVisible = true;
-private BitCalendarMonthPickerPosition monthPickerPosition;";
+private bool showMonthPicker = true;
+private bool showMonthPickerAsOverlay;";
 
     private readonly string example8RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDateTime"" ShowTimePicker=""true"" />

@@ -65,7 +65,8 @@
                                                SelectedDayButton = "background-color: purple;",
                                                YearPickerToggleButton = "color: blue;" })" />
 
-                <BitCalendar Classes="@(new() { Root = "custom-root",
+                <BitCalendar ShowTimePicker="true"
+                             Classes="@(new() { Root = "custom-root",
                                                 DayPickerWrapper = "custom-day-picker",
                                                 DayButton = "custom-day",
                                                 TodayDayButton = "custom-today-day",
@@ -74,7 +75,11 @@
                                                 DayPickerMonth = "custom-day-month",
                                                 DayPickerHeader = "custom-day-header",
                                                 WeekNumbersHeader = "custom-week-header",
-                                                YearMonthPickerWrapper = "custom-year-picker"})" />
+                                                YearMonthPickerWrapper = "custom-year-picker",
+                                                TimePickerIncreaseHourButton = "custom-increase-btn",
+                                                TimePickerIncreaseMinuteButton = "custom-increase-btn",
+                                                TimePickerDecreaseHourButton = "custom-decrease-btn",
+                                                TimePickerDecreaseMinuteButton = "custom-decrease-btn" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -158,14 +163,13 @@
             <div class="example-content">
                 <div>IsMonthPickerVisible:</div>
                 <br />
-                <BitCalendar IsMonthPickerVisible="@isMonthPickerVisible" />
-                <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker invisible" @bind-IsChecked="@isMonthPickerVisible" />
+                <BitCalendar ShowMonthPicker="@showMonthPicker" />
+                <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker invisible" @bind-IsChecked="@showMonthPicker" />
                 <br /><br /><br />
-                <div>MonthPickerPosition:</div>
+                <div>ShowMonthPickerAsOverlay:</div>
                 <br />
-                <BitCalendar MonthPickerPosition="@monthPickerPosition" />
-                <BitToggleButton OnText="Position Overlay" OffText="Position Besides"
-                                 OnChange="v => monthPickerPosition = v ? BitCalendarMonthPickerPosition.Overlay : BitCalendarMonthPickerPosition.Besides" />
+                <BitCalendar ShowMonthPickerAsOverlay="@showMonthPickerAsOverlay" />
+                <BitToggleButton OnText="Position Overlay" OffText="Position Besides" @bind-IsChecked="@showMonthPickerAsOverlay" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
