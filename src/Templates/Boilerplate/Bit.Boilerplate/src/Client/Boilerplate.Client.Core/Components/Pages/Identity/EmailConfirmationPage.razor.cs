@@ -29,7 +29,7 @@ public partial class EmailConfirmationPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto);
+            await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto, CurrentCancellationToken);
 
             emailConfirmationMessageType = BitMessageBarType.Success;
 

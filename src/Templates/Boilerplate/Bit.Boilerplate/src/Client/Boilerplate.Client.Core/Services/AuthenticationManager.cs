@@ -12,10 +12,10 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private HttpClient httpClient = default;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
-    public async Task SignIn(SignInRequestDto signInModel)
+    public async Task SignIn(SignInRequestDto signInModel, CancellationToken cancellationToken)
     {
-        var result = await (await httpClient.PostAsJsonAsync("Identity/SignIn", signInModel, AppJsonContext.Default.SignInRequestDto))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+        var result = await (await httpClient.PostAsJsonAsync("Identity/SignIn", signInModel, AppJsonContext.Default.SignInRequestDto, cancellationToken))
+                .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
 
         await StoreToken(result!, signInModel.RememberMe);
 

@@ -81,7 +81,12 @@ public class Middlewares
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
 
-            app.MapHealthChecksUI();
+            app.MapHealthChecksUI(options =>
+            {
+                options.UseRelativeApiPath = 
+                    options.UseRelativeResourcesPath = 
+                        options.UseRelativeWebhookPath = false;
+            });
         }
 
         // Handle the rest of requests with blazor

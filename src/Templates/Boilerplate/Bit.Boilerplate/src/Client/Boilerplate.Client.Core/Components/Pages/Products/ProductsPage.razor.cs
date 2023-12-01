@@ -59,7 +59,7 @@ public partial class ProductsPage
 
                 var url = NavigationManager.GetUriWithQueryParameters("Product/GetProducts", query);
 
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, CurrentCancellationToken);
 
                 return BitDataGridItemsProviderResult.From(await data!.Items!.ToListAsync(), (int)data!.TotalCount);
             }
@@ -99,7 +99,7 @@ public partial class ProductsPage
 
         if (confirmed)
         {
-            await HttpClient.DeleteAsync($"Product/Delete/{product.Id}");
+            await HttpClient.DeleteAsync($"Product/Delete/{product.Id}", CurrentCancellationToken);
 
             await RefreshData();
         }

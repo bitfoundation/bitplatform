@@ -20,7 +20,7 @@ public partial class OverallStatsWidget
         {
             data = await PrerenderStateService.GetValue($"{nameof(DashboardPage)}-{nameof(OverallStatsWidget)}",
                             async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetOverallAnalyticsStatsData",
-                                AppJsonContext.Default.OverallAnalyticsStatsDataResponseDto)) ?? new();
+                                AppJsonContext.Default.OverallAnalyticsStatsDataResponseDto, CurrentCancellationToken)) ?? new();
         }
         finally
         {

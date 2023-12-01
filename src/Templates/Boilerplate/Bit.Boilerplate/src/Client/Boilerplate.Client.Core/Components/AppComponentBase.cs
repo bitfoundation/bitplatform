@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Components;
 
-public partial class AppComponentBase : ComponentBase
+public partial class AppComponentBase : ComponentBase, IDisposable
 {
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
@@ -31,6 +31,9 @@ public partial class AppComponentBase : ComponentBase
     [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private readonly CancellationTokenSource cts = new();
+    protected CancellationToken CurrentCancellationToken => cts.Token;
 
     protected sealed override async Task OnInitializedAsync()
     {
@@ -174,5 +177,11 @@ public partial class AppComponentBase : ComponentBase
                 ExceptionHandler.Handle(exp);
             }
         };
+    }
+
+    public virtual void Dispose()
+    {
+        cts.Cancel();
+        cts.Dispose();
     }
 }

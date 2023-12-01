@@ -41,7 +41,7 @@ public partial class AddOrEditProductModal
         {
             var categoryList = await PrerenderStateService.GetValue($"{nameof(ProductsPage)}-AllCategoryList",
                                         async () => await HttpClient.GetFromJsonAsync("Category/Get",
-                                            AppJsonContext.Default.ListCategoryDto)) ?? [];
+                                            AppJsonContext.Default.ListCategoryDto, CurrentCancellationToken)) ?? [];
 
             allCategoryList = categoryList.Select(c => new BitDropdownItem<string>()
             {
@@ -66,11 +66,11 @@ public partial class AddOrEditProductModal
         {
             if (product.Id == 0)
             {
-                await HttpClient.PostAsJsonAsync("Product/Create", product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PostAsJsonAsync("Product/Create", product, AppJsonContext.Default.ProductDto, CurrentCancellationToken);
             }
             else
             {
-                await HttpClient.PutAsJsonAsync("Product/Update", product, AppJsonContext.Default.ProductDto);
+                await HttpClient.PutAsJsonAsync("Product/Update", product, AppJsonContext.Default.ProductDto, CurrentCancellationToken);
             }
 
             isOpen = false;
