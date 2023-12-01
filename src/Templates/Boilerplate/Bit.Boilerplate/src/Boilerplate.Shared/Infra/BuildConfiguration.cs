@@ -1,7 +1,24 @@
-﻿namespace Boilerplate.Shared.Infra;
+﻿//-:cnd:noEmit
+namespace Boilerplate.Shared.Infra;
 
-public enum BuildConfiguration
+public static class BuildConfiguration
 {
-    Debug,
-    Release
+    public static bool IsDebug()
+    {
+#if DEBUG
+        return true;
+#else
+        return false;
+#endif
+    }
+
+
+    public static bool IsRelease()
+    {
+#if DEBUG
+        return false;
+#else
+        return true;
+#endif
+    }
 }

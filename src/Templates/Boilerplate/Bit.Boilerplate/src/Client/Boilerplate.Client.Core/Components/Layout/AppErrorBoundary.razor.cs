@@ -15,7 +15,7 @@ public partial class AppErrorBoundary
 
     protected override void OnInitialized()
     {
-        showException = BuildConfigurationDetector.IsDebug();
+        showException = BuildConfiguration.IsDebug();
     }
 
     protected override async Task OnErrorAsync(Exception exception)

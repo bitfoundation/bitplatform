@@ -3,7 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddClientConfigurations();
 
-if (BuildConfigurationDetector.IsDebug())
+if (BuildConfiguration.IsDebug())
 {
     // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
     if (OperatingSystem.IsWindows())

@@ -33,7 +33,7 @@ public partial class MainPage
 
             handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
             handler.PlatformView.Opaque = false;
-            if (BuildConfigurationDetector.IsDebug())
+            if (BuildConfiguration.IsDebug())
             {
                 if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
                     || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
@@ -56,7 +56,7 @@ public partial class MainPage
                 settings.JavaScriptCanOpenWindowsAutomatically =
                 settings.DomStorageEnabled = true;
 
-            if (BuildConfigurationDetector.IsDebug())
+            if (BuildConfiguration.IsDebug())
             {
                 settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
             }
@@ -71,7 +71,7 @@ public partial class MainPage
             try
             {
 #if WINDOWS
-                if (BuildConfigurationDetector.IsRelease())
+                if (BuildConfiguration.IsRelease())
                 {
                     var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler!.PlatformView!;
                     await webView2.EnsureCoreWebView2Async();
