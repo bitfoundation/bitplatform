@@ -8,19 +8,6 @@
     align-self: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    padding: rem2(88px) rem2(32px);
-
-    @include lg {
-        padding: rem2(72px) rem2(32px);
-    }
-
-    @include md {
-        padding: rem2(64px) rem2(32px);
-    }
-
-    @include sm {
-        padding: rem2(40px) rem2(32px);
-    }
 }
 
 .page-content {
