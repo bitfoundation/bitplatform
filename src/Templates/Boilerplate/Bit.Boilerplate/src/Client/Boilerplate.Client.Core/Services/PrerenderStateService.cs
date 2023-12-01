@@ -8,16 +8,13 @@ namespace Boilerplate.Client.Core.Services;
 public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? subscription;
-    private readonly PersistentComponentState applicationState;
+    private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
-    public PrerenderStateService(IServiceProvider serviceProvider)
+    public PrerenderStateService(PersistentComponentState? persistentComponentState = null)
     {
-        if (AppRenderMode.PrerenderEnabled)
-        {
-            applicationState = serviceProvider.GetRequiredService<PersistentComponentState>();
-            subscription = applicationState.RegisterOnPersisting(PersistAsJson, AppRenderMode.Current);
-        }
+        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, AppRenderMode.Current);
+        this.persistentComponentState = persistentComponentState;
     }
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
@@ -25,7 +22,7 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
         if (AppRenderMode.PrerenderEnabled is false)
             return await factory();
 
-        if (applicationState.TryTakeFromJson(key, out T? value)) return value;
+        if (persistentComponentState!.TryTakeFromJson(key, out T? value)) return value;
 
         var result = await factory();
         Persist(key, result);
@@ -45,7 +42,7 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
     {
         foreach (var item in values)
         {
-            applicationState.PersistAsJson(item.Key, item.Value);
+            persistentComponentState!.PersistAsJson(item.Key, item.Value);
         }
     }
 

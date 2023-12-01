@@ -15,7 +15,7 @@ public partial class DeleteAccountConfirmModal
 
     private async Task DeleteAccount()
     {
-        await HttpClient.DeleteAsync("User/Delete");
+        await HttpClient.DeleteAsync("User/Delete", CurrentCancellationToken);
 
         await AuthenticationManager.SignOut();
 

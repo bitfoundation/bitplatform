@@ -37,7 +37,7 @@ public partial class Header : IDisposable
         await OnToggleMenu.InvokeAsync();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);

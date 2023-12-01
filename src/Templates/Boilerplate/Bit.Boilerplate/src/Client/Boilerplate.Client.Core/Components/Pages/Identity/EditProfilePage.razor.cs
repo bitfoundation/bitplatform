@@ -77,8 +77,8 @@ public partial class EditProfilePage
             user.BirthDate = userToEdit.BirthDate;
             user.Gender = userToEdit.Gender;
 
-            (await (await HttpClient.PutAsJsonAsync("User/Update", userToEdit, AppJsonContext.Default.EditUserDto))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto))!.Patch(user);
+            (await (await HttpClient.PutAsJsonAsync("User/Update", userToEdit, AppJsonContext.Default.EditUserDto, CurrentCancellationToken))
+                .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto, CurrentCancellationToken))!.Patch(user);
 
             PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, user);
 
@@ -105,7 +105,7 @@ public partial class EditProfilePage
 
         try
         {
-            await HttpClient.DeleteAsync(profileImageRemoveUrl);
+            await HttpClient.DeleteAsync(profileImageRemoveUrl, CurrentCancellationToken);
 
             await RefreshProfileData();
         }

@@ -30,7 +30,7 @@ public partial class SignInPage
 
         try
         {
-            await AuthenticationManager.SignIn(signInModel);
+            await AuthenticationManager.SignIn(signInModel, CurrentCancellationToken);
 
             NavigationManager.NavigateTo(RedirectUrl ?? "/");
         }

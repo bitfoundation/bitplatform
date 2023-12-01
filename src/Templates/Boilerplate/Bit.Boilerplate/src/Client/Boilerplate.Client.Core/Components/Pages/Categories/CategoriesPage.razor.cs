@@ -58,9 +58,9 @@ public partial class CategoriesPage
 
                 var url = NavigationManager.GetUriWithQueryParameters("Category/GetCategories", query);
 
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto) ?? new();
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto, CurrentCancellationToken) ?? new();
 
-                return BitDataGridItemsProviderResult.From(await data.Items!.ToListAsync()!, (int)data.TotalCount);
+                return BitDataGridItemsProviderResult.From(await data.Items!.ToListAsync(CurrentCancellationToken)!, (int)data.TotalCount);
             }
             catch (Exception exp)
             {
@@ -98,7 +98,7 @@ public partial class CategoriesPage
 
         if (confirmed)
         {
-            await HttpClient.DeleteAsync($"Category/Delete/{category.Id}");
+            await HttpClient.DeleteAsync($"Category/Delete/{category.Id}", CurrentCancellationToken);
 
             await RefreshData();
         }

@@ -32,7 +32,7 @@ public partial class ProductsCountPerCategotyWidget
 
             var data = await PrerenderStateService.GetValue($"{nameof(DashboardPage)}-{nameof(ProductsCountPerCategotyWidget)}",
                                 async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats",
-                                    AppJsonContext.Default.ListProductsCountPerCategoryResponseDto)) ?? [];
+                                    AppJsonContext.Default.ListProductsCountPerCategoryResponseDto, CurrentCancellationToken)) ?? [];
 
             BitChartBarDataset<int> chartDataSet = [.. data.Select(d => d.ProductCount)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();

@@ -7,6 +7,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
+        <WarningsAsErrors>$(WarningsAsErrors);CS0114</WarningsAsErrors>
 
         <NeutralLanguage>en-US</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>

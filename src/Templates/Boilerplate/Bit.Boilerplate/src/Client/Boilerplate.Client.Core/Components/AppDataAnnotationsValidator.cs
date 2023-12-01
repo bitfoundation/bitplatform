@@ -179,7 +179,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
         EditContext.NotifyValidationStateChanged();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);

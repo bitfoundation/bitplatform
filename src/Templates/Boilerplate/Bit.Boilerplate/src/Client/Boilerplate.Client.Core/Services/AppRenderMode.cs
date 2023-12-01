@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Core.Services;
 
 public static class AppRenderMode
 {
-    public const bool PrerenderEnabled = false;
+    public static readonly bool PrerenderEnabled = false;
 
     private static IComponentRenderMode Auto { get; } = new InteractiveAutoRenderMode(PrerenderEnabled);
     private static IComponentRenderMode BlazorWebAssembly { get; } = new InteractiveWebAssemblyRenderMode(PrerenderEnabled);

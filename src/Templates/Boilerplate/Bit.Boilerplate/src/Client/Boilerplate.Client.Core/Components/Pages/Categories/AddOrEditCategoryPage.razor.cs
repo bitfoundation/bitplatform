@@ -27,7 +27,7 @@ public partial class AddOrEditCategoryPage
 
         try
         {
-            category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto) ?? new();
+            category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto, CurrentCancellationToken) ?? new();
         }
         finally
         {
@@ -55,11 +55,11 @@ public partial class AddOrEditCategoryPage
         {
             if (category.Id == 0)
             {
-                await HttpClient.PostAsJsonAsync("Category/Create", category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PostAsJsonAsync("Category/Create", category, AppJsonContext.Default.CategoryDto, CurrentCancellationToken);
             }
             else
             {
-                await HttpClient.PutAsJsonAsync("Category/Update", category, AppJsonContext.Default.CategoryDto);
+                await HttpClient.PutAsJsonAsync("Category/Update", category, AppJsonContext.Default.CategoryDto, CurrentCancellationToken);
             }
 
             NavigationManager.NavigateTo("categories");
