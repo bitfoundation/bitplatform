@@ -54,7 +54,7 @@ public partial class MessageBox : IDisposable
         });
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
