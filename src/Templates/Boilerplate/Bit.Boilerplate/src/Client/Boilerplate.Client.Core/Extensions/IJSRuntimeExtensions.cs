@@ -22,7 +22,7 @@ public static class IJSRuntimeExtensions
 
     public static async Task SetCookie(this IJSRuntime jsRuntime, string key, string value, long expiresIn, bool rememberMe)
     {
-        bool secure = BuildConfigurationModeDetector.Current.IsRelease();
+        bool secure = BuildConfiguration.IsRelease();
 
         await jsRuntime.InvokeVoidAsync("App.setCookie", key, value, expiresIn, rememberMe, secure);
     }
