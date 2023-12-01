@@ -55,30 +55,34 @@
         <div class="form-input-container">
             <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
             <div class="color-container">
-                @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
-                {
-                    <button @onclick="() => SetCategoryColor(color)"
-                            class="color-btn @(category.Color == color ? "color-btn--active" : null)"
-                            style="background-color: @color"
-                            type="button" />
-                }
-                <BitButton ButtonStyle="BitButtonStyle.Standard" ButtonType="BitButtonType.Button" OnClick=@ToggleColorPicker>
-                    <div class="custom-color-container">
-                        <div class="color-square" style="background-color: @category.Color"></div>
-                        @Localizer[(nameof(AppStrings.CustomColor))]
-                    </div>
-                </BitButton>
-            </div>
-            @if (isColorPickerOpen)
-            {
-                <div class="color-picker-container">
-                    <BitColorPicker @bind-Color="category.Color"
-                                    id="catColorInput"
-                                    ShowPreview="true">
-                        @Localizer[nameof(AppStrings.DefaultColorPicker)]
-                    </BitColorPicker>
+                <div>
+                    @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
+                    {
+                        <button @onclick="() => SetCategoryColor(color)"
+                                class="color-btn @(category.Color == color ? "color-btn--active" : null)"
+                                style="background-color: @color"
+                                type="button" />
+                    }
                 </div>
-            }
+                <div>
+                    <BitButton ButtonStyle="BitButtonStyle.Standard" ButtonType="BitButtonType.Button" OnClick=@ToggleColorPicker>
+                        <div class="custom-color-container">
+                            <div class="color-square" style="background-color: @category.Color"></div>
+                            @Localizer[(nameof(AppStrings.CustomColor))]
+                        </div>
+                    </BitButton>
+                </div>
+                @if (isColorPickerOpen)
+                {
+                    <div class="color-picker-container">
+                        <BitColorPicker @bind-Color="category.Color"
+                                        id="catColorInput"
+                                        ShowPreview="true">
+                            @Localizer[nameof(AppStrings.DefaultColorPicker)]
+                        </BitColorPicker>
+                    </div>
+                }
+            </div>
             <ValidationMessage For="() => category.Color" />
         </div>
 
