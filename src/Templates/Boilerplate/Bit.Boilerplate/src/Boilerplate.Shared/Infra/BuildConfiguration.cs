@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Infra;
 
-public enum BuildConfigurationMode
+public enum BuildConfiguration
 {
     Debug,
     Release

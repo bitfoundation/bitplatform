@@ -13,7 +13,7 @@ public static class AppRenderMode
     public static IComponentRenderMode NoPrerenderBlazorWebAssembly => new InteractiveWebAssemblyRenderMode(prerender: false);
 
     public static IComponentRenderMode Current =>
-        BuildConfigurationModeDetector.Current.IsDebug() ? BlazorServer /*For better development experience*/ : Auto;
+        BuildConfigurationDetector.IsDebug() ? BlazorServer /*For better development experience*/ : Auto;
 
     public static bool PwaEnabled { get; } =
 #if PwaEnabled
