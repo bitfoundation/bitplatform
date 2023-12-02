@@ -1,0 +1,111 @@
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.page-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    max-width: rem2(1128px);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    @include lg {
+        max-width: rem2(1040px);
+    }
+
+    @include md {
+        max-width: rem2(770px);
+    }
+}
+
+.main-section {
+    width: 100%;
+    margin-bottom: rem2(24px);
+}
+
+.main-section-title {
+    width: 100%;
+    text-align: left;
+    font-weight: bold;
+    font-size: rem2(34px);
+    line-height: rem2(56px);
+    margin-bottom: rem2(24px);
+
+    @include lg {
+        font-size: rem2(30px);
+        line-height: rem2(48px);
+        margin-bottom: rem2(16px);
+    }
+
+    @include md {
+        font-size: rem2(24px);
+        line-height: rem2(40px);
+        margin-bottom: rem2(16px);
+    }
+
+    @include sm {
+        font-size: rem2(20px);
+        line-height: rem2(32px);
+        margin-bottom: rem2(12px);
+    }
+}
+
+.section-desc {
+    width: 100%;
+    font-size: rem2(18px);
+    line-height: rem2(28px);
+
+    @include lt-xl {
+        font-size: rem2(16px);
+        line-height: rem2(24px);
+    }
+
+    @include sm {
+        font-size: rem2(14px);
+    }
+}
+
+.sub-section {
+    width: 100%;
+    margin-bottom: rem2(24px);
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.sub-section-title {
+    width: 100%;
+    text-align: left;
+    font-weight: 600;
+    font-size: rem2(24px);
+    line-height: rem2(36px);
+    margin-bottom: rem2(16px);
+
+    @include lg {
+        font-size: rem2(20px);
+        line-height: rem2(32px);
+        margin-bottom: rem2(8px);
+    }
+
+    @include md {
+        font-size: rem2(18px);
+        line-height: rem2(28px);
+        margin-bottom: rem2(8px);
+    }
+
+    @include sm {
+        font-size: rem2(16px);
+        line-height: rem2(24px);
+        margin-bottom: rem2(8px);
+    }
+}

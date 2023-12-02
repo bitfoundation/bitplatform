@@ -1,41 +1,75 @@
 ﻿@page "/window"
-@using Console = Bit.Butil.Console
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Window window
 
 <PageTitle>Window Samples</PageTitle>
 
 <h1>Window</h1>
 
-<h3>Open the DevTools</h3>
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Window window
 
-<button @onclick=AddEvenetListener>AddEvenetListener</button>
-&nbsp;
-<button @onclick=RemoveEvenetListener>RemoveEvenetListener</button>
+@@code {
+    ...
+    await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
+    ...
+}
+</pre>
 
+<br />
 <hr />
+<br />
 
-<div>Is Registered: @isRegistered</div>
+<h4>Open the DevTools and start pressing keys on your keyboard</h4>
+<br />
+<button @onclick=AddEventListener>AddEventListener</button>&nbsp;<button @onclick=RemoveEventListener>RemoveEventListener</button>
+<br />
+<br />
+<div>Is KeyDown Registered? @isKeyDownRegistered</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=AddBeforeUnload>AddBeforeUnload</button>&nbsp;<button @onclick=RemoveBeforeUnload>RemoveBeforeUnload</button>
+<br />
+<br />
+<div>Is BeforeUnload Registered? @isBeforeUnloadRegistered</div>
 
 @code {
-    private bool isRegistered = false;
+    private bool isKeyDownRegistered;
+    private bool isBeforeUnloadRegistered;
 
-    private Action<DomKeyboardEventArgs> _handler = default!;
+    private Action<ButilKeyboardEventArgs> _handler = default!;
 
     protected override void OnInitialized()
     {
-        _handler = (DomKeyboardEventArgs arg) => Console.Log("KeyDown from C#:", arg.Code);
+        _handler = (ButilKeyboardEventArgs arg) => _ = console.Log("KeyDown from C#:", arg.Code);
 
         base.OnInitialized();
     }
 
-    private void AddEvenetListener()
+    private void AddEventListener()
     {
-        Window.AddEventListener(DomEvents.KeyDown, _handler);
-        isRegistered = true;
+        _ = window.AddEventListener(ButilEvents.KeyDown, _handler);
+        isKeyDownRegistered = true;
     }
 
-    private void RemoveEvenetListener()
+    private void RemoveEventListener()
     {
-        Window.RemoveEventListener(DomEvents.KeyDown, _handler);
-        isRegistered = false;
+        _ = window.RemoveEventListener(ButilEvents.KeyDown, _handler);
+        isKeyDownRegistered = false;
+    }
+
+    private void AddBeforeUnload()
+    {
+        _ = window.AddBeforeUnload();
+        isBeforeUnloadRegistered = true;
+    }
+
+    private void RemoveBeforeUnload()
+    {
+        _ = window.RemoveBeforeUnload();
+        isBeforeUnloadRegistered = false;
     }
 }

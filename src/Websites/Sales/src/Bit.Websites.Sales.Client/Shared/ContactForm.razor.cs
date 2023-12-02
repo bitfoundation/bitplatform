@@ -4,39 +4,39 @@ namespace Bit.Websites.Sales.Client.Shared;
 
 public partial class ContactForm
 {
-    private bool _isLoading;
-    private string? _successMessage;
-    private string? _errorMessage;
-    private ContactUsDto _contactUs = new();
+    private bool isLoading;
+    private string? successMessage;
+    private string? errorMessage;
+    private ContactUsDto contactUs = new();
 
-    [AutoInject] private HttpClient _httpClient = default!;
+    [AutoInject] private HttpClient httpClient = default!;
 
     private async Task DoSubmit()
     {
-        if (_isLoading) return;
+        if (isLoading) return;
 
-        _isLoading = true;
+        isLoading = true;
 
-        _errorMessage = string.Empty;
-        _successMessage = string.Empty;
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
 
         try
         {
-            await _httpClient.PostAsJsonAsync("ContactUs/SendMessage", _contactUs, AppJsonContext.Default.ContactUsDto);
+            await httpClient.PostAsJsonAsync("ContactUs/SendMessage", contactUs, AppJsonContext.Default.ContactUsDto);
 
-            _contactUs.Name = string.Empty;
-            _contactUs.Email = string.Empty;
-            _contactUs.Information = string.Empty;
+            contactUs.Name = string.Empty;
+            contactUs.Email = string.Empty;
+            contactUs.Information = string.Empty;
 
-            _successMessage = "Your request submitted successfully";
+            successMessage = "Your request submitted successfully";
         }
         catch (KnownException e)
         {
-            _errorMessage = e.Message;
+            errorMessage = e.Message;
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 }

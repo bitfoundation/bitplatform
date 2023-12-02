@@ -49,16 +49,16 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
 
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+      run: dotnet build src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -c Release
 
     - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish src/BlazorUI/Demo/Server/Api/Bit.BlazorUI.Demo.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
-    - name: Upload api-web artifact
+    - name: Upload server artifact
       uses: actions/upload-artifact@v3
       with:
-        name: api-web-bundle
-        path: ${{env.DOTNET_ROOT}}/api-web
+        name: server-bundle
+        path: ${{env.DOTNET_ROOT}}/server
 
   deploy_blazor_api_wasm:
     name: deploy blazor api + web assembly
@@ -70,10 +70,10 @@ jobs:
 
     steps:
 
-      - name: Retrieve api-web bundle
+      - name: Retrieve server bundle
         uses: actions/download-artifact@v2
         with:
-          name: api-web-bundle
+          name: server-bundle
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -83,6 +83,12 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.COMPONENTS_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
+
+      - name: Purge cache
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
@@ -113,10 +119,10 @@ jobs:
       run: cd src && dotnet workload install maui
   
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
   
     - name: Build exe
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -160,10 +166,10 @@ jobs:
       run: cd src && dotnet workload install maui-android
   
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:RunAOTCompilation=false -f net8.0-android
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -c Release -p:RunAOTCompilation=false -f net8.0-android
   
     - name: Build aab
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-android
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -225,10 +231,10 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
+      run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -c Release -f net8.0-ios
   
     - name: Build ipa
-      run: dotnet publish src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
+      run: dotnet publish src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -265,10 +271,10 @@ jobs:
        run: cd src && dotnet workload install maui
    
      - name: Generate CSS/JS files
-       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
+       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -c Release -f net8.0-maccatalyst
    
      - name: Build pkg
-       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-maccatalyst
+       run: dotnet build src/BlazorUI/Demo/Client/App/Bit.BlazorUI.Demo.Client.App.csproj -p:BlazorMode=BlazorHybrid -c Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
@@ -310,7 +316,7 @@ jobs:
        run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' src/BlazorUI/Demo/Directory.Build.props > temp.xml && mv temp.xml src/BlazorUI/Demo/Directory.Build.props
    
      - name: Generate CSS/JS files
-       run: dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -p:Configuration=Release
+       run: dotnet build src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj -c Release
    
      - name: Build app image
        run: cd src/BlazorUI/Demo/Client/Web/ && dotnet electronize build /target linux

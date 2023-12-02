@@ -1,4 +1,4 @@
-﻿self['bit-bswup.sw version'] = '8.1.0';
+﻿self['bit-bswup.sw version'] = '8.2.0';
 
 interface Window {
     clients: any
@@ -19,6 +19,7 @@ interface Window {
     ignoreDefaultInclude: any
     ignoreDefaultExclude: any
     isPassive: any
+    disablePassiveFirstBoot: any
     enableIntegrityCheck: any
     enableDiagnostics: any
     enableFetchDiagnostics: any
@@ -133,9 +134,11 @@ async function handleFetch(e) {
     let asset = UNIQUE_ASSETS.find(a => a[shouldServeIndexHtml ? 'url' : 'reqUrl'][caseMethod]() === requestUrl[caseMethod]());
 
     if (!asset) { // for assets that has asp-append-version or similar type of url versioning
-        const url = new URL(requestUrl);
-        const reqUrl = `${url.origin}${url.pathname}`;
-        asset = UNIQUE_ASSETS.find(a => a.reqUrl[caseMethod]() === reqUrl[caseMethod]());
+        try {
+            const url = new URL(requestUrl);
+            const reqUrl = `${url.origin}${url.pathname}`;
+            asset = UNIQUE_ASSETS.find(a => a.reqUrl[caseMethod]() === reqUrl[caseMethod]());
+        } catch { }
     }
 
     if (!asset?.url) {
@@ -187,14 +190,13 @@ function handleMessage(e) {
 async function createAssetsCache(ignoreProgressReport = false) {
     diagGroup('bit-bswup:createAssetsCache:' + ignoreProgressReport);
 
-    let newCache;
+    const newCache = await caches.open(CACHE_NAME);
     const cacheKeys = await caches.keys();
 
     if (!ignoreProgressReport) {
         const oldCacheKey = cacheKeys.find(key => key.startsWith(CACHE_NAME_PREFIX));
         if (oldCacheKey) {
             diag('copying old cache:', oldCacheKey);
-            newCache = await caches.open(CACHE_NAME);
             const oldCache = await caches.open(oldCacheKey);
             const oldKeys = await oldCache.keys();
             for (var i = 0; i < oldKeys.length; i++) {
@@ -207,13 +209,15 @@ async function createAssetsCache(ignoreProgressReport = false) {
         }
     }
 
-    if (!newCache) {
-        newCache = await caches.open(CACHE_NAME);
-    }
-
     let keys = await newCache.keys();
     const firstTime = keys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
+    if (passiveFirstTime && self.disablePassiveFirstBoot) {
+        if (!ignoreProgressReport) {
+            sendMessage({ type: 'bypass', data: { firstTime: true } });
+        }
+        return;
+    }
 
     diag('passiveFirstTime:', passiveFirstTime);
 
@@ -267,6 +271,11 @@ async function createAssetsCache(ignoreProgressReport = false) {
             newCache.delete(key.url);
             updatedAssets.push(foundAsset);
         }
+    }
+
+    const defaultAsset = UNIQUE_ASSETS.find(a => a.url === DEFAULT_URL);
+    if (!updatedAssets.includes(defaultAsset)) {
+        updatedAssets.push(defaultAsset); // get the latest version of the default doc in each update!
     }
 
     diag('oldUrls:', oldUrls);

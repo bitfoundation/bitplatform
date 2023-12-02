@@ -6,6 +6,7 @@ using Microsoft.Net.Http.Headers;
 using Bit.Websites.Platform.Server.Components;
 using System.Net;
 using Microsoft.AspNetCore.Components.Endpoints;
+using System.Runtime.Loader;
 
 namespace Bit.Websites.Platform.Server.Startup;
 
@@ -67,7 +68,7 @@ public class Middlewares
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(Assembly.Load("Bit.Websites.Platform.Client"));
+            .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Websites.Platform") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
     }
 
     private static void Configure_404_Page(WebApplication app)

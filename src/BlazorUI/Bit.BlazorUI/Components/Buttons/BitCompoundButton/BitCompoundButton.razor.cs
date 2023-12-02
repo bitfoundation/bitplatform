@@ -7,6 +7,7 @@ public partial class BitCompoundButton
     private BitButtonSize? size;
     private BitButtonColor? color;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -82,6 +83,27 @@ public partial class BitCompoundButton
     /// The value of the href attribute of the link rendered by the BitCompoundButton. If provided, the component will be rendered as an anchor.
     /// </summary>
     [Parameter] public string? Href { get; set; }
+
+    /// <summary>
+    /// The icon to show inside the BitCompoundButton.
+    /// </summary>
+    [Parameter] public string? IconName { get; set; }
+
+    /// <summary>
+    /// Specifies Icon position which can be rendered either at the start or end of the component.
+    /// </summary>
+    [Parameter]
+    public BitButtonIconPosition? IconPosition
+    {
+        get => iconPosition;
+        set
+        {
+            if (iconPosition == value) return;
+
+            iconPosition = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The callback for the click event of the BitCompoundButton.
@@ -165,6 +187,13 @@ public partial class BitCompoundButton
             BitButtonSize.Medium => "bit-cmb-md",
             BitButtonSize.Large => "bit-cmb-lg",
             _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => IconPosition switch
+        {
+            BitButtonIconPosition.Start => "bit-cmb-srt",
+            BitButtonIconPosition.End => "bit-cmb-end",
+            _ => "bit-cmb-srt"
         });
     }
 

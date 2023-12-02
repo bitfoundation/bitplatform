@@ -2,15 +2,15 @@
 
 public partial class Header
 {
-    private string? _currentUrl;
-    private bool _isMenuOpen;
+    private string? currentUrl;
+    private bool isMenuOpen;
 
-    [AutoInject] private NavigationManager _navigationManager = default!;
-    [AutoInject] private IJSRuntime _js = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
+    [AutoInject] private IJSRuntime js = default!;
 
     protected override async Task OnInitAsync()
     {
-        _navigationManager.LocationChanged += OnLocationChanged;
+        navigationManager.LocationChanged += OnLocationChanged;
 
         SetCurrentUrl();
 
@@ -26,25 +26,25 @@ public partial class Header
 
     private void SetCurrentUrl()
     {
-        _currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var hashIndex = _currentUrl.IndexOf('#');
+        currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.Ordinal);
+        var hashIndex = currentUrl.IndexOf('#');
         if (hashIndex > 0)
         {
-            _currentUrl = _currentUrl.Substring(0, hashIndex);
+            currentUrl = currentUrl.Substring(0, hashIndex);
         }
     }
 
     private async Task OpenMenu()
     {
-        _isMenuOpen = true;
-        await _js.InvokeVoidAsync("App.setBodyStyle", "overflow:hidden;");
+        isMenuOpen = true;
+        await js.InvokeVoidAsync("App.setBodyStyle", "overflow:hidden;");
         StateHasChanged();
     }
 
     private async Task CloseMenu()
     {
-        _isMenuOpen = false;
-        await _js.InvokeVoidAsync("App.setBodyStyle", "overflow:auto;");
+        isMenuOpen = false;
+        await js.InvokeVoidAsync("App.setBodyStyle", "overflow:auto;");
         StateHasChanged();
     }
 }

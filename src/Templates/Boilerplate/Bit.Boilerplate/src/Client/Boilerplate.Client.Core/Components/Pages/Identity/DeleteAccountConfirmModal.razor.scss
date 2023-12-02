@@ -1,0 +1,35 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+.modal-body {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
+    padding: rem2(28px) rem2(110px);
+
+    @include lt-lg {
+        padding: rem2(28px) rem2(47px);
+    }
+}
+
+.modal-close-btn-container {
+    top: 0;
+    right: 0;
+    position: absolute;
+}
+
+.modal-title {
+    color: #dc0000;
+    font-weight: 600;
+    font-size: rem2(24px);
+    line-height: rem2(40px);
+    margin-bottom: rem2(12px);
+}
+
+.modal-desc {
+    font-size: rem2(18px);
+    line-height: rem2(24px);
+    margin-bottom: rem2(36px);
+}

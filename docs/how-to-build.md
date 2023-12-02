@@ -94,7 +94,7 @@ Like the bit BlazorUI Demo project, the project templates (located in the `src/T
 
 For example for the `Boilerplate` project template in the `Boilerplate/Bit.Boilerplate` folder:
 
-The `Web` project just like the bit platform website only needs the basic requirements and can be simply built by running the following command in the `Boilerplate.Client.Web` project folder (`src/Client/Web`):
+The `Web` project just like the bit platform website only needs the basic requirements and can be simply built by running the following command in the `Boilerplate.Client.Web` project folder (`src/Client/Boilerplate.Client.Web`):
 
 ```bash
 dotnet build
@@ -113,7 +113,7 @@ dotnet workload install maui-android
 dotnet workload install maui
 ```
 
-To build the App project run the following command in the `Boilerplate.Client.App` project folder (`src/Client/Web`):
+To build the App project run the following command in the `Boilerplate.Client.Maui` project folder (`src/Client/Boilerplate.Client.Maui`):
 
 ```bash
 dotnet build

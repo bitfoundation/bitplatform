@@ -1,4 +1,4 @@
-﻿window['bit-bswup version'] = '8.1.0';
+﻿window['bit-bswup version'] = '8.2.0';
 
 declare const Blazor: any;
 
@@ -132,6 +132,11 @@ class BitBswup {
                     const firstInstall = !(navigator.serviceWorker.controller);
                     handle(BswupMessage.downloadFinished, { reload, firstInstall });
                 }
+            }
+
+            if (type === 'bypass') {
+                const firstInstall = data?.firstTime || !(navigator.serviceWorker.controller);
+                handle(BswupMessage.downloadFinished, { reload, firstInstall });
             }
 
             if (type === 'activate') {

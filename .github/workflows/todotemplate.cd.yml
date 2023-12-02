@@ -3,7 +3,6 @@ name: TodoTemplate CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'PwaPrerendered'
   API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/api/'
 
 on:
@@ -16,8 +15,8 @@ permissions:
 
 jobs:
 
-  build_blazor_api_wasm:
-    name: build blazor api + web assembly
+  build_api_blazor:
+    name: build api + blazor
     runs-on: ubuntu-22.04
 
     steps:
@@ -44,31 +43,31 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'TodoTemplate/src/Client/Core/appsettings.json'
+        files: 'TodoTemplate/src/Client/TodoTemplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
-    - name: Switch to blazor web assembly
-      run: sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
 
+    - name: Enable pre rendering
+      run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
+
     - name: Generate CSS/JS files
-      run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      run: dotnet publish TodoTemplate/src/Server/Api/TodoTemplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/api-web
+      run: dotnet publish TodoTemplate/src/TodoTemplate.Server/TodoTemplate.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
-    - name: Upload api-web artifact
+    - name: Upload server artifact
       uses: actions/upload-artifact@v3
       with:
-        name: api-web-bundle
-        path: ${{env.DOTNET_ROOT}}/api-web
+        name: server-bundle
+        path: ${{env.DOTNET_ROOT}}/server
 
-  deploy_blazor_api_wasm:
-    name: deploy blazor api + web assembly
-    needs: build_blazor_api_wasm
+  deploy_api_blazor:
+    name: deploy api + blazor
+    needs: build_api_blazor
     runs-on: ubuntu-22.04
     environment:
       name: 'production'
@@ -76,10 +75,10 @@ jobs:
 
     steps:
 
-      - name: Retrieve api-web bundle
+      - name: Retrieve server bundle
         uses: actions/download-artifact@v2
         with:
-          name: api-web-bundle
+          name: server-bundle
 
       - name: Delete IdentityCertificate.pfx
         run: |
@@ -100,6 +99,12 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
+
+      - name: Purge cache
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
@@ -129,7 +134,7 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'TodoTemplate/src/Client/Core/appsettings.json'
+        files: 'TodoTemplate/src/Client/TodoTemplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -137,16 +142,16 @@ jobs:
       run: cd src && dotnet workload install maui
   
     - name: Generate CSS/JS files
-      run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build exe
-      run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+      run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Maui/TodoTemplate.Client.Maui.csproj -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: TodoTemplate/src/Client/App/bin/release/net8.0-windows10.0.19041.0/win10-x86
+        path: TodoTemplate/src/Client/TodoTemplate.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -176,14 +181,14 @@ jobs:
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
       with:
-          fileDir: './TodoTemplate/src/Client/App/'
+          fileDir: './TodoTemplate/src/Client/TodoTemplate.Client.Maui/'
           fileName: 'TodoTemplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'TodoTemplate/src/Client/Core/appsettings.json'
+        files: 'TodoTemplate/src/Client/TodoTemplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -191,16 +196,16 @@ jobs:
       run: cd src && dotnet workload install maui-android
   
     - name: Generate CSS/JS files
-      run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build aab
-      run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
+      run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Maui/TodoTemplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoTemplate.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: android-bundle
-        path: TodoTemplate/src/Client/App/bin/Release/net8.0-android/*-Signed.*
+        path: TodoTemplate/src/Client/TodoTemplate.Client.Maui/bin/Release/net8.0-android/*-Signed.*
   
   build_blazor_hybrid_maccatalyst:
      name: build blazor hybrid (maccatalyst)
@@ -230,7 +235,7 @@ jobs:
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
        with:
-         files: 'TodoTemplate/src/Client/Core/appsettings.json'
+         files: 'TodoTemplate/src/Client/TodoTemplate.Client.Core/appsettings.json'
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -238,16 +243,16 @@ jobs:
        run: cd src && dotnet workload install maui
    
      - name: Generate CSS/JS files
-       run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+       run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
    
      - name: Build pkg
-       run: dotnet build TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-maccatalyst
+       run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Maui/TodoTemplate.Client.Maui.csproj -c Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
          name: mac-pkg-bundle
-         path: TodoTemplate/src/Client/App/bin/release/net8.0-maccatalyst/*.pkg
+         path: TodoTemplate/src/Client/TodoTemplate.Client.Maui/bin/release/net8.0-maccatalyst/*.pkg
 
   build_blazor_hybrid_ios:
     name: build blazor hybrid (ios)
@@ -281,7 +286,7 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'TodoTemplate/src/Client/Core/appsettings.json'
+        files: 'TodoTemplate/src/Client/TodoTemplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -310,68 +315,13 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Generate CSS/JS files
-      run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoTemplate/src/Client/TodoTemplate.Client.Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build ipa
-      run: dotnet publish TodoTemplate/src/Client/App/TodoTemplate.Client.App.csproj -p:RuntimeIdentifier=ios-arm64 -p:BlazorMode=BlazorHybrid -p:Configuration=Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
+      run: dotnet publish TodoTemplate/src/Client/TodoTemplate.Client.Maui/TodoTemplate.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoTemplate" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: ios-bundle
-        path: TodoTemplate/src/Client/App/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
-
-  build_blazor_electron_linux:
-     name: build blazor electron (linux)
-     runs-on: ubuntu-22.04
-   
-     steps:
-      
-     - name: Checkout source code
-       uses: actions/checkout@v3
-      
-     - name: Setup .NET
-       uses: actions/setup-dotnet@v3
-       with:
-         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
-
-     - name: Setup .NET for Electron.NET
-       uses: actions/setup-dotnet@v3
-       with:
-        dotnet-version: '6.x.x'
-
-     - uses: actions/setup-node@v3
-       with:
-         node-version: 18
-
-     - name: Create project from Boilerplate
-       run: |
-         cd src/Templates/Boilerplate && dotnet build -c Release
-         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-         cd ../../../ && dotnet new bit-bp --name TodoTemplate --database SqlServer --sample Todo
-     
-     - name: Update appsettings.json api server address
-       uses: microsoft/variable-substitution@v1 
-       with:
-         files: 'TodoTemplate/src/Client/Core/appsettings.json'
-       env:
-         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
-     - name: Switch to BlazorElectron
-       run: awk '/<BlazorMode>/{sub(">.*</", ">BlazorElectron</")}1' TodoTemplate/src/Directory.Build.props > temp.xml && mv temp.xml TodoTemplate/src/Directory.Build.props
-   
-     - name: Generate CSS/JS files
-       run: dotnet build TodoTemplate/src/Client/Core/TodoTemplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
-
-     - name: Restore electron .net
-       run: dotnet build TodoTemplate/src/Client/Web/TodoTemplate.Client.Web.csproj -t:BeforeBuildTasks
-   
-     - name: Build app image
-       run: cd TodoTemplate/src/Client/Web/ && dotnet electronize build /target linux
-   
-     - name: Upload artifact
-       uses: actions/upload-artifact@v2
-       with:
-         name: linux-app-image
-         path: TodoTemplate/src/Client/Web/bin/Desktop/linux-unpacked
+        path: TodoTemplate/src/Client/TodoTemplate.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa

@@ -8,6 +8,8 @@ public partial class BitDateRangePicker
 {
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
+    private const int STEP_DELAY = 75;
+    private const int INITIAL_STEP_DELAY = 400;
 
 
 
@@ -159,17 +161,19 @@ public partial class BitDateRangePicker
 
 
     private int _currentYear;
-    private int _displayYear;
     private int _currentMonth;
+    private bool _isPointerDown;
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private int? _selectedEndDateWeek;
     private int? _selectedStartDateWeek;
     private bool _showMonthPicker = true;
     private int? _selectedEndDateDayOfWeek;
+    private bool _isTimePickerOverlayOnTop;
     private bool _isMonthPickerOverlayOnTop;
     private int? _selectedStartDateDayOfWeek;
     private string _monthTitle = string.Empty;
+    private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
     private DotNetObjectReference<BitDateRangePicker> _dotnetObj = default!;
     private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
@@ -179,10 +183,10 @@ public partial class BitDateRangePicker
     private string? _labelId;
     private string? _inputId;
     private string? _activeDescendantId;
-    private ElementReference _inputStartTimeHourRef = default!;
-    private ElementReference _inputStartTimeMinuteRef = default!;
-    private ElementReference _inputEndTimeHourRef = default!;
-    private ElementReference _inputEndTimeMinuteRef = default!;
+    private ElementReference _startTimeHourInputRef = default!;
+    private ElementReference _startTimeMinuteInputRef = default!;
+    private ElementReference _endTimeHourInputRef = default!;
+    private ElementReference _endTimeMinuteInputRef = default!;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -277,6 +281,16 @@ public partial class BitDateRangePicker
     /// The title of the GoToToday button (tooltip).
     /// </summary>
     [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
+
+    /// <summary>
+    /// The title of the ShowTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string ShowTimePickerTitle { get; set; } = "Show time picker";
+
+    /// <summary>
+    /// The title of the HideTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string HideTimePickerTitle { get; set; } = "Hide time picker";
 
     /// <summary>
     /// Determines if the DateRangePicker has a border.
@@ -450,7 +464,7 @@ public partial class BitDateRangePicker
     [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     /// <summary>
-    /// Show month picker on top of date picker when visible.
+    /// Show month picker on top of date range picker when visible.
     /// </summary>
     [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
 
@@ -504,6 +518,10 @@ public partial class BitDateRangePicker
     /// </summary>
     [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
+    /// <summary>
+    /// Show month picker on top of date range picker when visible.
+    /// </summary>
+    [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
 
 
     public Task OpenCallout()
@@ -634,12 +652,20 @@ public partial class BitDateRangePicker
             _isMonthPickerOverlayOnTop = false;
         }
 
+        if (_showTimePickerAsOverlayInternal is false)
+        {
+            _showTimePickerAsOverlayInternal = result;
+        }
+
+        if (_showTimePickerAsOverlayInternal)
+        {
+            _isTimePickerOverlayOnTop = false;
+        }
+
         if (CurrentValue is not null)
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
-
-        _displayYear = _currentYear;
 
         await OnClick.InvokeAsync();
     }
@@ -710,7 +736,6 @@ public partial class BitDateRangePicker
             _currentYear--;
         }
 
-        _displayYear = _currentYear;
         _currentMonth = selectedMonth;
 
         var hour = CurrentValue.StartDate.HasValue ? _endTimeHour : _startTimeHour;
@@ -749,7 +774,6 @@ public partial class BitDateRangePicker
         if (IsMonthOutOfMinAndMaxDate(month)) return;
 
         _currentMonth = month;
-        _currentYear = _displayYear;
 
         GenerateMonthData(_currentYear, _currentMonth);
 
@@ -764,7 +788,7 @@ public partial class BitDateRangePicker
         if (IsEnabled is false) return;
         if (IsYearOutOfMinAndMaxDate(year)) return;
 
-        _currentYear = _displayYear = year;
+        _currentYear = year;
 
         ChangeYearRanges(_currentYear - 1);
 
@@ -810,8 +834,6 @@ public partial class BitDateRangePicker
             }
         }
 
-        _displayYear = _currentYear;
-
         GenerateMonthData(_currentYear, _currentMonth);
     }
 
@@ -820,7 +842,7 @@ public partial class BitDateRangePicker
         if (IsEnabled is false) return;
         if (CanChangeYear(isNext) is false) return;
 
-        _displayYear += isNext ? +1 : -1;
+        _currentYear += isNext ? +1 : -1;
 
         GenerateMonthData(_currentYear, _currentMonth);
     }
@@ -846,8 +868,6 @@ public partial class BitDateRangePicker
     {
         _currentMonth = Culture.Calendar.GetMonth(dateTime);
         _currentYear = Culture.Calendar.GetYear(dateTime);
-
-        _displayYear = _currentYear;
 
         _yearPickerStartYear = _currentYear - 1;
         _yearPickerEndYear = _currentYear + 10;
@@ -1013,9 +1033,9 @@ public partial class BitDateRangePicker
         return month;
     }
 
-    private bool IsGoTodayButtonDisabled(int todayYear, int todayMonth)
+    private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
     {
-        if (_showMonthPickerAsOverlayInternal)
+        if (showYearPicker)
         {
             return _yearPickerStartYear == todayYear - 1
                 && _yearPickerEndYear == todayYear + 10
@@ -1069,6 +1089,11 @@ public partial class BitDateRangePicker
         _isMonthPickerOverlayOnTop = !_isMonthPickerOverlayOnTop;
     }
 
+    private void ToggleTimePickerOverlay()
+    {
+        _isTimePickerOverlayOnTop = !_isTimePickerOverlayOnTop;
+    }
+
     private bool CanChangeMonth(bool isNext)
     {
         if (isNext && MaxDate.HasValue)
@@ -1076,7 +1101,7 @@ public partial class BitDateRangePicker
             var MaxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
             var MaxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
 
-            if (MaxDateYear == _displayYear && MaxDateMonth == _currentMonth) return false;
+            if (MaxDateYear == _currentYear && MaxDateMonth == _currentMonth) return false;
         }
 
 
@@ -1085,7 +1110,7 @@ public partial class BitDateRangePicker
             var MinDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
             var MinDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
 
-            if (MinDateYear == _displayYear && MinDateMonth == _currentMonth) return false;
+            if (MinDateYear == _currentYear && MinDateMonth == _currentMonth) return false;
         }
 
         return true;
@@ -1094,8 +1119,8 @@ public partial class BitDateRangePicker
     private bool CanChangeYear(bool isNext)
     {
         return (
-                (isNext && MaxDate.HasValue && Culture.Calendar.GetYear(MaxDate.Value.DateTime) == _displayYear) ||
-                (isNext is false && MinDate.HasValue && Culture.Calendar.GetYear(MinDate.Value.DateTime) == _displayYear)
+                (isNext && MaxDate.HasValue && Culture.Calendar.GetYear(MaxDate.Value.DateTime) == _currentYear) ||
+                (isNext is false && MinDate.HasValue && Culture.Calendar.GetYear(MinDate.Value.DateTime) == _currentYear)
                ) is false;
     }
 
@@ -1118,9 +1143,9 @@ public partial class BitDateRangePicker
             var MaxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
             var MaxDateDay = Culture.Calendar.GetDayOfMonth(MaxDate.Value.DateTime);
 
-            if (_displayYear > MaxDateYear ||
-               (_displayYear == MaxDateYear && month > MaxDateMonth) ||
-               (_displayYear == MaxDateYear && month == MaxDateMonth && day > MaxDateDay)) return true;
+            if (_currentYear > MaxDateYear ||
+               (_currentYear == MaxDateYear && month > MaxDateMonth) ||
+               (_currentYear == MaxDateYear && month == MaxDateMonth && day > MaxDateDay)) return true;
         }
 
         if (MinDate.HasValue)
@@ -1128,9 +1153,9 @@ public partial class BitDateRangePicker
             var MinDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
             var MinDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
             var MinDateDay = Culture.Calendar.GetDayOfMonth(MinDate.Value.DateTime);
-            if (_displayYear < MinDateYear ||
-               (_displayYear == MinDateYear && month < MinDateMonth) ||
-               (_displayYear == MinDateYear && month == MinDateMonth && day < MinDateDay)) return true;
+            if (_currentYear < MinDateYear ||
+               (_currentYear == MinDateYear && month < MinDateMonth) ||
+               (_currentYear == MinDateYear && month == MinDateMonth && day < MinDateDay)) return true;
         }
 
         return false;
@@ -1143,7 +1168,7 @@ public partial class BitDateRangePicker
             var MaxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
             var MaxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
 
-            if (_displayYear > MaxDateYear || (_displayYear == MaxDateYear && month > MaxDateMonth)) return true;
+            if (_currentYear > MaxDateYear || (_currentYear == MaxDateYear && month > MaxDateMonth)) return true;
         }
 
         if (MinDate.HasValue)
@@ -1151,7 +1176,7 @@ public partial class BitDateRangePicker
             var MinDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
             var MinDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
 
-            if (_displayYear < MinDateYear || (_displayYear == MinDateYear && month < MinDateMonth)) return true;
+            if (_currentYear < MinDateYear || (_currentYear == MinDateYear && month < MinDateMonth)) return true;
         }
 
         return false;
@@ -1282,7 +1307,7 @@ public partial class BitDateRangePicker
     private string GetMonthCellCssClass(int monthIndex, int todayYear, int todayMonth)
     {
         var className = new StringBuilder();
-        if (HighlightCurrentMonth && todayMonth == monthIndex && todayYear == _displayYear)
+        if (HighlightCurrentMonth && todayMonth == monthIndex && todayYear == _currentYear)
         {
             className.Append(" bit-dtrp-pcm");
         }
@@ -1358,46 +1383,175 @@ public partial class BitDateRangePicker
         return new DateTimeOffset(Culture.Calendar.ToDateTime(year, month, day, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
     }
 
-    private async Task HandleOnStartTimeHourFocus()
+    private async Task HandleOnHourInputFocus(bool isStartTime)
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(_inputStartTimeHourRef);
+        await _js.SelectText(isStartTime ? _startTimeHourInputRef : _endTimeHourInputRef);
     }
 
-    private async Task HandleOnStartTimeMinuteFocus()
+    private async Task HandleOnMinuteInputFocus(bool isStartTime)
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(_inputStartTimeMinuteRef);
+        await _js.SelectText(isStartTime ? _startTimeMinuteInputRef : _endTimeMinuteInputRef);
     }
 
-    private async Task HandleOnEndTimeHourFocus()
+    private void HandleOnAmClick(bool isStartTime)
     {
-        if (IsEnabled is false || ShowTimePicker is false) return;
-
-        await _js.SelectText(_inputEndTimeHourRef);
+        if (isStartTime)
+        {
+            _startTimeHour %= 12;  // "12:-- am" is "00:--" in 24h
+        }
+        else
+        {
+            _endTimeHour %= 12;  // "12:-- am" is "00:--" in 24h
+        }
+        UpdateTime();
     }
 
-    private async Task HandleOnEndTimeMinuteFocus()
+    private void HandleOnPmClick(bool isStartTime)
     {
-        if (IsEnabled is false || ShowTimePicker is false) return;
+        if (isStartTime)
+        {
+            if (_startTimeHour <= 12) // "12:-- pm" is "12:--" in 24h
+            {
+                _startTimeHour += 12;
+            }
 
-        await _js.SelectText(_inputEndTimeMinuteRef);
+            _startTimeHour %= 24;
+        }
+        else
+        {
+            if (_endTimeHour <= 12) // "12:-- pm" is "12:--" in 24h
+            {
+                _endTimeHour += 12;
+            }
+
+            _endTimeHour %= 24;
+        }
+
+        UpdateTime();
     }
 
-    private void ToggleStartTimeAmPm()
+    private bool? IsAm(int hour)
+    {
+        if (CurrentValue is null) return null;
+
+        return hour >= 0 && hour < 12; // am is 00:00 to 11:59
+    }
+
+    private async Task HandleOnPointerDown(bool isNext, bool isHour, bool isStartTime)
     {
         if (IsEnabled is false) return;
 
-        _startTimeHourView = _startTimeHour + (_startTimeHour >= 12 ? -12 : 12);
+        _isPointerDown = true;
+
+        await ChangeTime(isNext, isHour, isStartTime, INITIAL_STEP_DELAY);
     }
 
-    private void ToggleEndTimeAmPm()
+    private async Task ChangeTime(bool isNext, bool isHour, bool isStartTime, int stepDelay)
     {
-        if (IsEnabled is false) return;
+        if (_isPointerDown is false) return;
 
-        _endTimeHourView = _endTimeHour + (_endTimeHour >= 12 ? -12 : 12);
+        if (isHour)
+        {
+            ChangeHour(isNext, isStartTime);
+        }
+        else
+        {
+            ChangeMinute(isNext, isStartTime);
+        }
+        StateHasChanged();
+
+        await Task.Delay(stepDelay);
+
+        await ChangeTime(isNext, isHour, isStartTime, STEP_DELAY);
+    }
+
+    private void HandleOnPointerUpOrOut()
+    {
+        _isPointerDown = false;
+    }
+
+    private void ChangeHour(bool isNext, bool isStartTime)
+    {
+        if (isStartTime)
+        {
+            ChangeHour(ref _startTimeHour);
+        }
+        else
+        {
+            ChangeHour(ref _endTimeHour);
+        }
+
+        void ChangeHour(ref int hour)
+        {
+            if (isNext)
+            {
+                if (hour < 23)
+                {
+                    hour++;
+                }
+                else
+                {
+                    hour = 0;
+                }
+            }
+            else
+            {
+                if (hour > 0)
+                {
+                    hour--;
+                }
+                else
+                {
+                    hour = 23;
+                }
+            }
+        }
+
+        UpdateTime();
+    }
+
+    private void ChangeMinute(bool isNext, bool isStartTime)
+    {
+        if (isStartTime)
+        {
+            ChangeMinute(ref _startTimeMinute);
+        }
+        else
+        {
+            ChangeMinute(ref _endTimeMinute);
+        }
+
+        void ChangeMinute(ref int minute)
+        {
+            if (isNext)
+            {
+                if (minute < 59)
+                {
+                    minute++;
+                }
+                else
+                {
+                    minute = 0;
+                }
+            }
+            else
+            {
+                if (minute > 0)
+                {
+                    minute--;
+                }
+                else
+                {
+                    minute = 59;
+                }
+            }
+        }
+
+        UpdateTime();
     }
 
     private async Task CloseCallout()
@@ -1409,6 +1563,44 @@ public partial class BitDateRangePicker
         await ToggleCallout();
 
         StateHasChanged();
+    }
+
+    private bool ShowDayPicker()
+    {
+        if (ShowTimePicker)
+        {
+            if (ShowTimePickerAsOverlay)
+            {
+                return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false);
+            }
+            else
+            {
+                return (_showMonthPickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false);
+            }
+        }
+        else
+        {
+            return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false);
+        }
+    }
+
+    private bool ShowMonthPicker()
+    {
+        if (ShowTimePicker)
+        {
+            if (ShowTimePickerAsOverlay)
+            {
+                return (_showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop)) && _isTimePickerOverlayOnTop is false;
+            }
+            else
+            {
+                return (_showMonthPickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop && _isTimePickerOverlayOnTop is false);
+            }
+        }
+        else
+        {
+            return _showMonthPickerAsOverlayInternal is false || (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop);
+        }
     }
 
     [JSInvokable("CloseCallout")]
@@ -1427,6 +1619,8 @@ public partial class BitDateRangePicker
 
         _isMonthPickerOverlayOnTop = false;
         _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+        _isTimePickerOverlayOnTop = false;
+        _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
 
         return await _js.ToggleCallout(_dotnetObj,
                                        _dateRangePickerId,

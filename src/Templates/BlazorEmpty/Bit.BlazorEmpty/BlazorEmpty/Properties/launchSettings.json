@@ -13,7 +13,6 @@
       }
     },
     "profiles": {
-      //#if (HasHttpProfile)
       "http": {
         "commandName": "Project",
         "dotnetRunMessages": true,
@@ -26,7 +25,6 @@
           "ASPNETCORE_ENVIRONMENT": "Development"
         }
       },
-      //#endif
       //#if (HasHttpsProfile)
       "https": {
         "commandName": "Project",

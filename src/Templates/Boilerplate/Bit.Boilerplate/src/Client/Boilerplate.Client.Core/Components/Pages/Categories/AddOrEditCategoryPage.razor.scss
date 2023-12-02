@@ -1,0 +1,109 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.page-container {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: rem2(37px);
+
+    @include sm {
+        margin-bottom: rem2(29px);
+    }
+}
+
+.loading-contianer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::deep .back-btn {
+    margin-right: rem2(12px);
+}
+
+.page-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: rem2(24px);
+    line-height: rem2(32px);
+
+    @include md {
+        font-weight: 600;
+        font-size: rem2(20px);
+        line-height: rem2(28px);
+    }
+
+    @include sm {
+        font-weight: 600;
+        font-size: rem2(18px);
+        line-height: rem2(24px);
+    }
+}
+
+.form-input-container {
+    width: 100%;
+    margin-bottom: rem2(24px);
+}
+
+.color-container {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+    flex-flow: column wrap;
+    justify-content: flex-start;
+}
+
+.color-btn {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    width: rem2(32px);
+    height: rem2(32px);
+    margin-right: rem2(12px);
+    border-radius: rem2(2px);
+
+    @include sm {
+        width: rem2(28px);
+        height: rem2(28px);
+        margin-right: rem2(8px);
+        margin-bottom: rem2(8px);
+    }
+}
+
+.color-btn--active {
+    background-size: rem2(20px);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('images/icons/checkmark-icon.svg');
+}
+
+.color-square {
+    width: rem2(24px);
+    height: rem2(24px);
+    display: inline-block;
+    margin-right: rem2(8px);
+    border-radius: rem2(2px);
+}
+
+.custom-color-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+::deep .validation-message {
+    color: $bit-color-state-error;
+}

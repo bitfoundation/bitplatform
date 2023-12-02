@@ -4,25 +4,25 @@ namespace Bit.Websites.Platform.Client.Pages;
 
 public partial class ContactUsPage
 {
-    private ContactUsDto _contactUsModel { get; set; } = new();
+    private ContactUsDto contactUsModel { get; set; } = new();
 
-    private bool _isSending { get; set; }
+    private bool isSending { get; set; }
 
     private async Task SendMessage()
     {
-        if (_isSending) return;
+        if (isSending) return;
 
-        _isSending = true;
+        isSending = true;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("ContactUs/SendMessage", _contactUsModel, AppJsonContext.Default.ContactUsDto);
-            _contactUsModel.Email = "";
-            _contactUsModel.Message = "";
+            await HttpClient.PostAsJsonAsync("ContactUs/SendMessage", contactUsModel, AppJsonContext.Default.ContactUsDto);
+            contactUsModel.Email = "";
+            contactUsModel.Message = "";
         }
         finally
         {
-            _isSending = false;
+            isSending = false;
         }
     }
 }

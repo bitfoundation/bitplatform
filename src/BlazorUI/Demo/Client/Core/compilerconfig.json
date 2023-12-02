@@ -114,6 +114,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Badge/BitBadgeDemo.razor.css",
+        "inputFile": "Pages/Components/Badge/BitBadgeDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Breadcrumb/BitBreadcrumbDemo.razor.css",
         "inputFile": "Pages/Components/Breadcrumb/BitBreadcrumbDemo.razor.scss",
         "minify": { "enabled": false },
@@ -338,6 +344,12 @@
     {
         "outputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.css",
         "inputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Pagination/BitPaginationDemo.razor.css",
+        "inputFile": "Pages/Components/Pagination/BitPaginationDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

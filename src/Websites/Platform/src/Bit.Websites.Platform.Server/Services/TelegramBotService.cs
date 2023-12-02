@@ -4,7 +4,7 @@ namespace Bit.Websites.Platform.Server.Services;
 
 public partial class TelegramBotService
 {
-    [AutoInject] private TelegramBotApiClient _telegramBotApiClient = default!;
+    [AutoInject] private TelegramBotApiClient telegramBotApiClient = default!;
 
     public async Task SendContactUsMessage(string email, string message, CancellationToken cancellationToken)
     {
@@ -20,7 +20,7 @@ public partial class TelegramBotService
 
         messsageBuilder.AppendLine($"📜 *Message*: {message.Trim()}");
 
-        await _telegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
+        await telegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
     }
 
     public async Task SendBuyPackageMessage(string packageTitle, string email, string message, CancellationToken cancellationToken)
@@ -37,6 +37,6 @@ public partial class TelegramBotService
             messsageBuilder.AppendLine($"📜 *Message*: {message.Trim()}");
         }
 
-        await _telegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
+        await telegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
     }
 }

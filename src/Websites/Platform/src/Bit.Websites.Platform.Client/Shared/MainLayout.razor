@@ -2,12 +2,12 @@
 
 <Header />
 
-<div class="main @(_isTemplateDocRoute ? null : "main--full-page")">
-    @if (_isTemplateDocRoute)
+<div class="main @(isTemplateDocRoute ? null : "main--full-page")">
+    @if (isTemplateDocRoute)
     {
         <NavMenu />
     }
-    <div class="site-content @(_isTemplateDocRoute ? "docs-content" : "")">
+    <div class="site-content @(isTemplateDocRoute ? "docs-content" : "")">
         <AppErrorBoundary>
             @Body
         </AppErrorBoundary>

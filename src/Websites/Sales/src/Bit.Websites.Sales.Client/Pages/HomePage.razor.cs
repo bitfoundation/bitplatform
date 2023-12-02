@@ -2,5 +2,5 @@
 
 public partial class HomePage
 {
-    private BitCarousel? _carouselRef;
+    private BitCarousel? carouselRef;
 }

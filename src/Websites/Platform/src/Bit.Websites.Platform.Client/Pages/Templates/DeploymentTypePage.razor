@@ -15,14 +15,6 @@
     </BitTypography>
     <br />
 
-    <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Change WebAppDeploymentType</BitTypography>
-        <div class="section-card-txt">
-            To switch to each mode, easily change value of <b>@("<WebAppDeploymentType>")</b> in the <b>src/Directory.build.props</b> file in <b>Solution Items</b> root folder.
-        </div>
-        <div class="code-box">@("<WebAppDeploymentType>Spa</WebAppDeploymentType>")</div>
-    </section>
-
     <br />
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
         Supported deployment types are:
@@ -30,10 +22,9 @@
     <br />
 
     <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Spa</BitTypography>
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Spa (Default configuration)</BitTypography>
         <div class="section-card-txt">
             It's referring to a Typical <a href="https://en.wikipedia.org/wiki/Single-page_application" title="PWA" rel="nofollow">Single Page Application</a> (SPA) without pre-rendering.
-            <br />
             <br />
             <b>Note</b>: We'd recommend using next options for production and use Spa only for development / debugging.
         </div>
@@ -50,8 +41,11 @@
             <br />
             It's referring to a Typical Spa with pre-rendering.
             <br />
-            <br />
             <b>Demo</b>: <a href="https://bitplatform.dev" target="_blank">bitplatform.dev</a>
+            <br />
+            In order to enable prerendering, simply set <i>PrerenderEnabled</i> in Core/Services/AppRenderMode.cs to <i>true</i>
+            <br />
+            <div class="code-box">public static readonly bool PrerenderEnabled = true;</div>
         </div>
     </section>
 
@@ -62,8 +56,11 @@
             (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window,
             launching from the host's operating system, receiving push notifications, and automatically updating in the background.
             <br />
-            <br />
             <b>Demo</b>: <a href="https://adminpanel.bitplatform.dev" target="_blank">adminpanel.bitplatform.dev</a>
+            <br />
+            In order to enable pwa, simply set <i>PwaEnabled</i> in Directory.Build.props to <i>true</i>
+            <br />
+            <div class="code-box">&lt;PwaEnabled&gt;true&lt;/PwaEnabled&gt;</div>
         </div>
     </section>
 
@@ -78,8 +75,9 @@
             <br />
             It's referring to a Typical Pwa with pre-rendering.
             <br />
-            <br />
             <b>Demo</b>: <a href="https://todo.bitplatform.dev" target="_blank">todo.bitplatform.dev</a>
+            <br />
+            In order to enable pwa pre-render, simply enable both pwa and pre-render.
         </div>
     </section>
 
@@ -87,8 +85,10 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>PrerenderedOnly</BitTypography>
         <div class="section-card-txt">
             Statically renders the component with the specified parameters. It's recommended when the target is building a static page like a landing page.
+            <br />
+            In order to enable pre-render only, simply remove <i>@("@")rendermode=renderMode</i> from Server/Components/App.razor file.
         </div>
     </section>
 </div>
 
-<NavigationButtons Prev="Hosting models" PrevUrl="/templates/hosting-models" Next="Cache mechanism" NextUrl="/templates/cache-mechanism" />
+<NavigationButtons Prev="Blazor app models" PrevUrl="/templates/app-models" Next="Cache mechanism" NextUrl="/templates/cache-mechanism" />

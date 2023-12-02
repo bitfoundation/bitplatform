@@ -74,6 +74,7 @@ public partial class NavMenu : IDisposable
             {
                 new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
                 new() { Text = "Nav", Url = "/components/nav", Description = "Tree" },
+                new() { Text = "Pagination", Url = "/components/pagination" },
                 new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab" },
             }
         },
@@ -82,6 +83,7 @@ public partial class NavMenu : IDisposable
             Text = "Notification & Engagement",
             ChildItems = new()
             {
+                new() { Text = "Badge", Url = "/components/badge" },
                 new() { Text = "MessageBar", Url = "/components/messagebar", AdditionalUrls = new string[] { "/components/message-bar" } },
                 new() { Text = "Persona", Url = "/components/persona", Description = "Avatar" },
                 new() { Text = "SnackBar", Url = "/components/snackbar", Description = "Toast" },

@@ -2,9 +2,6 @@ name: Boilerplate CI
 
 # https://bitplatform.dev/templates/dev-ops
 
-env:
-  WEB_APP_DEPLOYMENT_TYPE: 'Spa'
-
 on:
   workflow_dispatch:
   push:
@@ -12,8 +9,8 @@ on:
 
 jobs:
 
-  build-blazor-server:
-    name: build blazor server
+  build_blazor_server:
+    name: build blazor
     runs-on: ubuntu-22.04
 
     steps:
@@ -31,127 +28,4 @@ jobs:
         node-version: 18
       
     - name: Build
-      run: dotnet build src/Client/Web/Boilerplate.Client.Web.csproj -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
-
-  build-blazor-hybrid-android:
-    name: build blazor hybrid (android)
-    runs-on: ubuntu-22.04
-
-    steps:
-    
-    - name: Checkout source code
-      uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: global.json
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Install maui
-      run: cd src && dotnet workload install maui-android
-
-    - name: Build
-      run: dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:RunAOTCompilation=false -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-android
-
-  build-blazor-hybrid-windows:
-    name: build blazor hybrid (windows)
-    runs-on: windows-2022
-
-    steps:
-    
-    - name: Checkout source code
-      uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: global.json
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Install maui
-      run: cd src && dotnet workload install maui
-
-    - name: Build
-      run: dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-windows10.0.19041.0
-
-  build-blazor-hybrid-iOS:
-    name: build blazor hybrid (iOS)
-    runs-on: macos-13
-
-    steps:
-    
-    - name: Checkout source code
-      uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: global.json
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Install maui
-      run: cd src && dotnet workload install maui
-
-    - name: Build
-      run: dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-ios
-
-  build-blazor-hybrid-maccatalyst:
-    name: build blazor hybrid (maccatalyst)
-    runs-on: macos-13
-
-    steps:
-    
-    - name: Checkout source code
-      uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: global.json
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Install maui
-      run: cd src && dotnet workload install maui
-      
-    - name: Build
-      run: dotnet build src/Client/App/Boilerplate.Client.App.csproj -p:BlazorMode=BlazorHybrid -p:Configuration=Release -f net8.0-maccatalyst
-
-  build-blazor-api-wasm:
-    name: build blazor api + web assembly
-    runs-on: ubuntu-22.04
-
-    steps:
-    
-    - name: Checkout source code
-      uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: global.json
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Switch to blazor wasm
-      run:  sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/Client/Web/Boilerplate.Client.Web.csproj
-
-    - name: Install wasm
-      run: cd src && dotnet workload install wasm-tools wasm-experimental
-      
-    - name: Build
-      run: dotnet build src/Server/Api/Boilerplate.Server.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:Configuration=Release -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
+      run: dotnet build Boilerplate.sln -c Release-c Release-c Release-c Release-c Release-c Release

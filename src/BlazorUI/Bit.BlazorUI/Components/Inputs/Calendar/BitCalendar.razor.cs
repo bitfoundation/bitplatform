@@ -8,35 +8,71 @@ public partial class BitCalendar
 {
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
-
+    private const int STEP_DELAY = 75;
+    private const int INITIAL_STEP_DELAY = 400;
 
 
     private CultureInfo culture = CultureInfo.CurrentUICulture;
-    private bool isMonthPickerVisible = true;
+    private bool showMonthPicker = true;
+    private bool showTimePicker;
 
-    private int timeHour;
-    private int _timeHour
+    private int _hour;
+    private int _hourView
     {
-        get => timeHour;
+        get
+        {
+            if (TimeFormat == BitTimeFormat.TwelveHours)
+            {
+                if (_hour > 12)
+                {
+                    return _hour - 12;
+                }
+
+                if (_hour == 0)
+                {
+                    return 12;
+                }
+            }
+
+            return _hour;
+        }
         set
         {
-            timeHour = value > 23 ? 23
-                : value < 0 ? 0
-                : value;
+            if (value > 23)
+            {
+                _hour = 23;
+            }
+            else if (value < 0)
+            {
+                _hour = 0;
+            }
+            else
+            {
+                _hour = value;
+            }
 
             UpdateTime();
         }
     }
 
-    private int timeMinute;
-    private int _timeMinute
+    private int _minute;
+    private int _minuteView
     {
-        get => timeMinute;
+        get => _minute;
         set
         {
-            timeMinute = value > 59 ? 59
-                : value < 0 ? 0
-                : value;
+            if (value > 59)
+            {
+                _minute = 59;
+            }
+            else if (value < 0)
+            {
+                _minute = 0;
+            }
+            else
+            {
+                _minute = value;
+            }
 
             UpdateTime();
         }
@@ -46,21 +82,20 @@ public partial class BitCalendar
 
     private int _currentDay;
     private int _currentYear;
-    private int _displayYear;
-    private int _yearPickerEndYear;
     private int _currentMonth;
-    private int _yearPickerStartYear;
+    private bool _isPointerDown;
     private bool _showYearPicker;
+    private bool _showTimePicker;
     private bool _showMonthPicker;
     private int? _selectedDateWeek;
+    private int _yearPickerEndYear;
+    private int _yearPickerStartYear;
     private int? _selectedDateDayOfWeek;
     private string? _activeDescendantId;
     private string _monthTitle = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
     private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
-
-
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -133,6 +168,21 @@ public partial class BitCalendar
     [Parameter] public string GoToTodayTitle { get; set; } = "Go to today";
 
     /// <summary>
+    /// The title of the GoToNow button (tooltip).
+    /// </summary>
+    [Parameter] public string GoToNowTitle { get; set; } = "Go to now";
+
+    /// <summary>
+    /// The title of the ShowTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string ShowTimePickerTitle { get; set; } = "Show time picker";
+
+    /// <summary>
+    /// The title of the HideTimePicker button (tooltip).
+    /// </summary>
+    [Parameter] public string HideTimePickerTitle { get; set; } = "Hide time picker";
+
+    /// <summary>
     /// Whether the month picker should highlight the current month.
     /// </summary>
     [Parameter] public bool HighlightCurrentMonth { get; set; }
@@ -151,17 +201,14 @@ public partial class BitCalendar
     /// Whether the month picker is shown or hidden.
     /// </summary>
     [Parameter]
-    public bool IsMonthPickerVisible
+    public bool ShowMonthPicker
     {
-        get => isMonthPickerVisible;
+        get => showMonthPicker;
         set
         {
-            isMonthPickerVisible = value;
+            showMonthPicker = value;
 
-            if (value is false)
-            {
-                _showMonthPicker = false;
-            }
+            _showMonthPicker = value;
         }
     }
 
@@ -186,9 +233,9 @@ public partial class BitCalendar
     [Parameter] public string MonthPickerToggleTitle { get; set; } = "{0}, change month";
 
     /// <summary>
-    /// Used to set the month picker position. 
+    /// Show month picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public BitCalendarMonthPickerPosition MonthPickerPosition { get; set; } = BitCalendarMonthPickerPosition.Besides;
+    [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
     /// Callback for when the user selects a date.
@@ -206,9 +253,28 @@ public partial class BitCalendar
     [Parameter] public bool ShowGoToToday { get; set; } = true;
 
     /// <summary>
+    /// Whether the GoToNow button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowGoToNow { get; set; } = true;
+
+    /// <summary>
     /// Whether the time picker should be shown or not.
     /// </summary>
-    [Parameter] public bool ShowTimePicker { get; set; }
+    [Parameter]
+    public bool ShowTimePicker
+    {
+        get => showTimePicker;
+        set
+        {
+            showTimePicker = value;
+            _showTimePicker = value;
+        }
+    }
+
+    /// <summary>
+    /// The time format of the time-picker, 24H or 12H.
+    /// </summary>
+    [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
     /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
@@ -240,6 +306,11 @@ public partial class BitCalendar
     /// </summary>
     [Parameter] public string YearRangePickerToggleTitle { get; set; } = "{0} - {1}, change month";
 
+    /// <summary>
+    /// Show month picker on top of date picker when visible.
+    /// </summary>
+    [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
+
 
     protected override string RootElementClass { get; } = "bit-cal";
 
@@ -259,6 +330,9 @@ public partial class BitCalendar
     {
         _activeDescendantId = $"BitCalendar-{UniqueId}-active-descendant";
 
+        _showTimePicker = showTimePicker && ShowTimePickerAsOverlay is false;
+        _showMonthPicker = _showTimePicker is false && showMonthPicker && ShowMonthPickerAsOverlay is false;
+
         base.OnInitialized();
     }
 
@@ -276,8 +350,8 @@ public partial class BitCalendar
             dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now);
         }
 
-        timeHour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
-        timeMinute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
+        _hour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
+        _minute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
 
         GenerateCalendarData(dateTime.DateTime);
 
@@ -330,10 +404,9 @@ public partial class BitCalendar
             _currentYear--;
         }
 
-        _displayYear = _currentYear;
         _currentMonth = selectedMonth;
 
-        var currentDateTime = Culture.Calendar.ToDateTime(_currentYear, _currentMonth, _currentDay, _timeHour, _timeMinute, 0, 0);
+        var currentDateTime = Culture.Calendar.ToDateTime(_currentYear, _currentMonth, _currentDay, _hour, _minute, 0, 0);
         CurrentValue = new DateTimeOffset(currentDateTime, DateTimeOffset.Now.Offset);
 
         GenerateMonthData(_currentYear, _currentMonth);
@@ -347,11 +420,10 @@ public partial class BitCalendar
         if (IsMonthOutOfMinAndMaxDate(month)) return;
 
         _currentMonth = month;
-        _currentYear = _displayYear;
 
         GenerateMonthData(_currentYear, _currentMonth);
 
-        if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay)
+        if (ShowMonthPickerAsOverlay || (ShowTimePicker && ShowTimePickerAsOverlay is false))
         {
             ToggleMonthPickerOverlay();
         }
@@ -362,7 +434,7 @@ public partial class BitCalendar
         if (IsEnabled is false) return;
         if (IsYearOutOfMinAndMaxDate(year)) return;
 
-        _currentYear = _displayYear = year;
+        _currentYear = year;
 
         ChangeYearRanges(_currentYear - 1);
 
@@ -408,8 +480,6 @@ public partial class BitCalendar
             }
         }
 
-        _displayYear = _currentYear;
-
         GenerateMonthData(_currentYear, _currentMonth);
     }
 
@@ -418,7 +488,7 @@ public partial class BitCalendar
         if (IsEnabled is false) return;
         if (CanChangeYear(isNext) is false) return;
 
-        _displayYear += isNext ? +1 : -1;
+        _currentYear += isNext ? +1 : -1;
 
         GenerateMonthData(_currentYear, _currentMonth);
     }
@@ -440,12 +510,21 @@ public partial class BitCalendar
         GenerateCalendarData(DateTime.Now);
     }
 
+    private async Task HandleGoToNow()
+    {
+        if (IsEnabled is false) return;
+
+        _hour = DateTime.Now.Hour;
+        _minute = DateTime.Now.Minute;
+
+        UpdateTime();
+    }
+
     private void GenerateCalendarData(DateTime dateTime)
     {
         _currentMonth = Culture.Calendar.GetMonth(dateTime);
         _currentYear = Culture.Calendar.GetYear(dateTime);
 
-        _displayYear = _currentYear;
         _yearPickerStartYear = _currentYear - 1;
         _yearPickerEndYear = _currentYear + 10;
 
@@ -585,9 +664,9 @@ public partial class BitCalendar
         return month;
     }
 
-    private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth)
+    private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
     {
-        if (MonthPickerPosition == BitCalendarMonthPickerPosition.Overlay)
+        if (showYearPicker)
         {
             return _yearPickerStartYear == todayYear - 1
                 && _yearPickerEndYear == todayYear + 10
@@ -641,6 +720,11 @@ public partial class BitCalendar
         _showMonthPicker = !_showMonthPicker;
     }
 
+    private void ToggleTimePickerOverlay()
+    {
+        _showTimePicker = !_showTimePicker;
+    }
+
     private bool CanChangeMonth(bool isNext)
     {
         if (isNext && MaxDate.HasValue)
@@ -648,7 +732,7 @@ public partial class BitCalendar
             var maxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
             var maxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
 
-            if (maxDateYear == _displayYear && maxDateMonth == _currentMonth) return false;
+            if (maxDateYear == _currentYear && maxDateMonth == _currentMonth) return false;
         }
 
 
@@ -657,7 +741,7 @@ public partial class BitCalendar
             var minDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
             var minDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
 
-            if (minDateYear == _displayYear && minDateMonth == _currentMonth) return false;
+            if (minDateYear == _currentYear && minDateMonth == _currentMonth) return false;
         }
 
         return true;
@@ -666,8 +750,8 @@ public partial class BitCalendar
     private bool CanChangeYear(bool isNext)
     {
         return (
-                (isNext && MaxDate.HasValue && Culture.Calendar.GetYear(MaxDate.Value.DateTime) == _displayYear) ||
-                (isNext is false && MinDate.HasValue && Culture.Calendar.GetYear(MinDate.Value.DateTime) == _displayYear)
+                (isNext && MaxDate.HasValue && Culture.Calendar.GetYear(MaxDate.Value.DateTime) == _currentYear) ||
+                (isNext is false && MinDate.HasValue && Culture.Calendar.GetYear(MinDate.Value.DateTime) == _currentYear)
                ) is false;
     }
 
@@ -690,9 +774,9 @@ public partial class BitCalendar
             var maxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
             var maxDateDay = Culture.Calendar.GetDayOfMonth(MaxDate.Value.DateTime);
 
-            if (_displayYear > maxDateYear ||
-                (_displayYear == maxDateYear && month > maxDateMonth) ||
-                (_displayYear == maxDateYear && month == maxDateMonth && day > maxDateDay)) return true;
+            if (_currentYear > maxDateYear ||
+                (_currentYear == maxDateYear && month > maxDateMonth) ||
+                (_currentYear == maxDateYear && month == maxDateMonth && day > maxDateDay)) return true;
         }
 
         if (MinDate.HasValue)
@@ -701,9 +785,9 @@ public partial class BitCalendar
             var minDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
             var minDateDay = Culture.Calendar.GetDayOfMonth(MinDate.Value.DateTime);
 
-            if (_displayYear < minDateYear ||
-                (_displayYear == minDateYear && month < minDateMonth) ||
-                (_displayYear == minDateYear && month == minDateMonth && day < minDateDay)) return true;
+            if (_currentYear < minDateYear ||
+                (_currentYear == minDateYear && month < minDateMonth) ||
+                (_currentYear == minDateYear && month == minDateMonth && day < minDateDay)) return true;
         }
 
         return false;
@@ -716,7 +800,7 @@ public partial class BitCalendar
             var maxDateYear = Culture.Calendar.GetYear(MaxDate.Value.DateTime);
             var maxDateMonth = Culture.Calendar.GetMonth(MaxDate.Value.DateTime);
 
-            if (_displayYear > maxDateYear || (_displayYear == maxDateYear && month > maxDateMonth)) return true;
+            if (_currentYear > maxDateYear || (_currentYear == maxDateYear && month > maxDateMonth)) return true;
         }
 
         if (MinDate.HasValue)
@@ -724,7 +808,7 @@ public partial class BitCalendar
             var minDateYear = Culture.Calendar.GetYear(MinDate.Value.DateTime);
             var minDateMonth = Culture.Calendar.GetMonth(MinDate.Value.DateTime);
 
-            if (_displayYear < minDateYear || (_displayYear == minDateYear && month < minDateMonth)) return true;
+            if (_currentYear < minDateYear || (_currentYear == minDateYear && month < minDateMonth)) return true;
         }
 
         return false;
@@ -798,7 +882,7 @@ public partial class BitCalendar
     private string GetMonthCellCssClass(int monthIndex, int todayYear, int todayMonth)
     {
         var className = new StringBuilder();
-        if (HighlightCurrentMonth && todayMonth == monthIndex && todayYear == _displayYear)
+        if (HighlightCurrentMonth && todayMonth == monthIndex && todayYear == _currentYear)
         {
             className.Append(" bit-cal-pcm");
         }
@@ -842,7 +926,7 @@ public partial class BitCalendar
         var currentValueMonth = Culture.Calendar.GetMonth(CurrentValue.Value.LocalDateTime);
         var currentValueDay = Culture.Calendar.GetDayOfMonth(CurrentValue.Value.LocalDateTime);
 
-        CurrentValue = new DateTimeOffset(Culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _timeHour, _timeMinute, 0, 0), DateTimeOffset.Now.Offset);
+        CurrentValue = new DateTimeOffset(Culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0), DateTimeOffset.Now.Offset);
     }
 
     private async Task HandleOnTimeHourFocus()
@@ -857,5 +941,161 @@ public partial class BitCalendar
         if (IsEnabled is false || ShowTimePicker is false) return;
 
         await _js.SelectText(_inputTimeMinuteRef);
+    }
+
+    private void ToggleAmPmTime()
+    {
+        if (IsEnabled is false) return;
+
+        _hourView = _hour + (_hour >= 12 ? -12 : 12);
+    }
+
+    private void HandleOnAmClick()
+    {
+        _hour %= 12;  // "12:-- am" is "00:--" in 24h
+        UpdateTime();
+    }
+
+    private void HandleOnPmClick()
+    {
+        if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
+        {
+            _hour += 12;
+        }
+
+        _hour %= 24;
+        UpdateTime();
+    }
+
+    private bool? IsAm()
+    {
+        if (CurrentValue.HasValue is false) return null;
+
+        return _hour >= 0 && _hour < 12; // am is 00:00 to 11:59
+    }
+
+    private async Task HandleOnPointerDown(bool isNext, bool isHour)
+    {
+        if (IsEnabled is false) return;
+
+        _isPointerDown = true;
+
+        await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
+    }
+
+    private async Task ChangeTime(bool isNext, bool isHour, int stepDelay)
+    {
+        if (_isPointerDown is false) return;
+
+        if (isHour)
+        {
+            ChangeHour(isNext);
+        }
+        else
+        {
+            ChangeMinute(isNext);
+        }
+        StateHasChanged();
+
+        await Task.Delay(stepDelay);
+
+        await ChangeTime(isNext, isHour, STEP_DELAY);
+    }
+
+    private void HandleOnPointerUpOrOut()
+    {
+        _isPointerDown = false;
+    }
+
+    private void ChangeHour(bool isNext)
+    {
+        if (isNext)
+        {
+            if (_hour < 23)
+            {
+                _hour++;
+            }
+            else
+            {
+                _hour = 0;
+            }
+        }
+        else
+        {
+            if (_hour > 0)
+            {
+                _hour--;
+            }
+            else
+            {
+                _hour = 23;
+            }
+        }
+
+        UpdateTime();
+    }
+
+    private void ChangeMinute(bool isNext)
+    {
+        if (isNext)
+        {
+            if (_minute < 59)
+            {
+                _minute++;
+            }
+            else
+            {
+                _minute = 0;
+            }
+        }
+        else
+        {
+            if (_minute > 0)
+            {
+                _minute--;
+            }
+            else
+            {
+                _minute = 59;
+            }
+        }
+
+        UpdateTime();
+    }
+
+    public bool DayPickerIsVisible()
+    {
+        if (_showMonthPicker is false && _showTimePicker is false) return true;
+
+        if (_showMonthPicker is false)
+        {
+            if (_showTimePicker)
+            {
+                return ShowTimePickerAsOverlay is false;
+            }
+        }
+        else
+        {
+            if (_showTimePicker)
+            {
+                return ShowMonthPickerAsOverlay is false && ShowTimePickerAsOverlay;
+            }
+            else
+            {
+                return ShowMonthPickerAsOverlay is false;
+            }
+        }
+
+        return false;
+    }
+
+    private bool MonthPickerIsVisible()
+    {
+        if (_showMonthPicker is false) return false;
+
+        return (ShowMonthPickerAsOverlay is false && ShowTimePickerAsOverlay is false) ||
+               (_showTimePicker && ShowMonthPickerAsOverlay && ShowTimePickerAsOverlay is false) ||
+               (_showTimePicker is false && (ShowMonthPickerAsOverlay is false && ShowTimePickerAsOverlay is false) is false);
+
     }
 }

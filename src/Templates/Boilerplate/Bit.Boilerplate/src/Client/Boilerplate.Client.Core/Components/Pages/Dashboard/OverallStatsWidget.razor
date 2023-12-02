@@ -1,0 +1,56 @@
+﻿@inherits AppComponentBase
+
+<div class="card-container">
+    <div class="card">
+        <div class="card-num @(isLoading ? "no-border" : null)">
+            @if (isLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            }
+            else
+            {
+                @data.Last30DaysProductCount
+            }
+        </div>
+        <div class="card-title">@Localizer[nameof(AppStrings.Last30DaysProductCount)]</div>
+    </div>
+    <div class="card">
+        <div class="card-num @(isLoading ? "no-border" : null)">
+            @if (isLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            }
+            else
+            {
+                @data.TotalProducts
+            }
+        </div>
+        <div class="card-title">@Localizer[nameof(AppStrings.TotalProducts)]</div>
+    </div>
+    <div class="card">
+        <div class="card-num @(isLoading ? "no-border" : null)">
+            @if (isLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            }
+            else
+            {
+                @data.TotalCategories
+            }
+        </div>
+        <div class="card-title">@Localizer[nameof(AppStrings.Last30DaysCategoryCount)]</div>
+    </div>
+    <div class="card">
+        <div class="card-num @(isLoading ? "no-border" : null)">
+            @if (isLoading)
+            {
+                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            }
+            else
+            {
+                @data.TotalCategories
+            }
+        </div>
+        <div class="card-title">@Localizer[nameof(AppStrings.TotalCategories)]</div>
+    </div>
+</div>

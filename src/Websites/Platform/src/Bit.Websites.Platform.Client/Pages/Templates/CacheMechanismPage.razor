@@ -36,8 +36,8 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Spa, SapPrerender and PrerenderOnly</BitTypography>
         <div class="section-card-txt">
-            In Spa mode, if a js, css, or dll file gets changed, the new version will be automatically requested by the browser through
-            the magic of the <b>asp-append-version</b> in <b>_Layout.cshtml</b> file. But for other file types such as fonts and images,
+            In Spa mode, if a js, css, or wasm file gets changed, the new version will be automatically requested by the browser if you use &lt;<b>S</b>cript&gt; and &lt;<b>L</b>ink&gt; instead of &lt;<b>s</b>cript&gt; and &lt;<b>l</b>ink&gt;,
+            but for other file types such as fonts and images,
             the file name must also be changed to ensure that the client is updated.
         </div>
     </section>

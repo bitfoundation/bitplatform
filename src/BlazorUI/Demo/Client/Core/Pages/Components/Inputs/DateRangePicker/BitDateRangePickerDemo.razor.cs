@@ -141,6 +141,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "HideTimePickerTitle",
+            Type = "string",
+            DefaultValue = "Hide time picker",
+            Description = "The title of the HideTimePicker button (tooltip).",
+        },
+        new()
+        {
             Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -297,7 +304,7 @@ public partial class BitDateRangePickerDemo
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible.",
+            Description = "Show month picker on top of date range picker when visible.",
         },
         new()
         {
@@ -305,6 +312,20 @@ public partial class BitDateRangePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether or not render the time-picker.",
+        },
+        new()
+        {
+            Name = "ShowTimePickerAsOverlay",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Show month picker on top of date range picker when visible.",
+        },
+        new()
+        {
+            Name = "ShowTimePickerTitle",
+            Type = "string",
+            DefaultValue = "Show time picker",
+            Description = "The title of the ShowTimePicker button (tooltip).",
         },
         new()
         {
@@ -1024,6 +1045,14 @@ public partial class BitDateRangePickerDemo
         border-end-end-radius: 0.5rem;
         border-start-end-radius: 0.5rem;
     }
+
+    .custom-increase-btn {
+        background-color: #48900f;
+    }
+
+    .custom-decrease-btn {
+        background-color: #c70505;
+    }
 </style>
 
 
@@ -1036,19 +1065,28 @@ public partial class BitDateRangePickerDemo
                                       TodayDayButton = ""background-color: red;"",
                                       SelectedDayButtons = ""background-color: purple;"",
                                       YearPickerToggleButton = ""color: blue;"" })"" />
-<BitDateRangePicker Classes=""@(new() { Root = ""custom-root"",
-                                       Callout = ""custom-callout"",
-                                       DayPickerWrapper = ""custom-day-picker"",
-                                       DayButton = ""custom-day"",
-                                       TodayDayButton = ""custom-today-day"",
-                                       StartAndEndSelectionDays = ""custom-start-end"",
-                                       SelectedDayButtons = ""custom-selected-days"",
-                                       PrevMonthNavButton = ""custom-prev-month"",
-                                       NextMonthNavButton = ""custom-next-month"",
-                                       DayPickerMonth = ""custom-day-month"",
-                                       DayPickerHeader = ""custom-day-header"",
-                                       WeekNumbersHeader = ""custom-week-header"",
-                                       YearMonthPickerWrapper = ""custom-year-picker""})"" />";
+BitDateRangePicker ShowTimePicker=""true""
+                   Classes=""@(new() { Root = ""custom-root"",
+                                      Callout = ""custom-callout"",
+                                      DayPickerWrapper = ""custom-day-picker"",
+                                      DayButton = ""custom-day"",
+                                      TodayDayButton = ""custom-today-day"",
+                                      StartAndEndSelectionDays = ""custom-start-end"",
+                                      SelectedDayButtons = ""custom-selected-days"",
+                                      PrevMonthNavButton = ""custom-prev-month"",
+                                      NextMonthNavButton = ""custom-next-month"",
+                                      DayPickerMonth = ""custom-day-month"",
+                                      DayPickerHeader = ""custom-day-header"",
+                                      WeekNumbersHeader = ""custom-week-header"",
+                                      YearMonthPickerWrapper = ""custom-year-picker"",
+                                      StartTimeIncreaseHourButton = ""custom-increase-btn"",
+                                      StartTimeIncreaseMinuteButton = ""custom-increase-btn"",
+                                      StartTimeDecreaseHourButton = ""custom-decrease-btn"",
+                                      StartTimeDecreaseMinuteButton = ""custom-decrease-btn"",
+                                      EndTimeIncreaseHourButton = ""custom-increase-btn"",
+                                      EndTimeIncreaseMinuteButton = ""custom-increase-btn"",
+                                      EndTimeDecreaseHourButton = ""custom-decrease-btn"",
+                                      EndTimeDecreaseMinuteButton })"" />";
 
     private readonly string example5RazorCode = @"
 <BitDateRangePicker @bind-Value=""@selectedDateRange"" />

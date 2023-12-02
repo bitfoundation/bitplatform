@@ -83,7 +83,7 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.MaxLength, maxLength);
             parameters.Add(p => p.IsMultiline, isMultiline);
             parameters.Add(p => p.Placeholder, placeholder);
-            parameters.Add(p => p.IsReadonly, isReadOnly);
+            parameters.Add(p => p.IsReadOnly, isReadOnly);
         });
 
         var bitTextField = component.Find(".bit-txt-inp");

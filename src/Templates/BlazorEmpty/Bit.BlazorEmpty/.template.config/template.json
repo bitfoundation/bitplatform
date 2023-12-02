@@ -306,6 +306,10 @@
       "defaultValue": "false",
       "description": "Whether to turn off HTTPS."
     },
+    "HasHttpsProfile": {
+      "type": "computed",
+      "value": "(!NoHttps)"
+    },
     "copyrightYear": {
       "type": "generated",
       "generator": "now",

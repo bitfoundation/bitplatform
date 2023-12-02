@@ -1,0 +1,22 @@
+﻿@inherits AppComponentBase
+
+<div class="card">
+    <div class="card-header">
+        <div class="title">
+            @Localizer[nameof(AppStrings.ProductSales)]
+        </div>
+        <div class="subtitle">@Localizer[nameof(AppStrings.ProductSalesText)]</div>
+    </div>
+    <div class="card-body">
+        @if (isLoading)
+        {
+            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+        }
+        else
+        {
+            <BitChart Config="config" @ref="chart" />
+        }
+    </div>
+</div>
+
+

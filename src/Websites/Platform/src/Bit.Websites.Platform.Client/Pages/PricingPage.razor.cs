@@ -4,48 +4,48 @@ namespace Bit.Websites.Platform.Client.Pages;
 
 public partial class PricingPage
 {
-    private bool _isSent;
-    private bool _isSending;
-    private bool _isBuyModalOpen;
-    private string _selectedPackageTitle = string.Empty;
-    private string _selectedPackagePrice = string.Empty;
+    private bool isSent;
+    private bool isSending;
+    private bool isBuyModalOpen;
+    private string selectedPackageTitle = string.Empty;
+    private string selectedPackagePrice = string.Empty;
 
-    private BuyPackageDto _buyPackageModel { get; set; } = new();
+    private BuyPackageDto buyPackageModel = new();
 
 
 
     private void ShowBuyModal(string title, string price)
     {
-        _selectedPackageTitle = title;
-        _selectedPackagePrice = price;
-        _buyPackageModel.SalePackageTitle = title;
-        _isBuyModalOpen = true;
+        selectedPackageTitle = title;
+        selectedPackagePrice = price;
+        buyPackageModel.SalePackageTitle = title;
+        isBuyModalOpen = true;
     }
 
     private void CloseModal()
     {
-        _isBuyModalOpen = false;
-        _isSent = false;
+        isBuyModalOpen = false;
+        isSent = false;
 
-        _buyPackageModel.Email = "";
-        _buyPackageModel.Message = "";
-        _buyPackageModel.SalePackageTitle = "";
+        buyPackageModel.Email = "";
+        buyPackageModel.Message = "";
+        buyPackageModel.SalePackageTitle = "";
     }
 
     private async Task SendMessage()
     {
-        if (_isSending) return;
+        if (isSending) return;
 
-        _isSending = true;
+        isSending = true;
 
         try
         {
-            await HttpClient.PostAsJsonAsync("SupportPackage/BuyPackage", _buyPackageModel, AppJsonContext.Default.BuyPackageDto);
+            await HttpClient.PostAsJsonAsync("SupportPackage/BuyPackage", buyPackageModel, AppJsonContext.Default.BuyPackageDto);
         }
         finally
         {
-            _isSending = false;
-            _isSent = true;
+            isSending = false;
+            isSent = true;
         }
     }
 }

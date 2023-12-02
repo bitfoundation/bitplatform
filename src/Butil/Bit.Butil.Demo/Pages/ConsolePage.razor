@@ -1,5 +1,5 @@
 ﻿@page "/console"
-@using Console = Bit.Butil.Console
+@inject Bit.Butil.Console console
 
 @code {
     private string _value = string.Empty;
@@ -9,14 +9,24 @@
 
 <h1>Console</h1>
 
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Console console
+
+@@code {
+    ...
+    console.Log("This is a test log");
+    ...
+}
+</pre>
+
 <h3>Open the DevTools</h3>
 
 <div class="container">
     <input @bind-value="_value" /><br />
-    <br /><button @onclick="@(() => Console.Assert(true, "This is a test assert:", _value))">assert</button><br />
-    <br /><button @onclick="@(() => Console.Count(_value))">count</button> <button @onclick="@(() => Console.CountReset(_value))">countReset</button><br />
-    <br /><button @onclick="@(() => Console.Error("This is a test error:", _value))">error</button><br />
-    <br /><button @onclick="@(() => Console.Info("This is a test info:", _value))">info</button><br />
-    <br /><button @onclick="@(() => Console.Log("This is a test log:", _value))">log</button><br />
-    <br /><button @onclick="@(() => Console.Warn("This is a test warn:", _value))">warn</button><br />
+    <br /><button @onclick="@(() => console.Assert(false, "This is a test assert:", _value))">assert</button><br />
+    <br /><button @onclick="@(() => console.Count(_value))">count</button> <button @onclick="@(() => console.CountReset(_value))">countReset</button><br />
+    <br /><button @onclick="@(() => console.Error("This is a test error:", _value))">error</button><br />
+    <br /><button @onclick="@(() => console.Info("This is a test info:", _value))">info</button><br />
+    <br /><button @onclick="@(() => console.Log("This is a test log:", _value))">log</button><br />
+    <br /><button @onclick="@(() => console.Warn("This is a test warn:", _value))">warn</button><br />
 </div>

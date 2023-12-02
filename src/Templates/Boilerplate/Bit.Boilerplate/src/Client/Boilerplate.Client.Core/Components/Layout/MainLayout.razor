@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+
+<div class="status-bar">Boilerplate</div>
+
+<Header OnToggleMenu=ToggleMenuHandler />
+
+@if (isUserAuthenticated)
+{
+    <NavMenu @bind-IsMenuOpen=isMenuOpen />
+}
+
+<div class="main @(isUserAuthenticated ? "main--authenticated" : null)">
+    <div class="main-content">
+        <AppErrorBoundary>
+            @Body
+        </AppErrorBoundary>
+    </div>
+    <Footer />
+</div>
+
+<MessageBox />

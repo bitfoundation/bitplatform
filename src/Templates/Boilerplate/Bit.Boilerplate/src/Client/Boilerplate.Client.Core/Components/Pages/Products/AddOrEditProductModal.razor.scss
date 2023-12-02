@@ -1,0 +1,51 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.main-container {
+    display: flex;
+    width: rem2(560px);
+    align-items: center;
+    flex-direction: column;
+    min-height: rem2(378px);
+    border-radius: rem2(2px);
+    justify-content: flex-start;
+    padding: rem2(16px) rem2(24px);
+    background-color: $bit-color-background-primary;
+
+    .bit-ios & {
+        padding: rem2(16px) rem2(24px) calc(rem2(16px) + env(safe-area-inset-bottom));
+    }
+
+    @include sm {
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        position: fixed;
+        border-radius: rem2(8px) rem2(8px) 0 0;
+    }
+}
+
+.header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    margin-bottom: rem2(24px);
+    justify-content: space-between;
+}
+
+.title {
+    font-weight: 600;
+    font-size: rem2(20px);
+    line-height: rem2(28px);
+}
+
+.form-input-container {
+    width: 100%;
+    margin-bottom: rem2(24px);
+}
+
+::deep .validation-message {
+    color: $bit-color-state-error;
+}

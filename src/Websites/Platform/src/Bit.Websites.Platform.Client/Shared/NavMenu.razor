@@ -1,19 +1,19 @@
 ﻿@inherits AppComponentBase
 
-@if (_isNavOpen)
+@if (isNavOpen)
 {
     <div class="nav-menu-shadow nav-menu--mobile" @onclick="@WrapHandled(ToggleMenu)"></div>
 }
-<div class="nav-menu @(_isNavOpen is false ? "nav-menu--desktop" : null)">
+<div class="nav-menu @(isNavOpen is false ? "nav-menu--desktop" : null)">
     <div class="search-box-container">
         <BitSearchBox Class="nav-menu-search-box"
                       Placeholder="Search"
                       IconName="@BitIconName.Search"
                       IsUnderlined="true"
-                      Value="@_searchText"
+                      Value="@searchText"
                       ValueChanged="@HandleValueChanged"
                       OnClear="@HandleOnClear" />
-        @if (_filteredNavItems.Count == 0)
+        @if (filteredNavItems.Count == 0)
         {
             <br />
             <div>nothing found!</div>
@@ -21,7 +21,7 @@
     </div>
     <div class="nav-menu-list">
         <BitNav Class="@GetNavMenuClass()"
-                Items="_filteredNavItems"
+                Items="filteredNavItems"
                 AriaLabel="bit project templates doc nav"
                 OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)"
                 Styles="@(new() { SelectedItemContainer = $"background-color:var({BitCss.Var.Color.Background.Primary});" })" />

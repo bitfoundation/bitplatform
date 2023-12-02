@@ -1,12 +1,16 @@
-﻿using Microsoft.JSInterop;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Butil;
 
 public static class BitButil
 {
-    public static void Init(IJSRuntime jsRuntime)
+    public static IServiceCollection AddBitButilServices(this IServiceCollection services)
     {
-        EventsJsInterop.Init(jsRuntime);
-        ConsoleJsInterop.Init(jsRuntime);
+        services.AddScoped<Window>();
+        services.AddScoped<Document>();
+        services.AddScoped<Keyboard>();
+        services.AddScoped<Console>();
+
+        return services;
     }
 }

@@ -19,13 +19,14 @@ public partial class BitTimePicker
     private int? _hour;
     private int? _minute;
     private string? _labelId;
+    private bool _isPointerDown;
     private string? _textFieldId;
     private string _timePickerId = string.Empty;
     private string _calloutId = string.Empty;
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
-    private Timer? _pointerDownTimer;
+
     private string _focusClass
     {
         get => focusClass;
@@ -484,6 +485,15 @@ public partial class BitTimePicker
     {
         if (IsEnabled is false) return;
 
+        _isPointerDown = true;
+
+        await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
+    }
+
+    private async Task ChangeTime(bool isNext, bool isHour, int stepDelay)
+    {
+        if (_isPointerDown is false) return;
+
         if (isHour)
         {
             await ChangeHour(isNext);
@@ -492,27 +502,16 @@ public partial class BitTimePicker
         {
             await ChangeMinute(isNext);
         }
+        StateHasChanged();
 
-        _pointerDownTimer = new Timer(async (_) =>
-        {
-            await InvokeAsync(async () =>
-            {
-                if (isHour)
-                {
-                    await ChangeHour(isNext);
-                }
-                else
-                {
-                    await ChangeMinute(isNext);
-                }
-                StateHasChanged();
-            });
-        }, null, INITIAL_STEP_DELAY, STEP_DELAY);
+        await Task.Delay(stepDelay);
+
+        await ChangeTime(isNext, isHour, STEP_DELAY);
     }
 
     private void HandleOnPointerUpOrOut()
     {
-        _pointerDownTimer?.Dispose();
+        _isPointerDown = false;
     }
 
     private string GetValueFormat()
