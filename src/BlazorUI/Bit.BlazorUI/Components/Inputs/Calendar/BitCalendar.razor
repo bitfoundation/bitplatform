@@ -182,9 +182,9 @@
                 {
                     var prevDisabled = CanChangeYear(false) is false;
                     var nextDisabled = CanChangeYear(true) is false;
-                    var toggleTitle = string.Format(YearPickerToggleTitle, _displayYear);
-                    var prevTitle = string.Format(GoToPrevYearTitle, _displayYear - 1);
-                    var nextTitle = string.Format(GoToNextYearTitle, _displayYear + 1);
+                    var toggleTitle = string.Format(YearPickerToggleTitle, _currentYear);
+                    var prevTitle = string.Format(GoToPrevYearTitle, _currentYear - 1);
+                    var nextTitle = string.Format(GoToNextYearTitle, _currentYear + 1);
                     <div style="@Styles?.MonthPickerHeader" class="bit-cal-pkh @Classes?.MonthPickerHeader">
                         <button @onclick="ToggleBetweenMonthAndYearPicker"
                                 tabindex="0"
@@ -195,7 +195,7 @@
                                 aria-label="@toggleTitle"
                                 style="@Styles?.YearPickerToggleButton"
                                 class="bit-cal-ptb @Classes?.YearPickerToggleButton">
-                            @_displayYear
+                            @_currentYear
                         </button>
                         <div style="@Styles?.MonthPickerNavWrapper" class="bit-cal-nbc @Classes?.MonthPickerNavWrapper">
                             <button @onclick="() => HandleYearChange(false)"
@@ -327,7 +327,7 @@
                                         aria-label="@GoToTodayTitle"
                                         style="@Styles?.GoToTodayButton"
                                         class="bit-cal-gtb @Classes?.GoToTodayButton"
-                                        disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
+                                        disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth, true)">
                                     <i aria-hidden="true"
                                        style="@Styles?.GoToTodayIcon"
                                        class="bit-cal-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
