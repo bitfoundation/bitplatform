@@ -1,0 +1,23 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
+
+    @(Anchor ?? ChildContent)
+
+    <div class="bit-ttp-wrp">
+        <div class="bit-ttp-ctn @GetTooltipPositionClasses()">
+            @if (Template is not null)
+            {
+                @Template
+            }
+            else
+            {
+                @Text
+            }
+        </div>
+    </div>
+</div>

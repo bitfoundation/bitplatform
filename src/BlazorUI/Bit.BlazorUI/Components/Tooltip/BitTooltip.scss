@@ -1,0 +1,219 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-ttp {
+    display: inline;
+    position: relative;
+
+    &.bit-dis {
+        .bit-ttp-ctn {
+            color: $color-foreground-disabled;
+        }
+    }
+}
+
+.bit-ttp-wrp {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    position: absolute;
+    pointer-events: none;
+}
+
+.bit-ttp-ctn {
+    opacity: 0;
+    z-index: 1;
+    height: auto;
+    font-weight: 500;
+    width: max-content;
+    position: absolute;
+    text-align: center;
+    visibility: hidden;
+    padding: spacing(1.25);
+    font-size: spacing(1.5);
+    transition: all 0.2s linear;
+    color: $color-foreground-primary;
+    background-color: $color-background-secondary;
+
+    &::after {
+        content: "";
+        position: absolute;
+        border: spacing(0.75) solid;
+    }
+
+    .bit-ttp:hover & {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.bit-ttp-top {
+    left: 50%;
+    top: spacing(-6);
+    transform: translateX(-50%);
+    box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        left: 50%;
+        bottom: spacing(-1.125);
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: transparent $color-background-secondary $color-background-secondary transparent;
+    }
+}
+
+.bit-ttp-tlf {
+    right: 94%;
+    top: spacing(-6);
+    box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        right: spacing(-0.25);
+        bottom: spacing(-1.125);
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: transparent $color-background-secondary $color-background-secondary transparent;
+    }
+}
+
+.bit-ttp-trg {
+    left: 94%;
+    top: spacing(-6);
+    box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        left: spacing(-0.25);
+        bottom: spacing(-1.125);
+        transform: rotate(135deg) translateX(-50%);
+        box-shadow: spacing(0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: $color-background-secondary $color-background-secondary transparent transparent;
+    }
+}
+
+.bit-ttp-rtp {
+    left: 104%;
+    top: spacing(-3.5);
+    box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        bottom: spacing(-0.25);
+        left: 0%;
+        transform: rotate(-45deg) translateY(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: $color-background-secondary transparent transparent $color-background-secondary;
+    }
+}
+
+.bit-ttp-rgt {
+    left: 104%;
+    top: spacing(-0.5);
+    box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        top: 50%;
+        left: 0%;
+        transform: rotate(-45deg) translateY(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: $color-background-secondary transparent transparent $color-background-secondary;
+    }
+}
+
+.bit-ttp-rbm {
+    left: 104%;
+    bottom: spacing(-3.5);
+    box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        top: spacing(-0.25);
+        left: 0%;
+        transform: rotate(-135deg) translateY(-50%);
+        box-shadow: spacing(0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: $color-background-secondary $color-background-secondary transparent transparent;
+    }
+}
+
+.bit-ttp-brg {
+    left: 95%;
+    bottom: spacing(-6);
+    box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        top: spacing(-0.125);
+        left: spacing(-0.25);
+        transform: rotate(135deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: transparent transparent $color-background-secondary $color-background-secondary;
+    }
+}
+
+.bit-ttp-btm {
+    left: 50%;
+    bottom: spacing(-6);
+    transform: translateX(-50%);
+    box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        left: 50%;
+        top: spacing(-0.125);
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: $color-background-secondary transparent transparent $color-background-secondary;
+    }
+}
+
+.bit-ttp-blf {
+    right: 95%;
+    bottom: spacing(-6);
+    box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        top: spacing(-0.125);
+        right: spacing(-0.25);
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: $color-background-secondary transparent transparent $color-background-secondary;
+    }
+}
+
+.bit-ttp-lbm {
+    right: 104%;
+    bottom: spacing(-3.5);
+    box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        top: spacing(-0.25);
+        right: 0%;
+        transform: rotate(-135deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: transparent transparent $color-background-secondary $color-background-secondary;
+    }
+}
+
+.bit-ttp-lft {
+    right: 104%;
+    top: spacing(-0.5);
+    box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        top: 50%;
+        right: 0;
+        transform: rotate(135deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: $color-background-secondary transparent transparent $color-background-secondary;
+    }
+}
+
+.bit-ttp-ltp {
+    right: 104%;
+    top: spacing(-3.5);
+    box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+
+    &::after {
+        right: 0;
+        bottom: spacing(-0.25);
+        transform: rotate(135deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
+        border-color: $color-background-secondary transparent transparent $color-background-secondary;
+    }
+}
