@@ -1,0 +1,14 @@
+﻿.tooltips-container {
+    padding: 1.5rem 2rem;
+}
+
+::deep {
+    .custom-root {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-tooltip {
+        color: tomato;
+        border-radius: 0.5rem;
+    }
+}

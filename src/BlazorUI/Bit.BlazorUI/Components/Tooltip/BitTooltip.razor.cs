@@ -17,7 +17,7 @@ public partial class BitTooltip
     [Parameter] public RenderFragment? Anchor { get; set; }
 
     /// <summary>
-    /// The content inside of tooltip tag, It can be Any custom tag or a text
+    /// The content inside of tooltip tag, It can be Any custom tag or a text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -27,7 +27,7 @@ public partial class BitTooltip
     [Parameter] public BitTooltipClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The visible state of the Tooltip.
+    /// The visibility state of the tooltip.
     /// </summary>
     [Parameter]
     public bool IsShown
@@ -45,7 +45,7 @@ public partial class BitTooltip
     [Parameter] public EventCallback<bool> IsShownChanged { get; set; }
 
     /// <summary>
-    /// The position of tooltip around its anchor
+    /// The position of tooltip around its anchor.
     /// </summary>
     [Parameter] 
     public BitTooltipPosition Position
@@ -61,27 +61,27 @@ public partial class BitTooltip
     }
 
     /// <summary>
-    /// The content of tooltip, It can be any custom tag or a text
+    /// The content you want inside the tooltip.
     /// </summary>
     [Parameter] public RenderFragment? Template { get; set; }
 
     /// <summary>
-    /// The text of tooltip to show
+    /// The text of tooltip to show.
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// Determines on which events the tooltip will act
+    /// Determines shows tooltip on hover.
     /// </summary>
     [Parameter] public bool ShowOnHover { get; set; } = true;
 
     /// <summary>
-    /// Determines on which events the tooltip will act
+    /// Determines shows tooltip on focus.
     /// </summary>
     [Parameter] public bool ShowOnFocus { get; set; } = true;
 
     /// <summary>
-    /// Determines on which events the tooltip will act
+    /// Determines shows tooltip on click.
     /// </summary>
     [Parameter] public bool ShowOnClick { get; set; }
 

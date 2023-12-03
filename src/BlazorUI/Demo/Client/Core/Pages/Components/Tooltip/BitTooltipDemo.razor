@@ -4,14 +4,98 @@
             Title="Tooltip"
             Description="Tooltip component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="Tooltip">
-    <ComponentExampleBox Title="Basic" Id="example1">
+<ComponentDemo ComponentName="Tooltip"
+               ComponentDescription="Tooltip component briefly describes unlabeled controls or provides a bit of additional information about labeled controls."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div>
+                Explore the fundamental use of BitTooltip with a simple hover interaction on a BitButton.
+            </div>
+            <br />
             <div class="tooltips-container">
                 <BitTooltip Text="This is the tooltip text">
-                    <BitButton>Hover over me</BitButton>
+                    <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
                 </BitTooltip>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom content" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div>Here are some examples of customizing the tooltip content.</div>
+            <br />
+            <div class="tooltips-container">
+                <BitTooltip>
+                    <Template>
+                        <ul style="margin: 0.5rem; padding: 0;">
+                            <li>1. One</li>
+                            <li>2. Two</li>
+                        </ul>
+                    </Template>
+                    <Anchor>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
+                    </Anchor>
+                </BitTooltip>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <div>You can easily show or hide the tooltip.</div>
+            <br />
+            <BitLabel>Two-way</BitLabel>
+            <BitTooltip @bind-IsShown="isShown1" Text="This is the tooltip text">
+                <BitButton ButtonStyle="BitButtonStyle.Standard">Two-way tooltip</BitButton>
+            </BitTooltip>
+            <br /><br />
+            <BitToggle @bind-Value="isShown1" DefaultText="Toggle tooltip" />
+            <br /><br />
+            <BitLabel>One-way</BitLabel>
+            <BitTooltip IsShown="isShown2" Text="This is the tooltip text">
+                <BitButton ButtonStyle="BitButtonStyle.Standard">Controled tooltip</BitButton>
+            </BitTooltip>
+            <br /><br />
+            <BitToggle @bind-Value="isShown2" DefaultText="Toggle tooltip" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Position" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <div>
+                You can customize the Tooltip position to enhance the user experience.
+            </div>
+            <br />
+            <div class="tooltips-container">
+                <BitTooltip Text="Text" Position="TooltipPosition">
+                    <BitButton ButtonStyle="BitButtonStyle.Standard">Position</BitButton>
+                </BitTooltip>
+                <br /><br />
+                <BitDropdown Items="TooltipPositionList" @bind-Value="TooltipPosition" Style="width: 8rem;" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>
+                Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
+            </div>
+            <br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div><br />
+            <div class="tooltips-container">
+                <BitTooltip Text="This is the tooltip text" Styles="@(new() { Tooltip = "box-shadow: aqua 0 0 0.5rem;" })">
+                    <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
+                </BitTooltip>
+                <br /><br />
+                <BitTooltip Text="This is the tooltip text" Classes="@(new() { Root = "custom-root", Tooltip = "custom-tooltip" })">
+                    <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
+                </BitTooltip>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>
