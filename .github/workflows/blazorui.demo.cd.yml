@@ -279,7 +279,7 @@ jobs:
       run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build ipa
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit.BlazorUI.Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
