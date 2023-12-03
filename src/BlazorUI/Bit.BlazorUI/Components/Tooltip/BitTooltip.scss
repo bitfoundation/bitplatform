@@ -50,13 +50,13 @@
 
 .bit-ttp-top {
     left: 50%;
-    top: spacing(-6);
+    bottom: 160%;
     transform: translateX(-50%);
     box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
         left: 50%;
-        bottom: spacing(-1.125);
+        bottom: spacing(-1.2);
         transform: rotate(45deg) translateX(-50%);
         box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: transparent $color-background-secondary $color-background-secondary transparent;
@@ -64,13 +64,13 @@
 }
 
 .bit-ttp-tlf {
-    right: 94%;
-    top: spacing(-6);
+    right: 90%;
+    bottom: 160%;
     box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
-        right: spacing(-0.25);
-        bottom: spacing(-1.125);
+        right: spacing(-0.22);
+        bottom: spacing(-1.25);
         transform: rotate(45deg) translateX(-50%);
         box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: transparent $color-background-secondary $color-background-secondary transparent;
@@ -78,13 +78,13 @@
 }
 
 .bit-ttp-trg {
-    left: 94%;
-    top: spacing(-6);
+    left: 90%;
+    bottom: 160%;
     box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
-        left: spacing(-0.25);
-        bottom: spacing(-1.125);
+        left: spacing(-0.22);
+        bottom: spacing(-1.25);
         transform: rotate(135deg) translateX(-50%);
         box-shadow: spacing(0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: $color-background-secondary $color-background-secondary transparent transparent;
@@ -92,13 +92,13 @@
 }
 
 .bit-ttp-rtp {
-    left: 104%;
+    left: 110%;
     top: spacing(-3.5);
     box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
-        bottom: spacing(-0.25);
-        left: 0%;
+        left: spacing(-0.2);
+        bottom: spacing(0.22);
         transform: rotate(-45deg) translateY(-50%);
         box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: $color-background-secondary transparent transparent $color-background-secondary;
@@ -106,13 +106,13 @@
 }
 
 .bit-ttp-rgt {
-    left: 104%;
-    top: spacing(-0.5);
+    left: 110%;
+    top: spacing(-1);
     box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
         top: 50%;
-        left: 0%;
+        left: spacing(-0.2);
         transform: rotate(-45deg) translateY(-50%);
         box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: $color-background-secondary transparent transparent $color-background-secondary;
@@ -120,13 +120,13 @@
 }
 
 .bit-ttp-rbm {
-    left: 104%;
+    left: 110%;
     bottom: spacing(-3.5);
     box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
-        top: spacing(-0.25);
-        left: 0%;
+        top: spacing(0.3);
+        left: spacing(-0.2);
         transform: rotate(-135deg) translateY(-50%);
         box-shadow: spacing(0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: $color-background-secondary $color-background-secondary transparent transparent;
@@ -134,13 +134,13 @@
 }
 
 .bit-ttp-brg {
-    left: 95%;
-    bottom: spacing(-6);
+    left: 90%;
+    bottom: spacing(-6.25);
     box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
-        top: spacing(-0.125);
-        left: spacing(-0.25);
+        top: spacing(-0.2);
+        left: spacing(-0.22);
         transform: rotate(135deg) translateX(-50%);
         box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: transparent transparent $color-background-secondary $color-background-secondary;
@@ -149,7 +149,7 @@
 
 .bit-ttp-btm {
     left: 50%;
-    bottom: spacing(-6);
+    bottom: spacing(-6.25);
     transform: translateX(-50%);
     box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
@@ -163,8 +163,8 @@
 }
 
 .bit-ttp-blf {
-    right: 95%;
-    bottom: spacing(-6);
+    right: 90%;
+    bottom: spacing(-6.25);
     box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
@@ -177,13 +177,13 @@
 }
 
 .bit-ttp-lbm {
-    right: 104%;
+    right: 110%;
     bottom: spacing(-3.5);
     box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
-        top: spacing(-0.25);
-        right: 0%;
+        top: spacing(0.3);
+        right: spacing(-0.2);
         transform: rotate(-135deg) translateX(-50%);
         box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: transparent transparent $color-background-secondary $color-background-secondary;
@@ -191,13 +191,13 @@
 }
 
 .bit-ttp-lft {
-    right: 104%;
-    top: spacing(-0.5);
+    right: 110%;
+    top: spacing(-1);
     box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
         top: 50%;
-        right: 0;
+        right: spacing(-0.2);
         transform: rotate(135deg) translateX(-50%);
         box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: $color-background-secondary transparent transparent $color-background-secondary;
@@ -205,13 +205,13 @@
 }
 
 .bit-ttp-ltp {
-    right: 104%;
+    right: 110%;
     top: spacing(-3.5);
     box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
-        right: 0;
-        bottom: spacing(-0.25);
+        right: spacing(-0.2);
+        bottom: spacing(0.22);
         transform: rotate(135deg) translateX(-50%);
         box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1);
         border-color: $color-background-secondary transparent transparent $color-background-secondary;
