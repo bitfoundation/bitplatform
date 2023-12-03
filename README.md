@@ -16,10 +16,18 @@
 
 Using C#, HTML, and CSS it offers a full featured dotnet project template equipped with a lot of features a .NET developer needs. With this template, one can also easily switch between different app modes:
 
-* **Blazor Server**: best for fast development and debugging with hot reload. With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
-* **Blazor WebAssembly**: best for SPA & PWA (with or without prerendering) deployment.Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process.
+* **Blazor Server**: Best for fast development and debugging with hot reload. With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling, and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
+* **Blazor WebAssembly**: Best for SPA deployment. Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies, and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process.
 * **Blazor Auto**: Blazor seamlessly combines Blazor Server and WebAssembly. This approach enhances user interaction initially through Blazor Server, while simultaneously downloading Blazor WebAssembly for subsequent visits, reducing server load.
 * **Blazor Hybrid - MAUI**: Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality. In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly). Blazor Hybrid is on top of .NET MAUI and has access to all native features of supported platforms (Android, iOS, macOS and Windows)
+
+With different deployment types:
+
+* **SPA**: It's referring to a Typical Single Page Application (SPA) without pre-rendering. Best for development / debugging. It is the default option.
+* **PWA**: A Blazor WebAssembly app built as a Progressive Web App (PWA) uses modern browser APIs to enable many of the capabilities of a native client app, such as working offline, running in its own app window, launching from the host's operating system, receiving push notifications, and automatically updating in the background.
+* **SPA-Prerendered**: Server-side rendering (SSR), is the ability of an application to contribute by displaying the web-page on the server instead of rendering it in the browser. Blazor pre-renders the requested page on the server and sends it as a static page, then later the page becomes an interactive Blazor app on the client. This behavior is intended to serve pages quickly to search engines with time-based positioning. It improves SEO.
+* **PWA-Prerendered**: Almost the same as the SPA version, but with the PWA capability which reduces the toll on the server considerebly after the first render.
+* **Prerender-Only**: Statically renders the component with the specified parameters without any interactivity on the client. It's recommended when the target is building a static content like a landing page.
 
 This project template is powered by [bit BlazorUI](https://components.bitplatform.dev) components, which are super-fast 🌶 and lightweight making them the best toolbox for developing common apps.
 
