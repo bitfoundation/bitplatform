@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Chart;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Chart;
 
 public partial class BitChartDemo
 {
@@ -68,4 +70,25 @@ public partial class BitChartDemo
             }
         }
     };
+
+    [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
+
+    private bool isLoadingAssemblies = true;
+
+    protected async override Task OnInitAsync()
+    {
+        try
+        {
+            if (OperatingSystem.IsBrowser())
+            {
+                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
+            }
+        }
+        finally
+        {
+            isLoadingAssemblies = false;
+        }
+
+        await base.OnInitAsync();
+    }
 }

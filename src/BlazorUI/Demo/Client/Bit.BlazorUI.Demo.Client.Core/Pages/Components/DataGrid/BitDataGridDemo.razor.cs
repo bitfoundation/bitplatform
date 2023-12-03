@@ -1,4 +1,7 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.DataGrid;
+﻿using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.DataGrid;
 
 public partial class BitDataGridDemo
 {
@@ -338,6 +341,99 @@ public partial class BitDataGridDemo
         new CountryModel { Code = "UZ", Name = "Uzbekistan", Medals = new MedalsModel { Gold = 3, Silver = 0, Bronze = 2 } },
         new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
     };
+
+    [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
+
+    private bool isLoadingAssemblies = true;
+
+    protected async override Task OnInitAsync()
+    {
+        allCountries = _countries.AsQueryable();
+
+        foodRecallProvider = async req =>
+        {
+            try
+            {
+                var query = new Dictionary<string, object?>
+                    {
+                    { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
+                    { "skip", req.StartIndex },
+                    { "limit", req.Count }
+                    };
+
+                var sort = req.GetSortByProperties().SingleOrDefault();
+
+                if (sort != default)
+                {
+                    var sortByColumnName = sort.PropertyName switch
+                    {
+                        nameof(FoodRecall.ReportDate) => "report_date",
+                        _ => throw new InvalidOperationException()
+                    };
+
+                    query.Add("sort", $"{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}");
+                }
+
+                var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
+
+                return BitDataGridItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+            }
+            catch
+            {
+                return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+            }
+        };
+
+        productsItemsProvider = async req =>
+        {
+            try
+            {
+                // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+                var query = new Dictionary<string, object?>()
+                {
+                    { "$top", req.Count ?? 50 },
+                    { "$skip", req.StartIndex }
+                };
+
+                if (string.IsNullOrEmpty(_odataSampleNameFilter) is false)
+                {
+                    query.Add("$filter", $"contains(Name,'{_odataSampleNameFilter}')");
+                }
+
+                if (req.GetSortByProperties().Any())
+                {
+                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
+                }
+
+                var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+
+                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+            }
+            catch
+            {
+                return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
+            }
+        };
+
+        try
+        {
+            if (OperatingSystem.IsBrowser())
+            {
+                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
+            }
+        }
+        finally
+        {
+            isLoadingAssemblies = false;
+        }
+
+        await base.OnInitAsync();
+    }
 
     private readonly string example1RazorCode = @"
 <style scoped>
