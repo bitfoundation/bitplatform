@@ -307,9 +307,10 @@ namespace Boilerplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Request could not be processed because of conflict in the request.
         /// </summary>
-        public static string ConflicException {
+        public static string ConflictException
+        {
             get {
-                return ResourceManager.GetString("ConflicException", resourceCulture);
+                return ResourceManager.GetString("ConflictException", resourceCulture);
             }
         }
         
