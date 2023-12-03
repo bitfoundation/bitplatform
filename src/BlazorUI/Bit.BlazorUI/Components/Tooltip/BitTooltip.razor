@@ -13,8 +13,8 @@
 
     @(Anchor ?? ChildContent)
 
-    <div class="bit-ttp-wrp">
-        <div class="bit-ttp-ctn @GetTooltipClasses()">
+    <div style="@Styles?.TooltipWrapper" class="bit-ttp-wrp @Classes?.TooltipWrapper">
+        <div style="@Styles?.Tooltip" class="bit-ttp-ctn @GetTooltipClasses() @Classes?.Tooltip">
             @if (Template is not null)
             {
                 @Template

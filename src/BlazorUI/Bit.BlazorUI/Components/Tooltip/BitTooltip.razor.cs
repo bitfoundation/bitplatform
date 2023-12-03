@@ -12,14 +12,37 @@ public partial class BitTooltip
 
 
     /// <summary>
+    /// Alias of ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Anchor { get; set; }
+
+    /// <summary>
     /// The content inside of tooltip tag, It can be Any custom tag or a text
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Alias of ChildContent.
+    /// Custom CSS classes for different parts of the BitTooltip.
     /// </summary>
-    [Parameter] public RenderFragment? Anchor { get; set; }
+    [Parameter] public BitTooltipClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The visible state of the Tooltip.
+    /// </summary>
+    [Parameter]
+    public bool IsShown
+    {
+        get => isShown;
+        set
+        {
+            if (value == isShown) return;
+
+            isShown = value;
+            _ = IsShownChanged.InvokeAsync(isShown);
+        }
+    }
+
+    [Parameter] public EventCallback<bool> IsShownChanged { get; set; }
 
     /// <summary>
     /// The position of tooltip around its anchor
@@ -63,29 +86,26 @@ public partial class BitTooltip
     [Parameter] public bool ShowOnClick { get; set; }
 
     /// <summary>
-    /// The visible state of the Tooltip.
+    /// Custom CSS styles for different parts of the BitTooltip.
     /// </summary>
-    [Parameter]
-    public bool IsShown
-    {
-        get => isShown;
-        set
-        {
-            if (value == isShown) return;
-
-            isShown = value;
-            _ = IsShownChanged.InvokeAsync(isShown);
-        }
-    }
-
-    [Parameter] public EventCallback<bool> IsShownChanged { get; set; }
+    [Parameter] public BitTooltipClassStyles? Styles { get; set; }
 
 
     protected override string RootElementClass => "bit-ttp";
 
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
 
-    private async Task HandleMouseEnter()
+
+    private void HandleMouseEnter()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
 
@@ -95,7 +115,7 @@ public partial class BitTooltip
         }
     }
 
-    private async Task HandleMouseLeave()
+    private void HandleMouseLeave()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
         if (ShowOnHover == false) return;
@@ -103,7 +123,7 @@ public partial class BitTooltip
         IsShown = false;
     }
 
-    private async Task HandleFocusIn()
+    private void HandleFocusIn()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
 
@@ -113,7 +133,7 @@ public partial class BitTooltip
         }
     }
 
-    private async Task HandleFocusOut()
+    private void HandleFocusOut()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
         if (ShowOnFocus == false) return;
@@ -121,7 +141,7 @@ public partial class BitTooltip
         IsShown = false;
     }
 
-    private async Task HandleMouseUp()
+    private void HandleMouseUp()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
 
