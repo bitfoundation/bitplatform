@@ -23,7 +23,6 @@
 
 .bit-ttp-ctn {
     opacity: 0;
-    z-index: 1;
     height: auto;
     font-weight: 500;
     width: max-content;
@@ -32,6 +31,7 @@
     visibility: hidden;
     padding: spacing(1.25);
     font-size: spacing(1.5);
+    z-index: $zindex-callout;
     transition: all 0.2s linear;
     color: $color-foreground-primary;
     background-color: $color-background-secondary;
@@ -41,11 +41,11 @@
         position: absolute;
         border: spacing(0.75) solid;
     }
+}
 
-    .bit-ttp:hover & {
-        opacity: 1;
-        visibility: visible;
-    }
+.bit-ttp-vis {
+    opacity: 1;
+    visibility: visible;
 }
 
 .bit-ttp-top {

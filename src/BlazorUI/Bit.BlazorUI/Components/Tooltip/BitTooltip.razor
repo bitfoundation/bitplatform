@@ -3,13 +3,18 @@
 
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
+     @onfocusin="@HandleFocusIn"
+     @onfocusout="@HandleFocusOut"
+     @onmouseup="@HandleMouseUp"
+     @onmouseenter="@HandleMouseEnter"
+     @onmouseleave="@HandleMouseLeave"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
 
     @(Anchor ?? ChildContent)
 
     <div class="bit-ttp-wrp">
-        <div class="bit-ttp-ctn @GetTooltipPositionClasses()">
+        <div class="bit-ttp-ctn @GetTooltipClasses()">
             @if (Template is not null)
             {
                 @Template
