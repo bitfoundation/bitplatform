@@ -213,6 +213,9 @@ ModelManifest.xml
 # VS Code
 .vscode
 
+# .NET Meteor
+.meteor
+
 # Rider
 .idea
 
@@ -221,13 +224,11 @@ profile.arm.json
 # Bit.BlazorUI.Demo
 *.map
 *Resource.designer.cs
+/**/*.css
 custom.aprof
 
-/Server/Api/Attachments/**/*.*
-/Server/Api/BitFileUploaderFiles
-/Server/Api/Properties/PublishProfiles/*.*
-/Server/Api/Properties/ServiceDependencies/*.*
+/Bit.BlazorUI.Demo.Server/Attachments/**/*.*
 
-/Client/Core/**/*.css
-/Client/Core/Scripts/*.js
-/Client/Core/wwwroot/scripts/*.js
+/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app*.js
+
+/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.DemoDb.db*
