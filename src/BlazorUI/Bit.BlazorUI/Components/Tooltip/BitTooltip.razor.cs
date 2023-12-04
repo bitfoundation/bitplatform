@@ -27,6 +27,11 @@ public partial class BitTooltip
     [Parameter] public BitTooltipClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// Default value of the IsShown.
+    /// </summary>
+    [Parameter] public bool? DefaultIsShown { get; set; }
+
+    /// <summary>
     /// The visibility state of the tooltip.
     /// </summary>
     [Parameter]
@@ -78,7 +83,7 @@ public partial class BitTooltip
     /// <summary>
     /// Determines shows tooltip on focus.
     /// </summary>
-    [Parameter] public bool ShowOnFocus { get; set; } = true;
+    [Parameter] public bool ShowOnFocus { get; set; }
 
     /// <summary>
     /// Determines shows tooltip on click.
@@ -103,9 +108,19 @@ public partial class BitTooltip
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsShownHasBeenSet is false && DefaultIsShown.HasValue)
+        {
+            IsShown = DefaultIsShown.Value;
+        }
+
+        await base.OnInitializedAsync();
+    }
 
 
-    private void HandleMouseEnter()
+
+    private void HandlePointerEnter()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
 
@@ -115,10 +130,10 @@ public partial class BitTooltip
         }
     }
 
-    private void HandleMouseLeave()
+    private void HandlePointerLeave()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
-        if (ShowOnHover == false) return;
+        if (ShowOnHover is false) return;
 
         IsShown = false;
     }
@@ -136,12 +151,12 @@ public partial class BitTooltip
     private void HandleFocusOut()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
-        if (ShowOnFocus == false) return;
+        if (ShowOnFocus is false) return;
 
         IsShown = false;
     }
 
-    private void HandleMouseUp()
+    private void HandlePointerUp()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
 
@@ -155,9 +170,9 @@ public partial class BitTooltip
     {
         StringBuilder className = new StringBuilder();
 
-        className.Append(IsShown ? "bit-ttp-vis" : string.Empty);
+        className.Append(IsShown ? "bit-ttp-vis " : string.Empty);
 
-        className.Append(' ').Append(Position switch
+        className.Append(Position switch
         {
             BitTooltipPosition.Top => "bit-ttp-top",
             BitTooltipPosition.TopLeft => "bit-ttp-tlf",
