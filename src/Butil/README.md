@@ -1,9 +1,21 @@
-# Butil
-Blazor Utilities for JavaScript
+# bit Butil
+bit Blazor Utilities for JavaScript
 
 ---
 
-To start using `Butil` you first need to add its services like this:
+To start using `Butil` you first need to install the NuGet package:
+
+```
+dotnet add package Bit.Butil
+```
+
+then add its script tag to your app:
+
+```html
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+```
+
+you also need to add its services like this:
 
 ```csharp
 using Bit.Butil;
@@ -15,7 +27,7 @@ builder.Services.AddBitButilServices();
 ...
 ```
 
-Then you can inject its classes for each tool. 
+Now you can inject its classes to use the utilities.
 
 ### Console
 
