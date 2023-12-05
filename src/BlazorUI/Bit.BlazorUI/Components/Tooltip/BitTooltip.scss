@@ -40,7 +40,7 @@
     &::after {
         content: "";
         position: absolute;
-        border: spacing(0.75) solid;
+        border: spacing(0.75) $shape-border-style;
     }
 }
 
@@ -52,8 +52,8 @@
 .bit-ttp-top {
     left: 50%;
     transform: translateX(-50%);
+    box-shadow: $box-shadow-callout;
     bottom: calc(100% + spacing(1.25));
-    box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
 
     &::after {
         bottom: spacing(-1.2);
@@ -67,7 +67,7 @@
 .bit-ttp-tlf {
     right: calc(100% - spacing(1.25));
     bottom: calc(100% + spacing(1.25));
-    box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         right: 0;
@@ -81,7 +81,7 @@
 .bit-ttp-trg {
     left: calc(100% - spacing(1.25));
     bottom: calc(100% + spacing(1.25));
-    box-shadow: 0 spacing(0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         left: 0;
@@ -95,7 +95,7 @@
 .bit-ttp-rtp {
     left: calc(100% + spacing(1.25));
     bottom: calc(100% - spacing(1.25));
-    box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         bottom: 0;
@@ -110,7 +110,7 @@
     bottom: 50%;
     transform: translateY(50%);
     left: calc(100% + spacing(1.25));
-    box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         left: 0;
@@ -124,7 +124,7 @@
 .bit-ttp-rbm {
     top: calc(100% - spacing(1.25));
     left: calc(100% + spacing(1.25));
-    box-shadow: spacing(-0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         top: 0;
@@ -138,7 +138,7 @@
 .bit-ttp-brg {
     top: calc(100% + spacing(1.25));
     left: calc(100% - spacing(1.25));
-    box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         left: 0;
@@ -153,7 +153,7 @@
     left: 50%;
     top: calc(100% + spacing(1.25));
     transform: translateX(-50%);
-    box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         top: spacing(-0.2);
@@ -167,7 +167,7 @@
 .bit-ttp-blf {
     top: calc(100% + spacing(1.25));
     right: calc(100% - spacing(1.25));
-    box-shadow: 0 spacing(-0.25) spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         right: 0;
@@ -181,7 +181,7 @@
 .bit-ttp-lbm {
     top: calc(100% - spacing(1.25));
     right: calc(100% + spacing(1.25));
-    box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         top: 0;
@@ -196,7 +196,7 @@
     bottom: 50%;
     transform: translateY(50%);
     right: calc(100% + spacing(1.25));
-    box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         right: spacing(-0.2);
@@ -210,7 +210,7 @@
 .bit-ttp-ltp {
     right: calc(100% + spacing(1.25));
     bottom: calc(100% - spacing(1.25));
-    box-shadow: spacing(0.25) 0 spacing(0.25) 0 rgba(0, 0, 0, 0.1), 0 spacing(0.125) spacing(0.125) 0 rgba(0, 0, 0, 0.1);
+    box-shadow: $box-shadow-callout;
 
     &::after {
         bottom: 0;

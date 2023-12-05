@@ -40,7 +40,7 @@ public partial class BitTooltip
         get => isShown;
         set
         {
-            if (value == isShown) return;
+            if (isShown == value) return;
 
             isShown = value;
             _ = IsShownChanged.InvokeAsync(isShown);
@@ -124,15 +124,13 @@ public partial class BitTooltip
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
 
-        if (ShowOnHover)
-        {
-            IsShown = true;
-        }
+        if (ShowOnHover) IsShown = true;
     }
 
     private void HandlePointerLeave()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
+
         if (ShowOnHover is false) return;
 
         IsShown = false;
@@ -142,15 +140,13 @@ public partial class BitTooltip
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
 
-        if (ShowOnFocus)
-        {
-            IsShown = true;
-        }
+        if (ShowOnFocus) IsShown = true;
     }
 
     private void HandleFocusOut()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
+
         if (ShowOnFocus is false) return;
 
         IsShown = false;
@@ -160,10 +156,7 @@ public partial class BitTooltip
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
 
-        if (ShowOnClick)
-        {
-            IsShown = !IsShown;
-        }
+        if (ShowOnClick) IsShown = !IsShown;
     }
 
     private string GetTooltipClasses()

@@ -10,7 +10,8 @@ public partial class BitTooltipDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Child content of component, the content that the Tooltip will apply to."
-        },new()
+        },
+        new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
