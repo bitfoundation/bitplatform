@@ -36,6 +36,20 @@ public partial class BitTooltipDemo
         },
         new()
         {
+            Name = "HideArrow",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the arrow of tooltip."
+        },
+        new()
+        {
+            Name = "HideDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "Delay (in milliseconds) before hiding the tooltip."
+        },
+        new()
+        {
             Name = "IsShown",
             Type = "bool",
             DefaultValue = "false",
@@ -73,10 +87,17 @@ public partial class BitTooltipDemo
         },
         new()
         {
-            Name = "ShowOnHover",
+            Name = "ShowOnClick",
             Type = "bool",
-            DefaultValue = "true",
-            Description = "Determines shows tooltip on hover."
+            DefaultValue = "false",
+            Description = "Determines shows tooltip on click."
+        },
+        new()
+        {
+            Name = "ShowDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "Delay (in milliseconds) before showing the tooltip."
         },
         new()
         {
@@ -87,10 +108,10 @@ public partial class BitTooltipDemo
         },
         new()
         {
-            Name = "ShowOnClick",
+            Name = "ShowOnHover",
             Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines shows tooltip on click."
+            DefaultValue = "true",
+            Description = "Determines shows tooltip on hover."
         },
         new()
         {
@@ -236,6 +257,8 @@ public partial class BitTooltipDemo
     private bool isShown = true;
     private bool showOnClick = true;
     private bool showOnHover;
+    private bool hideArrow;
+    private double hideDelay;
 
 
 
@@ -246,16 +269,16 @@ public partial class BitTooltipDemo
 
     private readonly string example2RazorCode = @"
 <BitTooltip DefaultIsShown=""true"" Text=""Text"" Position=""BitTooltipPosition.Top"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Position</BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Top</BitButton>
 </BitTooltip>
 <BitTooltip DefaultIsShown=""true"" Text=""Text"" Position=""BitTooltipPosition.Right"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Position</BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Right</BitButton>
 </BitTooltip>
 <BitTooltip DefaultIsShown=""true"" Text=""Text"" Position=""BitTooltipPosition.Left"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Position</BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Left</BitButton>
 </BitTooltip>
 <BitTooltip DefaultIsShown=""true"" Text=""Text"" Position=""BitTooltipPosition.Bottom"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Position</BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Bottom</BitButton>
 </BitTooltip>";
 
     private readonly string example3RazorCode = @"
@@ -313,21 +336,27 @@ public partial class BitTooltipDemo
 
     private readonly string example5RazorCode = @"
 <BitTooltip @bind-IsShown=""isShown""
+            Text=""Text""
+            HideArrow=""hideArrow""
+            HideDelay=""(int)hideDelay""
             ShowOnClick=""showOnClick""
             ShowOnHover=""showOnHover""
-            Text=""Text""
             Position=""tooltipPosition"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Position</BitButton>
+    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Anchor</BitButton>
 </BitTooltip>
 
-<BitDropdown Items=""tooltipPositionList"" @bind-Value=""tooltipPosition"" />
+<BitDropdown Label=""Tooltip positions"" Items=""tooltipPositionList"" @bind-Value=""tooltipPosition"" />
+<BitSpinButton Label=""Hide delay"" @bind-Value=""hideDelay"" Mode=""BitSpinButtonMode.Inline"" />
 <BitToggle @bind-Value=""isShown"" DefaultText=""Toggle tooltip state"" />
+<BitToggle @bind-Value=""hideArrow"" DefaultText=""Toggle tooltip arrow"" />
 <BitToggle @bind-Value=""showOnClick"" DefaultText=""Show tooltip on click"" />
 <BitToggle @bind-Value=""showOnHover"" DefaultText=""Show tooltip on hover"" />";
     private readonly string example5CsharpCode = @"
 private bool isShown = true;
 private bool showOnClick = true;
 private bool showOnHover;
+private bool hideArrow;
+private double hideDelay;
 
 private BitTooltipPosition tooltipPosition;
 

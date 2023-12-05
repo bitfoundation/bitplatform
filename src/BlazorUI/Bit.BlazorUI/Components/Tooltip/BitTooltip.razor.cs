@@ -6,6 +6,9 @@ public partial class BitTooltip
 {
     private bool IsShownHasBeenSet;
 
+    private CancellationTokenSource? _showDelayTokenSource = new CancellationTokenSource();
+    private CancellationTokenSource? _hideDelayTokenSource = new CancellationTokenSource();
+
     private bool isShown;
     private BitTooltipPosition tooltipPosition = BitTooltipPosition.Top;
 
@@ -32,6 +35,16 @@ public partial class BitTooltip
     [Parameter] public bool? DefaultIsShown { get; set; }
 
     /// <summary>
+    /// Hides the arrow of tooltip.
+    /// </summary>
+    [Parameter] public bool HideArrow { get; set; }
+
+    /// <summary>
+    /// Delay (in milliseconds) before hiding the tooltip.
+    /// </summary>
+    [Parameter] public int HideDelay { get; set; } = 0;
+
+    /// <summary>
     /// The visibility state of the tooltip.
     /// </summary>
     [Parameter]
@@ -52,7 +65,7 @@ public partial class BitTooltip
     /// <summary>
     /// The position of tooltip around its anchor.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public BitTooltipPosition Position
     {
         get => tooltipPosition;
@@ -76,9 +89,14 @@ public partial class BitTooltip
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// Determines shows tooltip on hover.
+    /// Determines shows tooltip on click.
     /// </summary>
-    [Parameter] public bool ShowOnHover { get; set; } = true;
+    [Parameter] public bool ShowOnClick { get; set; }
+
+    /// <summary>
+    /// Delay (in milliseconds) before showing the tooltip.
+    /// </summary>
+    [Parameter] public int ShowDelay { get; set; } = 0;
 
     /// <summary>
     /// Determines shows tooltip on focus.
@@ -86,9 +104,9 @@ public partial class BitTooltip
     [Parameter] public bool ShowOnFocus { get; set; }
 
     /// <summary>
-    /// Determines shows tooltip on click.
+    /// Determines shows tooltip on hover.
     /// </summary>
-    [Parameter] public bool ShowOnClick { get; set; }
+    [Parameter] public bool ShowOnHover { get; set; } = true;
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitTooltip.
@@ -119,44 +137,82 @@ public partial class BitTooltip
     }
 
 
-
-    private void HandlePointerEnter()
+    private async Task Show()
     {
-        if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
+        _showDelayTokenSource?.Cancel();
+        _hideDelayTokenSource?.Cancel();
 
-        if (ShowOnHover) IsShown = true;
+        if (ShowDelay > 0)
+        {
+            _showDelayTokenSource = new CancellationTokenSource();
+
+            await Task.Delay(ShowDelay, _showDelayTokenSource.Token);
+
+            _showDelayTokenSource.Dispose();
+            _showDelayTokenSource = null;
+        }
+
+        IsShown = true;
     }
 
-    private void HandlePointerLeave()
+    private async Task Hide()
+    {
+        _hideDelayTokenSource?.Cancel();
+        _showDelayTokenSource?.Cancel();
+
+        if (HideDelay > 0)
+        {
+            _hideDelayTokenSource = new CancellationTokenSource();
+
+            await Task.Delay(HideDelay, _hideDelayTokenSource.Token);
+
+            _hideDelayTokenSource.Dispose();
+            _hideDelayTokenSource = null;
+        }
+
+        IsShown = false;
+    }
+
+    private async Task HandlePointerEnter()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
-
         if (ShowOnHover is false) return;
 
-        IsShown = false;
+        await Show();
     }
 
-    private void HandleFocusIn()
+    private async Task HandlePointerLeave()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
+        if (ShowOnHover is false) return;
 
-        if (ShowOnFocus) IsShown = true;
+        await Hide();
     }
 
-    private void HandleFocusOut()
+    private async Task HandleFocusIn()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
+        if (ShowOnFocus is false) return;
+        
+        await Show();
+    }
 
+    private async Task HandleFocusOut()
+    {
+        if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
         if (ShowOnFocus is false) return;
 
-        IsShown = false;
+        await Hide();
     }
 
-    private void HandlePointerUp()
+    private async Task HandlePointerUp()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
+        if (ShowOnClick is false) return;
 
-        if (ShowOnClick) IsShown = !IsShown;
+        if (IsShown is false) await Show();
+
+        if (IsShown) await Hide();
     }
 
     private string GetTooltipClasses()

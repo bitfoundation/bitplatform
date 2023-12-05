@@ -13,8 +13,8 @@
 
     @(Anchor ?? ChildContent)
 
-    <div style="@Styles?.TooltipWrapper" class="bit-ttp-wrp @Classes?.TooltipWrapper">
-        <div style="@Styles?.Tooltip" class="bit-ttp-ctn @GetTooltipClasses() @Classes?.Tooltip">
+    <div style="@Styles?.TooltipWrapper" class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper">
+        <div style="@Styles?.Tooltip" class="bit-ttp-ctn @Classes?.Tooltip">
             @if (Template is not null)
             {
                 @Template
@@ -24,5 +24,9 @@
                 @Text
             }
         </div>
+        @if (HideArrow is false)
+        {
+            <div style="@Styles?.Arrow" class="bit-ttp-arw @Classes?.Arrow"></div>
+        }
     </div>
 </div>

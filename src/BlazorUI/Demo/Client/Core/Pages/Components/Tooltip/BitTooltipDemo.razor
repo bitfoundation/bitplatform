@@ -32,19 +32,19 @@
             <div class="tooltips-container center">
                 <div class="tooltips-container">
                     <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Top">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Position</BitButton>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard">Top</BitButton>
                     </BitTooltip>
                     <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Right">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Position</BitButton>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard">Right</BitButton>
                     </BitTooltip>
                 </div>
                 <br />
                 <div class="tooltips-container">
                     <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Left">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Position</BitButton>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard">Left</BitButton>
                     </BitTooltip>
                     <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Bottom">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Position</BitButton>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard">Bottom</BitButton>
                     </BitTooltip>
                 </div>
             </div>
@@ -108,18 +108,24 @@
             <div class="tooltips-container center">
                 <div class="tooltips-container">
                     <BitTooltip @bind-IsShown="isShown"
+                                Text="Text"
+                                HideArrow="hideArrow"
+                                HideDelay="(int)hideDelay"
                                 ShowOnClick="showOnClick"
                                 ShowOnHover="showOnHover"
-                                Text="Text"
                                 Position="tooltipPosition">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard" Style="width: 8rem;">Position</BitButton>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard" Style="width: 8rem;">Anchor</BitButton>
                     </BitTooltip>
                     <br />
-                    <BitDropdown Items="tooltipPositionList" @bind-Value="tooltipPosition" Style="width: 8rem;" />
+                    <BitDropdown Label="Tooltip positions" Items="tooltipPositionList" @bind-Value="tooltipPosition" Style="width: 8rem;" />
+                    <br />
+                    <BitSpinButton Label="Hide delay" @bind-Value="hideDelay" Mode="BitSpinButtonMode.Inline" Style="width: 8rem;" />
                 </div>
 
                 <div class="tooltips-container">
                     <BitToggle @bind-Value="isShown" DefaultText="Toggle tooltip state" />
+                    <br />
+                    <BitToggle @bind-Value="hideArrow" DefaultText="Toggle tooltip arrow" />
                     <br />
                     <BitToggle @bind-Value="showOnClick" DefaultText="Show tooltip on click" />
                     <br />
