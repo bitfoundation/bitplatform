@@ -12,7 +12,7 @@ public partial class SupportPackageController : AppControllerBase
     [HttpPost]
     public async Task<IActionResult> BuyPackage(BuyPackageDto buyPackageDto, CancellationToken cancellationToken)
     {
-        await telegramBotService.SendBuyPackageMessage(buyPackageDto.SalePackageTitle, buyPackageDto.Email, buyPackageDto.Message, cancellationToken);
+        await telegramBotService.SendBuyPackageMessage(string.Empty, buyPackageDto.Email, buyPackageDto.Message, cancellationToken);
         return Ok();
     }
 }
