@@ -74,7 +74,10 @@
                     <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
                 </BitTooltip>
                 <br /><br />
-                <BitTooltip Text="This is the tooltip text" Classes="@(new() { Root = "custom-root", Tooltip = "custom-tooltip" })">
+                <BitTooltip Text="This is the tooltip text"
+                            Classes="@(new() { Root = "custom-root",
+                                               Tooltip = "custom-tooltip",
+                                               Arrow = "custom-arrow" })">
                     <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
                 </BitTooltip>
             </div>

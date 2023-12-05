@@ -301,6 +301,11 @@ public partial class BitTooltipDemo
         border: solid tomato;
         border-radius: 0.5rem;
     }
+
+    .custom-arrow {
+        border-right: solid tomato;
+        border-bottom: solid tomato;
+    }
 </style>
 
 
@@ -317,7 +322,10 @@ public partial class BitTooltipDemo
     <BitButton ButtonStyle=""BitButtonStyle.Standard"">Hover over me</BitButton>
 </BitTooltip>
 
-<BitTooltip Text=""This is the tooltip text"" Classes=""@(new() { Root = ""custom-root"", Tooltip = ""custom-tooltip"" })"">
+<BitTooltip Text=""This is the tooltip text""
+            Classes=""@(new() { Root = ""custom-root"",
+                               Tooltip = ""custom-tooltip"",
+                               Arrow = ""custom-arrow"" })"">
     <BitButton ButtonStyle=""BitButtonStyle.Standard"">Hover over me</BitButton>
 </BitTooltip>";
 
