@@ -15,7 +15,7 @@
                 </BitTypography>
                 <br /><br />
                 <BitButton Class="hero-quickstart-button">
-                    <a Class="hero-quickstart-link" href="#quick-start">
+                    <a Class="hero-quickstart-link" href="#@QUICK_START_SECTION_ID">
                         <BitTypography Variant="BitTypographyVariant.H6" Class="hero-quickstart-text">Quick start &nbsp; <BitIcon IconName="@BitIconName.ChevronRightSmall" /></BitTypography>
                     </a>
                 </BitButton>
@@ -87,14 +87,10 @@
             </div>
             <div class="template-card-list">
                 <div class="template-card">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
-                        <BitLink Href="@Urls.Templates">Todo sample</BitLink>
-                    </BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Todo sample</BitTypography>
                     <br />
                     <div class="template-img-container">
-                        <a href="@Urls.Templates">
-                            <img class="template-img" src="/images/home/todotemplate.webp" alt="Todo sample" />
-                        </a>
+                        <img class="template-img" src="/images/home/todotemplate.webp" alt="Todo sample" />
                     </div>
                     <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
                         The Todo sample is built with bit platform Boilerplate project template, ASP.NET Core, Identity, Web API, and EF Core and Blazor.
@@ -102,18 +98,14 @@
                     <br />
                     <div class="links-container">
                         <a class="template-link" href="@Urls.Templates">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered" Target="_blank">Live</BitButton>
+                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered" Target="_blank">Demo</BitButton>
                     </div>
                 </div>
                 <div class="template-card">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
-                        <BitLink Href="@Urls.Templates">AdminPanel sample</BitLink>
-                    </BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>AdminPanel sample</BitTypography>
                     <br />
                     <div class="template-img-container">
-                        <a href="@Urls.Templates">
-                            <img class="template-img" src="/images/home/adminpanel.webp" alt="AdminPanel sample" />
-                        </a>
+                        <img class="template-img" src="/images/home/adminpanel.webp" alt="AdminPanel sample" />
                     </div>
                     <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
                         The AdminPanel sample is built with bit platform Boilerplate project template, ASP.NET Core, Identity, Web API, and EF Core and Blazor.
@@ -121,7 +113,7 @@
                     <br />
                     <div class="links-container">
                         <a class="template-link" href="@Urls.Templates">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.AdminPanelMultiLingual" Target="_blank">Live</BitButton>
+                        <BitButton Href="@Urls.AdminPanelMultiLingual" Target="_blank">Demo</BitButton>
                     </div>
                 </div>
             </div>
@@ -219,12 +211,12 @@
         </div>
     </section>
 
-    <section class="page-section quickstart-section" id="quick-start">
+    <section class="page-section quickstart-section" id="@QUICK_START_SECTION_ID" @ref="quickStartRef">
         <div class="page-section-content">
             <BitTypography Variant="BitTypographyVariant.H3" Gutter>Quick start</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>Quickly start with the bit platform products & tools</BitTypography>
             <div class="quickstart-links">
-                <BitCompoundButton Href="https://components.bitplatform.dev/getting-started">
+                <BitCompoundButton Href="https://components.bitplatform.dev/getting-started" Id="blazorui-button">
                     <PrimaryTemplate>
                         <BitTypography Variant="BitTypographyVariant.H5">BlazorUI</BitTypography>
                     </PrimaryTemplate>
@@ -234,7 +226,7 @@
                         </BitTypography>
                     </SecondaryTemplate>
                 </BitCompoundButton>
-                <BitCompoundButton Href="https://bitplatform.dev/templates/development-prerequisites">
+                <BitCompoundButton Href="https://bitplatform.dev/templates/development-prerequisites" Id="template-button">
                     <PrimaryTemplate>
                         <BitTypography Variant="BitTypographyVariant.H5">Project templates</BitTypography>
                     </PrimaryTemplate>

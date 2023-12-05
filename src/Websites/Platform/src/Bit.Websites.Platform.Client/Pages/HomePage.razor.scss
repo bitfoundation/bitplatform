@@ -1,4 +1,5 @@
-﻿@import '../Styles/bit-css-variables.scss';
+﻿
+@import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
@@ -412,7 +413,6 @@
     }
 
     .template-img-container {
-        cursor: pointer;
         position: relative;
         padding: 55% 0 0 0;
         margin-bottom: rem2(14px);
