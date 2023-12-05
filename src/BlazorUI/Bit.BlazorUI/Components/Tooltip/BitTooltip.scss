@@ -101,9 +101,10 @@
     }
 
     .bit-ttp-arw {
+        left: 100%;
         bottom: 100%;
-        left: calc(100% - var(--bit-ttp-arrow-spacing));
-        transform: rotate(135deg) translateX(-50%);
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
     }
 }
 
