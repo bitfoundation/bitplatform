@@ -208,11 +208,18 @@ public partial class BitTooltip
     private async Task HandlePointerUp()
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
-        if (ShowOnClick is false) return;
 
-        if (IsShown is false) await Show();
-
-        if (IsShown) await Hide();
+        if (ShowOnClick)
+        {
+            if (IsShown)
+            {
+                await Hide();
+            }
+            else
+            {
+                await Show();
+            }
+        }
     }
 
     private string GetTooltipClasses()

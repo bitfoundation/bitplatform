@@ -258,7 +258,7 @@ public partial class BitTooltipDemo
     private bool showOnClick = true;
     private bool showOnHover;
     private bool hideArrow;
-    private double hideDelay;
+    private double hideDelay = 800;
 
 
 
@@ -356,7 +356,7 @@ private bool isShown = true;
 private bool showOnClick = true;
 private bool showOnHover;
 private bool hideArrow;
-private double hideDelay;
+private double hideDelay = 800;
 
 private BitTooltipPosition tooltipPosition;
 
