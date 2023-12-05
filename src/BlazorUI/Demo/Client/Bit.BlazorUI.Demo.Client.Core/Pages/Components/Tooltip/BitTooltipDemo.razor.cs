@@ -229,14 +229,21 @@ public partial class BitTooltipDemo
                    Name = "TooltipWrapper",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the Tooltip wrapper of the BitTooltip."
+                   Description = "Custom CSS classes/styles for the tooltip wrapper of the BitTooltip."
                },
                new()
                {
                    Name = "Tooltip",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the Tooltip of the BitTooltip."
+                   Description = "Custom CSS classes/styles for the tooltip of the BitTooltip."
+               },
+               new()
+               {
+                   Name = "Arrow",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the arrow of the BitTooltip."
                }
             }
         }
