@@ -760,8 +760,8 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
                         Text = ""Project Templates"",
                         ChildItems = new()
                         {
-                            new() { Text = ""TodoTemplate"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         }
                     },
                     new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
@@ -1231,8 +1231,8 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
                         Text = ""Project Templates"",
                         ChildItems = new()
                         {
-                            new() { Text = ""TodoTemplate"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         }
                     },
                     new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
@@ -1295,8 +1295,8 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
                         Text = ""Project Templates"",
                         Links = new()
                         {
-                            new() { Text = ""TodoTemplate"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         }
                     },
                     new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
@@ -1863,8 +1863,8 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
                         Text = ""Project Templates"",
                         Links = new()
                         {
-                            new() { Text = ""TodoTemplate"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
                         }
                     },
                     new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
@@ -1900,8 +1900,8 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
-                <BitNavOption IconName=""@BitIconName.ToDoLogoOutline"" Text=""TodoTemplate"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-                <BitNavOption IconName=""@BitIconName.LocalAdmin"" Text=""AdminPanel"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption IconName=""@BitIconName.ToDoLogoOutline"" Text=""Todo sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption IconName=""@BitIconName.LocalAdmin"" Text=""AdminPanel sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
             <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" IsEnabled=""false"" />
@@ -2149,8 +2149,8 @@ private BitNavOption ToggledOption;";
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
-                <BitNavOption IconName=""@BitIconName.ToDoLogoTop"" Text=""TodoTemplate"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-                <BitNavOption IconName=""@BitIconName.Admin"" Text=""AdminPanel"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption IconName=""@BitIconName.ToDoLogoTop"" Text=""Todo sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption IconName=""@BitIconName.Admin"" Text=""AdminPanel sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
             <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" IsEnabled=""false"" />
