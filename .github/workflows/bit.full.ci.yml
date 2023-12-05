@@ -29,28 +29,28 @@ jobs:
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
 
-    - name: Release build todo sample + Blazor server + sqlite database
+    - name: Release build todo sample + sqlite database
       run: |
         dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
-        dotnet new bit-bp --name TodoBPBlazorServerSqlite --database sqlite --sample todo --pipeline other
-        cd TodoBPBlazorServerSqlite/src/TodoBPBlazorServerSqlite.Server/
+        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline other
+        cd TodoBPSqlite/src/TodoBPSqlite.Server/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../../
-        dotnet build TodoBPBlazorServerSqlite/TodoBPBlazorServerSqlite.sln -c Release -p:RunAOTCompilation=false
+        dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
 
-    - name: Release build empty sample + Blazor hybrid + no database
+    - name: Release build empty sample + no database
       run: |
-        dotnet new bit-bp --name EmptyBPBlazorHybrid --database other --sample none --pipeline azure
-        dotnet build EmptyBPBlazorHybrid/EmptyBPBlazorHybrid.sln -c Release -p:RunAOTCompilation=false
+        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure
+        dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false
 
-    - name: Release build admin panel sample + Blazor webassembly + SqlServer database
+    - name: Release build admin panel sample + SqlServer database
       run: |
-        dotnet new bit-bp --name AdminBPBlazorWasmSqlServer --database sqlserver --sample admin --pipeline github
-        dotnet build AdminBPBlazorWasmSqlServer/AdminBPBlazorWasmSqlServer.sln -c Release
+        dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github
+        dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
 
-    - name: Release build bit blazor ui + bit blazor ui demo (blazor server) + butil + bswu + bup + code analyzers + source generators
+    - name: Release build bit blazor ui + butil + bswu + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release
 
     - name: Release build careers, platform, sales websites
@@ -62,13 +62,8 @@ jobs:
     - name: Run bit blazor ui tests
       run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -c Release
 
-    - name: Release build bit blazor ui demo - Blazor hybrid
+    - name: Release build bit blazor ui demo
       run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -c Release -p:RunAOTCompilation=false
-
-    - name: Release build bit blazor ui demo - Blazor webassembly - Pwa prerendered
-      run: |
-        sed -i 's/Microsoft.NET.Sdk.Web/Microsoft.NET.Sdk.BlazorWebAssembly/g' src/BlazorUI/Demo/Client/Web/Bit.BlazorUI.Demo.Client.Web.csproj
-        dotnet build src/BlazorUI/Bit.BlazorUI.sln -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="PwaPrerendered" -c Release -p:RunAOTCompilation=false
 
     - name: Create projects from BlazorEmpty project template with different parameters
       run: |

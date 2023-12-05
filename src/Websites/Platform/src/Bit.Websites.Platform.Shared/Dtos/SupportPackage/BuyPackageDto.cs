@@ -6,8 +6,5 @@ public class BuyPackageDto
     [EmailAddress]
     public string Email { get; set; } = default!;
 
-    [Required]
-    public string SalePackageTitle { get; set; } = default!;
-
     public string Message { get; set; } = default!;
 }

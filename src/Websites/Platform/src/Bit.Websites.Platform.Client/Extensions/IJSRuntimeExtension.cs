@@ -7,13 +7,8 @@ public static class IJSRuntimeExtensions
         await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
     }
 
-    public static async Task GoBack(this IJSRuntime jsRuntime)
+    public static async Task ScrollElementIntoView(this IJSRuntime jsRuntime, ElementReference element)
     {
-        await jsRuntime.InvokeVoidAsync("App.goBack");
-    }
-
-    public static async Task ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
-    {
-        await jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
+        await jsRuntime.InvokeVoidAsync("scrollElementIntoView", element);
     }
 }
