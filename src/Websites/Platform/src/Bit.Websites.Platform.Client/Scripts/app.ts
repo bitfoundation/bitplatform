@@ -1,6 +1,4 @@
-﻿//declare var hljs: any;
-
-function toggleBodyOverflow(isMenuOpen: boolean) {
+﻿function toggleBodyOverflow(isMenuOpen: boolean) {
     if (window.innerWidth <= 900) {
         if (isMenuOpen) {
             document.body.style.overflow = "hidden";
@@ -10,19 +8,12 @@ function toggleBodyOverflow(isMenuOpen: boolean) {
     }
 }
 
-function RegisterOnScrollToChangeGettingStartedSideRailStyle(element: any) {
-    window.addEventListener('scroll', (event) => {
-        if (document.documentElement.scrollTop >= 500) {
-            element.classList.add("fixed-getting-started-side-rail-section");
-        }
-        else {
-            element.classList.remove("fixed-getting-started-side-rail-section");
-        }
-    });
-}
-
 function goToTop() {
     window.scrollTo({ top: 0 });
+}
+
+function scrollElementIntoView(element: HTMLElement) {
+    element?.scrollIntoView();
 }
 
 declare class BitTheme { static init(options: any): void; };

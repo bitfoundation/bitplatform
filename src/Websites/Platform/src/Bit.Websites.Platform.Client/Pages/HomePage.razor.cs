@@ -2,13 +2,15 @@
 
 public partial class HomePage
 {
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
+    private const string QuickStartSectionId = "quick-start";
 
-        /*if (firstRender)
+    //private ElementReference quickStartRef = default!;
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        if (NavigationManager.Uri.Contains(QuickStartSectionId))
         {
-            await JSRuntime.InitTrustPilot();
-        }*/
+            //await JSRuntime.ScrollElementIntoView(quickStartRef);
+        }
     }
 }
