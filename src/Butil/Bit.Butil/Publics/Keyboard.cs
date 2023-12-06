@@ -15,7 +15,7 @@ public class Keyboard(IJSRuntime js) : IDisposable
         var listenerId = KeyboardListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.AddKeyboard(KeyboardListenersManager.InvokeMethodName, listenerId, key,
+        await js.KeyboardAdd(KeyboardListenersManager.InvokeMethodName, listenerId, key,
             modifiers.HasFlag(ButilModifiers.Alt),
             modifiers.HasFlag(ButilModifiers.Ctrl),
             modifiers.HasFlag(ButilModifiers.Meta),
@@ -50,7 +50,7 @@ public class Keyboard(IJSRuntime js) : IDisposable
             _handlers.TryRemove(id, out _);
         }
 
-        _ = js.RemoveKeyboard(ids);
+        _ = js.KeyboardRemove(ids);
     }
 
     public void Dispose()
@@ -59,7 +59,7 @@ public class Keyboard(IJSRuntime js) : IDisposable
 
         KeyboardListenersManager.RemoveListeners(ids);
 
-        _ = js.RemoveKeyboard(ids);
+        _ = js.KeyboardRemove(ids);
     }
 
     private class Listener

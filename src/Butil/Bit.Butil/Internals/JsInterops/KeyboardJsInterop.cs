@@ -6,7 +6,7 @@ namespace Bit.Butil;
 
 internal static class KeyboardJsInterop
 {
-    internal static async Task AddKeyboard(this IJSRuntime js,
+    internal static async Task KeyboardAdd(this IJSRuntime js,
         string methodName,
         Guid listenerId,
         string key,
@@ -31,7 +31,7 @@ internal static class KeyboardJsInterop
             repeat);
     }
 
-    internal static async Task RemoveKeyboard(this IJSRuntime js, Guid[] ids)
+    internal static async Task KeyboardRemove(this IJSRuntime js, Guid[] ids)
     {
         await js.InvokeVoidAsync("BitButil.keyboard.remove", ids);
     }
