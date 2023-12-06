@@ -20,11 +20,11 @@ public class Window(IJSRuntime js)
 
     public async Task AddBeforeUnload()
     {
-        await js.AddBeforeUnload();
+        await js.WindowAddBeforeUnload();
     }
 
     public async Task RemoveBeforeUnload()
     {
-        await js.RemoveBeforeUnload();
+        await js.WindowRemoveBeforeUnload();
     }
 }
