@@ -420,6 +420,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Tooltip/BitTooltipDemo.razor.css",
+        "inputFile": "Pages/Components/Tooltip/BitTooltipDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Typography/BitTypographyDemo.razor.css",
         "inputFile": "Pages/Components/Typography/BitTypographyDemo.razor.scss",
         "minify": { "enabled": false },
