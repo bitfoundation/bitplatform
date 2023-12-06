@@ -100,7 +100,6 @@ public static class ButilKeyCodes
     public const string PrintScreen = "PrintScreen";
     public const string Insert = "Insert";
     public const string Delete = "Delete";
-    public const string Windows = "Windows";
     public const string MetaLeft = "MetaLeft";
     public const string MetaRight = "MetaRight";
     public const string ContextMenu = "ContextMenu";
