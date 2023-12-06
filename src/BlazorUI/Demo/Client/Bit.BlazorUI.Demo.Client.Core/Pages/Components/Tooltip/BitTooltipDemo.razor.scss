@@ -1,0 +1,44 @@
+﻿.tooltips-container {
+    gap: 0.5rem;
+    display: flex;
+    padding-top: 1rem;
+    padding-left: 0.5rem;
+    max-width: max-content;
+    flex-flow: column wrap;
+
+    &.center {
+        gap: 1.65rem;
+        display: flex;
+        max-width: unset;
+        min-height: 10rem;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+::deep {
+    .custom-class .custom-content {
+        gap: 0.5rem;
+        padding: 0.5rem;
+        color: blueviolet;
+        border-radius: 1rem;
+        display: inline-flex;
+        box-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-root {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-tooltip {
+        color: tomato;
+        border: solid tomato;
+        border-radius: 0.5rem;
+    }
+
+    .custom-arrow {
+        border-right: solid tomato;
+        border-bottom: solid tomato;
+    }
+}
