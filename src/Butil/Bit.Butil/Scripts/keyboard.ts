@@ -8,9 +8,9 @@ var BitButil = BitButil || {};
         remove
     };
 
-    function add(methodName, listenerId, key, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat) {
+    function add(methodName, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat) {
         const handler = e => {
-            if (e.key !== key) return;
+            if (e.code !== code) return;
             
             if (!alt && e.altKey) return;
             if (!ctrl && e.ctrlKey) return;

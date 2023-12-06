@@ -10,12 +10,12 @@ public class Keyboard(IJSRuntime js) : IDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 
-    public async Task<Guid> Add(string key, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
+    public async Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
     {
         var listenerId = KeyboardListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.KeyboardAdd(KeyboardListenersManager.InvokeMethodName, listenerId, key,
+        await js.KeyboardAdd(KeyboardListenersManager.InvokeMethodName, listenerId, code,
             modifiers.HasFlag(ButilModifiers.Alt),
             modifiers.HasFlag(ButilModifiers.Ctrl),
             modifiers.HasFlag(ButilModifiers.Meta),
