@@ -384,6 +384,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Shimmer/BitShimmerDemo.razor.css",
+        "inputFile": "Pages/Components/Shimmer/BitShimmerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Slider/BitSliderDemo.razor.css",
         "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss",
         "minify": { "enabled": false },
