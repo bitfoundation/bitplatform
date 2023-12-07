@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-namespace Boilerplate.Shared.Infra;
+namespace Boilerplate.Shared.Services;
 
 public static class BuildConfiguration
 {

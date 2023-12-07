@@ -22,8 +22,6 @@ public static class Services
 
         services.AddBlazor(configuration);
 
-        services.AddClientSharedServices();
-
         //+:cnd:noEmit
 
         services.AddCors();
