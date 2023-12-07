@@ -1,4 +1,4 @@
-name: Todo CD
+name: TodoSample CD
 
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
@@ -38,12 +38,12 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name Todo --database SqlServer --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
 
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'Todo/src/Client/Todo.Client.Core/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -51,13 +51,13 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
 
     - name: Enable pre rendering
-      run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' Todo/src/Client/Todo.Client.Core/Services/AppRenderMode.cs
+      run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
 
     - name: Generate CSS/JS files
-      run: dotnet build Todo/src/Client/Todo.Client.Core/Todo.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      run: dotnet publish Todo/src/Todo.Server/Todo.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+      run: dotnet publish TodoSample/src/TodoSample.Server/TodoSample.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v3
@@ -129,12 +129,12 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name Todo --database SqlServer --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'Todo/src/Client/Todo.Client.Core/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -142,16 +142,16 @@ jobs:
       run: cd src && dotnet workload install maui
   
     - name: Generate CSS/JS files
-      run: dotnet build Todo/src/Client/Todo.Client.Core/Todo.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build exe
-      run: dotnet build Todo/src/Client/Todo.Client.Maui/Todo.Client.Maui.csproj -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: Todo/src/Client/Todo.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -176,19 +176,19 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name Todo --database SqlServer --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
       with:
-          fileDir: './Todo/src/Client/Todo.Client.Maui/'
-          fileName: 'Todo.keystore'
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
+          fileName: 'TodoSample.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'Todo/src/Client/Todo.Client.Core/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -196,16 +196,16 @@ jobs:
       run: cd src && dotnet workload install maui-android
   
     - name: Generate CSS/JS files
-      run: dotnet build Todo/src/Client/Todo.Client.Core/Todo.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build aab
-      run: dotnet build Todo/src/Client/Todo.Client.Maui/Todo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Todo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: android-bundle
-        path: Todo/src/Client/Todo.Client.Maui/bin/Release/net8.0-android/*-Signed.*
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net8.0-android/*-Signed.*
   
   build_blazor_hybrid_maccatalyst:
      name: build blazor hybrid (maccatalyst)
@@ -230,12 +230,12 @@ jobs:
          cd src/Templates/Boilerplate && dotnet build -c Release
          dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
          dotnet new install Bit.Boilerplate.0.0.0.nupkg
-         cd ../../../ && dotnet new bit-bp --name Todo --database SqlServer --sample Todo
+         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
    
      - name: Update appsettings.json api server address
        uses: microsoft/variable-substitution@v1 
        with:
-         files: 'Todo/src/Client/Todo.Client.Core/appsettings.json'
+         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
        env:
          ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -243,16 +243,16 @@ jobs:
        run: cd src && dotnet workload install maui
    
      - name: Generate CSS/JS files
-       run: dotnet build Todo/src/Client/Todo.Client.Core/Todo.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
    
      - name: Build pkg
-       run: dotnet build Todo/src/Client/Todo.Client.Maui/Todo.Client.Maui.csproj -c Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-maccatalyst
+       run: dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-maccatalyst
    
      - name: Upload artifact
        uses: actions/upload-artifact@v2
        with:
          name: mac-pkg-bundle
-         path: Todo/src/Client/Todo.Client.Maui/bin/release/net8.0-maccatalyst/*.pkg
+         path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net8.0-maccatalyst/*.pkg
 
   build_blazor_hybrid_ios:
     name: build blazor hybrid (ios)
@@ -281,12 +281,12 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name Todo --database SqlServer --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'Todo/src/Client/Todo.Client.Core/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -315,13 +315,13 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Generate CSS/JS files
-      run: dotnet build Todo/src/Client/Todo.Client.Core/Todo.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build ipa
-      run: dotnet publish Todo/src/Client/Todo.Client.Maui/Todo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Todo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoSample" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: ios-bundle
-        path: Todo/src/Client/Todo.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
