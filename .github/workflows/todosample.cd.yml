@@ -51,7 +51,7 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
 
     - name: Enable pre rendering
-      run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' Todo/src/Client/Todo.Client.Core/Services/AppRenderMode.cs
+      run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
 
     - name: Generate CSS/JS files
       run: dotnet build Todo/src/Client/Todo.Client.Core/Todo.Client.Core.csproj -t:BeforeBuildTasks --no-restore
