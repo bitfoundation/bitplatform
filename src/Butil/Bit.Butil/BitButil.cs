@@ -11,6 +11,7 @@ public static class BitButil
         services.AddScoped<Keyboard>();
         services.AddScoped<Console>();
         services.AddScoped<History>();
+        services.AddScoped<Element>();
 
         return services;
     }
