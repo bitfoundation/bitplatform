@@ -194,7 +194,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		..\.github\workflows\platform.website.cd.yml = ..\.github\workflows\platform.website.cd.yml
 		..\.github\workflows\prerelease.nuget.org.yml = ..\.github\workflows\prerelease.nuget.org.yml
 		..\.github\workflows\sales.website.cd.yml = ..\.github\workflows\sales.website.cd.yml
-		..\.github\workflows\todotemplate.cd.yml = ..\.github\workflows\todotemplate.cd.yml
+		..\.github\workflows\todosample.cd.yml = ..\.github\workflows\todosample.cd.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{D7242830-A91D-4729-BF2D-B1E7E141953E}"
