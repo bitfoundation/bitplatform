@@ -44,9 +44,9 @@
         <Using Include="Boilerplate" />
         <Using Include="Boilerplate.Shared.Dtos" />
         <Using Include="Boilerplate.Shared.Enums" />
-        <Using Include="Boilerplate.Shared.Infra" />
         <Using Include="Boilerplate.Shared.Resources" />
         <Using Include="Boilerplate.Shared.Exceptions" />
+        <Using Include="Boilerplate.Shared.Services" />
         <Using Include="Boilerplate.Shared.Services.Contracts" />
     </ItemGroup>
 

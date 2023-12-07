@@ -64,7 +64,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Shared\Boilerplate.Shared.csproj" />
-        <ProjectReference Include="..\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
         <ProjectReference Include="..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
     </ItemGroup>
 

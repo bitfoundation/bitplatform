@@ -33,7 +33,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

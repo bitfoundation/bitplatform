@@ -17,7 +17,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IStorageService, BrowserStorageService>();
 
-        services.TryAddTransient<RequestHeadersDelegationHandler>();
+        services.TryAddKeyedTransient<HttpMessageHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();

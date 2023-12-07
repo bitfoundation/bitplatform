@@ -1,6 +1,5 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Boilerplate.Server;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Server.Services;
@@ -26,7 +25,7 @@ public static class IServiceCollectionExtensions
                 apiServerAddress = new Uri(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl(), apiServerAddress);
             }
 
-            return new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>())
+            return new HttpClient(sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler"))
             {
                 BaseAddress = apiServerAddress
             };
