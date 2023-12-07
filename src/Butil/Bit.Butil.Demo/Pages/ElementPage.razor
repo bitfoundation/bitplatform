@@ -1,0 +1,38 @@
+﻿@page "/element"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Element element
+
+<PageTitle>Element Samples</PageTitle>
+
+<h1>Element</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Element element
+
+@@code {
+    ...
+    var rect = await element.GetBoundingClientRect();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+<br />
+
+<h4>Open the DevTools</h4>
+<br />
+<div style="background:blue;width:100px;height:100px" @ref="elementRef">Element</div>
+<br />
+<button @onclick="GetBoundingClientRect">GetBoundingClientRect</button>
+<br />
+
+@code {
+    private ElementReference elementRef = default!;
+
+    private async Task GetBoundingClientRect()
+    {
+        var rect = await element.GetBoundingClientRect(elementRef);
+        await console.Log("BoundingClientRect:", rect);
+    }
+}
