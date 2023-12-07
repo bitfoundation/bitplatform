@@ -45,7 +45,7 @@ public partial class EditProfilePage
     {
         user = await GetCurrentUser() ?? new();
 
-        UpdateEditProfileData();
+        user.Patch(userToEdit);
     }
 
     private async Task RefreshProfileData()
@@ -53,13 +53,6 @@ public partial class EditProfilePage
         await LoadEditProfileData();
 
         PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, user);
-    }
-
-    private void UpdateEditProfileData()
-    {
-        userToEdit.Gender = user.Gender;
-        userToEdit.FullName = user.FullName;
-        userToEdit.BirthDate = user.BirthDate;
     }
 
     private Task<UserDto?> GetCurrentUser() => PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(user)}", () => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
@@ -73,9 +66,7 @@ public partial class EditProfilePage
 
         try
         {
-            user.Patch(userToEdit);
-            user.BirthDate = userToEdit.BirthDate;
-            user.Gender = userToEdit.Gender;
+            userToEdit.Patch(user);
 
             (await (await HttpClient.PutAsJsonAsync("User/Update", userToEdit, AppJsonContext.Default.EditUserDto, CurrentCancellationToken))
                 .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto, CurrentCancellationToken))!.Patch(user);

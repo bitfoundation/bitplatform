@@ -2,6 +2,7 @@
 using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
+using Boilerplate.Client.Core.Services;
 using Boilerplate.Server.Components;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -84,8 +85,8 @@ public class Middlewares
 
             app.MapHealthChecksUI(options =>
             {
-                options.UseRelativeApiPath = 
-                    options.UseRelativeResourcesPath = 
+                options.UseRelativeApiPath =
+                    options.UseRelativeResourcesPath =
                         options.UseRelativeWebhookPath = false;
             });
         }
@@ -107,6 +108,11 @@ public class Middlewares
     /// </summary>
     private static void Configure_401_403_404_Pages(WebApplication app)
     {
+        if (AppRenderMode.PrerenderEnabled is false)
+        {
+            return;
+        }
+
         app.Use(async (context, next) =>
         {
             if (context.Request.Path.HasValue)
