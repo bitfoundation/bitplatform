@@ -73,7 +73,7 @@ public partial class EditProfilePage
 
         try
         {
-            user.FullName = userToEdit.FullName;
+            user.Patch(userToEdit);
             user.BirthDate = userToEdit.BirthDate;
             user.Gender = userToEdit.Gender;
 

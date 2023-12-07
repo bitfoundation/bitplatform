@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Net.Http.Headers;
 
@@ -9,6 +10,7 @@ public partial class ServerExceptionHandler : IExceptionHandler
 {
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
+    [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception e, CancellationToken cancellationToken)
     {
@@ -43,7 +45,7 @@ public partial class ServerExceptionHandler : IExceptionHandler
 
         httpContext.Response.StatusCode = statusCode;
 
-        await httpContext.Response.WriteAsJsonAsync(restExceptionPayload, AppJsonContext.Default.RestErrorInfo, cancellationToken: cancellationToken);
+        await httpContext.Response.WriteAsJsonAsync(restExceptionPayload, jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken: cancellationToken);
 
         return true;
     }

@@ -30,7 +30,7 @@ public static class MauiProgram
 
         services.AddTransient(sp =>
         {
-            var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();
+            var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress

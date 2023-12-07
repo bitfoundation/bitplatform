@@ -29,6 +29,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
 
+        services.TryAddTransient(sp => AppJsonContext.Default.Options);
         services.AddBitBlazorUIServices();
         services.AddSharedServices();
 

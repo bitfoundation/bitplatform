@@ -68,6 +68,7 @@ public class Middlewares
             options.InjectJavascript($"/swagger/swagger-utils.js?v={Environment.TickCount64}");
         });
 
+        app.MapGet("/api/minimal-api-sample", () => "This is a test").WithTags("Test");
         app.MapControllers().RequireAuthorization();
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
