@@ -34,6 +34,9 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 18
+
+    # - name: Enable pre rendering
+    #   run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
         
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
