@@ -153,8 +153,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Dashboard/ProductsCountPerCategotyWidget.razor.css",
-        "inputFile": "Components/Pages/Dashboard/ProductsCountPerCategotyWidget.razor.scss",
+        "outputFile": "Components/Pages/Dashboard/ProductsCountPerCategoryWidget.razor.css",
+        "inputFile": "Components/Pages/Dashboard/ProductsCountPerCategoryWidget.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

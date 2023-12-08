@@ -30,4 +30,14 @@ public static class ICollectionExtensions
         }
         return results;
     }
+
+    public static IDictionary<TKey, TValue> AddRange<TKey, TValue>(this IDictionary<TKey, TValue> source, Dictionary<TKey, TValue> items)
+    {
+        foreach (var item in items)
+        {
+            source.Add(item);
+        }
+
+        return source;
+    }
 }

@@ -1,7 +1,10 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
+﻿using Boilerplate.Client.Core.Controllers.Identity;
 
-public partial class ProductsCountPerCategotyWidget
+namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
+
+public partial class ProductsCountPerCategoryWidget
 {
+    [AutoInject] IDashboardController dashboardController = default!;
 
     private bool isLoading;
     private BitChart? chart;
@@ -30,9 +33,7 @@ public partial class ProductsCountPerCategotyWidget
         {
             isLoading = true;
 
-            var data = await PrerenderStateService.GetValue($"{nameof(DashboardPage)}-{nameof(ProductsCountPerCategotyWidget)}",
-                                async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsCountPerCategotyStats",
-                                    AppJsonContext.Default.ListProductsCountPerCategoryResponseDto, CurrentCancellationToken)) ?? [];
+            var data = await (await dashboardController.GetProductsCountPerCategoryStats(CurrentCancellationToken)).ToListAsync(CurrentCancellationToken);
 
             BitChartBarDataset<int> chartDataSet = [.. data.Select(d => d.ProductCount)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();

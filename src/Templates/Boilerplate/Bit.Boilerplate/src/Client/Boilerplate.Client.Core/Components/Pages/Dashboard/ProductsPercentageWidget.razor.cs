@@ -1,7 +1,11 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
+﻿using Boilerplate.Client.Core.Controllers.Identity;
+
+namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 
 public partial class ProductsPercentageWidget
 {
+    [AutoInject] IDashboardController dashboardController = default!;
+
     private bool isLoading;
     private BitChartPieConfig config = default!;
 
@@ -24,9 +28,7 @@ public partial class ProductsPercentageWidget
 
         try
         {
-            var data = await PrerenderStateService.GetValue($"{nameof(DashboardPage)}-{nameof(ProductsPercentageWidget)}",
-                                async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsPercentagePerCategoryStats",
-                                    AppJsonContext.Default.ListProductPercentagePerCategoryResponseDto, CurrentCancellationToken)) ?? [];
+            var data = await dashboardController.GetProductsPercentagePerCategoryStats(CurrentCancellationToken);
 
             BitChartPieDataset<float> chartDataSet = [.. data!.Select(d => d.ProductPercentage)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();

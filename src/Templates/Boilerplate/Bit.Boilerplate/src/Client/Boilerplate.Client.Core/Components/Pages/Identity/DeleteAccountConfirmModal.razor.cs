@@ -1,7 +1,11 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Identity;
+﻿using Boilerplate.Client.Core.Controllers.Identity;
+
+namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class DeleteAccountConfirmModal
 {
+    [AutoInject] IUserController userController = default!;
+
     [Parameter] public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
@@ -15,7 +19,7 @@ public partial class DeleteAccountConfirmModal
 
     private async Task DeleteAccount()
     {
-        await HttpClient.DeleteAsync("User/Delete", CurrentCancellationToken);
+        await userController.Delete(CurrentCancellationToken);
 
         await AuthenticationManager.SignOut();
 

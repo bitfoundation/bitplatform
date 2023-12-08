@@ -1,7 +1,11 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Identity;
+﻿using Boilerplate.Client.Core.Controllers.Identity;
+
+namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class EmailConfirmationPage
 {
+    [AutoInject] IIdentityController identityController = default!;
+
     private bool isLoading;
     private string? resendLinkErrors;
     private BitMessageBarType emailConfirmationMessageType = BitMessageBarType.Error;
@@ -29,7 +33,7 @@ public partial class EmailConfirmationPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto, CurrentCancellationToken);
+            await identityController.SendConfirmationEmail(new() { Email = Email }, CurrentCancellationToken);
 
             emailConfirmationMessageType = BitMessageBarType.Success;
 

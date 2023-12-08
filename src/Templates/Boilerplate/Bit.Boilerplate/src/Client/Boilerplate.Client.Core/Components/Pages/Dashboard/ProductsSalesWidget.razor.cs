@@ -1,7 +1,11 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
+﻿using Boilerplate.Client.Core.Controllers.Identity;
+
+namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 
 public partial class ProductsSalesWidget
 {
+    [AutoInject] IDashboardController dashboardController = default!;
+
     private bool isLoading;
     private BitChart? chart;
     private BitChartBarConfig config = default!;
@@ -29,9 +33,7 @@ public partial class ProductsSalesWidget
         {
             isLoading = true;
 
-            var data = await PrerenderStateService.GetValue($"{nameof(DashboardPage)}-{nameof(ProductsSalesWidget)}",
-                                async () => await HttpClient.GetFromJsonAsync($"Dashboard/GetProductsSalesStats",
-                                    AppJsonContext.Default.ListProductSaleStatResponseDto, CurrentCancellationToken)) ?? [];
+            var data = await (await dashboardController.GetProductsSalesStats(CurrentCancellationToken)).ToListAsync(CurrentCancellationToken);
 
             BitChartBarDataset<decimal> chartDataSet = [.. data.Select(d => d.SaleAmount)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();
