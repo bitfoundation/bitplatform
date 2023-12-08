@@ -24,6 +24,7 @@ var BitButil = BitButil || {};
     function removeEventListener(elementName, eventName, dotnetListenerIds, options) {
         dotnetListenerIds.forEach(id => {
             const handler = _handlers[id];
+            delete _handlers[id];
             window[elementName].removeEventListener(eventName, handler, options);
         });
     }

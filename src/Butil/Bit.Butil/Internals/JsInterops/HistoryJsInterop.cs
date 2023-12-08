@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -49,5 +50,15 @@ internal static class HistoryJsInterop
     internal static async Task HistoryReplaceState(this IJSRuntime js, object? state, string unused, string? url)
     {
         await js.InvokeVoidAsync("BitButil.history.replaceState", state, unused, url);
+    }
+
+    internal static async Task HistoryAddPopState(this IJSRuntime js, string methodName, Guid listenerId)
+    {
+        await js.InvokeVoidAsync("BitButil.history.addPopState", methodName, listenerId);
+    }
+
+    internal static async Task HistoryRemovePopState(this IJSRuntime js, Guid[] ids)
+    {
+        await js.InvokeVoidAsync("BitButil.history.removePopState", ids);
     }
 }
