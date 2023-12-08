@@ -151,7 +151,7 @@ public partial class IdentityController : AppControllerBase
         return Redirect(url);
     }
 
-    [HttpPost]
+    [HttpPost, ProducesResponseType<TokenResponseDto>(statusCode: 200)]
     public async Task SignIn(SignInRequestDto signInRequest)
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;

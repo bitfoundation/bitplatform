@@ -1,8 +1,9 @@
 ﻿using System.Net;
+using System.Text.Json;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, HttpClientHandler httpClientHandler)
+public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, JsonSerializerOptions jsonSerializerOptions, HttpClientHandler httpClientHandler)
     : DelegatingHandler(httpClientHandler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -19,7 +20,7 @@ public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, 
             {
                 if (response.Headers.TryGetValues("Request-ID", out IEnumerable<string>? values) && values is not null && values.Any())
                 {
-                    RestErrorInfo restError = (await response!.Content.ReadFromJsonAsync(AppJsonContext.Default.RestErrorInfo, cancellationToken))!;
+                    RestErrorInfo restError = (await response!.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken))!;
 
                     Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType!) ?? typeof(UnknownException);
 
