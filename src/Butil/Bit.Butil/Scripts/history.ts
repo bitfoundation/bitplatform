@@ -1,6 +1,8 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
+    const _handlers = {};
+
     butil.history = {
         length,
         scrollRestoration,
@@ -10,7 +12,9 @@ var BitButil = BitButil || {};
         forward,
         go,
         pushState,
-        replaceState
+        replaceState,
+        addPopState,
+        removePopState
     };
 
     function length() {
@@ -47,5 +51,22 @@ var BitButil = BitButil || {};
 
     function replaceState(state, unused, url) {
         window.history.replaceState(state, unused, url);
+    }
+
+    function addPopState(methodName, listenerId) {
+        const handler = e => {
+            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, e.state);
+        };
+
+        _handlers[listenerId] = handler;
+        window.addEventListener('popstate', handler);
+    }
+
+    function removePopState(ids) {
+        ids.forEach(id => {
+            const handler = _handlers[id];
+            delete _handlers[id];
+            window.removeEventListener('popstate', handler);
+        });
     }
 }(BitButil));

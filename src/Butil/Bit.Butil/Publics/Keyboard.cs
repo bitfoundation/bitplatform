@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -60,12 +60,5 @@ public class Keyboard(IJSRuntime js) : IDisposable
         KeyboardListenersManager.RemoveListeners(ids);
 
         _ = js.KeyboardRemove(ids);
-    }
-
-    private class Listener
-    {
-        public string? Key { get; set; }
-        public Action? Handler { get; set; }
-        public ButilModifiers Modifiers { get; set; }
     }
 }
