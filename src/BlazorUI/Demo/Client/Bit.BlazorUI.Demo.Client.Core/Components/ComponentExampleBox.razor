@@ -40,7 +40,10 @@
             </BitActionButton>
 
             <pre class="code">
-                <code class="language-cshtml">@RazorCode.Trim()</code>
+                @if (RazorCode.HasValue())
+                {
+                    <code class="language-cshtml">@RazorCode.Trim()</code>
+                }
 
                 @if (CsharpCode.HasValue())
                 {
