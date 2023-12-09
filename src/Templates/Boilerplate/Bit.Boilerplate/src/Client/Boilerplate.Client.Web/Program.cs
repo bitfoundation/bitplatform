@@ -1,5 +1,4 @@
-﻿using Boilerplate.Client.Core.Services.HttpMessageHandlers;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+﻿using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -18,9 +17,10 @@ builder.Services.AddClientWebServices();
 
 var host = builder.Build();
 
-#if MultilingualEnabled
-var culture = await host.Services.GetRequiredService<IStorageService>().GetItem("Culture");
-CultureInfoManager.SetCurrentCulture(culture);
-#endif
+if (AppRenderMode.MultilingualEnabled)
+{
+    var culture = await host.Services.GetRequiredService<IStorageService>().GetItem("Culture");
+    CultureInfoManager.SetCurrentCulture(culture);
+}
 
 await host.RunAsync();

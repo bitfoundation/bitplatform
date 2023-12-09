@@ -50,15 +50,16 @@ public class Middlewares
         app.UseAuthorization();
         app.UseAntiforgery();
 
-#if MultilingualEnabled
-        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
-        app.UseRequestLocalization(new RequestLocalizationOptions
+        if (AppRenderMode.MultilingualEnabled)
         {
-            SupportedCultures = supportedCultures,
-            SupportedUICultures = supportedCultures,
-            ApplyCurrentCultureToResponseHeaders = true
-        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
-#endif
+            var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures,
+                ApplyCurrentCultureToResponseHeaders = true
+            }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+        }
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 

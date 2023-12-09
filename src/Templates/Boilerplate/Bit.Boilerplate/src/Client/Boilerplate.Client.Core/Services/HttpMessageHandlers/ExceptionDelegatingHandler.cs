@@ -52,7 +52,7 @@ public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, 
         }
         catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false)
             || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException
-            || exp is HttpRequestException { StatusCode : HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable })
+            || exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable })
         {
             throw new ServerConnectionException(nameof(AppStrings.ServerConnectionException), exp);
         }
