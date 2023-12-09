@@ -33,6 +33,7 @@ var BitButil = BitButil || {};
     function remove(ids) {
         ids.forEach(id => {
             const handler = _handlers[id];
+            delete _handlers[id];
             document.removeEventListener('keydown', handler);
         });
     }

@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -8,8 +11,10 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: https://developer.mozilla.org/en-US/docs/Web/API/History
 /// </summary>
-public class History(IJSRuntime js)
+public class History(IJSRuntime js) : IDisposable
 {
+    private readonly ConcurrentDictionary<Guid, Action<object>> _handlers = new();
+
     /// <summary>
     /// Returns an Integer representing the number of elements in the session history, including the currently loaded page.
     /// For example, for a page loaded in a new tab this property returns 1.
@@ -81,7 +86,6 @@ public class History(IJSRuntime js)
         await js.HistoryPushState(state, string.Empty, url);
     }
 
-
     /// <summary>
     /// Updates the most recent entry on the history stack to have the specified data, title, and, if provided, URL.
     /// </summary>
@@ -90,5 +94,59 @@ public class History(IJSRuntime js)
     public async Task ReplaceState(object? state = null, string? url = null)
     {
         await js.HistoryReplaceState(state, string.Empty, url);
+    }
+
+    /// <summary>
+    /// The popstate event of the Window interface is fired when the active history entry changes while the user navigates the session history.
+    /// </summary>
+    public async Task<Guid> AddPopState(Action<object> handler)
+    {
+        var listenerId = HistoryListenersManager.AddListener(handler);
+        _handlers.TryAdd(listenerId, handler);
+
+        await js.HistoryAddPopState(HistoryListenersManager.InvokeMethodName, listenerId);
+
+        return listenerId;
+    }
+
+    /// <summary>
+    /// The popstate event of the Window interface is fired when the active history entry changes while the user navigates the session history.
+    /// </summary>
+    public Guid[] RemovePopState(Action<object> handler)
+    {
+        var ids = HistoryListenersManager.RemoveListener(handler);
+
+        RemovePopState(ids);
+
+        return ids;
+    }
+
+    /// <summary>
+    /// The popstate event of the Window interface is fired when the active history entry changes while the user navigates the session history.
+    /// </summary>
+    public void RemovePopState(Guid id)
+    {
+        HistoryListenersManager.RemoveListeners([id]);
+
+        RemovePopState([id]);
+    }
+
+    private void RemovePopState(Guid[] ids)
+    {
+        foreach (var id in ids)
+        {
+            _handlers.TryRemove(id, out _);
+        }
+
+        _ = js.HistoryRemovePopState(ids);
+    }
+
+    public void Dispose()
+    {
+        var ids = _handlers.Select(h => h.Key).ToArray();
+
+        HistoryListenersManager.RemoveListeners(ids);
+
+        _ = js.HistoryRemovePopState(ids);
     }
 }
