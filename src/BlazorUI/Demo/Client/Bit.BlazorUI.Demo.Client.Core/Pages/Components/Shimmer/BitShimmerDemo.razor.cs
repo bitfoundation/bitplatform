@@ -193,6 +193,39 @@ private int isDataLoaded;";
 
     private readonly string example5RazorCode = @"
 <style>
+    .custom-class {
+        border-radius: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-wrapper {
+        border: solid tomato;
+        border-radius: 0.5rem;
+    }
+
+    .custom-shimmer {
+        background: linear-gradient(90deg, transparent, darkred, transparent);
+    }
+</style>
+
+
+<BitShimmer Height=""2.7rem"" Class=""custom-class"" />
+
+<BitShimmer Height=""2.7rem"" 
+            Styles=""@(new() { ShimmerWrapper = ""background-color: darkgoldenrod;"",
+                              Shimmer=""background-color: darkgoldenrod;"" })"" />
+
+<BitShimmer Height=""2.7rem"" 
+            Classes=""@(new() { Root = ""custom-root"",
+                               ShimmerWrapper = ""custom-wrapper"",
+                               Shimmer=""custom-shimmer"" })"" />";
+
+    private readonly string example6RazorCode = @"
+<style>
     .custom-content {
         gap: 1.7rem;
         width: 100%;
@@ -206,6 +239,7 @@ private int isDataLoaded;";
         align-items: start;
     }
 </style>
+
 
 <BitShimmer IsDataLoaded=""@isContentLoaded"" AriaLabel=""Loading content"" Height=""3.5rem"">
     <Content>
@@ -227,7 +261,7 @@ private int isDataLoaded;";
 </BitShimmer>
 
 <BitToggleButton @bind-IsChecked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private int isContentLoaded;";
 
 }

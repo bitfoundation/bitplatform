@@ -15,4 +15,22 @@
         flex-flow: column;
         align-items: start;
     }
+
+    .custom-class {
+        border-radius: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-wrapper {
+        border: solid tomato;
+        border-radius: 0.5rem;
+    }
+
+    .custom-shimmer {
+        background: linear-gradient(90deg, transparent, darkred, transparent);
+    }
 }
