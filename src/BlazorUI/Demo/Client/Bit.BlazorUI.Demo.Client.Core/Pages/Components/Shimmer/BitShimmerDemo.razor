@@ -29,10 +29,13 @@
             <br />
             <div class="shimmer-container">
                 <BitLabel>Line</BitLabel>
-                <BitShimmer Height="2.7rem" />
-                <br/>
+                <BitShimmer Height="1.5rem" />
+                <br />
                 <BitLabel>Circle</BitLabel>
                 <BitShimmer Shape="BitShimmerShape.Circle" Height="2.7rem" />
+                <br />
+                <BitLabel>Rectangle</BitLabel>
+                <BitShimmer Shape="BitShimmerShape.Rectangle" Height="2.7rem" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -45,12 +48,12 @@
             <br />
             <div class="shimmer-container">
                 <BitLabel>Wave</BitLabel>
-                <BitShimmer Height="2.7rem" />
+                <BitShimmer Height="1.5rem" />
                 <br />
                 <BitLabel>Pulse</BitLabel>
                 <div class="custom-content">
                     <BitShimmer Animation="BitShimmerAnimation.Pulse" Shape="BitShimmerShape.Circle" Height="3.5rem" />
-                    <BitShimmer Animation="BitShimmerAnimation.Pulse" Height="2.7rem" Width="100%"/>
+                    <BitShimmer Animation="BitShimmerAnimation.Pulse" Shape="BitShimmerShape.Rectangle" Height="2.7rem" Width="100%" />
                 </div>
             </div>
         </ExamplePreview>
@@ -79,19 +82,23 @@
             <br /><br />
             <div>Component's Style & Class:</div><br />
             <div class="shimmer-container">
-                <BitShimmer Height="2.7rem" Class="custom-class" />
+                <BitShimmer Height="2.7rem"
+                            Class="custom-class"
+                            Shape="BitShimmerShape.Rectangle" />
             </div>
             <br /><br /><br />
             <div><b>Styles</b> & <b>Classes</b>:</div><br />
             <div class="shimmer-container">
-                <BitShimmer Height="2.7rem" 
-                            Styles="@(new() { ShimmerWrapper = "background-color: darkgoldenrod;",
-                                              Shimmer="background-color: darkgoldenrod;" })" />
+                <BitShimmer Height="2.7rem"
+                            Shape="BitShimmerShape.Rectangle"
+                            Styles="@(new() { Shimmer="background-color: darkgoldenrod;",
+                                              ShimmerWrapper = "background-color: darkgoldenrod;" })" />
                 <br /><br />
-                <BitShimmer Height="2.7rem" 
+                <BitShimmer Height="2.7rem"
+                            Shape="BitShimmerShape.Rectangle"
                             Classes="@(new() { Root = "custom-root",
-                                               ShimmerWrapper = "custom-wrapper",
-                                               Shimmer="custom-shimmer" })" />
+                                               Shimmer="custom-shimmer",
+                                               ShimmerWrapper = "custom-wrapper" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -103,21 +110,29 @@
             </div>
             <br />
             <div class="shimmer-container">
-                <BitShimmer IsDataLoaded="@isContentLoaded" AriaLabel="Loading content" Height="3.5rem">
+                <BitShimmer IsDataLoaded="@isContentLoaded" AriaLabel="Loading content" Width="15.1rem">
                     <Content>
+                        <BitImage Alt="Basic BitImage" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png" />
+                        <br />
                         <BitPersona Text="Annie Lindqvist"
                                     SecondaryText="Software Engineer"
                                     Size="@BitPersonaSize.Size56"
                                     Presence="@BitPersonaPresenceStatus.Online"
                                     ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png" />
+                        <br />
                     </Content>
                     <ShimmerTemplate>
-                        <div class="custom-content">
-                            <BitShimmer Shape="BitShimmerShape.Circle" Height="3.5rem" />
-                            <div class="custom-content column">
-                                <BitShimmer Shape="BitShimmerShape.Line" Height="1.25rem" Width="8.5rem" />
-                                <BitShimmer Shape="BitShimmerShape.Line" Height="0.75rem" Width="7.0rem" />
+                        <div>
+                            <BitShimmer Shape="BitShimmerShape.Rectangle" Height="8rem" />
+                            <br />
+                            <div class="custom-content">
+                                <BitShimmer Shape="BitShimmerShape.Circle" Height="3.5rem" />
+                                <div class="custom-content column">
+                                    <BitShimmer Height="1.25rem" Width="8.5rem" />
+                                    <BitShimmer Height="0.75rem" Width="7rem" />
+                                </div>
                             </div>
+                            <br />
                         </div>
                     </ShimmerTemplate>
                 </BitShimmer>

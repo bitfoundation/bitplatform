@@ -121,6 +121,11 @@ public partial class BitShimmerDemo
                 {
                     Name = "Circle",
                     Value = "1"
+                },
+                new()
+                {
+                    Name = "Rectangle",
+                    Value = "2"
                 }
             }
         }
@@ -172,15 +177,17 @@ public partial class BitShimmerDemo
 <BitShimmer Height=""1.5rem"" />";
 
     private readonly string example2RazorCode = @"
-<BitShimmer Height=""2.7rem"" />
+<BitShimmer Height=""1.5rem"" />
 
-<BitShimmer Shape=""BitShimmerShape.Circle"" Height=""2.7rem"" />";
+<BitShimmer Shape=""BitShimmerShape.Circle"" Height=""2.7rem"" />
+
+<BitShimmer Shape=""BitShimmerShape.Rectangle"" Height=""2.7rem"" />";
 
     private readonly string example3RazorCode = @"
 <BitShimmer Height=""2.7rem"" />
 
 <BitShimmer Animation=""BitShimmerAnimation.Pulse"" Shape=""BitShimmerShape.Circle"" Height=""3.5rem"" />
-<BitShimmer Animation=""BitShimmerAnimation.Pulse"" Height=""2.7rem"" Width=""100%""/>";
+<BitShimmer Animation=""BitShimmerAnimation.Pulse"" Shape=""BitShimmerShape.Rectangle"" Height=""2.7rem"" Width=""100%"" />";
 
     private readonly string example4RazorCode = @"
 <BitShimmer IsDataLoaded=""@isDataLoaded"" AriaLabel=""Loading content"" Height=""1.5rem"">
@@ -202,27 +209,32 @@ private int isDataLoaded;";
         text-shadow: aqua 0 0 0.5rem;
     }
 
+    .custom-shimmer {
+        background: linear-gradient(90deg, transparent, darkred, transparent);
+    }
+
     .custom-wrapper {
         border: solid tomato;
         border-radius: 0.5rem;
     }
-
-    .custom-shimmer {
-        background: linear-gradient(90deg, transparent, darkred, transparent);
-    }
 </style>
 
 
-<BitShimmer Height=""2.7rem"" Class=""custom-class"" />
+<BitShimmer Height=""2.7rem""
+            Class=""custom-class""
+            Shape=""BitShimmerShape.Rectangle"" />
 
-<BitShimmer Height=""2.7rem"" 
-            Styles=""@(new() { ShimmerWrapper = ""background-color: darkgoldenrod;"",
-                              Shimmer=""background-color: darkgoldenrod;"" })"" />
 
-<BitShimmer Height=""2.7rem"" 
+<BitShimmer Height=""2.7rem""
+            Shape=""BitShimmerShape.Rectangle""
+            Styles=""@(new() { Shimmer=""background-color: darkgoldenrod;"",
+                              ShimmerWrapper = ""background-color: darkgoldenrod;"" })"" />
+
+<BitShimmer Height=""2.7rem""
+            Shape=""BitShimmerShape.Rectangle""
             Classes=""@(new() { Root = ""custom-root"",
-                               ShimmerWrapper = ""custom-wrapper"",
-                               Shimmer=""custom-shimmer"" })"" />";
+                               Shimmer=""custom-shimmer"",
+                               ShimmerWrapper = ""custom-wrapper"" })"" />";
 
     private readonly string example6RazorCode = @"
 <style>
@@ -241,21 +253,29 @@ private int isDataLoaded;";
 </style>
 
 
-<BitShimmer IsDataLoaded=""@isContentLoaded"" AriaLabel=""Loading content"" Height=""3.5rem"">
+<BitShimmer IsDataLoaded=""@isContentLoaded"" AriaLabel=""Loading content"" Width=""15.1rem"">
     <Content>
+        <BitImage Alt=""Basic BitImage"" Src=""_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" />
+        <br />
         <BitPersona Text=""Annie Lindqvist""
                     SecondaryText=""Software Engineer""
                     Size=""@BitPersonaSize.Size56""
                     Presence=""@BitPersonaPresenceStatus.Online""
                     ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
+        <br />
     </Content>
     <ShimmerTemplate>
-        <div class=""custom-content"">
-            <BitShimmer Shape=""BitShimmerShape.Circle"" Height=""3.5rem"" />
-            <div class=""custom-content column"">
-                <BitShimmer Shape=""BitShimmerShape.Line"" Height=""1.25rem"" Width=""8.5rem"" />
-                <BitShimmer Shape=""BitShimmerShape.Line"" Height=""0.75rem"" Width=""7.0rem"" />
+        <div>
+            <BitShimmer Shape=""BitShimmerShape.Rectangle"" Height=""8rem"" />
+            <br />
+            <div class=""custom-content"">
+                <BitShimmer Shape=""BitShimmerShape.Circle"" Height=""3.5rem"" />
+                <div class=""custom-content column"">
+                    <BitShimmer Height=""1.25rem"" Width=""8.5rem"" />
+                    <BitShimmer Height=""0.75rem"" Width=""7rem"" />
+                </div>
             </div>
+            <br />
         </div>
     </ShimmerTemplate>
 </BitShimmer>
@@ -263,5 +283,4 @@ private int isDataLoaded;";
 <BitToggleButton @bind-IsChecked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
     private readonly string example6CsharpCode = @"
 private int isContentLoaded;";
-
 }
