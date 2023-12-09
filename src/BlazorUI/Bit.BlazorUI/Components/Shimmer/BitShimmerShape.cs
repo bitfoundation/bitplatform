@@ -3,5 +3,6 @@
 public enum BitShimmerShape
 {
     Line,
-    Circle
+    Circle,
+    Rectangle
 }

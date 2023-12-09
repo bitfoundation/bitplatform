@@ -99,6 +99,7 @@ public partial class BitShimmer
     {
         BitShimmerShape.Line => "bit-smr-lin",
         BitShimmerShape.Circle => "bit-smr-crl",
+        BitShimmerShape.Rectangle => "bit-smr-rct",
         _ => "bit-smr-lin"
     };
 
