@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core.Controllers.Identity;
 
-[RoutePrefix("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/")]
 public interface IIdentityController : IAppController
 {
     [HttpPost]

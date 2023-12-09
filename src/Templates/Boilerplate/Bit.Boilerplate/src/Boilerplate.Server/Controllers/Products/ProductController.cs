@@ -31,7 +31,7 @@ public partial class ProductController : AppControllerBase, IProductController
         return new PagedResult<ProductDto>(query.AsAsyncEnumerable(), totalCount);
     }
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id}")]
     public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
     {
         var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
@@ -69,7 +69,7 @@ public partial class ProductController : AppControllerBase, IProductController
         return productToUpdate.Map();
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
         DbContext.Remove(new Product { Id = id });

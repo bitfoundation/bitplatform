@@ -44,7 +44,7 @@ public partial class CategoriesPage
             {
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
 
-                categoryController.QueryString.AddRange(new()
+                categoryController.AddQueryString(new()
                 {
                     { "$top", req.Count ?? 10 },
                     { "$skip", req.StartIndex }
@@ -52,12 +52,12 @@ public partial class CategoriesPage
 
                 if (string.IsNullOrEmpty(categoryNameFilter) is false)
                 {
-                    categoryController.QueryString.Add("$filter", $"contains(Name,'{categoryNameFilter}')");
+                    categoryController.AddQueryString("$filter", $"contains(Name,'{categoryNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
                 {
-                    categoryController.QueryString.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
+                    categoryController.AddQueryString("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
                 var data = await categoryController.GetCategories(CurrentCancellationToken);

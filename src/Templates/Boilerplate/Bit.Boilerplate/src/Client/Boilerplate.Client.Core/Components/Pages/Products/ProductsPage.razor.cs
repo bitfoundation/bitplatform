@@ -44,7 +44,7 @@ public partial class ProductsPage
             try
             {
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-                productController.QueryString.AddRange(new ()
+                productController.AddQueryString(new ()
                 {
                     { "$top", req.Count ?? 10 },
                     { "$skip", req.StartIndex }
@@ -52,12 +52,12 @@ public partial class ProductsPage
 
                 if (string.IsNullOrEmpty(productNameFilter) is false)
                 {
-                    productController.QueryString.Add("$filter", $"contains(Name,'{productNameFilter}')");
+                    productController.AddQueryString("$filter", $"contains(Name,'{productNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
                 {
-                    productController.QueryString.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
+                    productController.AddQueryString("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
                 var data = await productController.GetProducts(CurrentCancellationToken);

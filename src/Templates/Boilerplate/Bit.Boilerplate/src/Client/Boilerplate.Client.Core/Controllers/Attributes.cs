@@ -1,7 +1,7 @@
-﻿namespace Microsoft.AspNetCore.Mvc;
+﻿namespace Boilerplate.Client.Core.Controllers;
 
 [AttributeUsage(AttributeTargets.Interface)]
-internal class RoutePrefixAttribute(string template) : Attribute
+internal class RouteAttribute(string template) : Attribute
 {
     public string Template { get; } = template;
 }

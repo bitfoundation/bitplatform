@@ -31,7 +31,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         return new PagedResult<CategoryDto>(query.AsAsyncEnumerable(), totalCount);
     }
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id}")]
     public async Task<CategoryDto> Get(int id, CancellationToken cancellationToken)
     {
         var category = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
@@ -69,7 +69,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         return categoryToUpdate.Map();
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
         if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))

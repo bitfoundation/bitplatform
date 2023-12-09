@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core.Controllers.Categories;
 
-[RoutePrefix("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/")]
 public interface ICategoryController : IAppController
 {
     [HttpGet("{id}")]

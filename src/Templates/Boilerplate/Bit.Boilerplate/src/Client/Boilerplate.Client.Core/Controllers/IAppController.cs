@@ -2,5 +2,6 @@
 
 public interface IAppController
 {
-    Dictionary<string, object?> QueryString => [];
+    void AddQueryString(string key, object? value) { }
+    void AddQueryString(Dictionary<string, object?> queryString) { }
 }

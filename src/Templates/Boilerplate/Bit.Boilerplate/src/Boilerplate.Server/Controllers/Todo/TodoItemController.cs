@@ -34,7 +34,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
         return new PagedResult<TodoItemDto>(query.AsAsyncEnumerable(), totalCount);
     }
 
-    [HttpGet("{id:int}")]
+    [HttpGet("{id}")]
     public async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken)
     {
         var todoItem = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
@@ -76,7 +76,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
         return todoItemToUpdate.Map();
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
         DbContext.Remove(new TodoItem { Id = id });
