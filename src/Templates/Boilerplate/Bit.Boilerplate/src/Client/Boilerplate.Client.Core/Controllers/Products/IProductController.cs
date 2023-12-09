@@ -2,9 +2,10 @@
 
 namespace Boilerplate.Client.Core.Controllers.Identity;
 
-public interface IProductController : IAppControllerBase
+[RoutePrefix("api/[controller]/[action]/")]
+public interface IProductController : IAppController
 {
-    [HttpGet]
+    [HttpGet("{id}")]
     Task<ProductDto> Get(int id, CancellationToken cancellationToken = default);
 
     [HttpPost]
@@ -13,7 +14,7 @@ public interface IProductController : IAppControllerBase
     [HttpPut]
     Task<ProductDto> Update(ProductDto body, CancellationToken cancellationToken = default);
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     Task Delete(int id, CancellationToken cancellationToken = default);
 
     [HttpGet]

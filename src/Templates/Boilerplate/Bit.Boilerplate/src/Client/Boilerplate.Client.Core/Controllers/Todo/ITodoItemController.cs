@@ -2,9 +2,10 @@
 
 namespace Boilerplate.Client.Core.Controllers.Todo;
 
-public interface ITodoItemController : IAppControllerBase
+[RoutePrefix("api/[controller]/[action]/")]
+public interface ITodoItemController : IAppController
 {
-    [HttpGet]
+    [HttpGet($"{{id}}")]
     Task<TodoItemDto> Get(int id, CancellationToken cancellationToken = default);
 
     [HttpPost]
@@ -13,7 +14,7 @@ public interface ITodoItemController : IAppControllerBase
     [HttpPut]
     Task<TodoItemDto> Update(TodoItemDto body, CancellationToken cancellationToken = default);
 
-    [HttpDelete]
+    [HttpDelete($"{{id}}")]
     Task Delete(int id, CancellationToken cancellationToken = default);
 
     [HttpGet]

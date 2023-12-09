@@ -1,16 +1,37 @@
 ﻿namespace Microsoft.AspNetCore.Mvc;
 
-[AttributeUsage(AttributeTargets.Method)]
-internal class HttpGetAttribute : Attribute { }
+[AttributeUsage(AttributeTargets.Interface)]
+internal class RoutePrefixAttribute(string template) : Attribute
+{
+    public string Template { get; } = template;
+}
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpPostAttribute : Attribute { }
+internal class HttpGetAttribute(string? template = null) : Attribute
+{
+    public string? Template { get; } = template;
+}
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpPutAttribute : Attribute { }
+internal class HttpPostAttribute(string? template = null) : Attribute
+{
+    public string? Template { get; } = template;
+}
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpDeleteAttribute : Attribute { }
+internal class HttpPutAttribute(string? template = null) : Attribute
+{
+    public string? Template { get; } = template;
+}
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpPatchAttribute : Attribute { }
+internal class HttpDeleteAttribute(string? template = null) : Attribute
+{
+    public string? Template { get; } = template;
+}
+
+[AttributeUsage(AttributeTargets.Method)]
+internal class HttpPatchAttribute(string? template = null) : Attribute
+{
+    public string? Template { get; } = template;
+}

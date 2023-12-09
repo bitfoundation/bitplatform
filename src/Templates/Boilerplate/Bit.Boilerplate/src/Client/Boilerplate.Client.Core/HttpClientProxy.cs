@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
+using System.Threading;
 using System.Web;
+using Boilerplate.Client.Core.Controllers;
 using Boilerplate.Client.Core.Controllers.Categories;
 using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Client.Core.Controllers.Todo;
@@ -21,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<IDashboardController, DashboardController>();
             services.TryAddTransient<IUserController, UserController>();
             services.TryAddTransient<IIdentityController, IdentityController>();
+            services.TryAddTransient<IMinimalApiController, MinimalApiController>();
         }
     }
 }
@@ -53,7 +56,7 @@ namespace Boilerplate.Client.Core.Services
     {
         public virtual async Task<IAsyncEnumerable<CategoryDto>> Get(CancellationToken cancellationToken = default)
         {
-            var url = $"Category/Get{BuildQueryString(QueryString)}";
+            var url = $"api/Category/Get{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -65,7 +68,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<CategoryDto> Get(int id, CancellationToken cancellationToken = default)
         {
-            var url = $"Category/Get/{id}{BuildQueryString(QueryString)}";
+            var url = $"api/Category/Get/{id}{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -77,7 +80,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<PagedResult<CategoryDto>> GetCategories(CancellationToken cancellationToken = default)
         {
-            var url = $"Category/GetCategories{BuildQueryString(QueryString)}";
+            var url = $"api/Category/GetCategories{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -89,7 +92,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<CategoryDto> Create(CategoryDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Category/Create{BuildQueryString(QueryString)}";
+            var url = $"api/Category/Create{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -105,7 +108,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<CategoryDto> Update(CategoryDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Category/Update{BuildQueryString(QueryString)}";
+            var url = $"api/Category/Update{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -121,7 +124,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task Delete(int id, CancellationToken cancellationToken = default)
         {
-            var url = $"Category/Delete/{id}{BuildQueryString(QueryString)}";
+            var url = $"api/Category/Delete/{id}{BuildQueryString(QueryString)}";
 
             await httpClient.DeleteAsync(url, cancellationToken);
         }
@@ -131,7 +134,7 @@ namespace Boilerplate.Client.Core.Services
     {
         public virtual async Task<ProductDto> Get(int id, CancellationToken cancellationToken = default)
         {
-            var url = $"Product/Get/{id}{BuildQueryString(QueryString)}";
+            var url = $"api/Product/Get/{id}{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -143,7 +146,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken = default)
         {
-            var url = $"Product/GetProducts{BuildQueryString(QueryString)}";
+            var url = $"api/Product/GetProducts{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -155,7 +158,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<ProductDto> Create(ProductDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Product/Create{BuildQueryString(QueryString)}";
+            var url = $"api/Product/Create{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -171,7 +174,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<ProductDto> Update(ProductDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Product/Update{BuildQueryString(QueryString)}";
+            var url = $"api/Product/Update{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -187,7 +190,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task Delete(int id, CancellationToken cancellationToken = default)
         {
-            var url = $"Product/Delete/{id}{BuildQueryString(QueryString)}";
+            var url = $"api/Product/Delete/{id}{BuildQueryString(QueryString)}";
 
             await httpClient.DeleteAsync(url, cancellationToken);
         }
@@ -197,7 +200,7 @@ namespace Boilerplate.Client.Core.Services
     {
         public virtual async Task<IAsyncEnumerable<TodoItemDto>> Get(CancellationToken cancellationToken = default)
         {
-            var url = $"TodoItem/Get{BuildQueryString(QueryString)}";
+            var url = $"api/TodoItem/Get{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -209,7 +212,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken = default)
         {
-            var url = $"TodoItem/Get/{id}{BuildQueryString(QueryString)}";
+            var url = $"api/TodoItem/Get/{id}{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -221,7 +224,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<PagedResult<TodoItemDto>> GetTodoItems(CancellationToken cancellationToken = default)
         {
-            var url = $"TodoItem/GetTodoItems{BuildQueryString(QueryString)}";
+            var url = $"api/TodoItem/GetTodoItems{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -233,7 +236,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<TodoItemDto> Create(TodoItemDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"TodoItem/Create{BuildQueryString(QueryString)}";
+            var url = $"api/TodoItem/Create{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -249,7 +252,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<TodoItemDto> Update(TodoItemDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"TodoItem/Update{BuildQueryString(QueryString)}";
+            var url = $"api/TodoItem/Update{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -265,7 +268,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task Delete(int id, CancellationToken cancellationToken = default)
         {
-            var url = $"TodoItem/Delete/{id}{BuildQueryString(QueryString)}";
+            var url = $"api/TodoItem/Delete/{id}{BuildQueryString(QueryString)}";
 
             await httpClient.DeleteAsync(url, cancellationToken);
         }
@@ -275,7 +278,7 @@ namespace Boilerplate.Client.Core.Services
     {
         public virtual async Task<OverallAnalyticsStatsDataResponseDto> GetOverallAnalyticsStatsData(CancellationToken cancellationToken = default)
         {
-            var url = $"Dashboard/GetOverallAnalyticsStatsData{BuildQueryString(QueryString)}";
+            var url = $"api/Dashboard/GetOverallAnalyticsStatsData{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -287,7 +290,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<IAsyncEnumerable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken = default)
         {
-            var url = $"Dashboard/GetProductsCountPerCategoryStats{BuildQueryString(QueryString)}";
+            var url = $"api/Dashboard/GetProductsCountPerCategoryStats{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -299,7 +302,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<IAsyncEnumerable<ProductSaleStatResponseDto>> GetProductsSalesStats(CancellationToken cancellationToken = default)
         {
-            var url = $"Dashboard/GetProductsSalesStats{BuildQueryString(QueryString)}";
+            var url = $"api/Dashboard/GetProductsSalesStats{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -311,7 +314,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<ProductPercentagePerCategoryResponseDto[]> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken = default)
         {
-            var url = $"Dashboard/GetProductsPercentagePerCategoryStats{BuildQueryString(QueryString)}";
+            var url = $"api/Dashboard/GetProductsPercentagePerCategoryStats{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -326,7 +329,7 @@ namespace Boilerplate.Client.Core.Services
     {
         public virtual async Task SignUp(SignUpRequestDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Identity/SignUp{BuildQueryString(QueryString)}";
+            var url = $"api/Identity/SignUp{BuildQueryString(QueryString)}";
 
             var requestJsonTypeInfo = options.GetTypeInfo<SignUpRequestDto>();
 
@@ -335,7 +338,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task SendConfirmationEmail(SendConfirmationEmailRequestDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Identity/SendConfirmationEmail{BuildQueryString(QueryString)}";
+            var url = $"api/Identity/SendConfirmationEmail{BuildQueryString(QueryString)}";
 
             var requestJsonTypeInfo = options.GetTypeInfo<SendConfirmationEmailRequestDto>();
 
@@ -344,7 +347,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<TokenResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Identity/SignIn{BuildQueryString(QueryString)}";
+            var url = $"api/Identity/SignIn{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -360,7 +363,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<TokenResponseDto> Refresh(RefreshRequestDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Identity/Refresh{BuildQueryString(QueryString)}";
+            var url = $"api/Identity/Refresh{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -376,7 +379,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Identity/SendResetPasswordEmail{BuildQueryString(QueryString)}";
+            var url = $"api/Identity/SendResetPasswordEmail{BuildQueryString(QueryString)}";
 
             var requestJsonTypeInfo = options.GetTypeInfo<SendResetPasswordEmailRequestDto>();
 
@@ -385,7 +388,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task ResetPassword(ResetPasswordRequestDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"Identity/ResetPassword{BuildQueryString(QueryString)}";
+            var url = $"api/Identity/ResetPassword{BuildQueryString(QueryString)}";
 
             var requestJsonTypeInfo = options.GetTypeInfo<ResetPasswordRequestDto>();
 
@@ -397,7 +400,7 @@ namespace Boilerplate.Client.Core.Services
     {
         public virtual async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken = default)
         {
-            var url = $"User/GetCurrentUser{BuildQueryString(QueryString)}";
+            var url = $"api/User/GetCurrentUser{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -408,7 +411,7 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task<UserDto> Update(EditUserDto body, CancellationToken cancellationToken = default)
         {
-            var url = $"User/Update{BuildQueryString(QueryString)}";
+            var url = $"api/User/Update{BuildQueryString(QueryString)}";
 
             return (await prerenderStateService.GetValue(url, async () =>
             {
@@ -424,9 +427,34 @@ namespace Boilerplate.Client.Core.Services
 
         public virtual async Task Delete(CancellationToken cancellationToken = default)
         {
-            var url = $"User/Delete{BuildQueryString(QueryString)}";
+            var url = $"api/User/Delete{BuildQueryString(QueryString)}";
 
             await httpClient.DeleteAsync(url, cancellationToken);
+        }
+    }
+
+    internal class MinimalApiController(HttpClient httpClient, JsonSerializerOptions options, IPrerenderStateService prerenderStateService) : AppControllerBase, IMinimalApiController
+    {
+        public virtual async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken = default)
+        {
+            var url = $"api/User/GetCurrentUser{BuildQueryString(QueryString)}";
+
+            return (await prerenderStateService.GetValue(url, async () =>
+            {
+                var responseJsonTypeInfo = options.GetTypeInfo<UserDto>();
+                return await httpClient.GetFromJsonAsync(url, responseJsonTypeInfo, cancellationToken);
+            }))!;
+        }
+
+        public virtual async Task<JsonDocument> MinimalApiSample(string routeParameter, string queryStringParameter, CancellationToken cancellationToken)
+        {
+            var url = $"api/minimal-api-sample/{routeParameter}{BuildQueryString(QueryString)}&queryStringParameter1={queryStringParameter}";
+
+            return (await prerenderStateService.GetValue(url, async () =>
+            {
+                var responseJsonTypeInfo = options.GetTypeInfo<JsonDocument>();
+                return await httpClient.GetFromJsonAsync(url, responseJsonTypeInfo, cancellationToken);
+            }))!;
         }
     }
 }

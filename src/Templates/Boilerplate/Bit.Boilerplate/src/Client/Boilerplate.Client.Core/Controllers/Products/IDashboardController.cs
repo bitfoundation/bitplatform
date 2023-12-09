@@ -2,7 +2,8 @@
 
 namespace Boilerplate.Client.Core.Controllers.Identity;
 
-public interface IDashboardController : IAppControllerBase
+[RoutePrefix("api/[controller]/[action]/")]
+public interface IDashboardController : IAppController
 {
     [HttpGet]
     Task<OverallAnalyticsStatsDataResponseDto> GetOverallAnalyticsStatsData(CancellationToken cancellationToken = default);

@@ -2,9 +2,10 @@
 
 namespace Boilerplate.Client.Core.Controllers.Categories;
 
-public interface ICategoryController : IAppControllerBase
+[RoutePrefix("api/[controller]/[action]/")]
+public interface ICategoryController : IAppController
 {
-    [HttpGet]
+    [HttpGet("{id}")]
     Task<CategoryDto> Get(int id, CancellationToken cancellationToken = default);
 
     [HttpPost]
@@ -13,7 +14,7 @@ public interface ICategoryController : IAppControllerBase
     [HttpPut]
     Task<CategoryDto> Update(CategoryDto body, CancellationToken cancellationToken = default);
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     Task Delete(int id, CancellationToken cancellationToken = default);
 
     [HttpGet]

@@ -2,7 +2,8 @@
 
 namespace Boilerplate.Client.Core.Controllers.Identity;
 
-public interface IUserController : IAppControllerBase
+[RoutePrefix("api/[controller]/[action]/")]
+public interface IUserController : IAppController
 {
     [HttpGet]
     Task<UserDto> GetCurrentUser(CancellationToken cancellationToken = default);

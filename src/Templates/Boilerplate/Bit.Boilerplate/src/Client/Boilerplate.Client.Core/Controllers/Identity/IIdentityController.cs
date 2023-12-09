@@ -2,7 +2,8 @@
 
 namespace Boilerplate.Client.Core.Controllers.Identity;
 
-public interface IIdentityController : IAppControllerBase
+[RoutePrefix("api/[controller]/[action]/")]
+public interface IIdentityController : IAppController
 {
     [HttpPost]
     Task SignUp(SignUpRequestDto body, CancellationToken cancellationToken = default);
