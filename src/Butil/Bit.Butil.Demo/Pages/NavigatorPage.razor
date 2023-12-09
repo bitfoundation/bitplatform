@@ -1,0 +1,35 @@
+﻿@page "/navigator"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Navigator navigator
+
+<PageTitle>Navigator Samples</PageTitle>
+
+<h1>Navigator</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Navigator navigator
+
+@@code {
+    ...
+    var userAgent = await navigator.GetUserAgent();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+<br />
+
+<h4>Open the DevTools</h4>
+<br />
+<button @onclick=GetUserAgent>Get UserAgent</button>
+<br />
+<br />
+
+
+@code {
+    private async Task GetUserAgent()
+    {
+        _ = console.Log("User agent:", await navigator.GetUserAgent());
+    }
+}

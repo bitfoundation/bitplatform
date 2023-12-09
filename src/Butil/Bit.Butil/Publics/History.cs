@@ -9,7 +9,7 @@ namespace Bit.Butil;
 /// <summary>
 /// The History interface allows manipulation of the browser session history, that is the pages visited in the tab or frame that the current page is loaded in.
 /// <br/>
-/// More info: https://developer.mozilla.org/en-US/docs/Web/API/History
+/// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/History">https://developer.mozilla.org/en-US/docs/Web/API/History</see>
 /// </summary>
 public class History(IJSRuntime js) : IDisposable
 {
