@@ -46,16 +46,6 @@ public class Middlewares
         app.UseResponseCaching();
         app.UseAntiforgery();
 
-#if MultilingualEnabled
-        var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
-        app.UseRequestLocalization(new RequestLocalizationOptions
-        {
-            SupportedCultures = supportedCultures,
-            SupportedUICultures = supportedCultures,
-            ApplyCurrentCultureToResponseHeaders = true
-        }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
-#endif
-
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
         app.UseSwagger();

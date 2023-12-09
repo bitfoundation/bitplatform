@@ -11,10 +11,6 @@ public class RequestHeadersDelegationHandler(RetryDelegatingHandler handler)
         request.SetBrowserRequestCredentials(BrowserRequestCredentials.Omit);
         request.SetBrowserResponseStreamingEnabled(true);
 
-#if MultilingualEnabled
-        request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentCulture.Name));
-#endif
-
         return await base.SendAsync(request, cancellationToken);
     }
 }

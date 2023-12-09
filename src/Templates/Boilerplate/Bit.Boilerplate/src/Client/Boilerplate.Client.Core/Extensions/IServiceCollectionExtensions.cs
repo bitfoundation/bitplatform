@@ -44,7 +44,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (AppRenderMode.IsHybrid() || OperatingSystem.IsBrowser())
+        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
         {
             return services.AddSingleton<TService, TImplementation>();
         }
@@ -61,7 +61,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (AppRenderMode.IsHybrid() || OperatingSystem.IsBrowser())
+        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
         {
             services.TryAddSingleton<TService, TImplementation>();
         }
