@@ -95,6 +95,7 @@ public partial class NavMenu : IDisposable
             ChildItems = new()
             {
                 new() { Text = "ProgressIndicator", Url = "/components/progressindicator", AdditionalUrls = new string[] { "/components/progress-indicator" } },
+                new() { Text = "Shimmer", Url = "/components/shimmer", Description = "Skeleton" },
                 new() { Text = "Spinner", Url = "/components/spinner", Description = "Busy, Waiting, Loading" },
                 new() { Text = "Loading", Url = "/components/loading" }
             },

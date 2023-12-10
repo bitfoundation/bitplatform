@@ -22,5 +22,8 @@ public static class AppRenderMode
     false;
 #endif
 
-    public static bool IsHybrid() => OS.IsAndroid() || OS.IsIOS() || OS.IsMacCatalyst() || OS.IsMacOS() || OS.IsWindows();
+    /// <summary>
+    /// Is running under .NET MAUI?
+    /// </summary>
+    public static bool IsBlazorHybrid { get; set; }
 }
