@@ -196,7 +196,7 @@ public partial class BitShimmerDemo
 
 <BitToggleButton @bind-IsChecked=""@isDataLoaded"" Text=""Toggle shimmer"" />";
     private readonly string example4CsharpCode = @"
-private int isDataLoaded;";
+private bool isDataLoaded;";
 
     private readonly string example5RazorCode = @"
 <style>
@@ -284,5 +284,5 @@ private int isDataLoaded;";
 
 <BitToggleButton @bind-IsChecked=""@isContentLoaded"" Text=""Toggle shimmer"" />";
     private readonly string example6CsharpCode = @"
-private int isContentLoaded;";
+private bool isContentLoaded;";
 }
