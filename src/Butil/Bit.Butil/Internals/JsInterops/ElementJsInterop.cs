@@ -70,4 +70,14 @@ internal static class ElementJsInterop
     {
         await js.InvokeVoidAsync("BitButil.element.setPointerCapture", element, pointerId);
     }
+
+    internal static async Task<string> ElementGetAccessKey(this IJSRuntime js, ElementReference element)
+    {
+        return await js.InvokeAsync<string>("BitButil.element.getAccessKey", element);
+    }
+
+    internal static async Task ElementSetAccessKey(this IJSRuntime js, ElementReference element, string key)
+    {
+        await js.InvokeVoidAsync("BitButil.element.setAccessKey", element, key);
+    }
 }

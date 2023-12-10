@@ -14,7 +14,9 @@ var BitButil = BitButil || {};
         scrollBy,
         scrollIntoView,
         setAttribute,
-        setPointerCapture
+        setPointerCapture,
+        getAccessKey,
+        setAccessKey
     };
 
     function blur(element: HTMLElement) {
@@ -75,6 +77,14 @@ var BitButil = BitButil || {};
 
     function setPointerCapture(element: HTMLElement, pointerId: number) {
         element.setPointerCapture(pointerId);
+    }
+
+    function getAccessKey(element: HTMLElement) {
+        return element.accessKey
+    }
+
+    function setAccessKey(element: HTMLElement, key: string) {
+        element.accessKey = key;
     }
 
 }(BitButil));
