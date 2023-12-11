@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Controllers.Product;
+﻿using Boilerplate.Client.Core.Controllers.Dashboard;
 using Boilerplate.Shared.Dtos.Dashboard;
 
 namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
