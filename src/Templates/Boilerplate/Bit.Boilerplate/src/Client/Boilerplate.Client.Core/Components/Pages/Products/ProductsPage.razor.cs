@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using Boilerplate.Client.Core.Controllers.Product;
 using Boilerplate.Shared.Dtos.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;
@@ -6,6 +7,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Products;
 [Authorize]
 public partial class ProductsPage
 {
+    [AutoInject] IProductController productController = default!;
+
     private bool isLoading;
     private AddOrEditProductModal? modal;
     private string productNameFilter = string.Empty;
@@ -41,25 +44,23 @@ public partial class ProductsPage
             try
             {
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-                var query = new Dictionary<string, object?>()
+                productController.AddQueryStrings(new ()
                 {
                     { "$top", req.Count ?? 10 },
                     { "$skip", req.StartIndex }
-                };
+                });
 
                 if (string.IsNullOrEmpty(productNameFilter) is false)
                 {
-                    query.Add("$filter", $"contains(Name,'{productNameFilter}')");
+                    productController.AddQueryString("$filter", $"contains(Name,'{productNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
                 {
-                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
+                    productController.AddQueryString("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
-                var url = NavigationManager.GetUriWithQueryParameters("Product/GetProducts", query);
-
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto, CurrentCancellationToken);
+                var data = await productController.GetProducts(CurrentCancellationToken);
 
                 return BitDataGridItemsProviderResult.From(await data!.Items!.ToListAsync(), (int)data!.TotalCount);
             }
@@ -99,7 +100,7 @@ public partial class ProductsPage
 
         if (confirmed)
         {
-            await HttpClient.DeleteAsync($"Product/Delete/{product.Id}", CurrentCancellationToken);
+            await productController.Delete(product.Id, CurrentCancellationToken);
 
             await RefreshData();
         }

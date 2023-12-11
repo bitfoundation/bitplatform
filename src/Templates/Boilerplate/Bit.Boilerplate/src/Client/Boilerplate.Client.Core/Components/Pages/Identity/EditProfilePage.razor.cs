@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
@@ -6,6 +7,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 [Authorize]
 public partial class EditProfilePage
 {
+    [AutoInject] IUserController userController = default!;
+
     private bool isSaving;
     private bool isRemoving;
     private bool isLoading;
@@ -55,7 +58,7 @@ public partial class EditProfilePage
         PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, user);
     }
 
-    private Task<UserDto?> GetCurrentUser() => PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(user)}", () => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
+    private Task<UserDto> GetCurrentUser() => userController.GetCurrentUser(CurrentCancellationToken);
 
     private async Task DoSave()
     {
@@ -68,8 +71,7 @@ public partial class EditProfilePage
         {
             userToEdit.Patch(user);
 
-            (await (await HttpClient.PutAsJsonAsync("User/Update", userToEdit, AppJsonContext.Default.EditUserDto, CurrentCancellationToken))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto, CurrentCancellationToken))!.Patch(user);
+            (await userController.Update(userToEdit, CurrentCancellationToken)).Patch(user);
 
             PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, user);
 

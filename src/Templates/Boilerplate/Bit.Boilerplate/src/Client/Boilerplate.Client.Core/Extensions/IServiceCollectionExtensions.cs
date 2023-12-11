@@ -30,6 +30,8 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<LazyAssemblyLoader>();
 
         services.TryAddTransient(sp => AppJsonContext.Default.Options);
+        services.AddTypedHttpClients();
+
         services.AddBitBlazorUIServices();
         services.AddSharedServices();
 

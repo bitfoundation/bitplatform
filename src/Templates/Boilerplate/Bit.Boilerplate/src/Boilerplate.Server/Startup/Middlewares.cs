@@ -70,7 +70,12 @@ public class Middlewares
             options.InjectJavascript($"/swagger/swagger-utils.js?v={Environment.TickCount64}");
         });
 
-        app.MapGet("/api/minimal-api-sample", () => "This is a test").WithTags("Test");
+        app.MapGet("/api/minimal-api-sample/{routeParameter}", (string routeParameter, [FromQuery] string queryStringParameter) => new
+        {
+            RouteParameter = routeParameter,
+            QueryStringParameter = queryStringParameter
+        }).WithTags("Test");
+
         app.MapControllers().RequireAuthorization();
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;

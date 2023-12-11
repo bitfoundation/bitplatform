@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using System.Web;
+using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Server.Components;
 using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
@@ -14,7 +15,7 @@ namespace Boilerplate.Server.Controllers.Identity;
 
 [Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
-public partial class IdentityController : AppControllerBase
+public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private UserManager<User> userManager = default!;
 
@@ -247,7 +248,7 @@ public partial class IdentityController : AppControllerBase
     }
 
     [HttpPost]
-    public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest)
+    public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(resetPasswordRequest.Email!);
 

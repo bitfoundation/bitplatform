@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -9,14 +10,13 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
-    [AutoInject] private HttpClient httpClient = default;
+    [AutoInject] private IIdentityController identityController = default;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
     public async Task SignIn(SignInRequestDto signInModel, CancellationToken cancellationToken)
     {
-        var result = await (await httpClient.PostAsJsonAsync("Identity/SignIn", signInModel, AppJsonContext.Default.SignInRequestDto, cancellationToken))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
+        var result = await identityController.SignIn(signInModel, cancellationToken);
 
         await StoreToken(result!, signInModel.RememberMe);
 
@@ -60,8 +60,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
                 try
                 {
-                    var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
-                        .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
+                    var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token });
 
                     await StoreToken(refreshTokenResponse!);
                     access_token = refreshTokenResponse!.AccessToken;
