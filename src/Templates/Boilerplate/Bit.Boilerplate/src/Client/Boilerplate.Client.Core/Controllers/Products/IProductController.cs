@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Shared.Dtos.Products;
 
-namespace Boilerplate.Client.Core.Controllers.Identity;
+namespace Boilerplate.Client.Core.Controllers.Product;
 
 [Route("api/[controller]/[action]/")]
 public interface IProductController : IAppController

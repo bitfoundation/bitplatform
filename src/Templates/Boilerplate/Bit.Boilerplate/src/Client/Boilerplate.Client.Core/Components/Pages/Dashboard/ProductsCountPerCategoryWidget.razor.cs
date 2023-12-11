@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
+﻿using Boilerplate.Client.Core.Controllers.Product;
 
 namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 

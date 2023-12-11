@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
+﻿using Boilerplate.Client.Core.Controllers.Product;
 using Boilerplate.Server.Models.Products;
 using Boilerplate.Shared.Dtos.Products;
 

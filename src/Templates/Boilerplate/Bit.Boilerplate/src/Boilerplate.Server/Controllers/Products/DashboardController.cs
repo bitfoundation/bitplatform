@@ -1,5 +1,5 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Dashboard;
+﻿using Boilerplate.Shared.Dtos.Dashboard;
+using Boilerplate.Client.Core.Controllers.Product;
 
 namespace Boilerplate.Server.Controllers;
 

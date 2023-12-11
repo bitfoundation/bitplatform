@@ -44,7 +44,7 @@ public partial class CategoriesPage
             {
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
 
-                categoryController.AddQueryString(new()
+                categoryController.AddQueryStrings(new()
                 {
                     { "$top", req.Count ?? 10 },
                     { "$skip", req.StartIndex }

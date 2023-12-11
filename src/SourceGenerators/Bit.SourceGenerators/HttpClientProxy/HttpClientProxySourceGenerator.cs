@@ -84,7 +84,7 @@ internal static class IHttpClientServiceCollectionExtensions
             queryString.Add(key, value);    
         }}
 
-        public void AddQueryString(Dictionary<string, object?> queryString)
+        public void AddQueryStrings(Dictionary<string, object?> queryString)
         {{
             foreach (var key in queryString.Keys)
             {{

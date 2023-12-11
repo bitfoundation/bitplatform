@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Client.Core.Controllers.Product;
 using Boilerplate.Shared.Dtos.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;
@@ -44,7 +44,7 @@ public partial class ProductsPage
             try
             {
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-                productController.AddQueryString(new ()
+                productController.AddQueryStrings(new ()
                 {
                     { "$top", req.Count ?? 10 },
                     { "$skip", req.StartIndex }

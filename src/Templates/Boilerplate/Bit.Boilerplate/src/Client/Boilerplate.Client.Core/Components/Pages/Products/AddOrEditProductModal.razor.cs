@@ -1,5 +1,5 @@
 ﻿using Boilerplate.Client.Core.Controllers.Categories;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Client.Core.Controllers.Product;
 using Boilerplate.Shared.Dtos.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;
