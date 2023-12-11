@@ -46,6 +46,16 @@ public class Element(IJSRuntime js)
     public async Task<bool> HasAttributes(ElementReference element) => await js.ElementHasAttributes(element);
 
     /// <summary>
+    /// Indicates whether the element on which it is invoked has pointer capture for the pointer identified by the given pointer ID.
+    /// </summary>
+    public async Task<bool> HasPointerCapture(ElementReference element, int pointerId) => await js.ElementHasPointerCapture(element, pointerId);
+
+    /// <summary>
+    /// Returns a boolean value indicating whether or not the element would be selected by the specified selector string.
+    /// </summary>
+    public async Task<bool> Matches(ElementReference element, string selectors) => await js.ElementMatches(element, selectors);
+
+    /// <summary>
     /// Releases (stops) pointer capture that was previously set for a specific pointer event.
     /// </summary>
     public async Task ReleasePointerCapture(ElementReference element, int pointerId) => await js.ElementReleasePointerCapture(element, pointerId);
@@ -64,6 +74,11 @@ public class Element(IJSRuntime js)
     /// Asynchronously asks the browser to make the element fullscreen.
     /// </summary>
     public async Task RequestFullScreen(ElementReference element, FullScreenOptions? options) => await js.ElementRequestFullScreen(element, options);
+
+    /// <summary>
+    /// Allows to asynchronously ask for the pointer to be locked on the given element.
+    /// </summary>
+    public async Task RequestPointerLock(ElementReference element) => await js.ElementRequestPointerLock(element);
 
     /// <summary>
     /// Scrolls to a particular set of coordinates inside a given element.
@@ -117,6 +132,11 @@ public class Element(IJSRuntime js)
     /// Designates a specific element as the capture target of future pointer events.
     /// </summary>
     public async Task SetPointerCapture(ElementReference element, int pointerId) => await js.ElementSetPointerCapture(element, pointerId);
+
+    /// <summary>
+    /// Toggles a boolean attribute, removing it if it is present and adding it if it is not present, on the specified element.
+    /// </summary>
+    public async Task ToggleAttribute(ElementReference element, string name, bool? force = null) => await js.ElementToggleAttribute(element, name, force);
 
     /// <summary>
     /// A string representing the access key assigned to the element.

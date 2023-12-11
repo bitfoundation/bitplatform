@@ -24,6 +24,12 @@ internal static class ElementJsInterop
     internal static async Task<bool> ElementHasAttributes(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<bool>("BitButil.element.hasAttributes", element);
 
+    internal static async Task<bool> ElementHasPointerCapture(this IJSRuntime js, ElementReference element, int pointerId)
+        => await js.InvokeAsync<bool>("BitButil.element.hasPointerCapture", element, pointerId);
+
+    internal static async Task<bool> ElementMatches(this IJSRuntime js, ElementReference element, string selectors)
+        => await js.InvokeAsync<bool>("BitButil.element.matches", element, selectors);
+
     internal static async Task ElementReleasePointerCapture(this IJSRuntime js, ElementReference element, int pointerId)
         => await js.InvokeVoidAsync("BitButil.element.releasePointerCapture", element, pointerId);
 
@@ -35,6 +41,9 @@ internal static class ElementJsInterop
 
     internal static async Task ElementRequestFullScreen(this IJSRuntime js, ElementReference element, FullScreenOptions? options)
         => await js.InvokeVoidAsync("BitButil.element.requestFullScreen", element, options);
+
+    internal static async Task ElementRequestPointerLock(this IJSRuntime js, ElementReference element)
+        => await js.InvokeVoidAsync("BitButil.element.requestPointerLock", element);
 
     internal static async Task ElementScroll(this IJSRuntime js, ElementReference element, ScrollToOptions? options, double? x, double? y)
         => await js.InvokeVoidAsync("BitButil.element.scroll", element, options, x, y);
@@ -50,6 +59,9 @@ internal static class ElementJsInterop
 
     internal static async Task ElementSetPointerCapture(this IJSRuntime js, ElementReference element, int pointerId)
         => await js.InvokeVoidAsync("BitButil.element.setPointerCapture", element, pointerId);
+
+    internal static async Task ElementToggleAttribute(this IJSRuntime js, ElementReference element, string name, bool? force)
+        => await js.InvokeVoidAsync("BitButil.element.toggleAttribute", element, name, force);
 
     internal static async Task<string> ElementGetAccessKey(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<string>("BitButil.element.getAccessKey", element);

@@ -8,15 +8,19 @@ var BitButil = BitButil || {};
         getBoundingClientRect,
         hasAttribute,
         hasAttributes,
+        hasPointerCapture,
+        matches,
         releasePointerCapture,
         remove,
         removeAttribute,
         requestFullScreen,
+        requestPointerLock,
         scroll,
         scrollBy,
         scrollIntoView,
         setAttribute,
         setPointerCapture,
+        toggleAttribute,
         getAccessKey, setAccessKey,
         getClassName, setClassName,
         clientHeight,
@@ -57,6 +61,14 @@ var BitButil = BitButil || {};
         return element.hasAttributes();
     }
 
+    function hasPointerCapture(element: HTMLElement, pointerId: number) {
+        return element.hasPointerCapture(pointerId);
+    }
+
+    function matches(element: HTMLElement, selectors: string) {
+        return element.matches(selectors);
+    }
+
     function releasePointerCapture(element: HTMLElement, pointerId: number) {
         element.releasePointerCapture(pointerId);
     }
@@ -71,6 +83,10 @@ var BitButil = BitButil || {};
 
     function requestFullScreen(element: HTMLElement, options?: FullscreenOptions) {
         return element.requestFullscreen(options);
+    }
+
+    function requestPointerLock(element: HTMLElement) {
+        return element.requestPointerLock();
     }
 
     function scroll(element: HTMLElement, options?: ScrollToOptions, x?: number, y?: number) {
@@ -99,6 +115,10 @@ var BitButil = BitButil || {};
 
     function setPointerCapture(element: HTMLElement, pointerId: number) {
         element.setPointerCapture(pointerId);
+    }
+
+    function toggleAttribute(element: HTMLElement, name: string, force?: boolean) {
+        return element.toggleAttribute(name, force);
     }
 
     function getAccessKey(element: HTMLElement) {
