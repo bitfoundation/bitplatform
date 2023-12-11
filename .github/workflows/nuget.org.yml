@@ -87,12 +87,9 @@ jobs:
     
     - name: dotnet pack CodeAnalyzer
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
-      
-    - name: dotnet build SourceGenerators
-      run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     
-    - name: dotnet pack SourceGenerators
-      run: dotnet pack src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --output . --configuration Release
+    - name: build SourceGenerators nupkg file
+      run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release
 
     - name: dotnet pack Boilerplate
       run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output . --configuration Release
@@ -101,4 +98,4 @@ jobs:
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
     
     - name: dotnet nuget push
-      run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate
+      run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate
