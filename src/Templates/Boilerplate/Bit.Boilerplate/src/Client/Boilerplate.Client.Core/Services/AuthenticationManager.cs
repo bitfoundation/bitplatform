@@ -61,7 +61,6 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 try
                 {
                     var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token });
-
                     await StoreToken(refreshTokenResponse!);
                     access_token = refreshTokenResponse!.AccessToken;
                 }

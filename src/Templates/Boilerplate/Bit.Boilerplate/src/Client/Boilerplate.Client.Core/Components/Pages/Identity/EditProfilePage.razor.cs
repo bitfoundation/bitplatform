@@ -30,11 +30,11 @@ public partial class EditProfilePage
         {
             await LoadEditProfileData();
 
-            var access_token = await PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
+            var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessTokenAsync);
 
-            profileImageUploadUrl = $"{Configuration.GetApiServerAddress()}Attachment/UploadProfileImage?access_token={access_token}";
-            profileImageUrl = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}";
-            profileImageRemoveUrl = $"Attachment/RemoveProfileImage?access_token={access_token}";
+            profileImageUploadUrl = $"{Configuration.GetApiServerAddress()}api/Attachment/UploadProfileImage?access_token={access_token}";
+            profileImageUrl = $"{Configuration.GetApiServerAddress()}api/Attachment/GetProfileImage?access_token={access_token}";
+            profileImageRemoveUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
         }
         finally
         {

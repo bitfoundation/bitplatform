@@ -2,6 +2,7 @@
 using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Web;
 using Boilerplate.Client.Core.Services;
 using Boilerplate.Server.Components;
 using HealthChecks.UI.Client;
@@ -13,9 +14,25 @@ namespace Boilerplate.Server.Startup;
 
 public class Middlewares
 {
+    /// <summary>
+    /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
+    /// </summary>
     public static void Use(WebApplication app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
+
+        if (AppRenderMode.MultilingualEnabled)
+        {
+            var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures,
+                ApplyCurrentCultureToResponseHeaders = true
+            }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+        }
+
+        app.UseExceptionHandler("/", createScopeForErrors: true);
 
         if (env.IsDevelopment())
         {
@@ -24,7 +41,6 @@ public class Middlewares
         else
         {
             app.UseHttpsRedirection();
-            app.UseResponseCompression();
         }
 
         Configure_401_403_404_Pages(app);
@@ -45,23 +61,17 @@ public class Middlewares
         app.UseCors(options => options.WithOrigins("https://0.0.0.0" /*BlazorHybrid*/, "app://0.0.0.0" /*BlazorHybrid*/)
             .AllowAnyHeader().AllowAnyMethod());
 
-        app.UseResponseCaching();
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseAntiforgery();
 
-        if (AppRenderMode.MultilingualEnabled)
+        if (env.IsDevelopment() is false)
         {
-            var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => CultureInfoManager.CreateCultureInfo(sc.code)).ToArray();
-            app.UseRequestLocalization(new RequestLocalizationOptions
-            {
-                SupportedCultures = supportedCultures,
-                SupportedUICultures = supportedCultures,
-                ApplyCurrentCultureToResponseHeaders = true
-            }.SetDefaultCulture(CultureInfoManager.DefaultCulture.code));
+            app.UseResponseCompression();
         }
 
-        app.UseExceptionHandler("/", createScopeForErrors: true);
+        app.UseResponseCaching();
+
+        app.UseAntiforgery();
 
         app.UseSwagger();
 
@@ -98,10 +108,15 @@ public class Middlewares
         }
 
         // Handle the rest of requests with blazor
-        app.MapRazorComponents<App>()
+        var blazorApp = app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
+
+        if (AppRenderMode.PrerenderEnabled is false)
+        {
+            blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
+        }
     }
 
     /// <summary>
@@ -114,11 +129,6 @@ public class Middlewares
     /// </summary>
     private static void Configure_401_403_404_Pages(WebApplication app)
     {
-        if (AppRenderMode.PrerenderEnabled is false)
-        {
-            return;
-        }
-
         app.Use(async (context, next) =>
         {
             if (context.Request.Path.HasValue)
@@ -147,7 +157,10 @@ public class Middlewares
                 {
                     bool is403 = httpContext.Response.StatusCode is 403;
 
-                    httpContext.Response.Redirect($"/not-authorized?redirect-url={httpContext.Request.GetEncodedPathAndQuery()}&isForbidden={(is403 ? "true" : "false")}");
+                    var qs = HttpUtility.ParseQueryString(httpContext.Request.QueryString.Value ?? string.Empty);
+                    qs.Remove("try_refreshing_token");
+                    var redirectUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString(qs.ToString()));
+                    httpContext.Response.Redirect($"/not-authorized?redirect-url={redirectUrl}&isForbidden={(is403 ? "true" : "false")}");
                 }
                 else if (httpContext.Response.StatusCode is 404 &&
                     httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)
