@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Services.Contracts;
+﻿using System.Runtime.CompilerServices;
+
+namespace Boilerplate.Client.Core.Services.Contracts;
 
 /// <summary>
 /// This service simplifies the process of persisting application state in Pre-Rendering mode
@@ -13,5 +15,10 @@ public interface IPrerenderStateService
     /// one can easily use the following method (<see cref="GetValue"/>) in the OnInit lifecycle method of the Blazor components or pages
     /// to retrieve everything that requires an async-await (like current user's info).
     /// </summary>
+    Task<T?> GetValue<T>(Func<Task<T?>> factory,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "");
+
     Task<T?> GetValue<T>(string key, Func<Task<T?>> factory);
 }
