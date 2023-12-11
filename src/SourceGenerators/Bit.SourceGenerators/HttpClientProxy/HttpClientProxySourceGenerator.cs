@@ -115,7 +115,6 @@ internal static class IHttpClientServiceCollectionExtensions
 }}
 ");
 
-        File.WriteAllText(@$"C:\Workspace\temp\{Guid.NewGuid()}.txt", finalSource.ToString());
         context.AddSource($"HttpClientProxy.cs", finalSource.ToString());
     }
 }
