@@ -15,8 +15,16 @@ var BitButil = BitButil || {};
         scrollIntoView,
         setAttribute,
         setPointerCapture,
-        getAccessKey,
-        setAccessKey
+        getAccessKey, setAccessKey,
+        getClassName, setClassName,
+        clientHeight,
+        clientLeft,
+        clientTop,
+        clientWidth,
+        getId, setId,
+        getInnerHTML, setInnerHTML,
+        getOuterHTML, setOuterHTML,
+        scrollHeight
     };
 
     function blur(element: HTMLElement) {
@@ -80,11 +88,63 @@ var BitButil = BitButil || {};
     }
 
     function getAccessKey(element: HTMLElement) {
-        return element.accessKey
+        return element.accessKey;
     }
 
     function setAccessKey(element: HTMLElement, key: string) {
         element.accessKey = key;
+    }
+
+    function getClassName(element: HTMLElement) {
+        return element.className;
+    }
+
+    function setClassName(element: HTMLElement, className: string) {
+        element.className = className;
+    }
+
+    function clientHeight(element: HTMLElement) {
+        return element.clientHeight;
+    }
+
+    function clientLeft(element: HTMLElement) {
+        return element.clientLeft;
+    }
+
+    function clientTop(element: HTMLElement) {
+        return element.clientTop;
+    }
+
+    function clientWidth(element: HTMLElement) {
+        return element.clientWidth;
+    }
+
+    function getId(element: HTMLElement) {
+        return element.id;
+    }
+
+    function setId(element: HTMLElement, id: string) {
+        element.id = id;
+    }
+
+    function getInnerHTML(element: HTMLElement) {
+        return element.innerHTML;
+    }
+
+    function setInnerHTML(element: HTMLElement, innerHTML: string) {
+        element.innerHTML = innerHTML;
+    }
+
+    function getOuterHTML(element: HTMLElement) {
+        return element.outerHTML;
+    }
+
+    function setOuterHTML(element: HTMLElement, outerHTML: string) {
+        element.outerHTML = outerHTML;
+    }
+
+    function scrollHeight(element: HTMLElement) {
+        return element.scrollHeight;
     }
 
 }(BitButil));

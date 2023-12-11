@@ -4,6 +4,15 @@ using Microsoft.AspNetCore.Components;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// Element is the most general base class from which all element objects (i.e. objects that represent elements) in a Document inherit. 
+/// It only has methods and properties common to all kinds of elements. More specific classes inherit from Element.
+/// The HTMLElement interface represents any HTML element. Some elements directly implement this interface, 
+/// while others implement it via an interface that inherits it.
+/// <br/>
+/// More infor: <see href="https://developer.mozilla.org/en-US/docs/Web/API/element"></see>
+/// More infor: <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement"></see>
+/// </summary>
 public class Element(IJSRuntime js)
 {
     /// <summary>
@@ -108,4 +117,64 @@ public class Element(IJSRuntime js)
     /// </summary>
     public async Task SetAccessKey(ElementReference element, string key) => await js.ElementSetAccessKey(element, key);
 
+    /// <summary>
+    /// A string representing the class of the element.
+    /// </summary>
+    public async Task<string> GetClassName(ElementReference element) => await js.ElementGetClassName(element);
+    /// <summary>
+    /// A string representing the class of the element.
+    /// </summary>
+    public async Task SetClassName(ElementReference element, string className) => await js.ElementSetClassName(element, className);
+
+    /// <summary>
+    /// Returns a number representing the inner height of the element in px.
+    /// </summary>
+    public async Task<float> GetClientHeight(ElementReference element) => await js.ElementGetClientHeight(element);
+
+    /// <summary>
+    /// Returns a number representing the width of the left border of the element in px.
+    /// </summary>
+    public async Task<float> GetClientLeft(ElementReference element) => await js.ElementGetClientLeft(element);
+
+    /// <summary>
+    /// Returns a number representing the width of the top border of the element in px.
+    /// </summary>
+    public async Task<float> GetClientTop(ElementReference element) => await js.ElementGetClientTop(element);
+
+    /// <summary>
+    /// Returns a number representing the inner width of the element in px.
+    /// </summary>
+    public async Task<float> GetClientWidth(ElementReference element) => await js.ElementGetClientWidth(element);
+
+    /// <summary>
+    /// A string representing the id of the element.
+    /// </summary>
+    public async Task<string> GetId(ElementReference element) => await js.ElementGetId(element);
+    /// <summary>
+    /// A string representing the id of the element.
+    /// </summary>
+    public async Task SetId(ElementReference element, string id) => await js.ElementSetId(element, id);
+
+    /// <summary>
+    /// A string representing the markup of the element's content.
+    /// </summary>
+    public async Task<string> GetInnerHtml(ElementReference element) => await js.ElementGetInnerHTML(element);
+    /// <summary>
+    /// A string representing the markup of the element's content.
+    /// </summary>
+    public async Task SetInnerHtml(ElementReference element, string innerHtml) => await js.ElementSetInnerHTML(element, innerHtml);
+
+    /// <summary>
+    /// A string representing the markup of the element including its content.
+    /// </summary>
+    public async Task<string> GetOuterHtml(ElementReference element) => await js.ElementGetOuterHTML(element);
+    /// <summary>
+    /// A string representing the markup of the element including its content. When used as a setter, replaces the element with nodes parsed from the given string.
+    /// </summary>
+    public async Task SetOuterHtml(ElementReference element, string outerHtml) => await js.ElementSetOuterHTML(element, outerHtml);
+
+    /// <summary>
+    /// Returns a number representing the scroll view height of an element.
+    /// </summary>
+    public async Task<float> GetScrollHeight(ElementReference element) => await js.ElementGetScrollHeight(element);
 }
