@@ -6,11 +6,11 @@
 
     <ItemGroup>
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.4.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.2.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.3.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.2.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.3.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
