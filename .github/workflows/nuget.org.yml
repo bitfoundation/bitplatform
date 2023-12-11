@@ -88,7 +88,7 @@ jobs:
     - name: dotnet pack CodeAnalyzer
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
     
-    - name: dotnet pack SourceGenerators
+    - name: build SourceGenerators nupkg file
       run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release
 
     - name: dotnet pack Boilerplate
