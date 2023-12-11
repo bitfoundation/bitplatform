@@ -16,7 +16,7 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        if (context.SyntaxContextReceiver is not HttpClientProxySyntaxReceiver receiver)
+        if (context.SyntaxContextReceiver is not HttpClientProxySyntaxReceiver receiver || receiver.IControllers.Any() is false)
         {
             return;
         }
