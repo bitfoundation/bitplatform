@@ -6,6 +6,8 @@ var BitButil = BitButil || {};
         getAttribute,
         getAttributeNames,
         getBoundingClientRect,
+        hasAttribute,
+        hasAttributes,
         releasePointerCapture,
         remove,
         removeAttribute,
@@ -24,7 +26,11 @@ var BitButil = BitButil || {};
         getId, setId,
         getInnerHTML, setInnerHTML,
         getOuterHTML, setOuterHTML,
-        scrollHeight
+        scrollHeight,
+        scrollLeft,
+        scrollTop,
+        scrollWidth,
+        tagName
     };
 
     function blur(element: HTMLElement) {
@@ -41,6 +47,14 @@ var BitButil = BitButil || {};
 
     function getBoundingClientRect(element: HTMLElement) {
         return element.getBoundingClientRect();
+    }
+
+    function hasAttribute(element: HTMLElement, name: string) {
+        return element.hasAttribute(name);
+    }
+
+    function hasAttributes(element: HTMLElement) {
+        return element.hasAttributes();
     }
 
     function releasePointerCapture(element: HTMLElement, pointerId: number) {
@@ -147,4 +161,19 @@ var BitButil = BitButil || {};
         return element.scrollHeight;
     }
 
+    function scrollLeft(element: HTMLElement) {
+        return element.scrollLeft;
+    }
+
+    function scrollTop(element: HTMLElement) {
+        return element.scrollTop;
+    }
+
+    function scrollWidth(element: HTMLElement) {
+        return element.scrollWidth;
+    }
+
+    function tagName(element: HTMLElement) {
+        return element.tagName;
+    }
 }(BitButil));

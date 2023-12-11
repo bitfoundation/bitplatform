@@ -18,6 +18,12 @@ internal static class ElementJsInterop
     internal static async Task<DomRect> ElementGetBoundingClientRect(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<DomRect>("BitButil.element.getBoundingClientRect", element);
 
+    internal static async Task<bool> ElementHasAttribute(this IJSRuntime js, ElementReference element, string name)
+        => await js.InvokeAsync<bool>("BitButil.element.hasAttribute", element, name);
+
+    internal static async Task<bool> ElementHasAttributes(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<bool>("BitButil.element.hasAttributes", element);
+
     internal static async Task ElementReleasePointerCapture(this IJSRuntime js, ElementReference element, int pointerId)
         => await js.InvokeVoidAsync("BitButil.element.releasePointerCapture", element, pointerId);
 
@@ -89,4 +95,16 @@ internal static class ElementJsInterop
 
     internal static async Task<float> ElementGetScrollHeight(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<float>("BitButil.element.scrollHeight", element);
+
+    internal static async Task<float> ElementGetScrollLeft(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<float>("BitButil.element.scrollLeft", element);
+
+    internal static async Task<float> ElementGetScrollTop(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<float>("BitButil.element.scrollTop", element);
+
+    internal static async Task<float> ElementGetScrollWidth(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<float>("BitButil.element.scrollWidth", element);
+
+    internal static async Task<string> ElementGetTagName(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<string>("BitButil.element.tagName", element);
 }

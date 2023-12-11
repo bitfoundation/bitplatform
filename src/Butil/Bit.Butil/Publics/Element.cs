@@ -36,6 +36,16 @@ public class Element(IJSRuntime js)
     public async Task<DomRect> GetBoundingClientRect(ElementReference element) => await js.ElementGetBoundingClientRect(element);
 
     /// <summary>
+    /// Returns a boolean value indicating if the element has the specified attribute or not.
+    /// </summary>
+    public async Task<bool> HasAttribute(ElementReference element, string name) => await js.ElementHasAttribute(element, name);
+
+    /// <summary>
+    /// Returns a boolean value indicating if the element has one or more HTML attributes present.
+    /// </summary>
+    public async Task<bool> HasAttributes(ElementReference element) => await js.ElementHasAttributes(element);
+
+    /// <summary>
     /// Releases (stops) pointer capture that was previously set for a specific pointer event.
     /// </summary>
     public async Task ReleasePointerCapture(ElementReference element, int pointerId) => await js.ElementReleasePointerCapture(element, pointerId);
@@ -177,4 +187,24 @@ public class Element(IJSRuntime js)
     /// Returns a number representing the scroll view height of an element.
     /// </summary>
     public async Task<float> GetScrollHeight(ElementReference element) => await js.ElementGetScrollHeight(element);
+
+    /// <summary>
+    /// A number representing the left scroll offset of the element.
+    /// </summary>
+    public async Task<float> GetScrollLeft(ElementReference element) => await js.ElementGetScrollLeft(element);
+
+    /// <summary>
+    /// A number representing number of pixels the top of the element is scrolled vertically.
+    /// </summary>
+    public async Task<float> GetScrollTop(ElementReference element) => await js.ElementGetScrollTop(element);
+
+    /// <summary>
+    /// Returns a number representing the scroll view width of the element.
+    /// </summary>
+    public async Task<float> GetScrollWidth(ElementReference element) => await js.ElementGetScrollWidth(element);
+
+    /// <summary>
+    /// Returns a string with the name of the tag for the given element.
+    /// </summary>
+    public async Task<float> GetTagName(ElementReference element) => await js.ElementGetScrollWidth(element);
 }
