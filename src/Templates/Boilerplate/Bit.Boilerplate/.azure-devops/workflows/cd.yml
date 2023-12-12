@@ -8,7 +8,7 @@ variables:
   AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   AppSettings.IdentitySettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
-  ApiServerAddress: 'https://bp.bitplatform.dev/api/'
+  ApiServerAddress: 'https://bp.bitplatform.dev/'
 
 jobs:
 
@@ -29,6 +29,13 @@ jobs:
     inputs:
       versionSpec: '18.x'
     displayName: 'Install Node.js'
+
+  # - task: Bash@3
+  #   displayName: 'Enable pre rendering'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #         'sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs'
     
   - task: Bash@3
     displayName: 'Install wasm'

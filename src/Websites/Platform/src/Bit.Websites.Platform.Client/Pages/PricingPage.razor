@@ -66,7 +66,7 @@
                                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Open-source support (GitHub issues)</BitTypography>
                             </div>
                         </div>
-                        <BitButton Class="plan-card-button" Href="/#quick-start">Quick start</BitButton>
+                        <BitButton Class="plan-card-button" Href="/#quick-start">Join for free</BitButton>
                     </div>
                 </div>
 
@@ -104,7 +104,7 @@
                             </div>
                             <br />
                         </div>
-                        <BitButton Class="plan-card-button" OnClick=@(WrapHandled(() => ShowBuyModal("Paid", "€1200")))>Buy</BitButton>
+                        <BitButton Class="plan-card-button" OnClick=@(WrapHandled(() => ShowBuyModal()))>Contact sales</BitButton>
                     </div>
                 </div>
             </div>
@@ -117,30 +117,32 @@
         {
             <div class="modal-message-container">
                 <BitTypography Variant="BitTypographyVariant.H3" Gutter>Thanks</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H5" Gutter><b>@buyPackageModel.Email</b></BitTypography>
+                <br />
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Your request has been sent</BitTypography>
                 <BitTypography Variant="BitTypographyVariant.Body1">We will contact you soon</BitTypography>
-                <BitTypography Variant="BitTypographyVariant.Body1"><b>@buyPackageModel.Email</b></BitTypography>
             </div>
         }
         else
         {
 
-            <EditForm Model="buyPackageModel" OnValidSubmit="SendMessage" class="form">
+            <EditForm Model="buyPackageModel" OnValidSubmit="SendMessage" class="form" novalidate>
                 <DataAnnotationsValidator />
-                <BitTypography Variant="BitTypographyVariant.H3" Gutter>Buy <span class="blue-txt">@selectedPackageTitle</span> Package</BitTypography>
-                <BitTypography Variant="BitTypographyVariant.H4" Gutter>@selectedPackagePrice</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H4" Gutter>Contact sale team</BitTypography>
+                <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>Buying the commercial package</BitTypography>
+                <br />
                 <BitTextField @bind-Value="@buyPackageModel.Email"
                               Label="Email"
                               IsRequired="true"
                               Class="modal-text-field"
-                              Placeholder="Enter your email address" />
+                              Placeholder="name@company.com" />
                 <ValidationMessage For="() => buyPackageModel.Email" />
 
                 <BitTextField @bind-Value="@buyPackageModel.Message"
                               Label="Message"
                               IsMultiline="true"
                               Class="modal-text-field"
-                              Placeholder="Enter your message" />
+                              Placeholder="Describe your needs" />
                 <ValidationMessage For="() => buyPackageModel.Message" />
 
                 <BitButton ButtonType="BitButtonType.Submit" IsLoading="isSending">Send</BitButton>

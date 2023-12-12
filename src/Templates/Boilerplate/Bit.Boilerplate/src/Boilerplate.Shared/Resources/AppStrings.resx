@@ -141,7 +141,7 @@
   <data name="BadRequestException" xml:space="preserve">
     <value>Invalid request</value>
   </data>
-  <data name="ConflicException" xml:space="preserve">
+  <data name="ConflictException" xml:space="preserve">
     <value>Request could not be processed because of conflict in the request</value>
   </data>
   <data name="ForbiddenException" xml:space="preserve">

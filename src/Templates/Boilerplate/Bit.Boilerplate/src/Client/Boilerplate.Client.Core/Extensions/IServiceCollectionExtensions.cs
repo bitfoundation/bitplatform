@@ -17,7 +17,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IStorageService, BrowserStorageService>();
 
-        services.TryAddTransient<RequestHeadersDelegationHandler>();
+        services.TryAddKeyedTransient<HttpMessageHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
@@ -28,6 +28,9 @@ public static class IServiceCollectionExtensions
 
         services.TryAddTransient<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
+
+        services.TryAddTransient(sp => AppJsonContext.Default.Options);
+        services.AddTypedHttpClients();
 
         services.AddBitBlazorUIServices();
         services.AddSharedServices();
@@ -43,7 +46,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (AppRenderMode.IsHybrid() || OperatingSystem.IsBrowser())
+        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
         {
             return services.AddSingleton<TService, TImplementation>();
         }
@@ -60,7 +63,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (AppRenderMode.IsHybrid() || OperatingSystem.IsBrowser())
+        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
         {
             services.TryAddSingleton<TService, TImplementation>();
         }

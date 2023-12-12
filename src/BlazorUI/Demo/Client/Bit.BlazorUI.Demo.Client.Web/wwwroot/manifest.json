@@ -1,0 +1,50 @@
+{
+    "dir": "ltr",
+    "lang": "en",
+    "scope": "/",
+    "start_url": "/",
+    "orientation": "any",
+    "id": "bitBlazorUIDemo",
+    "display": "standalone",
+    "theme_color": "#2EA3FF",
+    "related_applications": [],
+    "name": "bit BlazorUI Demo",
+    "background_color": "#0D1117",
+    "short_name": "bit BlazorUI Demo",
+    "prefer_related_applications": false,
+    "display_override": [ "window-controls-overlay" ],
+    "description": "bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.",
+    "features": [
+        "Cross Platform",
+        "fast",
+        "simple"
+    ],
+    "categories": [
+        "utilities"
+    ],
+    "icons": [
+        {
+            "sizes": "512x512",
+            "type": "image/png",
+            "src": "images/icons/bit-icon-512.png"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Overview",
+            "url": "/overview"
+        },
+        {
+            "name": "Getting started",
+            "url": "/getting-started"
+        },
+        {
+            "name": "Iconography",
+            "url": "/iconography"
+        },
+        {
+            "name": "Theming",
+            "url": "/theming"
+        }
+    ]
+}

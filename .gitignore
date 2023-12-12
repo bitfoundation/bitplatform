@@ -263,3 +263,4 @@ _book
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
 custom.aprof
+/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js

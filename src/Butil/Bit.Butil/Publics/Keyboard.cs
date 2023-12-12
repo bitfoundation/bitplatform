@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -10,12 +10,12 @@ public class Keyboard(IJSRuntime js) : IDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 
-    public async Task<Guid> Add(string key, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
+    public async Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
     {
         var listenerId = KeyboardListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.AddKeyboard(KeyboardListenersManager.InvokeMethodName, listenerId, key,
+        await js.KeyboardAdd(KeyboardListenersManager.InvokeMethodName, listenerId, code,
             modifiers.HasFlag(ButilModifiers.Alt),
             modifiers.HasFlag(ButilModifiers.Ctrl),
             modifiers.HasFlag(ButilModifiers.Meta),
@@ -50,7 +50,7 @@ public class Keyboard(IJSRuntime js) : IDisposable
             _handlers.TryRemove(id, out _);
         }
 
-        _ = js.RemoveKeyboard(ids);
+        _ = js.KeyboardRemove(ids);
     }
 
     public void Dispose()
@@ -59,13 +59,6 @@ public class Keyboard(IJSRuntime js) : IDisposable
 
         KeyboardListenersManager.RemoveListeners(ids);
 
-        _ = js.RemoveKeyboard(ids);
-    }
-
-    private class Listener
-    {
-        public string? Key { get; set; }
-        public Action? Handler { get; set; }
-        public ButilModifiers Modifiers { get; set; }
+        _ = js.KeyboardRemove(ids);
     }
 }

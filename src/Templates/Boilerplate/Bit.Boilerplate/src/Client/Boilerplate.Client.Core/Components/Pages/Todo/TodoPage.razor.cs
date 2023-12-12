@@ -1,10 +1,13 @@
-﻿using Boilerplate.Shared.Dtos.Todo;
+﻿using Boilerplate.Client.Core.Controllers.Todo;
+using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Client.Core.Components.Pages.Todo;
 
 [Authorize]
 public partial class TodoPage
 {
+    [AutoInject] ITodoItemController todoItemController = default!;
+
     private bool isAdding;
     private bool isLoading;
     private string? searchText;
@@ -39,8 +42,7 @@ public partial class TodoPage
 
         try
         {
-            allTodoItems = await PrerenderStateService.GetValue($"{nameof(TodoPage)}-allTodoItems",
-                                async () => await HttpClient.GetFromJsonAsync("TodoItem/Get", AppJsonContext.Default.ListTodoItemDto, CurrentCancellationToken)) ?? [];
+            allTodoItems = await (await todoItemController.Get(CurrentCancellationToken)).ToListAsync(CurrentCancellationToken);
 
             FilterViewTodoItems();
         }
@@ -112,8 +114,7 @@ public partial class TodoPage
 
         try
         {
-            var addedTodoItem = await (await HttpClient.PostAsJsonAsync("TodoItem/Create", new() { Title = newTodoTitle }, AppJsonContext.Default.TodoItemDto, CurrentCancellationToken))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto, CurrentCancellationToken);
+            var addedTodoItem = await todoItemController.Create(new() { Title = newTodoTitle }, CurrentCancellationToken);
 
             allTodoItems.Add(addedTodoItem!);
 
@@ -145,7 +146,7 @@ public partial class TodoPage
 
                 StateHasChanged();
 
-                await HttpClient.DeleteAsync($"TodoItem/Delete/{todoItem.Id}", CurrentCancellationToken);
+                await todoItemController.Delete(todoItem.Id, CurrentCancellationToken);
 
                 allTodoItems.Remove(todoItem);
 
@@ -178,8 +179,7 @@ public partial class TodoPage
 
     private async Task UpdateTodoItem(TodoItemDto todoItem)
     {
-        (await (await HttpClient.PutAsJsonAsync("TodoItem/Update", todoItem, AppJsonContext.Default.TodoItemDto, CurrentCancellationToken))
-            .Content.ReadFromJsonAsync(AppJsonContext.Default.TodoItemDto, CurrentCancellationToken))!.Patch(todoItem);
+        (await todoItemController.Update(todoItem, CurrentCancellationToken)).Patch(todoItem);
 
         todoItem.IsInEditMode = false;
 

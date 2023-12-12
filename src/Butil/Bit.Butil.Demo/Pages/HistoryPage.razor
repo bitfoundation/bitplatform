@@ -1,0 +1,63 @@
+﻿@page "/history"
+@implements IDisposable
+@inject Bit.Butil.Console console
+@inject Bit.Butil.History history
+
+<PageTitle>History Samples</PageTitle>
+
+<h1>History</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.History history
+
+@@code {
+    ...
+    await history.GoBack();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+<br />
+
+<h4>Open the DevTools</h4>
+<br />
+<button @onclick="GetLength">Get length</button>
+<br />
+<button @onclick="GoBack">&lt; Back</button>
+<br />
+<button @onclick="GoForward">Forward &gt;</button>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // await history.PushState(new { Name = "Saleh1" }, "#1");
+        // await history.PushState(new { Name = "Saleh2" }, "#2");
+
+        await history.AddPopState(o => _ = console.Log("Popped state:", o));
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task GetLength()
+    {
+        var length = await history.GetLength();
+        await console.Log("History length", length);
+    }
+
+    private async Task GoBack()
+    {
+        await history.GoBack();
+    }
+
+    private async Task GoForward()
+    {
+        await history.GoForward();
+    }
+
+    public void Dispose()
+    {
+        history.Dispose();
+    }
+}

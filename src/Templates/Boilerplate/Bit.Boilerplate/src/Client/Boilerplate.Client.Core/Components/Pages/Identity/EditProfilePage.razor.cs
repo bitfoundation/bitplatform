@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
@@ -6,6 +7,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 [Authorize]
 public partial class EditProfilePage
 {
+    [AutoInject] IUserController userController = default!;
+
     private bool isSaving;
     private bool isRemoving;
     private bool isLoading;
@@ -27,11 +30,11 @@ public partial class EditProfilePage
         {
             await LoadEditProfileData();
 
-            var access_token = await PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-access_token", AuthTokenProvider.GetAccessTokenAsync);
+            var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessTokenAsync);
 
-            profileImageUploadUrl = $"{Configuration.GetApiServerAddress()}Attachment/UploadProfileImage?access_token={access_token}";
-            profileImageUrl = $"{Configuration.GetApiServerAddress()}Attachment/GetProfileImage?access_token={access_token}";
-            profileImageRemoveUrl = $"Attachment/RemoveProfileImage?access_token={access_token}";
+            profileImageUploadUrl = $"{Configuration.GetApiServerAddress()}api/Attachment/UploadProfileImage?access_token={access_token}";
+            profileImageUrl = $"{Configuration.GetApiServerAddress()}api/Attachment/GetProfileImage?access_token={access_token}";
+            profileImageRemoveUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
         }
         finally
         {
@@ -45,7 +48,7 @@ public partial class EditProfilePage
     {
         user = await GetCurrentUser() ?? new();
 
-        UpdateEditProfileData();
+        user.Patch(userToEdit);
     }
 
     private async Task RefreshProfileData()
@@ -55,14 +58,7 @@ public partial class EditProfilePage
         PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, user);
     }
 
-    private void UpdateEditProfileData()
-    {
-        userToEdit.Gender = user.Gender;
-        userToEdit.FullName = user.FullName;
-        userToEdit.BirthDate = user.BirthDate;
-    }
-
-    private Task<UserDto?> GetCurrentUser() => PrerenderStateService.GetValue($"{nameof(EditProfilePage)}-{nameof(user)}", () => HttpClient.GetFromJsonAsync("User/GetCurrentUser", AppJsonContext.Default.UserDto));
+    private Task<UserDto> GetCurrentUser() => userController.GetCurrentUser(CurrentCancellationToken);
 
     private async Task DoSave()
     {
@@ -73,12 +69,9 @@ public partial class EditProfilePage
 
         try
         {
-            user.FullName = userToEdit.FullName;
-            user.BirthDate = userToEdit.BirthDate;
-            user.Gender = userToEdit.Gender;
+            userToEdit.Patch(user);
 
-            (await (await HttpClient.PutAsJsonAsync("User/Update", userToEdit, AppJsonContext.Default.EditUserDto, CurrentCancellationToken))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.UserDto, CurrentCancellationToken))!.Patch(user);
+            (await userController.Update(userToEdit, CurrentCancellationToken)).Patch(user);
 
             PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, user);
 

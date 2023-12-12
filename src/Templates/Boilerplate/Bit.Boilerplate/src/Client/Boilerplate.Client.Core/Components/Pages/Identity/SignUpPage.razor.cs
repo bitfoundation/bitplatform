@@ -1,15 +1,17 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignUpPage
 {
+    [AutoInject] IIdentityController identityController = default!;
+
     private bool isLoading;
     private bool isSignedUp;
     private string? signUpMessage;
     private BitMessageBarType signUpMessageType;
     private SignUpRequestDto signUpModel = new();
-
 
     protected override async Task OnAfterFirstRenderAsync()
     {
@@ -30,7 +32,7 @@ public partial class SignUpPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/SignUp", signUpModel, AppJsonContext.Default.SignUpRequestDto, CurrentCancellationToken);
+            await identityController.SignUp(signUpModel, CurrentCancellationToken);
 
             isSignedUp = true;
         }
@@ -59,7 +61,7 @@ public partial class SignUpPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/SendConfirmationEmail", new() { Email = signUpModel.Email }, AppJsonContext.Default.SendConfirmationEmailRequestDto, CurrentCancellationToken);
+            await identityController.SendConfirmationEmail(new() { Email = signUpModel.Email }, CurrentCancellationToken);
 
             signUpMessageType = BitMessageBarType.Success;
             signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];

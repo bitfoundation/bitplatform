@@ -1,7 +1,6 @@
 ﻿//-:cnd:noEmit
 
 using System.Reflection;
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Boilerplate.Client.Maui.Services;
 
 namespace Boilerplate.Client.Maui;
@@ -10,6 +9,8 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+        AppRenderMode.IsBlazorHybrid = true;
+
         var builder = MauiApp.CreateBuilder();
         var assembly = typeof(MainLayout).GetTypeInfo().Assembly;
 
@@ -30,7 +31,7 @@ public static class MauiProgram
 
         services.AddTransient(sp =>
         {
-            var handler = sp.GetRequiredService<RequestHeadersDelegationHandler>();
+            var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress

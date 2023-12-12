@@ -1,28 +1,18 @@
-﻿using Boilerplate.Server.Models.Products;
+﻿using Boilerplate.Client.Core.Controllers.Product;
+using Boilerplate.Server.Models.Products;
 using Boilerplate.Shared.Dtos.Products;
 
 namespace Boilerplate.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class ProductController : AppControllerBase
+public partial class ProductController : AppControllerBase, IProductController
 {
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
     {
         return DbContext.Products
             .Project();
-    }
-
-    [HttpGet("{id:int}")]
-    public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
-    {
-        var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-
-        if (product is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
-
-        return product;
     }
 
     [HttpGet]
@@ -39,6 +29,17 @@ public partial class ProductController : AppControllerBase
             query = query.Take(odataQuery.Top.Value);
 
         return new PagedResult<ProductDto>(query.AsAsyncEnumerable(), totalCount);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
+    {
+        var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+        if (product is null)
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
+
+        return product;
     }
 
     [HttpPost]
@@ -68,7 +69,7 @@ public partial class ProductController : AppControllerBase
         return productToUpdate.Map();
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
         DbContext.Remove(new Product { Id = id });

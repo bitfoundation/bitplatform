@@ -1,28 +1,18 @@
-﻿using Boilerplate.Server.Models.Categories;
+﻿using Boilerplate.Client.Core.Controllers.Categories;
+using Boilerplate.Server.Models.Categories;
 using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class CategoryController : AppControllerBase
+public partial class CategoryController : AppControllerBase, ICategoryController
 {
     [HttpGet, EnableQuery]
     public IQueryable<CategoryDto> Get()
     {
         return DbContext.Categories
             .Project();
-    }
-
-    [HttpGet("{id:int}")]
-    public async Task<CategoryDto> Get(int id, CancellationToken cancellationToken)
-    {
-        var category = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-
-        if (category is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
-
-        return category;
     }
 
     [HttpGet]
@@ -39,6 +29,17 @@ public partial class CategoryController : AppControllerBase
             query = query.Take(odataQuery.Top.Value);
 
         return new PagedResult<CategoryDto>(query.AsAsyncEnumerable(), totalCount);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<CategoryDto> Get(int id, CancellationToken cancellationToken)
+    {
+        var category = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+        if (category is null)
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
+
+        return category;
     }
 
     [HttpPost]
@@ -68,7 +69,7 @@ public partial class CategoryController : AppControllerBase
         return categoryToUpdate.Map();
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
         if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))

@@ -17,6 +17,11 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
     {
         try
         {
+            if (string.IsNullOrEmpty(protectedText))
+            {
+                return NotSignedIn();
+            }
+
             var handler = new JwtSecurityTokenHandler();
             ClaimsPrincipal? principal = handler.ValidateToken(protectedText, validationParameters, out var validToken);
             var validJwt = (JwtSecurityToken)validToken;
@@ -26,9 +31,9 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
             }, IdentityConstants.BearerScheme);
             return data;
         }
-        catch
+        catch (Exception exp)
         {
-            return NotSignedIn();
+            throw new UnauthorizedException(nameof(AppStrings.UnauthorizedException), exp);
         }
     }
 

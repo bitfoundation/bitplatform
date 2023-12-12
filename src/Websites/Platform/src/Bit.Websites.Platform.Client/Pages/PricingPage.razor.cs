@@ -7,29 +7,19 @@ public partial class PricingPage
     private bool isSent;
     private bool isSending;
     private bool isBuyModalOpen;
-    private string selectedPackageTitle = string.Empty;
-    private string selectedPackagePrice = string.Empty;
-
     private BuyPackageDto buyPackageModel = new();
 
 
-
-    private void ShowBuyModal(string title, string price)
+    private void ShowBuyModal()
     {
-        selectedPackageTitle = title;
-        selectedPackagePrice = price;
-        buyPackageModel.SalePackageTitle = title;
         isBuyModalOpen = true;
     }
 
     private void CloseModal()
     {
-        isBuyModalOpen = false;
         isSent = false;
-
-        buyPackageModel.Email = "";
-        buyPackageModel.Message = "";
-        buyPackageModel.SalePackageTitle = "";
+        isBuyModalOpen = false;
+        buyPackageModel = new();
     }
 
     private async Task SendMessage()

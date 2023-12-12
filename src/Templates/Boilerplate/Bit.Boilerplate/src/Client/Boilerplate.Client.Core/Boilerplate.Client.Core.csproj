@@ -16,24 +16,23 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="8.2.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.2.0" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.2.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.3.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.3.0" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.3.0" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(sample)' == 'Admin' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.2.0" />
+        <PackageReference Condition=" '$(sample)' == 'Admin' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.3.0" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.2.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.3.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.2.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.3.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

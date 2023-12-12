@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -9,13 +10,13 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
-    [AutoInject] private HttpClient httpClient = default;
+    [AutoInject] private IIdentityController identityController = default;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
+    [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
     public async Task SignIn(SignInRequestDto signInModel, CancellationToken cancellationToken)
     {
-        var result = await (await httpClient.PostAsJsonAsync("Identity/SignIn", signInModel, AppJsonContext.Default.SignInRequestDto, cancellationToken))
-                .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto, cancellationToken);
+        var result = await identityController.SignIn(signInModel, cancellationToken);
 
         await StoreToken(result!, signInModel.RememberMe);
 
@@ -26,7 +27,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         await storageService.RemoveItem("access_token");
         await storageService.RemoveItem("refresh_token");
-        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsHybrid() is false)
+        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
         {
             await jsRuntime.RemoveCookie("access_token");
         }
@@ -35,7 +36,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
     public async Task RefreshToken()
     {
-        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsHybrid() is false)
+        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
         {
             await jsRuntime.RemoveCookie("access_token");
         }
@@ -59,9 +60,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
                 try
                 {
-                    var refreshTokenResponse = await (await httpClient.PostAsJsonAsync("Identity/Refresh", new() { RefreshToken = refresh_token }, AppJsonContext.Default.RefreshRequestDto))
-                        .Content.ReadFromJsonAsync(AppJsonContext.Default.TokenResponseDto);
-
+                    var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token });
                     await StoreToken(refreshTokenResponse!);
                     access_token = refreshTokenResponse!.AccessToken;
                 }
@@ -91,7 +90,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         }
         await storageService.SetItem("access_token", tokenResponseDto!.AccessToken, rememberMe is true);
         await storageService.SetItem("refresh_token", tokenResponseDto!.RefreshToken, rememberMe is true);
-        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsHybrid() is false)
+        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
         {
             await jsRuntime.SetCookie("access_token", tokenResponseDto.AccessToken!, tokenResponseDto.ExpiresIn, rememberMe is true);
         }
@@ -102,14 +101,14 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
     }
 
-    private static IEnumerable<Claim> ParseTokenClaims(string access_token)
+    private IEnumerable<Claim> ParseTokenClaims(string access_token)
     {
         return ParseJwt(access_token)
             .Select(keyValue => new Claim(keyValue.Key, keyValue.Value.ToString() ?? string.Empty))
             .ToArray();
     }
 
-    private static Dictionary<string, object> ParseJwt(string access_token)
+    private Dictionary<string, object> ParseJwt(string access_token)
     {
         // Split the token to get the payload
         string base64UrlPayload = access_token.Split('.')[1];
@@ -121,7 +120,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         string jsonPayload = Encoding.UTF8.GetString(Convert.FromBase64String(base64Payload));
 
         // Deserialize the JSON string to a dictionary
-        var claims = JsonSerializer.Deserialize(jsonPayload, AppJsonContext.Default.DictionaryStringObject)!;
+        var claims = JsonSerializer.Deserialize(jsonPayload, jsonSerializerOptions.GetTypeInfo<Dictionary<string, object>>())!;
 
         return claims;
     }

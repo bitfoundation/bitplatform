@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
-using OS = System.OperatingSystem;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -22,5 +21,15 @@ public static class AppRenderMode
     false;
 #endif
 
-    public static bool IsHybrid() => OS.IsAndroid() || OS.IsIOS() || OS.IsMacCatalyst() || OS.IsMacOS() || OS.IsWindows();
+    public static bool MultilingualEnabled { get; } =
+#if MultilingualEnabled
+    true;
+#else
+    false;
+#endif
+
+    /// <summary>
+    /// Is running under .NET MAUI?
+    /// </summary>
+    public static bool IsBlazorHybrid { get; set; }
 }
