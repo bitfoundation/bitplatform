@@ -15,3 +15,18 @@ const resp = await cache.match('/data/cache/Boilerplate-ClientDb.db');
 const blob = await resp.blob();
 URL.createObjectURL(blob);
 ```
+
+**Migration**
+
+Set `Server` as the Startup Project in solution explorer and set `Client.Core` it as the Default Project in Package Manager Console and run the following commands:
+```powershell
+Add-Migration InitialMigration -OutputDir Data\Migrations -Context ClientDbContext
+```
+You don't have to run `Update-Database` command, because client app should programmatically create database and tables on every device that runs the app.
+
+Or open a terminal in your Server project directory and run followings:
+```bash
+dotnet ef migrations add InitialMigration --context ClientDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj
+```
+
+*Note*: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
