@@ -55,6 +55,12 @@ var BitButil = BitButil || {};
         setInnerText(element: HTMLElement, value: string) { element.innerText = value },
         getInputMode(element: HTMLElement) { return element.inputMode },
         setInputMode(element: HTMLElement, value: string) { element.inputMode = value },
+        offsetHeight(element: HTMLElement) { return element.offsetHeight },
+        offsetLeft(element: HTMLElement) { return element.offsetLeft },
+        offsetTop(element: HTMLElement) { return element.offsetTop },
+        offsetWidth(element: HTMLElement) { return element.offsetWidth },
+        getTabIndex(element: HTMLElement) { return element.tabIndex },
+        setTabIndex(element: HTMLElement, value: number) { element.tabIndex = value },
     };
 
     function scroll(element: HTMLElement, options?: ScrollToOptions, x?: number, y?: number) {

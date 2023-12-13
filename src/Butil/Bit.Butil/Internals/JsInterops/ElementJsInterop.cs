@@ -258,4 +258,21 @@ internal static class ElementJsInterop
         };
         await js.InvokeVoidAsync("BitButil.element.setInputMode", element, v);
     }
+
+    internal static async Task<float> ElementGetOffsetHeight(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<float>("BitButil.element.offsetHeight", element);
+
+    internal static async Task<float> ElementGetOffsetLeft(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<float>("BitButil.element.offsetLeft", element);
+
+    internal static async Task<float> ElementGetOffsetTop(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<float>("BitButil.element.offsetTop", element);
+
+    internal static async Task<float> ElementGetOffsetWidth(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<float>("BitButil.element.offsetWidth", element);
+
+    internal static async Task<int> ElementGetTabIndex(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<int>("BitButil.element.getTabIndex", element);
+    internal static async Task ElementSetTabIndex(this IJSRuntime js, ElementReference element, int value)
+        => await js.InvokeVoidAsync("BitButil.element.setTabIndex", element, value);
 }

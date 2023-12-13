@@ -359,4 +359,41 @@ public class Element(IJSRuntime js)
     /// </summary>
     public async Task SetInputMode(ElementReference element, InputMode value)
         => await js.ElementSetInputMode(element, value);
+
+    /// <summary>
+    /// The HTMLElement.offsetHeight read-only property returns the height of an element, including vertical padding and borders in px.
+    /// </summary>
+    public async Task<float> GetOffsetHeight(ElementReference element)
+        => await js.ElementGetOffsetHeight(element);
+
+    /// <summary>
+    /// The HTMLElement.offsetLeft read-only property returns the number of pixels that the upper left corner 
+    /// of the current element is offset to the left within the HTMLElement.offsetParent node.
+    /// </summary>
+    public async Task<float> GetOffsetLeft(ElementReference element)
+        => await js.ElementGetOffsetLeft(element);
+
+    /// <summary>
+    /// The HTMLElement.offsetTop read-only property returns the distance from the outer border of the current element 
+    /// (including its margin) to the top padding edge of the offsetParent, the closest positioned ancestor element.
+    /// </summary>
+    public async Task<float> GetOffsetTop(ElementReference element)
+        => await js.ElementGetOffsetTop(element);
+
+    /// <summary>
+    /// The layout width of an element in px.
+    /// </summary>
+    public async Task<float> GetOffsetWidth(ElementReference element)
+        => await js.ElementGetOffsetWidth(element);
+
+    /// <summary>
+    /// A number representing the position of the element in the tabbing order.
+    /// </summary>
+    public async Task<int> GetTabIndex(ElementReference element)
+        => await js.ElementGetTabIndex(element);
+    /// <summary>
+    /// A number representing the position of the element in the tabbing order.
+    /// </summary>
+    public async Task SetTabIndex(ElementReference element, int value)
+        => await js.ElementSetTabIndex(element, value);
 }
