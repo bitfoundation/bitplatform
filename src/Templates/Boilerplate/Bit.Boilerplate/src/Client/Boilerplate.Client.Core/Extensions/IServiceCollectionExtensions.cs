@@ -1,5 +1,7 @@
-﻿//-:cnd:noEmit
-
+﻿//+:cnd:noEmit
+//#if (offlineDb == true)
+using Boilerplate.Client.Core.Data;
+//#endif
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -35,6 +37,9 @@ public static class IServiceCollectionExtensions
         services.AddBitBlazorUIServices();
         services.AddSharedServices();
 
+        //#if (offlineDb == true)
+        services.AddSqliteDbContextFactory<ClientDbContext>();
+        //#endif
         return services;
     }
 

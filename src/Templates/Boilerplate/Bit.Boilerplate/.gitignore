@@ -231,4 +231,4 @@ custom.aprof
 
 /src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js
 
-/src/Boilerplate.Server/BoilerplateDb.db*
+/src/Boilerplate.Server/*.db*

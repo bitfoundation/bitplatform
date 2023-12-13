@@ -195,6 +195,9 @@
     <data name="EditProfileTitle" xml:space="preserve">
     <value>Editer le profil</value>
   </data>
+    <data name="OfflineEditProfileTitle" xml:space="preserve">
+    <value>Modifier le profil hors ligne</value>
+  </data>
     <data name="FullName" xml:space="preserve">
     <value>Nom et prénom</value>
   </data>

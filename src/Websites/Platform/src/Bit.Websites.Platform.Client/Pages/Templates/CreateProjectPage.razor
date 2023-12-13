@@ -32,18 +32,22 @@ dotnet new install Bit.Boilerplate</pre>
                 <li>--database default to <i>SqlServer</i> among following options: <i>SqlServer</i> <i>Sqlite</i>, <i>Other</i></li>
                 <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>Other</i></li>
                 <li>--sample default to <i>None</i> among the following options: <i>Admin</i>, <i>Todo</i>, <i>None</i></li>
+                <li>--offlineDb</li>
             </ul>
         </div>
         Examples:
         <pre class="code-box">
-1- Create a cross-platform AdminPanel app for mobile, desktop, and web with Azure DevOps pipelines and a SQLite database.
+1- Create a cross-platform AdminPanel app for mobile, desktop and web with Azure DevOps pipelines and a SQLite database.
 dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin
 
-2- Create a cross-platform Todo app for mobile, desktop, and web with GitHub Actions and a SQLite database.
+2- Create a cross-platform Todo app for mobile, desktop and web with GitHub Actions and a SQLite database.
 dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo
 
-3- Create a mobile, desktop, and web app without sample pages, integrating GitHub Actions and a SQL Server database.
-dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None</pre>
+3- Create a mobile, desktop and web app without sample pages, integrating GitHub Actions and a SQL Server database.
+dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None
+
+4- Create an offline capable mobile, desktop and web app.
+dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --offlineDb</pre>
         <div class="section-card-txt">
             <b>Note</b>: We recommend to create the project in a path that is not too long without space character in the folder names.
         </div>

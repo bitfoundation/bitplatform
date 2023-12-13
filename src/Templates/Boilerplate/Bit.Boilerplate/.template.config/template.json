@@ -97,6 +97,12 @@
                     "description": "None"
                 }
             ]
+        },
+        "offlineDb": {
+            "displayName": "Offline db",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
         }
     },
     "postActions": [],
@@ -121,7 +127,8 @@
                         "**/*.lock.json",
                         "**/.git/**",
                         "**/*.nuspec",
-                        "**/Migrations/**"
+                        "src/Boilerplate.Server/Data/Migrations/**",
+                        "src/Boilerplate.Server/app.db"
                     ]
                 },
                 {
@@ -134,33 +141,44 @@
                 },
                 {
                     "condition": "(sample != Admin)",
-                    "exclude": [ "src/Shared/Dtos/Categories/**",
-						"src/Shared/Dtos/Dashboard/**",
-						"src/Shared/Dtos/Products/**",
-						"src/Boilerplate.Server/Controllers/Categories/**",
-						"src/Boilerplate.Server/Controllers/Products/**",
-						"src/Boilerplate.Server/Controllers/Dashboard/**",
-						"src/Boilerplate.Server/Data/Configurations/Category/**",
-						"src/Boilerplate.Server/Data/Configurations/Product/**",
-						"src/Boilerplate.Server/Mappers/CategoriesMapper.cs",
-						"src/Boilerplate.Server/Mappers/ProductsMapper.cs",
-						"src/Boilerplate.Server/Models/Categories/**",
-						"src/Boilerplate.Server/Models/Products/**",
-						"src/Client/Boilerplate.Client.Core/Controllers/Categories/**",
-						"src/Client/Boilerplate.Client.Core/Controllers/Products/**",
-						"src/Client/Boilerplate.Client.Core/Controllers/Dashboard/**",
-						"src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
-						"src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
-						"src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"]
+                    "exclude": [
+                        "src/Shared/Dtos/Categories/**",
+                        "src/Shared/Dtos/Dashboard/**",
+                        "src/Shared/Dtos/Products/**",
+                        "src/Boilerplate.Server/Controllers/Categories/**",
+                        "src/Boilerplate.Server/Controllers/Products/**",
+                        "src/Boilerplate.Server/Controllers/Dashboard/**",
+                        "src/Boilerplate.Server/Data/Configurations/Category/**",
+                        "src/Boilerplate.Server/Data/Configurations/Product/**",
+                        "src/Boilerplate.Server/Mappers/CategoriesMapper.cs",
+                        "src/Boilerplate.Server/Mappers/ProductsMapper.cs",
+                        "src/Boilerplate.Server/Models/Categories/**",
+                        "src/Boilerplate.Server/Models/Products/**",
+                        "src/Client/Boilerplate.Client.Core/Controllers/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Controllers/Products/**",
+                        "src/Client/Boilerplate.Client.Core/Controllers/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
+                    ]
                 },
                 {
                     "condition": "(sample != Todo)",
-                    "exclude": [ "src/Shared/Dtos/Todo/**",
-						"src/Boilerplate.Server/Controllers/Todo/**",
-						"src/Boilerplate.Server/Mappers/TodoMapper.cs",
-						"src/Boilerplate.Server/Models/Todo/**",
-						"src/Client/Boilerplate.Client.Core/Controllers/Todo/**",
-						"src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"]
+                    "exclude": [
+                        "src/Shared/Dtos/Todo/**",
+                        "src/Boilerplate.Server/Controllers/Todo/**",
+                        "src/Boilerplate.Server/Mappers/TodoMapper.cs",
+                        "src/Boilerplate.Server/Models/Todo/**",
+                        "src/Client/Boilerplate.Client.Core/Controllers/Todo/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"
+                    ]
+                },
+                {
+                    "condition": "(offlineDb != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Data/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Offline/**"
+                    ]
                 }
             ]
         }

@@ -15,7 +15,7 @@ public partial class DashboardPage
         {
             if (OperatingSystem.IsBrowser())
             {
-                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
+                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm"]);
             }
         }
         finally

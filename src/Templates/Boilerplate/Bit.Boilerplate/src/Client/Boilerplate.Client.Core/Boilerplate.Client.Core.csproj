@@ -20,6 +20,7 @@
         <PackageReference Include="Bit.BlazorUI.Icons" Version="8.3.0" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.3.0" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.3.0" />
         <PackageReference Condition=" '$(sample)' == 'Admin' or '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.3.0" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.3.0">
