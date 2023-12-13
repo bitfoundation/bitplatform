@@ -1,6 +1,6 @@
 ﻿namespace Bit.Besql;
 
-public interface IStorage
+public interface IBesqlStorage
 {
     Task<int> SyncDb(string filename);
 }

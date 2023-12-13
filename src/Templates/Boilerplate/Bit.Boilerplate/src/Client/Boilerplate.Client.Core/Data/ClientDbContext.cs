@@ -1,5 +1,6 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Boilerplate.Client.Core.Data;
 
@@ -27,5 +28,11 @@ public class ClientDbContext(DbContextOptions<ClientDbContext> options) : DbCont
         optionsBuilder.UseSqlite("Data Source=Boilerplate-ClientDb.db");
 
         base.OnConfiguring(optionsBuilder);
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
     }
 }

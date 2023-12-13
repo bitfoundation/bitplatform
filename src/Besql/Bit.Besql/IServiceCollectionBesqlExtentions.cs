@@ -4,17 +4,17 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IServiceCollectionExtensions
+public static class IServiceCollectionBesqlExtentions
 {
-    public static IServiceCollection AddSqliteDbContextFactory<TContext>(
+    public static IServiceCollection AddBesqlDbContextFactory<TContext>(
        this IServiceCollection services,
        Action<IServiceProvider, DbContextOptionsBuilder>? optionsAction)
         where TContext : DbContext
     {
         if (OperatingSystem.IsBrowser())
         {
-            services.TryAddScoped<IStorage, BrowserCacheStorage>();
-            services.AddDbContextFactory<TContext, SqliteWasmDbContextFactory<TContext>>(
+            services.TryAddScoped<IBesqlStorage, BrowserCacheBesqlStorage>();
+            services.AddDbContextFactory<TContext, BesqlDbContextFactory<TContext>>(
                 optionsAction ?? ((s, p) => { }), ServiceLifetime.Scoped);
         }
         else
@@ -26,18 +26,18 @@ public static class IServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddSqliteDbContextFactory<TContext>(
+    public static IServiceCollection AddBesqlDbContextFactory<TContext>(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder>? optionsAction)
     where TContext : DbContext
     {
-        return services.AddSqliteDbContextFactory<TContext>((s, p) => optionsAction?.Invoke(p));
+        return services.AddBesqlDbContextFactory<TContext>((s, p) => optionsAction?.Invoke(p));
     }
 
-    public static IServiceCollection AddSqliteDbContextFactory<TContext>(
+    public static IServiceCollection AddBesqlDbContextFactory<TContext>(
         this IServiceCollection services)
         where TContext : DbContext
     {
-        return services.AddSqliteDbContextFactory<TContext>(options => { });
+        return services.AddBesqlDbContextFactory<TContext>(options => { });
     }
 }

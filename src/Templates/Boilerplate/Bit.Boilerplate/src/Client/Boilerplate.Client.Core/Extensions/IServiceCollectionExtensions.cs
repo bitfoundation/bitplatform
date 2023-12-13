@@ -38,7 +38,7 @@ public static class IServiceCollectionExtensions
         services.AddSharedServices();
 
         //#if (offlineDb == true)
-        services.AddSqliteDbContextFactory<ClientDbContext>();
+        services.AddBesqlDbContextFactory<ClientDbContext>();
         //#endif
         return services;
     }

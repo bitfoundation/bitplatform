@@ -128,7 +128,7 @@
                         "**/.git/**",
                         "**/*.nuspec",
                         "src/Boilerplate.Server/Data/Migrations/**",
-                        "src/Boilerplate.Server/app.db"
+                        "src/Boilerplate.Server/*.db*"
                     ]
                 },
                 {

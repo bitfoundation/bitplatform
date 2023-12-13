@@ -2,11 +2,11 @@
 
 namespace Bit.Besql;
 
-public sealed class BrowserCacheStorage : IAsyncDisposable, IStorage
+public sealed class BrowserCacheBesqlStorage : IAsyncDisposable, IBesqlStorage
 {
     private readonly Lazy<Task<IJSObjectReference>> moduleTask;
 
-    public BrowserCacheStorage(IJSRuntime jsRuntime)
+    public BrowserCacheBesqlStorage(IJSRuntime jsRuntime)
     {
         moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
             "import", "./_content/Bit.Besql/browserCache.js").AsTask()!);

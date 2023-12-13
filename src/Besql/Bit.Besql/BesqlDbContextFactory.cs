@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Bit.Besql;
 
-public class SqliteWasmDbContextFactory<TContext> : DbContextFactory<TContext>
+public class BesqlDbContextFactory<TContext> : DbContextFactory<TContext>
     where TContext : DbContext
 {
     private static readonly IDictionary<Type, string> FileNames = new Dictionary<Type, string>();
 
-    private readonly IStorage cache;
+    private readonly IBesqlStorage cache;
     private Task<int>? startupTask = null;
     private int lastStatus = -2;
 
-    public SqliteWasmDbContextFactory(
-        IStorage cache,
+    public BesqlDbContextFactory(
+        IBesqlStorage cache,
         IServiceProvider serviceProvider,
         DbContextOptions<TContext> options,
         IDbContextFactorySource<TContext> factorySource)
@@ -26,7 +26,7 @@ public class SqliteWasmDbContextFactory<TContext> : DbContextFactory<TContext>
 
     private static string Filename => FileNames[typeof(TContext)];
 
-    private static string BackupFile => $"{SqliteWasmDbContextFactory<TContext>.Filename}_bak";
+    private static string BackupFile => $"{BesqlDbContextFactory<TContext>.Filename}_bak";
 
     public static void Reset() => FileNames.Clear();
 
@@ -111,8 +111,8 @@ public class SqliteWasmDbContextFactory<TContext> : DbContextFactory<TContext>
         if (e.EntitiesSavedCount > 0)
         {
             // unique to avoid conflicts. Is deleted after caching.
-            var backupName = $"{SqliteWasmDbContextFactory<TContext>.BackupFile}-{Guid.NewGuid().ToString().Split('-')[0]}";
-            await DoSwap(SqliteWasmDbContextFactory<TContext>.Filename, backupName);
+            var backupName = $"{BesqlDbContextFactory<TContext>.BackupFile}-{Guid.NewGuid().ToString().Split('-')[0]}";
+            await DoSwap(BesqlDbContextFactory<TContext>.Filename, backupName);
             lastStatus = await cache.SyncDb(backupName);
         }
     }
