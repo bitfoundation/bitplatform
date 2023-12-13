@@ -272,4 +272,91 @@ public class Element(IJSRuntime js)
     /// </summary>
     public async Task<float> GetTagName(ElementReference element)
         => await js.ElementGetScrollWidth(element);
+
+    /// <summary>
+    /// The contentEditable property of the HTMLElement interface specifies whether or not the element is editable.
+    /// </summary>
+    public async Task<ContentEditable> GetContentEditable(ElementReference element)
+        => await js.ElementGetContentEditable(element);
+    /// <summary>
+    /// The contentEditable property of the HTMLElement interface specifies whether or not the element is editable.
+    /// </summary>
+    public async Task SetContentEditable(ElementReference element, ContentEditable value)
+        => await js.ElementSetContentEditable(element, value);
+
+    /// <summary>
+    /// Returns a boolean value indicating whether or not the content of the element can be edited.
+    /// </summary>
+    public async Task<bool> IsContentEditable(ElementReference element)
+        => await js.ElementIsContentEditable(element);
+
+    /// <summary>
+    /// The HTMLElement.dir property gets or sets the text writing directionality of the content of the current element.
+    /// </summary>
+    public async Task<Dir> GetDir(ElementReference element)
+        => await js.ElementGetDir(element);
+    /// <summary>
+    /// The HTMLElement.dir property gets or sets the text writing directionality of the content of the current element.
+    /// </summary>
+    public async Task SetDir(ElementReference element, Dir value)
+        => await js.ElementSetDir(element, value);
+
+    /// <summary>
+    /// The enterKeyHint property is an enumerated property defining what action label (or icon) 
+    /// to present for the enter key on virtual keyboards.
+    /// </summary>
+    public async Task<EnterKeyHint> GetEnterKeyHint(ElementReference element)
+        => await js.ElementGetEnterKeyHint(element);
+    /// <summary>
+    /// The enterKeyHint property is an enumerated property defining what action label (or icon) 
+    /// to present for the enter key on virtual keyboards.
+    /// </summary>
+    public async Task SetEnterKeyHint(ElementReference element, EnterKeyHint value)
+        => await js.ElementSetEnterKeyHint(element, value);
+
+    /// <summary>
+    /// The HTMLElement property hidden reflects the value of the element's hidden attribute.
+    /// </summary>
+    public async Task<Hidden> GetHidden(ElementReference element)
+        => await js.ElementGetHidden(element);
+    /// <summary>
+    /// The HTMLElement property hidden reflects the value of the element's hidden attribute.
+    /// </summary>
+    public async Task SetHidden(ElementReference element, Hidden value)
+        => await js.ElementSetHidden(element, value);
+
+    /// <summary>
+    /// The HTMLElement property inert reflects the value of the element's inert attribute. It is a boolean value that, when present, 
+    /// makes the browser "ignore" user input events for the element, including focus events and events from assistive technologies.
+    /// </summary>
+    public async Task<bool> GetInert(ElementReference element)
+        => await js.ElementGetInert(element);
+    /// <summary>
+    /// The HTMLElement property inert reflects the value of the element's inert attribute. It is a boolean value that, when present, 
+    /// makes the browser "ignore" user input events for the element, including focus events and events from assistive technologies.
+    /// </summary>
+    public async Task SetInert(ElementReference element, bool value)
+        => await js.ElementSetInert(element, value);
+
+    /// <summary>
+    /// The innerText property of the HTMLElement interface represents the rendered text content of a node and its descendants.
+    /// </summary>
+    public async Task<string> GetInnerText(ElementReference element)
+        => await js.ElementGetInnerText(element);
+    /// <summary>
+    /// The innerText property of the HTMLElement interface represents the rendered text content of a node and its descendants.
+    /// </summary>
+    public async Task SetInnerText(ElementReference element, string value)
+        => await js.ElementSetInnerText(element, value);
+
+    /// <summary>
+    /// The HTMLElement property inputMode reflects the value of the element's inputmode attribute.
+    /// </summary>
+    public async Task<InputMode> GetInputMode(ElementReference element)
+        => await js.ElementGetInputMode(element);
+    /// <summary>
+    /// The HTMLElement property inputMode reflects the value of the element's inputmode attribute.
+    /// </summary>
+    public async Task SetInputMode(ElementReference element, InputMode value)
+        => await js.ElementSetInputMode(element, value);
 }
