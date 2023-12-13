@@ -7,7 +7,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Offline;
 [Authorize]
 public partial class OfflineEditProfilePage
 {
-    [AutoInject] IDbContextFactory<ClientDbContext> dbContextFactory = default!;
+    [AutoInject] IDbContextFactory<OfflineDbContext> dbContextFactory = default!;
 
     private bool isSaving;
     private bool isLoading = true;

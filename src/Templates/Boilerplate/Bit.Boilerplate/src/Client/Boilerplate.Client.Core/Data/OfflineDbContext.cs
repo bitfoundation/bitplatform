@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Boilerplate.Client.Core.Data;
 
-public class ClientDbContext(DbContextOptions<ClientDbContext> options) : DbContext(options)
+public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbContext(options)
 {
     public virtual DbSet<UserDto> Users { get; set; }
 
