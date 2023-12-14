@@ -68,6 +68,14 @@ public partial class NavMenu : IDisposable
                 IconName = BitIconName.EditContact,
                 Url = "/edit-profile",
             },
+            //#if (offlineDb == true)
+            new BitNavItem
+            {
+                Text = Localizer[nameof(AppStrings.OfflineEditProfileTitle)],
+                IconName = BitIconName.EditContact,
+                Url = "/offline-edit-profile",
+            },
+            //#endif
             new BitNavItem
             {
                 Text = Localizer[nameof(AppStrings.TermsTitle)],

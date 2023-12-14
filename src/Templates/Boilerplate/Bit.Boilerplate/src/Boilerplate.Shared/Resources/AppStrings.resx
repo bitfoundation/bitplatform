@@ -190,6 +190,11 @@
   <data name="EditProfileTitle" xml:space="preserve">
     <value>Edit profile</value>
   </data>
+  <!--#if (offlineDb == true) -->
+  <data name="OfflineEditProfileTitle" xml:space="preserve">
+    <value>Offline Edit profile</value>
+  </data>
+  <!--#endif-->
   <data name="FullName" xml:space="preserve">
     <value>FullName</value>
   </data>

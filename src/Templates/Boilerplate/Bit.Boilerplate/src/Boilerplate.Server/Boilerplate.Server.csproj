@@ -6,11 +6,11 @@
 
     <ItemGroup>
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.4.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.3.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.3.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -85,5 +85,14 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+
+    <!-- https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container -->
+    <PropertyGroup>
+        <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+        <EnableSdkContainerDebugging>True</EnableSdkContainerDebugging>
+        <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <DockerfileContext>..\..</DockerfileContext>
+    </PropertyGroup>
 
 </Project>

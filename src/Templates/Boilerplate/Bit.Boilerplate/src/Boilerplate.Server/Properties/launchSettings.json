@@ -1,26 +1,45 @@
 {
-    "$schema": "http://json.schemastore.org/launchsettings.json",
     "profiles": {
         "Boilerplate.Server-Swagger": {
             "commandName": "Project",
-            "dotnetRunMessages": true,
             "launchBrowser": true,
-            "applicationUrl": "http://localhost:5030;https://localhost:5031",
             "launchUrl": "swagger",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
-            }
+            },
+            "dotnetRunMessages": true,
+            "applicationUrl": "http://localhost:5030;https://localhost:5031"
         },
-        // This configuration allows debugging the Blazor Web Assembly
         "Boilerplate.Server-BlazorWebAssembly": {
             "commandName": "Project",
-            "dotnetRunMessages": true,
             "launchBrowser": true,
-            "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-            "applicationUrl": "http://localhost:5030;https://localhost:5031",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true,
+            "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+            "applicationUrl": "http://localhost:5030;https://localhost:5031"
+        },
+        "WSL": {
+            "commandName": "WSL2",
+            "launchBrowser": true,
+            "launchUrl": "http://localhost:5030/swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5030"
             }
+        },
+        "Docker": {
+            "commandName": "SdkContainer",
+            "launchBrowser": true,
+            "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+            "environmentVariables": {
+                "ASPNETCORE_HTTP_PORTS": "5030"
+            },
+            "publishAllPorts": true,
+            "useSSL": false,
+            "httpPort": 5030
         }
-    }
+    },
+    "$schema": "http://json.schemastore.org/launchsettings.json"
 }
