@@ -12,7 +12,8 @@
                       IsUnderlined="true"
                       Value="@_searchText"
                       ValueChanged="@HandleChange"
-                      OnClear="@HandleClear" />
+                      OnClear="@HandleClear"
+                      TItem="BitSearchBoxItem" />
         @if (_filteredNavItems.Count == 0)
         {
             <br />

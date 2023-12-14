@@ -1,38 +1,92 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<string?>
+@typeparam TItem
+
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+</CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div style="@Styles?.SearchIconContainer" class="bit-srb-ict @Classes?.SearchIconContainer" aria-hidden="true">
-        <i style="@Styles?.SearchIcon" class="bit-icon bit-icon--@IconName @Classes?.SearchIcon" aria-hidden="true" />
-    </div>
-    <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
-           id="@_inputId"
-           style="@Styles?.Input"
-           class="bit-srb-inp @Classes?.Input"
-           type="text"
-           role="searchbox"
-           value="@CurrentValue"
-           aria-label="@AriaLabel"
-           placeholder="@Placeholder"
-           autocomplete="@Autocomplete"
-           disabled="@(IsEnabled is false)" />
-    @if (CurrentValue.HasValue())
-    {
-        <div style="@Styles?.ClearButtonContainer" class="bit-srb-cbc @Classes?.ClearButtonContainer">
-            <button @onclick="HandleOnClear"
-                    style="@Styles?.ClearButton"
-                    class="bit-srb-cbt @Classes?.ClearButton"
-                    type="button"
-                    aria-hidden="true"
-                    aria-label="Clear text"
-                    disabled="@(CurrentValue.HasNoValue())">
-                <span style="@Styles?.ClearButtonIconContainer" class="@Classes?.ClearButtonIconContainer">
-                    <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
-                </span>
-            </button>
+    <div class="bit-srb-cnt @Classes?.Container" style="@Styles?.Container">
+        <div style="@Styles?.SearchIconContainer" class="bit-srb-ict @Classes?.SearchIconContainer" aria-hidden="true">
+            <i style="@Styles?.SearchIcon" class="bit-icon bit-icon--@IconName @Classes?.SearchIcon" aria-hidden="true" />
         </div>
-    }
+        <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
+                id="@_inputId"
+                style="@Styles?.Input"
+                class="bit-srb-inp @Classes?.Input"
+                type="text"
+                role="searchbox"
+                value="@_searchValue"
+                aria-label="@AriaLabel"
+                placeholder="@Placeholder"
+                autocomplete="@Autocomplete"
+                disabled="@(IsEnabled is false)" />
+        @if (CurrentValue.HasValue())
+        {
+            <div style="@Styles?.ClearButtonContainer" class="bit-srb-cbc @Classes?.ClearButtonContainer">
+                <button @onclick="HandleOnClear"
+                        style="@Styles?.ClearButton"
+                        class="bit-srb-cbt @Classes?.ClearButton"
+                        type="button"
+                        aria-hidden="true"
+                        aria-label="Clear text"
+                        disabled="@(CurrentValue.HasNoValue())">
+                    <span style="@Styles?.ClearButtonIconContainer" class="@Classes?.ClearButtonIconContainer">
+                        <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    </span>
+                </button>
+            </div>
+        }
+    </div>
+
+    <div @onclick="CloseCallout"
+         style="display:@(isOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-srb-ovl @Classes?.Overlay"></div>
+
+    <div id="@_calloutId"
+         tabindex="0"
+         role="listbox"
+         style="@Styles?.Callout"
+         class="bit-srb-cal @Classes?.Callout">
+
+        <div id="@_scrollContainerId"
+             style="@Styles?.ScrollContainer"
+             class="bit-srb-scn @Classes?.ScrollContainer">
+            @if (Virtualize)
+            {
+                if (ItemsProvider is null)
+                {
+                    <Virtualize Items="_searchItems"
+                                Context="item"
+                                ItemSize="ItemSize"
+                                OverscanCount="OverscanCount"
+                                Placeholder="VirtualizePlaceholder">
+                        <_BitSearchBoxItem Item="item" SearchBox="this" />
+                    </Virtualize>
+                }
+                else
+                {
+                    <Virtualize @ref="_virtualizeElement"
+                                Context="item"
+                                OverscanCount="OverscanCount"
+                                Placeholder="VirtualizePlaceholder"
+                                ItemsProvider="InternalItemsProvider">
+                        <_BitSearchBoxItem Item="item" SearchBox="this" />
+                    </Virtualize>
+                }
+            }
+            else
+            {
+                @foreach (var item in _searchItems)
+                {
+                    <_BitSearchBoxItem Item="item" SearchBox="this" />
+                }
+            }
+        </div>
+
+    </div>
 </div>

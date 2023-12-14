@@ -22,6 +22,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the SearchBox, a list of BitSearchBoxOption components.",
+        },
+        new()
+        {
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
@@ -57,6 +64,57 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Items",
+            Type = "ICollection<TItem>?",
+            DefaultValue = "null",
+            Description = "The list of items to display in the callout."
+        },
+        new()
+        {
+            Name = "ItemSize",
+            Type = "int",
+            DefaultValue = "35",
+            Description = "The height of each item in pixels for virtualization.",
+        },
+        new()
+        {
+            Name = "ItemsProvider",
+            Type = "BitSearchBoxItemsProvider<TItem>?",
+            DefaultValue = "null",
+            Description = "The function providing items to the list for virtualization.",
+        },
+        new()
+        {
+            Name = "ItemTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "The custom template for rendering the items of the BitSearchBox.",
+        },
+        new()
+        {
+            Name = "MaxSuggestedItems",
+            Type = "int",
+            DefaultValue = "5",
+            Description = "The maximum number of items or suggestions that will be displayed.",
+        },
+        new()
+        {
+            Name = "MinSearchLength",
+            Type = "int",
+            DefaultValue = "3",
+            Description = "The minimum character requirement for doing a search in suggested items.",
+        },
+        new()
+        {
+            Name = "NameSelectors",
+            Type = "BitSearchBoxNameSelectors<TItem>?",
+            DefaultValue = "null",
+            Description = "Names and selectors of the custom input type properties.",
+            LinkType = LinkType.Link,
+            Href = "#name-selectors"
+        },
+        new()
+        {
             Name = "OnChange",
             Type = "EventCallback<string?>",
             Description = "Callback for when the input value changes.",
@@ -81,6 +139,20 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of ChildContent.",
+        },
+        new()
+        {
+            Name = "OverscanCount",
+            Type = "int",
+            DefaultValue = "3",
+            Description = "Determines how many additional items are rendered before and after the visible region.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -94,6 +166,34 @@ public partial class BitSearchBoxDemo
             LinkType = LinkType.Link,
             Href = "#searchbox-class-styles",
             Description = "Custom CSS styles for different parts of the BitSearchBox.",
+        },
+        new()
+        {
+            Name = "SearchFunction",
+            Type = "Func<ICollection<TItem>, string, ICollection<TItem>>?",
+            DefaultValue = "null",
+            Description = "Custom search function to be used in place of the default search algorithm.",
+        },
+        new()
+        {
+            Name = "SearchDelay",
+            Type = "int",
+            DefaultValue = "400",
+            Description = "The delay, in milliseconds, applied to the search functionality.",
+        },
+        new()
+        {
+            Name = "Virtualize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables virtualization to render only the visible items.",
+        },
+        new()
+        {
+            Name = "VirtualizePlaceholder",
+            Type = "RenderFragment<PlaceholderContext>?",
+            DefaultValue = "null",
+            Description = "The template for items that have not yet been rendered in virtualization mode.",
         }
     };
 
@@ -163,97 +263,97 @@ public partial class BitSearchBoxDemo
                     Description = "Custom CSS classes/styles for the search box's search icon container.",
                 }
             }
-        }
+        },
+        new()
+        {
+            Id = "name-selectors",
+            Title = "BitSearchBoxNameSelectors<TItem>",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitSearchBoxItem.AriaLabel))",
+                   Description = "The AriaLabel field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Class",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitSearchBoxItem.Class))",
+                   Description = "The CSS Class field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Id",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitSearchBoxItem.Id))",
+                   Description = "The Id field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "BitNameSelectorPair<TItem, bool>",
+                   DefaultValue = "new(nameof(BitSearchBoxItem.IsSelected))",
+                   Description = "The IsSelected field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitSearchBoxItem.Style))",
+                   Description = "The CSS Style field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Text",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitSearchBoxItem.Text))",
+                   Description = "The Text field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitSearchBoxItem.Title))",
+                   Description = "The Title field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               }
+            },
+        },
+        new()
+        {
+            Id = "name-selector-pair",
+            Title = "BitNameSelectorPair<TItem, TProp>",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Name",
+                   Type = "string",
+                   Description = "Custom class property name."
+               },
+               new()
+               {
+                   Name = "Selector",
+                   Type = "Func<TItem, TProp?>?",
+                   Description = "Custom class property selector."
+               }
+            }
+        },
     };
-
-
-
-    private readonly string example1RazorCode = @"
-<BitLabel>Basic</BitLabel>
-<BitSearchBox Placeholder=""Search"" />
-    
-<BitLabel>Disabled</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" />";
-
-    private readonly string example2RazorCode = @"
-<BitLabel>Basic Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" />
-
-<BitLabel>Disabled Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" />";
-
-    private readonly string example3RazorCode = @"
-<BitLabel>SearchBox with fixed icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" FixedIcon=""true"" />
-
-<BitLabel>SearchBox without icon animation</BitLabel>
-<BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
-
-<BitLabel>SearchBox with custom icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />";
-
-    private readonly string example4RazorCode = @"
-<style>
-    .custom-class {
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
-    }
-
-    .custom-clear {
-        color: blueviolet;
-    }
-
-    .custom-search {
-        margin-right: 0.25rem;
-        border-radius: 0.5rem;
-        background-color: tomato;
-    }
-</style>
-
-<BitSearchBox Placeholder=""Search"" Style=""background-color: lightskyblue; border-radius: 1rem; margin: 1rem 0"" />
-<BitSearchBox Placeholder=""Search"" Class=""custom-class"" />
-
-<BitSearchBox Placeholder=""Search""
-              Styles=""@(new() {SearchIcon = ""color: darkorange;"",
-                               Input = ""padding: 0.5rem; background-color: goldenrod""})"" />
-<BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value""
-              Classes=""@(new() {ClearButtonIcon = ""custom-clear"",
-                                SearchIconContainer = ""custom-search""})"" />";
-
-    private readonly string example5RazorCode = @"
-Visible: [ <BitSearchBox Visibility=""BitVisibility.Visible"" Placeholder=""Visible SearchBox"" /> ]
-Hidden: [ <BitSearchBox Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden SearchBox"" />  ]
-Collapsed: [ <BitSearchBox Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed SearchBox"" />  ]";
-
-    private readonly string example6RazorCode = @"
-<BitLabel>Two-way Bind</BitLabel>
-<BitSearchBox Placeholder=""Search"" @bind-Value=""TwoWaySearchValue"" />
-<BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
-
-<BitLabel>OnChange</BitLabel>
-<BitSearchBox Placeholder=""Search"" OnChange=""(s) => OnChangeSearchValue = s"" OnClear=""() => OnChangeSearchValue = string.Empty"" />
-<BitLabel>Search Value: @OnChangeSearchValue</BitLabel>
-
-<BitLabel>OnSearch (Serach by Enter)</BitLabel>
-<BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" />
-<BitLabel>Search Value: @OnSearchValue</BitLabel>";
-    private readonly string example6CsharpCode = @"
-private string TwoWaySearchValue;
-private string OnChangeSearchValue;
-private string OnSearchValue;";
-
-    private readonly string example7RazorCode = @"
-<EditForm Model=""ValidationSearchBoxModel"">
-    <DataAnnotationsValidator />
-    <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""ValidationSearchBoxModel.Text"" />
-    <ValidationMessage For=""() => ValidationSearchBoxModel.Text"" />
-</EditForm>";
-    private readonly string example7CsharpCode = @"
-public class ValidationSearchBoxModel
-{
-    [StringLength(6, MinimumLength = 2, ErrorMessage = ""The text field length must be between 6 and 2 characters in length."")]
-    public string Text { get; set; }
-}
-
-private ValidationSearchBoxModel ValidationSearchBoxModel = new();";
 }

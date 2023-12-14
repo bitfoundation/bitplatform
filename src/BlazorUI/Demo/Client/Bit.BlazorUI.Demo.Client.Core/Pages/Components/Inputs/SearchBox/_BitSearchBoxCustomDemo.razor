@@ -1,0 +1,149 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Basic</BitLabel>
+                <BitSearchBox Placeholder="Search" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+            </div>
+            <br />
+            <div>
+                <BitLabel>Disabled</BitLabel>
+                <BitSearchBox Placeholder="Search" IsEnabled="false" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IsUnderlined" RazorCode="@example2RazorCode" CsharpCode="@example1CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Basic Underlined SearchBox</BitLabel>
+                <BitSearchBox Placeholder="Search" IsUnderlined="true" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+            </div>
+            <br />
+            <div>
+                <BitLabel>Disabled Underlined SearchBox</BitLabel>
+                <BitSearchBox Placeholder="Search" IsUnderlined="true" IsEnabled="false" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example1CsharpCode" Id="example3">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>SearchBox with fixed icon</BitLabel>
+                <BitSearchBox Placeholder="Search" FixedIcon="true" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+            </div>
+            <br />
+            <div>
+                <BitLabel>SearchBox without icon animation</BitLabel>
+                <BitSearchBox Placeholder="Search" DisableAnimation="true" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+            </div>
+            <br />
+            <div>
+                <BitLabel>SearchBox with custom icon</BitLabel>
+                <BitSearchBox Placeholder="Search" IconName="@BitIconName.Filter" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example1CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Component's Style & Class:</BitLabel>
+                <BitSearchBox Placeholder="Search" Style="background-color: lightskyblue; border-radius: 1rem; margin: 1rem 0" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+                <BitSearchBox Placeholder="Search" Class="custom-class" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+            </div>
+            <br />
+            <div>
+                <BitLabel>Styles & Classes:</BitLabel>
+                <BitSearchBox Placeholder="Search"
+                              Styles="@(new() { SearchIcon = "color: darkorange;",
+                                                Input = "padding: 0.5rem; background-color: goldenrod" })"
+                              Items="GetBasicCustoms()" 
+                              NameSelectors="nameSelectors" />
+                <br />
+                <BitSearchBox Placeholder="Search" DefaultValue="This is default value"
+                              Classes="@(new() { ClearButtonIcon = "custom-clear",
+                                                 SearchIconContainer = "custom-search" })"
+                              Items="GetBasicCustoms()" 
+                              NameSelectors="nameSelectors" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Visibility" RazorCode="@example5RazorCode" CsharpCode="@example1CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div class="example-content">
+            <div class="visibility-items">Visible: [ <BitSearchBox Visibility="BitVisibility.Visible" Placeholder="Visible SearchBox" Items="GetBasicCustoms()" NameSelectors="nameSelectors" /> ]</div>
+            <div class="visibility-items">Hidden: [ <BitSearchBox Visibility="BitVisibility.Hidden" Placeholder="Hidden SearchBox" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />  ]</div>
+            <div class="visibility-items">Collapsed: [ <BitSearchBox Visibility="BitVisibility.Collapsed" Placeholder="Collapsed SearchBox" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />  ]</div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Two-way Bind</BitLabel>
+                <BitSearchBox Placeholder="Search" Items="GetBasicCustoms()" NameSelectors="nameSelectors" @bind-Value="TwoWaySearchValue" />
+                <BitTextField Placeholder="Search Value" Style="margin-top: 5px;" @bind-Value="TwoWaySearchValue" />
+            </div>
+            <br />
+            <div>
+                <BitLabel>OnChange</BitLabel>
+                <BitSearchBox Placeholder="Search" OnChange="(s) => OnChangeSearchValue = s" OnClear="() => OnChangeSearchValue = string.Empty" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+                <BitLabel>Search Value: @OnChangeSearchValue</BitLabel>
+            </div>
+            <br />
+            <div>
+                <BitLabel>OnSearch (Search by Enter)</BitLabel>
+                <BitSearchBox Placeholder="Search" OnSearch="(s) => OnSearchValue = s" OnClear="() => OnSearchValue = string.Empty" Items="GetBasicCustoms()" NameSelectors="nameSelectors" />
+                <BitLabel>Search Value: @OnSearchValue</BitLabel>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div class="example-content">
+            <EditForm Model="ValidationSearchBoxModel">
+                <DataAnnotationsValidator />
+                <BitSearchBox Placeholder="Search" DefaultValue="This is default value" Items="GetBasicCustoms()" NameSelectors="nameSelectors" @bind-Value="ValidationSearchBoxModel.Text" />
+                <ValidationMessage For="() => ValidationSearchBoxModel.Text" />
+            </EditForm>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Suggest List" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitLabel>Items:</BitLabel>
+                <BitSearchBox Placeholder="e.g. Apple" Items="GetBasicCustoms()" NameSelectors="nameSelectors" @bind-Value="@SearchValue" />
+                <br />
+                SearchValue: @SearchValue
+            </div>
+
+            <div>
+                <BitLabel>ItemsProvider:</BitLabel>
+                <BitSearchBox Placeholder="e.g. Pro"
+                              Virtualize="true"
+                              ItemsProvider="LoadItems"
+                              NameSelectors="nameSelectors"
+                              @bind-Value="@ItemsProviderSearchValue" />
+                <br />
+                SearchValue: @ItemsProviderSearchValue
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

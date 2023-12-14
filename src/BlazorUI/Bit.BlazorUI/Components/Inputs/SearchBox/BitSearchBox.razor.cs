@@ -1,16 +1,30 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI;
 
-public partial class BitSearchBox
+public partial class BitSearchBox<TItem> where TItem : class
 {
+    private bool isOpen;
     private bool disableAnimation;
     private bool isUnderlined;
     private bool inputHasFocus;
     private bool fixedIcon;
 
+    private string? _searchValue;
     private string _inputId = string.Empty;
+    private string _calloutId = string.Empty;
+    private string _scrollContainerId = string.Empty;
     private ElementReference _inputRef = default!;
+    private Virtualize<TItem>? _virtualizeElement = default!;
+    private CancellationTokenSource _cancellationTokenSource = new();
+    private DotNetObjectReference<BitSearchBox<TItem>> _dotnetObj = default!;
+    private List<TItem> _items = [];
+    private List<TItem> _searchItems = [];
+    private TItem? _selectedItem;
+    private int? _totalItems;
+    private bool _refreshItems;
 
     private bool InputHasFocus
     {
@@ -96,6 +110,11 @@ public partial class BitSearchBox
     [Parameter] public string IconName { get; set; } = "Search";
 
     /// <summary>
+    /// Names and selectors of the custom input type properties.
+    /// </summary>
+    [Parameter] public BitSearchBoxNameSelectors<TItem>? NameSelectors { get; set; }
+
+    /// <summary>
     /// Callback for when the input value changes.
     /// </summary>
     [Parameter] public EventCallback<string?> OnChange { get; set; }
@@ -125,6 +144,70 @@ public partial class BitSearchBox
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
 
+    /// <summary>
+    /// Enables virtualization to render only the visible items.
+    /// </summary>
+    [Parameter] public bool Virtualize { get; set; }
+
+    /// <summary>
+    /// The template for items that have not yet been rendered in virtualization mode.
+    /// </summary>
+    [Parameter] public RenderFragment<PlaceholderContext>? VirtualizePlaceholder { get; set; }
+
+    /// <summary>
+    /// Determines how many additional items are rendered before and after the visible region.
+    /// </summary>
+    [Parameter] public int OverscanCount { get; set; } = 3;
+
+    /// <summary>
+    /// The list of items to display in the callout.
+    /// </summary>
+    [Parameter] public ICollection<TItem>? Items { get; set; }
+
+    /// <summary>
+    /// The height of each item in pixels for virtualization.
+    /// </summary>
+    [Parameter] public int ItemSize { get; set; } = 35;
+
+    /// <summary>
+    /// The function providing items to the list for virtualization.
+    /// </summary>
+    [Parameter] public BitSearchBoxItemsProvider<TItem>? ItemsProvider { get; set; }
+
+    /// <summary>
+    /// The custom template for rendering the items of the BitSearchBox.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Custom search function to be used in place of the default search algorithm.
+    /// </summary>
+    [Parameter] public Func<ICollection<TItem>, string, ICollection<TItem>>? SearchFunction { get; set; }
+
+    /// <summary>
+    /// The delay, in milliseconds, applied to the search functionality.
+    /// </summary>
+    [Parameter] public int SearchDelay { get; set; } = 400;
+
+    /// <summary>
+    /// The maximum number of items or suggestions that will be displayed.
+    /// </summary>
+    [Parameter] public int MaxSuggestedItems { get; set; } = 5;
+
+    /// <summary>
+    /// The minimum character requirement for doing a search in suggested items.
+    /// </summary>
+    [Parameter] public int MinSearchLength { get; set; } = 3;
+
+    /// <summary>
+    /// Alias of ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
+    /// The content of the Dropdown, a list of BitDropdownOption components.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     protected override string RootElementClass => "bit-srb";
 
@@ -148,6 +231,8 @@ public partial class BitSearchBox
 
     protected override Task OnInitializedAsync()
     {
+        _calloutId = $"BitSearchBox-{UniqueId}-callout";
+        _scrollContainerId = $"BitSearchBox-{UniqueId}-scroll-container";
         _inputId = $"BitSearchBox-{UniqueId}-input";
 
         if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
@@ -155,9 +240,30 @@ public partial class BitSearchBox
             CurrentValueAsString = DefaultValue;
         }
 
+        _searchValue = CurrentValueAsString;
+
         OnValueChanged += HandleOnValueChanged;
 
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (ChildContent is not null) return;
+
+        if (Items is not null)
+        {
+            _items = [.. Items];
+        }
+
+        if (CurrentValueAsString.HasNoValue())
+        {
+            _searchValue = CurrentValueAsString;
+        }
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
@@ -180,7 +286,9 @@ public partial class BitSearchBox
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        CurrentValueAsString = e.Value?.ToString();
+        CurrentValueAsString = _searchValue = e.Value?.ToString();
+
+        ThrottleSearch();
 
         await OnChange.InvokeAsync(CurrentValue);
     }
@@ -191,16 +299,451 @@ public partial class BitSearchBox
 
         if (eventArgs.Key == "Escape")
         {
-            CurrentValueAsString = string.Empty;
+            CurrentValueAsString = _searchValue = string.Empty;
             //await _inputRef.FocusAsync(); // is it required when the keydown event is captured on the input itself?
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
+            await CloseCallout();
         }
         else if (eventArgs.Key == "Enter")
         {
-            CurrentValueAsString = await _js.GetProperty(_inputRef, "value");
+            CurrentValueAsString = _searchValue = await _js.GetProperty(_inputRef, "value");
             await OnSearch.InvokeAsync(CurrentValue);
+            await CloseCallout();
         }
+        else if (eventArgs.Key == "ArrowUp")
+        {
+            await ChangeSelectedItem(true);
+        }
+        else if (eventArgs.Key == "ArrowDown")
+        {
+            await ChangeSelectedItem(false);
+        }
+    }
+
+    private async Task ToggleCallout()
+    {
+        if (IsEnabled is false) return;
+
+        await _js.ToggleCallout(_dotnetObj,
+                                _Id,
+                                _calloutId,
+                                isOpen,
+                                BitResponsiveMode.None,
+                                BitDropDirection.TopAndBottom,
+                                false,
+                                _scrollContainerId,
+                                0,
+                                string.Empty,
+                                string.Empty,
+                                true,
+                                RootElementClass);
+    }
+
+    private async Task CloseCallout()
+    {
+        if (IsEnabled is false) return;
+
+        isOpen = false;
+        await ToggleCallout();
+
+        StateHasChanged();
+    }
+
+    private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
+    {
+        if (ItemsProvider is null) return default;
+
+        // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
+        // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
+        // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
+        await Task.Delay(100);
+
+        if (request.CancellationToken.IsCancellationRequested) return default;
+
+        if (_refreshItems)
+        {
+            return new ItemsProviderResult<TItem>(_searchItems, _totalItems.GetValueOrDefault(_searchItems.Count));
+        }
+
+        if (_searchValue.HasNoValue() || _searchValue!.Length < MinSearchLength)
+        {
+            _searchItems?.Clear();
+            await ChangeStateCallout();
+            return new ItemsProviderResult<TItem>();
+        }
+
+        var countRequest = request.Count > MaxSuggestedItems || request.Count == 0 ? MaxSuggestedItems : request.Count;
+
+        // Combine the query parameters from Virtualize with the ones from PaginationState
+        var providerRequest = new BitSearchBoxItemsProviderRequest<TItem>(0, countRequest, _searchValue, request.CancellationToken);
+        var providerResult = await ItemsProvider(providerRequest);
+
+        if (request.CancellationToken.IsCancellationRequested) return default;
+
+        foreach (var item in providerResult.Items)
+        {
+            SetIsSelected(item, CurrentValue.HasValue() && GetText(item) == CurrentValue);
+        }
+
+        _totalItems = countRequest;
+        _searchItems = providerResult.Items.ToList();
+        await ChangeStateCallout();
+
+        return new ItemsProviderResult<TItem>(providerResult.Items, countRequest);
+    }
+
+    private async Task SearchItems()
+    {
+        if (Virtualize && ItemsProvider is not null)
+        {
+            await _virtualizeElement!.RefreshDataAsync();
+        }
+        else
+        {
+            _searchItems = _searchValue.HasNoValue() || _searchValue!.Length < MinSearchLength
+                ? []
+                : SearchFunction is not null
+                    ? [.. SearchFunction.Invoke(_items, _searchValue!).Take(MaxSuggestedItems)]
+                    : [.. _items.Where(i => GetText(i)?.Contains(_searchValue!, StringComparison.OrdinalIgnoreCase) ?? false).Take(MaxSuggestedItems)];
+
+            await ChangeStateCallout();
+        }
+    }
+
+    private void ThrottleSearch()
+    {
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = new();
+
+        Task.Run(async () =>
+        {
+            await Task.Delay(SearchDelay, _cancellationTokenSource.Token);
+            await InvokeAsync(async () =>
+            {
+                if (_cancellationTokenSource.IsCancellationRequested) return;
+
+                await SearchItems();
+                StateHasChanged();
+            });
+        }, _cancellationTokenSource.Token);
+    }
+
+    private async Task ChangeStateCallout()
+    {
+        if (IsEnabled is false) return;
+
+        if (_searchItems.Any())
+        {
+            var item = _searchItems.Find(i => GetText(i) == _searchValue);
+            if (item is not null)
+            {
+                ClearAllItemsIsSelected();
+                SetIsSelected(item, true);
+            }
+
+            if (isOpen is false)
+            {
+                isOpen = true;
+                await ToggleCallout();
+            }
+        }
+        else
+        {
+            await CloseCallout();
+        }
+    }
+
+    private async Task ChangeSelectedItem(bool isArrowUp)
+    {
+        if (IsEnabled is false) return;
+        if (isOpen is false) return;
+        if (_searchItems.Any() is false) return;
+
+        var count = _searchItems.Count;
+        TItem item;
+
+        if (_selectedItem is null || count == 1)
+        {
+            item = _searchItems[(isArrowUp ? count - 1 : 0)];
+            SetIsSelected(item, true);
+        }
+        else
+        {
+            var index = _searchItems.IndexOf(_selectedItem);
+            var nextIndex = (index == count - 1) ? 0 : (index + 1);
+
+            item = _searchItems[nextIndex];
+        }
+
+        ClearAllItemsIsSelected();
+        SetIsSelected(item, true);
+        _searchValue = GetText(_selectedItem);
+        if (Virtualize && ItemsProvider is not null)
+        {
+            _refreshItems = true;
+            try
+            {
+                await _virtualizeElement!.RefreshDataAsync();
+            }
+            finally
+            {
+                _refreshItems = false;
+            }
+        }
+        await _js.InvokeVoidAsync("BitSearchBox.moveCursorToEnd", _inputRef);
+    }
+
+    internal string? GetAriaLabel(TItem item)
+    {
+        if (item is BitSearchBoxItem searchBoxItem)
+        {
+            return searchBoxItem.AriaLabel;
+        }
+
+        if (item is BitSearchBoxOption searchBoxOption)
+        {
+            return searchBoxOption.AriaLabel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AriaLabel.Selector is not null)
+        {
+            return NameSelectors.AriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
+    }
+
+    internal string? GetClass(TItem item)
+    {
+        if (item is BitSearchBoxItem searchBoxItem)
+        {
+            return searchBoxItem.Class;
+        }
+
+        if (item is BitSearchBoxOption searchBoxOption)
+        {
+            return searchBoxOption.Class;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Class.Selector is not null)
+        {
+            return NameSelectors.Class.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
+    }
+
+    internal string? GetId(TItem item)
+    {
+        if (item is BitSearchBoxItem searchBoxItem)
+        {
+            return searchBoxItem.Id;
+        }
+
+        if (item is BitSearchBoxOption searchBoxOption)
+        {
+            return searchBoxOption.Id;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Id.Selector is not null)
+        {
+            return NameSelectors.Id.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Id.Name);
+    }
+
+    internal bool GetIsSelected(TItem item)
+    {
+        if (item is BitSearchBoxItem searchBoxItem)
+        {
+            return searchBoxItem.IsSelected;
+        }
+
+        if (item is BitSearchBoxOption searchBoxOption)
+        {
+            return searchBoxOption.IsSelected;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsSelected.Selector is not null)
+        {
+            return NameSelectors.IsSelected.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<bool>(NameSelectors.IsSelected.Name);
+    }
+
+    internal string? GetStyle(TItem item)
+    {
+        if (item is BitSearchBoxItem searchBoxItem)
+        {
+            return searchBoxItem.Style;
+        }
+
+        if (item is BitSearchBoxOption searchBoxOption)
+        {
+            return searchBoxOption.Style;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
+    }
+
+    internal string? GetText(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitSearchBoxItem searchBoxItem)
+        {
+            return searchBoxItem.Text;
+        }
+
+        if (item is BitSearchBoxOption searchBoxOption)
+        {
+            return searchBoxOption.Text;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Text.Selector is not null)
+        {
+            return NameSelectors.Text.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
+    }
+
+    internal string? GetTitle(TItem item)
+    {
+        if (item is BitSearchBoxItem searchBoxItem)
+        {
+            return searchBoxItem.Title;
+        }
+
+        if (item is BitSearchBoxOption searchBoxOption)
+        {
+            return searchBoxOption.Title;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Title.Selector is not null)
+        {
+            return NameSelectors.Title.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
+    }
+
+    internal void RegisterOption(BitSearchBoxOption option)
+    {
+        option.IsSelected = false;
+        _items.Add((option as TItem)!);
+
+        StateHasChanged();
+    }
+
+    internal void UnregisterOption(BitSearchBoxOption option)
+    {
+        var item = (option as TItem)!;
+        _items.Remove(item);
+
+        if (CurrentValue.HasValue())
+        {
+            CurrentValue = null;
+        }
+
+        StateHasChanged();
+    }
+
+    internal async Task HandleOnItemClick(TItem item)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        ClearAllItemsIsSelected();
+
+        SetIsSelected(item, true);
+
+        CurrentValueAsString = _searchValue = GetText(item);
+
+        await CloseCallout();
+
+        await OnChange.InvokeAsync(CurrentValueAsString);
+
+        await OnSearch.InvokeAsync(CurrentValueAsString);
+
+        StateHasChanged();
+    }
+
+    internal int? GetTotalItems()
+    {
+        if (_items is null) return null;
+
+        if (_totalItems.HasValue is false)
+        {
+            _totalItems = _items.Count;
+        }
+
+        return _totalItems.Value;
+    }
+
+    internal int? GetItemPosInSet(TItem item)
+    {
+        return _items?.IndexOf(item) + 1;
+    }
+
+    private void SetIsSelected(TItem item, bool value)
+    {
+        _selectedItem = item;
+
+        if (item is BitSearchBoxItem searchBoxItem)
+        {
+            searchBoxItem.IsSelected = value;
+        }
+
+        if (item is BitSearchBoxOption searchBoxOption)
+        {
+            searchBoxOption.IsSelected = value;
+        }
+
+        if (NameSelectors is null) return;
+
+        // we need to think about a proper solution to use Selector for setting the value!
+        //if (NameSelectors.IsSelected.Selector is not null)
+        //{
+        //    NameSelectors.IsSelected.Selector!(item);
+        //}
+
+        item.SetValueToProperty(NameSelectors.IsSelected.Name, value);
+    }
+
+    private void ClearAllItemsIsSelected() => _searchItems?.ForEach(i => SetIsSelected(i, false));
+
+
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        if (IsEnabled is false) return;
+
+        isOpen = false;
+        StateHasChanged();
     }
 
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -215,6 +758,8 @@ public partial class BitSearchBox
         if (disposing)
         {
             OnValueChanged -= HandleOnValueChanged;
+            _dotnetObj.Dispose();
+            _cancellationTokenSource.Dispose();
         }
 
         base.Dispose(disposing);

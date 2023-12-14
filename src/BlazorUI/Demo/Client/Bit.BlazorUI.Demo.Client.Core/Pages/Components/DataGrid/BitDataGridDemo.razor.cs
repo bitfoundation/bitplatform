@@ -611,8 +611,9 @@ public partial class BitDataGridDemo
             <BitDataGridPropertyColumn Class=""column--large"" Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value=""typicalSampleNameFilter""
-                                    Placeholder=""Search on Name""
-                                    InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                                  Placeholder=""Search on Name""
+                                  InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})""
+                                  TItem=""BitSearchBoxItem"" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
                 <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"" >
@@ -713,7 +714,7 @@ public class MedalsModel
 </div>
 <div class=""search-panel"">
      <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
+        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company"" TItem=""BitSearchBoxItem"" />
      </div>
 </div>
 ";
@@ -948,7 +949,7 @@ public class Openfda
 </div>
 <div class=""search-panel"">
      <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" />
+        <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" TItem=""BitSearchBoxItem"" />
      </div>
 </div>
 ";

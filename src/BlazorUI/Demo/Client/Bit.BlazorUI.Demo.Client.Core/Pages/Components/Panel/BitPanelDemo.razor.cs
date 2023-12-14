@@ -256,7 +256,7 @@ private bool IsBasicPanelOpen = false;";
 <BitPanel @bind-IsOpen=""IsPanelWithCustomHeaderOpen"">
     <HeaderTemplate>
         <div>
-            <BitSearchBox Placeholder=""Search here..."" />
+            <BitSearchBox Placeholder=""Search here..."" TItem=""BitSearchBoxItem"" />
             <p>
                 BitPanel with custom header content
             </p>
