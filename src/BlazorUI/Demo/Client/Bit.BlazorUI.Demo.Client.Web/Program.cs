@@ -18,9 +18,4 @@ builder.Services.AddClientWebServices();
 
 var host = builder.Build();
 
-#if MultilingualEnabled
-var culture = await host.Services.GetRequiredService<IStorageService>().GetItem("Culture");
-CultureInfoManager.SetCurrentCulture(culture);
-#endif
-
 await host.RunAsync();

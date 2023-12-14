@@ -1,9 +1,12 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ResetPasswordPage
 {
+    [AutoInject] IIdentityController identityController = default!;
+
     private bool isLoading;
     private string? resetPasswordMessage;
     private BitMessageBarType resetPasswordMessageType;
@@ -40,7 +43,7 @@ public partial class ResetPasswordPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("Identity/ResetPassword", resetPasswordModel, AppJsonContext.Default.ResetPasswordRequestDto, CurrentCancellationToken);
+            await identityController.ResetPassword(resetPasswordModel, CurrentCancellationToken);
 
             resetPasswordMessageType = BitMessageBarType.Success;
 

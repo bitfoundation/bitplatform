@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Infra;
+﻿namespace Boilerplate.Shared.Services;
 public class CultureInfoManager
 {
     public static (string name, string code) DefaultCulture { get; } = ("English", "en-US");

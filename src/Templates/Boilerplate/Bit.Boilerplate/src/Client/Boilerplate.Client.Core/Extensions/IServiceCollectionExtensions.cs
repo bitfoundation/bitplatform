@@ -1,5 +1,7 @@
-﻿//-:cnd:noEmit
-
+﻿//+:cnd:noEmit
+//#if (offlineDb == true)
+using Boilerplate.Client.Core.Data;
+//#endif
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -17,7 +19,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IStorageService, BrowserStorageService>();
 
-        services.TryAddTransient<RequestHeadersDelegationHandler>();
+        services.TryAddKeyedTransient<HttpMessageHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
@@ -29,9 +31,15 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
 
+        services.TryAddTransient(sp => AppJsonContext.Default.Options);
+        services.AddTypedHttpClients();
+
         services.AddBitBlazorUIServices();
         services.AddSharedServices();
 
+        //#if (offlineDb == true)
+        services.AddBesqlDbContextFactory<OfflineDbContext>();
+        //#endif
         return services;
     }
 
@@ -43,7 +51,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (AppRenderMode.IsHybrid() || OperatingSystem.IsBrowser())
+        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
         {
             return services.AddSingleton<TService, TImplementation>();
         }
@@ -60,7 +68,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (AppRenderMode.IsHybrid() || OperatingSystem.IsBrowser())
+        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
         {
             services.TryAddSingleton<TService, TImplementation>();
         }

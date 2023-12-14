@@ -9,22 +9,14 @@ public class Window(IJSRuntime js)
     private const string ElementName = "window";
 
     public async Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
-    {
-        await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture);
-    }
+        => await DomEventDispatcher.AddEventListener(js, ElementName, domEvent, listener, useCapture);
 
     public async Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)
-    {
-        await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
-    }
+        => await DomEventDispatcher.RemoveEventListener(js, ElementName, domEvent, listener, useCapture);
 
     public async Task AddBeforeUnload()
-    {
-        await js.WindowAddBeforeUnload();
-    }
+        => await js.WindowAddBeforeUnload();
 
     public async Task RemoveBeforeUnload()
-    {
-        await js.WindowRemoveBeforeUnload();
-    }
+        => await js.WindowRemoveBeforeUnload();
 }

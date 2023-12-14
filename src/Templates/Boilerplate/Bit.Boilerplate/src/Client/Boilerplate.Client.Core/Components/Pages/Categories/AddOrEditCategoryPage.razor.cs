@@ -1,10 +1,13 @@
-﻿using Boilerplate.Shared.Dtos.Categories;
+﻿using Boilerplate.Client.Core.Controllers.Categories;
+using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Categories;
 
 [Authorize]
 public partial class AddOrEditCategoryPage
 {
+    [AutoInject] ICategoryController categoryController = default!;
+
     [Parameter] public int? Id { get; set; }
 
     private bool isLoading;
@@ -27,7 +30,7 @@ public partial class AddOrEditCategoryPage
 
         try
         {
-            category = await HttpClient.GetFromJsonAsync($"Category/Get/{Id}", AppJsonContext.Default.CategoryDto, CurrentCancellationToken) ?? new();
+            category = await categoryController.Get(Id.Value, CurrentCancellationToken);
         }
         finally
         {
@@ -55,11 +58,11 @@ public partial class AddOrEditCategoryPage
         {
             if (category.Id == 0)
             {
-                await HttpClient.PostAsJsonAsync("Category/Create", category, AppJsonContext.Default.CategoryDto, CurrentCancellationToken);
+                await categoryController.Create(category, CurrentCancellationToken);
             }
             else
             {
-                await HttpClient.PutAsJsonAsync("Category/Update", category, AppJsonContext.Default.CategoryDto, CurrentCancellationToken);
+                await categoryController.Update(category, CurrentCancellationToken);
             }
 
             NavigationManager.NavigateTo("categories");

@@ -12,6 +12,8 @@ public static class MauiProgram
     {
         try
         {
+            AppRenderMode.IsBlazorHybrid = true;
+
             // For MacCatalyst there are still some issues with AppCenter
             // https://github.com/microsoft/appcenter-sdk-dotnet/issues/1755
             // https://github.com/microsoft/appcenter-sdk-dotnet/issues/1702

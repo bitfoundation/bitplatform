@@ -194,7 +194,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		..\.github\workflows\platform.website.cd.yml = ..\.github\workflows\platform.website.cd.yml
 		..\.github\workflows\prerelease.nuget.org.yml = ..\.github\workflows\prerelease.nuget.org.yml
 		..\.github\workflows\sales.website.cd.yml = ..\.github\workflows\sales.website.cd.yml
-		..\.github\workflows\todotemplate.cd.yml = ..\.github\workflows\todotemplate.cd.yml
+		..\.github\workflows\todosample.cd.yml = ..\.github\workflows\todosample.cd.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{D7242830-A91D-4729-BF2D-B1E7E141953E}"
@@ -208,6 +208,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Server", "BlazorUI\Demo\Bit.BlazorUI.Demo.Server\Bit.BlazorUI.Demo.Server.csproj", "{B61B811C-5D2B-4DF5-9D7B-212F4B464E3F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Shared", "BlazorUI\Demo\Bit.BlazorUI.Demo.Shared\Bit.BlazorUI.Demo.Shared.csproj", "{79023301-B334-46E5-BD6E-313BA58E530E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Besql", "Besql", "{619FE7F0-CF56-4325-BE76-7A3464D4DF3C}"
+	ProjectSection(SolutionItems) = preProject
+		Readme.MD = Readme.MD
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql", "Besql\Bit.Besql\Bit.Besql.csproj", "{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1014,6 +1021,26 @@ Global
 		{79023301-B334-46E5-BD6E-313BA58E530E}.Release|x64.Build.0 = Release|Any CPU
 		{79023301-B334-46E5-BD6E-313BA58E530E}.Release|x86.ActiveCfg = Release|Any CPU
 		{79023301-B334-46E5-BD6E-313BA58E530E}.Release|x86.Build.0 = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|x64.Build.0 = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Debug|x86.Build.0 = Debug|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|iPhone.Build.0 = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|x64.ActiveCfg = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|x64.Build.0 = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|x86.ActiveCfg = Release|Any CPU
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1072,6 +1099,7 @@ Global
 		{53022CD0-3145-403E-A7A0-70455D419588} = {D7242830-A91D-4729-BF2D-B1E7E141953E}
 		{B61B811C-5D2B-4DF5-9D7B-212F4B464E3F} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
 		{79023301-B334-46E5-BD6E-313BA58E530E} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
+		{18DFDA5D-B37A-4281-83D4-033F55DEC6CD} = {619FE7F0-CF56-4325-BE76-7A3464D4DF3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA107107-478F-477A-872B-787CEA7DD9B8}

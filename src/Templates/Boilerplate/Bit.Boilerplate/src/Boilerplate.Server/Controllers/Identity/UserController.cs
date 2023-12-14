@@ -1,11 +1,12 @@
-﻿using Boilerplate.Server.Models.Identity;
+﻿using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Server.Models.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class UserController : AppControllerBase
+public partial class UserController : AppControllerBase, IUserController
 {
     [AutoInject] private UserManager<User> userManager = default!;
 

@@ -1,27 +1,28 @@
 ﻿using Boilerplate.Shared.Dtos.Dashboard;
+using Boilerplate.Client.Core.Controllers.Dashboard;
 
 namespace Boilerplate.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class DashboardController : AppControllerBase
+public partial class DashboardController : AppControllerBase, IDashboardController
 {
     [HttpGet]
-    public async Task<OverallAnalyticsStatsDataResponseDto> GetOverallAnalyticsStatsData()
+    public async Task<OverallAnalyticsStatsDataResponseDto> GetOverallAnalyticsStatsData(CancellationToken cancellationToken)
     {
         var result = new OverallAnalyticsStatsDataResponseDto();
 
         var last30DaysDate = DateTimeOffset.UtcNow.AddDays(-30);
 
-        result.TotalProducts = await DbContext.Products.CountAsync();
-        result.Last30DaysProductCount = await DbContext.Products.CountAsync(p => p.CreatedOn > last30DaysDate);
-        result.TotalCategories = await DbContext.Categories.CountAsync();
+        result.TotalProducts = await DbContext.Products.CountAsync(cancellationToken);
+        result.Last30DaysProductCount = await DbContext.Products.CountAsync(p => p.CreatedOn > last30DaysDate, cancellationToken);
+        result.TotalCategories = await DbContext.Categories.CountAsync(cancellationToken);
 
         return result;
     }
 
     [HttpGet]
-    public async Task<IAsyncEnumerable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategotyStats()
+    public async Task<IAsyncEnumerable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken)
     {
         return DbContext.Categories
             .Select(c => new ProductsCountPerCategoryResponseDto()
@@ -33,7 +34,7 @@ public partial class DashboardController : AppControllerBase
     }
 
     [HttpGet]
-    public async Task<IAsyncEnumerable<ProductSaleStatResponseDto>> GetProductsSalesStats()
+    public async Task<IAsyncEnumerable<ProductSaleStatResponseDto>> GetProductsSalesStats(CancellationToken cancellationToken)
     {
         Random rand = new Random();
         return DbContext.Products.Include(p => p.Category)

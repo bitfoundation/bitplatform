@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
 using System.Reflection;
-using Boilerplate.Client.Core.Services;
 using Microsoft.JSInterop;
+using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Services;
 

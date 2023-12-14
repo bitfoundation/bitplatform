@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using Boilerplate.Client.Core.Controllers.Categories;
 using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Categories;
@@ -6,6 +7,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Categories;
 [Authorize]
 public partial class CategoriesPage
 {
+    [AutoInject] ICategoryController categoryController = default!;
+
     private bool isLoading;
     private string categoryNameFilter = string.Empty;
 
@@ -40,25 +43,24 @@ public partial class CategoriesPage
             try
             {
                 // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-                var query = new Dictionary<string, object?>()
+
+                categoryController.AddQueryStrings(new()
                 {
                     { "$top", req.Count ?? 10 },
                     { "$skip", req.StartIndex }
-                };
+                });
 
                 if (string.IsNullOrEmpty(categoryNameFilter) is false)
                 {
-                    query.Add("$filter", $"contains(Name,'{categoryNameFilter}')");
+                    categoryController.AddQueryString("$filter", $"contains(Name,'{categoryNameFilter}')");
                 }
 
                 if (req.GetSortByProperties().Any())
                 {
-                    query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
+                    categoryController.AddQueryString("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
-                var url = NavigationManager.GetUriWithQueryParameters("Category/GetCategories", query);
-
-                var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryDto, CurrentCancellationToken) ?? new();
+                var data = await categoryController.GetCategories(CurrentCancellationToken);
 
                 return BitDataGridItemsProviderResult.From(await data.Items!.ToListAsync(CurrentCancellationToken)!, (int)data.TotalCount);
             }
@@ -98,7 +100,7 @@ public partial class CategoriesPage
 
         if (confirmed)
         {
-            await HttpClient.DeleteAsync($"Category/Delete/{category.Id}", CurrentCancellationToken);
+            await categoryController.Delete(category.Id, CurrentCancellationToken);
 
             await RefreshData();
         }

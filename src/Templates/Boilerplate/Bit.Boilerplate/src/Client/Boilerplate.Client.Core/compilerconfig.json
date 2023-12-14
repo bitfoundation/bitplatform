@@ -120,6 +120,14 @@
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
+    //#if (offlineDb == true)
+    {
+        "outputFile": "Components/Pages/Offline/OfflineEditProfilePage.razor.css",
+        "inputFile": "Components/Pages/Offline/OfflineEditProfilePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    //#endif
     //#if (sample == "Todo")
     {
         "outputFile": "Components/Pages/Todo/TodoPage.razor.css",
@@ -153,8 +161,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Dashboard/ProductsCountPerCategotyWidget.razor.css",
-        "inputFile": "Components/Pages/Dashboard/ProductsCountPerCategotyWidget.razor.scss",
+        "outputFile": "Components/Pages/Dashboard/ProductsCountPerCategoryWidget.razor.css",
+        "inputFile": "Components/Pages/Dashboard/ProductsCountPerCategoryWidget.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -1,11 +1,12 @@
-﻿using Boilerplate.Server.Models.Todo;
+﻿using Boilerplate.Client.Core.Controllers.Todo;
+using Boilerplate.Server.Models.Todo;
 using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Server.Controllers.Todo;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class TodoItemController : AppControllerBase
+public partial class TodoItemController : AppControllerBase, ITodoItemController
 {
     [HttpGet, EnableQuery]
     public IQueryable<TodoItemDto> Get()
@@ -15,17 +16,6 @@ public partial class TodoItemController : AppControllerBase
         return DbContext.TodoItems
             .Where(t => t.UserId == userId)
             .Project();
-    }
-
-    [HttpGet("{id:int}")]
-    public async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken)
-    {
-        var todoItem = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-
-        if (todoItem is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
-
-        return todoItem;
     }
 
     [HttpGet]
@@ -42,6 +32,17 @@ public partial class TodoItemController : AppControllerBase
             query = query.Take(odataQuery.Top.Value);
 
         return new PagedResult<TodoItemDto>(query.AsAsyncEnumerable(), totalCount);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken)
+    {
+        var todoItem = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+        if (todoItem is null)
+            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+
+        return todoItem;
     }
 
     [HttpPost]
@@ -75,7 +76,7 @@ public partial class TodoItemController : AppControllerBase
         return todoItemToUpdate.Map();
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
         DbContext.Remove(new TodoItem { Id = id });
