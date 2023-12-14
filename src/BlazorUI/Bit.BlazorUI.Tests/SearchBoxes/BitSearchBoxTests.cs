@@ -11,7 +11,7 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow("Filter")]
     public void SearchBoxPlaceholderMeetEnteredValue(string componentPlaceholder)
     {
-        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.Placeholder, componentPlaceholder));
+        var component = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameter => parameter.Add(p => p.Placeholder, componentPlaceholder));
 
         var input = component.Find(".bit-srb-inp");
         var inputPlaceholder = input.GetAttribute("placeholder");
@@ -25,7 +25,7 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow("fake value")]
     public void SearchBoxDefaultValueMeetEnteredValue(string value)
     {
-        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.Value, value));
+        var component = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameter => parameter.Add(p => p.Value, value));
 
         var input = component.Find(".bit-srb-inp");
         var inputValue = input.GetAttribute("value");
@@ -38,7 +38,7 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow(false)]
     public void SearchBoxNoAnimationShouldHaveClassName(bool disableAnimation)
     {
-        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.DisableAnimation, disableAnimation));
+        var component = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameter => parameter.Add(p => p.DisableAnimation, disableAnimation));
 
         var searchBox = component.Find(".bit-srb");
 
@@ -50,7 +50,7 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow(false)]
     public void SearchBoxUnderlinedShouldHaveClassName(bool isUnderlined)
     {
-        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.IsUnderlined, isUnderlined));
+        var component = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameter => parameter.Add(p => p.IsUnderlined, isUnderlined));
 
         var searchBox = component.Find(".bit-srb");
 
@@ -61,7 +61,7 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow("Detailed label")]
     public void BitSearchBoxAriaLabelTest(string ariaLabel)
     {
-        var com = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.AriaLabel, ariaLabel));
+        var com = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameters => parameters.Add(p => p.AriaLabel, ariaLabel));
 
         var bitSearchBox = com.Find(".bit-srb-inp");
 
@@ -75,7 +75,7 @@ public class BitSearchBoxTests : BunitTestContext
     ]
     public void BitSearchBoxShouldTakeDefaultValue(string value, string defaultValue)
     {
-        var component = RenderComponent<BitSearchBox>(parameters =>
+        var component = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameters =>
         {
             parameters.Bind(p => p.Value, value, v => value = v);
             parameters.Add(p => p.DefaultValue, defaultValue);
@@ -93,7 +93,7 @@ public class BitSearchBoxTests : BunitTestContext
     ]
     public void BitSearchBoxedMustShowSearchIconEvenHasValueWhenShowIconTrue(string value, bool fixedIcon)
     {
-        var component = RenderComponent<BitSearchBox>(parameters =>
+        var component = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameters =>
         {
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.FixedIcon, fixedIcon);
@@ -112,7 +112,7 @@ public class BitSearchBoxTests : BunitTestContext
     public void BitSearchBoxMustRespondToTheChangeEvent(bool isEnabled)
     {
         int currentCount = 0;
-        var component = RenderComponent<BitSearchBox>(parameters =>
+        var component = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.OnChange, () => currentCount++);
@@ -132,7 +132,7 @@ public class BitSearchBoxTests : BunitTestContext
     ]
     public void BitSearchBoxAutoCompleteTest(string autoComplete)
     {
-        var component = RenderComponent<BitSearchBox>(parameters =>
+        var component = RenderComponent<BitSearchBox<BitSearchBoxItem>>(parameters =>
         {
             parameters.Add(p => p.Autocomplete, autoComplete);
             parameters.Add(p => p.IsEnabled, true);
