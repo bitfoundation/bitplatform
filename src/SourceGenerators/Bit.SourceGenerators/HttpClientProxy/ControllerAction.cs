@@ -19,5 +19,7 @@ public class ControllerAction
 
     public ActionParameter? BodyParameter { get; set; }
 
-    public bool HasCancellationToken { get; set; }
+    public bool HasCancellationToken => string.IsNullOrEmpty(CancellationTokenParameterName) is false;
+
+    public string? CancellationTokenParameterName { get; set; }
 }

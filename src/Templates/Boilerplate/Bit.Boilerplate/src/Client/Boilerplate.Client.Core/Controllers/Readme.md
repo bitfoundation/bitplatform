@@ -48,7 +48,7 @@ Explore `IMinimalApiController` for example of ASP.NET Core Minimal API that has
 
 1- No server-side web api controllers because of ASP.NET Core Minimal API.
 
-2- Receiving output as `JsonDocument`.
+2- Receiving output as `JsonElement`.
 
 3- Example of Query String.
 

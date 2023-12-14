@@ -46,8 +46,8 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
             {{" : string.Empty)}
                 using var request = new HttpRequestMessage(HttpMethod.{action.HttpMethod}, url);
                 {(action.BodyParameter is not null ? $@"request.Content = JsonContent.Create({action.BodyParameter.Name}, options.GetTypeInfo<{action.BodyParameter.Type.ToDisplayString()}>());" : string.Empty)}
-                using var response = await httpClient.SendAsync(request{(action.HasCancellationToken ? ", cancellationToken" : string.Empty)});
-                {(action.DoesReturnSomething ? ($"return await response.Content.ReadFromJsonAsync(options.GetTypeInfo<{action.ReturnType.GetUnderlyingType().ToDisplayString()}>(){(action.HasCancellationToken ? ", cancellationToken" : string.Empty)});}}))!;") : string.Empty)}
+                using var response = await httpClient.SendAsync(request{(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});
+                {(action.DoesReturnSomething ? ($"return await response.Content.ReadFromJsonAsync(options.GetTypeInfo<{action.ReturnType.GetUnderlyingType().ToDisplayString()}>(){(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});}}))!;") : string.Empty)}
         }}
 ");
             }
