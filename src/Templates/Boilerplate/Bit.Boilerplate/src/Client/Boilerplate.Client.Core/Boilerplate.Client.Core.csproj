@@ -13,8 +13,8 @@
 
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <Content Remove="appsettings.json" />
-        <EmbeddedResource Include="appsettings.json" />
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
 
         <PackageReference Include="Bit.BlazorUI" Version="8.4.0" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="8.4.0" />

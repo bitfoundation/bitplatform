@@ -8,5 +8,10 @@ public static class IConfigurationBuilderExtensions
     {
         var assembly = Assembly.Load("Boilerplate.Client.Core");
         builder.AddJsonStream(assembly.GetManifestResourceStream("Boilerplate.Client.Core.appsettings.json")!);
+
+        if (BuildConfiguration.IsDebug())
+        {
+            builder.AddJsonStream(assembly.GetManifestResourceStream("Boilerplate.Client.Core.appsettings.Development.json")!);
+        }
     }
 }
