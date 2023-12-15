@@ -1,4 +1,5 @@
 ﻿@page "/window"
+@implements IDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.Window window
 
@@ -71,5 +72,13 @@
     {
         _ = window.RemoveBeforeUnload();
         isBeforeUnloadRegistered = false;
+    }
+
+    public void Dispose()
+    {
+        if (isKeyDownRegistered)
+        {
+            _ = window.RemoveEventListener(ButilEvents.KeyDown, _handler);
+        }
     }
 }

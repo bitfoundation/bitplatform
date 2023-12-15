@@ -1,4 +1,5 @@
 ﻿@page "/document"
+@implements IDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.Document document
 
@@ -16,7 +17,7 @@
 }
 </pre>
 
-<h3>Open the DevTools and start pressing keys on your keyboard</h3>
+<h3>Open the DevTools and start clicking on page</h3>
 
 <button @onclick=AddEventListener>AddEventListener</button>
 &nbsp;
@@ -33,7 +34,7 @@
 
     protected override void OnInitialized()
     {
-        _handler = (ButilMouseEventArgs arg) => _ = console.Log("Click from C#:", arg.ClientX, arg.ClientY);
+        _handler = (ButilMouseEventArgs arg) => _ = console.Log("Click from C# = X:", arg.ClientX, "Y:", arg.ClientY);
 
         base.OnInitialized();
     }
@@ -48,5 +49,13 @@
     {
         _ = document.RemoveEventListener(ButilEvents.Click, _handler);
         isRegistered = false;
+    }
+
+    public void Dispose()
+    {
+        if (isRegistered)
+        {
+            _ = document.RemoveEventListener(ButilEvents.Click, _handler);
+        }
     }
 }
