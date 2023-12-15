@@ -17,43 +17,72 @@ internal static class DomEventDispatcher
         bool preventDefault = false,
         bool stopPropagation = false)
     {
-        var domEventType = DomEventArgs.TypeOf(domEvent);
-        var listenerType = typeof(T);
+        var argType = typeof(T);
+        var eventType = DomEventArgs.TypeOf(domEvent);
 
-        if (listenerType != domEventType)
-            throw new InvalidOperationException($"Invalid listener type ({listenerType}) for this dom event type ({domEventType})");
+        if (argType != eventType)
+            throw new InvalidOperationException($"Invalid listener type ({argType}) for this dom event type ({eventType})");
 
-        if (domEventType == typeof(ButilKeyboardEventArgs))
+        string[] args = [];
+        var methodName = "";
+        var id = Guid.NewGuid();
+        var options = useCapture ? TrueUseCapture : FalseUseCapture;
+
+        if (argType == typeof(ButilKeyboardEventArgs))
         {
-            var action = (listener as Action<ButilKeyboardEventArgs>)!;
-            await DomKeyboardEventHandler.AddListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture, preventDefault, stopPropagation);
+            args = ButilKeyboardEventArgs.EventArgsMembers;
+            methodName = DomKeyboardEventListenersManager.InvokeMethodName;
+            var action = listener as Action<ButilKeyboardEventArgs>;
+            id = DomKeyboardEventListenersManager.SetListener(action!, elementName, options);
+        }
+        else if (argType == typeof(ButilMouseEventArgs))
+        {
+            args = ButilMouseEventArgs.EventArgsMembers;
+            methodName = DomMouseEventListenersManager.InvokeMethodName;
+            var action = listener as Action<ButilMouseEventArgs>;
+            id = DomMouseEventListenersManager.SetListener(action!, elementName, options);
+        }
+        else
+        {
+            methodName = DomEventListenersManager.InvokeMethodName;
+            var action = listener as Action<object>;
+            id = DomEventListenersManager.SetListener(action!, elementName, options);
         }
 
-        if (domEventType == typeof(ButilMouseEventArgs))
-        {
-            var action = (listener as Action<ButilMouseEventArgs>)!;
-            await DomMouseEventHandler.AddListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture, preventDefault, stopPropagation);
-        }
+        await js.AddEventListener(elementName, domEvent, methodName, id, args, options, preventDefault, stopPropagation);
     }
 
-    internal static async Task RemoveEventListener<T>(IJSRuntime js, string elementName, string domEvent, Action<T> listener, bool useCapture = false)
+    internal static async Task RemoveEventListener<T>(IJSRuntime js,
+        string elementName,
+        string domEvent,
+        Action<T> listener,
+        bool useCapture = false)
     {
-        var domEventType = DomEventArgs.TypeOf(domEvent);
-        var listenerType = typeof(T);
+        var argType = typeof(T);
+        var eventType = DomEventArgs.TypeOf(domEvent);
 
-        if (listenerType != domEventType)
-            throw new InvalidOperationException($"Invalid listener type ({listenerType}) for this dom event type ({domEventType})");
+        if (argType != eventType)
+            throw new InvalidOperationException($"Invalid listener type ({argType}) for this dom event type ({eventType})");
 
-        if (domEventType == typeof(ButilKeyboardEventArgs))
+        Guid[] ids = [];
+        var options = useCapture ? TrueUseCapture : FalseUseCapture;
+
+        if (argType == typeof(ButilKeyboardEventArgs))
         {
-            var action = (listener as Action<ButilKeyboardEventArgs>)!;
-            await DomKeyboardEventHandler.RemoveListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture);
+            var action = listener as Action<ButilKeyboardEventArgs>;
+            ids = DomKeyboardEventListenersManager.RemoveListener(action!, elementName, options);
+        }
+        else if (argType == typeof(ButilMouseEventArgs))
+        {
+            var action = listener as Action<ButilMouseEventArgs>;
+            ids = DomMouseEventListenersManager.RemoveListener(action!, elementName, options);
+        }
+        else
+        {
+            var action = listener as Action<object>;
+            ids = DomEventListenersManager.RemoveListener(action!, elementName, options);
         }
 
-        if (domEventType == typeof(ButilMouseEventArgs))
-        {
-            var action = (listener as Action<ButilMouseEventArgs>)!;
-            await DomMouseEventHandler.RemoveListener(js, elementName, domEvent, action, useCapture ? TrueUseCapture : FalseUseCapture);
-        }
+        await js.RemoveEventListener(elementName, domEvent, ids, options);
     }
 }
