@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+        <RootNamespace>Boilerplate.Client.WinExe</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="Boilerplate.Client.Core.Components.Layout" />
+        <Using Include="Boilerplate.Client.Core.Services.Contracts" />
+        <Using Include="Boilerplate.Client.Core.Services" />
+        
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.4.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="8.4.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.3" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
+        
+        <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
+    </ItemGroup>
+
+</Project>
