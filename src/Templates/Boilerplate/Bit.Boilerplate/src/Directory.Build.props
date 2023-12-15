@@ -24,7 +24,7 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
         <DefineConstants Condition="  $(TargetFramework.Contains('-android')) ">$(DefineConstants);Android</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-ios')) ">$(DefineConstants);iOS</DefineConstants>
-        <DefineConstants Condition="  $(TargetFramework.Contains('-windows10')) ">$(DefineConstants);Windows</DefineConstants>
+        <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
