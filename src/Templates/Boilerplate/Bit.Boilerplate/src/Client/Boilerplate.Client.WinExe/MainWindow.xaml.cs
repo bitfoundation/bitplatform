@@ -1,5 +1,4 @@
 ﻿using System.Net.Http;
-using Boilerplate.Client.WinExe.Services;
 
 namespace Boilerplate.Client.WinExe;
 
@@ -28,8 +27,7 @@ public partial class MainWindow
         {
             services.AddBlazorWebViewDeveloperTools();
         }
-        services.AddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, WindowsExceptionHandler>();
+        services.AddWindowsServices();
         services.AddClientSharedServices();
         Resources.Add("services", services.BuildServiceProvider());
         InitializeComponent();
