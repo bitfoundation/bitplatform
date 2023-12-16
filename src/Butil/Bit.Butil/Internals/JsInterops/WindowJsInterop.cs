@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
