@@ -713,7 +713,7 @@ public class MedalsModel
 </div>
 <div class=""search-panel"">
      <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company"" />
+        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
      </div>
 </div>
 ";
