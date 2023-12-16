@@ -611,8 +611,8 @@ public partial class BitDataGridDemo
             <BitDataGridPropertyColumn Class=""column--large"" Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value=""typicalSampleNameFilter""
-                                  Placeholder=""Search on Name""
-                                  InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                                   Placeholder=""Search on Name""
+                                   InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
                 <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"" >
