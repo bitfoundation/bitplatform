@@ -153,7 +153,7 @@ public partial class BitSearchBox
     [Parameter] public ICollection<string>? SuggestedItems { get; set; }
 
     /// <summary>
-    /// The height of each item in pixels for virtualization.
+    /// The height of each suggested item in pixels for virtualization.
     /// </summary>
     [Parameter] public int SuggestedItemSize { get; set; } = 35;
 
