@@ -420,9 +420,9 @@ SearchValue: @SearchValueWithSearchDelay
 
 <BitLabel>ItemsProvider:</BitLabel>
 <BitSearchBox Placeholder=""e.g. Pro""
-                Virtualize=""true""
-                SuggestedItemsProvider=""LoadItems""
-                @bind-Value=""@ItemsProviderSearchValue"" />
+              Virtualize=""true""
+              SuggestedItemsProvider=""LoadItems""
+              @bind-Value=""@ItemsProviderSearchValue"" />
 SearchValue: @ItemsProviderSearchValue";
     private readonly string example8CsharpCode = @"
 private string SearchValue;
