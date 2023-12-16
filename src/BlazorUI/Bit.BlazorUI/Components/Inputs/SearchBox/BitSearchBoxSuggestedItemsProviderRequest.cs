@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public struct BitSearchBoxItemsProviderRequest<TItem>
+public struct BitSearchBoxSuggestedItemsProviderRequest<TItem>
 {
     public int StartIndex { get; }
 
@@ -10,7 +10,7 @@ public struct BitSearchBoxItemsProviderRequest<TItem>
 
     public CancellationToken CancellationToken { get; }
 
-    internal BitSearchBoxItemsProviderRequest(int startIndex, int count, string? search, CancellationToken cancellationToken)
+    internal BitSearchBoxSuggestedItemsProviderRequest(int startIndex, int count, string? search, CancellationToken cancellationToken)
     {
         StartIndex = startIndex;
         Count = count;

@@ -1,0 +1,31 @@
+@namespace Bit.BlazorUI
+
+@{
+    var isSelected = SearchBox.GetIsSelected(Text);
+}
+
+<div style="@SearchBox.Styles?.ItemWrapper" class="@SearchBox.Classes?.ItemWrapper">
+    <button @onclick="()=> SearchBox.HandleOnItemClick(Text)"
+            type="button"
+            role="option"
+            title="@Text"
+            tabindex="0"
+            style="@SearchBox.Styles?.ItemButton"
+            class="bit-srb-itm@(isSelected ? " bit-srb-sel" : "") @SearchBox.Classes?.ItemButton"
+            aria-label="@Text"
+            aria-setsize="@SearchBox.GetTotalItems()"
+            aria-selected="@(isSelected ? "true" : "false")"
+            aria-posinset="@SearchBox.GetItemPosInSet(Text)">
+        @if (SearchBox.SuggestedItemTemplate is not null)
+        {
+            @SearchBox.SuggestedItemTemplate(Text)
+        }
+        else
+        {
+            <span class="@SearchBox.Classes?.ItemText"
+                  style="@SearchBox.Styles?.ItemText">
+                @Text
+            </span>
+        }
+    </button>
+</div>

@@ -146,13 +146,6 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "OverscanCount",
-            Type = "int",
-            DefaultValue = "3",
-            Description = "Determines how many additional items are rendered before and after the visible region.",
-        },
-        new()
-        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -170,7 +163,7 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "SearchFunction",
-            Type = "Func<ICollection<TItem>, string, ICollection<TItem>>?",
+            Type = "Func<ICollection<BitSearchBoxSuggestedItem>, string, ICollection<BitSearchBoxSuggestedItem>>?",
             DefaultValue = "null",
             Description = "Custom search function to be used in place of the default search algorithm.",
         },
@@ -263,97 +256,230 @@ public partial class BitSearchBoxDemo
                     Description = "Custom CSS classes/styles for the search box's search icon container.",
                 }
             }
-        },
-        new()
-        {
-            Id = "name-selectors",
-            Title = "BitSearchBoxNameSelectors<TItem>",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "AriaLabel",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitSearchBoxItem.AriaLabel))",
-                   Description = "The AriaLabel field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               },
-               new()
-               {
-                   Name = "Class",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitSearchBoxItem.Class))",
-                   Description = "The CSS Class field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               },
-               new()
-               {
-                   Name = "Id",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitSearchBoxItem.Id))",
-                   Description = "The Id field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               },
-               new()
-               {
-                   Name = "IsSelected",
-                   Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitSearchBoxItem.IsSelected))",
-                   Description = "The IsSelected field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               },
-               new()
-               {
-                   Name = "Style",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitSearchBoxItem.Style))",
-                   Description = "The CSS Style field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               },
-               new()
-               {
-                   Name = "Text",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitSearchBoxItem.Text))",
-                   Description = "The Text field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               },
-               new()
-               {
-                   Name = "Title",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitSearchBoxItem.Title))",
-                   Description = "The Title field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               }
-            },
-        },
-        new()
-        {
-            Id = "name-selector-pair",
-            Title = "BitNameSelectorPair<TItem, TProp>",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Name",
-                   Type = "string",
-                   Description = "Custom class property name."
-               },
-               new()
-               {
-                   Name = "Selector",
-                   Type = "Func<TItem, TProp?>?",
-                   Description = "Custom class property selector."
-               }
-            }
-        },
+        }
     };
+
+    [Inject] private HttpClient HttpClient { get; set; } = default!;
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+
+    private string TwoWaySearchValue;
+    private string OnChangeSearchValue;
+    private string OnSearchValue;
+    private string SearchValue;
+    private string SearchValueWithSearchDelay;
+    private string SearchValueWithMinSearchLength;
+    private string SearchValueWithMaxSuggestedItems;
+    private string ItemsProviderSearchValue;
+
+    private readonly ValidationSearchBoxModel ValidationSearchBoxModel = new();
+
+    private List<string> GetSuggestedItems() =>
+    [
+         "Apple",
+         "Red Apple",
+         "Blue Apple",
+         "Green Apple",
+         "Banana",
+         "Orange",
+         "Grape",
+         "Broccoli",
+         "Carrot",
+         "Lettuce"
+    ];
+
+    private async ValueTask<BitSearchBoxSuggestedItemsProviderResult<string>> LoadItems(BitSearchBoxSuggestedItemsProviderRequest<string> request)
+    {
+        try
+        {
+            // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
+
+            var query = new Dictionary<string, object?>()
+            {
+                { "$top", request.Count == 0 ? 5 : request.Count },
+                { "$skip", request.StartIndex }
+            };
+
+            if (string.IsNullOrEmpty(request.Search) is false)
+            {
+                query.Add("$filter", $"contains(Name,'{request.Search}')");
+            }
+
+            var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+
+            var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+            var items = data!.Items.Select(i => i.Name).ToList();
+
+            return BitSearchBoxSuggestedItemsProviderResult.From(items, data!.TotalCount);
+        }
+        catch
+        {
+            return BitSearchBoxSuggestedItemsProviderResult.From(new List<string>(), 0);
+        }
+    }
+
+    private readonly string example1RazorCode = @"
+<BitLabel>Basic</BitLabel>
+<BitSearchBox Placeholder=""Search"" TItem=""BitSearchBoxItem"" />
+    
+<BitLabel>Disabled</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" TItem=""BitSearchBoxItem"" />";
+
+    private readonly string example2RazorCode = @"
+<BitLabel>Basic Underlined SearchBox</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" TItem=""BitSearchBoxItem"" />
+
+<BitLabel>Disabled Underlined SearchBox</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" TItem=""BitSearchBoxItem"" />";
+
+    private readonly string example3RazorCode = @"
+<BitLabel>SearchBox with fixed icon</BitLabel>
+<BitSearchBox Placeholder=""Search"" FixedIcon=""true"" TItem=""BitSearchBoxItem"" />
+
+<BitLabel>SearchBox without icon animation</BitLabel>
+<BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" TItem=""BitSearchBoxItem"" />
+
+<BitLabel>SearchBox with custom icon</BitLabel>
+<BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" TItem=""BitSearchBoxItem"" />";
+
+    private readonly string example4RazorCode = @"
+<style>
+    .custom-class {
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-clear {
+        color: blueviolet;
+    }
+
+    .custom-search {
+        margin-right: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: tomato;
+    }
+</style>
+
+<BitSearchBox Placeholder=""Search"" Style=""background-color: lightskyblue; border-radius: 1rem; margin: 1rem 0"" TItem=""BitSearchBoxItem"" />
+<BitSearchBox Placeholder=""Search"" Class=""custom-class"" TItem=""BitSearchBoxItem"" />
+
+<BitSearchBox Placeholder=""Search""
+              Styles=""@(new() {SearchIcon = ""color: darkorange;"",
+                               Input = ""padding: 0.5rem; background-color: goldenrod""})"" 
+              TItem=""BitSearchBoxItem"" />
+
+<BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value""
+              Classes=""@(new() {ClearButtonIcon = ""custom-clear"",
+                                SearchIconContainer = ""custom-search""})""
+              TItem=""BitSearchBoxItem"" />";
+
+    private readonly string example5RazorCode = @"
+Visible: [ <BitSearchBox Visibility=""BitVisibility.Visible"" Placeholder=""Visible SearchBox"" TItem=""BitSearchBoxItem"" /> ]
+Hidden: [ <BitSearchBox Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden SearchBox"" TItem=""BitSearchBoxItem"" />  ]
+Collapsed: [ <BitSearchBox Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed SearchBox"" TItem=""BitSearchBoxItem"" />  ]";
+
+    private readonly string example6RazorCode = @"
+<BitLabel>Two-way Bind</BitLabel>
+<BitSearchBox Placeholder=""Search"" TItem=""BitSearchBoxItem"" @bind-Value=""TwoWaySearchValue"" />
+<BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
+
+<BitLabel>OnChange</BitLabel>
+<BitSearchBox Placeholder=""Search"" OnChange=""(s) => OnChangeSearchValue = s"" OnClear=""() => OnChangeSearchValue = string.Empty"" TItem=""BitSearchBoxItem"" />
+<BitLabel>Search Value: @OnChangeSearchValue</BitLabel>
+
+<BitLabel>OnSearch (Serach by Enter)</BitLabel>
+<BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" TItem=""BitSearchBoxItem"" />
+<BitLabel>Search Value: @OnSearchValue</BitLabel>";
+    private readonly string example6CsharpCode = @"
+private string TwoWaySearchValue;
+private string OnChangeSearchValue;
+private string OnSearchValue;";
+
+    private readonly string example7RazorCode = @"
+<EditForm Model=""ValidationSearchBoxModel"">
+    <DataAnnotationsValidator />
+    <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" TItem=""BitSearchBoxItem"" @bind-Value=""ValidationSearchBoxModel.Text"" />
+    <ValidationMessage For=""() => ValidationSearchBoxModel.Text"" />
+</EditForm>";
+    private readonly string example7CsharpCode = @"
+public class ValidationSearchBoxModel
+{
+    [StringLength(6, MinimumLength = 2, ErrorMessage = ""The text field length must be between 6 and 2 characters in length."")]
+    public string Text { get; set; }
+}
+
+private ValidationSearchBoxModel ValidationSearchBoxModel = new();";
+
+    private readonly string example8RazorCode = @"
+<BitLabel>Items:</BitLabel>
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestedItems=""GetSuggestedItems()"" @bind-Value=""@SearchValue"" />
+SearchValue: @SearchValue
+
+<BitLabel>MinSearchLength equals 1:</BitLabel>
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestedItems=""GetSuggestedItems()"" MinSearchLength=""1"" @bind-Value=""@SearchValueWithMinSearchLength"" />
+SearchValue: @SearchValueWithMinSearchLength
+
+<BitLabel>MaxSuggestedItems equals 2:</BitLabel>
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestedItems=""GetSuggestedItems()"" MaxSuggestedItems=""2"" @bind-Value=""@SearchValueWithMaxSuggestedItems"" />
+SearchValue: @SearchValueWithMaxSuggestedItems
+
+<BitLabel>SearchDelay equals 2 seconds:</BitLabel>
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestedItems=""GetSuggestedItems()"" SearchDelay=""2000"" @bind-Value=""@SearchValueWithSearchDelay"" />
+SearchValue: @SearchValueWithSearchDelay
+
+<BitLabel>ItemsProvider:</BitLabel>
+<BitSearchBox Placeholder=""e.g. Pro""
+                Virtualize=""true""
+                SuggestedItemsProvider=""LoadItems""
+                @bind-Value=""@ItemsProviderSearchValue"" />
+SearchValue: @ItemsProviderSearchValue";
+    private readonly string example8CsharpCode = @"
+private string SearchValue;
+private string SearchValueWithSearchDelay;
+private string SearchValueWithMinSearchLength;
+private string SearchValueWithMaxSuggestedItems;
+private string ItemsProviderSearchValue;
+
+private List<string> GetSuggestedItems() =>
+[
+        ""Apple"",
+        ""Red Apple"",
+        ""Blue Apple"",
+        ""Green Apple"",
+        ""Banana"",
+        ""Orange"",
+        ""Grape"",
+        ""Broccoli"",
+        ""Carrot"",
+        ""Lettuce""
+];
+
+private async ValueTask<BitSearchBoxSuggestedItemsProviderResult<string>> LoadItems(BitSearchBoxSuggestedItemsProviderRequest<string> request)
+{
+    try
+    {
+        var query = new Dictionary<string, object?>()
+        {
+            { ""$top"", request.Count == 0 ? 5 : request.Count },
+            { ""$skip"", request.StartIndex }
+        };
+
+        if (string.IsNullOrEmpty(request.Search) is false)
+        {
+            query.Add(""$filter"", $""contains(Name,'{request.Search}')"");
+        }
+
+        var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
+
+        var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
+
+        var items = data!.Items.Select(i => i.Name).ToList();
+
+        return BitSearchBoxSuggestedItemsProviderResult.From(items, data!.TotalCount);
+    }
+    catch
+    {
+        return BitSearchBoxSuggestedItemsProviderResult.From(new List<string>(), 0);
+    }
+}";
 }

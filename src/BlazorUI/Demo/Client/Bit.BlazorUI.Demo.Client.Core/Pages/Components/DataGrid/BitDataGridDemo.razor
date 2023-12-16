@@ -31,8 +31,7 @@
                                 <ColumnOptions>
                                     <BitSearchBox @bind-Value="typicalSampleNameFilter"
                                                   Placeholder="Search on Name"
-                                                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})"
-                                                  TItem="BitSearchBoxItem" />
+                                                  InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                                 </ColumnOptions>
                             </BitDataGridPropertyColumn>
                             <BitDataGridTemplateColumn Title="Flag" Align="BitDataGridAlign.Center">
@@ -63,7 +62,7 @@
                 </div>
                 <div class="search-panel">
                     <div class="inline-block">
-                        <BitSearchBox @bind-Value="VirtualSampleNameFilter" Width="250px" Placeholder="Search on Company" TItem="BitSearchBoxItem" />
+                        <BitSearchBox @bind-Value="VirtualSampleNameFilter" Width="250px" Placeholder="Search on Company" />
                     </div>
                 </div>
             </ExamplePreview>
@@ -80,7 +79,7 @@
                 </div>
                 <div class="search-panel">
                     <div class="inline-block">
-                        <BitSearchBox @bind-Value="ODataSampleNameFilter" Width="250px" Placeholder="Search on Name" TItem="BitSearchBoxItem" />
+                        <BitSearchBox @bind-Value="ODataSampleNameFilter" Width="250px" Placeholder="Search on Name" />
                     </div>
                 </div>
             </ExamplePreview>

@@ -8,7 +8,7 @@ public class BitSearchBoxClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the main container of the BitDropdown.
+    /// Custom CSS classes/styles for the main container of the BitSearchBox.
     /// </summary>
     public string? Container { get; set; }
 
@@ -48,27 +48,32 @@ public class BitSearchBoxClassStyles
     public string? SearchIconContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the overlay of the BitDropdown.
+    /// Custom CSS classes/styles for the overlay of the BitSearchBox.
     /// </summary>
     public string? Overlay { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the callout of the BitDropdown.
+    /// Custom CSS classes/styles for the callout of the BitSearchBox.
     /// </summary>
     public string? Callout { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the scroll container of the BitDropdown.
+    /// Custom CSS classes/styles for the scroll container of the BitSearchBox.
     /// </summary>
     public string? ScrollContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the item button of the BitDropdown.
+    /// Custom CSS classes/styles for the item wrapper of the BitSearchBox.
+    /// </summary>
+    public string? ItemWrapper { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the item button of the BitSearchBox.
     /// </summary>
     public string? ItemButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the item text of the BitDropdown.
+    /// Custom CSS classes/styles for the item text of the BitSearchBox.
     /// </summary>
     public string? ItemText { get; set; }
 }
