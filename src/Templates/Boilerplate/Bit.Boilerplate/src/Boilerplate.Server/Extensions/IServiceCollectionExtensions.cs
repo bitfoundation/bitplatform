@@ -1,4 +1,4 @@
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using Boilerplate.Server;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Server.Services;
@@ -160,7 +160,7 @@ public static class IServiceCollectionExtensions
 
         services.AddHealthChecksUI(setupSettings: setup =>
         {
-            setup.AddHealthCheckEndpoint("BPHealthChecks", env.IsDevelopment() ? "https://localhost:5031/healthz" : "/healthz");
+            setup.AddHealthCheckEndpoint("BPHealthChecks", env.IsDevelopment() ? "http://localhost:5030/healthz" : "/healthz");
         }).AddInMemoryStorage();
 
         var healthChecksBuilder = services.AddHealthChecks()
