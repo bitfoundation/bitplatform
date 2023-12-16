@@ -24,11 +24,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Watch Include="..\Boilerplate.Client.Core\**\*.razor" />
-        <Watch Include="..\Boilerplate.Client.Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="Bit.Bswup" Version="8.5.0-pre-02" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.5.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
