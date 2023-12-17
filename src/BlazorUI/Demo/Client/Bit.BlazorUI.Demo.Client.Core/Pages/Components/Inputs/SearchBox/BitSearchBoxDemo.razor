@@ -137,33 +137,37 @@
                 <div class="example-content">
                     <div>
                         <BitLabel>Items:</BitLabel>
-                        <BitSearchBox Placeholder="e.g. Apple" SuggestedItems="GetSuggestedItems()" @bind-Value="@SearchValue" />
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" @bind-Value="@SearchValue" />
                         SearchValue: @SearchValue
+                    </div>
+                    <div>
+                        <BitLabel>SuggestFilterFunction (use StartsWith):</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" SuggestFilterFunction="@SearchFunc" @bind-Value="@SearchValueWithSuggestFilterFunction" />
+                        SearchValue: @SearchValueWithSuggestFilterFunction
                     </div>
                     <br />
                     <div>
-                        <BitLabel>MinSearchLength equals 1:</BitLabel>
-                        <BitSearchBox Placeholder="e.g. Apple" SuggestedItems="GetSuggestedItems()" MinSearchLength="1" @bind-Value="@SearchValueWithMinSearchLength" />
+                        <BitLabel>MinSuggestTriggerChars equals 1:</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" MinSuggestTriggerChars="1" @bind-Value="@SearchValueWithMinSearchLength" />
                         SearchValue: @SearchValueWithMinSearchLength
                     </div>
                     <br />
                     <div>
-                        <BitLabel>MaxSuggestedItems equals 2:</BitLabel>
-                        <BitSearchBox Placeholder="e.g. Apple" SuggestedItems="GetSuggestedItems()" MaxSuggestedItems="2" @bind-Value="@SearchValueWithMaxSuggestedItems" />
+                        <BitLabel>MaxSuggestCount equals 2:</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" MaxSuggestCount="2" @bind-Value="@SearchValueWithMaxSuggestedItems" />
                         SearchValue: @SearchValueWithMaxSuggestedItems
                     </div>
                     <br />
                     <div>
-                        <BitLabel>SearchDelay equals 2 seconds:</BitLabel>
-                        <BitSearchBox Placeholder="e.g. Apple" SuggestedItems="GetSuggestedItems()" SearchDelay="2000" @bind-Value="@SearchValueWithSearchDelay" />
+                        <BitLabel>SuggestThrottleTime equals 2 seconds:</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" SuggestThrottleTime="2000" @bind-Value="@SearchValueWithSearchDelay" />
                         SearchValue: @SearchValueWithSearchDelay
                     </div>
                     <br />
                     <div>
                         <BitLabel>ItemsProvider:</BitLabel>
                         <BitSearchBox Placeholder="e.g. Pro"
-                                      Virtualize="true"
-                                      SuggestedItemsProvider="LoadItems"
+                                      SuggestItemProvider="LoadItems"
                                       @bind-Value="@ItemsProviderSearchValue" />
                         SearchValue: @ItemsProviderSearchValue
                     </div>

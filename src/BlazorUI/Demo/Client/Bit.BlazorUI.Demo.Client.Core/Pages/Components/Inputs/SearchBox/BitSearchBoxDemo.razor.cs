@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.SearchBox;
+﻿using System.Diagnostics.Metrics;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.SearchBox;
 
 public partial class BitSearchBoxDemo
 {
@@ -19,13 +21,6 @@ public partial class BitSearchBoxDemo
             LinkType = LinkType.Link,
             Href = "#searchbox-class-styles",
             Description = "Custom CSS classes for different parts of the BitSearchBox.",
-        },
-        new()
-        {
-            Name = "ChildContent",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "The content of the SearchBox, a list of BitSearchBoxOption components.",
         },
         new()
         {
@@ -64,42 +59,35 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "SuggestedItems",
+            Name = "SuggestItems",
             Type = "ICollection<string>?",
             DefaultValue = "null",
-            Description = "The list of suggested items to display in the callout."
+            Description = "The list of suggest items to display in the callout."
         },
         new()
         {
-            Name = "SuggestedItemSize",
-            Type = "int",
-            DefaultValue = "35",
-            Description = "The height of each suggested item in pixels for virtualization.",
-        },
-        new()
-        {
-            Name = "SuggestedItemsProvider",
-            Type = "BitSearchBoxSuggestedItemsProvider<string>?",
+            Name = "SuggestItemProvider",
+            Type = "Func<string?, int, Task<ICollection<string>>>?",
             DefaultValue = "null",
-            Description = "The function providing items to the list for virtualization.",
+            Description = "The function providing suggest items.",
         },
         new()
         {
-            Name = "SuggestedItemTemplate",
+            Name = "SuggestItemTemplate",
             Type = "RenderFragment<string>?",
             DefaultValue = "null",
-            Description = "The custom template for rendering the items of the BitSearchBox.",
+            Description = "The custom template for rendering the suggest items of the BitSearchBox.",
         },
         new()
         {
-            Name = "MaxSuggestedItems",
+            Name = "MaxSuggestCount",
             Type = "int",
             DefaultValue = "5",
             Description = "The maximum number of items or suggestions that will be displayed.",
         },
         new()
         {
-            Name = "MinSearchLength",
+            Name = "MinSuggestTriggerChars",
             Type = "int",
             DefaultValue = "3",
             Description = "The minimum character requirement for doing a search in suggested items.",
@@ -130,13 +118,6 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "Options",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Alias of ChildContent.",
-        },
-        new()
-        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -153,31 +134,17 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "SearchFunction",
-            Type = "Func<ICollection<string>, string, ICollection<string>>?",
+            Name = "SuggestFilterFunction",
+            Type = "Func<string?, string?, bool>?",
             DefaultValue = "null",
             Description = "Custom search function to be used in place of the default search algorithm.",
         },
         new()
         {
-            Name = "SearchDelay",
+            Name = "SuggestThrottleTime",
             Type = "int",
             DefaultValue = "400",
             Description = "The delay, in milliseconds, applied to the search functionality.",
-        },
-        new()
-        {
-            Name = "Virtualize",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables virtualization to render only the visible items.",
-        },
-        new()
-        {
-            Name = "VirtualizePlaceholder",
-            Type = "RenderFragment<PlaceholderContext>?",
-            DefaultValue = "null",
-            Description = "The template for items that have not yet been rendered in virtualization mode.",
         }
     };
 
@@ -257,6 +224,7 @@ public partial class BitSearchBoxDemo
     private string OnChangeSearchValue;
     private string OnSearchValue;
     private string SearchValue;
+    private string SearchValueWithSuggestFilterFunction;
     private string SearchValueWithSearchDelay;
     private string SearchValueWithMinSearchLength;
     private string SearchValueWithMaxSuggestedItems;
@@ -278,7 +246,14 @@ public partial class BitSearchBoxDemo
          "Lettuce"
     ];
 
-    private async ValueTask<BitSearchBoxSuggestedItemsProviderResult<string>> LoadItems(BitSearchBoxSuggestedItemsProviderRequest<string> request)
+    private Func<string, string, bool> SearchFunc = (string searchText, string itemText) =>
+    {
+        if (string.IsNullOrEmpty(searchText) || string.IsNullOrEmpty(itemText)) return false;
+
+        return itemText.StartsWith(searchText, StringComparison.OrdinalIgnoreCase);
+    };
+
+    private async Task<ICollection<string>> LoadItems(string? search, int count)
     {
         try
         {
@@ -286,26 +261,23 @@ public partial class BitSearchBoxDemo
 
             var query = new Dictionary<string, object?>()
             {
-                { "$top", request.Count == 0 ? 5 : request.Count },
-                { "$skip", request.StartIndex }
+                { "$top", count < 1 ? 5 : count },
             };
 
-            if (string.IsNullOrEmpty(request.Search) is false)
+            if (string.IsNullOrEmpty(search) is false)
             {
-                query.Add("$filter", $"contains(Name,'{request.Search}')");
+                query.Add("$filter", $"contains(Name,'{search}')");
             }
 
             var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-            var items = data!.Items.Select(i => i.Name).ToList();
-
-            return BitSearchBoxSuggestedItemsProviderResult.From(items, data!.TotalCount);
+            return data!.Items.Select(i => i.Name).ToList();
         }
         catch
         {
-            return BitSearchBoxSuggestedItemsProviderResult.From(new List<string>(), 0);
+            return new List<string>();
         }
     }
 
@@ -403,33 +375,42 @@ private ValidationSearchBoxModel ValidationSearchBoxModel = new();";
 
     private readonly string example8RazorCode = @"
 <BitLabel>Items:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestedItems=""GetSuggestedItems()"" @bind-Value=""@SearchValue"" />
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" @bind-Value=""@SearchValue"" />
 SearchValue: @SearchValue
+                    
 
-<BitLabel>MinSearchLength equals 1:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestedItems=""GetSuggestedItems()"" MinSearchLength=""1"" @bind-Value=""@SearchValueWithMinSearchLength"" />
+<BitLabel>SuggestFilterFunction (use StartsWith):</BitLabel>
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" SuggestFilterFunction=""@SearchFunc"" @bind-Value=""@SearchValueWithSuggestFilterFunction"" />
+SearchValue: @SearchValueWithSuggestFilterFunction
+                    
+
+<BitLabel>MinSuggestTriggerChars equals 1:</BitLabel>
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" MinSuggestTriggerChars=""1"" @bind-Value=""@SearchValueWithMinSearchLength"" />
 SearchValue: @SearchValueWithMinSearchLength
+                    
 
-<BitLabel>MaxSuggestedItems equals 2:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestedItems=""GetSuggestedItems()"" MaxSuggestedItems=""2"" @bind-Value=""@SearchValueWithMaxSuggestedItems"" />
+<BitLabel>MaxSuggestCount equals 2:</BitLabel>
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" MaxSuggestCount=""2"" @bind-Value=""@SearchValueWithMaxSuggestedItems"" />
 SearchValue: @SearchValueWithMaxSuggestedItems
-
-<BitLabel>SearchDelay equals 2 seconds:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestedItems=""GetSuggestedItems()"" SearchDelay=""2000"" @bind-Value=""@SearchValueWithSearchDelay"" />
+                        
+<BitLabel>SuggestThrottleTime equals 2 seconds:</BitLabel>
+<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" SuggestThrottleTime=""2000"" @bind-Value=""@SearchValueWithSearchDelay"" />
 SearchValue: @SearchValueWithSearchDelay
 
 <BitLabel>ItemsProvider:</BitLabel>
 <BitSearchBox Placeholder=""e.g. Pro""
-              Virtualize=""true""
-              SuggestedItemsProvider=""LoadItems""
+              SuggestItemProvider=""LoadItems""
               @bind-Value=""@ItemsProviderSearchValue"" />
 SearchValue: @ItemsProviderSearchValue";
     private readonly string example8CsharpCode = @"
 private string SearchValue;
+private string SearchValueWithSuggestFilterFunction;
 private string SearchValueWithSearchDelay;
 private string SearchValueWithMinSearchLength;
 private string SearchValueWithMaxSuggestedItems;
 private string ItemsProviderSearchValue;
+
+private readonly ValidationSearchBoxModel ValidationSearchBoxModel = new();
 
 private List<string> GetSuggestedItems() =>
 [
@@ -445,32 +426,36 @@ private List<string> GetSuggestedItems() =>
         ""Lettuce""
 ];
 
-private async ValueTask<BitSearchBoxSuggestedItemsProviderResult<string>> LoadItems(BitSearchBoxSuggestedItemsProviderRequest<string> request)
+private Func<string, string, bool> SearchFunc = (string searchText, string itemText) =>
+{
+    if (string.IsNullOrEmpty(searchText) || string.IsNullOrEmpty(itemText)) return false;
+
+    return itemText.StartsWith(searchText, StringComparison.OrdinalIgnoreCase);
+};
+
+private async Task<ICollection<string>> LoadItems(string? search, int count)
 {
     try
     {
         var query = new Dictionary<string, object?>()
         {
-            { ""$top"", request.Count == 0 ? 5 : request.Count },
-            { ""$skip"", request.StartIndex }
+            { ""$top"", count < 1 ? 5 : count },
         };
 
-        if (string.IsNullOrEmpty(request.Search) is false)
+        if (string.IsNullOrEmpty(search) is false)
         {
-            query.Add(""$filter"", $""contains(Name,'{request.Search}')"");
+            query.Add(""$filter"", $""contains(Name,'{search}')"");
         }
 
         var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
 
         var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-        var items = data!.Items.Select(i => i.Name).ToList();
-
-        return BitSearchBoxSuggestedItemsProviderResult.From(items, data!.TotalCount);
+        return data!.Items.Select(i => i.Name).ToList();
     }
     catch
     {
-        return BitSearchBoxSuggestedItemsProviderResult.From(new List<string>(), 0);
+        return new List<string>();
     }
 }";
 }

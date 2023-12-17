@@ -38,7 +38,7 @@
         }
     </div>
 
-    @if ((SuggestedItems?.Any() ?? false) || (Virtualize && SuggestedItemsProvider is not null))
+    @if ((SuggestItems?.Any() ?? false) || SuggestItemProvider is not null)
     {
         <div @onclick="CloseCallout"
              style="display:@(isOpen ? "block" : "none");@Styles?.Overlay"
@@ -53,22 +53,34 @@
             <div id="@_scrollContainerId"
                  style="@Styles?.ScrollContainer"
                  class="bit-srb-scn @Classes?.ScrollContainer">
-                @if (Virtualize && SuggestedItemsProvider is not null)
+                @foreach (var text in _searchItems)
                 {
-                    <Virtualize @ref="_virtualizeElement"
-                                Context="item"
-                                ItemSize="SuggestedItemSize"
-                                Placeholder="VirtualizePlaceholder"
-                                ItemsProvider="InternalItemsProvider">
-                        <_BitSearchBoxSuggestedItem Text="@item" SearchBox="this" />
-                    </Virtualize>
-                }
-                else
-                {
-                    @foreach (var item in _searchItems)
-                    {
-                        <_BitSearchBoxSuggestedItem Text="@item" SearchBox="this" />
-                    }
+                    var isSelected = GetIsSelected(text);
+                    <div style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
+                        <button @onclick="()=> HandleOnItemClick(text)"
+                                type="button"
+                                role="option"
+                                title="@text"
+                                tabindex="0"
+                                style="@Styles?.SuggestItemButton"
+                                class="bit-srb-itm@(isSelected ? " bit-srb-sel" : "") @Classes?.SuggestItemButton"
+                                aria-label="@text"
+                                aria-setsize="@GetTotalItems()"
+                                aria-selected="@(isSelected ? "true" : "false")"
+                                aria-posinset="@GetItemPosInSet(text)">
+                            @if (SuggestItemTemplate is not null)
+                            {
+                                @SuggestItemTemplate(text)
+                            }
+                            else
+                            {
+                                <span class="@Classes?.SuggestItemText"
+                                      style="@Styles?.SuggestItemText">
+                                    @text
+                                </span>
+                            }
+                        </button>
+                    </div>
                 }
             </div>
 

@@ -63,17 +63,17 @@ public class BitSearchBoxClassStyles
     public string? ScrollContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the item wrapper of the BitSearchBox.
+    /// Custom CSS classes/styles for the suggest item wrapper of the BitSearchBox.
     /// </summary>
-    public string? ItemWrapper { get; set; }
+    public string? SuggestItemWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the item button of the BitSearchBox.
+    /// Custom CSS classes/styles for the suggest item button of the BitSearchBox.
     /// </summary>
-    public string? ItemButton { get; set; }
+    public string? SuggestItemButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the item text of the BitSearchBox.
+    /// Custom CSS classes/styles for the suggest item text of the BitSearchBox.
     /// </summary>
-    public string? ItemText { get; set; }
+    public string? SuggestItemText { get; set; }
 }

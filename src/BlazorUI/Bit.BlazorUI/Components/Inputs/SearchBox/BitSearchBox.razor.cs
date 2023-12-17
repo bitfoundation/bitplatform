@@ -15,14 +15,12 @@ public partial class BitSearchBox
     private string _calloutId = string.Empty;
     private string _scrollContainerId = string.Empty;
     private ElementReference _inputRef = default!;
-    private Virtualize<string>? _virtualizeElement = default!;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
     private List<string> _items = [];
     private List<string> _searchItems = [];
     private int _selectedIndex = -1;
     private int? _totalItems;
-    private bool _refreshItems;
 
     private bool InputHasFocus
     {
@@ -138,64 +136,40 @@ public partial class BitSearchBox
     [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// Enables virtualization to render only the visible items.
+    /// The list of suggest items to display in the callout.
     /// </summary>
-    [Parameter] public bool Virtualize { get; set; }
+    [Parameter] public ICollection<string>? SuggestItems { get; set; }
 
     /// <summary>
-    /// The template for items that have not yet been rendered in virtualization mode.
+    /// The function providing suggest items.
     /// </summary>
-    [Parameter] public RenderFragment<PlaceholderContext>? VirtualizePlaceholder { get; set; }
+    [Parameter] public Func<string?, int, Task<ICollection<string>>>? SuggestItemProvider { get; set; }
 
     /// <summary>
-    /// The list of suggested items to display in the callout.
+    /// The custom template for rendering the suggest items of the BitSearchBox.
     /// </summary>
-    [Parameter] public ICollection<string>? SuggestedItems { get; set; }
-
-    /// <summary>
-    /// The height of each suggested item in pixels for virtualization.
-    /// </summary>
-    [Parameter] public int SuggestedItemSize { get; set; } = 35;
-
-    /// <summary>
-    /// The function providing items to the list for virtualization.
-    /// </summary>
-    [Parameter] public BitSearchBoxSuggestedItemsProvider<string>? SuggestedItemsProvider { get; set; }
-
-    /// <summary>
-    /// The custom template for rendering the items of the BitSearchBox.
-    /// </summary>
-    [Parameter] public RenderFragment<string>? SuggestedItemTemplate { get; set; }
+    [Parameter] public RenderFragment<string>? SuggestItemTemplate { get; set; }
 
     /// <summary>
     /// Custom search function to be used in place of the default search algorithm.
     /// </summary>
-    [Parameter] public Func<ICollection<string>, string, ICollection<string>>? SearchFunction { get; set; }
+    [Parameter] public Func<string?, string?, bool>? SuggestFilterFunction { get; set; }
 
     /// <summary>
     /// The delay, in milliseconds, applied to the search functionality.
     /// </summary>
-    [Parameter] public int SearchDelay { get; set; } = 400;
+    [Parameter] public int SuggestThrottleTime { get; set; } = 400;
 
     /// <summary>
     /// The maximum number of items or suggestions that will be displayed.
     /// </summary>
-    [Parameter] public int MaxSuggestedItems { get; set; } = 5;
+    [Parameter] public int MaxSuggestCount { get; set; } = 5;
 
     /// <summary>
-    /// The minimum character requirement for doing a search in suggested items.
+    /// The minimum character requirement for doing a search in suggest items.
     /// </summary>
-    [Parameter] public int MinSearchLength { get; set; } = 3;
+    [Parameter] public int MinSuggestTriggerChars { get; set; } = 3;
 
-    /// <summary>
-    /// Alias of ChildContent.
-    /// </summary>
-    [Parameter] public RenderFragment? Options { get; set; }
-
-    /// <summary>
-    /// The content of the Dropdown, a list of BitDropdownOption components.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     protected override string RootElementClass => "bit-srb";
 
@@ -241,11 +215,9 @@ public partial class BitSearchBox
     {
         await base.OnParametersSetAsync();
 
-        if (ChildContent is not null) return;
-
-        if (SuggestedItems is not null)
+        if (SuggestItems is not null)
         {
-            _items = [.. SuggestedItems.Distinct()];
+            _items = [.. SuggestItems.Distinct()];
         }
 
         if (CurrentValueAsString.HasNoValue())
@@ -338,71 +310,24 @@ public partial class BitSearchBox
         StateHasChanged();
     }
 
-    private async ValueTask<ItemsProviderResult<string>> InternalItemsProvider(ItemsProviderRequest request)
+    private async Task SearchItems()
     {
-        if (SuggestedItemsProvider is null) return default;
-
-        // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
-        // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
-        // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
-        await Task.Delay(100);
-
-        if (request.CancellationToken.IsCancellationRequested) return default;
-
-        if (_refreshItems)
+        if (SuggestItemProvider is not null)
         {
-            return new ItemsProviderResult<string>(_searchItems, _totalItems.GetValueOrDefault(_searchItems.Count));
-        }
-
-        if (_searchValue.HasNoValue() || _searchValue!.Length < MinSearchLength)
-        {
-            _selectedIndex = -1;
-            _searchItems?.Clear();
-            await ChangeStateCallout();
-            return new ItemsProviderResult<string>();
-        }
-
-        var countRequest = request.Count > MaxSuggestedItems || request.Count == 0 ? MaxSuggestedItems : request.Count;
-
-        // Combine the query parameters from Virtualize with the ones from PaginationState
-        var providerRequest = new BitSearchBoxSuggestedItemsProviderRequest<string>(0, countRequest, _searchValue, request.CancellationToken);
-        var providerResult = await SuggestedItemsProvider(providerRequest);
-
-        if (request.CancellationToken.IsCancellationRequested) return default;
-
-        _totalItems = countRequest;
-        _searchItems = providerResult.Items.Distinct().Take(countRequest).ToList();
-
-        if (CurrentValue.HasValue())
-        {
-            _selectedIndex = _searchItems.FindIndex(i => i == CurrentValue);
+            _searchItems = [.. (await SuggestItemProvider.Invoke(_searchValue, MaxSuggestCount)).Distinct().Take(MaxSuggestCount)];
         }
         else
         {
-            _selectedIndex = -1;
+            _searchItems = _searchValue.HasNoValue() || _searchValue!.Length < MinSuggestTriggerChars
+                ? []
+                : _items.Where(i => SuggestFilterFunction is not null ?
+                                    SuggestFilterFunction.Invoke(_searchValue, i) :
+                                    (i?.Contains(_searchValue!, StringComparison.OrdinalIgnoreCase) ?? false))
+                        .Distinct().Take(MaxSuggestCount).ToList();
+
         }
 
         await ChangeStateCallout();
-
-        return new ItemsProviderResult<string>(_searchItems, countRequest);
-    }
-
-    private async Task SearchItems()
-    {
-        if (Virtualize && SuggestedItemsProvider is not null)
-        {
-            await _virtualizeElement!.RefreshDataAsync();
-        }
-        else
-        {
-            _searchItems = _searchValue.HasNoValue() || _searchValue!.Length < MinSearchLength
-                ? []
-                : SearchFunction is not null
-                    ? [.. SearchFunction.Invoke(_items, _searchValue!).Distinct().Take(MaxSuggestedItems)]
-                    : [.. _items.Where(i => i?.Contains(_searchValue!, StringComparison.OrdinalIgnoreCase) ?? false).Take(MaxSuggestedItems)];
-
-            await ChangeStateCallout();
-        }
     }
 
     private void ThrottleSearch()
@@ -413,7 +338,7 @@ public partial class BitSearchBox
 
         Task.Run(async () =>
         {
-            await Task.Delay(SearchDelay, _cancellationTokenSource.Token);
+            await Task.Delay(SuggestThrottleTime, _cancellationTokenSource.Token);
             await InvokeAsync(async () =>
             {
                 if (_cancellationTokenSource.IsCancellationRequested) return;
@@ -475,23 +400,10 @@ public partial class BitSearchBox
 
         CurrentValueAsString = _searchValue = _searchItems[_selectedIndex];
         await OnChange.InvokeAsync(CurrentValueAsString);
-
-        if (Virtualize && SuggestedItemsProvider is not null)
-        {
-            _refreshItems = true;
-            try
-            {
-                await _virtualizeElement!.RefreshDataAsync();
-            }
-            finally
-            {
-                _refreshItems = false;
-            }
-        }
         await _js.InvokeVoidAsync("BitSearchBox.moveCursorToEnd", _inputRef);
     }
 
-    internal async Task HandleOnItemClick(string item)
+    private async Task HandleOnItemClick(string item)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -507,7 +419,7 @@ public partial class BitSearchBox
         StateHasChanged();
     }
 
-    internal int? GetTotalItems()
+    private int? GetTotalItems()
     {
         if (_items is null) return null;
 
@@ -519,12 +431,12 @@ public partial class BitSearchBox
         return _totalItems.Value;
     }
 
-    internal int? GetItemPosInSet(string item)
+    private int? GetItemPosInSet(string item)
     {
         return _searchItems?.IndexOf(item) + 1;
     }
 
-    internal bool GetIsSelected(string item)
+    private bool GetIsSelected(string item)
     {
         return _selectedIndex > -1 && _searchItems.IndexOf(item) == _selectedIndex;
     }
