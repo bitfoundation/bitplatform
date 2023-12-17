@@ -1,0 +1,120 @@
+﻿@page "/storage"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+
+<PageTitle>Window Samples</PageTitle>
+
+<h1>Window</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.LocalStorage localStorage
+@@inject Bit.Butil.SessionStorage sessionStorage
+
+@@code {
+    ...
+    await localStorage.setItem("my-key", "my-value");
+    ...
+    await sessionStorage.setItem("my-key2", "my-value2");
+    ...
+}
+</pre>
+
+<br />
+
+<hr />
+
+<h4>Open the DevTools and click on buttons</h4>
+
+<hr />
+
+<h5>LocalStorage</h5>
+<br />
+<button @onclick=GetLength>GetLength</button>
+<br />
+<br />
+<br />
+<span>key:</span>
+<input @bind="getItemKey" />
+<button @onclick=GetItem>GetItem</button>
+<br />
+<br />
+<br />
+<span>key:</span>
+<input @bind="setItemKey" />
+<br />
+<span>value:</span>
+<input @bind="setItemValue" />
+<br />
+<button @onclick=SetItem>SetItem</button>
+<br />
+
+<br />
+<hr />
+
+<h5>SessionStorage</h5>
+<br />
+<button @onclick=GetLength2>GetLength</button>
+<br />
+<br />
+<br />
+<span>key:</span>
+<input @bind="getItemKey2" />
+<button @onclick=GetItem2>GetItem</button>
+<br />
+<br />
+<br />
+<span>key:</span>
+<input @bind="setItemKey2" />
+<br />
+<span>value:</span>
+<input @bind="setItemValue2" />
+<br />
+<button @onclick=SetItem2>SetItem</button>
+
+@code {
+    private string getItemKey = "";
+    private string setItemKey = "";
+    private string setItemValue = "";
+
+    private async Task GetLength()
+    {
+        var length = await localStorage.GetLength();
+        await console.Log("localStorage.length =", length);
+    }
+
+    private async Task GetItem()
+    {
+        var value = await localStorage.GetItem(getItemKey);
+        await console.Log($"localStorage.getItem({getItemKey}) =", value);
+    }
+
+    private async Task SetItem()
+    {
+        await localStorage.SetItem(setItemKey, setItemValue);
+        await console.Log($"localStorage.setItem({setItemKey}, {setItemValue})");
+    }
+
+
+    private string getItemKey2 = "";
+    private string setItemKey2 = "";
+    private string setItemValue2 = "";
+
+    private async Task GetLength2()
+    {
+        var length = await sessionStorage.GetLength();
+        await console.Log("sessionStorage.length =", length);
+    }
+
+    private async Task GetItem2()
+    {
+        var value = await sessionStorage.GetItem(getItemKey2);
+        await console.Log($"sessionStorage.getItem({getItemKey2}) =", value);
+    }
+
+    private async Task SetItem2()
+    {
+        await sessionStorage.SetItem(setItemKey2, setItemValue2);
+        await console.Log($"sessionStorage.setItem({setItemKey2}, {setItemValue2})");
+    }
+}
