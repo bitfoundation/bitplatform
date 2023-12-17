@@ -13,6 +13,8 @@ public static class BitButil
         services.AddScoped<History>();
         services.AddScoped<Element>();
         services.AddScoped<Navigator>();
+        services.AddScoped<LocalStorage>();
+        services.AddScoped<SessionStorage>();
 
         return services;
     }
