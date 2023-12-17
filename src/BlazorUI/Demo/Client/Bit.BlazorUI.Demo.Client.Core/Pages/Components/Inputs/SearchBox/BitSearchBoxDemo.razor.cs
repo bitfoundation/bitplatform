@@ -410,8 +410,6 @@ private string SearchValueWithMinSearchLength;
 private string SearchValueWithMaxSuggestedItems;
 private string ItemsProviderSearchValue;
 
-private readonly ValidationSearchBoxModel ValidationSearchBoxModel = new();
-
 private List<string> GetSuggestedItems() =>
 [
         ""Apple"",
