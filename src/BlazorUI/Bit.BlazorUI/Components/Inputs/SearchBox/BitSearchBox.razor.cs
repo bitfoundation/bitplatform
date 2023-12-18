@@ -10,17 +10,14 @@ public partial class BitSearchBox
     private bool inputHasFocus;
     private bool fixedIcon;
 
-    private string? _searchValue;
     private string _inputId = string.Empty;
     private string _calloutId = string.Empty;
     private string _scrollContainerId = string.Empty;
     private ElementReference _inputRef = default!;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
-    private List<string> _items = [];
     private List<string> _searchItems = [];
     private int _selectedIndex = -1;
-    private int? _totalItems;
 
     private bool InputHasFocus
     {
@@ -138,7 +135,7 @@ public partial class BitSearchBox
     /// <summary>
     /// The list of suggest items to display in the callout.
     /// </summary>
-    [Parameter] public ICollection<string>? SuggestItems { get; set; }
+    [Parameter] public IEnumerable<string>? SuggestItems { get; set; }
 
     /// <summary>
     /// The function providing suggest items.
@@ -202,28 +199,11 @@ public partial class BitSearchBox
             CurrentValueAsString = DefaultValue;
         }
 
-        _searchValue = CurrentValueAsString;
-
         OnValueChanged += HandleOnValueChanged;
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
         return base.OnInitializedAsync();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-
-        if (SuggestItems is not null)
-        {
-            _items = [.. SuggestItems.Distinct()];
-        }
-
-        if (CurrentValueAsString.HasNoValue())
-        {
-            _searchValue = CurrentValueAsString;
-        }
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
@@ -246,7 +226,7 @@ public partial class BitSearchBox
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        CurrentValueAsString = _searchValue = e.Value?.ToString();
+        CurrentValue = e.Value?.ToString();
 
         ThrottleSearch();
 
@@ -256,10 +236,11 @@ public partial class BitSearchBox
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
     {
         if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         if (eventArgs.Key == "Escape")
         {
-            CurrentValueAsString = _searchValue = string.Empty;
+            CurrentValue = string.Empty;
             //await _inputRef.FocusAsync(); // is it required when the keydown event is captured on the input itself?
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
@@ -267,7 +248,7 @@ public partial class BitSearchBox
         }
         else if (eventArgs.Key == "Enter")
         {
-            CurrentValueAsString = _searchValue = await _js.GetProperty(_inputRef, "value");
+            CurrentValue = await _js.GetProperty(_inputRef, "value");
             await OnSearch.InvokeAsync(CurrentValue);
             await CloseCallout();
         }
@@ -314,16 +295,16 @@ public partial class BitSearchBox
     {
         if (SuggestItemProvider is not null)
         {
-            _searchItems = [.. (await SuggestItemProvider.Invoke(_searchValue, MaxSuggestCount)).Distinct().Take(MaxSuggestCount)];
+            _searchItems = [.. (await SuggestItemProvider.Invoke(CurrentValue, MaxSuggestCount)).Distinct().Take(MaxSuggestCount)];
         }
         else
         {
-            _searchItems = _searchValue.HasNoValue() || _searchValue!.Length < MinSuggestTriggerChars
+            _searchItems = CurrentValue.HasNoValue() || CurrentValue!.Length < MinSuggestTriggerChars
                 ? []
-                : _items.Where(i => SuggestFilterFunction is not null ?
-                                    SuggestFilterFunction.Invoke(_searchValue, i) :
-                                    (i?.Contains(_searchValue!, StringComparison.OrdinalIgnoreCase) ?? false))
-                        .Distinct().Take(MaxSuggestCount).ToList();
+                : SuggestItems?.Where(i => SuggestFilterFunction is not null ?
+                                    SuggestFilterFunction.Invoke(CurrentValue, i) :
+                                    (i?.Contains(CurrentValue!, StringComparison.OrdinalIgnoreCase) ?? false))
+                        .Distinct().Take(MaxSuggestCount).ToList() ?? [];
 
         }
 
@@ -355,7 +336,7 @@ public partial class BitSearchBox
 
         if (_searchItems.Any())
         {
-            _selectedIndex = _searchItems.FindIndex(i => i == _searchValue);
+            _selectedIndex = _searchItems.FindIndex(i => i == CurrentValue);
 
             if (isOpen is false)
             {
@@ -371,7 +352,6 @@ public partial class BitSearchBox
 
     private async Task ChangeSelectedItem(bool isArrowUp)
     {
-        if (IsEnabled is false) return;
         if (isOpen is false) return;
         if (_searchItems.Any() is false) return;
 
@@ -398,8 +378,8 @@ public partial class BitSearchBox
             _selectedIndex++;
         }
 
-        CurrentValueAsString = _searchValue = _searchItems[_selectedIndex];
-        await OnChange.InvokeAsync(CurrentValueAsString);
+        CurrentValue = _searchItems[_selectedIndex];
+        await OnChange.InvokeAsync(CurrentValue);
         await _js.InvokeVoidAsync("BitSearchBox.moveCursorToEnd", _inputRef);
     }
 
@@ -408,7 +388,7 @@ public partial class BitSearchBox
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        CurrentValueAsString = _searchValue = item;
+        CurrentValue = item;
 
         await CloseCallout();
 
@@ -421,14 +401,9 @@ public partial class BitSearchBox
 
     private int? GetTotalItems()
     {
-        if (_items is null) return null;
+        if (_searchItems is null) return null;
 
-        if (_totalItems.HasValue is false)
-        {
-            _totalItems = _items.Count;
-        }
-
-        return _totalItems.Value;
+        return _searchItems.Count;
     }
 
     private int? GetItemPosInSet(string item)
