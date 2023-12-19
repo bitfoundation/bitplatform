@@ -9,6 +9,11 @@ public class BitTimelineItem
     public string? Class { get; set; }
 
     /// <summary>
+    /// The color of the item.
+    /// </summary>
+    public BitTimelineColor? Color { get; set; }
+
+    /// <summary>
     /// The custom template for the item's dot.
     /// </summary>
     public RenderFragment<BitTimelineItem>? DotTemplate { get; set; }
@@ -62,6 +67,11 @@ public class BitTimelineItem
     /// The secondary text of the item.
     /// </summary>
     public string? SecondaryText { get; set; }
+
+    /// <summary>
+    /// The size of the item.
+    /// </summary>
+    public BitTimelineSize? Size { get; set; }
 
     /// <summary>
     /// The custom value for the style attribute of the item.

@@ -35,6 +35,7 @@
     overflow: hidden;
     position: relative;
     align-items: center;
+    font-size: var(--bit-tln-font-size);
     padding: calc(var(--bit-tln-dot-size) / 2) 0;
     min-width: calc(50% - var(--bit-tln-dot-size));
     min-height: calc(50% - var(--bit-tln-dot-size));
@@ -62,7 +63,7 @@
     align-items: center;
     justify-content: center;
     padding: calc(var(--bit-tln-dot-size) / 2);
-    
+
     &::before {
         top: 0;
         content: "";
@@ -111,6 +112,10 @@
     .bit-tln-ids .bit-tln-dot {
         --bit-tln-brd-clr: #{$color-border-disabled};
     }
+
+    .bit-icon {
+        color: var(--bit-tln-sec-brd-clr);
+    }
 }
 
 .bit-tln-txt {
@@ -129,6 +134,7 @@
     }
 
     .bit-icon {
+        --bit-tln-clr: var(--bit-tln-sec-brd-clr);
         z-index: 1;
         display: flex;
         border-radius: 50%;
@@ -167,7 +173,7 @@
     }
 }
 
-.bit-tln-inf {
+.bit-tln-inf, .bit-tln-iin {
     --bit-tln-clr: #{$color-foreground-primary};
     --bit-tln-bg-clr: #{$color-state-info-bg};
     --bit-tln-brd-clr: #{$color-state-info-bg};
@@ -175,7 +181,7 @@
     --bit-tln-sec-brd-clr: #{$color-state-info};
 }
 
-.bit-tln-suc {
+.bit-tln-suc, .bit-tln-isu {
     --bit-tln-clr: #{$color-foreground-primary};
     --bit-tln-bg-clr: #{$color-state-success-bg};
     --bit-tln-brd-clr: #{$color-state-success-bg};
@@ -183,7 +189,7 @@
     --bit-tln-sec-brd-clr: #{$color-state-success};
 }
 
-.bit-tln-war {
+.bit-tln-war, .bit-tln-iwa {
     --bit-tln-clr: #{$color-foreground-primary};
     --bit-tln-bg-clr: #{$color-state-warning-bg};
     --bit-tln-brd-clr: #{$color-state-warning-bg};
@@ -191,7 +197,7 @@
     --bit-tln-sec-brd-clr: #{$color-state-warning};
 }
 
-.bit-tln-swa {
+.bit-tln-swa, .bit-tln-isw {
     --bit-tln-clr: #{$color-foreground-primary};
     --bit-tln-bg-clr: #{$color-state-severe-warning-bg};
     --bit-tln-brd-clr: #{$color-state-severe-warning-bg};
@@ -199,7 +205,7 @@
     --bit-tln-sec-brd-clr: #{$color-state-severe-warning};
 }
 
-.bit-tln-err {
+.bit-tln-err, .bit-tln-ier {
     --bit-tln-clr: #{$color-foreground-primary};
     --bit-tln-bg-clr: #{$color-state-error-bg};
     --bit-tln-brd-clr: #{$color-state-error-bg};
@@ -207,12 +213,17 @@
     --bit-tln-sec-brd-clr: #{$color-state-error};
 }
 
-.bit-tln-sm, bit-tln-ism {
-    --bit-tln-dot-size: #{spacing(2.25)};
+.bit-tln-sm, .bit-tln-ism {
+    --bit-tln-dot-size: #{spacing(2.5)};
     --bit-tln-font-size: #{spacing(1.5)};
 }
 
-.bit-tln-lg, bit-tln-ilg {
+.bit-tln-md, .bit-tln-imd {
+    --bit-tln-dot-size: #{spacing(3.75)};
+    --bit-tln-font-size: #{spacing(1.75)};
+}
+
+.bit-tln-lg, .bit-tln-ilg {
     --bit-tln-dot-size: #{spacing(5.25)};
     --bit-tln-font-size: #{spacing(2)};
 }

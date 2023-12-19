@@ -26,7 +26,7 @@
              disabled="@(isEnabled is false)"
              aria-disabled="@(isEnabled is false)"
              style="@GetStyle(item) @Styles?.Item"
-             class="bit-tln-itm@(GetItemClass(item, isEnabled)) @GetClass(item) @Classes?.Item">
+             class="bit-tln-itm@(GetItemClasses(item)) @Classes?.Item">
             <div style="@Styles?.PrimaryContent" class="bit-tln-pcn @Classes?.PrimaryContent">
                 @if (primaryContent is not null)
                 {

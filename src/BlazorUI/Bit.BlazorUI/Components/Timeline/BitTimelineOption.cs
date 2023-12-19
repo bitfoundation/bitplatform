@@ -14,6 +14,11 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// The color of the option.
+    /// </summary>
+    [Parameter] public BitTimelineColor? Color { get; set; }
+
+    /// <summary>
     /// The custom template for the item's dot.
     /// </summary>
     [Parameter] public RenderFragment<BitTimelineOption>? DotTemplate { get; set; }
@@ -44,27 +49,27 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     [Parameter] public EventCallback<BitTimelineOption> OnClick { get; set; }
 
     /// <summary>
-    /// The primary content of the item.
+    /// The primary content of the option.
     /// </summary>
     [Parameter] public RenderFragment<BitTimelineOption>? PrimaryContent { get; set; }
 
     /// <summary>
-    /// The primary text of the item.
+    /// The primary text of the option.
     /// </summary>
     [Parameter] public string? PrimaryText { get; set; }
 
     /// <summary>
-    /// Reverses the item direction.
+    /// Reverses the option direction.
     /// </summary>
     [Parameter] public bool Reversed { get; set; }
 
     /// <summary>
-    /// The secondary content of the item.
+    /// The secondary content of the option.
     /// </summary>
     [Parameter] public RenderFragment<BitTimelineOption>? SecondaryContent { get; set; }
 
     /// <summary>
-    /// The secondary text of the item.
+    /// The secondary text of the option.
     /// </summary>
     [Parameter] public string? SecondaryText { get; set; }
 
@@ -72,6 +77,11 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// The custom value for the style attribute of the option.
     /// </summary>
     [Parameter] public string? Style { get; set; }
+
+    /// <summary>
+    /// The size of the option.
+    /// </summary>
+    [Parameter] public BitTimelineSize? Size { get; set; }
 
     /// <summary>
     /// The custom template for the option.

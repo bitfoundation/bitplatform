@@ -8,6 +8,11 @@ public class BitTimelineNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitTimelineItem.Class));
 
     /// <summary>
+    /// The Color field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitTimelineColor?> Color { get; set; } = new(nameof(BitTimelineItem.Color));
+
+    /// <summary>
     /// DotTemplate field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, RenderFragment<TItem>?> DotTemplate { get; set; } = new(nameof(BitTimelineItem.DotTemplate));
@@ -66,6 +71,11 @@ public class BitTimelineNameSelectors<TItem>
     /// The CSS Style field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitTimelineItem.Style));
+
+    /// <summary>
+    /// The Size field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitTimelineSize?> Size { get; set; } = new(nameof(BitTimelineItem.Size));
 
     /// <summary>
     /// Template field name and selector of the custom input class.

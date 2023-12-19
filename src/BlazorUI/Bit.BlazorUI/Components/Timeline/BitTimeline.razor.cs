@@ -192,29 +192,40 @@ public partial class BitTimeline<TItem> where TItem : class
 
 
 
-    private string? GetItemClass(TItem item, bool isEnabled)
+    private string? GetItemClasses(TItem item)
     {
         StringBuilder className = new StringBuilder();
 
-        className.Append(Color switch
+        if (GetColor(item) is not null)
         {
-            BitTimelineColor.Info => " bit-tln-inf",
-            BitTimelineColor.Success => " bit-tln-suc",
-            BitTimelineColor.Warning => " bit-tln-war",
-            BitTimelineColor.SevereWarning => " bit-tln-swa",
-            BitTimelineColor.Error => " bit-tln-err",
-            _ => string.Empty
-        });
+            className.Append(GetColor(item) switch
+            {
+                BitTimelineColor.Info => " bit-tln-iin",
+                BitTimelineColor.Success => " bit-tln-isu",
+                BitTimelineColor.Warning => " bit-tln-iwa",
+                BitTimelineColor.SevereWarning => " bit-tln-isw",
+                BitTimelineColor.Error => " bit-tln-ier",
+                _ => string.Empty
+            });
+        }
 
-        className.Append(Size switch
+        if (GetSize(item) is not null)
         {
-            BitTimelineSize.Small => " bit-tln-ism",
-            BitTimelineSize.Medium => " bit-tln-imd",
-            BitTimelineSize.Large => " bit-tln-ilg",
-            _ => string.Empty
-        });
+            className.Append(GetSize(item) switch
+            {
+                BitTimelineSize.Small => " bit-tln-ism",
+                BitTimelineSize.Medium => " bit-tln-imd",
+                BitTimelineSize.Large => " bit-tln-ilg",
+                _ => string.Empty
+            });
+        }
 
-        if (isEnabled is false)
+        if (GetClass(item) is not null)
+        {
+            className.Append(' ').Append(GetClass(item));
+        }
+
+        if (GetIsEnabled(item) is false)
         {
             className.Append(" bit-tln-ids");
         }
@@ -518,5 +529,53 @@ public partial class BitTimeline<TItem> where TItem : class
         }
 
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.DotTemplate.Name);
+    }
+
+    private BitTimelineSize? GetSize(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.Size;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.Size;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Reversed.Selector is not null)
+        {
+            return NameSelectors.Size.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitTimelineSize?>(NameSelectors.Size.Name, null);
+    }
+
+    private BitTimelineColor? GetColor(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.Color;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.Color;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Reversed.Selector is not null)
+        {
+            return NameSelectors.Color.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitTimelineColor?>(NameSelectors.Color.Name, null);
     }
 }
