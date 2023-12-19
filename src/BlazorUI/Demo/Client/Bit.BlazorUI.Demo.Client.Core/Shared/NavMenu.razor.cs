@@ -65,6 +65,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "BasicList", Url = "/components/basiclist", AdditionalUrls = new string[] { "/components/basic-list" } },
                 new() { Text = "Carousel", Url = "/components/carousel" },
                 new() { Text = "Swiper", Url = "/components/swiper" },
+                new() { Text = "Timeline", Url = "/components/timeline" },
             }
         },
         new()
