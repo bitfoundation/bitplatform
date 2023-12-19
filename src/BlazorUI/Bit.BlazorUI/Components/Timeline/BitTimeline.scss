@@ -1,10 +1,10 @@
 ﻿@import "../../Styles/functions.scss";
 
 .bit-tln {
+    width: 100%;
     display: flex;
     position: relative;
     height: max-content;
-    min-width: max-content;
     flex-direction: column;
     font-size: var(--bit-tln-font-size);
     --bit-tln-dot-size: #{spacing(3.75)};
@@ -20,11 +20,16 @@
 
     &.bit-tln-rvs {
         flex-flow: row-reverse;
+
+        .bit-tln-scn {
+            flex-flow: row-reverse;
+        }
     }
 }
 
 .bit-tln-pcn,
 .bit-tln-scn {
+    width: 100%;
     display: flex;
     flex: 1 1 auto;
     overflow: hidden;
@@ -35,8 +40,17 @@
     min-height: calc(50% - var(--bit-tln-dot-size));
 }
 
+.bit-tln-pcn {
+    flex-flow: row-reverse;
+
+    .bit-tln-rvs & {
+        flex-flow: row;
+    }
+}
+
 .bit-tln-ttx {
     display: flex;
+    width: max-content;
     font-size: inherit;
     align-items: center;
     overflow-wrap: anywhere;
@@ -143,6 +157,7 @@
     .bit-tln-scn {
         overflow: unset;
         justify-content: center;
+        padding: 0 calc(var(--bit-tln-dot-size) / 2);
     }
 
     .bit-tln-dvd::before {

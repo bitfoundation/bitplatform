@@ -46,7 +46,7 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// <summary>
     /// The primary content of the item.
     /// </summary>
-    [Parameter] public RenderFragment<BitTimelineItem>? PrimaryContent { get; set; }
+    [Parameter] public RenderFragment<BitTimelineOption>? PrimaryContent { get; set; }
 
     /// <summary>
     /// The primary text of the item.
@@ -61,7 +61,7 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// <summary>
     /// The secondary content of the item.
     /// </summary>
-    [Parameter] public RenderFragment<BitTimelineItem>? SecondaryContent { get; set; }
+    [Parameter] public RenderFragment<BitTimelineOption>? SecondaryContent { get; set; }
 
     /// <summary>
     /// The secondary text of the item.
