@@ -547,7 +547,7 @@ public partial class BitTimeline<TItem> where TItem : class
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.Reversed.Selector is not null)
+        if (NameSelectors.Size.Selector is not null)
         {
             return NameSelectors.Size.Selector!(item);
         }
@@ -571,7 +571,7 @@ public partial class BitTimeline<TItem> where TItem : class
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.Reversed.Selector is not null)
+        if (NameSelectors.Color.Selector is not null)
         {
             return NameSelectors.Color.Selector!(item);
         }
