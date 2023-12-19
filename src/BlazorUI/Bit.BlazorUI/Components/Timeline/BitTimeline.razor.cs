@@ -23,7 +23,7 @@ public partial class BitTimeline<TItem> where TItem : class
 
 
     /// <summary>
-    /// The appearance of timeline, Possible values: Primary | Standard
+    /// The appearance of component, Possible values: Primary | Standard
     /// </summary>
     [Parameter]
     public BitAppearance Appearance
@@ -65,11 +65,6 @@ public partial class BitTimeline<TItem> where TItem : class
     }
 
     /// <summary>
-    ///  List of Item, each can be with different contents in the timeline.
-    /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
-
-    /// <summary>
     /// Defines whether to render timeline children horizontaly.
     /// </summary>
     [Parameter]
@@ -84,6 +79,11 @@ public partial class BitTimeline<TItem> where TItem : class
             StyleBuilder.Reset();
         }
     }
+
+    /// <summary>
+    ///  List of Item, each can be with different contents in the timeline.
+    /// </summary>
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -134,6 +134,7 @@ public partial class BitTimeline<TItem> where TItem : class
     internal void UnregisterOption(BitTimelineOption option)
     {
         _items.Remove((option as TItem)!);
+
         StateHasChanged();
     }
 
@@ -254,7 +255,6 @@ public partial class BitTimeline<TItem> where TItem : class
             }
         }
     }
-
 
     private string? GetClass(TItem? item)
     {
