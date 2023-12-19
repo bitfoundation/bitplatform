@@ -2,39 +2,24 @@
 @import '../../../../Styles/abstracts/_colors.scss';
 @import '../../../../Styles/abstracts/_media-queries.scss';
 
-.example-desc {
-    margin-bottom: rem2(20px) !important;
-}
-
-.example-box {
-    display: flex;
-    gap: rem2(10px);
-    width: rem2(300px);
-    flex-direction: column;
-
-    @include sm {
-        width: rem2(200px);
-    }
-}
-
-.visibility-items {
-    align-items: center;
-    white-space: nowrap;
-    display: inline-flex;
-}
-
-.validation-summary {
-    border-left: rem2(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
-    overflow: hidden;
-    margin-bottom: rem2(10px);
-
-    .validation-errors {
-        margin: rem2(5px);
-    }
-}
-
 ::deep {
+    .example-content {
+        display: flex;
+        gap: rem2(20px);
+        flex-flow: row wrap;
+        align-items: center;
+        max-width: rem2(304px);
+
+        &.column {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        & > div {
+            width: 100%;
+        }
+    }
+
     .validation-message {
         color: $Red20;
         font-size: rem2(12px);
