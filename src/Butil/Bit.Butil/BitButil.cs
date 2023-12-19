@@ -16,6 +16,7 @@ public static class BitButil
         services.AddScoped<LocalStorage>();
         services.AddScoped<SessionStorage>();
         services.AddScoped<Location>();
+        services.AddScoped<Screen>();
 
         return services;
     }
