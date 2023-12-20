@@ -72,7 +72,7 @@
                 <ValidationMessage For="@(() => signUpModel.Password)" />
             </div>
 
-            <div class="form-input-container form-input-container--no-margin">
+            <div class="form-input-container">
                 <BitCheckbox Class="form-checkbox" @bind-Value="signUpModel.TermsAccepted">
                     <LabelTemplate>
                         <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="/terms">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
