@@ -2,7 +2,6 @@
 
 namespace Bit.Butil;
 
-
 // see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
 /// <summary>
 /// Contains properties of the event describing user interaction with the keyboard.
