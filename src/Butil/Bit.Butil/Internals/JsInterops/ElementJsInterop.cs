@@ -141,24 +141,24 @@ internal static class ElementJsInterop
     internal static async Task<bool> ElementIsContentEditable(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<bool>("BitButil.element.isContentEditable", element);
 
-    internal static async Task<Dir> ElementGetDir(this IJSRuntime js, ElementReference element)
+    internal static async Task<ElementDir> ElementGetDir(this IJSRuntime js, ElementReference element)
     {
         var value = await js.InvokeAsync<string>("BitButil.element.getDir", element);
         return value switch
         {
-            "ltr" => Dir.Ltr,
-            "rtl" => Dir.Rtl,
-            "auto" => Dir.Auto,
-            _ => Dir.NotSet,
+            "ltr" => ElementDir.Ltr,
+            "rtl" => ElementDir.Rtl,
+            "auto" => ElementDir.Auto,
+            _ => ElementDir.NotSet,
         };
     }
-    internal static async Task ElementSetDir(this IJSRuntime js, ElementReference element, Dir value)
+    internal static async Task ElementSetDir(this IJSRuntime js, ElementReference element, ElementDir value)
     {
         var v = value switch
         {
-            Dir.Ltr => "ltr",
-            Dir.Rtl => "rtl",
-            Dir.Auto => "auto",
+            ElementDir.Ltr => "ltr",
+            ElementDir.Rtl => "rtl",
+            ElementDir.Auto => "auto",
             _ => "",
         };
         await js.InvokeVoidAsync("BitButil.element.setDir", element, v);

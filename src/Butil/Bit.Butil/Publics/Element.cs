@@ -293,12 +293,12 @@ public class Element(IJSRuntime js)
     /// <summary>
     /// The HTMLElement.dir property gets or sets the text writing directionality of the content of the current element.
     /// </summary>
-    public async Task<Dir> GetDir(ElementReference element)
+    public async Task<ElementDir> GetDir(ElementReference element)
         => await js.ElementGetDir(element);
     /// <summary>
     /// The HTMLElement.dir property gets or sets the text writing directionality of the content of the current element.
     /// </summary>
-    public async Task SetDir(ElementReference element, Dir value)
+    public async Task SetDir(ElementReference element, ElementDir value)
         => await js.ElementSetDir(element, value);
 
     /// <summary>

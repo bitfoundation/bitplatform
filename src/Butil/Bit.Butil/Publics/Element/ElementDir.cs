@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-public enum Dir
+public enum ElementDir
 {
     /// <summary>
     /// The dir value is not set.
