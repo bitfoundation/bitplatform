@@ -1,0 +1,80 @@
+﻿@page "/cookie"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Cookie cookie
+
+<PageTitle>Cookie Samples</PageTitle>
+
+<h1>Cookie</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Cookie cookie
+
+@@code {
+    ...
+    await Cookie.Remove("cookie-name");
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and click on buttons</h3>
+
+<hr />
+<br />
+
+<button @onclick=GetAllCookies>All cookies</button>
+
+<br />
+<br />
+
+<input @bind="getCookieName" />
+<button @onclick=GetCookie>GetCookie</button>
+
+<br />
+<br />
+<br />
+
+<span>Name:</span>
+<input @bind="setCookieName" />
+<br/>
+<span>Value:</span>
+<input @bind="setCookieValue" />
+<br />
+<button @onclick=SetCookie>SetCookie</button>
+
+<br />
+<br />
+<br />
+
+<input @bind="removeCookieName" />
+<button @onclick=RemoveCookie>RemoveCookie</button>
+
+@code {
+    private string getCookieName = "";
+    private string setCookieName = "";
+    private string setCookieValue = "";
+    private string removeCookieName = "";
+
+    private async Task GetAllCookies()
+    {
+        await console.Log("All cookies =", string.Join<ButilCookie>("; ", await cookie.GetAll()));
+    }
+
+    private async Task GetCookie()
+    {
+        await console.Log("GetCookie =", await cookie.Get(getCookieName));
+    }
+
+    private async Task SetCookie()
+    {
+        await cookie.Set(new ButilCookie { Name = setCookieName, Value = setCookieValue });
+        await console.Log("SetCookie =", await cookie.Get(setCookieName));
+    }
+
+    private async Task RemoveCookie()
+    {
+        await cookie.Remove(removeCookieName);
+    }
+}
