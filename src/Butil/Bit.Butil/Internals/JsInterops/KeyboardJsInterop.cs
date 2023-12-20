@@ -17,8 +17,7 @@ internal static class KeyboardJsInterop
         bool preventDefault = false,
         bool stopPropagation = false,
         bool repeat = false)
-    {
-        await js.InvokeVoidAsync("BitButil.keyboard.add",
+        => await js.InvokeVoidAsync("BitButil.keyboard.add",
             methodName,
             listenerId,
             code,
@@ -29,10 +28,7 @@ internal static class KeyboardJsInterop
             preventDefault,
             stopPropagation,
             repeat);
-    }
 
     internal static async Task KeyboardRemove(this IJSRuntime js, Guid[] ids)
-    {
-        await js.InvokeVoidAsync("BitButil.keyboard.remove", ids);
-    }
+        => await js.InvokeVoidAsync("BitButil.keyboard.remove", ids);
 }

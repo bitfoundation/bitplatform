@@ -12,7 +12,7 @@ internal class DomEventArgs
             ButilEvents.KeyDown => typeof(ButilKeyboardEventArgs),
             ButilEvents.KeyUp => typeof(ButilKeyboardEventArgs),
             ButilEvents.KeyPress => typeof(ButilKeyboardEventArgs),
-            _ => throw new NotSupportedException(domEvent),
+            _ => typeof(object),
         };
     }
 }

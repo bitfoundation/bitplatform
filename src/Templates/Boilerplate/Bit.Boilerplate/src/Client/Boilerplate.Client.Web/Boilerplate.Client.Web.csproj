@@ -24,17 +24,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Watch Include="..\Boilerplate.Client.Core\**\*.razor" />
-        <Watch Include="..\Boilerplate.Client.Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="8.4.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.4.0">
+        <PackageReference Include="Bit.Bswup" Version="8.5.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.4.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

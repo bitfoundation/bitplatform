@@ -40,10 +40,10 @@ jobs:
         cd ../../../
         dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
 
-    - name: Release build empty sample + no database
+    - name: Release build empty sample + offline db + Win exe
       run: |
-        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure
-        dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false
+        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --winExe
+        dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
 
     - name: Release build admin panel sample + SqlServer database
       run: |

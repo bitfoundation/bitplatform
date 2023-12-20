@@ -11,19 +11,16 @@
     <BitTypography Variant="BitTypographyVariant.H3" Gutter>Create Project</BitTypography>
     <br />
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-        Install the necessary packages to start building with the bit project templates.
+        Let's make our next web project a success with Bit.Boilerplate.
     </BitTypography>
     <br />
 
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>CLI</BitTypography>
         <div class="section-card-txt">
-            1. Install the project template from the NuGet package manager with the following command:
-        </div>
-        <pre class="code-box">
-dotnet new install Bit.Boilerplate</pre>
-        <div class="section-card-txt">
-            2. Create a new project using dotnet new command or Visual Studio create new project wizard:
+            Create a new project using dotnet new command:
+<pre class="code-box">
+dotnet new bit-bp</pre>
         </div>
         <div class="section-card-txt">
             <b>Note</b>: bit project templates accept the following parameters:
@@ -32,12 +29,13 @@ dotnet new install Bit.Boilerplate</pre>
                 <li>--database default to <i>SqlServer</i> among following options: <i>SqlServer</i> <i>Sqlite</i>, <i>Other</i></li>
                 <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>Other</i></li>
                 <li>--sample default to <i>None</i> among the following options: <i>Admin</i>, <i>Todo</i>, <i>None</i></li>
-                <li>--offlineDb</li>
+                <li>--offlineDb (Providing --offlineDb adds sqlite database support to the client mobile, web and desktop apps)</li>
+                <li>--winExe (Providing --winExe adds support for exe output for windows 7+)</li>
             </ul>
         </div>
         Examples:
         <pre class="code-box">
-1- Create a cross-platform AdminPanel app for mobile, desktop and web with Azure DevOps pipelines and a SQLite database.
+1- Create a cross-platform AdminPanel app for mobile, desktop and web with Azure DevOps pipelines and a SqlServer database.
 dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin
 
 2- Create a cross-platform Todo app for mobile, desktop and web with GitHub Actions and a SQLite database.

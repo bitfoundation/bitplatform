@@ -16,7 +16,7 @@ public static class DomKeyboardEventListenersManager
         var id = Guid.NewGuid();
 
         Listeners.TryAdd(id, new Listener { Action = action, Element = element, Options = options });
-        
+
         return id;
     }
 

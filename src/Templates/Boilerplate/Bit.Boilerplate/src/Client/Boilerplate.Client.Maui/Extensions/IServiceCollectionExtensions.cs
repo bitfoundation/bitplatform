@@ -11,6 +11,7 @@ public static class IServiceCollectionExtensions
         // Services registered in this class can be injected in Android, iOS, Windows, and macOS.
 
         services.TryAddTransient<MainPage>();
+        services.TryAddTransient<IStorageService, MauiStorageService>();
         services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
 

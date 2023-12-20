@@ -8,6 +8,11 @@ public class BitSearchBoxClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the main container of the BitSearchBox.
+    /// </summary>
+    public string? Container { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the search box's clear button.
     /// </summary>
     public string? ClearButton { get; set; }
@@ -41,4 +46,34 @@ public class BitSearchBoxClassStyles
     /// Custom CSS classes/styles for the search box's search icon container.
     /// </summary>
     public string? SearchIconContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the overlay of the BitSearchBox.
+    /// </summary>
+    public string? Overlay { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the callout of the BitSearchBox.
+    /// </summary>
+    public string? Callout { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the scroll container of the BitSearchBox.
+    /// </summary>
+    public string? ScrollContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the suggest item wrapper of the BitSearchBox.
+    /// </summary>
+    public string? SuggestItemWrapper { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the suggest item button of the BitSearchBox.
+    /// </summary>
+    public string? SuggestItemButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the suggest item text of the BitSearchBox.
+    /// </summary>
+    public string? SuggestItemText { get; set; }
 }

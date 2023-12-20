@@ -1,4 +1,5 @@
 ﻿@page "/document"
+@implements IDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.Document document
 
@@ -13,18 +14,33 @@
     ...
     await document.AddEventListener(ButilEvents.Click, args => { ... });
     ...
+    await document.SetTitle("New shinny title");
+    ...
 }
 </pre>
 
-<h3>Open the DevTools and start pressing keys on your keyboard</h3>
+<br />
+<hr />
+
+<h3>Open the DevTools and start clicking</h3>
+
+<hr />
+<br />
 
 <button @onclick=AddEventListener>AddEventListener</button>
 &nbsp;
 <button @onclick=RemoveEventListener>RemoveEventListener</button>
-
-<hr />
-
+<br />
 <div>Is Registered: @isRegistered</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=GetTitle>Document Title</button>
+<br />
+<br />
+<button @onclick=GetUrl>Document URL</button>
 
 @code {
     private bool isRegistered = false;
@@ -33,7 +49,7 @@
 
     protected override void OnInitialized()
     {
-        _handler = (ButilMouseEventArgs arg) => _ = console.Log("Click from C#:", arg.ClientX, arg.ClientY);
+        _handler = (ButilMouseEventArgs arg) => _ = console.Log("Click from C# = X:", arg.ClientX, "Y:", arg.ClientY);
 
         base.OnInitialized();
     }
@@ -48,5 +64,23 @@
     {
         _ = document.RemoveEventListener(ButilEvents.Click, _handler);
         isRegistered = false;
+    }
+
+    private async Task GetTitle()
+    {
+        await console.Log("document.title =", await document.GetTitle());
+    }
+
+    private async Task GetUrl()
+    {
+        await console.Log("document.URL =", await document.GetUrl());
+    }
+
+    public void Dispose()
+    {
+        if (isRegistered)
+        {
+            _ = document.RemoveEventListener(ButilEvents.Click, _handler);
+        }
     }
 }

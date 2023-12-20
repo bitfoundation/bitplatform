@@ -103,6 +103,12 @@
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false"
+        },
+        "winExe": {
+            "displayName": "Windows exe",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
         }
     },
     "postActions": [],
@@ -178,6 +184,12 @@
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Offline/**"
+                    ]
+                },
+                {
+                    "condition": "(winExe != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.WinExe/**"
                     ]
                 }
             ]

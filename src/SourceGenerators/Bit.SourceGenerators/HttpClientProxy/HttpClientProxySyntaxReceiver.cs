@@ -65,7 +65,7 @@ public class HttpClientProxySyntaxReceiver : ISyntaxContextReceiver
 
                     // if there is a parameter that is not a cancellation token and is not in the route template, then it is the body parameter
                     action.BodyParameter = action.Parameters.FirstOrDefault(p => p.Type.ToDisplayString() is not "System.Threading.CancellationToken" && url.Contains($"{{{p.Name}}}") is false);
-                    action.HasCancellationToken = action.Parameters.Any(p => p.Type.ToDisplayString() is "System.Threading.CancellationToken");
+                    action.CancellationTokenParameterName = action.Parameters.FirstOrDefault(p => p.Type.ToDisplayString() == "System.Threading.CancellationToken")?.Name;
                     action.Url = url;
                 }
 

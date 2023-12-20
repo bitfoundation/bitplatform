@@ -4,54 +4,18 @@ var BitButil = BitButil || {};
     const _handlers = {};
 
     butil.history = {
-        length,
-        scrollRestoration,
-        setScrollRestoration,
-        state,
-        back,
-        forward,
-        go,
-        pushState,
-        replaceState,
+        length() { return window.history.length },
+        scrollRestoration() { return window.history.scrollRestoration },
+        setScrollRestoration(value) { window.history.scrollRestoration = value },
+        state() { return window.history.state },
+        back() { window.history.back() },
+        forward() { window.history.forward() },
+        go(delta) { window.history.go(delta) },
+        pushState(state, unused, url) { window.history.pushState(state, unused, url) },
+        replaceState(state, unused, url) { window.history.replaceState(state, unused, url) },
         addPopState,
         removePopState
     };
-
-    function length() {
-        return window.history.length;
-    }
-
-    function scrollRestoration() {
-        return window.history.scrollRestoration;
-    }
-
-    function setScrollRestoration(value) {
-        window.history.scrollRestoration = value;
-    }
-
-    function state() {
-        return window.history.state;
-    }
-
-    function back() {
-        window.history.back();
-    }
-
-    function forward() {
-        window.history.forward();
-    }
-
-    function go(delta) {
-        window.history.go(delta);
-    }
-
-    function pushState(state, unused, url) {
-        window.history.pushState(state, unused, url);
-    }
-
-    function replaceState(state, unused, url) {
-        window.history.replaceState(state, unused, url);
-    }
 
     function addPopState(methodName, listenerId) {
         const handler = e => {

@@ -96,7 +96,7 @@
                                                          OnChange="() => ToggleIsDone(todo)" />
 
                                             <div Class="todo-item-date">
-                                                @todo.Date.ToString("yyyy MMMM dd, HH:mm:ss")
+                                                @todo.Date.ToLocalTime().ToString("yyyy MMMM dd, HH:mm:ss")
                                             </div>
                                         </div>
 

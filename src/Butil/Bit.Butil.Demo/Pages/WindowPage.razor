@@ -1,4 +1,5 @@
 ﻿@page "/window"
+@implements IDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.Window window
 
@@ -18,10 +19,12 @@
 
 <br />
 <hr />
+
+<h4>Open the DevTools and start pressing keys or clicking on buttons</h4>
+
+<hr />
 <br />
 
-<h4>Open the DevTools and start pressing keys on your keyboard</h4>
-<br />
 <button @onclick=AddEventListener>AddEventListener</button>&nbsp;<button @onclick=RemoveEventListener>RemoveEventListener</button>
 <br />
 <br />
@@ -35,6 +38,12 @@
 <br />
 <br />
 <div>Is BeforeUnload Registered? @isBeforeUnloadRegistered</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=GetInnerHeight>GetInnerHeight</button>&nbsp;<button @onclick=GetInnerWidth>GetInnerWidth</button>
 
 @code {
     private bool isKeyDownRegistered;
@@ -71,5 +80,23 @@
     {
         _ = window.RemoveBeforeUnload();
         isBeforeUnloadRegistered = false;
+    }
+
+    private async Task GetInnerHeight()
+    {
+        await console.Log("Window InnerHeight =", await window.GetInnerHeight());
+    }
+
+    private async Task GetInnerWidth()
+    {
+        await console.Log("Window InnerWidth =", await window.GetInnerWidth());
+    }
+
+    public void Dispose()
+    {
+        if (isKeyDownRegistered)
+        {
+            _ = window.RemoveEventListener(ButilEvents.KeyDown, _handler);
+        }
     }
 }
