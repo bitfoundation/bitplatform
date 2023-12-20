@@ -15,8 +15,8 @@ internal static class ElementJsInterop
     internal static async Task<string[]> ElementGetAttributeNames(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<string[]>("BitButil.element.getAttribute", element);
 
-    internal static async Task<DomRect> ElementGetBoundingClientRect(this IJSRuntime js, ElementReference element)
-        => await js.InvokeAsync<DomRect>("BitButil.element.getBoundingClientRect", element);
+    internal static async Task<Rect> ElementGetBoundingClientRect(this IJSRuntime js, ElementReference element)
+        => await js.InvokeAsync<Rect>("BitButil.element.getBoundingClientRect", element);
 
     internal static async Task<bool> ElementHasAttribute(this IJSRuntime js, ElementReference element, string name)
         => await js.InvokeAsync<bool>("BitButil.element.hasAttribute", element, name);

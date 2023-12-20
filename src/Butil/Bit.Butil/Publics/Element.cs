@@ -36,7 +36,7 @@ public class Element(IJSRuntime js)
     /// <summary>
     /// Returns the size of an element and its position relative to the viewport.
     /// </summary>
-    public async Task<DomRect> GetBoundingClientRect(ElementReference element)
+    public async Task<Rect> GetBoundingClientRect(ElementReference element)
         => await js.ElementGetBoundingClientRect(element);
 
     /// <summary>

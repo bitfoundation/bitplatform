@@ -1,8 +1,6 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
-    const _handlers = {};
-
     butil.document = {
         characterSet() { return document.characterSet },
         compatMode() { return document.compatMode },
@@ -17,7 +15,6 @@ var BitButil = BitButil || {};
         URL() { return document.URL },
         setTitle(value: string) { document.title = value },
         exitFullscreen() { return document.exitFullscreen() },
-        exitPointerLock() { return document.exitPointerLock() },
-
+        exitPointerLock() { return document.exitPointerLock() }
     };
 }(BitButil));
