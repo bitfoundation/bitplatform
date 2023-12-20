@@ -2,11 +2,15 @@
     <ExamplePreview>
         <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
         <br /><br />
+        <div>Vertical (default)</div>
+        <br />
         <div class="example-content">
             <BitTimeline Items="basicCustoms1"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   SecondaryText = { Selector = i => i.SecondText } })" />
         </div>
+        <br /><br />
+        <div>Horizontal</div>
         <br />
         <div class="example-content">
             <BitTimeline Horizontal 
@@ -28,7 +32,7 @@
                          Items="disabledCustoms1"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText } })" />
         </div>
-        <br />
+        <br /><br />
         <div>Standard</div>
         <br />
         <div class="example-content">
@@ -37,7 +41,7 @@
                          Appearance="BitAppearance.Standard" 
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText } })" />
         </div>
-        <br />
+        <br /><br />
         <div>Text</div>
         <br />
         <div class="example-content">
@@ -61,7 +65,7 @@
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
         </div>
-        <br />
+        <br /><br />
         <div>Standard</div>
         <br />
         <div class="example-content">
@@ -71,7 +75,7 @@
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
         </div>
-        <br />
+        <br /><br />
         <div>Text</div>
         <br />
         <div class="example-content">
@@ -88,11 +92,15 @@
     <ExamplePreview>
         <div>Each item in the Timeline can be revesed and be on the opposite side.</div>
         <br /><br />
+        <div>Vertical (default)</div>
+        <br />
         <div class="example-content">
             <BitTimeline Items="reversedCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   Reversed = { Selector = i => i.Opposite } })" />
         </div>
+        <br /><br />
+        <div>Horizontal</div>
         <br />
         <div class="example-content">
             <BitTimeline Horizontal
@@ -107,6 +115,8 @@
     <ExamplePreview>
         <div>Here are some examples of customizing the Timeline content.</div>
         <br /><br />
+        <div>Vertical (default)</div>
+        <br />
         <div class="example-content">
             <BitTimeline Items="templateItems"
                          NameSelectors="@(new() { PrimaryContent = { Selector = i => i.FirstContent },
@@ -114,6 +124,8 @@
                                                   SecondaryContent = { Selector = i => i.SecondContent },
                                                   Reversed = { Selector = i => i.Opposite } })" />
         </div>
+        <br /><br />
+        <div>Horizontal</div>
         <br />
         <div class="example-content">
             <BitTimeline Horizontal
