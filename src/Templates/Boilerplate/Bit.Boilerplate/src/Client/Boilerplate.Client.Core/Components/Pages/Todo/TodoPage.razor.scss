@@ -109,7 +109,7 @@
     &.edit-mode {
         gap: rem2(16px);
 
-        @media all and (max-width: #{rem2(450px)}) {
+        @media all and (max-width: #{rem2(430px)}) {
             flex-flow: column;
 
             ::deep .todo-input {

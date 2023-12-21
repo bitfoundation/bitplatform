@@ -65,12 +65,11 @@
 
 ::deep {
     .culture-drp {
-        left: rem2(5px);
-        width: rem2(105px);
+        left: rem2(8px);
+        width: rem2(104px);
         position: absolute;
-        background-color: white;
 
-        @include sm {
+        @media all and (max-width: #{rem2(380px)}) {
             position: static;
         }
     }
