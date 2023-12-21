@@ -28,8 +28,13 @@ public partial class MainWindow
             services.AddBlazorWebViewDeveloperTools();
         }
         services.AddWindowsServices();
-        services.AddClientSharedServices();
-        Resources.Add("services", services.BuildServiceProvider());
         InitializeComponent();
+        BlazorWebView.Services = services.BuildServiceProvider();
+        BlazorWebView.Loaded += async delegate
+        {
+            await BlazorWebView.WebView.EnsureCoreWebView2Async();
+            while ((await BlazorWebView.WebView.ExecuteScriptAsync("Blazor.start()")) is "null")
+                await Task.Yield();
+        };
     }
 }
