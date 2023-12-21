@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components;
+﻿using System.Text.Json;
+
+namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : ComponentBase, IDisposable
 {
@@ -7,6 +9,8 @@ public partial class AppComponentBase : ComponentBase, IDisposable
     [AutoInject] protected IStorageService StorageService = default!;
 
     [AutoInject] protected HttpClient HttpClient = default!;
+
+    [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
 
     /// <summary>
     /// <inheritdoc cref="IPrerenderStateService"/>

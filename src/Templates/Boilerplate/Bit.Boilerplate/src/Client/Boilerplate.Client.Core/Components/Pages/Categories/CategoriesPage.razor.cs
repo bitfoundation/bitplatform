@@ -62,7 +62,7 @@ public partial class CategoriesPage
 
                 var data = await categoryController.GetCategories(CurrentCancellationToken);
 
-                return BitDataGridItemsProviderResult.From(await data.Items!.ToListAsync(CurrentCancellationToken)!, (int)data.TotalCount);
+                return BitDataGridItemsProviderResult.From(data.Items!, (int)data.TotalCount);
             }
             catch (Exception exp)
             {
