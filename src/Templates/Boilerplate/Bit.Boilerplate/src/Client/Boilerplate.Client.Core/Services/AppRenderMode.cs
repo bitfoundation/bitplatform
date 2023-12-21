@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿//-:cdn:noEmit
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Core.Services;
 
