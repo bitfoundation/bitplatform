@@ -36,7 +36,7 @@ public class Element(IJSRuntime js)
     /// <summary>
     /// Returns the size of an element and its position relative to the viewport.
     /// </summary>
-    public async Task<DomRect> GetBoundingClientRect(ElementReference element)
+    public async Task<Rect> GetBoundingClientRect(ElementReference element)
         => await js.ElementGetBoundingClientRect(element);
 
     /// <summary>
@@ -293,12 +293,12 @@ public class Element(IJSRuntime js)
     /// <summary>
     /// The HTMLElement.dir property gets or sets the text writing directionality of the content of the current element.
     /// </summary>
-    public async Task<Dir> GetDir(ElementReference element)
+    public async Task<ElementDir> GetDir(ElementReference element)
         => await js.ElementGetDir(element);
     /// <summary>
     /// The HTMLElement.dir property gets or sets the text writing directionality of the content of the current element.
     /// </summary>
-    public async Task SetDir(ElementReference element, Dir value)
+    public async Task SetDir(ElementReference element, ElementDir value)
         => await js.ElementSetDir(element, value);
 
     /// <summary>

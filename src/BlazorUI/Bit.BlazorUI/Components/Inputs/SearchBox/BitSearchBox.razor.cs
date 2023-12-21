@@ -4,13 +4,20 @@ namespace Bit.BlazorUI;
 
 public partial class BitSearchBox
 {
+    private bool isOpen;
     private bool disableAnimation;
     private bool isUnderlined;
     private bool inputHasFocus;
     private bool fixedIcon;
 
     private string _inputId = string.Empty;
+    private string _calloutId = string.Empty;
+    private string _scrollContainerId = string.Empty;
     private ElementReference _inputRef = default!;
+    private CancellationTokenSource _cancellationTokenSource = new();
+    private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
+    private List<string> _searchItems = [];
+    private int _selectedIndex = -1;
 
     private bool InputHasFocus
     {
@@ -125,6 +132,41 @@ public partial class BitSearchBox
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
 
+    /// <summary>
+    /// The list of suggest items to display in the callout.
+    /// </summary>
+    [Parameter] public IEnumerable<string>? SuggestItems { get; set; }
+
+    /// <summary>
+    /// The function providing suggest items.
+    /// </summary>
+    [Parameter] public Func<string?, int, Task<ICollection<string>>>? SuggestItemProvider { get; set; }
+
+    /// <summary>
+    /// The custom template for rendering the suggest items of the BitSearchBox.
+    /// </summary>
+    [Parameter] public RenderFragment<string>? SuggestItemTemplate { get; set; }
+
+    /// <summary>
+    /// Custom search function to be used in place of the default search algorithm.
+    /// </summary>
+    [Parameter] public Func<string?, string?, bool>? SuggestFilterFunction { get; set; }
+
+    /// <summary>
+    /// The delay, in milliseconds, applied to the search functionality.
+    /// </summary>
+    [Parameter] public int SuggestThrottleTime { get; set; } = 400;
+
+    /// <summary>
+    /// The maximum number of items or suggestions that will be displayed.
+    /// </summary>
+    [Parameter] public int MaxSuggestCount { get; set; } = 5;
+
+    /// <summary>
+    /// The minimum character requirement for doing a search in suggest items.
+    /// </summary>
+    [Parameter] public int MinSuggestTriggerChars { get; set; } = 3;
+
 
     protected override string RootElementClass => "bit-srb";
 
@@ -148,6 +190,8 @@ public partial class BitSearchBox
 
     protected override Task OnInitializedAsync()
     {
+        _calloutId = $"BitSearchBox-{UniqueId}-callout";
+        _scrollContainerId = $"BitSearchBox-{UniqueId}-scroll-container";
         _inputId = $"BitSearchBox-{UniqueId}-input";
 
         if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
@@ -156,6 +200,8 @@ public partial class BitSearchBox
         }
 
         OnValueChanged += HandleOnValueChanged;
+
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         return base.OnInitializedAsync();
     }
@@ -180,7 +226,9 @@ public partial class BitSearchBox
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        CurrentValueAsString = e.Value?.ToString();
+        CurrentValue = e.Value?.ToString();
+
+        ThrottleSearch();
 
         await OnChange.InvokeAsync(CurrentValue);
     }
@@ -188,19 +236,193 @@ public partial class BitSearchBox
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
     {
         if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         if (eventArgs.Key == "Escape")
         {
-            CurrentValueAsString = string.Empty;
+            CurrentValue = string.Empty;
             //await _inputRef.FocusAsync(); // is it required when the keydown event is captured on the input itself?
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
+            await CloseCallout();
         }
         else if (eventArgs.Key == "Enter")
         {
-            CurrentValueAsString = await _js.GetProperty(_inputRef, "value");
+            CurrentValue = await _js.GetProperty(_inputRef, "value");
             await OnSearch.InvokeAsync(CurrentValue);
+            await CloseCallout();
         }
+        else if (eventArgs.Key == "ArrowUp")
+        {
+            await ChangeSelectedItem(true);
+        }
+        else if (eventArgs.Key == "ArrowDown")
+        {
+            await ChangeSelectedItem(false);
+        }
+    }
+
+    private async Task ToggleCallout()
+    {
+        if (IsEnabled is false) return;
+
+        await _js.ToggleCallout(_dotnetObj,
+                                _Id,
+                                _calloutId,
+                                isOpen,
+                                BitResponsiveMode.None,
+                                BitDropDirection.TopAndBottom,
+                                false,
+                                _scrollContainerId,
+                                0,
+                                string.Empty,
+                                string.Empty,
+                                true,
+                                RootElementClass);
+    }
+
+    private async Task CloseCallout()
+    {
+        if (IsEnabled is false) return;
+
+        isOpen = false;
+        await ToggleCallout();
+
+        StateHasChanged();
+    }
+
+    private async Task SearchItems()
+    {
+        if (SuggestItemProvider is not null)
+        {
+            _searchItems = [.. (await SuggestItemProvider.Invoke(CurrentValue, MaxSuggestCount)).Distinct().Take(MaxSuggestCount)];
+        }
+        else
+        {
+            _searchItems = CurrentValue.HasNoValue() || CurrentValue!.Length < MinSuggestTriggerChars
+                ? []
+                : SuggestItems?.Where(i => SuggestFilterFunction is not null ?
+                                    SuggestFilterFunction.Invoke(CurrentValue, i) :
+                                    (i?.Contains(CurrentValue!, StringComparison.OrdinalIgnoreCase) ?? false))
+                        .Distinct().Take(MaxSuggestCount).ToList() ?? [];
+
+        }
+
+        await ChangeStateCallout();
+    }
+
+    private void ThrottleSearch()
+    {
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = new();
+
+        Task.Run(async () =>
+        {
+            await Task.Delay(SuggestThrottleTime, _cancellationTokenSource.Token);
+            await InvokeAsync(async () =>
+            {
+                if (_cancellationTokenSource.IsCancellationRequested) return;
+
+                await SearchItems();
+                StateHasChanged();
+            });
+        }, _cancellationTokenSource.Token);
+    }
+
+    private async Task ChangeStateCallout()
+    {
+        if (IsEnabled is false) return;
+
+        if (_searchItems.Any())
+        {
+            _selectedIndex = _searchItems.FindIndex(i => i == CurrentValue);
+
+            if (isOpen is false)
+            {
+                isOpen = true;
+                await ToggleCallout();
+            }
+        }
+        else
+        {
+            await CloseCallout();
+        }
+    }
+
+    private async Task ChangeSelectedItem(bool isArrowUp)
+    {
+        if (isOpen is false) return;
+        if (_searchItems.Any() is false) return;
+
+        var count = _searchItems.Count;
+
+        if (_selectedIndex < 0 || count == 1)
+        {
+            _selectedIndex = isArrowUp ? count - 1 : 0;
+        }
+        else if (_selectedIndex == count - 1 && isArrowUp is false)
+        {
+            _selectedIndex = 0;
+        }
+        else if (_selectedIndex == 0 && isArrowUp)
+        {
+            _selectedIndex = count - 1;
+        }
+        else if (isArrowUp)
+        {
+            _selectedIndex--;
+        }
+        else
+        {
+            _selectedIndex++;
+        }
+
+        CurrentValue = _searchItems[_selectedIndex];
+        await OnChange.InvokeAsync(CurrentValue);
+        await _js.InvokeVoidAsync("BitSearchBox.moveCursorToEnd", _inputRef);
+    }
+
+    private async Task HandleOnItemClick(string item)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        CurrentValue = item;
+
+        await CloseCallout();
+
+        await OnChange.InvokeAsync(CurrentValueAsString);
+
+        await OnSearch.InvokeAsync(CurrentValueAsString);
+
+        StateHasChanged();
+    }
+
+    private int? GetTotalItems()
+    {
+        if (_searchItems is null) return null;
+
+        return _searchItems.Count;
+    }
+
+    private int? GetItemPosInSet(string item)
+    {
+        return _searchItems?.IndexOf(item) + 1;
+    }
+
+    private bool GetIsSelected(string item)
+    {
+        return _selectedIndex > -1 && _searchItems.IndexOf(item) == _selectedIndex;
+    }
+
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        if (IsEnabled is false) return;
+
+        isOpen = false;
+        StateHasChanged();
     }
 
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -215,6 +437,8 @@ public partial class BitSearchBox
         if (disposing)
         {
             OnValueChanged -= HandleOnValueChanged;
+            _dotnetObj.Dispose();
+            _cancellationTokenSource.Dispose();
         }
 
         base.Dispose(disposing);

@@ -8,5 +8,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.AddTransient<IExceptionHandler, WindowsExceptionHandler>();
+
+        services.AddClientSharedServices();
     }
 }
