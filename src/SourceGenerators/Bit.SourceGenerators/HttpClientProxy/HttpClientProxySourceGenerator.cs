@@ -115,7 +115,6 @@ internal static class IHttpClientServiceCollectionExtensions
 
 }}
 ");
-        //File.WriteAllText("Test.cs", finalSource.ToString());
         context.AddSource($"HttpClientProxy.cs", finalSource.ToString());
     }
 }
