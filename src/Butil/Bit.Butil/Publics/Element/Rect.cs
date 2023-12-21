@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-public  class DomRect
+public class Rect
 {
     public double Height { get; set; }
     public double Width { get; set; }

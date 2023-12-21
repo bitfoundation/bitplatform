@@ -15,8 +15,6 @@ var BitButil = BitButil || {};
         removeChange
     };
 
-
-
     function addChange(methodName, listenerId) {
         const handler = e => {
             DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId);

@@ -44,14 +44,11 @@ internal static class ConsoleJsInterop
     internal static async Task ConsoleLog(this IJSRuntime js, params object?[]? args)
         => await js.InvokeVoidAsync("BitButil.console.log", args);
 
-    internal static async Task ConsoleMemory(this IJSRuntime js)
-        => await js.InvokeVoidAsync("BitButil.console.memory");
+    internal static async Task ConsoleProfile(this IJSRuntime js, string? name)
+        => await js.InvokeVoidAsync("BitButil.console.profile", name);
 
-    internal static async Task ConsoleProfile(this IJSRuntime js)
-        => await js.InvokeVoidAsync("BitButil.console.profile");
-
-    internal static async Task ConsoleProfileEnd(this IJSRuntime js)
-        => await js.InvokeVoidAsync("BitButil.console.profileEnd");
+    internal static async Task ConsoleProfileEnd(this IJSRuntime js, string? name)
+        => await js.InvokeVoidAsync("BitButil.console.profileEnd", name);
 
     internal static async Task ConsoleTable(this IJSRuntime js, object? data, object? properties)
         => await js.InvokeVoidAsync("BitButil.console.table", data, properties);
