@@ -11,6 +11,8 @@ public class ControllerAction
 
     public bool DoesReturnSomething => ReturnType.ToDisplayString() is not "System.Threading.Tasks.Task" or "System.Threading.Tasks.ValueTask";
 
+    public bool DoesReturnIAsyncEnumerable => DoesReturnSomething && ReturnType.ToDisplayString().Contains("IAsyncEnumerable");
+
     public string HttpMethod { get; set; } = default!;
 
     public string Url { get; set; } = default!;
