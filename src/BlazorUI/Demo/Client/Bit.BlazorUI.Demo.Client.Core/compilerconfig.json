@@ -426,6 +426,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Timeline/BitTimelineDemo.razor.css",
+        "inputFile": "Pages/Components/Timeline/BitTimelineDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Tooltip/BitTooltipDemo.razor.css",
         "inputFile": "Pages/Components/Tooltip/BitTooltipDemo.razor.scss",
         "minify": { "enabled": false },
