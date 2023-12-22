@@ -184,14 +184,14 @@ public partial class BitShimmerDemo
 <BitShimmer Shape=""BitShimmerShape.Rectangle"" Height=""2.7rem"" />";
 
     private readonly string example3RazorCode = @"
-<BitShimmer Height=""2.7rem"" />
+<BitShimmer Height=""1.5rem"" />
 
 <BitShimmer Animation=""BitShimmerAnimation.Pulse"" Shape=""BitShimmerShape.Circle"" Height=""3.5rem"" />
 <BitShimmer Animation=""BitShimmerAnimation.Pulse"" Shape=""BitShimmerShape.Rectangle"" Height=""2.7rem"" Width=""100%"" />";
 
     private readonly string example4RazorCode = @"
 <BitShimmer IsDataLoaded=""@isDataLoaded"" AriaLabel=""Loading content"" Height=""1.5rem"">
-    Congratulations!!! You have successfully loaded the content.
+    Content loaded successfully.
 </BitShimmer>
 
 <BitToggleButton @bind-IsChecked=""@isDataLoaded"" Text=""Toggle shimmer"" />";
