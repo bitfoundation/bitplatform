@@ -12,14 +12,12 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-.bit-blazor-hybrid, .bit-blazor-electron {
+.bit-blazor-hybrid {
     *:not(input) {
         -webkit-user-select: none;
         user-select: none;
     }
-}
 
-.bit-blazor-hybrid {
     &.bit-windows * {
         -webkit-user-drag: none;
     }
@@ -39,6 +37,7 @@ html, body, #app-container {
 
 .pivot-sticky-header {
     z-index: 10;
+    overflow: auto;
     position: sticky;
     padding: 0.25rem 0.5rem;
     box-shadow: $bit-box-shadow-callout;
