@@ -45,11 +45,11 @@
         position: relative;
         text-align: center;
         align-items: center;
-        max-width: rem2(608px);
+        max-width: rem2(504px);
         border-radius: rem2(4px);
         justify-content: center;
         flex-flow: column nowrap;
-        padding: rem2(32px) rem2(16px);
+        padding: rem2(48px) rem2(16px);
         box-shadow: $bit-box-shadow-callout;
         background-color: $bit-color-background-primary;
     }
