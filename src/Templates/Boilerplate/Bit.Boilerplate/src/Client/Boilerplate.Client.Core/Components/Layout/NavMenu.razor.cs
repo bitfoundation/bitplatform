@@ -121,6 +121,13 @@ public partial class NavMenu : IDisposable
         navManager.NavigateTo("edit-profile");
     }
 
+    private async Task HandleNavItemClick(BitNavItem item)
+    {
+        if (string.IsNullOrEmpty(item.Url)) return;
+
+        await CloseMenu();
+    }
+
     private async Task CloseMenu()
     {
         IsMenuOpen = false;
