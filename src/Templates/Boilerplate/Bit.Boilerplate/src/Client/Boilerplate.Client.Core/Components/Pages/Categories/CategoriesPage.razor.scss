@@ -41,9 +41,12 @@
     }
 }
 
+.grid-container {
+    overflow: auto;
+}
+
 .grid {
     width: 100%;
-    overflow: auto;
     display: inline-flex;
     flex-direction: column;
     border-radius: rem2(2px);
@@ -83,6 +86,7 @@
 
 ::deep td {
     font-weight: 400;
+    white-space: nowrap;
     font-size: rem2(12px);
     line-height: rem2(16px);
     border-top: rem2(1px) solid $bit-color-border-secondary;
@@ -127,9 +131,10 @@
 
 ::deep .bitdatagrid-paginator {
     margin-top: 0;
-    height: rem2(43px);
+    overflow: auto;
     padding: 0 rem2(12px);
     font-size: rem2(14px);
+    min-height: rem2(43px);
     border-top: rem2(1px) solid $bit-color-border-secondary;
 }
 

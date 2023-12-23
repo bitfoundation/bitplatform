@@ -6,9 +6,11 @@
 .main-container {
     left: 0;
     z-index: 16;
+    height: 100%;
     display: flex;
     position: fixed;
     min-height: 100%;
+    overflow: hidden auto;
     flex-flow: column nowrap;
     width: rem2($navMenuWidth);
     justify-content: flex-start;
@@ -31,7 +33,7 @@
 .top-container {
     width: 100%;
     display: flex;
-    padding: rem2(18px) 0;
+    padding: rem2(16px);
     flex-flow: column nowrap;
     margin-bottom: rem2(20px);
     justify-content: flex-start;
