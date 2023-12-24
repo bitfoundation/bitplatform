@@ -34,8 +34,8 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(SignUpRequestDto))]
 [JsonSerializable(typeof(EditUserDto))]
 [JsonSerializable(typeof(RestErrorInfo))]
-[JsonSerializable(typeof(EmailConfirmedRequestDto))]
 [JsonSerializable(typeof(SendConfirmationEmailRequestDto))]
+[JsonSerializable(typeof(ConfirmEmailRequestDto))]
 [JsonSerializable(typeof(SendResetPasswordEmailRequestDto))]
 [JsonSerializable(typeof(ResetPasswordRequestDto))]
 public partial class AppJsonContext : JsonSerializerContext
