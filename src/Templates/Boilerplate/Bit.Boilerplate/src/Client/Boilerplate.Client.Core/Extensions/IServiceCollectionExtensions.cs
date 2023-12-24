@@ -34,6 +34,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient(sp => AppJsonContext.Default.Options);
         services.AddTypedHttpClients();
 
+        services.AddBitButilServices();
         services.AddBitBlazorUIServices();
         services.AddSharedServices();
 

@@ -16,6 +16,7 @@
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
 
+        <PackageReference Include="Bit.Butil" Version="8.6.0-pre-01" />
         <PackageReference Include="Bit.BlazorUI" Version="8.6.0-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="8.6.0-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.6.0-pre-01" />
@@ -41,6 +42,7 @@
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />
+        <Using Include="Bit.Butil" />
         <Using Include="Bit.BlazorUI" />
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />

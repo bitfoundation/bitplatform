@@ -7,9 +7,9 @@ namespace Boilerplate.Client.Core.Services;
 
 public partial class AuthenticationManager : AuthenticationStateProvider
 {
+    [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IIdentityController identityController = default;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
@@ -29,7 +29,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         await storageService.RemoveItem("refresh_token");
         if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
         {
-            await jsRuntime.RemoveCookie("access_token");
+            await cookie.Remove("access_token");
         }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
@@ -38,7 +38,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
         {
-            await jsRuntime.RemoveCookie("access_token");
+            await cookie.Remove("access_token");
         }
         await storageService.RemoveItem("access_token");
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
@@ -92,7 +92,12 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         await storageService.SetItem("refresh_token", tokenResponseDto!.RefreshToken, rememberMe is true);
         if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
         {
-            await jsRuntime.SetCookie("access_token", tokenResponseDto.AccessToken!, tokenResponseDto.ExpiresIn, rememberMe is true);
+            await cookie.Set(new ButilCookie
+            {
+                Name = "access_token",
+                Value = tokenResponseDto.AccessToken,
+                MaxAge = tokenResponseDto.ExpiresIn
+            });
         }
     }
 
