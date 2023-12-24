@@ -22,7 +22,7 @@ public class MainActivity : MauiAppCompatActivity
         base.OnCreate(savedInstanceState);
 
         var url = Intent?.DataString;
-        if (url != null && App.Current!.MainPage is NavigationPage navPage && navPage.CurrentPage is MainPage mainPage)
+        if (url is not null && App.Current!.MainPage is NavigationPage navPage && navPage.CurrentPage is MainPage mainPage)
         {
             mainPage.BlazorWebView.StartPath = new URL(url).File ?? "/";
         }
