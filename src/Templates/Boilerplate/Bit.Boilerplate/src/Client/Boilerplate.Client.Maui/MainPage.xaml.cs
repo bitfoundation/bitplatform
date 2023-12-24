@@ -73,7 +73,7 @@ public partial class MainPage
 #if WINDOWS
                 if (BuildConfiguration.IsRelease())
                 {
-                    var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler!.PlatformView!;
+                    var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)BlazorWebView.Handler!.PlatformView!;
                     await webView2.EnsureCoreWebView2Async();
                     var settings = webView2.CoreWebView2.Settings;
                     settings.IsZoomControlEnabled = false;

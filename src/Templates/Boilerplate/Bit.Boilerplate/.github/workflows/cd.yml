@@ -3,7 +3,7 @@ name: Boilerplate CD
 # https://bitplatform.dev/templates/dev-ops
 
 env:
-  API_SERVER_ADDRESS: 'https://bp.bitplatform.dev/api/'
+  API_SERVER_ADDRESS: 'https://bp.bitplatform.dev/'
   APP_SERVICE_NAME: 'app-service-bp-test'
   IOS_CODE_SIGN_PROVISION: 'Boilerplate'
 

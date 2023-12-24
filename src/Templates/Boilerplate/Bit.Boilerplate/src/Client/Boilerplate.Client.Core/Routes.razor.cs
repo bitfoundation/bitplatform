@@ -5,9 +5,17 @@ public partial class Routes
     [AutoInject] IJSRuntime jsRuntime = default!;
     [AutoInject] IBitDeviceCoordinator bitDeviceCoordinator = default!;
     [AutoInject] IStorageService storageService = default!;
+    [AutoInject] IPubSubService pubSubService = default!;
+    [AutoInject] NavigationManager navigationManager = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        pubSubService.Subscribe(PubSubMessages.NAVIGATE, async arg =>
+        {
+            var navUrl = (string)arg!;
+            navigationManager.NavigateTo(navUrl);
+        });
+
         if (AppRenderMode.IsBlazorHybrid)
         {
             if (AppRenderMode.MultilingualEnabled)

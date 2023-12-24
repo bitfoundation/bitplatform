@@ -1,5 +1,4 @@
-﻿//-:cnd:noEmit
-using System.Web;
+﻿using System.Web;
 using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Server.Components;
 using Boilerplate.Server.Models.Emailing;
@@ -94,9 +93,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var controller = RouteData.Values["controller"]!.ToString();
 
-        var confirmationLink = Url.Action(nameof(ConfirmEmail), controller,
-            new { user.Email, token },
-            HttpContext.Request.Scheme);
+        var confirmationLink = new Uri(HttpContext.Request.GetBaseUrl(), $"email-confirmation?email={HttpUtility.UrlEncode(user.Email)}&token={HttpUtility.UrlEncode(token)}");
 
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
@@ -128,28 +125,22 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.ErrorMessages.Select(err => Localizer[err]).ToArray());
     }
 
-    [HttpGet]
-    public async Task<ActionResult> ConfirmEmail(string email, string token)
+    [HttpPost]
+    public async Task ConfirmEmail(ConfirmEmailRequestDto body)
     {
-        var user = await userManager.FindByEmailAsync(email);
+        var user = await userManager.FindByEmailAsync(body.Email!);
 
         if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), email));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), body.Email!));
 
         var emailConfirmed = user.EmailConfirmed;
-        var errors = string.Empty;
 
         if (emailConfirmed is false)
         {
-            var result = await userManager.ConfirmEmailAsync(user, token);
+            var result = await userManager.ConfirmEmailAsync(user, body.Token!);
             if (!result.Succeeded)
-                errors = string.Join(", ", result.Errors.Select(e => $"{e.Code}: {e.Description}"));
-            emailConfirmed = result.Succeeded;
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
-
-        string url = $"/email-confirmation?email={email}&email-confirmed={emailConfirmed}{(string.IsNullOrEmpty(errors) ? "" : ($"&error={errors}"))}";
-
-        return Redirect(url);
     }
 
     [HttpPost, ProducesResponseType<TokenResponseDto>(statusCode: 200)]
