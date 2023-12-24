@@ -306,6 +306,22 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />";
 
     private readonly string example4RazorCode = @"
+<BitLabel>Basic SearchBox</BitLabel>
+<BitSearchBox  Placeholder=""Search"" ShowSearchButton=""true"" />
+<br />
+<BitLabel>Basic Underlined SearchBox</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" ShowSearchButton=""true"" />
+<br />
+<BitLabel>SearchBox with custom button icon</BitLabel>
+<BitSearchBox Placeholder=""Search"" ShowSearchButton=""true"" SearchButtonIconName=""PageListFilter"" />
+<br />
+<BitLabel>Disabled Basic SearchBox</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" ShowSearchButton=""true"" />
+<br />
+<BitLabel>Disabled Underlined SearchBox</BitLabel>
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" ShowSearchButton=""true"" />";
+
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         border: 1px solid red;
@@ -336,12 +352,12 @@ public partial class BitSearchBoxDemo
                                 SearchIconContainer = ""custom-search""})""
               />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 Visible: [ <BitSearchBox Visibility=""BitVisibility.Visible"" Placeholder=""Visible SearchBox"" /> ]
 Hidden: [ <BitSearchBox Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden SearchBox"" />  ]
 Collapsed: [ <BitSearchBox Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed SearchBox"" />  ]";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitLabel>Two-way Bind</BitLabel>
 <BitSearchBox Placeholder=""Search"" @bind-Value=""TwoWaySearchValue"" />
 <BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
@@ -353,18 +369,18 @@ Collapsed: [ <BitSearchBox Visibility=""BitVisibility.Collapsed"" Placeholder=""
 <BitLabel>OnSearch (Serach by Enter)</BitLabel>
 <BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" />
 <BitLabel>Search Value: @OnSearchValue</BitLabel>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string TwoWaySearchValue;
 private string OnChangeSearchValue;
 private string OnSearchValue;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <EditForm Model=""ValidationSearchBoxModel"">
     <DataAnnotationsValidator />
     <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""ValidationSearchBoxModel.Text"" />
     <ValidationMessage For=""() => ValidationSearchBoxModel.Text"" />
 </EditForm>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 public class ValidationSearchBoxModel
 {
     [StringLength(6, MinimumLength = 2, ErrorMessage = ""The text field length must be between 6 and 2 characters in length."")]
@@ -373,7 +389,7 @@ public class ValidationSearchBoxModel
 
 private ValidationSearchBoxModel ValidationSearchBoxModel = new();";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitLabel>Items:</BitLabel>
 <BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" @bind-Value=""@SearchValue"" />
 SearchValue: @SearchValue
@@ -402,7 +418,7 @@ SearchValue: @SearchValueWithSearchDelay
               SuggestItemProvider=""LoadItems""
               @bind-Value=""@ItemsProviderSearchValue"" />
 SearchValue: @ItemsProviderSearchValue";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private string SearchValue;
 private string SearchValueWithSuggestFilterFunction;
 private string SearchValueWithSearchDelay;
