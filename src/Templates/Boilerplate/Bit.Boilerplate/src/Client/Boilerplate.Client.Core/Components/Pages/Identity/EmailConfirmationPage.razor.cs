@@ -7,8 +7,8 @@ public partial class EmailConfirmationPage
     [AutoInject] IIdentityController identityController = default!;
 
     private bool isLoading = true;
-    string? error { get; set; }
-    bool emailConfirmed = false;
+    private string? error;
+    private bool emailConfirmed = false;
     private BitMessageBarType emailConfirmationMessageType = BitMessageBarType.Error;
 
     [SupplyParameterFromQuery, Parameter] public string? Email { get; set; }
