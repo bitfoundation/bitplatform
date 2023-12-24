@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿//-:cnd:noEmit
+using System.Web;
 using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Server.Components;
 using Boilerplate.Server.Models.Emailing;
