@@ -1,27 +1,7 @@
 ﻿class App {
-    public static setCookie(name: string, value: string, seconds: number, remeber: boolean, secure: boolean) {
-        const date = new Date();
-        date.setSeconds(date.getSeconds() + seconds);
-        let cookie = `${name}=${value};path=/;samesite=strict;`;
-        if (remeber == true) {
-            cookie = cookie += `expires=${date.toUTCString()};`;
-        }
-        if (secure == true) {
-            cookie = `${cookie};secure`;
-        }
-        document.cookie = cookie;
-    }
-
-    public static removeCookie(name: string): void {
-        document.cookie = `${name}=; Max-Age=0`;
-    }
-
-    public static goBack(): void {
-        window.history.back();
-    }
-
     /**
-     * To disable the scrollbar of the body when showing the modal, so the modal can be always shown in the viewport without being scrolled out.
+     * To disable the scrollbar of the body when showing the modal, 
+     * so the modal can be always shown in the viewport without being scrolled out.
      **/
     public static setBodyOverflow(hidden: boolean) {
         document.body.style.overflow = hidden ? "hidden" : "auto";
