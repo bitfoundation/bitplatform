@@ -292,7 +292,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         
     - name: Set iOS universal link
-      run:  awk -v old="bp.bitplatform.dev" -v new="adminpanel.bitplatform.dev" '{gsub(old, new, $0); print $0}' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/iOS/Entitlements.plist
+      run:  awk -v old="bp.bitplatform.dev" -v new="adminpanel.bitplatform.dev" '{gsub(old, new, $0); print $0}' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/iOS/Entitlements.plist | tee AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/iOS/Entitlements.plist
 
     - name: Install maui
       run: cd src && dotnet workload install maui
