@@ -53,9 +53,6 @@ jobs:
     - name: Enable pre rendering
       run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
 
-    - name: Set android universal link
-      run:  sed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android/MainActivity.cs
-
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
@@ -194,6 +191,9 @@ jobs:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        
+    - name: Set android universal link
+      run:  sed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android/MainActivity.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -285,9 +285,6 @@ jobs:
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
-
-    - name: Set iOS universal link
-      run:  awk -v old="bp.bitplatform.dev" -v new="todo.bitplatform.dev" '{gsub(old, new, $0); print $0}' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist
       
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -295,6 +292,9 @@ jobs:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        
+    - name: Set iOS universal link
+      run:  awk -v old="bp.bitplatform.dev" -v new="todo.bitplatform.dev" '{gsub(old, new, $0); print $0}' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist
 
     - name: Install maui
       run: cd src && dotnet workload install maui
