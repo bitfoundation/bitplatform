@@ -11,7 +11,6 @@ public partial class MessageBox : IDisposable
     private async Task OnCloseClick()
     {
         isOpen = false;
-        await JSRuntime.SetBodyOverflow(false);
         tcs?.SetResult(null);
         tcs = null;
     }
@@ -19,7 +18,6 @@ public partial class MessageBox : IDisposable
     private async Task OnOkClick()
     {
         isOpen = false;
-        await JSRuntime.SetBodyOverflow(false);
         tcs?.SetResult(null);
         tcs = null;
     }
@@ -44,8 +42,6 @@ public partial class MessageBox : IDisposable
     {
         await InvokeAsync(() =>
         {
-            _ = JSRuntime.SetBodyOverflow(true);
-
             isOpen = true;
             this.title = title;
             body = message;
