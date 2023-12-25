@@ -88,7 +88,7 @@ public class Middlewares
 
         app.MapGet("/.well-known/apple-app-site-association", async () =>
         {
-            // https://limitless-sierra-4673.herokuapp.com/ 
+            // https://branch.io/resources/aasa-validator/ 
             var contentType = "application/json; charset=utf-8";
             var path = Path.Combine("wwwroot/.well-known", "apple-app-site-association");
             return Results.Stream(File.OpenRead(path), contentType, "apple-app-site-association");
