@@ -287,8 +287,8 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
 
     - name: Set iOS universal link
-      run:  sed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist
-  
+      run:  awk -v old="bp.bitplatform.dev" -v new="todo.bitplatform.dev" '{gsub(old, new, $0); print $0}' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist
+      
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
