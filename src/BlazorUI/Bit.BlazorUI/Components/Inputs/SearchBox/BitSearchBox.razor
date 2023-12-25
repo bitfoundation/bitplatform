@@ -22,7 +22,7 @@
                disabled="@(IsEnabled is false)" />
         @if (CurrentValue.HasValue())
         {
-            <button @onclick="HandleOnClear"
+            <button @onclick="HandleOnClearButtonClick"
                     style="@Styles?.ClearButton"
                     class="bit-srb-cbt @Classes?.ClearButton"
                     type="button"
@@ -35,7 +35,7 @@
     </div>
     @if (ShowSearchButton)
     {
-        <button @onclick="HandleOnSearch"
+        <button @onclick="HandleOnSearchButtonClick"
                 style="@Styles?.SearchButton"
                 class="bit-srb-sbn @Classes?.SearchButton"
                 aria-hidden="true"

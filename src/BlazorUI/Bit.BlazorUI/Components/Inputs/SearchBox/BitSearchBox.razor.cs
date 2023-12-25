@@ -235,7 +235,7 @@ public partial class BitSearchBox
 
     private void HandleInputFocusOut() => _inputHasFocus = false;
 
-    private async Task HandleOnSearch()
+    private async Task HandleOnSearchButtonClick()
     {
         if (IsEnabled is false) return;
 
@@ -244,8 +244,10 @@ public partial class BitSearchBox
         await CloseCallout();
     }
 
-    private async Task HandleOnClear()
+    private async Task HandleOnClearButtonClick()
     {
+        if (IsEnabled is false) return;
+
         await HandleOnChange(new() { Value = string.Empty });
 
         await _inputRef.FocusAsync();
