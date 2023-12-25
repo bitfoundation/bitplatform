@@ -189,6 +189,14 @@ public partial class BitSearchBox
         }
     }
 
+
+
+    public ElementReference InputReference => _inputRef;
+
+    public ValueTask FocusInput() => _inputRef.FocusAsync();
+
+
+
     protected override string RootElementClass => "bit-srb";
 
     protected override void RegisterCssClasses()
