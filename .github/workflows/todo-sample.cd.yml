@@ -294,7 +294,7 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         
     - name: Set iOS universal link
-      run:  brew install gnu-sed && sed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist
+      run:  brew install gnu-sed && gsed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist
 
     - name: Install maui
       run: cd src && dotnet workload install maui
