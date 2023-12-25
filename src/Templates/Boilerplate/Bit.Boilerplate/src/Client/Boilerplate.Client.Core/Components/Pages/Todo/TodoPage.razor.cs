@@ -6,6 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Todo;
 [Authorize]
 public partial class TodoPage
 {
+    [AutoInject] Keyboard keyboard = default!;
     [AutoInject] ITodoItemController todoItemController = default!;
 
     private bool isAdding;
@@ -19,9 +20,12 @@ public partial class TodoPage
     private IList<TodoItemDto> allTodoItems = default!;
     private IList<TodoItemDto> viewTodoItems = default!;
     private List<BitDropdownItem<string>> sortItems = [];
+    private BitSearchBox searchBox = default!;
 
     protected override async Task OnInitAsync()
     {
+        _ = keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusInput(), ButilModifiers.Ctrl);
+
         selectedFilter = nameof(AppStrings.All);
         selectedSort = nameof(AppStrings.Alphabetical);
 
