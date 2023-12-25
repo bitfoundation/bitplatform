@@ -50,6 +50,9 @@ jobs:
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
+
+    - name: Set android universal link
+      run:  sed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Maui.Core/Platforms/Android/MainActivity.cs
       
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
@@ -280,6 +283,9 @@ jobs:
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin
+
+    - name: Set iOS universal link
+      run:  sed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Maui.Core/Platforms/iOS/Entitlements.plist
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
