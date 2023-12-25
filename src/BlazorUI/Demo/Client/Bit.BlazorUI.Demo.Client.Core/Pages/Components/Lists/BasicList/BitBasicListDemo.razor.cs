@@ -151,7 +151,7 @@ public partial class BitBasicListDemo
     </RowTemplate>
 </BitBasicList>";
     private readonly string example1CsharpCode = @"
-private List<Person> LotsOfPeople = Enumerable.Range(0, 8000).Select(i => new Person
+private List<Person> FewPeople = Enumerable.Range(0, 100).Select(i => new Person
 {
     Id = i + 1,
     FirstName = $""Person {i + 1}"",
@@ -184,7 +184,7 @@ public class Person
     </RowTemplate>
 </BitBasicList>";
     private readonly string example2CsharpCode = @"
-private List<Person> FewPeople = Enumerable.Range(0, 100).Select(i => new Person
+private List<Person> LotsOfPeople = Enumerable.Range(0, 8000).Select(i => new Person
 {
     Id = i + 1,
     FirstName = $""Person {i + 1}"",
