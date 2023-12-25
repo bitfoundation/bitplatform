@@ -5,17 +5,9 @@ public partial class Routes
     [AutoInject] IJSRuntime jsRuntime = default!;
     [AutoInject] IBitDeviceCoordinator bitDeviceCoordinator = default!;
     [AutoInject] IStorageService storageService = default!;
-    [AutoInject] IPubSubService pubSubService = default!;
-    [AutoInject] NavigationManager navigationManager = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        pubSubService.Subscribe(PubSubMessages.NAVIGATE, async arg =>
-        {
-            var navUrl = (string)arg!;
-            navigationManager.NavigateTo(navUrl);
-        });
-
         if (AppRenderMode.IsBlazorHybrid)
         {
             if (AppRenderMode.MultilingualEnabled)
@@ -63,5 +55,21 @@ public partial class Routes
 
         cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
         await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
+    }
+
+    [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }
+    public static NavigationManager? universalLinksNavigationManager;
+
+    public static async Task OpenUniversalLink(string url)
+    {
+        await Task.Run(async () =>
+        {
+            while (universalLinksNavigationManager is null)
+            {
+                await Task.Yield();
+            }
+
+            universalLinksNavigationManager.NavigateTo(url);
+        });
     }
 }

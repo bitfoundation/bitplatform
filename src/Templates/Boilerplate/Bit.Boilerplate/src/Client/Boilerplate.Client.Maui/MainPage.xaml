@@ -10,8 +10,7 @@
                                                        Default=#000000}}">
 
     <b:BlazorWebView
-        x:Name="BlazorWebView"
-        x:FieldModifier="public"
+        x:Name="blazorWebView"
         BackgroundColor="{AppThemeBinding Light={OnPlatform Android=#0D2960,
                                                             Default=#ffffff},
                                           Dark={OnPlatform Android=#0D2960,
