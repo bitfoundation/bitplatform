@@ -5,49 +5,44 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
-    <div class="bit-srb-cnt @Classes?.Container" style="@Styles?.Container">
-        <div class="bit-srb-wrp @Classes?.InputWrapper" style="@Styles?.InputWrapper">
-            <div style="@Styles?.SearchIconContainer" class="bit-srb-ict @Classes?.SearchIconContainer" aria-hidden="true">
-                <i style="@Styles?.SearchIcon" class="bit-icon bit-icon--@IconName @Classes?.SearchIcon" aria-hidden="true" />
-            </div>
-            <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
-                   id="@_inputId"
-                   style="@Styles?.Input"
-                   class="bit-srb-inp @Classes?.Input"
-                   type="text"
-                   role="searchbox"
-                   value="@CurrentValue"
-                   aria-label="@AriaLabel"
-                   placeholder="@Placeholder"
-                   autocomplete="@Autocomplete"
-                   disabled="@(IsEnabled is false)" />
-            @if (CurrentValue.HasValue())
-            {
-                <button @onclick="HandleOnClear"
-                        style="@Styles?.ClearButton"
-                        class="bit-srb-cbt @Classes?.ClearButton"
-                        type="button"
-                        aria-hidden="true"
-                        aria-label="Clear text"
-                        disabled="@(CurrentValue.HasNoValue())">
-                    <span style="@Styles?.ClearButtonIconContainer" class="@Classes?.ClearButtonIconContainer">
-                        <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
-                    </span>
-                </button>
-            }
+    <div class="bit-srb-cnt @Classes?.InputContainer" style="@Styles?.InputContainer">
+        <div style="@Styles?.IconWrapper" class="bit-srb-iwp @Classes?.IconWrapper" aria-hidden="true">
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
         </div>
-
-        @if (ShowSearchButton)
+        <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
+               id="@_inputId"
+               style="@Styles?.Input"
+               class="bit-srb-inp @Classes?.Input"
+               type="text"
+               role="searchbox"
+               value="@CurrentValue"
+               aria-label="@AriaLabel"
+               placeholder="@Placeholder"
+               autocomplete="@Autocomplete"
+               disabled="@(IsEnabled is false)" />
+        @if (CurrentValue.HasValue())
         {
-            <button @onclick="HandleOnSearch"
-                    style="@Styles?.SearchButton"
-                    class="bit-srb-sbn @Classes?.SearchButton"
+            <button @onclick="HandleOnClear"
+                    style="@Styles?.ClearButton"
+                    class="bit-srb-cbt @Classes?.ClearButton"
+                    type="button"
                     aria-hidden="true"
-                    aria-label="Search text">
-                <i style="@Styles?.SearchButtonIcon" class="bit-icon bit-icon--@SearchButtonIconName @Classes?.SearchButtonIcon" aria-hidden="true" />
+                    aria-label="Clear text"
+                    disabled="@(CurrentValue.HasNoValue())">
+                <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
             </button>
         }
     </div>
+    @if (ShowSearchButton)
+    {
+        <button @onclick="HandleOnSearch"
+                style="@Styles?.SearchButton"
+                class="bit-srb-sbn @Classes?.SearchButton"
+                aria-hidden="true"
+                aria-label="Search text">
+            <i style="@Styles?.SearchButtonIcon" class="bit-icon bit-icon--@SearchButtonIconName @Classes?.SearchButtonIcon" aria-hidden="true" />
+        </button>
+    }
 
     @if ((SuggestItems?.Any() ?? false) || SuggestItemProvider is not null)
     {

@@ -343,14 +343,12 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Search"" Class=""custom-class"" />
 
 <BitSearchBox Placeholder=""Search""
-              Styles=""@(new() {SearchIcon = ""color: darkorange;"",
-                               Input = ""padding: 0.5rem; background-color: goldenrod""})"" 
-              />
+              Styles=""@(new() { SearchIcon = ""color: darkorange;"",
+                                Input = ""padding: 0.5rem; background-color: goldenrod"" })"" />
 
 <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value""
-              Classes=""@(new() {ClearButtonIcon = ""custom-clear"",
-                                SearchIconContainer = ""custom-search""})""
-              />";
+              Classes=""@(new() { ClearButtonIcon = ""custom-clear"",
+                                 IconWrapper = ""custom-search"" })"" />";
 
     private readonly string example6RazorCode = @"
 Visible: [ <BitSearchBox Visibility=""BitVisibility.Visible"" Placeholder=""Visible SearchBox"" /> ]

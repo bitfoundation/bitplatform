@@ -8,9 +8,9 @@ public class BitSearchBoxClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the main container of the BitSearchBox.
+    /// Custom CSS classes/styles for the input container of the BitSearchBox.
     /// </summary>
-    public string? Container { get; set; }
+    public string? InputContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the search box's clear button.
@@ -18,19 +18,9 @@ public class BitSearchBoxClassStyles
     public string? ClearButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the wrapper of buttons and input in the BitSearchBox.
-    /// </summary>
-    public string? InputWrapper { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the search box's clear button icon.
     /// </summary>
     public string? ClearButtonIcon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the search box's clear button icon container.
-    /// </summary>
-    public string? ClearButtonIconContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the search box's input.
@@ -40,12 +30,12 @@ public class BitSearchBoxClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the search box's search icon.
     /// </summary>
-    public string? SearchIcon { get; set; }
+    public string? Icon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the search box's search icon container.
+    /// Custom CSS classes/styles for the search box's icon wrapper.
     /// </summary>
-    public string? SearchIconContainer { get; set; }
+    public string? IconWrapper { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the search box's search button.
