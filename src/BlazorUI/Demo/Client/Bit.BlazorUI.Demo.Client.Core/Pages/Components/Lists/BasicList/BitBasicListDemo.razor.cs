@@ -98,7 +98,7 @@ public partial class BitBasicListDemo
             try
             {
                 var query = new Dictionary<string, object?>()
-                                {
+                {
                     { "$top", req.Count},
                     { "$skip", req.StartIndex }
                 };
@@ -120,10 +120,10 @@ public partial class BitBasicListDemo
             try
             {
                 var query = new Dictionary<string, object>()
-                            {
+                {
                     { "$top", req.Count},
                     { "$skip", req.StartIndex }
-                            };
+                };
 
                 var url = NavManager.GetUriWithQueryParameters("Products/GetCategoriesAndProducts", query);
 
@@ -143,17 +143,10 @@ public partial class BitBasicListDemo
 
 
     private readonly string example1RazorCode = @"
-<BitBasicList Items=""LotsOfPeople""
-              EnableVirtualization=""true""
-              Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
+<BitBasicList Items=""FewPeople"" Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
     <RowTemplate Context=""person"">
-        <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <img src=""https://picsum.photos/100/100?random=@(person.Id)"">
-            <div style=""margin-left:3%; display: inline-block;"">
-                <p>Id: <strong>@person.Id</strong></p>
-                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-                <p>Job: <strong>@person.Job</strong></p>
-            </div>
+        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+            Name: <strong>@person.FirstName</strong>
         </div>
     </RowTemplate>
 </BitBasicList>";
@@ -176,13 +169,17 @@ public class Person
 }";
 
     private readonly string example2RazorCode = @"
-<BitBasicList Items=""FewPeople"" Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
+<BitBasicList Items=""LotsOfPeople""
+              EnableVirtualization=""true""
+              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
     <RowTemplate Context=""person"">
-        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <img src=""https://picsum.photos/100/100?random=@(person.Id)"">
-            <p>Id: <strong>@person.Id</strong></p>
-            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-            <p>Job: <strong>@person.Job</strong></p>
+        <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
+            <img width=""100px"" height=""100px"" src=""https://picsum.photos/100/100?random=@(person.Id)"">
+            <div style=""margin-left:3%; display: inline-block;"">
+                <p>Id: <strong>@person.Id</strong></p>
+                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
         </div>
     </RowTemplate>
 </BitBasicList>";
@@ -206,21 +203,24 @@ public class Person
 
     private readonly string example3RazorCode = @"
 <style>
-    .list-item {
-        padding: 16px 20px;
-        background-color: #f2f2f2;
-        margin: 10px 10px;
-        width: 20%;
-        height: 143px;
-        display: inline-grid;
-        justify-content: center;
-        align-items: center;
+    .custom-class .list-item {
+        gap: 0.5rem;
+        color: white;
+        display: flex;
+        padding: 1rem;
+        margin: 0.5rem;
+        flex-wrap: wrap;
+        border-radius: 0.25rem;
+        background-color: tomato;
     }
 </style>
 
-<BitBasicList Items=""LotsOfPeople"" Role=""list""
+
+<BitBasicList Items=""LotsOfPeople""
+              Role=""list""
+              Class=""custom-class""
               EnableVirtualization=""true""
-              Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
+              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
     <RowTemplate Context=""person"">
         <div @key=""person.Id"" class=""list-item"">
             <span>Id: <strong>@person.Id</strong></span>
@@ -248,14 +248,19 @@ public class Person
 }";
 
     private readonly string example4RazorCode = @"
-<BitBasicList Items=""LotsOfPeople"" ItemSize=""300"" OverscanCount=""5""
+<BitBasicList Items=""LotsOfPeople""
+              ItemSize=""300""
+              OverscanCount=""5""
               EnableVirtualization=""true""
-              Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
+              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
     <RowTemplate Context=""person"">
         <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <p>Id: <strong>@person.Id</strong></p>
-            <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
-            <p>Job: <strong>@person.Job</strong></p>
+            <img width=""100px"" height=""100px"" src=""https://picsum.photos/100/100?random=@(person.Id)"">
+            <div style=""margin-left:3%; display: inline-block;"">
+                <p>Id: <strong>@person.Id</strong></p>
+                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                <p>Job: <strong>@person.Job</strong></p>
+            </div>
         </div>
     </RowTemplate>
 </BitBasicList>";
@@ -278,10 +283,11 @@ public class Person
 }";
 
     private readonly string example5RazorCode = @"
-<BitBasicList TItem=""ProductDto"" ItemSize=""83""
+<BitBasicList TItem=""ProductDto""
+              ItemSize=""83""
               EnableVirtualization=""true""
               ItemsProvider=""@ProductsProvider""
-              Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
+              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
     <RowTemplate Context=""product"">
         <div @key=""product.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;"">
             <div>Id: <strong>@product.Id</strong></div>
@@ -307,10 +313,10 @@ protected override void OnInitialized()
         try
         {
             var query = new Dictionary<string, object>()
-                     {
+            {
                  { ""$top"", req.Count},
                  { ""$skip"", req.StartIndex }
-                     };
+            };
     
             var url = NavManager.GetUriWithQueryParameters(""Products/GetProducts"", query);
     
@@ -340,21 +346,22 @@ public class ProductDto
 public partial class AppJsonContext : JsonSerializerContext { }";
 
     private readonly string example6RazorCode = @"
-<BitBasicList TItem=""CategoryOrProductDto"" ItemSize=""83""
+<BitBasicList TItem=""CategoryOrProductDto""
+              ItemSize=""83""
               EnableVirtualization=""true""
               ItemsProvider=""@CategoriesAndProductsProvider""
-              Style=""border: 1px #a19f9d solid; border-radius: 3px;"">
+              Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
     <RowTemplate Context=""catOrProd"">
         @if (catOrProd.IsProduct)
         {
-            <div @key=""@($""{catOrProd.CategoryId}-{catOrProd.ProductId}"")"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; display:flex; flex-flow:row;"">
-                <div style=""width:250px;"">Name: <strong>@catOrProd.Name</strong></div>
+            <div @key=""@($""{catOrProd.CategoryId}-{catOrProd.ProductId}"")"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 10px; display:flex; flex-flow:row;"">
+                <div style=""min-width:184px;"">Name: <strong>@catOrProd.Name</strong></div>
                 <div>Price: <strong>@catOrProd.Price</strong></div>
             </div>
         }
         else
         {
-            <div @key=""catOrProd.CategoryId"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;background-color:#777"">
+            <div @key=""catOrProd.CategoryId"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; background-color: #75737329;"">
                 <div>@catOrProd.Name</div>
             </div>
         }
@@ -375,10 +382,10 @@ protected override void OnInitialized()
         try
         {
             var query = new Dictionary<string, object>()
-                {
+            {
                 { ""$top"", req.Count},
                 { ""$skip"", req.StartIndex }
-                };
+            };
 
             var url = NavManager.GetUriWithQueryParameters(""Products/GetCategoriesAndProducts"", query);
 
