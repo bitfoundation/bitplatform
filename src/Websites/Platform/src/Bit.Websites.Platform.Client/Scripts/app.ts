@@ -12,10 +12,6 @@ function goToTop() {
     window.scrollTo({ top: 0 });
 }
 
-function scrollElementIntoView(element: HTMLElement) {
-    element?.scrollIntoView();
-}
-
 declare class BitTheme { static init(options: any): void; };
 
 BitTheme.init({

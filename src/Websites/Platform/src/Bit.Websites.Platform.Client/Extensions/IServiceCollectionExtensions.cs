@@ -1,4 +1,5 @@
-﻿using Bit.Websites.Platform.Client.Services.HttpMessageHandlers;
+﻿using Bit.Butil;
+using Bit.Websites.Platform.Client.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ public static class IServiceCollectionExtensions
         services.AddTransient<IExceptionHandler, ExceptionHandler>();
         services.AddScoped<IPubSubService, PubSubService>();
         services.AddBitBlazorUIServices();
+        services.AddBitButilServices();
 
         services.AddTransient<RequestHeadersDelegationHandler>();
         services.AddTransient<RetryDelegatingHandler>();

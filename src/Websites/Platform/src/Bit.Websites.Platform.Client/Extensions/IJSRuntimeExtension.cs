@@ -6,9 +6,4 @@ public static class IJSRuntimeExtensions
     {
         await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
     }
-
-    public static async Task ScrollElementIntoView(this IJSRuntime jsRuntime, ElementReference element)
-    {
-        await jsRuntime.InvokeVoidAsync("scrollElementIntoView", element);
-    }
 }
