@@ -27,8 +27,6 @@ public partial class AddOrEditProductModal
     {
         await InvokeAsync(() =>
         {
-            _ = JSRuntime.SetBodyOverflow(true);
-
             isOpen = true;
             product = productToShow;
             selectedCategoyId = (product.CategoryId ?? 0).ToString();
@@ -76,8 +74,6 @@ public partial class AddOrEditProductModal
             }
 
             isOpen = false;
-
-            await JSRuntime.SetBodyOverflow(false);
         }
         finally
         {
@@ -90,7 +86,5 @@ public partial class AddOrEditProductModal
     private async Task OnCloseClick()
     {
         isOpen = false;
-
-        await JSRuntime.SetBodyOverflow(false);
     }
 }
