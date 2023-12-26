@@ -74,7 +74,7 @@
         observer.observe(element);
     }
 
-    static toggleScroll(selector: string, isHidden: boolean) {
+    static toggleOverflow(selector: string, isHidden: boolean) {
         const element = document.querySelector(selector) as HTMLElement;
 
         if (!element) return 0;

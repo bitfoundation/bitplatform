@@ -56,6 +56,6 @@ internal static class BitJsRuntimeExtension
 
     internal static async Task<int> ToggleOverflow(this IJSRuntime jsRuntime, string scrollerSelector, bool isHidden)
     {
-        return await jsRuntime.InvokeAsync<int>("Bit.toggleScroll", scrollerSelector, isHidden);
+        return await jsRuntime.InvokeAsync<int>("Bit.toggleOverflow", scrollerSelector, isHidden);
     }
 }
