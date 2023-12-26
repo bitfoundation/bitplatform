@@ -10,7 +10,7 @@ public class BitTimelineItem
     /// <summary>
     /// The color of the item.
     /// </summary>
-    public BitColors? Color { get; set; }
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The custom template for the item's dot.

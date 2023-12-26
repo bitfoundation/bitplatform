@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 public partial class BitButtonGroup<TItem> where TItem : class
 {
     private bool vertical;
-    private BitColors? color;
+    private BitColor? color;
     private BitButtonSize? size;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
@@ -47,7 +47,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
     /// The color of ButtonGroup.
     /// </summary>
     [Parameter]
-    public BitColors? Color
+    public BitColor? Color
     {
         get => color;
         set
@@ -147,11 +147,11 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
         ClassBuilder.Register(() => Color switch
         {
-            BitColors.Info => "bit-btg-inf",
-            BitColors.Success => "bit-btg-suc",
-            BitColors.Warning => "bit-btg-war",
-            BitColors.SevereWarning => "bit-btg-swa",
-            BitColors.Error => "bit-btg-err",
+            BitColor.Info => "bit-btg-inf",
+            BitColor.Success => "bit-btg-suc",
+            BitColor.Warning => "bit-btg-war",
+            BitColor.SevereWarning => "bit-btg-swa",
+            BitColor.Error => "bit-btg-err",
             _ => string.Empty
         });
 
@@ -193,11 +193,11 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
         className.Append(Color switch
         {
-            BitColors.Info => " bit-btg-iin",
-            BitColors.Success => " bit-btg-isu",
-            BitColors.Warning => " bit-btg-iwa",
-            BitColors.SevereWarning => " bit-btg-isw",
-            BitColors.Error => " bit-btg-ier",
+            BitColor.Info => " bit-btg-iin",
+            BitColor.Success => " bit-btg-isu",
+            BitColor.Warning => " bit-btg-iwa",
+            BitColor.SevereWarning => " bit-btg-isw",
+            BitColor.Error => " bit-btg-ier",
             _ => string.Empty
         });
 

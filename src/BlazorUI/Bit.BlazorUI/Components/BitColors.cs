@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitColors
+public enum BitColor
 {
     /// <summary>
     /// Info styled component.

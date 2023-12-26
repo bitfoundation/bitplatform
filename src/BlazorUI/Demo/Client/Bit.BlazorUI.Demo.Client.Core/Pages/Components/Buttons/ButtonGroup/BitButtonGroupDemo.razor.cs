@@ -16,7 +16,7 @@ public partial class BitButtonGroupDemo
         new()
         {
             Name = "Color",
-            Type = "BitColors",
+            Type = "BitColor",
             LinkType = LinkType.Link,
             Href = "#button-color-enum",
             DefaultValue = "null",
@@ -349,7 +349,7 @@ public partial class BitButtonGroupDemo
         new()
         {
             Id = "button-color-enum",
-            Name = "BitColors",
+            Name = "BitColor",
             Description = "",
             Items = new List<ComponentEnumItem>()
             {

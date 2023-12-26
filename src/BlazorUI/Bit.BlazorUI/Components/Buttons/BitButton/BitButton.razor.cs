@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton
 {
-    private BitColors? color;
+    private BitColor? color;
     private BitButtonSize? size;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
@@ -69,7 +69,7 @@ public partial class BitButton
     /// The color of button
     /// </summary>
     [Parameter]
-    public BitColors? Color
+    public BitColor? Color
     {
         get => color;
         set
@@ -185,11 +185,11 @@ public partial class BitButton
         
         ClassBuilder.Register(() => Color switch
         {
-            BitColors.Info => "bit-btn-inf",
-            BitColors.Success => "bit-btn-suc",
-            BitColors.Warning => "bit-btn-wrn",
-            BitColors.SevereWarning => "bit-btn-swr",
-            BitColors.Error => "bit-btn-err",
+            BitColor.Info => "bit-btn-inf",
+            BitColor.Success => "bit-btn-suc",
+            BitColor.Warning => "bit-btn-wrn",
+            BitColor.SevereWarning => "bit-btn-swr",
+            BitColor.Error => "bit-btn-err",
             _ => string.Empty
         });
         

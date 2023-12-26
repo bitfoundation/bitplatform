@@ -10,7 +10,7 @@ public partial class BitPagination
     private int selectedPage;
     private int middleCount = 3;
     private int boundaryCount = 2;
-    private BitColors? color;
+    private BitColor? color;
     private BitPaginationSize? size;
     private BitAppearance appearance = BitAppearance.Primary;
 
@@ -54,7 +54,7 @@ public partial class BitPagination
     /// The color of the component.
     /// </summary>
     [Parameter]
-    public BitColors? Color
+    public BitColor? Color
     {
         get => color;
         set
@@ -300,11 +300,11 @@ public partial class BitPagination
 
         className.Append(' ').Append(Color switch
         {
-            BitColors.Info => "bit-pgn-inf",
-            BitColors.Success => "bit-pgn-suc",
-            BitColors.Warning => "bit-pgn-wrn",
-            BitColors.SevereWarning => "bit-pgn-swr",
-            BitColors.Error => "bit-pgn-err",
+            BitColor.Info => "bit-pgn-inf",
+            BitColor.Success => "bit-pgn-suc",
+            BitColor.Warning => "bit-pgn-wrn",
+            BitColor.SevereWarning => "bit-pgn-swr",
+            BitColor.Error => "bit-pgn-err",
             _ => string.Empty
         });
 

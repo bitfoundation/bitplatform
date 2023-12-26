@@ -62,7 +62,7 @@ public partial class BitButtonDemo
         new()
         {
             Name = "Color",
-            Type = "BitColors",
+            Type = "BitColor",
             LinkType = LinkType.Link,
             Href = "#button-color-enum",
             DefaultValue = "null",
@@ -200,7 +200,7 @@ public partial class BitButtonDemo
         new()
         {
             Id = "button-color-enum",
-            Name = "BitColors",
+            Name = "BitColor",
             Description = "",
             Items = new List<ComponentEnumItem>()
             {
@@ -399,25 +399,25 @@ public partial class BitButtonDemo
 private int clickCounter;";
     
     private readonly string example7RazorCode = @"
-<BitButton Color=""BitColors.Info"">Info</BitButton>
-<BitButton Color=""BitColors.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
-<BitButton Color=""BitColors.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
+<BitButton Color=""BitColor.Info"">Info</BitButton>
+<BitButton Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
+<BitButton Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
 
-<BitButton Color=""BitColors.Success"">Success</BitButton>
-<BitButton Color=""BitColors.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
-<BitButton Color=""BitColors.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
+<BitButton Color=""BitColor.Success"">Success</BitButton>
+<BitButton Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
+<BitButton Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
 
-<BitButton Color=""BitColors.Warning"">Warning</BitButton>
-<BitButton Color=""BitColors.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
-<BitButton Color=""BitColors.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
+<BitButton Color=""BitColor.Warning"">Warning</BitButton>
+<BitButton Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
+<BitButton Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
 
-<BitButton Color=""BitColors.SevereWarning"">SevereWarning</BitButton>
-<BitButton Color=""BitColors.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
-<BitButton Color=""BitColors.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
+<BitButton Color=""BitColor.SevereWarning"">SevereWarning</BitButton>
+<BitButton Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
+<BitButton Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
 
-<BitButton Color=""BitColors.Error"">Error</BitButton>
-<BitButton Color=""BitColors.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
-<BitButton Color=""BitColors.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
+<BitButton Color=""BitColor.Error"">Error</BitButton>
+<BitButton Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
+<BitButton Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
     
     private readonly string example8RazorCode = @"
 <BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>
