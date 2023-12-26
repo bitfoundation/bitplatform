@@ -53,12 +53,19 @@ public class Keyboard(IJSRuntime js) : IDisposable
         _ = js.KeyboardRemove(ids);
     }
 
-    public void Dispose()
+    public async Task RemoveAll()
     {
         var ids = _handlers.Select(h => h.Key).ToArray();
 
+        _handlers.Clear();
+
         KeyboardListenersManager.RemoveListeners(ids);
 
-        _ = js.KeyboardRemove(ids);
+        await js.KeyboardRemove(ids);
+    }
+
+    public void Dispose()
+    {
+        _ = RemoveAll();
     }
 }
