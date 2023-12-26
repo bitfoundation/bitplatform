@@ -10,7 +10,7 @@ public class BitTimelineNameSelectors<TItem>
     /// <summary>
     /// The Color field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, BitTimelineColor?> Color { get; set; } = new(nameof(BitTimelineItem.Color));
+    public BitNameSelectorPair<TItem, BitColors?> Color { get; set; } = new(nameof(BitTimelineItem.Color));
 
     /// <summary>
     /// DotTemplate field name and selector of the custom input class.

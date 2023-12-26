@@ -192,39 +192,39 @@ protected override void OnInitialized()
 }";
 
     private readonly string example6RazorCode = @"
-<BitButtonGroup Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Info"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Info"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-
-<BitButtonGroup Color=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Info"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
 
-<BitButtonGroup Color=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Success"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Success"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-
-<BitButtonGroup Color=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Success"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
 
-<BitButtonGroup Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Warning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Warning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
+<BitButtonGroup Color=""BitColors.Warning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+
+<BitButtonGroup Color=""BitColors.SevereWarning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Color=""BitColors.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Color=""BitColors.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+
+<BitButtonGroup Color=""BitColors.Error"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Color=""BitColors.Error"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Color=""BitColors.Error"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />";
     private readonly string example6CsharpCode = @"
 public class ButtonGroupActionItem

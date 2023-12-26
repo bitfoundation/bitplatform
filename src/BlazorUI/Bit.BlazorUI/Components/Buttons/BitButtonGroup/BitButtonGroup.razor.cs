@@ -6,8 +6,8 @@ namespace Bit.BlazorUI;
 public partial class BitButtonGroup<TItem> where TItem : class
 {
     private bool vertical;
+    private BitColors? color;
     private BitButtonSize? size;
-    private BitButtonColor? color;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private List<TItem> _items = new();
@@ -23,7 +23,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
 
     /// <summary>
-    /// The style of button, Possible values: Primary | Standard
+    /// The style of ButtonGroup, Possible values: Primary | Standard
     /// </summary>
     [Parameter]
     public BitButtonStyle ButtonStyle
@@ -44,10 +44,10 @@ public partial class BitButtonGroup<TItem> where TItem : class
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The color of button
+    /// The color of ButtonGroup.
     /// </summary>
     [Parameter]
-    public BitButtonColor? Color
+    public BitColors? Color
     {
         get => color;
         set
@@ -101,7 +101,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large
+    /// The size of ButtonGroup, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
     public BitButtonSize? Size
@@ -147,11 +147,11 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
         ClassBuilder.Register(() => Color switch
         {
-            BitButtonColor.Info => "bit-btg-inf",
-            BitButtonColor.Success => "bit-btg-suc",
-            BitButtonColor.Warning => "bit-btg-war",
-            BitButtonColor.SevereWarning => "bit-btg-swa",
-            BitButtonColor.Error => "bit-btg-err",
+            BitColors.Info => "bit-btg-inf",
+            BitColors.Success => "bit-btg-suc",
+            BitColors.Warning => "bit-btg-war",
+            BitColors.SevereWarning => "bit-btg-swa",
+            BitColors.Error => "bit-btg-err",
             _ => string.Empty
         });
 
@@ -193,11 +193,11 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
         className.Append(Color switch
         {
-            BitButtonColor.Info => " bit-btg-iin",
-            BitButtonColor.Success => " bit-btg-isu",
-            BitButtonColor.Warning => " bit-btg-iwa",
-            BitButtonColor.SevereWarning => " bit-btg-isw",
-            BitButtonColor.Error => " bit-btg-ier",
+            BitColors.Info => " bit-btg-iin",
+            BitColors.Success => " bit-btg-isu",
+            BitColors.Warning => " bit-btg-iwa",
+            BitColors.SevereWarning => " bit-btg-isw",
+            BitColors.Error => " bit-btg-ier",
             _ => string.Empty
         });
 

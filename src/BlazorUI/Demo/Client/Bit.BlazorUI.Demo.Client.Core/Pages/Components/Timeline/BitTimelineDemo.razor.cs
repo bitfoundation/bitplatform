@@ -32,7 +32,7 @@ public partial class BitTimelineDemo
         new()
         {
             Name = "Color",
-            Type = "BitTimelineColor?",
+            Type = "BitColors?",
             DefaultValue = "null",
             Description = "The color of component.",
             LinkType = LinkType.Link,
@@ -114,7 +114,7 @@ public partial class BitTimelineDemo
                new()
                {
                    Name = "Color",
-                   Type = "BitTimelineColor?",
+                   Type = "BitColors?",
                    DefaultValue = "null",
                    Description = "The color of the item."
                },
@@ -234,7 +234,7 @@ public partial class BitTimelineDemo
                new()
                {
                    Name = "Color",
-                   Type = "BitTimelineColor?",
+                   Type = "BitColors?",
                    DefaultValue = "null",
                    Description = "The color of the option."
                },
@@ -597,7 +597,7 @@ public partial class BitTimelineDemo
         new()
         {
             Id = "timeline-color-enum",
-            Name = "BitTimelineColor",
+            Name = "BitColors",
             Description = "",
             Items = new List<ComponentEnumItem>()
             {
