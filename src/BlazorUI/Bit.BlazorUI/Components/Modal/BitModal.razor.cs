@@ -167,8 +167,8 @@ public partial class BitModal : IDisposable
         _offsetTop = 0;
 
         if (AutoToggleScroll is false) return;
-
-        _offsetTop = await _js.ToggleModalScroll(ScrollerSelector, IsOpen);
+        
+        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
 
         if (AbsolutePosition is false) return;
 

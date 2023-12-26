@@ -74,6 +74,17 @@
         observer.observe(element);
     }
 
+    static toggleScroll(selector: string, isHidden: boolean) {
+        const element = document.querySelector(selector) as HTMLElement;
+
+        if (!element) return 0;
+
+        element.style.overflow = isHidden ? "hidden" : "";
+
+        return element.scrollTop;
+    }
+
+
     // https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid/#2117523
     private static guidTemplate = '10000000-1000-4000-8000-100000000000';
     static uuidv4(): string {
