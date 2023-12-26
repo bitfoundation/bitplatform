@@ -160,7 +160,7 @@ public partial class BitPanel
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.InvokeAsync<int>("BitPanel.toggleScroll", ScrollerSelector, isOpen);
+        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, isOpen);
 
         StyleBuilder.Reset();
         StateHasChanged();
