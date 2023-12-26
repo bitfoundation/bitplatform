@@ -123,12 +123,19 @@ public class History(IJSRuntime js) : IDisposable
         _ = js.HistoryRemovePopState(ids);
     }
 
-    public void Dispose()
+    public async Task RemoveAllPopStates()
     {
         var ids = _handlers.Select(h => h.Key).ToArray();
+
+        _handlers.Clear();
 
         HistoryListenersManager.RemoveListeners(ids);
 
         _ = js.HistoryRemovePopState(ids);
+    }
+
+    public void Dispose()
+    {
+        _ = RemoveAllPopStates();
     }
 }
