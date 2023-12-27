@@ -1,5 +1,4 @@
-﻿
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public class BitTimelineItem
 {
@@ -11,7 +10,7 @@ public class BitTimelineItem
     /// <summary>
     /// The color of the item.
     /// </summary>
-    public BitTimelineColor? Color { get; set; }
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The custom template for the item's dot.

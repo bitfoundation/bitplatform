@@ -32,7 +32,7 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "Color",
-            Type = "BitBadgeColor?",
+            Type = "BitColor?",
             DefaultValue = "null",
             Description = "The color of the badge.",
             LinkType = LinkType.Link,
@@ -148,7 +148,7 @@ public partial class BitBadgeDemo
         new()
         {
             Id = "badge-color-enum",
-            Name = "BitBadgeColor",
+            Name = "BitColor",
             Description = "",
             Items = new List<ComponentEnumItem>()
             {
@@ -408,53 +408,53 @@ private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValu
     .ToList();";
 
     private readonly string example11RazorCode = @"
-<BitBadge Content=""100"" Color=""BitBadgeColor.Info"">
+<BitBadge Content=""100"" Color=""BitColor.Info"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.Info"" Appearance=""BitAppearance.Standard"">
+<BitBadge Content=""100"" Color=""BitColor.Info"" Appearance=""BitAppearance.Standard"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.Info"" Appearance=""BitAppearance.Text"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-
-<BitBadge Content=""100"" Color=""BitBadgeColor.Success"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.Success"" Appearance=""BitAppearance.Standard"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.Success"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Color=""BitColor.Info"" Appearance=""BitAppearance.Text"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
 
-<BitBadge Content=""100"" Color=""BitBadgeColor.Warning"">
+<BitBadge Content=""100"" Color=""BitColor.Success"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.Warning"" Appearance=""BitAppearance.Standard"">
+<BitBadge Content=""100"" Color=""BitColor.Success"" Appearance=""BitAppearance.Standard"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.Warning"" Appearance=""BitAppearance.Text"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-
-<BitBadge Content=""100"" Color=""BitBadgeColor.SevereWarning"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.SevereWarning"" Appearance=""BitAppearance.Standard"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.SevereWarning"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Color=""BitColor.Success"" Appearance=""BitAppearance.Text"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
 
-<BitBadge Content=""100"" Color=""BitBadgeColor.Error"">
+<BitBadge Content=""100"" Color=""BitColor.Warning"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.Error"" Appearance=""BitAppearance.Standard"">
+<BitBadge Content=""100"" Color=""BitColor.Warning"" Appearance=""BitAppearance.Standard"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitBadgeColor.Error"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Color=""BitColor.Warning"" Appearance=""BitAppearance.Text"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+
+<BitBadge Content=""100"" Color=""BitColor.SevereWarning"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Color=""BitColor.SevereWarning"" Appearance=""BitAppearance.Standard"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Color=""BitColor.SevereWarning"" Appearance=""BitAppearance.Text"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+
+<BitBadge Content=""100"" Color=""BitColor.Error"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Color=""BitColor.Error"" Appearance=""BitAppearance.Standard"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Color=""BitColor.Error"" Appearance=""BitAppearance.Text"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>";
 

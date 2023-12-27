@@ -6,8 +6,8 @@ namespace Bit.BlazorUI;
 public partial class BitTimeline<TItem> where TItem : class
 {
     private bool horizontal;
+    private BitColor? color;
     private BitTimelineSize? size;
-    private BitTimelineColor? color;
     private BitAppearance appearance = BitAppearance.Primary;
 
     private List<TItem> _items = new();
@@ -52,7 +52,7 @@ public partial class BitTimeline<TItem> where TItem : class
     /// The color of component.
     /// </summary>
     [Parameter]
-    public BitTimelineColor? Color
+    public BitColor? Color
     {
         get => color;
         set
@@ -157,11 +157,11 @@ public partial class BitTimeline<TItem> where TItem : class
 
         ClassBuilder.Register(() => Color switch
         {
-            BitTimelineColor.Info => "bit-tln-inf",
-            BitTimelineColor.Success => "bit-tln-suc",
-            BitTimelineColor.Warning => "bit-tln-war",
-            BitTimelineColor.SevereWarning => "bit-tln-swa",
-            BitTimelineColor.Error => "bit-tln-err",
+            BitColor.Info => "bit-tln-inf",
+            BitColor.Success => "bit-tln-suc",
+            BitColor.Warning => "bit-tln-war",
+            BitColor.SevereWarning => "bit-tln-swa",
+            BitColor.Error => "bit-tln-err",
             _ => string.Empty
         });
 
@@ -200,11 +200,11 @@ public partial class BitTimeline<TItem> where TItem : class
         {
             className.Append(GetColor(item) switch
             {
-                BitTimelineColor.Info => " bit-tln-iin",
-                BitTimelineColor.Success => " bit-tln-isu",
-                BitTimelineColor.Warning => " bit-tln-iwa",
-                BitTimelineColor.SevereWarning => " bit-tln-isw",
-                BitTimelineColor.Error => " bit-tln-ier",
+                BitColor.Info => " bit-tln-iin",
+                BitColor.Success => " bit-tln-isu",
+                BitColor.Warning => " bit-tln-iwa",
+                BitColor.SevereWarning => " bit-tln-isw",
+                BitColor.Error => " bit-tln-ier",
                 _ => string.Empty
             });
         }
@@ -555,7 +555,7 @@ public partial class BitTimeline<TItem> where TItem : class
         return item.GetValueFromProperty<BitTimelineSize?>(NameSelectors.Size.Name, null);
     }
 
-    private BitTimelineColor? GetColor(TItem? item)
+    private BitColor? GetColor(TItem? item)
     {
         if (item is null) return null;
 
@@ -576,6 +576,6 @@ public partial class BitTimeline<TItem> where TItem : class
             return NameSelectors.Color.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitTimelineColor?>(NameSelectors.Color.Name, null);
+        return item.GetValueFromProperty<BitColor?>(NameSelectors.Color.Name, null);
     }
 }
