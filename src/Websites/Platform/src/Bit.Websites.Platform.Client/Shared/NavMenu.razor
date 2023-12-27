@@ -23,7 +23,6 @@
         <BitNav Class="@GetNavMenuClass()"
                 Items="filteredNavItems"
                 AriaLabel="bit project templates doc nav"
-                OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)"
-                Styles="@(new() { SelectedItemContainer = $"background-color:var({BitCss.Var.Color.Background.Primary});" })" />
+                OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)" />
     </div>
 </div>
