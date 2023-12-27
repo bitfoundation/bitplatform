@@ -127,12 +127,19 @@ public class Screen(IJSRuntime js) : IDisposable
         _ = js.ScreenRemoveChange(ids);
     }
 
-    public void Dispose()
+    public async Task RemoveAllChanges()
     {
         var ids = _handlers.Select(h => h.Key).ToArray();
+
+        _handlers.Clear();
 
         ScreenListenersManager.RemoveListeners(ids);
 
         _ = js.ScreenRemoveChange(ids);
+    }
+
+    public void Dispose()
+    {
+        _ = RemoveAllChanges();
     }
 }
