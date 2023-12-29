@@ -17,7 +17,9 @@ public partial class SignInPage
         await base.OnParamsSetAsync();
 
         if (string.IsNullOrEmpty(signInModel.UserName))
+        {
             signInModel.UserName = Email;
+        }
     }
 
     private async Task DoSignIn()
