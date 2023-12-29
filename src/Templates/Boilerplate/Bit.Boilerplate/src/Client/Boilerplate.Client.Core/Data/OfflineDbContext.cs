@@ -6,6 +6,11 @@ namespace Boilerplate.Client.Core.Data;
 
 public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbContext(options)
 {
+    static OfflineDbContext()
+    {
+        AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
+    }
+
     public virtual DbSet<UserDto> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -25,7 +30,9 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbCo
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite("Data Source=Boilerplate-ClientDb.db");
+        optionsBuilder
+            // .UseModel(OfflineDbContextModel.Instance)
+            .UseSqlite("Data Source=Boilerplate-ClientDb.db");
 
         base.OnConfiguring(optionsBuilder);
     }

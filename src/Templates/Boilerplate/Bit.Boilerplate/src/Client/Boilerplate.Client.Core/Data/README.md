@@ -30,3 +30,25 @@ dotnet ef migrations add InitialMigration --context OfflineDbContext --output-di
 *Note*: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
 
 *Note*: You may not run `Update-Database` command, because client app should programmatically create database and tables on every device that runs the app using `DbContext.Database.MigrateAsync()` code.
+
+*Optimizing EF Core Performance with Compiled Models:*
+
+To enhance the performance of your models, consider compiling them using EF Core compiled models. Detailed information on this advanced optimization technique can be found [here](https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cexpression-api-with-constant#compiled-models) and [here](https://learn.microsoft.com/en-us/ef/core/cli/dotnet#dotnet-ef-dbcontext-optimize).
+
+To implement this optimization, follow these steps in the Package Manager Console:
+
+1. Make sure `Boilerplate.Server` is set as the default startup project, and `Boilerplate.Client.Core` is the default project in the Package Manager Console.
+
+2. Run the following command:
+
+    ```powershell
+    Optimize-DbContext -Context OfflineDbContext -OutputDir Data/CompiledModel -Namespace Boilerplate.Client.Core.Data
+    ```
+
+3. Uncomment the following line in the `OfflineDbContext.cs` file:
+
+    ```csharp
+    .UseModel(OfflineDbContextModel.Instance)
+    ```
+
+By adhering to these steps, you leverage EF Core compiled models to boost the performance of your application, ensuring an optimized and efficient data access method.
