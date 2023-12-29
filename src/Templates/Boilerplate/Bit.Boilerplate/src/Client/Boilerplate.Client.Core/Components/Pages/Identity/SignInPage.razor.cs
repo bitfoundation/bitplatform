@@ -10,15 +10,14 @@ public partial class SignInPage
     private SignInRequestDto signInModel = new();
 
     [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
+    [SupplyParameterFromQuery(Name = "email"), Parameter] public string? Email { get; set; }
 
-    protected override async Task OnAfterFirstRenderAsync()
+    protected override async Task OnParamsSetAsync()
     {
-        await base.OnAfterFirstRenderAsync();
+        await base.OnParamsSetAsync();
 
-        if ((await AuthenticationStateTask).User.IsAuthenticated())
-        {
-            NavigationManager.NavigateTo("/");
-        }
+        if (string.IsNullOrEmpty(signInModel.UserName))
+            signInModel.UserName = Email;
     }
 
     private async Task DoSignIn()

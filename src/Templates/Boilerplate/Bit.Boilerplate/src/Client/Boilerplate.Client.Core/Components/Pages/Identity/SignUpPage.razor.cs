@@ -13,16 +13,6 @@ public partial class SignUpPage
     private BitMessageBarType signUpMessageType;
     private SignUpRequestDto signUpModel = new();
 
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-        await base.OnAfterFirstRenderAsync();
-
-        if ((await AuthenticationStateTask).User.IsAuthenticated())
-        {
-            NavigationManager.NavigateTo("/");
-        }
-    }
-
     private async Task DoSignUp()
     {
         if (isLoading) return;
