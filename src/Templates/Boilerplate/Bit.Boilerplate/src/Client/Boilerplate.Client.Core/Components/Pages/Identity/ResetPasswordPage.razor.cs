@@ -8,6 +8,7 @@ public partial class ResetPasswordPage
     [AutoInject] IIdentityController identityController = default!;
 
     private bool isLoading;
+    private bool passwordChanged;
     private string? resetPasswordMessage;
     private BitMessageBarType resetPasswordMessageType;
     private ResetPasswordRequestDto resetPasswordModel = new();
@@ -24,14 +25,9 @@ public partial class ResetPasswordPage
         await base.OnInitAsync();
     }
 
-    protected override async Task OnAfterFirstRenderAsync()
+    private void RedirectToSignIn()
     {
-        await base.OnAfterFirstRenderAsync();
-
-        if ((await AuthenticationStateTask).User.IsAuthenticated())
-        {
-            NavigationManager.NavigateTo("/");
-        }
+        NavigationManager.NavigateTo($"/sign-in?email={Email}");
     }
 
     private async Task DoSubmit()
@@ -48,6 +44,8 @@ public partial class ResetPasswordPage
             resetPasswordMessageType = BitMessageBarType.Success;
 
             resetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
+
+            passwordChanged = true;
         }
         catch (KnownException e)
         {

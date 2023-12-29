@@ -36,7 +36,7 @@ public partial class EmailConfirmationPage
 
     private void RedirectToSignIn()
     {
-        NavigationManager.NavigateTo("/sign-in");
+        NavigationManager.NavigateTo($"/sign-in?email={Email}");
     }
 
     private async Task DoResendLink()
