@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.WinExe.Services;
+﻿using Boilerplate.Client.Windows.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

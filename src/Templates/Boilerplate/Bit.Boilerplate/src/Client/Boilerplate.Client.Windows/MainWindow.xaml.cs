@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace Boilerplate.Client.WinExe;
+namespace Boilerplate.Client.Windows;
 
 public partial class MainWindow
 {
