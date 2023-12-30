@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
-        <RootNamespace>Boilerplate.Client.WinExe</RootNamespace>
+        <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
