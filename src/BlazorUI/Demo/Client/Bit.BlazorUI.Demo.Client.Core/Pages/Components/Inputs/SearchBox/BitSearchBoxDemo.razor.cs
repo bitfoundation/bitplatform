@@ -45,6 +45,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "HideIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the icon is visible.",
+        },
+        new()
+        {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
@@ -145,7 +152,21 @@ public partial class BitSearchBoxDemo
             Type = "int",
             DefaultValue = "400",
             Description = "The delay, in milliseconds, applied to the search functionality.",
-        }
+        },
+        new()
+        {
+            Name = "SearchButtonIconName",
+            Type = "string",
+            DefaultValue = "ChromeBackMirrored",
+            Description = "Custom icon name for the search button.",
+        },
+        new()
+        {
+            Name = "ShowSearchButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to show the search button.",
+        },
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()

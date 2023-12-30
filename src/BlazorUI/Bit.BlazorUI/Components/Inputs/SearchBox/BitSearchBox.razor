@@ -6,9 +6,12 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
     <div class="bit-srb-cnt @Classes?.InputContainer" style="@Styles?.InputContainer">
-        <div style="@Styles?.IconWrapper" class="bit-srb-iwp @Classes?.IconWrapper" aria-hidden="true">
-            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
-        </div>
+        @if (HideIcon is false)
+        {
+            <div style="@Styles?.IconWrapper" class="bit-srb-iwp @Classes?.IconWrapper" aria-hidden="true">
+                <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+            </div>
+        }
         <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
                id="@_inputId"
                style="@Styles?.Input"
