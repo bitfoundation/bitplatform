@@ -1,4 +1,4 @@
-export async function synchronizeDbWithCache(file) {
+async function synchronizeDbWithCache(file) {
 
     window.sqlitedb = window.sqlitedb || {
         init: false,
