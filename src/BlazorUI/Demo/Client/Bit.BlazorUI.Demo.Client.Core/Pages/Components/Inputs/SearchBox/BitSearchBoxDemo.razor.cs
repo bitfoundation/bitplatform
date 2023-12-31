@@ -311,17 +311,17 @@ public partial class BitSearchBoxDemo
 
     private readonly string example2RazorCode = @"
 <BitLabel>Basic Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" />
+<BitSearchBox Placeholder=""Search"" IsUnderlined />
 
 <BitLabel>Disabled Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" />";
+<BitSearchBox Placeholder=""Search"" IsUnderlined IsEnabled=""false"" />";
 
     private readonly string example3RazorCode = @"
 <BitLabel>SearchBox with fixed icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" FixedIcon=""true"" />
+<BitSearchBox Placeholder=""Search"" FixedIcon />
 
 <BitLabel>SearchBox without icon animation</BitLabel>
-<BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
+<BitSearchBox Placeholder=""Search"" DisableAnimation />
 
 <BitLabel>SearchBox with custom icon</BitLabel>
 <BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />
@@ -331,19 +331,19 @@ public partial class BitSearchBoxDemo
 
     private readonly string example4RazorCode = @"
 <BitLabel>Basic SearchBox</BitLabel>
-<BitSearchBox  Placeholder=""Search"" ShowSearchButton=""true"" />
+<BitSearchBox  Placeholder=""Search"" ShowSearchButton />
 <br />
 <BitLabel>Basic Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" ShowSearchButton=""true"" />
+<BitSearchBox Placeholder=""Search"" IsUnderlined ShowSearchButton />
 <br />
 <BitLabel>SearchBox with custom button icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" ShowSearchButton=""true"" SearchButtonIconName=""PageListFilter"" />
+<BitSearchBox Placeholder=""Search"" ShowSearchButton SearchButtonIconName=""PageListFilter"" />
 <br />
 <BitLabel>Disabled Basic SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" ShowSearchButton=""true"" />
+<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" ShowSearchButton />
 <br />
 <BitLabel>Disabled Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" ShowSearchButton=""true"" />";
+<BitSearchBox Placeholder=""Search"" IsUnderlined IsEnabled=""false"" ShowSearchButton />";
 
     private readonly string example5RazorCode = @"
 <style>
