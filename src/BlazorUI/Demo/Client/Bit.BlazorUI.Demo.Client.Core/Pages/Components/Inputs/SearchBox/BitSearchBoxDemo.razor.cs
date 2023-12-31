@@ -311,17 +311,17 @@ public partial class BitSearchBoxDemo
 
     private readonly string example2RazorCode = @"
 <BitLabel>Basic Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined />
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" />
 
 <BitLabel>Disabled Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined IsEnabled=""false"" />";
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" />";
 
     private readonly string example3RazorCode = @"
 <BitLabel>SearchBox with fixed icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" FixedIcon />
+<BitSearchBox Placeholder=""Search"" FixedIcon=""true"" />
 
 <BitLabel>SearchBox without icon animation</BitLabel>
-<BitSearchBox Placeholder=""Search"" DisableAnimation />
+<BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
 
 <BitLabel>SearchBox with custom icon</BitLabel>
 <BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />
@@ -334,16 +334,16 @@ public partial class BitSearchBoxDemo
 <BitSearchBox  Placeholder=""Search"" ShowSearchButton />
 <br />
 <BitLabel>Basic Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined ShowSearchButton />
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" ShowSearchButton=""true"" />
 <br />
 <BitLabel>SearchBox with custom button icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" ShowSearchButton SearchButtonIconName=""PageListFilter"" />
+<BitSearchBox Placeholder=""Search"" ShowSearchButton=""true"" SearchButtonIconName=""PageListFilter"" />
 <br />
 <BitLabel>Disabled Basic SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" ShowSearchButton />
+<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" ShowSearchButton=""true"" />
 <br />
 <BitLabel>Disabled Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined IsEnabled=""false"" ShowSearchButton />";
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" ShowSearchButton />";
 
     private readonly string example5RazorCode = @"
 <style>
