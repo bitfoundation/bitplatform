@@ -331,7 +331,7 @@ public partial class BitSearchBoxDemo
 
     private readonly string example4RazorCode = @"
 <BitLabel>Basic SearchBox</BitLabel>
-<BitSearchBox  Placeholder=""Search"" ShowSearchButton />
+<BitSearchBox  Placeholder=""Search"" ShowSearchButton=""true"" />
 <br />
 <BitLabel>Basic Underlined SearchBox</BitLabel>
 <BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" ShowSearchButton=""true"" />
@@ -343,7 +343,7 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Search"" IsEnabled=""false"" ShowSearchButton=""true"" />
 <br />
 <BitLabel>Disabled Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" ShowSearchButton />";
+<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" ShowSearchButton=""true"" />";
 
     private readonly string example5RazorCode = @"
 <style>
