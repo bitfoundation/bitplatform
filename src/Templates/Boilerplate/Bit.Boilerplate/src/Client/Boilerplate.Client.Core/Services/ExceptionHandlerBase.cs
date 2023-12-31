@@ -22,7 +22,10 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
             {
                 _ = Console.Error(exceptionMessage);
             }
-            _ = System.Console.Out.WriteLineAsync(exceptionMessage);
+            else
+            {
+                _ = System.Console.Out.WriteLineAsync(exceptionMessage);
+            }
             Debugger.Break();
         }
 
