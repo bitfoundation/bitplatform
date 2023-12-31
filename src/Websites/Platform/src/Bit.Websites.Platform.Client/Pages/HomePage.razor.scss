@@ -12,6 +12,11 @@
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
+
+    .hero-bg-image {
+        width: 100%;
+        position: absolute;
+    }
 }
 
 .page-section {
@@ -34,9 +39,11 @@
 
 .hero-section {
     padding: 0;
+    /*background-image: url('/images/home/hero-gradient.svg');*/
 
     .page-section-content {
         gap: 5rem;
+        z-index: 2;
         display: flex;
         margin-bottom: 8rem;
         flex-flow: row nowrap;
@@ -58,23 +65,11 @@
     }
 
     .hero-section-content {
-        width: 50%;
+        flex-grow: 1;
         display: flex;
-        padding-top: 15rem;
-        max-width: rem2(504px);
-        align-items: flex-start;
+        padding-top: 7rem;
+        align-items: center;
         flex-flow: column nowrap;
-        justify-content: flex-start;
-
-        @include lt-xl {
-            width: 60%;
-        }
-
-        @include lt-lg {
-            width: 100%;
-            max-width: 100%;
-            padding-top: 10rem;
-        }
 
         @include lt-md {
             padding-top: 2rem;
@@ -84,61 +79,12 @@
             }
         }
     }
-
-    .hero-section-banner-container {
-        width: 50%;
-        max-width: 225rem;
-
-        .hero-section-banner {
-            padding: 2rem;
-            min-width: 225rem;
-            padding-bottom: 5rem;
-            border-bottom-left-radius: rem2(2px);
-            background-color: $bit-color-background-secondary;
-        }
-
-        @include lt-xl {
-            width: 40%;
-            max-width: 40%;
-
-            .hero-section-banner {
-                min-width: 140%;
-                padding-bottom: 10rem;
-            }
-
-            img {
-                width: 100%
-            }
-        }
-
-        @include lt-lg {
-            display: none;
-        }
-    }
-
-    ::deep .hero-quickstart-button {
-        padding: 0;
-        height: rem2(50px);
-
-        .hero-quickstart-link {
-            height: 100%;
-            display: flex;
-            color: inherit;
-            padding: 1rem 2rem;
-            text-decoration: none;
-
-            .hero-quickstart-text {
-                display: flex;
-                align-items: center;
-            }
-        }
-    }
 }
 
 .intro-section {
     margin: 5rem 0;
     padding: 5rem 0;
-    background-color: $bit-color-background-secondary;
+    /*background-color: $bit-color-background-secondary;*/
 
     @include lt-md {
         padding: 5rem 0;

@@ -8,7 +8,7 @@
                 <BitIconButton Class="header-menu-btn" IconName="@BitIconName.CollapseMenu" OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
-            <a class="header-link @(currentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a>
+            @* <a class="header-link @(currentUrl == Urls.HomePage ? "header-link--active" : null)" href="@Urls.HomePage">Home</a> *@
             <div class="header-link header-ps-btn @(currentUrl.Contains("templates") ? "header-link--active" : null)">
                 Products & Services
                 <div class="header-menu-popup">
@@ -88,7 +88,7 @@
 {
     <nav class="header-nav">
         <BitIconButton Class="header-nav-close-btn" IconName="@BitIconName.Cancel" OnClick="@WrapHandled(ToggleHeaderMenu)" />
-        <a class="header-nav-link @(currentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage" @onclick=@WrapHandled(ToggleHeaderMenu)>Home</a>
+        @* <a class="header-nav-link @(currentUrl == Urls.HomePage ? "header-nav-link--active" : null)" href="@Urls.HomePage" @onclick=@WrapHandled(ToggleHeaderMenu)>Home</a> *@
         <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
             Products & Services
             <div class="header-menu-popup">
