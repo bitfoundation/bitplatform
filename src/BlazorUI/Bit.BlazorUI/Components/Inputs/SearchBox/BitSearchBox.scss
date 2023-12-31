@@ -127,6 +127,12 @@
     }
 }
 
+.bit-srb-hic {
+    .bit-srb-cnt {
+        padding-left: spacing(1);
+    }
+}
+
 .bit-srb-ssb {
     .bit-srb-cnt {
         border-radius: $shape-border-radius 0 0 $shape-border-radius;

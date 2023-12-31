@@ -45,6 +45,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "HideIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the icon is visible.",
+        },
+        new()
+        {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
@@ -145,7 +152,21 @@ public partial class BitSearchBoxDemo
             Type = "int",
             DefaultValue = "400",
             Description = "The delay, in milliseconds, applied to the search functionality.",
-        }
+        },
+        new()
+        {
+            Name = "SearchButtonIconName",
+            Type = "string",
+            DefaultValue = "ChromeBackMirrored",
+            Description = "Custom icon name for the search button.",
+        },
+        new()
+        {
+            Name = "ShowSearchButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to show the search button.",
+        },
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
@@ -303,7 +324,10 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
 
 <BitLabel>SearchBox with custom icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />";
+<BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />
+
+<BitLabel>SearchBox without icon</BitLabel>
+<BitSearchBox Placeholder=""Search"" HideIcon />";
 
     private readonly string example4RazorCode = @"
 <BitLabel>Basic SearchBox</BitLabel>

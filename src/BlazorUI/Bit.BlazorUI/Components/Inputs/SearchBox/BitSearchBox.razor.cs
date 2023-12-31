@@ -5,11 +5,12 @@ namespace Bit.BlazorUI;
 public partial class BitSearchBox
 {
     private bool isOpen;
-    private bool disableAnimation;
+    private bool hideIcon;
+    private bool fixedIcon;
     private bool isUnderlined;
     private bool inputHasFocus;
-    private bool fixedIcon;
     private bool showSearchButton;
+    private bool disableAnimation;
 
     private string _inputId = string.Empty;
     private string _calloutId = string.Empty;
@@ -78,6 +79,22 @@ public partial class BitSearchBox
             if (fixedIcon == value) return;
 
             fixedIcon = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Whether or not the icon is visible.
+    /// </summary>
+    [Parameter]
+    public bool HideIcon
+    {
+        get => hideIcon;
+        set
+        {
+            if (hideIcon == value) return;
+
+            hideIcon = value;
             ClassBuilder.Reset();
         }
     }
@@ -212,6 +229,8 @@ public partial class BitSearchBox
         ClassBuilder.Register(() => _inputHasFocus ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}foc" : string.Empty);
 
         ClassBuilder.Register(() => ShowSearchButton ? $"{RootElementClass}-ssb" : string.Empty);
+
+        ClassBuilder.Register(() => HideIcon ? $"{RootElementClass}-hic" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
