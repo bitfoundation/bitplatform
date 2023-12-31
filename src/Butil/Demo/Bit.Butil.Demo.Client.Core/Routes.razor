@@ -1,6 +1,5 @@
 ﻿<LayoutView Layout="typeof(MainLayout)">
-    <Router AppAssembly="@GetType().Assembly"
-            AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Bit.Butil.Demo") is true))">
+    <Router AppAssembly="@GetType().Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
         </Found>

@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
-    <ProjectReference Include="..\..\..\Bit.Butil\Bit.Butil.csproj" />
+    <ProjectReference Include="..\..\Bit.Butil\Bit.Butil.csproj" />
   </ItemGroup>
 
   <ItemGroup>
