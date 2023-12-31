@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bit.Butil\Bit.Butil.csproj" />
+    <ProjectReference Include="..\Bit.Butil.Demo.Client.Core\Bit.Butil.Demo.Client.Core.csproj" />
   </ItemGroup>
 
 </Project>
