@@ -9,11 +9,6 @@
     align-items: center;
     justify-content: center;
     flex-flow: column nowrap;
-    padding: rem2(48px) rem2(16px);
-
-    @include lt-lg {
-        padding: rem2(16px);
-    }
 }
 
 .content-container {
@@ -24,7 +19,7 @@
     max-width: rem2(608px);
     border-radius: rem2(4px);
     flex-flow: column nowrap;
-    padding: rem2(32px) rem2(14px);
+    padding: rem2(32px) rem2(16px);
     background-color: $bit-color-background-primary;
 
     &.profile-panel {
@@ -63,24 +58,10 @@
     width: 100%;
     display: flex;
     align-items: center;
-    max-width: rem2(340px);
     flex-flow: row nowrap;
-    margin-bottom: rem2(17px);
+    max-width: rem2(340px);
+    margin-bottom: rem2(16px);
     justify-content: flex-start;
-
-    @include lt-xl {
-        max-width: rem2(300px);
-        margin-bottom: rem2(13px);
-    }
-
-    @include md {
-        margin-bottom: rem2(21px);
-    }
-
-    @include sm {
-        max-width: 100%;
-        margin-bottom: rem2(13px);
-    }
 }
 
 .form-input-container {
@@ -100,20 +81,7 @@
 .form-choice-container {
     width: 100%;
     max-width: rem2(340px);
-    margin-bottom: rem2(19px);
-
-    @include lt-xl {
-        max-width: rem2(300px);
-        margin-bottom: rem2(17px);
-    }
-
-    @include md {
-        margin-bottom: rem2(25px);
-    }
-
-    @include sm {
-        max-width: 100%;
-    }
+    margin-bottom: rem2(16px);
 }
 
 ::deep .edit-profile-dtp {

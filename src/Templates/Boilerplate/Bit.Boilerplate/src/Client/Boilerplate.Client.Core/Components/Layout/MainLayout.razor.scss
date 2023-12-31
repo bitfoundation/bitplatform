@@ -45,25 +45,13 @@
         position: relative;
         text-align: center;
         align-items: center;
-        max-width: rem2(608px);
+        max-width: rem2(504px);
         border-radius: rem2(4px);
         justify-content: center;
         flex-flow: column nowrap;
-        padding: rem2(48px) rem2(5px);
+        padding: rem2(48px) rem2(16px);
         box-shadow: $bit-box-shadow-callout;
         background-color: $bit-color-background-primary;
-
-        @include lg {
-            padding: rem2(48px) rem2(5px);
-        }
-
-        @include md {
-            padding: rem2(48px) rem2(5px);
-        }
-
-        @include sm {
-            padding: rem2(32px) rem2(14px);
-        }
     }
 
     .form-title {
@@ -92,17 +80,9 @@
         width: 100%;
         display: flex;
         text-align: start;
-        max-width: rem2(340px);
+        max-width: rem2(300px);
         flex-flow: column nowrap;
         margin-bottom: rem2(21px);
-
-        @include lt-xl {
-            max-width: rem2(300px);
-        }
-
-        @include sm {
-            max-width: 100%;
-        }
     }
 
     .form-input-error,

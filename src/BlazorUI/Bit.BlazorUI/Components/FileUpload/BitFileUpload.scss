@@ -43,12 +43,12 @@
     cursor: pointer;
     font-weight: 300;
     user-select: none;
-    padding: spacing(2);
     align-items: center;
     font-size: spacing(2);
-    height: spacing(4.375);
     justify-content: center;
+    min-height: spacing(4.5);
     border-radius: spacing(0.5);
+    padding: spacing(0.5) spacing(2);
     color: $color-foreground-primary;
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary;

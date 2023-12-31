@@ -17,7 +17,7 @@ section {
     position: relative;
     max-width: rem2(1200px);
     box-sizing: border-box;
-    padding: rem2(100px) rem2(20px);
+    padding: rem2(100px) rem2(16px);
 
     &:first-child {
         display: grid;
@@ -115,9 +115,8 @@ a {
 
 .links-container {
     gap: 20px;
-    display: grid;
-    grid-auto-columns: 1fr;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .column {

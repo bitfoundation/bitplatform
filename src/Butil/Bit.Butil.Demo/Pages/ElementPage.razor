@@ -33,7 +33,7 @@
 
     private async Task GetBoundingClientRect()
     {
-        var rect = await element.GetBoundingClientRect(elementRef);
-        await console.Log("BoundingClientRect:", rect);
+        await console.Log("BoundingClientRect:", await elementRef.GetBoundingClientRect());
+        await console.Log("BoundingClientRect:", await element.GetBoundingClientRect(elementRef));
     }
 }

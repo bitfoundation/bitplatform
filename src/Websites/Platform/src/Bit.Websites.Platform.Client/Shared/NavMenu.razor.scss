@@ -18,7 +18,7 @@
     width: rem2($NavMenuWidth);
     max-width: rem2($NavMenuWidth);
     height: calc(100vh - rem2($HeaderHeight));
-    background-color: $bit-color-background-secondary;
+    background-color: $bit-color-background-primary;
 
     @include lt-lg {
         height: 100vh;
@@ -70,7 +70,7 @@
     overflow-x: hidden;
 
     &::-webkit-scrollbar {
-        width: rem2(6px);
+        width: 0;
     }
 }
 

@@ -42,7 +42,7 @@ jobs:
 
     - name: Release build empty sample + offline db + Win exe
       run: |
-        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --winExe
+        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --Windows
         dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
 
     - name: Release build admin panel sample + SqlServer database

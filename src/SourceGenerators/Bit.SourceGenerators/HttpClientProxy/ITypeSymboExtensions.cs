@@ -24,10 +24,16 @@ public static class ITypeSymbolExtensions
 
     public static ITypeSymbol GetUnderlyingType(this ITypeSymbol typeSymbol)
     {
-        return typeSymbol switch
+        if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
         {
-            INamedTypeSymbol namedTypeSymbol => namedTypeSymbol.TypeArguments.FirstOrDefault() ?? namedTypeSymbol,
-            _ => typeSymbol
-        };
+            if (namedTypeSymbol.ToDisplayString().Contains("System.Collections.Generic.IAsyncEnumerable<"))
+            {
+                return namedTypeSymbol.TypeArguments.First().GetUnderlyingType();
+            }
+
+            return namedTypeSymbol.TypeArguments.FirstOrDefault() ?? namedTypeSymbol;
+        }
+
+        return typeSymbol;
     }
 }

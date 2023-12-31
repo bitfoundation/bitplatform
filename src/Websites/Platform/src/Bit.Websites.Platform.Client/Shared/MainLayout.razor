@@ -7,14 +7,15 @@
     {
         <NavMenu />
     }
+
     <div class="site-content @(isTemplateDocRoute ? "docs-content" : "")">
         <AppErrorBoundary>
             @Body
         </AppErrorBoundary>
-
-        <Footer />
     </div>
 </div>
+
+<Footer />
 
 
 <MessageBox />

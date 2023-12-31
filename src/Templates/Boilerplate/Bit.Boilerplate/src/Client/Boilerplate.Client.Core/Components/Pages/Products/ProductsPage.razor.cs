@@ -62,7 +62,7 @@ public partial class ProductsPage
 
                 var data = await productController.GetProducts(CurrentCancellationToken);
 
-                return BitDataGridItemsProviderResult.From(await data!.Items!.ToListAsync(), (int)data!.TotalCount);
+                return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }
             catch (Exception exp)
             {

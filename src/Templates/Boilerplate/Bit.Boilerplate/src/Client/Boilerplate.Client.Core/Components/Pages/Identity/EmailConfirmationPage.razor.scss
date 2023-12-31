@@ -8,15 +8,6 @@
     align-items: center;
     justify-content: center;
     flex-flow: column nowrap;
-    padding: rem2(56px) rem2(16px);
-
-    @include lg {
-        padding: rem2(48px) rem2(16px);
-    }
-
-    @include sm {
-        padding: rem2(40px) rem2(16px);
-    }
 }
 
 .form-description {

@@ -1,0 +1,30 @@
+{
+    "activitycontinuation": {
+        "apps": [ "76WD644YU8.com.bitplatform.AdminPanel.Template", "76WD644YU8.com.bitplatform.Todo.Template" ]
+    },
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "76WD644YU8.com.bitplatform.AdminPanel.Template",
+                "paths": [ "*", "/*" ],
+                "components": [
+                    {
+                        "/": "/*",
+                        "comment": "Matches any URL with a path that starts with /"
+                    }
+                ]
+            },
+            {
+                "appID": "76WD644YU8.com.bitplatform.Todo.Template",
+                "paths": [ "*", "/*" ],
+                "components": [
+                    {
+                        "/": "/*",
+                        "comment": "Matches any URL with a path that starts with /"
+                    }
+                ]
+            }
+        ]
+    }
+}

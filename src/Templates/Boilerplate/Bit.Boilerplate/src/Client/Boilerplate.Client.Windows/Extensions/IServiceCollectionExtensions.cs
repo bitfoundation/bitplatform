@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.WinExe.Services;
+﻿using Boilerplate.Client.Windows.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -8,5 +8,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.AddTransient<IExceptionHandler, WindowsExceptionHandler>();
+
+        services.AddClientSharedServices();
     }
 }

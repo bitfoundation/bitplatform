@@ -1,10 +1,10 @@
-﻿@import "../../../../Styles/abstracts/_functions.scss";
-@import "../../../../Styles/abstracts/_bit-css-variables.scss";
-
-.list-item {
-    height: rem2(44px);
-    min-width: rem2(450px);
-    margin: rem2(10px) rem2(10px);
-    padding: rem2(10px) rem2(20px);
-    background-color: $bit-color-background-secondary;
+﻿.custom-class .list-item {
+    gap: 0.5rem;
+    color: white;
+    display: flex;
+    padding: 1rem;
+    margin: 0.5rem;
+    flex-wrap: wrap;
+    border-radius: 0.25rem;
+    background-color: tomato;
 }

@@ -1,29 +1,29 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitButtonColor
+public enum BitColor
 {
     /// <summary>
-    /// Info styled Button
+    /// Info styled component.
     /// </summary>
     Info,
 
     /// <summary>
-    /// Success styled Button
+    /// Success styled component.
     /// </summary>
     Success,
 
     /// <summary>
-    /// Warning styled Button
+    /// Warning styled component.
     /// </summary>
     Warning,
 
     /// <summary>
-    /// Severe Warning styled Button
+    /// Severe Warning styled component.
     /// </summary>
     SevereWarning,
 
     /// <summary>
-    /// Error styled Button
+    /// Error styled component.
     /// </summary>
     Error,
 }

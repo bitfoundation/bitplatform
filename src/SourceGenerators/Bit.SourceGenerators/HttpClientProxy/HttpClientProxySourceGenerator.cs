@@ -46,8 +46,9 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
             {{" : string.Empty)}
                 using var request = new HttpRequestMessage(HttpMethod.{action.HttpMethod}, url);
                 {(action.BodyParameter is not null ? $@"request.Content = JsonContent.Create({action.BodyParameter.Name}, options.GetTypeInfo<{action.BodyParameter.Type.ToDisplayString()}>());" : string.Empty)}
-                using var response = await httpClient.SendAsync(request{(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});
-                {(action.DoesReturnSomething ? ($"return await response.Content.ReadFromJsonAsync(options.GetTypeInfo<{action.ReturnType.GetUnderlyingType().ToDisplayString()}>(){(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});}}))!;") : string.Empty)}
+                {(action.DoesReturnIAsyncEnumerable ? "" : "using ")}var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead {(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});
+                {(action.DoesReturnSomething ? ($"return {(action.DoesReturnIAsyncEnumerable ? "" : "await")} response.Content.{(action.DoesReturnIAsyncEnumerable ? "ReadFromJsonAsAsyncEnumerable" : "ReadFromJsonAsync")}(options.GetTypeInfo<{action.ReturnType.GetUnderlyingType().ToDisplayString()}>(){(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});" +
+          $"}}))!;") : string.Empty)}
         }}
 ");
             }
@@ -114,7 +115,6 @@ internal static class IHttpClientServiceCollectionExtensions
 
 }}
 ");
-
         context.AddSource($"HttpClientProxy.cs", finalSource.ToString());
     }
 }

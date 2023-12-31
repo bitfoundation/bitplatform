@@ -28,7 +28,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         if (odataQuery.Top is not null)
             query = query.Take(odataQuery.Top.Value);
 
-        return new PagedResult<CategoryDto>(query.AsAsyncEnumerable(), totalCount);
+        return new PagedResult<CategoryDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
     [HttpGet("{id}")]

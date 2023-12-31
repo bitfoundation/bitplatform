@@ -1,4 +1,4 @@
-﻿<Window x:Class="Boilerplate.Client.WinExe.MainWindow"
+﻿<Window x:Class="Boilerplate.Client.Windows.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="Boilerplate" Height="450" Width="800">
     <Grid>
-        <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{DynamicResource services}">
+        <blazor:BlazorWebView x:Name="BlazorWebView" HostPage="wwwroot\index.html">
             <blazor:BlazorWebView.RootComponents>
                 <blazor:RootComponent Selector="#app-container" ComponentType="{x:Type core:Routes}" />
             </blazor:BlazorWebView.RootComponents>

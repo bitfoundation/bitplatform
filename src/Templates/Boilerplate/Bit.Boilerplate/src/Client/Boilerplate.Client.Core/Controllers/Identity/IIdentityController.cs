@@ -15,6 +15,9 @@ public interface IIdentityController : IAppController
     Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
+    Task ConfirmEmail(ConfirmEmailRequestDto body);
+
+    [HttpPost]
     Task ResetPassword(ResetPasswordRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]

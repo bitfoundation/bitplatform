@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
-        <RootNamespace>Boilerplate.Client.WinExe</RootNamespace>
+        <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,11 +14,11 @@
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.5.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.6.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.5.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.6.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

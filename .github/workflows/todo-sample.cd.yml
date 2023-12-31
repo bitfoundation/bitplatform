@@ -191,6 +191,9 @@ jobs:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        
+    - name: Set android universal link
+      run:  sed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android/MainActivity.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -282,13 +285,16 @@ jobs:
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
-  
+      
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        
+    - name: Set iOS universal link
+      run:  brew install gnu-sed && gsed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist
 
     - name: Install maui
       run: cd src && dotnet workload install maui

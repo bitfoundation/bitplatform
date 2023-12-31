@@ -104,8 +104,8 @@
             "datatype": "bool",
             "defaultValue": "false"
         },
-        "winExe": {
-            "displayName": "Windows exe",
+        "windows": {
+            "displayName": "Windows",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false"
@@ -187,9 +187,9 @@
                     ]
                 },
                 {
-                    "condition": "(winExe != true)",
+                    "condition": "(windows != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.WinExe/**"
+                        "src/Client/Boilerplate.Client.Windows/**"
                     ]
                 }
             ]

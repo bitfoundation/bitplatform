@@ -4,8 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitBadge
 {
+    private BitColor? color;
     private BitBadgeSize? size;
-    private BitBadgeColor? color;
     private BitAppearance appearance = BitAppearance.Primary;
     private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
 
@@ -43,7 +43,7 @@ public partial class BitBadge
     /// The color of the badge.
     /// </summary>
     [Parameter]
-    public BitBadgeColor? Color
+    public BitColor? Color
     {
         get => color;
         set
@@ -212,11 +212,11 @@ public partial class BitBadge
 
         className.Append(' ').Append(Color switch
         {
-            BitBadgeColor.Info => "bit-bdg-inf",
-            BitBadgeColor.Success => "bit-bdg-suc",
-            BitBadgeColor.Warning => "bit-bdg-wrn",
-            BitBadgeColor.SevereWarning => "bit-bdg-swr",
-            BitBadgeColor.Error => "bit-bdg-err",
+            BitColor.Info => "bit-bdg-inf",
+            BitColor.Success => "bit-bdg-suc",
+            BitColor.Warning => "bit-bdg-wrn",
+            BitColor.SevereWarning => "bit-bdg-swr",
+            BitColor.Error => "bit-bdg-err",
             _ => string.Empty
         });
 

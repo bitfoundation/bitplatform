@@ -9,20 +9,8 @@
     box-sizing: border-box;
     font-family: "Segoe UI";
     -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
-}
-
-.bit-blazor-hybrid, .bit-blazor-electron {
-    *:not(input) {
-        -webkit-user-select: none;
-        user-select: none;
-    }
-}
-
-.bit-blazor-hybrid {
-    &.bit-windows * {
-        -webkit-user-drag: none;
-    }
 }
 
 html, body, #app-container {
@@ -30,15 +18,31 @@ html, body, #app-container {
     padding: 0;
     width: 100%;
     height: 100%;
-    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
 }
 
-#app-container {
-    padding-left: env(safe-area-inset-left);
+h1, h2, h3, h4, h5 {
+    margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+.bit-blazor-hybrid {
+    *:not(input) {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    &.bit-windows * {
+        -webkit-user-drag: none;
+    }
 }
 
 .pivot-sticky-header {
     z-index: 10;
+    overflow: auto;
     position: sticky;
     padding: 0.25rem 0.5rem;
     box-shadow: $bit-box-shadow-callout;

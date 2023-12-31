@@ -86,6 +86,14 @@ public class Middlewares
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
+        app.MapGet("/.well-known/apple-app-site-association", async () =>
+        {
+            // https://branch.io/resources/aasa-validator/ 
+            var contentType = "application/json; charset=utf-8";
+            var path = Path.Combine("wwwroot/.well-known", "apple-app-site-association");
+            return Results.Stream(File.OpenRead(path), contentType, "apple-app-site-association");
+        }).ExcludeFromDescription();
+
         app.MapControllers().RequireAuthorization();
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;

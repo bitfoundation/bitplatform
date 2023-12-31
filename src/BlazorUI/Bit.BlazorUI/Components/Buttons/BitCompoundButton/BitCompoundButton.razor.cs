@@ -4,8 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitCompoundButton
 {
+    private BitColor? color;
     private BitButtonSize? size;
-    private BitButtonColor? color;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
@@ -67,7 +67,7 @@ public partial class BitCompoundButton
     /// The color of button
     /// </summary>
     [Parameter]
-    public BitButtonColor? Color
+    public BitColor? Color
     {
         get => color;
         set
@@ -173,11 +173,11 @@ public partial class BitCompoundButton
 
         ClassBuilder.Register(() => Color switch
         {
-            BitButtonColor.Info => "bit-cmb-inf",
-            BitButtonColor.Success => "bit-cmb-suc",
-            BitButtonColor.Warning => "bit-cmb-wrn",
-            BitButtonColor.SevereWarning => "bit-cmb-swr",
-            BitButtonColor.Error => "bit-cmb-err",
+            BitColor.Info => "bit-cmb-inf",
+            BitColor.Success => "bit-cmb-suc",
+            BitColor.Warning => "bit-cmb-wrn",
+            BitColor.SevereWarning => "bit-cmb-swr",
+            BitColor.Error => "bit-cmb-err",
             _ => string.Empty
         });
 

@@ -17,7 +17,7 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         if (isDebug)
         {
-            _ = Console.Out.WriteLineAsync(exceptionMessage);
+            _ = System.Console.Out.WriteLineAsync(exceptionMessage);
             Debugger.Break();
         }
 

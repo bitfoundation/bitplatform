@@ -15,9 +15,9 @@
 .search-box-container {
     width: 100%;
     display: flex;
-    padding: rem2(21px);
     align-items: center;
     justify-content: center;
+    padding: rem2(8px) rem2(14px) rem2(24px);
     border-bottom: rem2(1px) solid $bit-color-border-secondary;
 }
 
@@ -82,17 +82,13 @@
 .todo-list {
     width: 100%;
     display: flex;
-    height: rem2(350px);
+    height: rem2(322px);
     align-items: center;
     margin-top: rem2(4px);
     flex-flow: column nowrap;
     justify-content: flex-start;
     background-color: $bit-color-background-primary;
     border: rem2(1px) solid $bit-color-border-secondary;
-
-    @include lt-lg {
-        height: rem2(300px);
-    }
 }
 
 .todo-item {
@@ -106,14 +102,14 @@
     justify-content: space-between;
     border-bottom: rem2(1px) solid $bit-color-border-secondary;
 
-    &:last-child {
+    &:nth-last-child(-n + 2) {
         border-bottom: none;
     }
 
     &.edit-mode {
         gap: rem2(16px);
 
-        @media all and (max-width: #{rem2(450px)}) {
+        @media all and (max-width: #{rem2(430px)}) {
             flex-flow: column;
 
             ::deep .todo-input {

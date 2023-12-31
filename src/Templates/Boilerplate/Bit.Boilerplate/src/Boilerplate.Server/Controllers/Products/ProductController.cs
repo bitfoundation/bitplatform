@@ -28,7 +28,7 @@ public partial class ProductController : AppControllerBase, IProductController
         if (odataQuery.Top is not null)
             query = query.Take(odataQuery.Top.Value);
 
-        return new PagedResult<ProductDto>(query.AsAsyncEnumerable(), totalCount);
+        return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
 
     [HttpGet("{id}")]

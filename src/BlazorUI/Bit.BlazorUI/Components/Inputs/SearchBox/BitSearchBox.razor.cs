@@ -5,10 +5,12 @@ namespace Bit.BlazorUI;
 public partial class BitSearchBox
 {
     private bool isOpen;
-    private bool disableAnimation;
+    private bool hideIcon;
+    private bool fixedIcon;
     private bool isUnderlined;
     private bool inputHasFocus;
-    private bool fixedIcon;
+    private bool showSearchButton;
+    private bool disableAnimation;
 
     private string _inputId = string.Empty;
     private string _calloutId = string.Empty;
@@ -19,7 +21,7 @@ public partial class BitSearchBox
     private List<string> _searchItems = [];
     private int _selectedIndex = -1;
 
-    private bool InputHasFocus
+    private bool _inputHasFocus
     {
         get => inputHasFocus;
         set
@@ -77,6 +79,22 @@ public partial class BitSearchBox
             if (fixedIcon == value) return;
 
             fixedIcon = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Whether or not the icon is visible.
+    /// </summary>
+    [Parameter]
+    public bool HideIcon
+    {
+        get => hideIcon;
+        set
+        {
+            if (hideIcon == value) return;
+
+            hideIcon = value;
             ClassBuilder.Reset();
         }
     }
@@ -167,6 +185,34 @@ public partial class BitSearchBox
     /// </summary>
     [Parameter] public int MinSuggestTriggerChars { get; set; } = 3;
 
+    /// <summary>
+    /// Custom icon name for the search button.
+    /// </summary>
+    [Parameter] public string SearchButtonIconName { get; set; } = "ChromeBackMirrored";
+
+    /// <summary>
+    /// Whether to show the search button.
+    /// </summary>
+    [Parameter]
+    public bool ShowSearchButton
+    {
+        get => showSearchButton;
+        set
+        {
+            if (showSearchButton == value) return;
+
+            showSearchButton = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+
+
+    public ElementReference InputReference => _inputRef;
+
+    public ValueTask FocusInput() => _inputRef.FocusAsync();
+
+
 
     protected override string RootElementClass => "bit-srb";
 
@@ -180,7 +226,11 @@ public partial class BitSearchBox
 
         ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
 
-        ClassBuilder.Register(() => InputHasFocus ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}foc" : string.Empty);
+        ClassBuilder.Register(() => _inputHasFocus ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}foc" : string.Empty);
+
+        ClassBuilder.Register(() => ShowSearchButton ? $"{RootElementClass}-ssb" : string.Empty);
+
+        ClassBuilder.Register(() => HideIcon ? $"{RootElementClass}-hic" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -208,12 +258,23 @@ public partial class BitSearchBox
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
 
-    private void HandleInputFocusIn() => InputHasFocus = true;
+    private void HandleInputFocusIn() => _inputHasFocus = true;
 
-    private void HandleInputFocusOut() => InputHasFocus = false;
+    private void HandleInputFocusOut() => _inputHasFocus = false;
 
-    private async Task HandleOnClear()
+    private async Task HandleOnSearchButtonClick()
     {
+        if (IsEnabled is false) return;
+
+        await OnSearch.InvokeAsync(CurrentValue);
+
+        await CloseCallout();
+    }
+
+    private async Task HandleOnClearButtonClick()
+    {
+        if (IsEnabled is false) return;
+
         await HandleOnChange(new() { Value = string.Empty });
 
         await _inputRef.FocusAsync();

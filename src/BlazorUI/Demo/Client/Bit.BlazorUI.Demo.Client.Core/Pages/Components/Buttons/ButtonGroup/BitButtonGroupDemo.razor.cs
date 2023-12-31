@@ -9,9 +9,18 @@ public partial class BitButtonGroupDemo
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
             DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of button, Possible values: Primary | Standard.",
+            Description = "The style of ButtonGroup, Possible values: Primary | Standard.",
             LinkType = LinkType.Link,
             Href = "#button-style-enum",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor",
+            LinkType = LinkType.Link,
+            Href = "#button-color-enum",
+            DefaultValue = "null",
+            Description = "The color of the ButtonGroup.",
         },
         new()
         {
@@ -64,6 +73,15 @@ public partial class BitButtonGroupDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Alias of ChildContent.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "null",
+            Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
         }
     };
 
@@ -120,7 +138,7 @@ public partial class BitButtonGroupDemo
                new()
                {
                    Name = "Template",
-                   Type = "RenderFragment<BitMenuButtonItem>?",
+                   Type = "RenderFragment<BitButtonGroupItem>?",
                    DefaultValue = "null",
                    Description = "The custom template for the item.",
                },
@@ -184,7 +202,7 @@ public partial class BitButtonGroupDemo
                new()
                {
                    Name = "Template",
-                   Type = "RenderFragment<BitMenuButtonOption>?",
+                   Type = "RenderFragment<BitButtonGroupOption>?",
                    DefaultValue = "null",
                    Description = "The custom template for the option.",
                },
@@ -324,6 +342,72 @@ public partial class BitButtonGroupDemo
                 {
                     Name= "Text",
                     Description="The button for less-pronounced actions.",
+                    Value="2",
+                }
+            }
+        },
+        new()
+        {
+            Id = "button-color-enum",
+            Name = "BitColor",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Info",
+                    Description="Info styled Button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success styled Button.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning styled Button.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="Severe Warning styled Button.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error styled Button.",
+                    Value="4",
+                }
+            }
+        },
+        new()
+        {
+            Id = "button-size-enum",
+            Name = "BitButtonSize",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size button.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size button.",
                     Value="2",
                 }
             }

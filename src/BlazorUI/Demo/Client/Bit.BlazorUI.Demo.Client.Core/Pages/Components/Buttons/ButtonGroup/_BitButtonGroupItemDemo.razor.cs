@@ -132,25 +132,25 @@ protected override void OnInitialized()
 }";
 
     private readonly string example6RazorCode = @"
-<BitButtonGroup Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.Info"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Color=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.Success"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Color=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.Warning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Color=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Color=""BitButtonColor.Error"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />";
+<BitButtonGroup Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />";
     private readonly string example6CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = new()
 {

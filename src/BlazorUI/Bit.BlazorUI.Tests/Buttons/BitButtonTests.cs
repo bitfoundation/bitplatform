@@ -206,15 +206,15 @@ public class BitButtonTests : BunitTestContext
     }
     
     [DataTestMethod,
-         DataRow(BitButtonColor.Info),
-         DataRow(BitButtonColor.Success),
-         DataRow(BitButtonColor.Warning),
-         DataRow(BitButtonColor.SevereWarning),
-         DataRow(BitButtonColor.Error),
+         DataRow(BitColor.Info),
+         DataRow(BitColor.Success),
+         DataRow(BitColor.Warning),
+         DataRow(BitColor.SevereWarning),
+         DataRow(BitColor.Error),
          DataRow(null),
     ]
     [TestMethod]
-    public void BitButtonColorOfButtonTest(BitButtonColor? color)
+    public void BitColorOfButtonTest(BitColor? color)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
@@ -228,11 +228,11 @@ public class BitButtonTests : BunitTestContext
 
         var colorClassName = color switch
         {
-            BitButtonColor.Info => "bit-btn-inf",
-            BitButtonColor.Success => "bit-btn-suc",
-            BitButtonColor.Warning => "bit-btn-wrn",
-            BitButtonColor.SevereWarning => "bit-btn-swr",
-            BitButtonColor.Error => "bit-btn-err",
+            BitColor.Info => "bit-btn-inf",
+            BitColor.Success => "bit-btn-suc",
+            BitColor.Warning => "bit-btn-wrn",
+            BitColor.SevereWarning => "bit-btn-swr",
+            BitColor.Error => "bit-btn-err",
             _ => String.Empty
         };
 

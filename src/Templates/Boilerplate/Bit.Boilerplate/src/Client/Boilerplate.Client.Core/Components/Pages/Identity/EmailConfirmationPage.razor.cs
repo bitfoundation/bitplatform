@@ -6,22 +6,37 @@ public partial class EmailConfirmationPage
 {
     [AutoInject] IIdentityController identityController = default!;
 
-    private bool isLoading;
-    private string? resendLinkErrors;
+    private bool isLoading = true;
+    private string? error;
+    private bool emailConfirmed = false;
     private BitMessageBarType emailConfirmationMessageType = BitMessageBarType.Error;
 
     [SupplyParameterFromQuery, Parameter] public string? Email { get; set; }
+    [SupplyParameterFromQuery, Parameter] public string? Token { get; set; }
 
-    /// <summary>
-    /// Email confirmation errors populated by api/Identity/ConfirmEmail endpoint.
-    /// </summary>
-    [SupplyParameterFromQuery, Parameter] public string? Errors { get; set; }
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        try
+        {
+            await identityController.ConfirmEmail(new() { Email = Email!, Token = Token! });
+            emailConfirmed = true;
+        }
+        catch (ResourceValidationException exp)
+        {
+            error = string.Join(", ", exp.Payload.Details.SelectMany(d => d.Errors));
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
 
-    [SupplyParameterFromQuery(Name = "email-confirmed"), Parameter] public bool EmailConfirmed { get; set; }
+        await base.OnAfterFirstRenderAsync();
+    }
 
     private void RedirectToSignIn()
     {
-        NavigationManager.NavigateTo("/sign-in");
+        NavigationManager.NavigateTo($"/sign-in?email={Email}");
     }
 
     private async Task DoResendLink()
@@ -29,7 +44,7 @@ public partial class EmailConfirmationPage
         if (isLoading) return;
 
         isLoading = true;
-        resendLinkErrors = Errors = null;
+        error = null;
 
         try
         {
@@ -37,13 +52,13 @@ public partial class EmailConfirmationPage
 
             emailConfirmationMessageType = BitMessageBarType.Success;
 
-            resendLinkErrors = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
+            error = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
             emailConfirmationMessageType = BitMessageBarType.Error;
 
-            resendLinkErrors = e.Message;
+            error = e.Message;
         }
         finally
         {

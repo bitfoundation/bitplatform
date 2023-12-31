@@ -59,11 +59,43 @@
                         <BitLabel>SearchBox with custom icon</BitLabel>
                         <BitSearchBox Placeholder="Search" IconName="@BitIconName.Filter" />
                     </div>
+                    <br />
+                    <div>
+                        <BitLabel>SearchBox without icon</BitLabel>
+                        <BitSearchBox Placeholder="Search" HideIcon />
+                    </div>
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+        <ComponentExampleBox Title="Search Button" RazorCode="@example4RazorCode" Id="example4">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div>
+                        <BitLabel>Basic SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" ShowSearchButton="true" />
+                    </div>
+                    <div>
+                        <BitLabel>Basic Underlined SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsUnderlined="true" ShowSearchButton="true" />
+                    </div>
+                    <div>
+                        <BitLabel>SearchBox with custom button icon</BitLabel>
+                        <BitSearchBox Placeholder="Search" ShowSearchButton="true" SearchButtonIconName="PageListFilter" />
+                    </div>
+                    <div>
+                        <BitLabel>Disabled Basic SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsEnabled="false" ShowSearchButton="true" />
+                    </div>
+                    <div>
+                        <BitLabel>Disabled Underlined SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsUnderlined="true" IsEnabled="false" ShowSearchButton="true" />
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
             <ExamplePreview>
                 <div class="example-content">
                     <div>
@@ -75,18 +107,18 @@
                     <div>
                         <BitLabel>Styles & Classes:</BitLabel>
                         <BitSearchBox Placeholder="Search"
-                                      Styles="@(new() { SearchIcon = "color: darkorange;",
-                                                Input = "padding: 0.5rem; background-color: goldenrod" })" />
+                                      Styles="@(new() { Icon = "color: darkorange;",
+                                                        Input = "padding: 0.5rem; background-color: goldenrod" })" />
                         <br />
                         <BitSearchBox Placeholder="Search" DefaultValue="This is default value"
                                       Classes="@(new() { ClearButtonIcon = "custom-clear",
-                                                 SearchIconContainer = "custom-search" })" />
+                                                         IconWrapper = "custom-search" })" />
                     </div>
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Visibility" RazorCode="@example5RazorCode" Id="example5">
+        <ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" Id="example6">
             <ExamplePreview>
                 <div class="example-content">
                     <div class="visibility-items">Visible: [ <BitSearchBox Visibility="BitVisibility.Visible" Placeholder="Visible SearchBox" /> ]</div>
@@ -96,7 +128,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <ExamplePreview>
                 <div class="example-content">
                     <div>
@@ -120,7 +152,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <ExamplePreview>
                 <div class="example-content">
                     <EditForm Model="ValidationSearchBoxModel">
@@ -132,7 +164,7 @@
             </ExamplePreview>
         </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Suggest List" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ComponentExampleBox Title="Suggest List" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <ExamplePreview>
                 <div class="example-content">
                     <div>

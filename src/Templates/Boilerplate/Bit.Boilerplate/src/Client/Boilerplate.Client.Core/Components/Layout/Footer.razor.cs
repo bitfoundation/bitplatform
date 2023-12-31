@@ -3,6 +3,7 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class Footer
 {
+    [AutoInject] private Cookie cookie = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator { get; set; } = default!;
 
@@ -23,7 +24,13 @@ public partial class Footer
 
     private async Task OnCultureChanged()
     {
-        await JSRuntime.SetCookie(".AspNetCore.Culture", $"c={SelectedCulture}|uic={SelectedCulture}", expiresIn: 30 * 24 * 3600, rememberMe: true);
+        await cookie.Set(new ButilCookie
+        {
+            Name = ".AspNetCore.Culture",
+            Value = $"c={SelectedCulture}|uic={SelectedCulture}",
+            MaxAge = 30 * 24 * 3600,
+            Secure = BuildConfiguration.IsRelease()
+        });
 
         await StorageService.SetItem("Culture", SelectedCulture, persistent: true);
 

@@ -53,4 +53,9 @@ internal static class BitJsRuntimeExtension
     {
         return await jsRuntime.InvokeAsync<TransformMatrix>("Bit.getComputedTransform", element);
     }
+
+    internal static async Task<int> ToggleOverflow(this IJSRuntime jsRuntime, string scrollerSelector, bool isHidden)
+    {
+        return await jsRuntime.InvokeAsync<int>("Bit.toggleOverflow", scrollerSelector, isHidden);
+    }
 }

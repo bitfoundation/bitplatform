@@ -65,8 +65,14 @@ main {
         }
     }
 
+    .subclass-title,
+    .subenum-title,
+    .subtitle,
     .title {
         overflow-wrap: anywhere;
+    }
+
+    .title {
         margin-bottom: rem2(50px);
     }
 
