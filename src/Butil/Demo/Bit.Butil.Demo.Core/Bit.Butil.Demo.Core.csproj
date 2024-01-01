@@ -9,8 +9,4 @@
     <ProjectReference Include="..\..\Bit.Butil\Bit.Butil.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
 </Project>
