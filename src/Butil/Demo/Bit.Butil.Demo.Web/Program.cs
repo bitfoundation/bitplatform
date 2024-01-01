@@ -1,13 +1,12 @@
-﻿using Bit.Butil;
-using Bit.Butil.Demo;
+﻿using Bit.Butil.Demo.Core;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddBitButilServices();
+builder.Services.AddWebServices();
 
-builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<Routes>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 await builder.Build().RunAsync();
