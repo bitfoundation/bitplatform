@@ -10,7 +10,7 @@
     z-index: 11;
     position: fixed;
     backdrop-filter: blur(20px);
-    box-shadow: $bit-box-shadow-1;
+    /*box-shadow: $bit-box-shadow-1;*/
     -webkit-backdrop-filter: blur(20px);
     padding-top: var(--bit-status-bar-height);
 }
@@ -31,8 +31,8 @@
     box-sizing: border-box;
     padding-left: rem2(20px);
     padding-right: rem2(20px);
-    min-height: rem2($HeaderHeight);
     justify-content: space-between;
+    min-height: rem2($HeaderHeight);
 
     @include md {
         padding-left: rem2(30px);

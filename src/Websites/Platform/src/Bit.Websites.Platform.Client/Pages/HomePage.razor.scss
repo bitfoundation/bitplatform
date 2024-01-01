@@ -14,8 +14,15 @@
     justify-content: flex-start;
 
     .hero-bg-image {
+        left: 50%;
         width: 100%;
         position: absolute;
+        max-width: rem2(1200px);
+        transform: translateX(-50%);
+
+        @include lt-lg {
+            /*top: -50px;*/
+        }
     }
 }
 
@@ -49,19 +56,6 @@
         flex-flow: row nowrap;
         align-items: flex-start;
         justify-content: flex-start;
-
-        @include lt-xl {
-            gap: 2rem;
-        }
-
-        @include lt-lg {
-            padding-top: 2rem;
-            justify-content: center;
-        }
-
-        @include lt-md {
-            margin-bottom: 3rem;
-        }
     }
 
     .hero-section-content {
@@ -71,12 +65,23 @@
         align-items: center;
         flex-flow: column nowrap;
 
+        @include lt-lg {
+            padding-top: 4rem;
+
+            ::deep {
+                .hero-title {
+                    font-size: 4rem;
+                }
+
+                .hero-subtitle {
+                    font-size: 1rem;
+                    font-weight: normal;
+                }
+            }
+        }
+
         @include lt-md {
             padding-top: 2rem;
-
-            ::deep .hero-title {
-                font-size: 5rem;
-            }
         }
     }
 }
