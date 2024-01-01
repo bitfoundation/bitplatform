@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Bit.Butil.Demo": {
+        "Bit.Butil.Demo.Web": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
