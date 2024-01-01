@@ -51,3 +51,6 @@
 <br />
 <button @onclick="@(() => console.Warn("This is a test warn:", _value))">warn</button>
 <br />
+<br />
+<button @onclick="@(() => console.Table(new { Name = "Value", Value = _value }))">Table</button>
+<br />

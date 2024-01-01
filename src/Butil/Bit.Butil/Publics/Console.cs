@@ -26,7 +26,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/count_static">https://developer.mozilla.org/en-US/docs/Web/API/console/count_static</see>
     /// </summary>
-    public async Task Count(string? label)
+    public async Task Count(string? label = null)
         => await js.ConsoleCount(label);
 
     /// <summary>
@@ -34,7 +34,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/countreset_static">https://developer.mozilla.org/en-US/docs/Web/API/console/countreset_static</see>
     /// </summary>
-    public async Task CountReset(string? label)
+    public async Task CountReset(string? label = null)
         => await js.ConsoleCountReset(label);
 
     /// <summary>
@@ -120,7 +120,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/profile_static">https://developer.mozilla.org/en-US/docs/Web/API/console/profile_static</see>
     /// </summary>
-    public async Task Profile(string? name)
+    public async Task Profile(string? name = null)
         => await js.ConsoleProfile(name);
 
     /// <summary>
@@ -129,7 +129,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/profileend_static">https://developer.mozilla.org/en-US/docs/Web/API/console/profileend_static</see>
     /// </summary>
-    public async Task ProfileEnd(string? name)
+    public async Task ProfileEnd(string? name = null)
         => await js.ConsoleProfileEnd(name);
 
     /// <summary>
@@ -137,7 +137,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/table_static">https://developer.mozilla.org/en-US/docs/Web/API/console/table_static</see>
     /// </summary>
-    public async Task Table(object? data, object? properties)
+    public async Task Table(object? data, object? properties = null)
         => await js.ConsoleTable(data, properties);
 
     /// <summary>
@@ -145,7 +145,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/time_static">https://developer.mozilla.org/en-US/docs/Web/API/console/time_static</see>
     /// </summary>
-    public async Task Time(string? label)
+    public async Task Time(string? label = null)
         => await js.ConsoleTime(label);
 
     /// <summary>
@@ -153,7 +153,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/timeend_static">https://developer.mozilla.org/en-US/docs/Web/API/console/timeend_static</see>
     /// </summary>
-    public async Task TimeEnd(string? label)
+    public async Task TimeEnd(string? label = null)
         => await js.ConsoleTimeEnd(label);
 
     /// <summary>
@@ -161,7 +161,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/timelog_static">https://developer.mozilla.org/en-US/docs/Web/API/console/timelog_static</see>
     /// </summary>
-    public async Task TimeLog(string? label, params object?[]? args)
+    public async Task TimeLog(string? label = null, params object?[]? args)
         => await js.ConsoleTimeLog(label, args);
 
     /// <summary>
@@ -169,7 +169,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/timestamp_static">https://developer.mozilla.org/en-US/docs/Web/API/console/timestamp_static</see>
     /// </summary>
-    public async Task TimeStamp(string? label)
+    public async Task TimeStamp(string? label = null)
         => await js.ConsoleTimeStamp(label);
 
     /// <summary>
