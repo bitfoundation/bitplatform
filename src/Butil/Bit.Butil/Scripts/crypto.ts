@@ -17,56 +17,56 @@ var BitButil = BitButil || {};
     };
 
     async function endecryptRsaOaep(algorithm, key, data, keyHash, func) {
-        var cryptoAlgorithm = {
+        const cryptoAlgorithm = {
             name: algorithm.name,
             label: algorithm.label?.buffer
         }
 
-        var keyAlgorithm = { name: "RSA-OAEP", hash: keyHash ?? "SHA-256" };
+        const keyAlgorithm = { name: "RSA-OAEP", hash: keyHash ?? "SHA-256" };
 
         return await endecrypt(cryptoAlgorithm, key, data, keyAlgorithm, func);
     }
 
     async function endecryptAesCtr(algorithm, key, data, func) {
-        var cryptoAlgorithm = {
+        const cryptoAlgorithm = {
             name: algorithm.name,
             counter: algorithm.counter?.buffer,
             length: algorithm.length
         }
 
-        var keyAlgorithm = { name: "AES-CTR" };
+        const keyAlgorithm = { name: "AES-CTR" };
 
         return await endecrypt(cryptoAlgorithm, key, data, keyAlgorithm, func);
     }
 
     async function endecryptAesCbc(algorithm, key, data, func) {
-        var cryptoAlgorithm = {
+        const cryptoAlgorithm = {
             name: algorithm.name,
             iv: algorithm.iv?.buffer,
         }
 
-        var keyAlgorithm = { name: "AES-CBC" };
+        const keyAlgorithm = { name: "AES-CBC" };
 
         return await endecrypt(cryptoAlgorithm, key, data, keyAlgorithm, func);
     }
 
     async function endecryptAesGcm(algorithm, key, data, func) {
-        var cryptoAlgorithm = {
+        const cryptoAlgorithm = {
             name: algorithm.name,
             iv: algorithm.iv?.buffer,
             additionalData: algorithm.additionalData?.buffer,
             tagLength: algorithm.tagLength,
         }
 
-        var keyAlgorithm = { name: "AES-GCM" };
+        const keyAlgorithm = { name: "AES-GCM" };
 
         return await endecrypt(cryptoAlgorithm, key, data, keyAlgorithm, func);
     }
 
     async function endecrypt(cryptoAlgorithm, key, data, keyAlgorithm, func) {
-        var cryptoKey = await crypto.subtle.importKey("raw", key.buffer, keyAlgorithm, false, ["encrypt", "decrypt"]);
+        const cryptoKey = await crypto.subtle.importKey("raw", key.buffer, keyAlgorithm, false, ["encrypt", "decrypt"]);
 
-        var buffer = await window.crypto.subtle[func](cryptoAlgorithm, cryptoKey, data.buffer);
+        const buffer = await window.crypto.subtle[func](cryptoAlgorithm, cryptoKey, data.buffer);
 
         return new Uint8Array(buffer);
     }
