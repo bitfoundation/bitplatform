@@ -10,6 +10,6 @@ public class TodoItem
     public bool IsDone { get; set; }
 
     [ForeignKey(nameof(UserId))]
-    public User? User { get; set; }
+    public User User { get; set; } = default!;
     public int UserId { get; set; }
 }

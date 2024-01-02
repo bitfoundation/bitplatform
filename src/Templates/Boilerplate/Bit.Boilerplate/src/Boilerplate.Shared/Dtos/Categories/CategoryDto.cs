@@ -12,4 +12,6 @@ public class CategoryDto
 
     [Display(Name = nameof(AppStrings.Color))]
     public string? Color { get; set; } = "#FFFFFF";
+
+    public int ProductsCount { get; set; }
 }
