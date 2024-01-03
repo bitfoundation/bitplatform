@@ -7,12 +7,14 @@
 
 <h1>Window</h1>
 
-<pre style="font-family:Consolas">
+<pre style="font-family:Consolas; overflow: auto;">
 @@inject Bit.Butil.Window window
 
 @@code {
     ...
     await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
+    ...
+    await window.Alert("Alert from C#");
     ...
 }
 </pre>
@@ -20,12 +22,14 @@
 <br />
 <hr />
 
-<h4>Open the DevTools and start pressing keys or clicking on buttons</h4>
+<h3>Open the DevTools console and start pressing keys or clicking on buttons</h3>
 
 <hr />
 <br />
 
-<button @onclick=AddEventListener>AddEventListener</button>&nbsp;<button @onclick=RemoveEventListener>RemoveEventListener</button>
+<button @onclick=AddEventListener>AddEventListener</button>
+&nbsp;
+<button @onclick=RemoveEventListener>RemoveEventListener</button>
 <br />
 <br />
 <div>Is KeyDown Registered? @isKeyDownRegistered</div>
@@ -34,7 +38,9 @@
 <hr />
 <br />
 
-<button @onclick=AddBeforeUnload>AddBeforeUnload</button>&nbsp;<button @onclick=RemoveBeforeUnload>RemoveBeforeUnload</button>
+<button @onclick=AddBeforeUnload>AddBeforeUnload</button>
+&nbsp;
+<button @onclick=RemoveBeforeUnload>RemoveBeforeUnload</button>
 <br />
 <br />
 <div>Is BeforeUnload Registered? @isBeforeUnloadRegistered</div>
@@ -43,7 +49,34 @@
 <hr />
 <br />
 
-<button @onclick=GetInnerHeight>GetInnerHeight</button>&nbsp;<button @onclick=GetInnerWidth>GetInnerWidth</button>
+<button @onclick=GetInnerHeight>GetInnerHeight</button>
+&nbsp;
+<button @onclick=GetInnerWidth>GetInnerWidth</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=ShowAlert>ShowAlert</button>
+&nbsp;
+<button @onclick=ShowConfirm>ShowConfirm</button>
+&nbsp;
+<button @onclick=ShowPrompt>ShowPrompt</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=OpenWindow>OpenWindow</button>
+&nbsp;
+<button @onclick=OpenPrint>OpenPrint</button>
+&nbsp;
+<button @onclick=Find>Find 'window' word</button>
+
+<br />
+<br />
 
 @code {
     private bool isKeyDownRegistered;
@@ -90,6 +123,37 @@
     private async Task GetInnerWidth()
     {
         await console.Log("Window InnerWidth =", await window.GetInnerWidth());
+    }
+
+    private async Task ShowAlert()
+    {
+        await window.Alert("Alert from C#");
+    }
+
+    private async Task ShowConfirm()
+    {
+        await window.Confirm("Confirm from C#");
+    }
+
+    private async Task ShowPrompt()
+    {
+        await window.Prompt("Prompt from C#", string.Empty);
+    }
+
+    private async Task OpenWindow()
+    {
+        var windowFeatures = new WindowFeatures() { Popup = true, Width = 848, Height = 568 };
+        await window.Open("/document", "popupWindow", windowFeatures);
+    }
+
+    private async Task OpenPrint()
+    {
+        await window.Print();
+    }
+
+    private async Task Find()
+    {
+        await window.Find("window");
     }
 
     public void Dispose()
