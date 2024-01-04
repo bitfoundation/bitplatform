@@ -42,6 +42,7 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbCo
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
+        // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type:
         configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
         configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
     }
