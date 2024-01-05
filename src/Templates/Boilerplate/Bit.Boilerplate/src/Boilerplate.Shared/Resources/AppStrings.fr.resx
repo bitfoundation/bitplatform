@@ -561,4 +561,7 @@
     <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
   </data>
+    <data name="ProductsCount" xml:space="preserve">
+    <value>Les produits comptent</value>
+  </data>
 </root>

@@ -37,43 +37,43 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpGet("{id}")]
     public async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken)
     {
-        var todoItem = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
-        if (todoItem is null)
+        if (dto is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
-        return todoItem;
+        return dto;
     }
 
     [HttpPost]
     public async Task<TodoItemDto> Create(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var todoItemToAdd = dto.Map();
+        var entityToAdd = dto.Map();
 
-        todoItemToAdd.UserId = User.GetUserId();
+        entityToAdd.UserId = User.GetUserId();
 
-        todoItemToAdd.Date = DateTimeOffset.UtcNow;
+        entityToAdd.Date = DateTimeOffset.UtcNow;
 
-        await DbContext.TodoItems.AddAsync(todoItemToAdd, cancellationToken);
+        await DbContext.TodoItems.AddAsync(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return todoItemToAdd.Map();
+        return entityToAdd.Map();
     }
 
     [HttpPut]
     public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var todoItemToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
-        if (todoItemToUpdate is null)
+        if (entityToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
-        dto.Patch(todoItemToUpdate);
+        dto.Patch(entityToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return todoItemToUpdate.Map();
+        return entityToUpdate.Map();
     }
 
     [HttpDelete("{id}")]
