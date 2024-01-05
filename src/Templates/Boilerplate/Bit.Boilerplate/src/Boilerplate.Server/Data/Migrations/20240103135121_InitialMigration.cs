@@ -135,7 +135,7 @@ public partial class InitialMigration : Migration
             {
                 Id = table.Column<int>(type: "int", nullable: false)
                     .Annotation("SqlServer:Identity", "1, 1"),
-                Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                 Date = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                 IsDone = table.Column<bool>(type: "bit", nullable: false),
                 UserId = table.Column<int>(type: "int", nullable: false)

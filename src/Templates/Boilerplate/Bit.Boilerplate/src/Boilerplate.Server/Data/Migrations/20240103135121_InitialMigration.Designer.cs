@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boilerplate.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231121162004_InitialMigration")]
+    [Migration("20240103135121_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -472,6 +472,7 @@ namespace Boilerplate.Server.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")

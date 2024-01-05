@@ -19,7 +19,7 @@ var BitButil = BitButil || {};
     async function endecryptRsaOaep(algorithm, key, data, keyHash, func) {
         const cryptoAlgorithm = {
             name: algorithm.name,
-            label: algorithm.label?.buffer
+            label: arrayToBuffer(algorithm.label)
         }
 
         const keyAlgorithm = { name: "RSA-OAEP", hash: keyHash ?? "SHA-256" };
@@ -30,7 +30,7 @@ var BitButil = BitButil || {};
     async function endecryptAesCtr(algorithm, key, data, func) {
         const cryptoAlgorithm = {
             name: algorithm.name,
-            counter: algorithm.counter?.buffer,
+            counter: arrayToBuffer(algorithm.counter),
             length: algorithm.length
         }
 
@@ -42,7 +42,7 @@ var BitButil = BitButil || {};
     async function endecryptAesCbc(algorithm, key, data, func) {
         const cryptoAlgorithm = {
             name: algorithm.name,
-            iv: algorithm.iv?.buffer,
+            iv: arrayToBuffer(algorithm.iv),
         }
 
         const keyAlgorithm = { name: "AES-CBC" };
@@ -53,8 +53,8 @@ var BitButil = BitButil || {};
     async function endecryptAesGcm(algorithm, key, data, func) {
         const cryptoAlgorithm = {
             name: algorithm.name,
-            iv: algorithm.iv?.buffer,
-            additionalData: algorithm.additionalData?.buffer,
+            iv: arrayToBuffer(algorithm.iv),
+            additionalData: arrayToBuffer(algorithm.additionalData),
             tagLength: algorithm.tagLength,
         }
 
@@ -64,12 +64,14 @@ var BitButil = BitButil || {};
     }
 
     async function endecrypt(cryptoAlgorithm, key, data, keyAlgorithm, func) {
-        const cryptoKey = await crypto.subtle.importKey("raw", key.buffer, keyAlgorithm, false, ["encrypt", "decrypt"]);
+        const cryptoKey = await crypto.subtle.importKey("raw", arrayToBuffer(key), keyAlgorithm, false, ["encrypt", "decrypt"]);
 
-        const buffer = await window.crypto.subtle[func](cryptoAlgorithm, cryptoKey, data.buffer);
+        const encryptedBuffer = await window.crypto.subtle[func](cryptoAlgorithm, cryptoKey, arrayToBuffer(data));
 
-        return new Uint8Array(buffer);
+        return new Uint8Array(encryptedBuffer);
     }
 
-
+    function arrayToBuffer(array: Uint8Array): ArrayBuffer {
+        return array?.buffer.slice(array.byteOffset, array.byteLength + array.byteOffset)
+    }
 }(BitButil));

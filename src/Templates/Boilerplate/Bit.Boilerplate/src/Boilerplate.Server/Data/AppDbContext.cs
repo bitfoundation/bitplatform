@@ -59,11 +59,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     //#if (database == "Sqlite")
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
+        //#if (IsInsideProjectTemplate == true)
         if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
         {
-            configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
-            configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        //#endif
+        // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type:
+        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        //#if (IsInsideProjectTemplate == true)
         }
+        //#endif
     }
     //#endif
 

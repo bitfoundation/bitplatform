@@ -34,39 +34,39 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     [HttpGet("{id}")]
     public async Task<CategoryDto> Get(int id, CancellationToken cancellationToken)
     {
-        var category = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
-        if (category is null)
+        if (dto is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
-        return category;
+        return dto;
     }
 
     [HttpPost]
     public async Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken)
     {
-        var categoryToAdd = dto.Map();
+        var entityToAdd = dto.Map();
 
-        await DbContext.Categories.AddAsync(categoryToAdd, cancellationToken);
+        await DbContext.Categories.AddAsync(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return categoryToAdd.Map();
+        return entityToAdd.Map();
     }
 
     [HttpPut]
     public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken)
     {
-        var categoryToUpdate = await DbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = await DbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
-        if (categoryToUpdate is null)
+        if (entityToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        dto.Patch(categoryToUpdate);
+        dto.Patch(entityToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return categoryToUpdate.Map();
+        return entityToUpdate.Map();
     }
 
     [HttpDelete("{id}")]
