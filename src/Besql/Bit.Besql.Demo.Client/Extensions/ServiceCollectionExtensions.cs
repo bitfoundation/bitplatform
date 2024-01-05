@@ -1,4 +1,4 @@
-﻿using Bit.Besql.Sample.Client.Data;
+﻿using Bit.Besql.Demo.Client.Data;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

@@ -209,7 +209,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Shared", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Besql", "Besql", "{619FE7F0-CF56-4325-BE76-7A3464D4DF3C}"
 	ProjectSection(SolutionItems) = preProject
-		Readme.MD = Readme.MD
+		Besql\README.md = Besql\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql", "Besql\Bit.Besql\Bit.Besql.csproj", "{18DFDA5D-B37A-4281-83D4-033F55DEC6CD}"
@@ -222,9 +222,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil.Demo.Core", "Buti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil.Demo.Maui", "Butil\Demo\Bit.Butil.Demo.Maui\Bit.Butil.Demo.Maui.csproj", "{A2804E75-DB56-40DC-8039-599F49E23270}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Sample", "Besql\Bit.Besql.Sample\Bit.Besql.Sample.csproj", "{369CA388-48AF-4BC1-B51B-78B8E650D57C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Demo", "Besql\Bit.Besql.Demo\Bit.Besql.Demo.csproj", "{369CA388-48AF-4BC1-B51B-78B8E650D57C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Sample.Client", "Besql\Bit.Besql.Sample.Client\Bit.Besql.Sample.Client.csproj", "{0E77F82E-CED5-49A8-8BE5-A0C0D6BB4EAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Demo.Client", "Besql\Bit.Besql.Demo.Client\Bit.Besql.Demo.Client.csproj", "{0E77F82E-CED5-49A8-8BE5-A0C0D6BB4EAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

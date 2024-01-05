@@ -1,9 +1,9 @@
-﻿using Bit.Besql.Sample.Client.Data.CompiledModel;
-using Bit.Besql.Sample.Client.Model;
+﻿using Bit.Besql.Demo.Client.Data.CompiledModel;
+using Bit.Besql.Demo.Client.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Bit.Besql.Sample.Client.Data;
+namespace Bit.Besql.Demo.Client.Data;
 
 public class OfflineDbContext(DbContextOptions<OfflineDbContext> options)
     : DbContext(options)

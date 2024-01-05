@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Bit.Besql.Sample.Client.Model;
+namespace Bit.Besql.Demo.Client.Model;
 
 public class WeatherForecast
 {

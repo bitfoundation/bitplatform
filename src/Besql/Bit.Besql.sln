@@ -5,9 +5,9 @@ VisualStudioVersion = 17.9.34321.82
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql", "Bit.Besql\Bit.Besql.csproj", "{09B2C633-C120-4B89-A3FF-A1F9F76D42C5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Sample", "Bit.Besql.Sample\Bit.Besql.Sample.csproj", "{DCF10236-066C-430F-98DC-128448F6E35B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Demo", "Bit.Besql.Demo\Bit.Besql.Demo.csproj", "{DCF10236-066C-430F-98DC-128448F6E35B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Sample.Client", "Bit.Besql.Sample.Client\Bit.Besql.Sample.Client.csproj", "{7B950D57-4D60-47AB-B169-5E3215C73BED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Demo.Client", "Bit.Besql.Demo.Client\Bit.Besql.Demo.Client.csproj", "{7B950D57-4D60-47AB-B169-5E3215C73BED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

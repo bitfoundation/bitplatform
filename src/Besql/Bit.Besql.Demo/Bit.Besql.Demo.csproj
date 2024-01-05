@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Bit.Besql.Sample.Client\Bit.Besql.Sample.Client.csproj" />
+		<ProjectReference Include="..\Bit.Besql.Demo.Client\Bit.Besql.Demo.Client.csproj" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
 	</ItemGroup>
 
@@ -15,8 +15,8 @@
 		<!-- 
 			 To add migrations or optimize db context, first install
 			 Microsoft.EntityFrameworkCore.Design & Microsoft.EntityFrameworkCore.Tools nuget packages.			 
-			 Then Set `Bit.Besql.Sample` project as startup project in solution explorer,
-			 and open Nuget Package Manager Console, and select `Bit.Besql.Sample` project as default project
+			 Then Set `Bit.Besql.Demo` project as startup project in solution explorer,
+			 and open Nuget Package Manager Console, and select `Bit.Besql.Demo` project as default project
 			 Then run either Add-Migration MigrationName -OutputDir Data\Migrations or
 			 Optimize-DbContext -OutputDir Data/CompiledModel commands. -->
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">

@@ -1,6 +1,6 @@
-using Bit.Besql.Sample.Client.Data;
-using Bit.Besql.Sample.Client.Pages;
-using Bit.Besql.Sample.Components;
+using Bit.Besql.Demo.Client.Data;
+using Bit.Besql.Demo.Client.Pages;
+using Bit.Besql.Demo.Components;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

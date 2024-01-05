@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace Bit.Besql.Sample.Client.Data.Migrations;
+namespace Bit.Besql.Demo.Client.Data.Migrations;
 
 /// <inheritdoc />
 public partial class InitialMigration : Migration
