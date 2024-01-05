@@ -24,7 +24,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/key">https://developer.mozilla.org/en-US/docs/Web/API/Storage/key</see>
     /// </summary>
-    public async Task<string> GetKey(int index)
+    public async Task<string?> GetKey(int index)
         => await js.StorageGetKey(storageName, index);
 
     /// <summary>
@@ -32,7 +32,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem</see>
     /// </summary>
-    public async Task<string> GetItem(string key)
+    public async Task<string?> GetItem(string? key)
         => await js.StorageGetItem(storageName, key);
 
     /// <summary>
@@ -40,7 +40,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem</see>
     /// </summary>
-    public async Task SetItem(string key, string value)
+    public async Task SetItem(string? key, string? value)
         => await js.StorageSetItem(storageName, key, value);
 
     /// <summary>
@@ -48,7 +48,7 @@ public class ButilStorage(IJSRuntime js, string storageName)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem">https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem</see>
     /// </summary>
-    public async Task RemoveItem(string key)
+    public async Task RemoveItem(string? key)
         => await js.StorageRemoveItem(storageName, key);
 
     /// <summary>
