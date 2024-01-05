@@ -192,10 +192,10 @@
 <hr />
 <br />
 
-Scroll X: <input type="number" @bind-value="scrollX"/>
+X: <input type="number" @bind-value="scrollX"/>
 <br />
 <br />
-Scroll Y: <input type="number" @bind-value="scrollY"/>
+Y: <input type="number" @bind-value="scrollY"/>
 <br />
 <br />
 <button @onclick=Scroll>Scroll</button>
@@ -203,6 +203,17 @@ Scroll Y: <input type="number" @bind-value="scrollY"/>
 <br />
 <br />
 <hr />
+<br />
+
+X: <input type="number" @bind-value="scrollByX"/>
+<br />
+<br />
+Y: <input type="number" @bind-value="scrollByY"/>
+<br />
+<br />
+<button @onclick=ScrollBy>ScrollBy</button>
+
+<br />
 <br />
 
 @code {
@@ -235,6 +246,9 @@ Scroll Y: <input type="number" @bind-value="scrollY"/>
 
     private float scrollY = 0;
     private float scrollX = 0;
+
+    private float scrollByY = -156;
+    private float scrollByX = 0;
 
     private Action<ButilKeyboardEventArgs> _handler = default!;
 
@@ -374,8 +388,14 @@ Scroll Y: <input type="number" @bind-value="scrollY"/>
 
     private async Task Scroll()
     {
-        var scrollOptions = new ScrollToOptions() { Top = scrollY, Left = scrollX, behavior = ScrollBehavior.Smooth };
+        var scrollOptions = new ScrollToOptions() { Top = scrollY, Left = scrollX, Behavior = ScrollBehavior.Smooth };
         await window.Scroll(scrollOptions);
+    }
+
+    private async Task ScrollBy()
+    {
+        var scrollOptions = new ScrollToOptions() { Top = scrollByY, Left = scrollByX, Behavior = ScrollBehavior.Smooth };
+        await window.ScrollBy(scrollOptions);
     }
 
     public void Dispose()
