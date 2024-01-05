@@ -52,6 +52,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "HideClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to hide the clear button when the BitSearchBox has value.",
+        },
+        new()
+        {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
@@ -166,7 +173,7 @@ public partial class BitSearchBoxDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to show the search button.",
-        },
+        }
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
