@@ -23,7 +23,7 @@
                placeholder="@Placeholder"
                autocomplete="@Autocomplete"
                disabled="@(IsEnabled is false)" />
-        @if (CurrentValue.HasValue())
+        @if (HideClearButton is false && CurrentValue.HasValue())
         {
             <button @onclick="HandleOnClearButtonClick"
                     style="@Styles?.ClearButton"
