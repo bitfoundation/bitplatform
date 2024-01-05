@@ -11,5 +11,5 @@ public class Category
 
     public string? Color { get; set; }
 
-    public IList<Product>? Products { get; set; }
+    public IList<Product> Products { get; set; } = [];
 }
