@@ -67,6 +67,24 @@
 <hr />
 <br />
 
+<button @onclick=GetScreenX>GetScreenX</button>
+&nbsp;
+<button @onclick=GetScreenY>GetScreenY</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=GetScrollX>GetScrollX</button>
+&nbsp;
+<button @onclick=GetScrollY>GetScrollY</button>
+
+<br />
+<br />
+<hr />
+<br />
+
 <button @onclick=ShowAlert>ShowAlert</button>
 &nbsp;
 <button @onclick=ShowConfirm>ShowConfirm</button>
@@ -301,6 +319,26 @@ Y: <input type="number" @bind-value="scrollByY"/>
     private async Task GetOuterWidth()
     {
         await console.Log("Window OuterWidth =", await window.GetOuterWidth());
+    }
+
+    private async Task GetScreenX()
+    {
+        await console.Log("Window ScreenX =", await window.GetScreenX());
+    }
+
+    private async Task GetScreenY()
+    {
+        await console.Log("Window ScreenY =", await window.GetScreenY());
+    }
+
+    private async Task GetScrollX()
+    {
+        await console.Log("Window ScrollX =", await window.GetScrollX());
+    }
+
+    private async Task GetScrollY()
+    {
+        await console.Log("Window ScrollY =", await window.GetScrollY());
     }
 
     private async Task ShowAlert()
