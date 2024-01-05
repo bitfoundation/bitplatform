@@ -132,6 +132,11 @@ public partial class BitDatePicker
     [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
+    /// Whether the DatePicker closes automatically after selecting the date.
+    /// </summary>
+    [Parameter] public bool AutoClose { get; set; } = true;
+
+    /// <summary>
     /// Aria label of the DatePicker's callout for screen readers.
     /// </summary>
     [Parameter] public string CalloutAriaLabel { get; set; } = "Calendar";
@@ -663,8 +668,11 @@ public partial class BitDatePicker
             _currentYear--;
         }
 
-        IsOpen = false;
-        await ToggleCallout();
+        if (AutoClose)
+        {
+            IsOpen = false;
+            await ToggleCallout();
+        }
 
         _currentMonth = selectedMonth;
 

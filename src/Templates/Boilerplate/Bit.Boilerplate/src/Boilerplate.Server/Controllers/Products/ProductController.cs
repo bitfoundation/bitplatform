@@ -34,39 +34,39 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpGet("{id}")]
     public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
     {
-        var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
-        if (product is null)
+        if (dto is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        return product;
+        return dto;
     }
 
     [HttpPost]
     public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
     {
-        var productToAdd = dto.Map();
+        var entityToAdd = dto.Map();
 
-        await DbContext.Products.AddAsync(productToAdd, cancellationToken);
+        await DbContext.Products.AddAsync(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return productToAdd.Map();
+        return entityToAdd.Map();
     }
 
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
-        var productToUpdate = await DbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = await DbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
-        if (productToUpdate is null)
+        if (entityToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        dto.Patch(productToUpdate);
+        dto.Patch(entityToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        return productToUpdate.Map();
+        return entityToUpdate.Map();
     }
 
     [HttpDelete("{id}")]

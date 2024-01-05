@@ -534,7 +534,7 @@ private string OverridePivotSelectedKey = ""1"";";
             DefaultSelectedKey=""Foo""
             LinkSize=""@BitPivotLinkSize.Large""
             HeadersOnly=""true""
-            OnLinkClick=""@(item => SelectedKey = item.Key)"">
+            OnItemClick=""@(item => SelectedKey = item.Key)"">
     <BitPivotItem HeaderText=""Foo"" Key=""Foo""></BitPivotItem>
     <BitPivotItem HeaderText=""Bar"" Key=""Bar""></BitPivotItem>
     <BitPivotItem HeaderText=""Bas"" Key=""Bas""></BitPivotItem>
@@ -548,7 +548,7 @@ private string SelectedKey = ""Foo"";";
     Last Pivot clicked: <strong>@SelectedPivotItem?.HeaderText</strong>
 </div>
 
-<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"" OnLinkClick=""@(item => SelectedPivotItem = item)"">
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"" OnItemClick=""@(item => SelectedPivotItem = item)"">
     <BitPivotItem HeaderText=""Foo"">
         <div style=""margin-top:10px"">
             <h1>Pivot #1: Foo</h1>

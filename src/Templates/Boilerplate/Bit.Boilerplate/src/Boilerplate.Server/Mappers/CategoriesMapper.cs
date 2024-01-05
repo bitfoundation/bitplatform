@@ -11,6 +11,8 @@ namespace Boilerplate.Server.Mappers;
 public static partial class CategoriesMapper
 {
     public static partial IQueryable<CategoryDto> Project(this IQueryable<Category> query);
+
+    [MapProperty(nameof(@Category.Products.Count), nameof(@CategoryDto.ProductsCount))]
     public static partial CategoryDto Map(this Category source);
     public static partial Category Map(this CategoryDto source);
     public static partial void Patch(this CategoryDto source, Category destination);
