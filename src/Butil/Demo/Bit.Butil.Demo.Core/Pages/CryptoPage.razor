@@ -53,6 +53,7 @@
         await console.Log("Start encrypting...");
         var textAsUtf8Bytes = System.Text.Encoding.UTF8.GetBytes(inputText);
         encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+        await console.Log("Encrypted bytes:", encryptedBytes);
         await console.Log("Encrypted text:", BitConverter.ToString(encryptedBytes));
     }
 
@@ -60,6 +61,7 @@
     {
         await console.Log("Start decrypting...");
         var decryptedBytes = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, encryptedBytes, iv: iv);
+        await console.Log("Decrypted bytes:", decryptedBytes);
         outputText = System.Text.Encoding.UTF8.GetString(decryptedBytes);
         await console.Log("Decrypted text:", outputText);
     }
