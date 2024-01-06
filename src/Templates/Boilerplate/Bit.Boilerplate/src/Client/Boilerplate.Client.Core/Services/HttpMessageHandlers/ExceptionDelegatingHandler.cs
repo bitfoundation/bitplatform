@@ -39,11 +39,11 @@ public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, 
 
             if (response.StatusCode is HttpStatusCode.Unauthorized)
             {
-                throw new UnauthorizedException(localizer[AppStrings.YouNeedToSignIn]);
+                throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
             }
             if (response.StatusCode is HttpStatusCode.Forbidden)
             {
-                throw new ForbiddenException(localizer[AppStrings.ForbiddenException]);
+                throw new ForbiddenException(localizer[nameof(AppStrings.ForbiddenException)]);
             }
 
             response.EnsureSuccessStatusCode();
@@ -54,7 +54,7 @@ public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, 
             || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException
             || exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable })
         {
-            throw new ServerConnectionException(nameof(AppStrings.ServerConnectionException), exp);
+            throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
     }
 }
