@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bit.Besql\Bit.Besql.csproj" />
+    <ProjectReference Include="..\..\Bit.Besql\Bit.Besql.csproj" />
   </ItemGroup>
 
 </Project>
