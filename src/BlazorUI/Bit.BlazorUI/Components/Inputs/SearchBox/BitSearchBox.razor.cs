@@ -206,6 +206,11 @@ public partial class BitSearchBox
         }
     }
 
+    /// <summary>
+    /// Whether to hide the clear button when the BitSearchBox has value.
+    /// </summary>
+    [Parameter] public bool HideClearButton { get; set; }
+
 
 
     public ElementReference InputReference => _inputRef;
