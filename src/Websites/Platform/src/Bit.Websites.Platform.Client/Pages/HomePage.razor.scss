@@ -432,7 +432,6 @@
     margin: 5rem 0;
     padding: 5rem 0;
     text-align: center;
-    /*background-color: $bit-color-background-secondary;*/
 
     @include lt-md {
         padding: 5rem 0;
@@ -480,7 +479,6 @@
     }
 
     .github-item {
-        /*background-image: url('/images/home/tech/github-logo.webp');*/
         svg path {
             fill: $bit-color-foreground-primary;
         }
@@ -504,7 +502,6 @@
         flex-flow: column nowrap;
         justify-content: flex-start;
         padding: rem2(46px) rem2(40px);
-        /*background-color: $bit-color-background-secondary;*/
 
         @include md {
             padding: rem2(28px) rem2(25px);
