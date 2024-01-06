@@ -6,41 +6,50 @@
             Description="home page of the bit platform" />
 
 <div class="page-container">
+    <img src="/images/home/hero-gradient-dark.svg" class="hero-gradient dark-theme" />
+    <img src="/images/home/hero-gradient-light.svg" class="hero-gradient light-theme" />
     <section class="page-section hero-section">
         <div class="page-section-content">
             <div class="hero-section-content">
-                <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="hero-title">bit platform</BitTypography>
-                <BitTypography Variant="BitTypographyVariant.H5" Gutter Style="font-weight: 300">
-                    Build everything for everywhere using what you already know and love
+                <BitTypography Variant="BitTypographyVariant.H5" Gutter Class="hero-subtitle">
+                    Let's build apps with
+                </BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="hero-title">
+                    bit platform
+                </BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle">
+                    Build everything for everywhere
+                </BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle">
+                    using what you already know and love
                 </BitTypography>
                 <br /><br />
-                <BitButton Class="hero-quickstart-button">
-                    <a Class="hero-quickstart-link" href="#@QUICK_START_SECTION_ID">
-                        <BitTypography Variant="BitTypographyVariant.H6" Class="hero-quickstart-text">Quick start &nbsp; <BitIcon IconName="@BitIconName.ChevronRightSmall" /></BitTypography>
-                    </a>
+                <BitButton IconName="@BitIconName.ChevronRightMed"
+                           Href="@($"#{QUICK_START_SECTION_ID}")"
+                           Size="BitButtonSize.Large"
+                           IconPosition="BitButtonIconPosition.End"
+                           ButtonStyle="BitButtonStyle.Standard">
+                    Quick start
                 </BitButton>
-            </div>
-            <div class="hero-section-banner-container">
-                <div class="hero-section-banner">
-                    <img src="/images/home/banner.webp" />
-                </div>
             </div>
         </div>
     </section>
+    <img src="/images/home/hero-image-dark.svg" class="hero-image dark-theme" />
+    <img src="/images/home/hero-image-light.svg" class="hero-image light-theme" />
 
     <section class="page-section intro-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>What is bit platform?</BitTypography>
-            <BitTypography Variant="BitTypographyVariant.Subtitle1">
-                bit platform is a set of tools for <b>.NET</b> developers to easily <b>Code, Build & Deploy</b> their projects across <span class="blue-txt"><b>multiple platforms</b></span>.<br />
-                Our mission is to make development easier.
+            <BitTypography Variant="BitTypographyVariant.H6" Gutter>What is bit platform?</BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H4">
+                It's a set of tools for <b>.net</b> developers to easily <b>code, build & deploy</b> their projects across <b>multiple platforms</b>.
             </BitTypography>
         </div>
     </section>
 
     <section class="page-section components-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Components</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Components</BitTypography>
             <div class="components-container">
                 <div class="components-content-container">
                     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
@@ -71,9 +80,10 @@
 
     <section class="page-section templates-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Bit Boilerplate</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Project templates</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-                .NET project template that enable high-quality, speedy cross-platform development for Pwa / Ssr enabled web sites and Android, iOS, macOS, Windows apps.
+                Visual studio and .NET project templates that enable high-quality, speedy cross-platform development
+                for PWA/SSR enabled websites and Android, iOS, macOS, Windows apps.
             </BitTypography>
             <div class="template-terminal">
                 <BitIcon IconName="@BitIconName.ChevronRightSmall" /> <span>dotnet</span> <span>new</span> <span>bit-bp</span>
@@ -82,7 +92,7 @@
                 <span>--pipeline</span>
                 <span class="animation-container"><span class="animated a-3">github</span> <span class="animated a-3 delayed d-3">azure</span></span>
                 <span>--sample</span>
-                <span class="animation-container"><span class="animated a-3">todo</span> <span class="animated a-3 delayed d-3">admin</span></span>
+                <span class="animation-container"><span class="animated a-4">admin</span> <span class="animated a-4 delayed d-4">todo</span></span>
                 <span>--name</span> <span>MyAwesomeProject</span>
             </div>
             <div class="template-card-list">
@@ -98,7 +108,8 @@
                     <br />
                     <div class="links-container">
                         <a class="template-link" href="@Urls.Templates">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered" Target="_blank">Demo</BitButton>
+                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered"
+                                   Target="_blank" ButtonStyle="BitButtonStyle.Standard">Demo</BitButton>
                     </div>
                 </div>
                 <div class="template-card">
@@ -113,7 +124,8 @@
                     <br />
                     <div class="links-container">
                         <a class="template-link" href="@Urls.Templates">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.AdminPanelMultiLingual" Target="_blank">Demo</BitButton>
+                        <BitButton Href="@Urls.AdminPanelMultiLingual"
+                                   Target="_blank" ButtonStyle="BitButtonStyle.Standard">Demo</BitButton>
                     </div>
                 </div>
             </div>
@@ -122,7 +134,7 @@
 
     <section class="page-section tech-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Tech we use</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Tech we use</BitTypography>
             <div class="tech-list">
                 @* <a target="_blank" title=".NET" class="tech-item dotnet-item" href="https://dotnet.microsoft.com/en-us/"></a> *@
                 <a target="_blank" title="C#" class="tech-item csharp-item" href="https://dotnet.microsoft.com/en-us/languages/csharp"></a>
@@ -141,7 +153,7 @@
 
     <section class="page-section customer-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Our customers</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Our customers</BitTypography>
             <BitCarousel Class="customer-feedback-carousel" ShowNextPrev="false" AutoPlay="true" AutoPlayInterval="5000" InfiniteScrolling="true">
                 <BitCarouselItem>
                     <div class="customer-feedback-card">
@@ -183,20 +195,6 @@
                         </div>
                     </div>
                 </BitCarouselItem>
-                <BitCarouselItem>
-                    <div class="customer-feedback-card">
-                        <a href="https://twitter.com/mhrastegari77/status/1553252183973453824" target="_blank"><div class="twitter-icon"></div></a>
-                        <div class="customer-feedback-txt">
-                            Man! <span class="highlighted-txt">#BitPlatform</span> team is really awesome and powerful!!! <br />
-                            Yesterday I requested a draggable Carousel component for #Blazor and
-                            they literally published a pre release of it today. 🔥
-                        </div>
-                        <div class="author-container">
-                            <img class="customer-image" src="images/home/twitter/3.webp" />
-                            <div class="customer-feedback-name">MH Rastegari</div>
-                        </div>
-                    </div>
-                </BitCarouselItem>
             </BitCarousel>
 
             <!-- TrustBox widget - Micro Review Count -->
@@ -213,10 +211,12 @@
 
     <section class="page-section quickstart-section" id="@QUICK_START_SECTION_ID" @ref="quickStartRef">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Quick start</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Quick start</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>Quickly start with the bit platform products & tools</BitTypography>
             <div class="quickstart-links">
-                <BitCompoundButton Href="https://components.bitplatform.dev/getting-started" Id="blazorui-button">
+                <BitCompoundButton Id="blazorui-button"
+                                   Href="https://components.bitplatform.dev/getting-started"
+                                   ButtonStyle="BitButtonStyle.Standard">
                     <PrimaryTemplate>
                         <BitTypography Variant="BitTypographyVariant.H5">BlazorUI</BitTypography>
                     </PrimaryTemplate>
@@ -226,7 +226,9 @@
                         </BitTypography>
                     </SecondaryTemplate>
                 </BitCompoundButton>
-                <BitCompoundButton Href="https://bitplatform.dev/templates/development-prerequisites" Id="template-button">
+                <BitCompoundButton Id="template-button"
+                                   Href="https://bitplatform.dev/templates/development-prerequisites"
+                                   ButtonStyle="BitButtonStyle.Standard">
                     <PrimaryTemplate>
                         <BitTypography Variant="BitTypographyVariant.H5">Project templates</BitTypography>
                     </PrimaryTemplate>

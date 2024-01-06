@@ -1,8 +1,16 @@
-﻿
+﻿@import '../Styles/abstracts/_vars.scss';
 @import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+
+.bit-theme-dark .light-theme {
+    display: none;
+}
+
+.bit-theme-light .dark-theme {
+    display: none;
+}
 
 .page-container {
     width: 100%;
@@ -12,6 +20,25 @@
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
+
+    .hero-gradient {
+        left: 50%;
+        width: 100%;
+        top: rem2(-200px);
+        position: absolute;
+        max-width: rem2(1200px);
+        transform: translateX(-50%);
+
+        @include lt-lg {
+            top: rem2(-100px);
+        }
+    }
+
+    .hero-image {
+        width: 100%;
+        margin: auto;
+        max-width: rem2(1200px);
+    }
 }
 
 .page-section {
@@ -34,102 +61,61 @@
 
 .hero-section {
     padding: 0;
+    padding-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
 
     .page-section-content {
         gap: 5rem;
+        z-index: 2;
         display: flex;
         margin-bottom: 8rem;
         flex-flow: row nowrap;
         align-items: flex-start;
         justify-content: flex-start;
-
-        @include lt-xl {
-            gap: 2rem;
-        }
-
-        @include lt-lg {
-            padding-top: 2rem;
-            justify-content: center;
-        }
-
-        @include lt-md {
-            margin-bottom: 3rem;
-        }
     }
 
     .hero-section-content {
-        width: 50%;
+        flex-grow: 1;
         display: flex;
-        padding-top: 15rem;
-        max-width: rem2(504px);
-        align-items: flex-start;
+        padding-top: 7rem;
+        align-items: center;
         flex-flow: column nowrap;
-        justify-content: flex-start;
 
-        @include lt-xl {
-            width: 60%;
+        ::deep {
+            .hero-title {
+                font-size: 9rem;
+                font-weight: 400;
+            }
         }
 
         @include lt-lg {
-            width: 100%;
-            max-width: 100%;
-            padding-top: 10rem;
+            padding-top: 4rem;
+
+            ::deep {
+                .hero-title {
+                    font-size: 6rem;
+                    font-weight: normal;
+                }
+
+                .hero-subtitle {
+                    font-size: 1.5rem;
+                    font-weight: normal;
+                }
+            }
         }
 
         @include lt-md {
-            padding-top: 2rem;
+            ::deep {
+                .hero-title {
+                    font-size: 4rem;
+                }
 
-            ::deep .hero-title {
-                font-size: 5rem;
-            }
-        }
-    }
-
-    .hero-section-banner-container {
-        width: 50%;
-        max-width: 225rem;
-
-        .hero-section-banner {
-            padding: 2rem;
-            min-width: 225rem;
-            padding-bottom: 5rem;
-            border-bottom-left-radius: rem2(2px);
-            background-color: $bit-color-background-secondary;
-        }
-
-        @include lt-xl {
-            width: 40%;
-            max-width: 40%;
-
-            .hero-section-banner {
-                min-width: 140%;
-                padding-bottom: 10rem;
-            }
-
-            img {
-                width: 100%
-            }
-        }
-
-        @include lt-lg {
-            display: none;
-        }
-    }
-
-    ::deep .hero-quickstart-button {
-        padding: 0;
-        height: rem2(50px);
-
-        .hero-quickstart-link {
-            height: 100%;
-            display: flex;
-            color: inherit;
-            padding: 1rem 2rem;
-            text-decoration: none;
-
-            .hero-quickstart-text {
-                display: flex;
-                align-items: center;
+                .hero-subtitle {
+                    font-size: 1rem;
+                }
             }
         }
     }
@@ -138,6 +124,7 @@
 .intro-section {
     margin: 5rem 0;
     padding: 5rem 0;
+    margin-top: 10rem;
     background-color: $bit-color-background-secondary;
 
     @include lt-md {
@@ -275,16 +262,15 @@
 
 .templates-section {
     .template-terminal {
-        gap: rem2(12px);
         display: flex;
+        color: #f0f0f0;
+        gap: rem2(12px);
         flex-wrap: wrap;
         padding: rem2(50px);
-        margin: rem2(50px) 0;
         align-items: center;
+        margin: rem2(50px) 0;
         border-radius: rem2(4px);
-        color: #f0f0f0;
-        border: 1px solid #001234;
-        background-color: #012456;
+        background-color: #0C1949;
 
         span {
             white-space: nowrap;
@@ -333,6 +319,14 @@
 
         .d-3 {
             animation-delay: 6s;
+        }
+
+        .a-4 {
+            animation-duration: 10s;
+        }
+
+        .d-4 {
+            animation-delay: 5s;
         }
 
         @keyframes terminal-animation {
@@ -438,7 +432,6 @@
     margin: 5rem 0;
     padding: 5rem 0;
     text-align: center;
-    background-color: $bit-color-background-secondary;
 
     @include lt-md {
         padding: 5rem 0;
@@ -486,7 +479,6 @@
     }
 
     .github-item {
-        /*background-image: url('/images/home/tech/github-logo.webp');*/
         svg path {
             fill: $bit-color-foreground-primary;
         }
@@ -510,7 +502,6 @@
         flex-flow: column nowrap;
         justify-content: flex-start;
         padding: rem2(46px) rem2(40px);
-        background-color: $bit-color-background-secondary;
 
         @include md {
             padding: rem2(28px) rem2(25px);

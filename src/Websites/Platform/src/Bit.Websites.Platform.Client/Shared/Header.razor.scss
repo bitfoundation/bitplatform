@@ -10,14 +10,13 @@
     z-index: 11;
     position: fixed;
     backdrop-filter: blur(20px);
-    box-shadow: $bit-box-shadow-1;
     -webkit-backdrop-filter: blur(20px);
     padding-top: var(--bit-status-bar-height);
 }
 
 .main-header--full-page {
     .header-main-container {
-        max-width: rem2(1200px);
+        /*max-width: rem2(1200px);*/
     }
 }
 
@@ -31,8 +30,8 @@
     box-sizing: border-box;
     padding-left: rem2(20px);
     padding-right: rem2(20px);
-    min-height: rem2($HeaderHeight);
     justify-content: space-between;
+    min-height: rem2($HeaderHeight);
 
     @include md {
         padding-left: rem2(30px);
@@ -121,8 +120,8 @@
     border: none;
     cursor: pointer;
     height: rem2(35px);
-    min-width: rem2(35px);
     border-radius: 50%;
+    min-width: rem2(35px);
     color: $bit-color-primary-text;
     background-color: $bit-color-primary-main;
 
@@ -158,9 +157,9 @@
     display: none;
     align-items: center;
     flex-flow: row nowrap;
+    backdrop-filter: none;
     box-sizing: border-box;
     justify-content: flex-start;
-    backdrop-filter: none;
     height: rem2($HeaderSecondRowHeight);
 
     @include lt-lg {
@@ -280,8 +279,8 @@
         align-items: center;
         flex-flow: row nowrap;
         border-radius: rem2(4px);
-        padding: rem2(8px) rem2(16px);
         justify-content: flex-start;
+        padding: rem2(8px) rem2(16px);
         transition: background-color 150ms cubic-bezier(.4,0,.2,1) 0ms;
 
         &:hover {
@@ -323,46 +322,6 @@
                 border-color: $B11Color;
             }
         }
-    }
-
-    .menu-item-icon {
-        width: rem2(32px);
-        height: rem2(32px);
-        margin-right: rem2(16px);
-        border-radius: 50%;
-        border: rem2(1px) solid $B11Color;
-        background-color: $White;
-        background-position: center;
-        background-repeat: no-repeat;
-
-        @include sm {
-            display: none;
-        }
-    }
-
-    .todo-item {
-        background-image: url('/images/header/todo-template-icon.webp');
-        background-size: rem2(22px);
-    }
-
-    .admin-item {
-        background-image: url('/images/header/admin-panel-icon.webp');
-        background-size: rem2(18px);
-    }
-
-    .components-item {
-        background-image: url('/images/header/components-icon.webp');
-        background-size: rem2(28px);
-    }
-
-    .cloud-item {
-        background-image: url('/images/header/cloud-icon.webp');
-        background-size: rem2(20px);
-    }
-
-    .academy-item {
-        background-image: url('/images/header/academy-icon.webp');
-        background-size: rem2(22px);
     }
 }
 
