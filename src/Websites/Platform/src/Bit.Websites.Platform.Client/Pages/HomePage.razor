@@ -6,8 +6,7 @@
             Description="home page of the bit platform" />
 
 <div class="page-container">
-    <img src="/images/home/hero.svg" class="hero-bg-image" />
-    @* <img src="/images/home/hero-gradient.svg" class="hero-bg-gradient" /> *@
+    <img src="/images/home/hero-gradient2.svg" class="hero-gradient" />
     <section class="page-section hero-section">
         <div class="page-section-content">
             <div class="hero-section-content">
@@ -17,10 +16,10 @@
                 <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="hero-title">
                     bit platform
                 </BitTypography>
-                <BitTypography Variant="BitTypographyVariant.H5" Gutter Class="hero-subtitle">
+                <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle">
                     Build everything for everywhere
                 </BitTypography>
-                <BitTypography Variant="BitTypographyVariant.H5" Gutter Class="hero-subtitle">
+                <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle">
                     using what you already know and love
                 </BitTypography>
                 <br /><br />
@@ -34,30 +33,22 @@
             </div>
         </div>
     </section>
+    <img src="/images/home/hero-image.svg" class="hero-image" />
 
     <section class="page-section intro-section">
         <div class="page-section-content">
-            @* <bittypography variant="bittypographyvariant.h3" gutter>what is bit platform?</bittypography>
-            <bittypography variant="bittypographyvariant.subtitle1">
-                bit platform is a set of tools for <b>.net</b> developers to easily <b>code, build & deploy</b> their projects across <span class="blue-txt"><b>multiple platforms</b></span>.<br />
-                our mission is to make development easier.
-            </bittypography> *@
-        </div>
-    </section>
-
-    <section class="page-section intro-section">
-        <div class="page-section-content">
-            <bittypography variant="bittypographyvariant.h3" gutter>what is bit platform?</bittypography>
-            <bittypography variant="bittypographyvariant.subtitle1">
-            bit platform is a set of tools for <b>.net</b> developers to easily <b>code, build & deploy</b> their projects across <span class="blue-txt"><b>multiple platforms</b></span>.<br />
-            our mission is to make development easier.
-            </bittypography>
+            <BitTypography Variant="BitTypographyVariant.H6" Gutter>What is bit platform?</BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H4">
+                It's a set of tools for <b>.net</b> developers to easily <b>code, build & deploy</b> <br />
+                their projects across <b>multiple platforms</b>.
+            </BitTypography>
         </div>
     </section>
 
     <section class="page-section components-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Components</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Components</BitTypography>
             <div class="components-container">
                 <div class="components-content-container">
                     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
@@ -88,7 +79,7 @@
 
     <section class="page-section templates-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Bit Boilerplate</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Project templates</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
                 .NET project template that enable high-quality, speedy cross-platform development for Pwa / Ssr enabled web sites and Android, iOS, macOS, Windows apps.
             </BitTypography>
@@ -99,7 +90,7 @@
                 <span>--pipeline</span>
                 <span class="animation-container"><span class="animated a-3">github</span> <span class="animated a-3 delayed d-3">azure</span></span>
                 <span>--sample</span>
-                <span class="animation-container"><span class="animated a-3">todo</span> <span class="animated a-3 delayed d-3">admin</span></span>
+                <span class="animation-container"><span class="animated a-4">admin</span> <span class="animated a-4 delayed d-4">todo</span></span>
                 <span>--name</span> <span>MyAwesomeProject</span>
             </div>
             <div class="template-card-list">
@@ -115,7 +106,8 @@
                     <br />
                     <div class="links-container">
                         <a class="template-link" href="@Urls.Templates">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered" Target="_blank">Demo</BitButton>
+                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered"
+                                   Target="_blank" ButtonStyle="BitButtonStyle.Standard">Demo</BitButton>
                     </div>
                 </div>
                 <div class="template-card">
@@ -130,7 +122,8 @@
                     <br />
                     <div class="links-container">
                         <a class="template-link" href="@Urls.Templates">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.AdminPanelMultiLingual" Target="_blank">Demo</BitButton>
+                        <BitButton Href="@Urls.AdminPanelMultiLingual"
+                                   Target="_blank" ButtonStyle="BitButtonStyle.Standard">Demo</BitButton>
                     </div>
                 </div>
             </div>
@@ -139,7 +132,7 @@
 
     <section class="page-section tech-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Tech we use</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Tech we use</BitTypography>
             <div class="tech-list">
                 @* <a target="_blank" title=".NET" class="tech-item dotnet-item" href="https://dotnet.microsoft.com/en-us/"></a> *@
                 <a target="_blank" title="C#" class="tech-item csharp-item" href="https://dotnet.microsoft.com/en-us/languages/csharp"></a>
@@ -158,7 +151,7 @@
 
     <section class="page-section customer-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Our customers</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Our customers</BitTypography>
             <BitCarousel Class="customer-feedback-carousel" ShowNextPrev="false" AutoPlay="true" AutoPlayInterval="5000" InfiniteScrolling="true">
                 <BitCarouselItem>
                     <div class="customer-feedback-card">
@@ -200,7 +193,7 @@
                         </div>
                     </div>
                 </BitCarouselItem>
-                <BitCarouselItem>
+                @* <BitCarouselItem>
                     <div class="customer-feedback-card">
                         <a href="https://twitter.com/mhrastegari77/status/1553252183973453824" target="_blank"><div class="twitter-icon"></div></a>
                         <div class="customer-feedback-txt">
@@ -213,7 +206,7 @@
                             <div class="customer-feedback-name">MH Rastegari</div>
                         </div>
                     </div>
-                </BitCarouselItem>
+                </BitCarouselItem> *@
             </BitCarousel>
 
             <!-- TrustBox widget - Micro Review Count -->
@@ -230,10 +223,12 @@
 
     <section class="page-section quickstart-section" id="@QUICK_START_SECTION_ID" @ref="quickStartRef">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Quick start</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H2" Gutter>Quick start</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>Quickly start with the bit platform products & tools</BitTypography>
             <div class="quickstart-links">
-                <BitCompoundButton Href="https://components.bitplatform.dev/getting-started" Id="blazorui-button">
+                <BitCompoundButton Id="blazorui-button"
+                                   Href="https://components.bitplatform.dev/getting-started"
+                                   ButtonStyle="BitButtonStyle.Standard">
                     <PrimaryTemplate>
                         <BitTypography Variant="BitTypographyVariant.H5">BlazorUI</BitTypography>
                     </PrimaryTemplate>
@@ -243,7 +238,9 @@
                         </BitTypography>
                     </SecondaryTemplate>
                 </BitCompoundButton>
-                <BitCompoundButton Href="https://bitplatform.dev/templates/development-prerequisites" Id="template-button">
+                <BitCompoundButton Id="template-button"
+                                   Href="https://bitplatform.dev/templates/development-prerequisites"
+                                   ButtonStyle="BitButtonStyle.Standard">
                     <PrimaryTemplate>
                         <BitTypography Variant="BitTypographyVariant.H5">Project templates</BitTypography>
                     </PrimaryTemplate>

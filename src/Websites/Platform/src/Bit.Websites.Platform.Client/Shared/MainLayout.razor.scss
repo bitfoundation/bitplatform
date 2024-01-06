@@ -10,11 +10,10 @@
     min-height: 100vh;
     box-sizing: border-box;
     justify-content: flex-start;
-    padding-top: rem2($HeaderHeight);
-
-    @include lt-lg {
+    /*padding-top: rem2($HeaderHeight);*/
+    /*@include lt-lg {
         padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
-    }
+    }*/
 }
 
 .main--full-page {
@@ -60,7 +59,6 @@
     padding-left: rem2(60px);
     padding-right: rem2(60px);
     padding-bottom: rem2(65px);
-    max-width: calc(100% - $NavMenuWidth);
 
     @include lt-xl {
         padding-top: rem2(35px);
@@ -73,25 +71,29 @@
     }
 
     @include md {
-        max-width: 100%;
         padding-left: rem2(30px);
         padding-right: rem2(30px);
     }
 
     @include sm {
-        max-width: 100%;
         padding-left: rem2(20px);
         padding-right: rem2(20px);
-    }
-
-    @media all and (min-width: 1621px) {
-        max-width: rem2(1320px);
     }
 }
 
 .docs-content {
     padding: 2.5rem;
     background-color: $bit-color-background-secondary;
+    margin-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        margin-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
+
+    ::deep .page-container {
+        margin: auto;
+        max-width: rem2(1200px);
+    }
 }
 
 ::deep {

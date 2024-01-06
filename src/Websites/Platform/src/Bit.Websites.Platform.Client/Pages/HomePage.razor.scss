@@ -1,4 +1,4 @@
-﻿
+﻿@import '../Styles/abstracts/_vars.scss';
 @import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
@@ -13,16 +13,23 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
 
-    .hero-bg-image {
+    .hero-gradient {
         left: 50%;
         width: 100%;
+        top: rem2(-200px);
         position: absolute;
         max-width: rem2(1200px);
         transform: translateX(-50%);
 
         @include lt-lg {
-            /*top: -50px;*/
+            top: rem2(-100px);
         }
+    }
+
+    .hero-image {
+        width: 100%;
+        margin: auto;
+        max-width: rem2(1200px);
     }
 }
 
@@ -46,7 +53,11 @@
 
 .hero-section {
     padding: 0;
-    /*background-image: url('/images/home/hero-gradient.svg');*/
+    padding-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
 
     .page-section-content {
         gap: 5rem;
@@ -65,12 +76,20 @@
         align-items: center;
         flex-flow: column nowrap;
 
+        ::deep {
+            .hero-title {
+                font-size: 9rem;
+                font-weight: 400;
+            }
+        }
+
         @include lt-lg {
             padding-top: 4rem;
 
             ::deep {
                 .hero-title {
                     font-size: 4rem;
+                    font-weight: normal;
                 }
 
                 .hero-subtitle {
@@ -89,7 +108,8 @@
 .intro-section {
     margin: 5rem 0;
     padding: 5rem 0;
-    /*background-color: $bit-color-background-secondary;*/
+    margin-top: 10rem;
+    background-color: $bit-color-background-secondary;
 
     @include lt-md {
         padding: 5rem 0;
@@ -226,16 +246,15 @@
 
 .templates-section {
     .template-terminal {
-        gap: rem2(12px);
         display: flex;
+        color: #f0f0f0;
+        gap: rem2(12px);
         flex-wrap: wrap;
         padding: rem2(50px);
-        margin: rem2(50px) 0;
         align-items: center;
+        margin: rem2(50px) 0;
         border-radius: rem2(4px);
-        color: #f0f0f0;
-        border: 1px solid #001234;
-        background-color: #012456;
+        background-color: #0C1949;
 
         span {
             white-space: nowrap;
@@ -284,6 +303,14 @@
 
         .d-3 {
             animation-delay: 6s;
+        }
+
+        .a-4 {
+            animation-duration: 10s;
+        }
+
+        .d-4 {
+            animation-delay: 5s;
         }
 
         @keyframes terminal-animation {
@@ -389,7 +416,7 @@
     margin: 5rem 0;
     padding: 5rem 0;
     text-align: center;
-    background-color: $bit-color-background-secondary;
+    /*background-color: $bit-color-background-secondary;*/
 
     @include lt-md {
         padding: 5rem 0;
@@ -461,7 +488,7 @@
         flex-flow: column nowrap;
         justify-content: flex-start;
         padding: rem2(46px) rem2(40px);
-        background-color: $bit-color-background-secondary;
+        /*background-color: $bit-color-background-secondary;*/
 
         @include md {
             padding: rem2(28px) rem2(25px);
