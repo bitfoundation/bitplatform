@@ -1,5 +1,9 @@
 ## bit entity framework core sqlite (bit Besql)
 
+**Step by step walkthrough video:**
+
+[![bit besql video](http://img.youtube.com/vi/ClpMKUboJmA/sd2.jpg)](http://www.youtube.com/watch?v=ClpMKUboJmA "bit besql video")
+
 How to use `Bit.Besql`:
 
 The usage of `Bit.Besql` is exactly the same as the regular usage of `Microsoft.EntityFrameworkCore.Sqlite` with [IDbContextFactory](https://learn.microsoft.com/en-us/aspnet/core/blazor/blazor-ef-core?view=aspnetcore-8.0#new-dbcontext-instances).
