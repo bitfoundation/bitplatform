@@ -34,8 +34,9 @@
 @mixin SectionCard {
     width: 100%;
     overflow: auto;
-    padding: rem2(28px);
     position: relative;
+    padding: rem2(28px);
+    word-wrap: break-word;
     border-radius: rem2(4px);
     margin-bottom: rem2(28px);
     background-clip: padding-box;

@@ -4,6 +4,14 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 
+.bit-theme-dark .light-theme {
+    display: none;
+}
+
+.bit-theme-light .dark-theme {
+    display: none;
+}
+
 .page-container {
     width: 100%;
     display: flex;
@@ -88,19 +96,27 @@
 
             ::deep {
                 .hero-title {
-                    font-size: 4rem;
+                    font-size: 6rem;
                     font-weight: normal;
                 }
 
                 .hero-subtitle {
-                    font-size: 1rem;
+                    font-size: 1.5rem;
                     font-weight: normal;
                 }
             }
         }
 
         @include lt-md {
-            padding-top: 2rem;
+            ::deep {
+                .hero-title {
+                    font-size: 4rem;
+                }
+
+                .hero-subtitle {
+                    font-size: 1rem;
+                }
+            }
         }
     }
 }

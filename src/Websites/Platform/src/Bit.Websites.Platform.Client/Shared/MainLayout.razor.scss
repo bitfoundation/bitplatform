@@ -10,43 +10,12 @@
     min-height: 100vh;
     box-sizing: border-box;
     justify-content: flex-start;
-    /*padding-top: rem2($HeaderHeight);*/
-    /*@include lt-lg {
-        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
-    }*/
 }
 
 .main--full-page {
     .site-content {
+        padding: 0;
         max-width: 100%;
-        padding-top: 0;
-        padding-left: 0;
-        padding-right: 0;
-        padding-bottom: 0;
-
-        @include lt-xl {
-            padding-top: 0;
-            padding-bottom: 0;
-        }
-
-        @include lg {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        @include md {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        @include sm {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        @media all and (min-width: 1620px) {
-            max-width: 100%;
-        }
     }
 }
 
@@ -83,8 +52,8 @@
 
 .docs-content {
     padding: 2.5rem;
-    background-color: $bit-color-background-secondary;
     margin-top: rem2($HeaderHeight);
+    background-color: $bit-color-background-secondary;
 
     @include lt-lg {
         margin-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
