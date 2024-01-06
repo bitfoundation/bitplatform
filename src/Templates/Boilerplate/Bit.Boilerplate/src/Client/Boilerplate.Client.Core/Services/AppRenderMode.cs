@@ -15,6 +15,9 @@ public static class AppRenderMode
     public static IComponentRenderMode Current =>
         BuildConfiguration.IsDebug() ? BlazorServer /*For better development experience*/ : Auto;
 
+    /// <summary>
+    /// To enable/disable pwa support, navigate to Directory.Build.props and modify the MultilingualEnabled flag.
+    /// </summary>
     public static bool PwaEnabled { get; } =
 #if PwaEnabled
         true;
@@ -22,6 +25,9 @@ public static class AppRenderMode
     false;
 #endif
 
+    /// <summary>
+    /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the MultilingualEnabled flag.
+    /// </summary>
     public static bool MultilingualEnabled { get; } =
 #if MultilingualEnabled
     true;
