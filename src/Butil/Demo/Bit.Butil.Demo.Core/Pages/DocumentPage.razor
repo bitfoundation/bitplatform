@@ -7,7 +7,7 @@
 
 <h1>Document</h1>
 
-<pre style="font-family:Consolas">
+<pre style="font-family:Consolas; overflow: auto;">
 @@inject Bit.Butil.Document document
 
 @@code {
@@ -22,7 +22,7 @@
 <br />
 <hr />
 
-<h3>Open the DevTools and start clicking</h3>
+<h3>Open the DevTools console and start clicking</h3>
 
 <hr />
 <br />
@@ -31,21 +31,80 @@
 &nbsp;
 <button @onclick=RemoveEventListener>RemoveEventListener</button>
 <br />
+<br />
 <div>Is Registered: @isRegistered</div>
 
 <br />
 <hr />
 <br />
 
-<button @onclick=GetTitle>Document Title</button>
+<button @onclick=GetCharacterSet>Document character set</button>
+&nbsp;
+<button @onclick=GetContentType>Document content type</button>
 <br />
 <br />
+<button @onclick=GetCompatMode>Document compat mode</button>
+&nbsp;
+<button @onclick=GetReferrer>Document referrer</button>
+<br />
+<br />
+<button @onclick=GetDocumentURI>Document URI</button>
+&nbsp;
 <button @onclick=GetUrl>Document URL</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input type="checkbox" value="@designMode" @onchange="OnDesignModeChanged" />
+<label>@(designMode == DesignMode.On ? "On" : "Off")</label>
+<br />
+<br />
+<button @onclick=SetDesignMode>SetDesignMode</button>
+<br />
+<br />
+<button @onclick=GetDesignMode>GetDesignMode</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input type="checkbox" value="@documentDir" @onchange="OnDocumentDirChanged" />
+<label>@(documentDir == DocumentDir.Ltr ? "Ltr" : "Rtl")</label>
+<br />
+<br />
+<button @onclick=SetDocumentDir>SetDocumentDir</button>
+<br />
+<br />
+<button @onclick=GetDocumentDir>GetDocumentDir</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind-value="documentTitle" placeholder="Document title" />
+<br />
+<br />
+<button @onclick=SetTitle>SetTitle</button>
+&nbsp;
+<button @onclick=GetTitle>GetTitle</button>
+
+<br />
+<br />
 
 @code {
     private bool isRegistered = false;
 
     private Action<ButilMouseEventArgs> _handler = default!;
+
+    private string documentTitle;
+
+    private DesignMode designMode;
+
+    private DocumentDir documentDir;
 
     protected override void OnInitialized()
     {
@@ -66,14 +125,83 @@
         isRegistered = false;
     }
 
-    private async Task GetTitle()
+    private async Task GetCharacterSet()
     {
-        await console.Log("document.title =", await document.GetTitle());
+        await console.Log("document.characterSet =", await document.GetCharacterSet());
+    }
+
+    private async Task GetCompatMode()
+    {
+        await console.Log("document.compatMode =", await document.GetCompatMode());
+    }
+
+    private async Task GetContentType()
+    {
+        await console.Log("document.contentType =", await document.GetContentType());
+    }
+
+    private async Task GetReferrer()
+    {
+        var res = await document.GetReferrer();
+
+        if (string.IsNullOrWhiteSpace(res) is false)
+        {
+            await console.Log("The user came from:", await document.GetReferrer());
+        }
+        else
+        {
+           await console.Log("The user landed directly on this page");
+        }
     }
 
     private async Task GetUrl()
     {
         await console.Log("document.URL =", await document.GetUrl());
+    }
+
+    private async Task GetDocumentURI()
+    {
+        await console.Log("document.documentURI =", await document.GetDocumentURI());
+    }
+
+    private void OnDesignModeChanged(ChangeEventArgs e)
+    {
+        designMode = e.Value.ToString().ToLower() == "true" ? DesignMode.On : DesignMode.Off;
+    }
+
+    private async Task SetDesignMode()
+    {
+        await document.SetDesignMode(designMode);
+    }
+
+    private async Task GetDesignMode()
+    {
+        await console.Log("document.designMode =", await document.GetDesignMode());
+    }
+
+    private void OnDocumentDirChanged(ChangeEventArgs e)
+    {
+        documentDir = e.Value.ToString().ToLower() == "true" ? DocumentDir.Rtl : DocumentDir.Ltr;
+    }
+
+    private async Task SetDocumentDir()
+    {
+        await document.SetDir(documentDir);
+    }
+
+    private async Task GetDocumentDir()
+    {
+        await console.Log("document.dir =", await document.GetDir());
+    }
+
+    private async Task SetTitle()
+    {
+        await document.SetTitle(documentTitle);
+    }
+
+    private async Task GetTitle()
+    {
+        await console.Log("document.title =", await document.GetTitle());
     }
 
     public void Dispose()
