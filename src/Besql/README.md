@@ -11,7 +11,7 @@ The usage of `Bit.Besql` is exactly the same as the regular usage of `Microsoft.
 To get start, simply install `Bit.Besql` and use `services.AddBesqlDbContextFactory` instead of `services.AddDbContextFactory`.
 Then add the following script:
 ```html
-<script src="_content/Bit.Besql/browserCache.js"></script>
+<script src="_content/Bit.Besql/bit-bsql.js"></script>
 ```
 
 Note: Don't use `IDbContextFactory` in `OnInitialized` because it relies on `IJSRuntime`. Use `OnAfterRender` instead.
