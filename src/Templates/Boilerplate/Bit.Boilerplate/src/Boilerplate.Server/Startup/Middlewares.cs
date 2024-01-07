@@ -49,12 +49,15 @@ public class Middlewares
         {
             OnPrepareResponse = ctx =>
             {
-                // https://bitplatform.dev/templates/cache-mechanism
-                ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+                if (env.IsDevelopment() is false)
                 {
-                    MaxAge = TimeSpan.FromDays(7),
-                    Public = true
-                };
+                    // https://bitplatform.dev/templates/cache-mechanism
+                    ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+                    {
+                        MaxAge = TimeSpan.FromDays(7),
+                        Public = true
+                    };
+                }
             }
         });
 
