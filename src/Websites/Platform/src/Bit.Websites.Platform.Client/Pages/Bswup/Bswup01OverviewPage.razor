@@ -1,0 +1,42 @@
+﻿@page "/bswup/overview"
+@inherits AppComponentBase
+
+<PageOutlet Url="bswup/overview"
+            Title="Overview - Bswup"
+            Description="overview of the bit Bswup" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>bit Bswup</BitTypography>
+
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        bit Bswup is a set of tools that assists developers in making the most out of the
+        Service Worker when building Blazor web applications.
+        It utilizes the Service Worker's events to handle Installing and Updating the app
+        as fast and smooth as possible while minimizing the download size.
+    </BitTypography>
+
+    <br />
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup1.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup2.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup3.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup4-1.webp" class="bswup-img" />
+    <img src="/images/bswup/bswup4-2.webp" class="bswup-img" />
+
+</div>
+
+<NavigationButtons Next="Development prerequisites" NextUrl="/bswup/install" />

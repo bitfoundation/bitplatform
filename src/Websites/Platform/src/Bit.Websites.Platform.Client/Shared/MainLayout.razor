@@ -2,13 +2,18 @@
 
 <Header />
 
-<div class="main @(isTemplateDocRoute ? null : "main--full-page")">
+<div class="main @(isDocsRoute ? null : "main--full-page")">
     @if (isTemplateDocRoute)
     {
-        <NavMenu />
+        <NavMenu NavItems="templatesNavItems" />
     }
 
-    <div class="site-content @(isTemplateDocRoute ? "docs-content" : "")">
+    @if (isBswupDocRoute)
+    {
+        <NavMenu NavItems="bswupNavItems" />
+    }
+
+    <div class="site-content @(isDocsRoute ? "docs-content" : "")">
         <AppErrorBoundary>
             @Body
         </AppErrorBoundary>

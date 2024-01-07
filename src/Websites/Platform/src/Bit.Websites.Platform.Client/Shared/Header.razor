@@ -24,7 +24,14 @@
                         <a class="menu-item @(currentUrl.Contains("templates") ? "active" : "")" href="@Urls.Templates">
                             <div class="menu-item-content">
                                 <div class="item-title">Project templates</div>
-                                <div class="item-desc">Full-featured .NET project templates</div>
+                                <div class="item-desc">Feature-rich .NET project templates</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item @(currentUrl.Contains("bswup") ? "active" : "")" href="@Urls.Bswup">
+                            <div class="menu-item-content">
+                                <div class="item-title">Bswup</div>
+                                <div class="item-desc">Blazor SW Update Progress utilities</div>
                             </div>
                         </a>
                     </div>
@@ -94,7 +101,14 @@
                     <a class="menu-item" href="@Urls.Templates" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <div class="menu-item-content">
                             <div class="item-title">Project templates</div>
-                            <div class="item-desc">Cross-Platform project templates</div>
+                            <div class="item-desc">Feature-rich project templates</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item" href="@Urls.Bswup" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Bswup</div>
+                            <div class="item-desc">Blazor SW Update Progress utilities</div>
                         </div>
                     </a>
                 </div>
