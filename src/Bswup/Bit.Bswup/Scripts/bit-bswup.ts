@@ -166,11 +166,11 @@ class BitBswup {
 
         function extract(): BswupOptions {
             const defaultoptions = {
-                log: 'info',
-                sw: 'service-worker.js',
                 scope: '/',
+                log: 'none',
+                sw: 'service-worker.js',
                 handlerName: 'bitBswupHandler',
-                blazorScript: '_framework/blazor.webassembly.js',
+                blazorScript: '_framework/blazor.web.js',
             }
 
             const optionsAttribute = (bitBswupScript.attributes)['options'];
