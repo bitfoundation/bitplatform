@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Besql.Demo.Client\Bit.Besql.Demo.Client.csproj" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- 
+			 To add migrations or optimize db context, first install
+			 Microsoft.EntityFrameworkCore.Design & Microsoft.EntityFrameworkCore.Tools nuget packages.			 
+			 Then Set `Bit.Besql.Demo` project as startup project in solution explorer,
+			 and open Nuget Package Manager Console, and select `Bit.Besql.Demo` project as default project
+			 Then run either Add-Migration MigrationName -OutputDir Data\Migrations or
+			 Optimize-DbContext -OutputDir Data/CompiledModel commands. -->
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+</Project>

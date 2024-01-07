@@ -1,5 +1,6 @@
 ﻿@import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 
@@ -11,6 +12,11 @@
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
+    padding-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
 }
 
 .page-section {

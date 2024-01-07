@@ -1,4 +1,4 @@
-﻿window['bit-bswup version'] = '8.7.0-pre-04';
+﻿window['bit-bswup version'] = '8.7.0-pre-05';
 
 declare const Blazor: any;
 
@@ -166,11 +166,11 @@ class BitBswup {
 
         function extract(): BswupOptions {
             const defaultoptions = {
-                log: 'info',
-                sw: 'service-worker.js',
                 scope: '/',
+                log: 'none',
+                sw: 'service-worker.js',
                 handlerName: 'bitBswupHandler',
-                blazorScript: '_framework/blazor.webassembly.js',
+                blazorScript: '_framework/blazor.web.js',
             }
 
             const optionsAttribute = (bitBswupScript.attributes)['options'];

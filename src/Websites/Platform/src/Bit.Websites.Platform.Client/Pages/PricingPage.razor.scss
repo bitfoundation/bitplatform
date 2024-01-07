@@ -10,6 +10,11 @@
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
+    padding-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
 }
 
 .page-section {
