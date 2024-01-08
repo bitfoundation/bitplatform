@@ -9,6 +9,12 @@
     flex-flow: column;
 }
 
+.video-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
 .bswup-img {
     width: 100%;
     margin: auto;

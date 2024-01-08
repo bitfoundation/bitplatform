@@ -16,17 +16,22 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>ASP.NET caching</BitTypography>
         <div class="section-card-txt">
-            Disable static file caching. You can follow the below code in the Startup.cs file:
+            Enable static file caching. You can follow the below code in the Startup.cs file:
 
 <pre class="code-box">
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+        if (env.IsDevelopment() is false)
         {
-            NoCache = true
-        };
+            // https://bitplatform.dev/templates/cache-mechanism
+            ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+            {
+                MaxAge = TimeSpan.FromDays(7),
+                Public = true
+            };
+        }
     }
 });</pre>
         </div>

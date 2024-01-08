@@ -7,17 +7,22 @@ To use the bit Bswup, please follow these steps:
 dotnet add package Bit.Bswup
 ```
 
-2. Disable static file caching. You can follow the below code in the `Startup.cs` file:
+2. Enable static file caching. You can follow the below code in the `Startup.cs` file:
 
 ```csharp
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+        if (env.IsDevelopment() is false)
         {
-            NoCache = true
-        };
+            // https://bitplatform.dev/templates/cache-mechanism
+            ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+            {
+                MaxAge = TimeSpan.FromDays(7),
+                Public = true
+            };
+        }
     }
 });
 ```
@@ -94,31 +99,36 @@ function bitBswupHandler(type, data) {
 6. Configure additional settings in the service-worker file like the following code:
 
 ```js
-self.assetsInclude = [];
+self.assetsInclude = [/\data.db$/];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
-self.defaultUrl = 'index.html';
-self.prohibitedUrls = [];
-self.assetsUrl = '/service-worker-assets.js';
+self.defaultUrl = '/';
+self.prohibitedUrls = [/\/admin\//];
+self.serverHandledUrls = [/\/api\//];
+self.serverRenderedUrls = [/\/privacy$/];
 self.externalAssets = [
     {
         "url": "/"
     },
     {
-        "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
+        "url": "https://www.googletagmanager.com/gtag/js?id=G-G123456789"
     }
 ];
+self.assetsUrl = '/service-worker-assets.js';
+self.noPrerenderQuery = 'no-prerender=true';
 
 self.caseInsensitiveUrl = true;
-
-self.serverHandledUrls = [/\/api\//];
-self.serverRenderedUrls = [/\/privacy$/];
-
-self.noPrerenderQuery = 'no-prerender=true';
+self.ignoreDefaultInclude = true;
+self.ignoreDefaultExclude = true;
+self.isPassive = true;
+self.disablePassiveFirstBoot = true;
+self.enableIntegrityCheck = true;
+self.enableDiagnostics = true;
+self.enableFetchDiagnostics = true;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
 ```
 
-The most important line of code which is the only mandatory config in this file is the last line of importing the Bswup service-worker file:
+The most important line here is the last line which is the only mandatory config in this file that imports the Bswup service-worker file:
 
 ```js
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
@@ -126,26 +136,27 @@ self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
 
 The other settings are:
 
-- `self.assetsInclude`: The list of file names from the assets list to **include** when the Bswup tries to store them in the cache storage (regex supported).
-- `self.assetsExclude`: The list of file names from the assets list to **exclude** when the Bswup tries to store them in the cache storage (regex supported).
-- `self.externalAssets`: The list of external assets to cache that are not included in the auto-generated assets file. For example, if you're not using `index.html` (like `_host.cshtml`), then you should add `{ "url": "/" }`.
-- `self.defaultUrl`: The default page URL. Use `/` when using `_Host.cshtml`.
-- `self.assetsUrl`: The file path of the service-worker assets file generated at compile time (the default file name is `service-worker-assets.js`).
-- `self.prohibitedUrls`: The list of file names that should not be accessed (regex supported).
-- `self.caseInsensitiveUrl`: Enables the case insensitivity in the URL checking of the cache process.
-- `self.serverHandledUrls`: The list of URLs that do not enter the service-worker offline process and will be handled only by server (regex supported). such as `/api`, `/swagger`, ...
-- `self.serverRenderedUrls`: The list of URLs that should be rendered by the server and not client while navigating (regex supported). such as `/about.html`, `/privacy`, ...
-- `self.noPrerenderQuery`: The query string attached to the default document request to disable the prerendering from the server so an unwanted prerendered result not be cached.
-- `self.ignoreDefaultInclude`: Ignores the default asset **includes** array which is provided by the Bswup itself which is like this: 
+- `assetsInclude`: The list of file names from the assets list to **include** when the Bswup tries to store them in the cache storage (regex supported).
+- `assetsExclude`: The list of file names from the assets list to **exclude** when the Bswup tries to store them in the cache storage (regex supported).
+- `externalAssets`: The list of external assets to cache that are not included in the auto-generated assets file. For example, if you're not using `index.html` (like `_host.cshtml`), then you should add `{ "url": "/" }`.
+- `defaultUrl`: The default page URL. Use `/` when using `_Host.cshtml`.
+- `assetsUrl`: The file path of the service-worker assets file generated at compile time (the default file name is `service-worker-assets.js`).
+- `prohibitedUrls`: The list of file names that should not be accessed (regex supported).
+- `caseInsensitiveUrl`: Enables the case insensitivity in the URL checking of the cache process.
+- `serverHandledUrls`: The list of URLs that do not enter the service-worker offline process and will be handled only by server (regex supported). such as `/api`, `/swagger`, ...
+- `serverRenderedUrls`: The list of URLs that should be rendered by the server and not client while navigating (regex supported). such as `/about.html`, `/privacy`, ...
+- `noPrerenderQuery`: The query string attached to the default document request to disable the prerendering from the server so an unwanted prerendered result not be cached.
+- `ignoreDefaultInclude`: Ignores the default asset **includes** array which is provided by the Bswup itself which is like this: 
     ```js
     [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/]
     ```
-- `self.ignoreDefaultExclude`: Ignores the default asset **excludes** array which is provided by the Bswup itself which is like this: 
+- `ignoreDefaultExclude`: Ignores the default asset **excludes** array which is provided by the Bswup itself which is like this: 
     ```js
     [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/]
     ```
     #### Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker. Only the browser should handle these files. 
-- `self.isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
-- `self.enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
-- `self.enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
-- `self.enableFetchDiagnostics`: Enables fetch event diagnostics by pushing service-worker fetch event logs to the browser console.
+- `isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
+- `disablePassiveFirstBoot`: Disables downloading the Blazor's boot files in first time of Passive mode.
+- `enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
+- `enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
+- `enableFetchDiagnostics`: Enables fetch event diagnostics by pushing service-worker fetch event logs to the browser console.
