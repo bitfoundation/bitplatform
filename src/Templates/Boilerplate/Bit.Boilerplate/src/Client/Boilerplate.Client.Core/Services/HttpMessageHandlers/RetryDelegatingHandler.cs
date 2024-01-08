@@ -16,7 +16,7 @@ public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
             {
                 return await base.SendAsync(request, cancellationToken);
             }
-            catch (Exception exp) when (exp is not KnownException)
+            catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException)
             {
                 lastExp = exp;
                 await Task.Delay(delay, cancellationToken);

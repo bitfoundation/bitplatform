@@ -34,7 +34,7 @@ internal static class DocumentJsInterop
         };
     }
     internal static async Task DocumentSetDesignMode(this IJSRuntime js, DesignMode mode)
-        => await js.InvokeVoidAsync("BitButil.document.setDesignMode", mode);
+        => await js.InvokeVoidAsync("BitButil.document.setDesignMode", mode.ToString());
 
     internal static async Task<DocumentDir> DocumentGetDir(this IJSRuntime js)
     {
@@ -46,7 +46,7 @@ internal static class DocumentJsInterop
         };
     }
     internal static async Task DocumentSetDir(this IJSRuntime js, DocumentDir dir)
-        => await js.InvokeVoidAsync("BitButil.document.setDir", dir);
+        => await js.InvokeVoidAsync("BitButil.document.setDir", dir.ToString());
 
     internal static async Task<string> DocumentGetReferrer(this IJSRuntime js)
         => await js.InvokeAsync<string>("BitButil.document.referrer");
