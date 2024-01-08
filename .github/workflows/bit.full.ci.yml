@@ -42,7 +42,7 @@ jobs:
 
     - name: Release build empty sample + offline db + Win exe
       run: |
-        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --Windows
+        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --windows
         dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
 
     - name: Release build admin panel sample + SqlServer database
@@ -50,7 +50,7 @@ jobs:
         dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github
         dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
 
-    - name: Release build bit blazor ui + butil + bswu + bup + code analyzers + source generators
+    - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release
 
     - name: Release build careers, platform, sales websites
