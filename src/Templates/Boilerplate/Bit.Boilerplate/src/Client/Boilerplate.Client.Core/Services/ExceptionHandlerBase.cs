@@ -7,6 +7,7 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 {
     [AutoInject] protected readonly IStringLocalizer<AppStrings> Localizer = default!;
     [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
+    [AutoInject] protected Bit.Butil.Console Console = default!;
 
     public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
@@ -17,7 +18,14 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         if (isDebug)
         {
-            _ = System.Console.Out.WriteLineAsync(exceptionMessage);
+            if (OperatingSystem.IsBrowser() || AppRenderMode.IsBlazorHybrid)
+            {
+                _ = Console.Error(exceptionMessage);
+            }
+            else
+            {
+                _ = System.Console.Out.WriteLineAsync(exceptionMessage);
+            }
             Debugger.Break();
         }
 

@@ -17,8 +17,8 @@ footer {
 .footer-section {
     width: 100%;
     position: relative;
-    max-width: rem2(1200px);
     box-sizing: border-box;
+    max-width: rem2(1200px);
     padding: rem2(40px) rem2(20px) rem2(80px);
 
     &:first-child {
@@ -27,8 +27,8 @@ footer {
         align-items: center;
         grid-auto-columns: 1fr;
         grid-template-rows: auto;
-        grid-template-columns: 1fr 1fr;
         justify-content: space-between;
+        grid-template-columns: 1fr 1fr;
 
         @include lg {
             grid-template-columns: 1fr 1.75fr;
@@ -76,8 +76,8 @@ footer {
 
 .go-to-top {
     bottom: 0;
-    right: rem2(2px);
     cursor: pointer;
+    right: rem2(2px);
     position: absolute;
     padding: rem2(8px) rem2(12px);
     background-color: $bit-color-background-secondary;
@@ -130,8 +130,8 @@ footer {
 .bit-logo {
     width: rem2(32px);
     height: rem2(27px);
-    margin-bottom: rem2(20px);
     background-size: contain;
+    margin-bottom: rem2(20px);
     background-position: center;
     background-repeat: no-repeat;
     background-image: url('/images/bit-blue-icon.svg');
@@ -149,8 +149,8 @@ footer {
     font-weight: 400;
     letter-spacing: 0;
     font-size: rem2(14px);
-    margin-top: rem2(10px);
     text-decoration: none;
+    margin-top: rem2(10px);
     color: $bit-color-primary-main;
 
     &:hover {

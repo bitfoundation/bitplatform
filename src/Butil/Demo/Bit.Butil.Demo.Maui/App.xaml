@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Application
+    x:Class="Bit.Butil.Demo.Maui.App"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
+    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+    android:Application.WindowSoftInputModeAdjust="Resize">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Style ApplyToDerivedTypes="True" TargetType="ContentPage">
+                <Setter Property="NavigationPage.HasNavigationBar" Value="False" />
+                <Setter Property="ios:Page.UseSafeArea" Value="True" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -118,7 +118,6 @@ public partial class BitDatePicker
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _inputId;
-    private string? _activeDescendantId;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
 
@@ -130,6 +129,11 @@ public partial class BitDatePicker
     /// Whether or not the DatePicker allows a string date input.
     /// </summary>
     [Parameter] public bool AllowTextInput { get; set; }
+
+    /// <summary>
+    /// Whether the DatePicker closes automatically after selecting the date.
+    /// </summary>
+    [Parameter] public bool AutoClose { get; set; } = true;
 
     /// <summary>
     /// Aria label of the DatePicker's callout for screen readers.
@@ -500,7 +504,6 @@ public partial class BitDatePicker
         _labelId = $"{_datePickerId}-label";
         _calloutId = $"{_datePickerId}-callout";
         _inputId = $"{_datePickerId}-input";
-        _activeDescendantId = $"{_datePickerId}-active-descendant";
 
         base.OnInitialized();
     }
@@ -663,8 +666,11 @@ public partial class BitDatePicker
             _currentYear--;
         }
 
-        IsOpen = false;
-        await ToggleCallout();
+        if (AutoClose)
+        {
+            IsOpen = false;
+            await ToggleCallout();
+        }
 
         _currentMonth = selectedMonth;
 

@@ -272,13 +272,6 @@ public class Window(IJSRuntime js)
     /// </summary>
     public async Task Scroll(float? x, float? y)
         => await js.WindowScroll(null, x, y);
-    /// <summary>
-    /// Scrolls the window to a particular place in the document.
-    /// <br/>
-    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scroll">https://developer.mozilla.org/en-US/docs/Web/API/Window/scroll</see>
-    /// </summary>
-    public async Task Scroll(ScrollToOptions? options, float? x, float? y)
-        => await js.WindowScroll(options, x, y);
 
     /// <summary>
     /// Scrolls the document in the window by the given amount.

@@ -97,10 +97,10 @@ internal static class WindowJsInterop
         => await js.InvokeAsync<string>("BitButil.window.prompt", message, defaultValue);
 
     internal static async Task WindowScroll(this IJSRuntime js, ScrollToOptions? options, float? x, float? y)
-        => await js.InvokeVoidAsync("BitButil.window.scroll", options, x, y);
+        => await js.InvokeVoidAsync("BitButil.window.scroll", options?.ToJsObject(), x, y);
 
     internal static async Task WindowScrollBy(this IJSRuntime js, ScrollToOptions? options, float? x, float? y)
-        => await js.InvokeVoidAsync("BitButil.window.scrollBy", options, x, y);
+        => await js.InvokeVoidAsync("BitButil.window.scrollBy", options?.ToJsObject(), x, y);
 
     internal static async Task WindowStop(this IJSRuntime js)
         => await js.InvokeVoidAsync("BitButil.window.stop");

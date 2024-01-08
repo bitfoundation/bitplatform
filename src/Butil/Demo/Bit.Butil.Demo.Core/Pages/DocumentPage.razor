@@ -1,0 +1,204 @@
+﻿@page "/document"
+@implements IDisposable
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Document document
+
+<PageTitle>Document Samples</PageTitle>
+
+<h1>Document</h1>
+
+<pre style="font-family:Consolas; overflow: auto;">
+@@inject Bit.Butil.Document document
+
+@@code {
+    ...
+    await document.AddEventListener(ButilEvents.Click, args => { ... });
+    ...
+    await document.SetTitle("New shinny title");
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking</h3>
+
+<hr />
+<br />
+
+<button @onclick=AddEventListener>AddEventListener</button>
+&nbsp;
+<button @onclick=RemoveEventListener>RemoveEventListener</button>
+<br />
+<br />
+<div>Is Registered: @isRegistered</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=GetCharacterSet>Document character set</button>
+&nbsp;
+<button @onclick=GetContentType>Document content type</button>
+<br />
+<br />
+<button @onclick=GetCompatMode>Document compat mode</button>
+&nbsp;
+<button @onclick=GetReferrer>Document referrer</button>
+<br />
+<br />
+<button @onclick=GetDocumentURI>Document URI</button>
+&nbsp;
+<button @onclick=GetUrl>Document URL</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input type="checkbox" @bind="@isDesignModeOn" />
+<label>@(isDesignModeOn ? "On" : "Off")</label>
+<br />
+<br />
+<button @onclick=SetDesignMode>SetDesignMode</button>
+<br />
+<br />
+<button @onclick=GetDesignMode>GetDesignMode</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input type="checkbox" @bind="@isDocumentDirRtl" />
+<label>@(isDocumentDirRtl ? "Rtl" : "Ltr")</label>
+<br />
+<br />
+<button @onclick=SetDocumentDir>SetDocumentDir</button>
+<br />
+<br />
+<button @onclick=GetDocumentDir>GetDocumentDir</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind-value="documentTitle" placeholder="Document title" />
+<br />
+<br />
+<button @onclick=SetTitle>SetTitle</button>
+&nbsp;
+<button @onclick=GetTitle>GetTitle</button>
+
+<br />
+<br />
+
+@code {
+    private bool isRegistered = false;
+
+    private Action<ButilMouseEventArgs> _handler = default!;
+
+    private string documentTitle;
+
+    private bool isDesignModeOn;
+
+    private bool isDocumentDirRtl;
+
+    protected override void OnInitialized()
+    {
+        _handler = (ButilMouseEventArgs arg) => _ = console.Log("Click from C# = X:", arg.ClientX, "Y:", arg.ClientY);
+
+        base.OnInitialized();
+    }
+
+    private void AddEventListener()
+    {
+        _ = document.AddEventListener(ButilEvents.Click, _handler);
+        isRegistered = true;
+    }
+
+    private void RemoveEventListener()
+    {
+        _ = document.RemoveEventListener(ButilEvents.Click, _handler);
+        isRegistered = false;
+    }
+
+    private async Task GetCharacterSet()
+    {
+        await console.Log("document.characterSet =", await document.GetCharacterSet());
+    }
+
+    private async Task GetCompatMode()
+    {
+        await console.Log("document.compatMode =", await document.GetCompatMode());
+    }
+
+    private async Task GetContentType()
+    {
+        await console.Log("document.contentType =", await document.GetContentType());
+    }
+
+    private async Task GetReferrer()
+    {
+        var res = await document.GetReferrer();
+
+        if (string.IsNullOrWhiteSpace(res) is false)
+        {
+            await console.Log("The user came from:", await document.GetReferrer());
+        }
+        else
+        {
+           await console.Log("The user landed directly on this page");
+        }
+    }
+
+    private async Task GetUrl()
+    {
+        await console.Log("document.URL =", await document.GetUrl());
+    }
+
+    private async Task GetDocumentURI()
+    {
+        await console.Log("document.documentURI =", await document.GetDocumentURI());
+    }
+
+    private async Task SetDesignMode()
+    {
+        await document.SetDesignMode(isDesignModeOn ? DesignMode.On : DesignMode.Off);
+    }
+
+    private async Task GetDesignMode()
+    {
+        await console.Log("document.designMode =", await document.GetDesignMode());
+    }
+
+    private async Task SetDocumentDir()
+    {
+        await document.SetDir(isDocumentDirRtl ? DocumentDir.Rtl : DocumentDir.Ltr);
+    }
+
+    private async Task GetDocumentDir()
+    {
+        await console.Log("document.dir =", await document.GetDir());
+    }
+
+    private async Task SetTitle()
+    {
+        await document.SetTitle(documentTitle);
+    }
+
+    private async Task GetTitle()
+    {
+        await console.Log("document.title =", await document.GetTitle());
+    }
+
+    public void Dispose()
+    {
+        if (isRegistered)
+        {
+            _ = document.RemoveEventListener(ButilEvents.Click, _handler);
+        }
+    }
+}

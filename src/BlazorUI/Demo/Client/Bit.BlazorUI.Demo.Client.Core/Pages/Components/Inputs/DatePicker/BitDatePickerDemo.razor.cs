@@ -13,6 +13,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "AutoClose",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the DatePicker closes automatically after selecting the date."
+        },
+        new()
+        {
             Name = "CalloutAriaLabel",
             Type = "string",
             DefaultValue = "Calendar",

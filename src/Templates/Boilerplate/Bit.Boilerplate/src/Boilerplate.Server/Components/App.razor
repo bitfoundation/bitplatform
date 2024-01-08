@@ -42,12 +42,7 @@
         @if (AppRenderMode.PwaEnabled)
         {
             <Script src="_framework/blazor.web.js" autostart="false"></Script>
-            <Script src="_content/Bit.Bswup/bit-bswup.js"
-                    scope="/"
-                    log="none"
-                    sw="service-worker.js"
-                    handler="bitBswupHandler"
-                    blazorScript="_framework/blazor.web.js"></Script>
+            <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
             <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
             <AppBswupProgressBar />
         }
@@ -56,6 +51,9 @@
             <Script src="_framework/blazor.web.js"></Script>
         }
         <Script src="_content/Bit.Butil/bit-butil.js"></Script>
+        @*#if (offlineDb == true)*@
+        <Script src="_content/Bit.Besql/bit-besql.js"></Script>
+        @*#endif*@
         <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
         <Script src="_content/Boilerplate.Client.Core/scripts/app.js"></Script>
         @*#if (sample == "Admin")*@
