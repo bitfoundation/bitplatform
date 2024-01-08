@@ -1,0 +1,61 @@
+﻿@page "/bswup/overview"
+@inherits AppComponentBase
+
+<PageOutlet Url="bswup/overview"
+            Title="Overview - Bswup"
+            Description="overview of the bit Bswup" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Bswup</BitTypography>
+    <br/>
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Service Worker Update Progress utilities</BitTypography>
+
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        bit Bswup is a set of tools that assists developers in making the most out of the
+        Service Worker when building PWAs with Blazor.
+        It utilizes the Service Worker's events to handle Installing and Updating the app
+        as fast and smooth as possible while minimizing the download size.
+    </BitTypography>
+
+    <br />
+
+    <div class="section-card-txt">
+        <b>Note</b>: Currently, bit Bswup is the only tool that can enable complete PWA solution for the new Blazor web app 
+        project template that introduced in .NET 8 which has different render mode (Auto, Server, WebAssembly).
+    </div>
+
+    <br />
+    <br />
+
+    <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/Y4MTtF1XMfM?si=OsH6RnUd8uKOBHU_"
+                width="560" height="315" allowfullscreen title="YouTube video player" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+    </div>
+
+    <br />
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup1.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup2.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup3.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup4-1.webp" class="bswup-img" />
+    <br />
+    <img src="/images/bswup/bswup4-2.webp" class="bswup-img" />
+
+</div>
+
+<NavigationButtons Next="Install" NextUrl="/bswup/install" />

@@ -39,7 +39,7 @@ public partial class Header : IDisposable
         {
             Urls.HomePage => "Home",
             Urls.Components => "Products & Services",
-            Urls.CloudHostingSolutins => "Products & Services",
+            Urls.CloudHostingSolutions => "Products & Services",
             Urls.Support => "Products & Services",
             Urls.Academy => "Products & Services",
             Urls.Pricing => "Pricing",
@@ -55,7 +55,7 @@ public partial class Header : IDisposable
     {
         return (currentUrl.Contains("templates") ||
            currentUrl == Urls.Components ||
-           currentUrl == Urls.CloudHostingSolutins ||
+           currentUrl == Urls.CloudHostingSolutions ||
            currentUrl == Urls.Support ||
            currentUrl == Urls.Academy);
     }

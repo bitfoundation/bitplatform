@@ -78,86 +78,104 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/CacheMechanismPage.razor.css",
-        "inputFile": "Pages/Templates/CacheMechanismPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates01OverviewPage.razor.css",
+        "inputFile": "Pages/Templates/Templates01OverviewPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/CreateProjectPage.razor.css",
-        "inputFile": "Pages/Templates/CreateProjectPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates02DevelopmentPrerequisitesPage.razor.css",
+        "inputFile": "Pages/Templates/Templates02DevelopmentPrerequisitesPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/DatabasePage.razor.css",
-        "inputFile": "Pages/Templates/DatabasePage.razor.scss",
+        "outputFile": "Pages/Templates/Templates03CreateProjectPage.razor.css",
+        "inputFile": "Pages/Templates/Templates03CreateProjectPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/DeploymentTypePage.razor.css",
-        "inputFile": "Pages/Templates/DeploymentTypePage.razor.scss",
+        "outputFile": "Pages/Templates/Templates04ProjectStructurePage.razor.css",
+        "inputFile": "Pages/Templates/Templates04ProjectStructurePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/DevelopmentPrerequisitesPage.razor.css",
-        "inputFile": "Pages/Templates/DevelopmentPrerequisitesPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates05DatabasePage.razor.css",
+        "inputFile": "Pages/Templates/Templates05DatabasePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/DevOpsPage.razor.css",
-        "inputFile": "Pages/Templates/DevOpsPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates06RunPage.razor.css",
+        "inputFile": "Pages/Templates/Templates06RunPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/ExceptionHandlingPage.razor.css",
-        "inputFile": "Pages/Templates/ExceptionHandlingPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates07AppModelsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates07AppModelsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/AppModelsPage.razor.css",
-        "inputFile": "Pages/Templates/AppModelsPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates08DeploymentTypePage.razor.css",
+        "inputFile": "Pages/Templates/Templates08DeploymentTypePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/MultilingualismPage.razor.css",
-        "inputFile": "Pages/Templates/MultilingualismPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates09CacheMechanismPage.razor.css",
+        "inputFile": "Pages/Templates/Templates09CacheMechanismPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/OverviewPage.razor.css",
-        "inputFile": "Pages/Templates/OverviewPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates10DevOpsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates10DevOpsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/PlatformIntegrationPage.razor.css",
-        "inputFile": "Pages/Templates/PlatformIntegrationPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates11PlatformIntegrationPage.razor.css",
+        "inputFile": "Pages/Templates/Templates11PlatformIntegrationPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/ProjectStructurePage.razor.css",
-        "inputFile": "Pages/Templates/ProjectStructurePage.razor.scss",
+        "outputFile": "Pages/Templates/Templates12SettingsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates12SettingsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/RunPage.razor.css",
-        "inputFile": "Pages/Templates/RunPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates13ExceptionHandlingPage.razor.css",
+        "inputFile": "Pages/Templates/Templates13ExceptionHandlingPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/SettingsPage.razor.css",
-        "inputFile": "Pages/Templates/SettingsPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates14MultilingualismPage.razor.css",
+        "inputFile": "Pages/Templates/Templates14MultilingualismPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup01OverviewPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup01OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup02InstallPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup02InstallPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup03ScriptsPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup03ScriptsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     }

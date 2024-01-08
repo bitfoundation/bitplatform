@@ -22,6 +22,8 @@ public static class Urls
 
     public const string Templates = "/templates/overview";
 
+    public const string Bswup = "/bswup/overview";
+
     public const string BoilerplateNuget = "https://www.nuget.org/packages/Bit.Boilerplate/";
 
     public const string TodoTemplatePwaPrerendered = "https://todo.bitplatform.dev/";
@@ -39,7 +41,7 @@ public static class Urls
     public const string Components = "https://components.bitplatform.dev/";
     public const string ComponentsDocs = "https://components.bitplatform.dev/";
 
-    public const string CloudHostingSolutins = "/cloud-hosting-solutions";
+    public const string CloudHostingSolutions = "/cloud-hosting-solutions";
     public const string Support = "/support";
     public const string Academy = "/academy";
     public const string Pricing = "/pricing";
@@ -47,6 +49,4 @@ public static class Urls
     public const string Videos = "/videos";
     public const string AboutUs = "/about-us";
     public const string ContactUs = "/contact-us";
-
-    public const string Bswup = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup";
 }
