@@ -51,7 +51,7 @@ public class Console(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/console/dir_static">https://developer.mozilla.org/en-US/docs/Web/API/console/dir_static</see>
     /// </summary>
-    public async Task Dir(object? item, object? options)
+    public async Task Dir(object? item, object? options = null)
         => await js.ConsoleDir(item, options);
 
     /// <summary>
