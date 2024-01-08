@@ -71,8 +71,8 @@
 <hr />
 <br />
 
-<input type="checkbox" @bind="@isDocumentDirLTR" />
-<label>@(isDocumentDirLTR ? "Rtl" : "Ltr")</label>
+<input type="checkbox" @bind="@isDocumentDirRTL" />
+<label>@(isDocumentDirRTL ? "Rtl" : "Ltr")</label>
 <br />
 <br />
 <button @onclick=SetDocumentDir>SetDocumentDir</button>
@@ -104,7 +104,7 @@
 
     private bool isDesignModeOn;
 
-    private bool isDocumentDirLTR;
+    private bool isDocumentDirRTL;
 
     protected override void OnInitialized()
     {
@@ -176,7 +176,7 @@
 
     private async Task SetDocumentDir()
     {
-        await document.SetDir(isDocumentDirLTR ? DocumentDir.Rtl : DocumentDir.Ltr);
+        await document.SetDir(isDocumentDirRTL ? DocumentDir.Rtl : DocumentDir.Ltr);
     }
 
     private async Task GetDocumentDir()
