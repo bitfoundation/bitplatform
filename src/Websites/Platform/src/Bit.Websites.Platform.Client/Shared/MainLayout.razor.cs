@@ -34,6 +34,9 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Overview", Url = "/bswup/overview" },
         new BitNavItem { Text = "Install", Url = "/bswup/install" },
         new BitNavItem { Text = "Scripts", Url = "/bswup/scripts" },
+        new BitNavItem { Text = "Events", Url = "/bswup/events" },
+        new BitNavItem { Text = "Service Worker", Url = "/bswup/service-worker" },
+        new BitNavItem { Text = "Caching", Url = "/bswup/caching" },
     };
 
 

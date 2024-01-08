@@ -1,0 +1,38 @@
+﻿@page "/bswup/caching"
+@inherits AppComponentBase
+
+<PageOutlet Url="bswup/caching"
+            Title="Caching - Bswup"
+            Description="caching configuration of the bit Bswup" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Caching</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit Bswup needs no caching to be set on the assets response header.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>ASP.NET caching</BitTypography>
+        <div class="section-card-txt">
+            Disable static file caching. You can follow the below code in the Startup.cs file:
+
+<pre class="code-box">
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+        {
+            NoCache = true
+        };
+    }
+});</pre>
+        </div>
+
+    </section>
+
+</div>
+
+<NavigationButtons Prev="Service Worker" PrevUrl="/bswup/service-worker" />
