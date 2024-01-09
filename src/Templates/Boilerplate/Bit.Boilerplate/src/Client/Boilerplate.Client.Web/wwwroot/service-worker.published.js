@@ -6,7 +6,9 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
     /bit\.blazorui\.fluent-light\.css$/,
-    /Boilerplate\.Client\.Web\.styles\.css$/
+    /Client\.Web\.styles\.css$/ // In .NET 8, an inexistent CSS file is inadvertently included in the assets list under the name 'Boilerplate.Client.Web.styles.css.'
+    // Subsequently, during the download process of assets list files, bswup attempts to retrieve this non - existent CSS file along with others.
+    // It is imperative that we expunge this file from the assets list.
 ];
 self.externalAssets = [
     {
