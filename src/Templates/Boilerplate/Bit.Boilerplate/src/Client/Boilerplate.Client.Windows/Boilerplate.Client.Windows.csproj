@@ -14,11 +14,11 @@
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.7.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
