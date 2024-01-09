@@ -16,10 +16,9 @@ public partial class OfflineEditProfilePage
     private UserDto user = new();
     private readonly EditUserDto userToEdit = new();
 
-    protected async override Task OnAfterFirstRenderAsync()
+    protected override async Task OnInitAsync()
     {
-        await base.OnAfterFirstRenderAsync();
-
+        await base.OnInitAsync();
         try
         {
             await LoadEditProfileData();
@@ -27,7 +26,6 @@ public partial class OfflineEditProfilePage
         finally
         {
             isLoading = false;
-            StateHasChanged();
         }
     }
 
