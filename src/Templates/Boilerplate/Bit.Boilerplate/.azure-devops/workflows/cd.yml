@@ -211,16 +211,16 @@ jobs:
     displayName: 'Install Node.js'
 
   - task: Bash@3
-    displayName: 'Install Android Dependencies'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:InstallAndroidDependencies -f:net8.0-android -p:AcceptAndroidSDKLicenses=True'
-
-  - task: Bash@3
     displayName: 'Install maui'
     inputs:
       targetType: 'inline'
       script: cd src && dotnet workload install maui-android
+
+  - task: Bash@3
+    displayName: 'Install Android Dependencies'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:InstallAndroidDependencies -f:net8.0-android -p:AcceptAndroidSDKLicenses=True'
 
   - task: DownloadSecureFile@1
     displayName: Download Boilerplate keystore file
