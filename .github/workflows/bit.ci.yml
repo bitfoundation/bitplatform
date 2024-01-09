@@ -48,6 +48,9 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
     - uses: actions/setup-node@v3
       with:
         node-version: 18
