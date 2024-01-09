@@ -23,6 +23,11 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 18
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        cmdline-tools-version: 9477386
       
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
@@ -51,7 +56,7 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       with:
-        cmdline-tools-version: 9477386
+        cmdline-tools-version: 10406996 # V11
 
     - uses: actions/setup-node@v3
       with:
