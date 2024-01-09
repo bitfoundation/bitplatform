@@ -28,7 +28,7 @@ public partial class Header : IDisposable
         }
         finally
         {
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 

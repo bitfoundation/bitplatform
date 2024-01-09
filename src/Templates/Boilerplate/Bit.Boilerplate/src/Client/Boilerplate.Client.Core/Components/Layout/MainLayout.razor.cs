@@ -54,7 +54,7 @@ public partial class MainLayout : IDisposable
         }
         finally
         {
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 

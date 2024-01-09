@@ -92,7 +92,7 @@ public partial class NavMenu : IDisposable
 
             SetProfileImageUrl();
 
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         });
 
         user = await userController.GetCurrentUser(CurrentCancellationToken);
