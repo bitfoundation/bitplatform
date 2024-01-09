@@ -32,7 +32,7 @@ jobs:
     - name: Release build todo sample + sqlite database
       run: |
         dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
-        dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Maui/TodoBPSqlite.Maui.csproj -t:InstallAndroidDependencies -f:net8.0-android -p:AcceptAndroidSDKLicenses=True
+        dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Maui/TodoBPSqlite.Client.Maui.csproj -t:InstallAndroidDependencies -f:net8.0-android -p:AcceptAndroidSDKLicenses=True
         dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline other
         cd TodoBPSqlite/src/TodoBPSqlite.Server/
         dotnet tool restore
