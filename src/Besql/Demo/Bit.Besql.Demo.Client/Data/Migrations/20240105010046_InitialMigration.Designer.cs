@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Bit.Besql.Demo.Client.Data.Migrations
 {
     [DbContext(typeof(OfflineDbContext))]
-    [Migration("20230105010046_InitialMigration")]
+    [Migration("20240105010046_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
