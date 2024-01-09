@@ -50,6 +50,8 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        cmdline-tools-version: 9477386
 
     - uses: actions/setup-node@v3
       with:
