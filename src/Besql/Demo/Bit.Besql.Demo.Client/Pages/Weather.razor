@@ -52,7 +52,7 @@ else
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         var forecast = await dbContext.WeatherForecasts.AddAsync(new()
         {
-            Date = new DateTimeOffset(2024, 1, 4, 10, 10, 10, TimeSpan.Zero),
+            Date = new DateTimeOffset(2023, 1, 4, 10, 10, 10, TimeSpan.Zero),
             Summary = "Test",
             TemperatureC = 17
         });
