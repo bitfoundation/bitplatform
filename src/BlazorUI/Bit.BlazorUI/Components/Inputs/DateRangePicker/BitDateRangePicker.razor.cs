@@ -182,7 +182,6 @@ public partial class BitDateRangePicker
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _inputId;
-    private string? _activeDescendantId;
     private ElementReference _startTimeHourInputRef = default!;
     private ElementReference _startTimeMinuteInputRef = default!;
     private ElementReference _endTimeHourInputRef = default!;
@@ -561,7 +560,6 @@ public partial class BitDateRangePicker
         _labelId = $"{_dateRangePickerId}-label";
         _calloutId = $"{_dateRangePickerId}-callout";
         _inputId = $"{_dateRangePickerId}-input";
-        _activeDescendantId = $"{_dateRangePickerId}-active-descendant";
 
         base.OnInitialized();
     }
