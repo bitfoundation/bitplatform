@@ -30,10 +30,9 @@ self.serverHandledUrls = [
     /\/swagger/
 ];
 
-self.isPassive = true;
 self.defaultUrl = "/";
 self.caseInsensitiveUrl = true;
 self.noPrerenderQuery = 'no-prerender=true';
-self.disablePassiveFirstBoot = true;
+self.isPassive = self.disablePassiveFirstBoot = true;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
