@@ -6,8 +6,6 @@ The usage of `Bit.Besql` is exactly the same as the regular usage of `Microsoft.
 
 To get start, simply install `Bit.Besql` and use `services.AddBesqlDbContextFactory` instead of `services.AddDbContextFactory`.
 
-Note: Don't use `IDbContextFactory` in `OnInitialized` because it relies on `IJSRuntime`. Use `OnAfterRender` instead.
-
 In order to download sqlite db file from browser cache storage in blazor WebAssembly run the followings in browser console:
 ```js
 const cache = await caches.open('Bit-Besql');
