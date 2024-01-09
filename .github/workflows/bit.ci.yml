@@ -53,7 +53,7 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - name: Set up JDK 17
+    - name: Set up JDK
       uses: actions/setup-java@v3
       with:
         java-version: '17'
