@@ -1,4 +1,4 @@
-## bit Blazor Entity Framework core Sqlite (bit Besql)
+## bit Blazor Entity Framework Sqlite (bit Besql)
 
 **Step by step walkthrough video:**
 
