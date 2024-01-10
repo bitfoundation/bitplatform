@@ -34,6 +34,13 @@
                                 <div class="item-desc">Blazor Service Worker Update Progress</div>
                             </div>
                         </a>
+
+                        <a class="menu-item @(currentUrl.Contains("besql") ? "active" : "")" href="@Urls.Besql">
+                            <div class="menu-item-content">
+                                <div class="item-title">Besql</div>
+                                <div class="item-desc">Blazor Entity Framework Sqlite</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col">
                         <div class="col-header">Services</div>
@@ -109,6 +116,13 @@
                         <div class="menu-item-content">
                             <div class="item-title">Bswup (Blazor PWA)</div>
                             <div class="item-desc">Blazor Service Worker Update Progress</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item" href="@Urls.Besql" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Besql</div>
+                            <div class="item-desc">Blazor Entity Framework Sqlite</div>
                         </div>
                     </a>
                 </div>

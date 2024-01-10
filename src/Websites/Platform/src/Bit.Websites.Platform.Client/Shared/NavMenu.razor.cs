@@ -22,6 +22,12 @@ public partial class NavMenu : IDisposable
         HandleOnClear();
     }
 
+    protected override void OnParametersSet()
+    {
+        filteredNavItems = NavItems;
+    }
+
+
 
     private async Task ToggleMenu()
     {
