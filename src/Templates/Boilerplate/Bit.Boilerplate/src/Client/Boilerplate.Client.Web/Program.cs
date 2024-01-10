@@ -8,7 +8,7 @@ Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.RelativeOrAbs
 
 if (apiServerAddress!.IsAbsoluteUri is false)
 {
-    apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
+    apiServerAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), apiServerAddress);
 }
 
 builder.Services.AddTransient(sp => new HttpClient(sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler")) { BaseAddress = apiServerAddress });

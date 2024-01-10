@@ -24,7 +24,7 @@ public partial class Footer
 
     private async Task OnCultureChanged()
     {
-        await cookie.Set(new ButilCookie
+        await cookie.Set(new()
         {
             Name = ".AspNetCore.Culture",
             Value = $"c={SelectedCulture}|uic={SelectedCulture}",
