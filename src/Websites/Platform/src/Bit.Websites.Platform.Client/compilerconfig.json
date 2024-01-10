@@ -178,5 +178,41 @@
         "inputFile": "Pages/Bswup/Bswup03ScriptsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup04EventsPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup04EventsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup05ServiceWorkerPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup05ServiceWorkerPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup06CachingPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup06CachingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Besql/Besql01OverviewPage.razor.css",
+        "inputFile": "Pages/Besql/Besql01OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Besql/Besql02InstallPage.razor.css",
+        "inputFile": "Pages/Besql/Besql02InstallPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Besql/Besql03UsagePage.razor.css",
+        "inputFile": "Pages/Besql/Besql03UsagePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     }
 ]
