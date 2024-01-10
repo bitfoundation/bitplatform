@@ -13,7 +13,7 @@ internal static class ElementJsInterop
         => await js.InvokeAsync<string>("BitButil.element.getAttribute", element, name);
 
     internal static async ValueTask<string[]> ElementGetAttributeNames(this IJSRuntime js, ElementReference element)
-        => await js.InvokeAsync<string[]>("BitButil.element.getAttribute", element);
+        => await js.InvokeAsync<string[]>("BitButil.element.getAttributeNames", element);
 
     internal static async ValueTask<Rect> ElementGetBoundingClientRect(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<Rect>("BitButil.element.getBoundingClientRect", element);
