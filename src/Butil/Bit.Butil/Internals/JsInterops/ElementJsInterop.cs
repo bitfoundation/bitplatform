@@ -46,7 +46,7 @@ internal static class ElementJsInterop
         => await js.InvokeVoidAsync("BitButil.element.requestPointerLock", element);
 
     internal static async ValueTask ElementScroll(this IJSRuntime js, ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await js.InvokeVoidAsync("BitButil.element.scroll", element, options, x, y);
+        => await js.InvokeVoidAsync("BitButil.element.scroll", element, options?.ToJsObject(), x, y);
 
     internal static async ValueTask ElementScrollBy(this IJSRuntime js, ElementReference element, ScrollToOptions? options, double? x, double? y)
         => await js.InvokeVoidAsync("BitButil.element.scrollBy", element, options?.ToJsObject(), x, y);

@@ -61,8 +61,10 @@ public static class ElementReferenceExtensions
     public static async ValueTask RequestPointerLock(this ElementReference element)
         => await GetJSRuntime(element).ElementRequestPointerLock(element);
 
-    public static async ValueTask Scroll(this ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await GetJSRuntime(element).ElementScroll(element, options, x, y);
+    public static async ValueTask Scroll(this ElementReference element, ScrollToOptions? options)
+        => await GetJSRuntime(element).ElementScroll(element, options, null, null);
+    public static async ValueTask Scroll(this ElementReference element, double? x, double? y)
+        => await GetJSRuntime(element).ElementScroll(element, null, x, y);
 
     public static async ValueTask ScrollBy(this ElementReference element, ScrollToOptions? options)
         => await GetJSRuntime(element).ElementScrollBy(element, options, null, null);
