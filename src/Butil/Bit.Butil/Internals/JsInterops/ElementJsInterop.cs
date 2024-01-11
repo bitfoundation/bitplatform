@@ -36,8 +36,8 @@ internal static class ElementJsInterop
     internal static async ValueTask ElementRemove(this IJSRuntime js, ElementReference element)
         => await js.InvokeVoidAsync("BitButil.element.remove", element);
 
-    internal static async ValueTask<string> ElementRemoveAttribute(this IJSRuntime js, ElementReference element, string name)
-        => await js.InvokeAsync<string>("BitButil.element.removeAttribute", element, name);
+    internal static async ValueTask ElementRemoveAttribute(this IJSRuntime js, ElementReference element, string name)
+        => await js.InvokeVoidAsync("BitButil.element.removeAttribute", element, name);
 
     internal static async ValueTask ElementRequestFullScreen(this IJSRuntime js, ElementReference element, FullScreenOptions? options)
         => await js.InvokeVoidAsync("BitButil.element.requestFullScreen", element, options);

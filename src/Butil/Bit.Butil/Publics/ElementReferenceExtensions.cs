@@ -52,7 +52,7 @@ public static class ElementReferenceExtensions
     public static async ValueTask Remove(this ElementReference element)
         => await GetJSRuntime(element).ElementRemove(element);
 
-    public static async ValueTask<string> RemoveAttribute(this ElementReference element, string name)
+    public static async ValueTask RemoveAttribute(this ElementReference element, string name)
         => await GetJSRuntime(element).ElementRemoveAttribute(element, name);
 
     public static async ValueTask RequestFullScreen(this ElementReference element, FullScreenOptions? options)

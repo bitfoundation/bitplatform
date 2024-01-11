@@ -78,7 +78,7 @@ public class Element(IJSRuntime js)
     /// <summary>
     /// Removes the named attribute from the current node.
     /// </summary>
-    public async Task<string> RemoveAttribute(ElementReference element, string name)
+    public async Task RemoveAttribute(ElementReference element, string name)
         => await js.ElementRemoveAttribute(element, name);
 
     /// <summary>
