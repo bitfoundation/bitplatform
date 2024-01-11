@@ -20,7 +20,7 @@ var host = builder.Build();
 if (AppRenderMode.MultilingualEnabled)
 {
     var culture = await host.Services.GetRequiredService<IStorageService>().GetItem("Culture");
-    CultureInfoManager.SetCurrentCulture(culture);
+    host.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(culture);
 }
 
 await host.RunAsync();
