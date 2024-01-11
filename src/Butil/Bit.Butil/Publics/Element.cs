@@ -103,11 +103,6 @@ public class Element(IJSRuntime js)
     /// </summary>
     public async Task Scroll(ElementReference element, double? x, double? y)
         => await js.ElementScroll(element, null, x, y);
-    /// <summary>
-    /// Scrolls to a particular set of coordinates inside a given element.
-    /// </summary>
-    public async Task Scroll(ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await js.ElementScroll(element, options, x, y);
 
     /// <summary>
     /// Scrolls an element by the given amount.
