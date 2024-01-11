@@ -119,11 +119,6 @@ public class Element(IJSRuntime js)
     /// </summary>
     public async Task ScrollBy(ElementReference element, double? x, double? y)
         => await js.ElementScrollBy(element, null, x, y);
-    /// <summary>
-    /// Scrolls an element by the given amount.
-    /// </summary>
-    public async Task ScrollBy(ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await js.ElementScrollBy(element, options, x, y);
 
     /// <summary>
     /// Scrolls the page until the element gets into the view.

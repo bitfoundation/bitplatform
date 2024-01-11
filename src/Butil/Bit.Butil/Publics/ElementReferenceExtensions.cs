@@ -64,8 +64,10 @@ public static class ElementReferenceExtensions
     public static async ValueTask Scroll(this ElementReference element, ScrollToOptions? options, double? x, double? y)
         => await GetJSRuntime(element).ElementScroll(element, options, x, y);
 
-    public static async ValueTask ScrollBy(this ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await GetJSRuntime(element).ElementScrollBy(element, options, x, y);
+    public static async ValueTask ScrollBy(this ElementReference element, ScrollToOptions? options)
+        => await GetJSRuntime(element).ElementScrollBy(element, options, null, null);
+    public static async ValueTask ScrollBy(this ElementReference element, double? x, double? y)
+        => await GetJSRuntime(element).ElementScrollBy(element, null, x, y);
 
     public static async ValueTask ScrollIntoView(this ElementReference element, bool? alignToTop, ScrollIntoViewOptions? options)
         => await GetJSRuntime(element).ElementScrollIntoView(element, alignToTop, options);
