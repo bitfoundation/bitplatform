@@ -1,6 +1,6 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
-using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -34,10 +34,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private int? _totalItems;
     private string? _searchText;
     private bool _isValuesChanged;
+    private string? _selectedItemId;
     private bool _valueTypeIsString;
     private bool _inputSearchHasFocus;
-    private ElementReference _inputRef;
     private ElementReference _searchInputRef;
+    private ElementReference _comboBoxInputRef;
     private Virtualize<TItem>? _virtualizeElement;
     private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
 
@@ -398,9 +399,19 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
+        _selectedItemId = null;
         IsOpen = false;
         StateHasChanged();
     }
+
+    [JSInvokable("SetSelectedItemId")]
+    public void SetSelectedItemId(string? id)
+    {
+        if (id.HasNoValue()) return;
+
+        _selectedItemId = id;
+    }
+
     public async Task UnselectItem(TItem? item)
     {
         if (item is null) return;
@@ -417,6 +428,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
     internal void RegisterOption(BitDropdownOption<TValue> option)
     {
+        if (IsComboBox && option.ItemType == BitDropdownItemType.Normal && option.Id.HasNoValue())
+        {
+            option.Id = Guid.NewGuid().ToString();
+        }
+
         _items.Add((option as TItem)!);
 
         var comparer = EqualityComparer<TValue>.Default;
@@ -599,7 +615,30 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             stringBuilder.Append($" {RootElementClass}-ids");
         }
 
+        if (IsComboBox && _selectedItemId.HasValue() && GetIsHidden(item) is false && GetIsEnabled(item) && GetItemType(item) == BitDropdownItemType.Normal)
+        {
+            var id = GetId(item);
+            if (id.HasValue() && id == _selectedItemId)
+            {
+                stringBuilder.Append($" {RootElementClass}-sli");
+            }
+        }
+
         return stringBuilder.ToString();
+    }
+
+    internal string? GetItemCssClasses(TItem item)
+    {
+        if (IsComboBox && _selectedItemId.HasValue() && GetIsHidden(item) is false && GetIsEnabled(item) && GetItemType(item) == BitDropdownItemType.Normal)
+        {
+            var id = GetId(item);
+            if (id.HasValue() && id == _selectedItemId)
+            {
+                return $"{RootElementClass}-sli";
+            }
+        }
+
+        return null;
     }
 
     internal int? GetTotalItems()
@@ -658,7 +697,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
         if (ItemsProvider is null && Items is null)
         {
-            _items = new List<TItem>();
+            _items = [];
         }
 
         SelectedItems ??= [];
@@ -677,6 +716,17 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         if (Items is not null)
         {
             _items = [.. Items];
+
+            if (IsComboBox)
+            {
+                _items.ForEach(item =>
+                {
+                    if (GetItemType(item) == BitDropdownItemType.Normal && GetId(item).HasNoValue())
+                    {
+                        SetId(item);
+                    }
+                });
+            }
         }
 
         InitValues();
@@ -843,6 +893,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
         if (IsOpen is false) return;
 
+        _selectedItemId = null;
         IsOpen = false;
         await ToggleCallout();
 
@@ -918,7 +969,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         if (IsComboBox is false) return;
         if (IsOpen is false) return;
 
-        await _inputRef.FocusAsync();
+        await _comboBoxInputRef.FocusAsync();
     }
 
     private List<TItem> GetSearchedItems()
@@ -1353,6 +1404,43 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<bool>(NameSelectors.IsSelected.Name) && item.GetValueFromProperty<bool>(NameSelectors.IsDynamic.Name);
     }
 
+    private bool CheckInvalidForSelect(TItem item)
+    {
+        if (item is BitDropdownItem<TValue> dropdownItem)
+        {
+            return dropdownItem.IsHidden is false &&
+                   dropdownItem.IsEnabled &&
+                   dropdownItem.ItemType == BitDropdownItemType.Normal &&
+                   dropdownItem.Id.HasNoValue();
+        }
+
+        if (item is BitDropdownOption<TValue> dropdownOption)
+        {
+            return dropdownOption.IsHidden is false &&
+                   dropdownOption.IsEnabled &&
+                   dropdownOption.ItemType == BitDropdownItemType.Normal &&
+                   dropdownOption.Id.HasNoValue();
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsHidden.Selector is not null &&
+            NameSelectors.IsEnabled.Selector is not null &&
+            NameSelectors.ItemType.Selector is not null &&
+            NameSelectors.Id.Selector is not null)
+        {
+            return NameSelectors.IsHidden.Selector!(item) is false &&
+                   NameSelectors.IsEnabled.Selector!(item) &&
+                   NameSelectors.ItemType.Selector!(item) == BitDropdownItemType.Normal &&
+                   NameSelectors.Id.Selector!(item).HasNoValue();
+        }
+
+        return item.GetValueFromProperty<bool>(NameSelectors.IsHidden.Name) is false &&
+               item.GetValueFromProperty<bool>(NameSelectors.IsEnabled.Name) &&
+               item.GetValueFromProperty<BitDropdownItemType>(NameSelectors.ItemType.Name) == BitDropdownItemType.Normal &&
+               item.GetValueFromProperty<string?>(NameSelectors.Id.Name).HasNoValue();
+    }
+
     private void SetIsSelected(TItem item, bool value)
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
@@ -1376,6 +1464,29 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         item.SetValueToProperty(NameSelectors.IsSelected.Name, value);
     }
 
+    private void SetId(TItem item)
+    {
+        if (item is BitDropdownItem<TValue> dropdownItem)
+        {
+            dropdownItem.Id = Guid.NewGuid().ToString();
+        }
+
+        if (item is BitDropdownOption<TValue> dropdownOption)
+        {
+            dropdownOption.Id = Guid.NewGuid().ToString();
+        }
+
+        if (NameSelectors is null) return;
+
+        // we need to think about a proper solution to use Selector for setting the value!
+        //if (NameSelectors.Id.Selector is not null)
+        //{
+        //    NameSelectors.Id.Selector!(item);
+        //}
+
+        item.SetValueToProperty(NameSelectors.Id.Name, Guid.NewGuid().ToString());
+    }
+
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
     {
         if (IsEnabled is false) return;
@@ -1389,7 +1500,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         }
         else if (eventArgs.Key == "Enter")
         {
-            _searchText = await _js.GetProperty(_inputRef, "value");
+            _searchText = await _js.GetProperty(_comboBoxInputRef, "value");
 
             await AddDynamicItem();
 
@@ -1403,9 +1514,28 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                 await RemoveLastSelectedItem();
             }
         }
+        else if (eventArgs.Key == "ArrowUp")
+        {
+            await ChangeSelectedItem(true);
+        }
+        else if (eventArgs.Key == "ArrowDown")
+        {
+            await ChangeSelectedItem(false);
+        }
     }
 
     private Task HandleOnClickUnselectItem(TItem? item) => UnselectItem(item);
+
+    private async Task HandleOnChange(ChangeEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        _searchText = e.Value?.ToString();
+        await SearchVirtualized();
+
+        await OpenCallout();
+    }
 
     private async Task OpenCallout()
     {
@@ -1434,6 +1564,26 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
     private async Task AddDynamicItem()
     {
+        if (_selectedItemId.HasValue())
+        {
+            TItem? selectItem = null;
+            if (ItemsProvider is not null)
+            {
+                selectItem = _lastShowItems.Find(i => GetId(i) == _selectedItemId!);
+            }
+            else if (_items is not null)
+            {
+                selectItem = _items.Find(i => GetId(i) == _selectedItemId!);
+            }
+
+            if (selectItem is not null)
+            {
+                await HandleOnItemClick(selectItem);
+
+                return;
+            }
+        }
+
         if (_searchText.HasNoValue()) return;
 
         if (SelectedItems.Count > 0)
@@ -1493,14 +1643,12 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         await OnAddedComboBox.InvokeAsync(text);
     }
 
-    private async Task HandleOnChange(ChangeEventArgs e)
+    private async Task ChangeSelectedItem(bool isArrowUp)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsOpen is false) return;
+        if (ItemsProvider is not null && _lastShowItems.Exists(CheckInvalidForSelect)) return;
+        if (_items is not null && _items.Exists(CheckInvalidForSelect)) return;
 
-        _searchText = e.Value?.ToString();
-        await SearchVirtualized();
-
-        await OpenCallout();
+        await _js.InvokeVoidAsync("BitDropdown.changeSelectedItem", _dotnetObj, _comboBoxInputRef, _scrollContainerId, IsMultiSelect, isArrowUp);
     }
 }
