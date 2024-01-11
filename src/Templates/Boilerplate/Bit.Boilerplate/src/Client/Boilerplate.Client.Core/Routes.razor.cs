@@ -5,6 +5,7 @@ public partial class Routes
     [AutoInject] IJSRuntime jsRuntime = default!;
     [AutoInject] IBitDeviceCoordinator bitDeviceCoordinator = default!;
     [AutoInject] IStorageService storageService = default!;
+    [AutoInject] CultureInfoManager cultureInfoManager = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -12,7 +13,7 @@ public partial class Routes
         {
             if (AppRenderMode.MultilingualEnabled)
             {
-                CultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture"));
+                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture"));
             }
 
             await SetupBodyClasses();
