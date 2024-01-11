@@ -40,7 +40,7 @@ internal static class ElementJsInterop
         => await js.InvokeVoidAsync("BitButil.element.removeAttribute", element, name);
 
     internal static async ValueTask ElementRequestFullScreen(this IJSRuntime js, ElementReference element, FullScreenOptions? options)
-        => await js.InvokeVoidAsync("BitButil.element.requestFullScreen", element, options);
+        => await js.InvokeVoidAsync("BitButil.element.requestFullScreen", element, options?.ToJsObject());
 
     internal static async ValueTask ElementRequestPointerLock(this IJSRuntime js, ElementReference element)
         => await js.InvokeVoidAsync("BitButil.element.requestPointerLock", element);
