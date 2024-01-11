@@ -72,6 +72,9 @@ public partial class _BitDropdownOptionDemo
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
+    private string? comboBoxValue;
+    private ICollection<string?> comboBoxValues = [];
+
 
     protected override void OnInitialized()
     {

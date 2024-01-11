@@ -665,4 +665,51 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     new() { Text = ""Carrot"", Value = ""v-car"" },
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
+
+    private readonly string example11RazorCode = @"
+<BitDropdown @bind-Value=""comboBoxValue""
+             Label=""Single select combo box""
+             Placeholder=""Select an option""
+             IsComboBox=""true""
+             ShowChips=""true""
+             Dynamic
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<BitLabel>Value: @comboBoxValue</BitLabel>
+
+<BitDropdown @bind-Values=""comboBoxValues""
+             Label=""Multi select combo box""
+             Placeholder=""Select options""
+             IsMultiSelect=""true""
+             IsComboBox=""true""
+             ShowChips=""true""
+             Dynamic
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
+    private readonly string example11CsharpCode = @"
+private string? comboBoxValue;
+private ICollection<string?> comboBoxValues = [];
+
+private readonly List<BitDropdownItem<string>> basicItems = new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
 }

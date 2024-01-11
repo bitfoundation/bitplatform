@@ -414,3 +414,34 @@
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="ComboBox" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example10">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitDropdown @bind-Value="comboBoxValue"
+                             Label="Single select combo box"
+                             Items="GetBasicCustoms()"
+                             NameSelectors="nameSelectors"
+                             Placeholder="Select an option"
+                             IsComboBox="true"
+                             ShowChips="true"
+                             Dynamic />
+                <BitLabel>Value: @comboBoxValue</BitLabel>
+            </div>
+            <br>
+            <div>
+                <BitDropdown @bind-Values="comboBoxValues"
+                             Label="Multi select combo box"
+                             Items="GetBasicCustoms()"
+                             NameSelectors="nameSelectors"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             IsComboBox="true"
+                             ShowChips="true"
+                             Dynamic />
+                <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

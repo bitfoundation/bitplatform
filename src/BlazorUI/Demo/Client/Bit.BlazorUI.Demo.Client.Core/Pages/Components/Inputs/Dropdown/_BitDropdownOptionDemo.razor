@@ -528,3 +528,42 @@
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="ComboBox" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitDropdown @bind-Value="comboBoxValue"
+                             Label="Single select combo box"
+                             Placeholder="Select an option"
+                             IsComboBox="true"
+                             ShowChips="true"
+                             Dynamic
+                             TItem="BitDropdownOption<string>" TValue="string">
+                    @foreach (var item in basicItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Value: @comboBoxValue</BitLabel>
+            </div>
+            <br>
+            <div>
+                <BitDropdown @bind-Values="comboBoxValues"
+                             Label="Multi select combo box"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             IsComboBox="true"
+                             ShowChips="true"
+                             Dynamic
+                             TItem="BitDropdownOption<string>" TValue="string">
+                    @foreach (var item in basicItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

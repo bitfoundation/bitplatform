@@ -604,4 +604,41 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     new() { Text = ""Carrot"", Value = ""v-car"" },
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
+
+    private readonly string example12RazorCode = @"
+<BitDropdown @bind-Value=""comboBoxValue""
+             Label=""Single select combo box""
+             Items=""GetBasicItems()""
+             Placeholder=""Select an option""
+             IsComboBox=""true""
+             ShowChips=""true""
+             Dynamic />
+<BitLabel>Value: @comboBoxValue</BitLabel>
+
+<BitDropdown @bind-Values=""comboBoxValues""
+             Label=""Multi select combo box""
+             Items=""GetBasicItems()""
+             Placeholder=""Select options""
+             IsMultiSelect=""true""
+             IsComboBox=""true""
+             ShowChips=""true""
+             Dynamic />
+<BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
+    private readonly string example12CsharpCode = @"
+private string? comboBoxValue;
+private ICollection<string?> comboBoxValues = [];
+
+private List<BitDropdownItem<string>> GetBasicItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
 }

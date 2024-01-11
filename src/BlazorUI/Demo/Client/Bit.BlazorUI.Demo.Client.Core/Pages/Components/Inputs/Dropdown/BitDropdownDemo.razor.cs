@@ -78,6 +78,25 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Dynamic",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "It is allowed to add a new item in the ComboBox mode.",
+        },
+        new()
+        {
+            Name = "ExistsSelectedItemFunction",
+            Type = "Func<ICollection<TItem>, string, bool>",
+            Description = "Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.",
+        },
+        new()
+        {
+            Name = "FindItemFunction",
+            Type = "Func<ICollection<TItem>, string, TItem>",
+            Description = "Custom search function to be used in place of the default search algorithm for checking existing an item in items in the ComboBox mode.",
+        },
+        new()
+        {
             Name = "IsMultiSelect",
             Type = "bool",
             DefaultValue = "false",
@@ -150,6 +169,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "IsComboBox",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Activates the ComboBox feature in BitDropDown component.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -218,6 +244,12 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "OnAddedComboBox",
+            Type = "EventCallback<string>",
+            Description = "The callback that is called when a new item is added in ComboBox mode.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -271,6 +303,13 @@ public partial class BitDropdownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Shows the SearchBox element in the callout.",
+        },
+        new()
+        {
+            Name = "ShowChips",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the selected items like chips in the BitDropdown.",
         },
         new()
         {
