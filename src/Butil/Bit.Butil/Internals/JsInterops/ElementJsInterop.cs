@@ -60,8 +60,8 @@ internal static class ElementJsInterop
     internal static async ValueTask ElementSetPointerCapture(this IJSRuntime js, ElementReference element, int pointerId)
         => await js.InvokeVoidAsync("BitButil.element.setPointerCapture", element, pointerId);
 
-    internal static async ValueTask ElementToggleAttribute(this IJSRuntime js, ElementReference element, string name, bool? force)
-        => await js.InvokeVoidAsync("BitButil.element.toggleAttribute", element, name, force);
+    internal static async ValueTask<bool> ElementToggleAttribute(this IJSRuntime js, ElementReference element, string name, bool? force)
+        => await js.InvokeAsync<bool>("BitButil.element.toggleAttribute", element, name, force);
 
     internal static async ValueTask<string> ElementGetAccessKey(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<string>("BitButil.element.getAccessKey", element);
