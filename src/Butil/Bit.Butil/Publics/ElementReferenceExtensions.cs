@@ -73,9 +73,9 @@ public static class ElementReferenceExtensions
 
     public static async ValueTask ScrollIntoView(this ElementReference element)
         => await GetJSRuntime(element).ElementScrollIntoView(element, null, null);
-    public static async ValueTask ScrollIntoView(this ElementReference element, bool? alignToTop)
+    public static async ValueTask ScrollIntoView(this ElementReference element, bool alignToTop)
         => await GetJSRuntime(element).ElementScrollIntoView(element, alignToTop, null);
-    public static async ValueTask ScrollIntoView(this ElementReference element, ScrollIntoViewOptions? options)
+    public static async ValueTask ScrollIntoView(this ElementReference element, ScrollIntoViewOptions options)
         => await GetJSRuntime(element).ElementScrollIntoView(element, null, options);
 
     public static async ValueTask SetAttribute(this ElementReference element, string name, string value)
