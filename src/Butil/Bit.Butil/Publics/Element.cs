@@ -151,7 +151,7 @@ public class Element(IJSRuntime js)
     /// <summary>
     /// Toggles a boolean attribute, removing it if it is present and adding it if it is not present, on the specified element.
     /// </summary>
-    public async Task ToggleAttribute(ElementReference element, string name, bool? force = null)
+    public async Task<bool> ToggleAttribute(ElementReference element, string name, bool? force = null)
         => await js.ElementToggleAttribute(element, name, force);
 
     /// <summary>

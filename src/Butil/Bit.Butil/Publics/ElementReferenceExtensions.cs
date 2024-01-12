@@ -80,7 +80,7 @@ public static class ElementReferenceExtensions
     public static async ValueTask SetPointerCapture(this ElementReference element, int pointerId)
         => await GetJSRuntime(element).ElementSetPointerCapture(element, pointerId);
 
-    public static async ValueTask ToggleAttribute(this ElementReference element, string name, bool? force)
+    public static async ValueTask<bool> ToggleAttribute(this ElementReference element, string name, bool? force)
         => await GetJSRuntime(element).ElementToggleAttribute(element, name, force);
 
     public static async ValueTask<string> GetAccessKey(this ElementReference element)
