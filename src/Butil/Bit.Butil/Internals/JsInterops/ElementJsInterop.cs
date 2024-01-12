@@ -52,7 +52,7 @@ internal static class ElementJsInterop
         => await js.InvokeVoidAsync("BitButil.element.scrollBy", element, options?.ToJsObject(), x, y);
 
     internal static async ValueTask ElementScrollIntoView(this IJSRuntime js, ElementReference element, bool? alignToTop, ScrollIntoViewOptions? options)
-        => await js.InvokeVoidAsync("BitButil.element.scrollIntoView", element, alignToTop, options);
+        => await js.InvokeVoidAsync("BitButil.element.scrollIntoView", element, alignToTop, options?.ToJsObject());
 
     internal static async ValueTask ElementSetAttribute(this IJSRuntime js, ElementReference element, string name, string value)
         => await js.InvokeVoidAsync("BitButil.element.setAttribute", element, name, value);

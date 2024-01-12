@@ -119,22 +119,17 @@ public class Element(IJSRuntime js)
     /// Scrolls the page until the element gets into the view.
     /// </summary>
     public async Task ScrollIntoView(ElementReference element)
-        => await ScrollIntoView(element, null, null);
+        => await js.ElementScrollIntoView(element, null, null);
     /// <summary>
     /// Scrolls the page until the element gets into the view.
     /// </summary>
     public async Task ScrollIntoView(ElementReference element, bool alignToTop)
-        => await ScrollIntoView(element, alignToTop, null);
+        => await js.ElementScrollIntoView(element, alignToTop, null);
     /// <summary>
     /// Scrolls the page until the element gets into the view.
     /// </summary>
     public async Task ScrollIntoView(ElementReference element, ScrollIntoViewOptions options)
-        => await ScrollIntoView(element, null, options);
-    /// <summary>
-    /// Scrolls the page until the element gets into the view.
-    /// </summary>
-    public async Task ScrollIntoView(ElementReference element, bool? alignToTop, ScrollIntoViewOptions? options)
-        => await js.ElementScrollIntoView(element, alignToTop, options);
+        => await js.ElementScrollIntoView(element, null, options);
 
     /// <summary>
     /// Sets the value of a named attribute of the current node.
