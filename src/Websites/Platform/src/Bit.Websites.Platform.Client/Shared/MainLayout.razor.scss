@@ -59,6 +59,10 @@
         margin-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
     }
 
+    @include sm {
+        padding: 1rem;
+    }
+
     ::deep .page-container {
         margin: auto;
         max-width: rem2(1200px);

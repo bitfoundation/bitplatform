@@ -4,15 +4,22 @@ namespace Bit.Websites.Platform.Client.Shared;
 
 public partial class Header : IDisposable
 {
-    private string currentUrl = string.Empty;
+    private bool isDocsRoute;
+    private bool isBswupDocRoute;
+    private bool isBesqlDocRoute;
+    private bool isButilDocRoute;
     private bool isHeaderMenuOpen;
+    private bool isTemplateDocRoute;
+    private string currentUrl = string.Empty;
+
 
     [AutoInject] public NavManuService navManuService = default!;
     [AutoInject] public BitThemeManager bitThemeManager  = default!;
 
     protected override async Task OnInitAsync()
     {
-        currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        HandleCollapseMenu();
+
         NavigationManager.LocationChanged += OnLocationChanged;
 
         await base.OnInitAsync();
@@ -20,8 +27,21 @@ public partial class Header : IDisposable
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+        HandleCollapseMenu();
+
         StateHasChanged();
+    }
+
+    private void HandleCollapseMenu()
+    {
+        currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
+
+        isBswupDocRoute = currentUrl.Contains("bswup");
+        isBesqlDocRoute = currentUrl.Contains("besql");
+        isButilDocRoute = currentUrl.Contains("butil");
+        isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
+
+        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute;
     }
 
     private void ToggleMenu()
