@@ -12,7 +12,7 @@ public static partial class ProductsMapper
 {
     public static partial IQueryable<ProductDto> Project(this IQueryable<Product> query);
 
-    // In reality, the utilization of MapProperty is unnecessary in this context.
+    // In reality, the utilization of [MapProperty] is unnecessary in this context.
     // This is because the 'Product' model already possesses a 'Category' property, and the 'Category' property, in turn,
     // includes a 'Name' property. By concatenating these properties, we naturally obtain 'CategoryName,'
     // thereby leveraging automatic functionality through mapperly conventions.
