@@ -20,8 +20,17 @@
 <pre class="code-box">
 @@inject Bit.Butil.Element element
 
+...
+&lt;div @@ref="elementRef">Test element&lt;/div>
+...
+
 @@code {
+    private ElementReference elementRef;
+    ...
     var rect = await element.GetBoundingClientRect(elementRef);
+    // or
+    var rect = await elementRef.GetBoundingClientRect();
+    ...
 }</pre>
         </div>
     </section>
