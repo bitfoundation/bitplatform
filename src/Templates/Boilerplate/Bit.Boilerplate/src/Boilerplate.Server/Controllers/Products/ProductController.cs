@@ -72,7 +72,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpDelete("{id}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
-        DbContext.Remove(new Product { Id = id });
+        DbContext.Products.Remove(new() { Id = id });
 
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 

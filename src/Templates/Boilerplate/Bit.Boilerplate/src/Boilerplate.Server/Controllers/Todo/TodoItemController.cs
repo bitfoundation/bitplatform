@@ -79,7 +79,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpDelete("{id}")]
     public async Task Delete(int id, CancellationToken cancellationToken)
     {
-        DbContext.Remove(new TodoItem { Id = id });
+        DbContext.TodoItems.Remove(new() { Id = id });
 
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 
