@@ -1,0 +1,36 @@
+﻿@page "/butil/screen"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/screen"
+            Title="Screen - Butil"
+            Description="Screen class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Screen</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Screen class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser screen features you need to inject the Bit.Butil.Screen class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.Screen screen
+
+@@code {
+    var screenWidth = await screen.GetWidth();
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Location" PrevUrl="/butil/location" Next="Cookie" NextUrl="/butil/cookie" />

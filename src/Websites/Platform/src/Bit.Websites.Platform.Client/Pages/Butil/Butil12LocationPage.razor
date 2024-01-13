@@ -1,0 +1,36 @@
+﻿@page "/butil/location"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/location"
+            Title="Location - Butil"
+            Description="Location class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Location</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Location class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser location features you need to inject the Bit.Butil.Location class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.Location location
+
+@@code {
+    await location.Reload();
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Storage" PrevUrl="/butil/storage" Next="Screen" NextUrl="/butil/screen" />

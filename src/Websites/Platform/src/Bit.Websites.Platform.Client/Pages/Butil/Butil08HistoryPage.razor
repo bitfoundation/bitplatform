@@ -1,0 +1,41 @@
+﻿@page "/butil/history"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/history"
+            Title="History - Butil"
+            Description="History class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>History</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the History class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser history features you need to inject the Bit.Butil.History class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.History history
+
+@@code {
+    await history.GoBack();
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <b>GetLength</b>: Returns an Integer representing the number of elements in the session history, including the currently loaded page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/length" target="_blank">MDN</a>).
+            <br /><br />
+            <b>GetScrollRestoration</b>: Gets default scroll restoration behavior on history navigation. This property can be either auto or manual
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Console" PrevUrl="/butil/console" Next="Element" NextUrl="/butil/element" />

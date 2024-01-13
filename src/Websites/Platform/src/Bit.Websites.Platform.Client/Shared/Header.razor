@@ -41,6 +41,13 @@
                                 <div class="item-desc">Blazor Entity Framework Sqlite</div>
                             </div>
                         </a>
+
+                        <a class="menu-item @(currentUrl.Contains("butil") ? "active" : "")" href="@Urls.Butil">
+                            <div class="menu-item-content">
+                                <div class="item-title">Butil</div>
+                                <div class="item-desc">Blazor Utilities for JavaScript</div>
+                            </div>
+                        </a>
                     </div>
                     <div class="col">
                         <div class="col-header">Services</div>
@@ -123,6 +130,13 @@
                         <div class="menu-item-content">
                             <div class="item-title">Besql</div>
                             <div class="item-desc">Blazor Entity Framework Sqlite</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Butil</div>
+                            <div class="item-desc">Blazor Utilities for JavaScript</div>
                         </div>
                     </a>
                 </div>

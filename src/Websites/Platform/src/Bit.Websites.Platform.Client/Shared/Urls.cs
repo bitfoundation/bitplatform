@@ -24,6 +24,7 @@ public static class Urls
 
     public const string Bswup = "/bswup/overview";
     public const string Besql = "/besql/overview";
+    public const string Butil = "/butil/overview";
 
     public const string BoilerplateNuget = "https://www.nuget.org/packages/Bit.Boilerplate/";
 

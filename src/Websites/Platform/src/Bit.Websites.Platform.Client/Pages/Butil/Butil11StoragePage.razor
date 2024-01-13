@@ -1,0 +1,38 @@
+﻿@page "/butil/storage"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/storage"
+            Title="Storage - Butil"
+            Description="Storage class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Storage</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Storage class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser storage features you need to inject the Bit.Butil.Storage class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.LocalStorage localStorage
+@@inject Bit.Butil.SessionStorage sessionStorage
+
+@@code {
+    await localStorage.setItem("my-key", "my-value");
+    await sessionStorage.setItem("my-key2", "my-value2");
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Navigator" PrevUrl="/butil/navigator" Next="Location" NextUrl="/butil/location" />

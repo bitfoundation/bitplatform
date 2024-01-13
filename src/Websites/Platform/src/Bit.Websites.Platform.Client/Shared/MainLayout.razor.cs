@@ -10,6 +10,7 @@ public partial class MainLayout : IDisposable
     private bool isTemplateDocRoute;
     private bool isBswupDocRoute;
     private bool isBesqlDocRoute;
+    private bool isButilDocRoute;
 
     private List<BitNavItem> navItems = [];
 
@@ -49,6 +50,25 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Usage", Url = "/besql/usage" },
     ];
 
+    private readonly List<BitNavItem> butilNavItems =
+    [
+        new BitNavItem { Text = "Overview", Url = "/butil/overview" },
+        new BitNavItem { Text = "Install", Url = "/butil/install" },
+        new BitNavItem { Text = "Setup", Url = "/butil/setup" },
+        new BitNavItem { Text = "Window", Url = "/butil/window" },
+        new BitNavItem { Text = "Document", Url = "/butil/document" },
+        new BitNavItem { Text = "Keyboard", Url = "/butil/keyboard" },
+        new BitNavItem { Text = "Console", Url = "/butil/console" },
+        new BitNavItem { Text = "History", Url = "/butil/history" },
+        new BitNavItem { Text = "Element", Url = "/butil/element" },
+        new BitNavItem { Text = "Navigator", Url = "/butil/navigator" },
+        new BitNavItem { Text = "Storage", Url = "/butil/storage" },
+        new BitNavItem { Text = "Location", Url = "/butil/location" },
+        new BitNavItem { Text = "Screen", Url = "/butil/screen" },
+        new BitNavItem { Text = "Cookie", Url = "/butil/cookie" },
+        new BitNavItem { Text = "Crypto", Url = "/butil/Crypto" },
+    ];
+
 
     protected override Task OnInitializedAsync()
     {
@@ -73,11 +93,13 @@ public partial class MainLayout : IDisposable
         isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
         isBswupDocRoute = currentUrl.Contains("bswup");
         isBesqlDocRoute = currentUrl.Contains("besql");
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute;
+        isButilDocRoute = currentUrl.Contains("butil");
+        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute;
 
         navItems = isTemplateDocRoute ? templatesNavItems
                  : isBswupDocRoute ? bswupNavItems
                  : isBesqlDocRoute ? besqlNavItems
+                 : isButilDocRoute ? butilNavItems
                  : [];
     }
 
