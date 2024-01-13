@@ -1,0 +1,55 @@
+﻿@page "/butil/console"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/console"
+            Title="Console - Butil"
+            Description="Console class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Console</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Console class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser console features you need to inject the Bit.Butil.Console class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.Console console
+
+@@code {
+    console.Log("This is a test log:", someValue);
+    console.Assert(condition, "The condition failed!", testedValue);
+    console.Error("This is a test error:", value);
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <b>Assert</b>: Log a message and stack trace to console if the first argument is false
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/assert_static" target="_blank">MDN</a>).
+            <br /><br />
+            <b>Clear</b>: Clear the console
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/clear_static" target="_blank">MDN</a>).
+            <br /><br />
+            <b>Count</b>: Log the number of times this line has been called with the given label
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/count_static" target="_blank">MDN</a>).
+            <br /><br />
+            <b>CountReset</b>: Resets the value of the counter with the given label
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/countreset_static" target="_blank">MDN</a>).
+            <br /><br />
+            <b>Debug</b>: Outputs a message to the console with the log level debug
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/debug_static" target="_blank">MDN</a>).
+            <br /><br />
+            <b>Dir</b>: Displays an interactive listing of the properties of a specified JavaScript object
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/dir_static" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Keyboard" PrevUrl="/butil/keyboard" Next="History" NextUrl="/butil/history" />

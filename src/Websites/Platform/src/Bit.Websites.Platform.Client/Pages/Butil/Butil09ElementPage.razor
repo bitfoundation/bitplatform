@@ -1,0 +1,36 @@
+﻿@page "/butil/element"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/element"
+            Title="Element - Butil"
+            Description="Element class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Element</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Element class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser Element features you need to inject the Bit.Butil.Element class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.Element element
+
+@@code {
+    var rect = await element.GetBoundingClientRect(elementRef);
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="History" PrevUrl="/butil/history" Next="Navigator" NextUrl="/butil/navigator" />

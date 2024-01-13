@@ -1,0 +1,36 @@
+﻿@page "/butil/cookie"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/cookie"
+            Title="Cookie - Butil"
+            Description="Cookie class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Cookie</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Cookie class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser cookie features you need to inject the Bit.Butil.Cookie class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.Cookie cookie
+
+@@code {
+    await Cookie.Remove("cookie-name");
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Screen" PrevUrl="/butil/screen" Next="Crypto" NextUrl="/butil/crypto" />

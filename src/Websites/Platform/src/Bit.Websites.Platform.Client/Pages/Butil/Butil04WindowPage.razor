@@ -1,0 +1,54 @@
+﻿@page "/butil/window"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/window"
+            Title="Window - Butil"
+            Description="Window class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Window</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Window class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser window features you need to inject the Bit.Butil.Window class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.Window window
+
+@@code {
+    await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
+    await window.Alert("Alert from C#");
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <b>AddBeforeUnload</b>, <b>RemoveBeforeUnload</b>: The beforeunload event is fired when the current window, 
+            contained document, and associated resources are about to be unloaded. The main use case for this event is to 
+            trigger a browser-generated confirmation dialog that asks users to confirm if they really want to leave the page 
+            when they try to close or reload it, or navigate somewhere else. This is intended to help prevent loss of unsaved data.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event" target="_blank">MDN</a>).
+            <br /><br />
+            <b>GetInnerHeight</b>: Gets the height of the content area of the browser window in px including, if rendered, the horizontal scrollbar
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/innerHeight" target="_blank">MDN</a>).
+            <br /><br />
+            <b>GetInnerWidth</b>: Gets the width of the content area of the browser window in px including, if rendered, the vertical scrollbar
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth" target="_blank">MDN</a>).
+            <br /><br />
+            <b>IsSecureContext</b>: Returns a boolean indicating whether the current context is secure (true) or not (false)
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/isSecureContext" target="_blank">MDN</a>).
+            <br /><br />
+            <b>GetOrigin</b>: Returns the global object's origin, serialized as a string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/origin" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Setup" PrevUrl="/butil/setup" Next="Document" NextUrl="/butil/document" />
