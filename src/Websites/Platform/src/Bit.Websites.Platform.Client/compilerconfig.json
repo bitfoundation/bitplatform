@@ -192,8 +192,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Bswup/Bswup06CachingPage.razor.css",
-        "inputFile": "Pages/Bswup/Bswup06CachingPage.razor.scss",
+        "outputFile": "Pages/Bswup/Bswup06ProgressPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup06ProgressPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

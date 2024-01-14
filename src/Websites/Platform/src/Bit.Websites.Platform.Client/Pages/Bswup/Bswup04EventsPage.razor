@@ -63,6 +63,27 @@ function bitBswupHandler(type, data) {
         </div>
     </section>
 
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Bswup Events</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            All the bit Bswup events are as follows:
+            <br /><br />
+            <b>updateFound</b>: when a new update for the app is found by the bit Bswup's Service Worker.
+            <br /><br />
+            <b>stateChanged</b>: when the state of the Service Worker is changed.
+            <br /><br />
+            <b>activate</b>: when a new version of the Service Worker is activated.
+            <br /><br />
+            <b>downloadStarted</b>: when download of the new version of the app started.
+            <br /><br />
+            <b>downloadProgress</b>: the progress of downloading the new version of the app.
+            <br /><br />
+            <b>downloadFinished</b>: when the download of the new version of the app finished.
+            <br /><br />
+            <b>updateReady</b>: when the new version of the app is ready to apply.
+        </div>
+    </section>
 </div>
 
 <NavigationButtons Prev="Scripts" PrevUrl="/bswup/scripts" Next="Service Worker" NextUrl="/bswup/service-worker" />

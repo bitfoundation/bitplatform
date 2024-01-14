@@ -46,74 +46,73 @@ self.enableDiagnostics = true;
 self.enableFetchDiagnostics = true;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');</pre>
-        </div>
 
-        <div class="section-card">
-            <b>Note</b>: The most important line here is the last line which is the only mandatory config in this file
-            that imports the Bswup service-worker file:
+            <div class="section-card">
+                <b>Note</b>: The most important line here is the last line which is the only mandatory config in this file
+                that imports the Bswup service-worker file:
 
-<pre class="code-box">
+<pre class="code-box" style="margin-bottom:0">
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');</pre>
-        </div>
+            </div>
 
-        <div class="section-card">
-            The other settings are:
+            These available configurations are exaplined below:
             <br /><br />
-            <b>assetsInclude</b>: The list of file names from the assets list to include when the Bswup 
+            <b>assetsInclude</b>: The list of file names from the assets list to include when the Bswup
             tries to store them in the cache storage (regex supported).
             <br /><br />
-            <b>assetsExclude</b>: The list of file names from the assets list to exclude when the Bswup 
+            <b>assetsExclude</b>: The list of file names from the assets list to exclude when the Bswup
             tries to store them in the cache storage (regex supported).
             <br /><br />
-            <b>externalAssets</b>: The list of external assets to cache that are not included in the auto-generated assets file. 
+            <b>externalAssets</b>: The list of external assets to cache that are not included in the auto-generated assets file.
             For example, if you're not using index.html (like _host.cshtml), then you should add { "url": "/" }.
             <br /><br />
             <b>defaultUrl</b>: The default page URL. Use / when using _Host.cshtml.
             <br /><br />
-            <b>assetsUrl</b>: The file path of the service-worker assets file generated at compile time 
+            <b>assetsUrl</b>: The file path of the service-worker assets file generated at compile time
             (the default file name is service-worker-assets.js).
             <br /><br />
             <b>prohibitedUrls</b>: The list of file names that should not be accessed (regex supported).
             <br /><br />
             <b>caseInsensitiveUrl</b>: Enables the case insensitivity in the URL checking of the cache process.
             <br /><br />
-            <b>serverHandledUrls</b>: The list of URLs that do not enter the service-worker offline process and 
+            <b>serverHandledUrls</b>: The list of URLs that do not enter the service-worker offline process and
             will be handled only by server (regex supported). such as /api, /swagger, ...
             <br /><br />
-            <b>serverRenderedUrls</b>: The list of URLs that should be rendered by the server and not 
+            <b>serverRenderedUrls</b>: The list of URLs that should be rendered by the server and not
             client while navigating (regex supported). such as /about.html, /privacy, ...
             <br /><br />
-            <b>noPrerenderQuery</b>: The query string attached to the default document request to disable 
+            <b>noPrerenderQuery</b>: The query string attached to the default document request to disable
             the prerendering from the server so an unwanted prerendered result not be cached.
             <br /><br />
-            <b>ignoreDefaultInclude</b>: Ignores the default asset includes array which is provided by the 
+            <b>ignoreDefaultInclude</b>: Ignores the default asset includes array which is provided by the
             Bswup itself which is like this:
 <pre class="code-box">
 [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/]</pre>
 
-            <b>ignoreDefaultExclude</b>: Ignores the default asset excludes array which is provided by the Bswup 
+            <b>ignoreDefaultExclude</b>: Ignores the default asset excludes array which is provided by the Bswup
             itself which is like this:
 <pre class="code-box">
 [/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/]</pre>
 
-            <b>Note</b>: Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker. 
+            <b>Note</b>: Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker.
             Only the browser should handle these files.
             <br /><br />
-            <b>isPassive</b>: Enables the Bswup's passive mode. In this mode, the assets won't be 
+            <b>isPassive</b>: Enables the Bswup's passive mode. In this mode, the assets won't be
             cached in advance but rather upon initial request.
             <br /><br />
             <b>disablePassiveFirstBoot</b>: Disables downloading the Blazor's boot files in first time of Passive mode.
             <br /><br />
-            <b>enableIntegrityCheck</b>: Enables the default integrity check available in browsers by setting 
+            <b>enableIntegrityCheck</b>: Enables the default integrity check available in browsers by setting
             the integrity attribute of the request object created in the service-worker to fetch the assets.
             <br /><br />
             <b>enableDiagnostics</b>: Enables diagnostics by pushing service-worker logs to the browser console.
             <br /><br />
-            <b>enableFetchDiagnostics</b>: Enables fetch event diagnostics by pushing service-worker 
+            <b>enableFetchDiagnostics</b>: Enables fetch event diagnostics by pushing service-worker
             fetch event logs to the browser console.
+
         </div>
     </section>
 
 </div>
 
-<NavigationButtons Prev="Events" PrevUrl="/bswup/events" Next="Caching" NextUrl="/bswup/caching" />
+<NavigationButtons Prev="Events" PrevUrl="/bswup/events" Next="BswupProgress" NextUrl="/bswup/progress" />
