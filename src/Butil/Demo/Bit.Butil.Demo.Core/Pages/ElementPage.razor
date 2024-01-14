@@ -245,6 +245,14 @@ else
 <button @onclick="IsContentEditable">IsContentEditable</button>
 <br />
 <br />
+<select @bind="selectedContentEditable">
+    @foreach (var option in Enum.GetValues(typeof(ContentEditable)))
+    {
+        <option value="@option">@option.ToString()</option>
+    }
+</select>
+<br />
+<br />
 <button @onclick="SetContentEditable">SetContentEditable</button>
 &nbsp;
 <button @onclick="GetContentEditable">GetContentEditable</button>
@@ -254,6 +262,14 @@ else
 <hr />
 <br />
 
+<select @bind="selectedEnterKeyHint">
+    @foreach (var option in Enum.GetValues(typeof(EnterKeyHint)))
+    {
+        <option value="@option">@option.ToString()</option>
+    }
+</select>
+<br />
+<br />
 <button @onclick="SetEnterKeyHint">SetEnterKeyHint</button>
 &nbsp;
 <button @onclick="GetEnterKeyHint">GetEnterKeyHint</button>
@@ -263,6 +279,15 @@ else
 <hr />
 <br />
 
+
+<select @bind="selectedHidden">
+    @foreach (var option in Enum.GetValues(typeof(Hidden)))
+    {
+        <option value="@option">@option.ToString()</option>
+    }
+</select>
+<br />
+<br />
 <button @onclick="SetHidden">SetHidden</button>
 &nbsp;
 <button @onclick="GetHidden">GetHidden</button>
@@ -286,6 +311,10 @@ else
 <hr />
 <br />
 
+<input type="checkbox" @bind="@isInert" />
+<label>@(isInert ? "true" : "false")</label>
+<br />
+<br />
 <button @onclick=SetInert>SetInert</button>
 &nbsp;
 <button @onclick=GetInert>GetInert</button>
@@ -328,8 +357,10 @@ else
 
 @code {
     private ElementReference elementRef = default!;
-    
+
     private bool isDirRtl;
+
+    private bool isInert;
 
     private int tabIndex;
 
@@ -354,6 +385,12 @@ else
     private string outerHTML = "<div style=\"max-width:6rem; max-height:6rem; color: white; overflow: auto; background: dodgerblue;\"><div style=\"height: 10rem\">Element</div></div>";
 
     private string innerText = "Element";
+
+    private ContentEditable selectedContentEditable = ContentEditable.True;
+
+    private EnterKeyHint selectedEnterKeyHint = EnterKeyHint.Done;
+
+    private Hidden selectedHidden = Hidden.True;
 
 
     private async Task GetAttribute()
@@ -557,7 +594,7 @@ else
     private async Task SetInnerText()
     {
         await elementRef.SetInnerText(innerText);
-        await console.Log($"Element InnerText has been successfuly set");
+        await console.Log("Element InnerText has been successfuly set");
     }
 
     private async Task GetInnerText()
@@ -597,8 +634,8 @@ else
 
     private async Task SetContentEditable()
     {
-        await elementRef.SetContentEditable(ContentEditable.True);
-        await console.Log($"Element ContentEditable has been successfuly set");
+        await elementRef.SetContentEditable(selectedContentEditable);
+        await console.Log($"Element ContentEditable has been successfuly set to \"{selectedContentEditable}\"");
     }
 
     private async Task GetContentEditable()
@@ -608,8 +645,8 @@ else
 
     private async Task SetEnterKeyHint()
     {
-        await elementRef.SetEnterKeyHint(EnterKeyHint.Done);
-        await console.Log($"Element EnterKeyHint has been successfuly set");
+        await elementRef.SetEnterKeyHint(selectedEnterKeyHint);
+        await console.Log($"Element EnterKeyHint has been successfuly set to \"{selectedEnterKeyHint}\"");
     }
 
     private async Task GetEnterKeyHint()
@@ -619,8 +656,8 @@ else
 
     private async Task SetHidden()
     {
-        await elementRef.SetHidden(Hidden.True);
-        await console.Log($"Element Hidden has been successfuly set");
+        await elementRef.SetHidden(selectedHidden);
+        await console.Log($"Element Hidden has been successfuly set to \"{selectedHidden}\"");
     }
 
     private async Task GetHidden()
@@ -641,8 +678,8 @@ else
 
     private async Task SetInert()
     {
-        await elementRef.SetInert(true);
-        await console.Log($"Element Inert has been successfuly set");
+        await elementRef.SetInert(isInert);
+        await console.Log($"Element Inert has been successfuly set to \"{isInert}\"");
     }
 
     private async Task GetInert()
@@ -673,7 +710,7 @@ else
     private async Task SetTabIndex()
     {
         await elementRef.SetTabIndex(tabIndex);
-        await console.Log($"Element TabIndex has been successfuly set");
+        await console.Log($"Element TabIndex has been successfuly set to \"{tabIndex}\"");
     }
 
     private async Task GetTabIndex()
