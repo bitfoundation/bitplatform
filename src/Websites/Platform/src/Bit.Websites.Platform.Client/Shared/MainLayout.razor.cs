@@ -40,7 +40,7 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Scripts", Url = "/bswup/scripts" },
         new BitNavItem { Text = "Events", Url = "/bswup/events" },
         new BitNavItem { Text = "Service Worker", Url = "/bswup/service-worker" },
-        new BitNavItem { Text = "Caching", Url = "/bswup/caching" },
+        new BitNavItem { Text = "BswupProgress", Url = "/bswup/progress" },
     ];
 
     private readonly List<BitNavItem> besqlNavItems =

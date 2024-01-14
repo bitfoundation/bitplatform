@@ -16,12 +16,12 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor script</BitTypography>
         <div class="section-card-txt">
-            Since Bswup is taking care of the lifecyle of the application, we need to disable
-            the autostarting of the Blazor by adding autostart=false to the Blazor script tag:
+            Since Bswup is taking care of the lifecycle of the application, we need to disable
+            the autostart of the Blazor by adding autostart=false to the Blazor script tag:
 
 <pre class="code-box">
 &lt;script src="_framework/blazor.web.js" autostart="false">/&lt;script></pre>
-
+Or for the standalone template:
 <pre class="code-box">
 &lt;script src="_framework/blazor.webassembly.js" autostart="false">&lt;/script></pre>
         </div>
@@ -44,17 +44,16 @@
 
         <div class="section-card-txt">
             This script tag as shown above, has some options:
-            <br />
-            <br />
+            <br /><br />
             <b>scope</b>: The scope of the service-worker
             (<a href="https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope" target="_blank">read more</a>).
-            <br />
+            <br /><br />
             <b>log</b>: The log level of the Bswup logger. available options are: info, verbose, debug, and error (coming soon).
-            <br />
+            <br /><br />
             <b>sw</b>: The file path of the service-worker file.
-            <br />
-            <b>handler</b>: The name of the handler function for the service-worker events.
-            <br />
+            <br /><br />
+            <b>handler</b>: The name of the handler function for the service-worker events that explained <a href="/bswup/events">here</a>.
+            <br /><br />
             <b>blazorScript</b>: The file path of the Blazor's js script file.
         </div>
         <div class="section-card-txt">
