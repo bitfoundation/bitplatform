@@ -1,5 +1,6 @@
 ﻿@page "/butil/window"
 @inherits AppComponentBase
+@inject Bit.Butil.Window window
 
 <PageOutlet Url="butil/window"
             Title="Window - Butil"
@@ -30,11 +31,15 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
         <div class="section-card-txt">
-            <b>AddBeforeUnload</b>, <b>RemoveBeforeUnload</b>: The beforeunload event is fired when the current window, 
-            contained document, and associated resources are about to be unloaded. The main use case for this event is to 
-            trigger a browser-generated confirmation dialog that asks users to confirm if they really want to leave the page 
+            <b>AddBeforeUnload</b>, <b>RemoveBeforeUnload</b>: The beforeunload event is fired when the current window,
+            contained document, and associated resources are about to be unloaded. The main use case for this event is to
+            trigger a browser-generated confirmation dialog that asks users to confirm if they really want to leave the page
             when they try to close or reload it, or navigate somewhere else. This is intended to help prevent loss of unsaved data
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>AddEventListener</b>, <b>RemoveEventListener</b>: Sets up a function that will be called whenever the specified event is delivered to the window
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank">MDN</a>).
             <br /><br />
 
             <b>GetInnerHeight</b>: Gets the height of the content area of the browser window in px including, if rendered, the horizontal scrollbar
@@ -60,13 +65,64 @@
             <b>GetOrigin</b>: Returns the global object's origin, serialized as a string
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/origin" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode1
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick=GetOrigin>GetOrigin</BitButton>
+                            <div style="margin-top: 1rem;">Origin is: @origin</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
             <b>GetOuterHeight</b>: Gets the height of the outside of the browser window in px
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/outerHeight" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode2
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick=GetOuterHeight>GetOuterHeight</BitButton>
+                            <div style="margin-top: 1rem;">OuterHeight is: @outerHeight</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
             <b>GetOuterWidth</b>: Gets the width of the outside of the browser window in px
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/outerWidth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode3
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick=GetOuterWidth>GetOuterWidth</BitButton>
+                            <div style="margin-top: 1rem;">OuterWidth is: @outerWidth</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
             <b>GetScreenX</b>: Returns the horizontal distance in px from the left border of the user's browser viewport to the left side of the screen
@@ -85,16 +141,70 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollY" target="_blank">MDN</a>).
             <br /><br />
 
+            <b>Btoa</b>: Creates a base-64 encoded ASCII string from a string of binary data
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/btoa" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode4
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="btoaValue" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick=EncodeData>EncodeData</BitButton>
+                            <div style="margin-top: 1rem;">Encoded data is: @btoaText</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
             <b>Atob</b>: Decodes a string of data which has been encoded using base-64 encoding
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/atob" target="_blank">MDN</a>).
             <br /><br />
-
-            <b>Btoa</b>: Creates a base-64 encoded ASCII string from a string of binary data
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/btoa" target="_blank">MDN</a>).
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode5
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="atobValue" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick=DecodeData>DecodeData</BitButton>
+                            <div style="margin-top: 1rem;">Decoded text is: @atobText</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
             <b>Alert</b>: Displays an alert dialog
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/alert" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode6
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => window.Alert("Alert from C#"))">ShowAlert</BitButton>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
             <b>Blur</b>: Sets focus away from the window
@@ -107,6 +217,22 @@
 
             <b>Confirm</b>: Displays a dialog with a message that the user needs to respond to
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode7
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => window.Confirm("Confirm from C#"))">ShowConfirm</BitButton>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
             <b>Find</b>: Searches for a given string in a window
@@ -152,3 +278,134 @@
 </div>
 
 <NavigationButtons Prev="Setup" PrevUrl="/butil/setup" Next="Document" NextUrl="/butil/document" />
+
+@code {
+    private string? origin;
+
+    private float outerHeight;
+
+    private float outerWidth;
+
+    private string? btoaText;
+    private string? btoaValue;
+
+    private string? atobText;
+    private string? atobValue;
+
+
+    private async Task GetOrigin()
+    {
+        origin = await window.GetOrigin();
+    }
+
+    private async Task GetOuterHeight()
+    {
+        outerHeight = await window.GetOuterHeight();
+    }
+
+    private async Task GetOuterWidth()
+    {
+        outerWidth = await window.GetOuterWidth();
+    }
+
+    private async Task EncodeData()
+    {
+        btoaText = await window.Btoa(btoaValue!);
+    }
+
+    private async Task DecodeData()
+    {
+        atobText = await window.Atob(atobValue!);
+    }
+
+    private string exampleCode1 = 
+@"@inject Bit.Butil.Window window
+
+<BitButton OnClick=GetOrigin>GetOrigin</BitButton>
+
+<div>Origin is: @origin</div>
+
+@code {
+    private string? origin;
+
+    private async Task GetOrigin()
+    {
+        origin = await window.GetOrigin();
+    }
+}";
+    private string exampleCode2 = 
+@"@inject Bit.Butil.Window window
+
+<BitButton OnClick=GetOuterHeight>GetOuterHeight</BitButton>
+
+<div>OuterHeight is: @outerHeight</div>
+
+@code {
+    private float outerHeight;
+
+    private async Task GetOuterHeight()
+    {
+        outerHeight = await window.GetOuterHeight();
+    }
+}";
+    private string exampleCode3 =
+@"@inject Bit.Butil.Window window
+
+<BitButton OnClick=GetOuterWidth>GetOuterWidth</BitButton>
+
+<div>OuterWidth is: @outerWidth</div>
+
+@code {
+    private float outerWidth;
+
+    private async Task GetOuterWidth()
+    {
+        outerWidth = await window.GetOuterWidth();
+    }
+}";
+    private string exampleCode4 = 
+@"@inject Bit.Butil.Window window
+
+<BitTextField @bind-Value=""btoaValue"" />
+                            
+<BitButton OnClick=EncodeData>EncodeData</BitButton>
+
+<div>Encoded data is: @btoaText</div>
+
+@code {
+    private string? btoaText;
+    private string? btoaValue;
+
+    private async Task EncodeData()
+    {
+        btoaText = await window.Btoa(btoaValue!);
+    }
+}";
+    private string exampleCode5 = 
+@"@inject Bit.Butil.Window window
+
+<BitTextField @bind-Value=""atobValue"" />
+                            
+<BitButton OnClick=DecodeData>DecodeData</BitButton>
+
+<div>Decoded data is: @atobText</div>
+
+@code {
+    private string? atobText;
+    private string? atobValue;
+
+    private async Task DecodeData()
+    {
+        atobText = await window.Atob(atobValue!);
+    }
+}";
+    private string exampleCode6 = 
+@"@inject Bit.Butil.Window window
+
+<BitButton OnClick=""@(() => window.Alert(""Alert from C#""))"">ShowAlert</BitButton>";
+    private string exampleCode7 =
+@"@inject Bit.Butil.Window window
+
+<BitButton OnClick=""@(() => window.Confirm(""Confirm from C#""))"">ShowConfirm</BitButton>";
+
+}
