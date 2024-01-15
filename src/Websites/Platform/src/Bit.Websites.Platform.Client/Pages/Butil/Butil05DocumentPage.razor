@@ -1,5 +1,6 @@
 ﻿@page "/butil/document"
 @inherits AppComponentBase
+@inject Bit.Butil.Document document
 
 <PageOutlet Url="butil/document"
             Title="Document - Butil"
@@ -53,8 +54,26 @@
             <b>SetDesignMode</b>, <b>GetDesignMode</b>: Gets/Sets ability to edit the whole document
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode1
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitCheckbox @bind-Value="isDesignModeOn" Label="@(isDesignModeOn ? "On" : "Off")" />
+                            <br />
+                            <BitButton OnClick=SetDesignMode>SetDesignMode</BitButton>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>SetDir</b>, <b>GetDir</b>: Gets/Sets directionality (rtl/ltr) of the document
+            <b>SetDir</b>, <b>GetDir</b>: Gets/Sets directionality (Rtl/Ltr) of the document
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/dir" target="_blank">MDN</a>).
             <br /><br />
 
@@ -81,3 +100,28 @@
 </div>
 
 <NavigationButtons Prev="Window" PrevUrl="/butil/window" Next="Keyboard" NextUrl="/butil/keyboard" />
+
+@code {
+    private bool isDesignModeOn;
+
+    private async Task SetDesignMode()
+    {
+        await document.SetDesignMode(isDesignModeOn ? DesignMode.On : DesignMode.Off);
+    }
+
+    private string exampleCode1 =
+@"@inject Bit.Butil.Document document
+
+<BitCheckbox @bind-Value=""isDesignModeOn"" Label=""@(isDesignModeOn ? ""On"" : ""Off"")"" />
+
+<BitButton OnClick=SetDesignMode>SetDesignMode</BitButton>
+
+@code {
+    private bool isDesignModeOn;
+
+    private async Task SetDesignMode()
+    {
+        await document.SetDesignMode(isDesignModeOn ? DesignMode.On : DesignMode.Off);
+    }
+}";
+}
