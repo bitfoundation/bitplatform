@@ -91,7 +91,6 @@ public partial class BitCalendar
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private int? _selectedDateDayOfWeek;
-    private string? _activeDescendantId;
     private string _monthTitle = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
@@ -328,8 +327,6 @@ public partial class BitCalendar
 
     protected override void OnInitialized()
     {
-        _activeDescendantId = $"BitCalendar-{UniqueId}-active-descendant";
-
         _showTimePicker = showTimePicker && ShowTimePickerAsOverlay is false;
         _showMonthPicker = _showTimePicker is false && showMonthPicker && ShowMonthPickerAsOverlay is false;
 
