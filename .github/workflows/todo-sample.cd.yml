@@ -53,6 +53,9 @@ jobs:
     - name: Enable pre rendering
       run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
 
+    - name: Changes for static-todo.bitplatform.dev - Part 1
+      run:  sed -i 's/http://localhost:4030/https://static-todo.bitplatform.dev/g' TodoSample/src/TodoSample.Server/Startup/Middlewares.cs
+
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
@@ -64,6 +67,18 @@ jobs:
       with:
         name: server-bundle
         path: ${{env.DOTNET_ROOT}}/server
+
+    - name: Changes for static-todo.bitplatform.dev - Part 2
+      run:  sed -i 's/public static readonly bool PrerenderEnabled = true;/public static readonly bool PrerenderEnabled = false;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
+
+    - name: Publish static todo
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -p:BlazorWebAssemblyStatic=true -o ${{env.DOTNET_ROOT}}/static
+
+    - name: Upload static artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: static-bundle
+        path: ${{env.DOTNET_ROOT}}/static
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -99,6 +114,22 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
+
+      - name: Retrieve static bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: server-static
+          path: ./static
+
+      - name: Deploy to Azure Static pages
+        id: deploy-to-static-pages
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          app-name: 'todo'
+          slot-name: 'production'
+          azure_static_web_apps_api_token: ${{ secrets.TODO_STATIC_AZURE_STATIC_PAGES_TOKEN }}
+          package: ./static
+          action: "upload"
 
       - name: Purge cache
         uses: jakejarvis/cloudflare-purge-action@master

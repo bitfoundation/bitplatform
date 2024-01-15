@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-    
+
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-        <!--/-:msbuild-conditional:noEmit -->
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
@@ -17,10 +16,21 @@
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
+        <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
-        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.js" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(BlazorWebAssemblyStatic)' == 'true' ">
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.1" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(BlazorWebAssemblyStatic)' == 'false' ">
+        <Content Remove="wwwroot\index.html" />
+        <None Remove="Properties\launchSettings.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -39,6 +49,7 @@
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
 
         <Using Include="Microsoft.JSInterop" />
+        <Using Include="Boilerplate.Client.Core" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
@@ -49,5 +60,5 @@
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
-    
+
 </Project>

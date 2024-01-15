@@ -11,10 +11,10 @@
 
         <NeutralLanguage>en-US</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
-        <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
-        
         <PwaEnabled>false</PwaEnabled>
-        <DefineConstants Condition=" '$(PwaEnabled)' == 'true' ">$(DefineConstants);PwaEnabled</DefineConstants>
+        <BlazorWebAssemblyStatic>true</BlazorWebAssemblyStatic>
+
+        <PwaEnabled Condition=" '$(BlazorWebAssemblyStatic)' == 'true' ">true</PwaEnabled>
 
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">14.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">14.0</SupportedOSPlatformVersion>
@@ -26,6 +26,9 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-ios')) ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
+        <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorWebAssemblyStatic)' == 'true' ">$(DefineConstants);BlazorWebAssemblyStatic</DefineConstants>
+        <DefineConstants Condition=" '$(PwaEnabled)' == 'true' ">$(DefineConstants);PwaEnabled</DefineConstants>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 

@@ -15,4 +15,4 @@ var app = builder.Build();
 
 Boilerplate.Server.Startup.Middlewares.Use(app, builder.Environment, builder.Configuration);
 
-app.Run();
+await app.RunAsync();
