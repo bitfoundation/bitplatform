@@ -1,5 +1,6 @@
 ﻿@page "/butil/keyboard"
 @inherits AppComponentBase
+@inject Bit.Butil.Keyboard keyboard
 
 <PageOutlet Url="butil/keyboard"
             Title="Keyboard - Butil"
@@ -30,11 +31,53 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
         <div class="section-card-txt">
-            <b>Add</b>: Adds a handler to a keyboard key combination.
+            <b>Add</b>, <b>Remove</b>: Adds/Removes a handler to a keyboard key combination.
             <br /><br />
-            <b>Remove</b>: Removes a handler from a keyboard key combination.
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode1
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <div>Press Ctrl+F to focus on search box</div>
+                            <br />
+                            <BitSearchBox @ref="searchBox" Style="max-width: 18.75rem;" />
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
         </div>
     </section>
 </div>
 
 <NavigationButtons Prev="Document" PrevUrl="/butil/document" Next="Console" NextUrl="/butil/console" />
+
+@code {
+    private BitSearchBox searchBox = default!;
+
+    protected override async Task OnInitAsync()
+    {
+        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusInput(), ButilModifiers.Ctrl);
+    }
+
+    private string exampleCode1 =
+@"@inject Bit.Butil.Document document
+
+<div>Press Ctrl+F to focus on search box</div>
+
+<BitSearchBox @ref=""searchBox"" />
+
+@code {
+    private BitSearchBox searchBox = default!;
+
+    protected override async Task OnInitAsync()
+    {
+        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusInput(), ButilModifiers.Ctrl);
+    }
+}";
+}
