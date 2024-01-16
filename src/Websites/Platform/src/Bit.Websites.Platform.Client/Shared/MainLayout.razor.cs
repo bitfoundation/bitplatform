@@ -18,6 +18,7 @@ public partial class MainLayout : IDisposable
     private readonly List<BitNavItem> templatesNavItems =
     [
         new BitNavItem { Text = "Overview", Url = "/templates/overview", AdditionalUrls = new string[] { "/admin-panel/overview", "/todo-template/overview" } },
+        new BitNavItem { Text = "Samples", Url = "/templates/samples" },
         new BitNavItem { Text = "Development prerequisites", Url = "/templates/development-prerequisites", AdditionalUrls = new string[] { "/admin-panel/development-prerequisites", "/todo-template/development-prerequisites" } },
         new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = new string[] { "/admin-panel/create-project", "/todo-template/create-project" } },
         new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = new string[] { "/admin-panel/project-structure", "/todo-template/project-structure" } },
