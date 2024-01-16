@@ -12,7 +12,7 @@
         <NeutralLanguage>en-US</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
         <PwaEnabled>false</PwaEnabled>
-        <BlazorWebAssemblyStatic>true</BlazorWebAssemblyStatic>
+        <BlazorWebAssemblyStatic>false</BlazorWebAssemblyStatic>
 
         <PwaEnabled Condition=" '$(BlazorWebAssemblyStatic)' == 'true' ">true</PwaEnabled>
 
