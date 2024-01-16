@@ -41,6 +41,8 @@ public class Middlewares
         else
         {
             app.UseHttpsRedirection();
+            app.UseResponseCaching();
+            app.UseResponseCompression();
         }
 
         Configure_401_403_404_Pages(app);
@@ -67,13 +69,6 @@ public class Middlewares
 
         app.UseAuthentication();
         app.UseAuthorization();
-
-        if (env.IsDevelopment() is false)
-        {
-            app.UseResponseCompression();
-        }
-
-        app.UseResponseCaching();
 
         app.UseAntiforgery();
 
