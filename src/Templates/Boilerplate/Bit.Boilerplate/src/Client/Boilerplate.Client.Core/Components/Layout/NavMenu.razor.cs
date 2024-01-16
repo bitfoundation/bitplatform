@@ -131,7 +131,7 @@ public partial class NavMenu : IDisposable
     private async Task HandleNavItemClick(BitNavItem item)
     {
         if (string.IsNullOrEmpty(item.Url)) return;
-        
+
         await CloseMenu();
     }
 
