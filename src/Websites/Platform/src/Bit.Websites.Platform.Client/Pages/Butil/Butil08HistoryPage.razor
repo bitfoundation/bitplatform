@@ -1,7 +1,6 @@
 ﻿@page "/butil/history"
 @inherits AppComponentBase
 @inject Bit.Butil.History history
-@inject Bit.Butil.Console console
 
 <PageOutlet Url="butil/history"
             Title="History - Butil"
@@ -79,25 +78,6 @@
 
             <b>GetState</b>: Returns an any value representing the state at the top of the history stack
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/state" target="_blank">MDN</a>).
-            <br /><br />
-            <BitAccordion Title="Sample">
-                <ChildContent>
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @exampleCode3
-                            </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <div>Open the DevTools console and start clicking on the button</div>
-                            <br />
-                            <BitButton OnClick="@GetState">GetState</BitButton>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
-                </ChildContent>
-            </BitAccordion>
             <br /><br />
 
             <b>GoBack</b>: This asynchronous method goes to the previous page in session history, the same action as when the user clicks the browser's Back button. Calling this method to go back beyond the first page in the session history has no effect and doesn't raise an exception
@@ -230,8 +210,6 @@
 
     private string replaceStateUrl = "butil/history#replace-state";
 
-    private object? popState;
-
 
     private async Task GetLength()
     {
@@ -242,12 +220,6 @@
     private async Task SetScrollRestoration()
     {
         await history.SetScrollRestoration(isScrollRestorationManual ? ScrollRestoration.Manual : ScrollRestoration.Auto);
-    }
-
-    private async Task GetState()
-    {
-        var state = await history.GetState();
-        await console.Log("History state", state);
     }
 
     private async Task Go()
@@ -294,19 +266,6 @@
     private async Task SetScrollRestoration()
     {
         await history.SetScrollRestoration(isScrollRestorationManual ? ScrollRestoration.Manual : ScrollRestoration.Auto);
-    }
-}";
-    private string exampleCode3 =
-    @"@inject Bit.Butil.History history
-@inject Bit.Butil.Console console
-
-<BitButton OnClick=""@GetState"">GetState</BitButton>
-
-@code {
-    private async Task GetState()
-    {
-        var state = await history.GetState();
-        await console.Log(""History state"", state);
     }
 }";
     private string exampleCode4 =
