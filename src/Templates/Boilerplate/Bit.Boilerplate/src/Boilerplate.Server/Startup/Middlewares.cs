@@ -61,7 +61,7 @@ public class Middlewares
             }
         });
 
-        // 0.0.0.0 origins are required for BlazorHybrid's WebView and localhost:4030 is required for BlazorStandaloneWebAssembly to work.
+        // 0.0.0.0 origins are essential for the proper functioning of BlazorHybrid's WebView, while localhost:4030 is a prerequisite for BlazorStandaloneWebAssembly testing.
         app.UseCors(options => options.WithOrigins("https://0.0.0.0", "app://0.0.0.0", "http://localhost:4030")
             .AllowAnyHeader().AllowAnyMethod());
 
