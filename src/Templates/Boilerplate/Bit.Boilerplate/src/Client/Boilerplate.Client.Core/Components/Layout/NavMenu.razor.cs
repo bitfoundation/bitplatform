@@ -95,7 +95,8 @@ public partial class NavMenu : IDisposable
             await InvokeAsync(StateHasChanged);
         });
 
-        // The PreRenderStateService efficiently stores information in a dictionary. Subsequently, upon the initialization of the client,
+        // Automatically generated controllers employ the PrerenderStateService discreetly when the AppRenderMode.PrerenderEnabled is set to true.
+        // PrerenderStateService efficiently stores information in a dictionary. Subsequently, upon the initialization of the client,
         // this stored data is employed to establish the initial state of the application, eliminating the need for redundant server requests.
         // The dictionary's keys correspond to the URLs of the respective requests.
         // As the GetCurrentUser method is invoked in both NavMenu.razor.cs and EditProfile.razor.cs, it becomes imperative to
