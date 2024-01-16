@@ -13,8 +13,8 @@
         <MultilingualEnabled>true</MultilingualEnabled>
         <PwaEnabled>false</PwaEnabled>
         <BlazorStandaloneWebAssembly>false</BlazorStandaloneWebAssembly>
-        <!-- By enabling the BlazorStandaloneWebAssembly option to true, you gain the ability to
-        deploy your Client.Web project on platforms such as GitHub, Cloudflare Pages and Azure Static Web Apps. -->
+        <!-- By enabling the BlazorStandaloneWebAssembly option, you gain the ability to
+        deploy your Client.Web project on platforms such as GitHub/Cloudflare Pages and Azure Static Web Apps. -->
 
         <PwaEnabled Condition=" '$(BlazorStandaloneWebAssembly)' == 'true' ">true</PwaEnabled>
 
