@@ -84,80 +84,85 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates02DevelopmentPrerequisitesPage.razor.css",
-        "inputFile": "Pages/Templates/Templates02DevelopmentPrerequisitesPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates02SamplesPage.razor.css",
+        "inputFile": "Pages/Templates/Templates02SamplesPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates03CreateProjectPage.razor.css",
-        "inputFile": "Pages/Templates/Templates03CreateProjectPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates03DevelopmentPrerequisitesPage.razor.css",
+        "inputFile": "Pages/Templates/Templates03DevelopmentPrerequisitesPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates04ProjectStructurePage.razor.css",
-        "inputFile": "Pages/Templates/Templates04ProjectStructurePage.razor.scss",
+        "outputFile": "Pages/Templates/Templates04CreateProjectPage.razor.css",
+        "inputFile": "Pages/Templates/Templates04CreateProjectPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates05DatabasePage.razor.css",
-        "inputFile": "Pages/Templates/Templates05DatabasePage.razor.scss",
+        "outputFile": "Pages/Templates/Templates05ProjectStructurePage.razor.css",
+        "inputFile": "Pages/Templates/Templates05ProjectStructurePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {   "outputFile": "Pages/Templates/Templates06DatabasePage.razor.css",
+        "inputFile": "Pages/Templates/Templates06DatabasePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates06RunPage.razor.css",
-        "inputFile": "Pages/Templates/Templates06RunPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates07RunPage.razor.css",
+        "inputFile": "Pages/Templates/Templates07RunPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates07AppModelsPage.razor.css",
-        "inputFile": "Pages/Templates/Templates07AppModelsPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates08AppModelsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates08AppModelsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates08DeploymentTypePage.razor.css",
-        "inputFile": "Pages/Templates/Templates08DeploymentTypePage.razor.scss",
+        "outputFile": "Pages/Templates/Templates09DeploymentTypePage.razor.css",
+        "inputFile": "Pages/Templates/Templates09DeploymentTypePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates09CacheMechanismPage.razor.css",
-        "inputFile": "Pages/Templates/Templates09CacheMechanismPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates10CacheMechanismPage.razor.css",
+        "inputFile": "Pages/Templates/Templates10CacheMechanismPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates10DevOpsPage.razor.css",
-        "inputFile": "Pages/Templates/Templates10DevOpsPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates11DevOpsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates11DevOpsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates11PlatformIntegrationPage.razor.css",
-        "inputFile": "Pages/Templates/Templates11PlatformIntegrationPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates12PlatformIntegrationPage.razor.css",
+        "inputFile": "Pages/Templates/Templates12PlatformIntegrationPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates12SettingsPage.razor.css",
-        "inputFile": "Pages/Templates/Templates12SettingsPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates13SettingsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates13SettingsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates13ExceptionHandlingPage.razor.css",
-        "inputFile": "Pages/Templates/Templates13ExceptionHandlingPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates14ExceptionHandlingPage.razor.css",
+        "inputFile": "Pages/Templates/Templates14ExceptionHandlingPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates14MultilingualismPage.razor.css",
-        "inputFile": "Pages/Templates/Templates14MultilingualismPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates15MultilingualismPage.razor.css",
+        "inputFile": "Pages/Templates/Templates15MultilingualismPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
