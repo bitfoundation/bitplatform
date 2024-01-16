@@ -51,6 +51,10 @@ jobs:
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
 
+    - name: Configure app render mode
+      run: |
+          sed -i 's/Auto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
+
     - name: Configure bswup
       run: |
           sed -i 's/self.noPrerenderQuery/\/\/ self.noPrerenderQuery/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.js
