@@ -69,9 +69,6 @@
                     content: var(--bit-bswup-percent-text, "");
                 }
 
-        /* If you want the update to be applied after the user approves the new Pwa version and not automatically,
-                   set first parameter of startBswupProgress (AutoReload) to false and uncomment the following code: */
-        /*
         #bit-bswup-reload {
             top: 38px;
             left: 50%;
@@ -83,7 +80,6 @@
             border-radius: 2px;
             transform: translateX(-50%);
         }
-        */
     </style>
     <div>
         <div id="app-container">
@@ -93,10 +89,16 @@
                     <circle r="40%" cx="50%" cy="50%"></circle>
                     <circle r="40%" cx="50%" cy="50%"></circle>
                 </svg>
-                <img style="display: none" src onerror="startBswupProgress(true, false, false, '#app-container', false, '')" />
             </div>
         </div>
+        <!-- If you want the update to be applied after the user approves the new Pwa version and not automatically,
+        set first parameter of startBswupProgress (AutoReload) to false and uncomment the bit-bswup-reload button code. -->
+        <!-- <button id="bit-bswup-reload">Update</button> -->
     </div>
+    <script>
+        const autoReload = true, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, handler = null;
+        startBswupProgress(autoReload, showLogs, showAssets, appContainer, hideApp, handler);
+    </script>
     <script src="_content/Bit.Butil/bit-butil.js"></script>
     <!--#if (offlineDb == true) -->
     <script src="_content/Bit.Besql/bit-besql.js"></script>

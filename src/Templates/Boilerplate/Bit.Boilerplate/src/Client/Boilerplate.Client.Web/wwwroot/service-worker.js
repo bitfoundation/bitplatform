@@ -2,7 +2,7 @@
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [
-    /_framework\/blazor.(web|webassembly).js/
+    
 ];
 self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,

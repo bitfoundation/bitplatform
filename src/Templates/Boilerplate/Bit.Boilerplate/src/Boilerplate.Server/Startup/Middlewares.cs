@@ -61,7 +61,8 @@ public class Middlewares
             }
         });
 
-        app.UseCors(options => options.WithOrigins("https://0.0.0.0" /*BlazorHybrid*/, "app://0.0.0.0" /*BlazorHybrid*/, "http://localhost:4030" /*BlazorWebAssemblyStatic*/)
+        // 0.0.0.0 origins are required for BlazorHybrid's WebView and localhost:4030 is required for BlazorStandaloneWebAssembly to work.
+        app.UseCors(options => options.WithOrigins("https://0.0.0.0", "app://0.0.0.0", "http://localhost:4030")
             .AllowAnyHeader().AllowAnyMethod());
 
         app.UseAuthentication();

@@ -23,7 +23,7 @@
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.js" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(BlazorWebAssemblyStatic)' == 'false' ">
+    <ItemGroup Condition=" '$(BlazorStandaloneWebAssembly)' == 'false' ">
         <Content Remove="wwwroot\index.html" />
         <None Remove="Properties\launchSettings.json" />
     </ItemGroup>

@@ -72,7 +72,7 @@ jobs:
       run:  sed -i 's/public static readonly bool PrerenderEnabled = true;/public static readonly bool PrerenderEnabled = false;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
 
     - name: Publish static todo
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -p:BlazorWebAssemblyStatic=true -o ${{env.DOTNET_ROOT}}/static
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -p:BlazorStandaloneWebAssembly=true -o ${{env.DOTNET_ROOT}}/static
 
     - name: Upload static artifact
       uses: actions/upload-artifact@v3
