@@ -1,5 +1,6 @@
 ﻿@page "/butil/navigator"
 @inherits AppComponentBase
+@inject Bit.Butil.Navigator navigator
 
 <PageOutlet Url="butil/navigator"
             Title="Navigator - Butil"
@@ -29,66 +30,632 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
         <div class="section-card-txt">
-            <b>GetDeviceMemory</b>: Returns the amount of device memory in gigabytes. This value is an approximation given by rounding to the nearest power of 2 and dividing that number by 1024
+            <br />
+            <b>GetDeviceMemory</b>: <br />
+            Returns the amount of device memory in gigabytes. This value is an approximation given by rounding to the nearest power of 2 and dividing that number by 1024
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/deviceMemory" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getDeviceMemoryExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetDeviceMemory">GetDeviceMemory</BitButton>
+                            <br />
+                            <br />
+                            <div>Device memory is: @deviceMemory</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>GetHardwareConcurrency</b>: Returns the number of logical processor cores available
+            <b>GetHardwareConcurrency</b>: <br />
+            Returns the number of logical processor cores available
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getHardwareConcurrencyExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetHardwareConcurrency">GetHardwareConcurrency</BitButton>
+                            <br />
+                            <br />
+                            <div>Hardware concurrency is: @hardwareConcurrency</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>GetLanguage</b>: Returns a string representing the preferred language of the user, usually the language of the browser UI. The null value is returned when this is unknown
+            <b>GetLanguage</b>: <br />
+            Returns a string representing the preferred language of the user, usually the language of the browser UI. The null value is returned when this is unknown
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getLanguageExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetLanguage">GetLanguage</BitButton>
+                            <br />
+                            <br />
+                            <div>Language: @language</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>GetLanguages</b>: Returns an array of strings representing the languages known to the user, by order of preference
+            <b>GetLanguages</b>: <br />
+            Returns an array of strings representing the languages known to the user, by order of preference
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/languages" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getLanguagesExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetLanguages">GetLanguages</BitButton>
+                            <br />
+                            <br />
+                            <div>Languages: @languages</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>GetMaxTouchPoints</b>: Returns the maximum number of simultaneous touch contact points are supported by the current device
+            <b>GetMaxTouchPoints</b>: <br />
+            Returns the maximum number of simultaneous touch contact points are supported by the current device
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/maxTouchPoints" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getMaxTouchPointsExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetMaxTouchPoints">GetMaxTouchPoints</BitButton>
+                            <br />
+                            <br />
+                            <div>Max touch points: @maxTouchPoints</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>IsOnLine</b>: Returns a boolean value indicating whether the browser is working online
+            <b>IsOnLine</b>: <br />
+            Returns a boolean value indicating whether the browser is working online
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @isOnLineExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetIsOnLine">GetIsOnLine</BitButton>
+                            <br />
+                            <br />
+                            <div>Is OnLine: @isOnLine</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>IsPdfViewerEnabled</b>: Returns true if the browser can display PDF files inline when navigating to them, and false otherwise
+            <b>IsPdfViewerEnabled</b>: <br />
+            Returns true if the browser can display PDF files inline when navigating to them, and false otherwise
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/pdfViewerEnabled" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @isPdfViewerEnabledExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetIsPdfViewerEnabled">GetIsPdfViewerEnabled</BitButton>
+                            <br />
+                            <br />
+                            <div>Is Pdf viewer enabled: @isPdfViewerEnabled</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>GetUserAgent</b>: Returns the user agent string for the current browser
+            <b>GetUserAgent</b>: <br />
+            Returns the user agent string for the current browser
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent" target="_blank">MDN</a>).
             <br /><br />
-
-            <b>IsWebDriver</b>: Indicates whether the user agent is controlled by automation
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/webdriver" target="_blank">MDN</a>).
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getUserAgentExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetUserAgent">GetUserAgent</BitButton>
+                            <br />
+                            <br />
+                            <div>User agent: @userAgent</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
-            <b>CanShare</b>: Returns true if a call to Navigator.share() would succeed
+            <b>IsWebDriver</b>: <br />
+            Indicates whether the user agent is controlled by automation
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/webdriver" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>CanShare</b>: <br />
+            Returns true if a call to navigator.Share() would succeed
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @canShareExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetCanShare">GetCanShare</BitButton>
+                            <br />
+                            <br />
+                            <div>Can share: @canShare</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>ClearAppBadge</b>: Clears a badge on the current app's icon and returns a Promise that resolves with undefined
+            <b>ClearAppBadge</b>: <br />
+            Clears a badge on the current app's icon and returns a Promise that resolves with undefined
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/clearAppBadge" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @clearAppBadgeExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => navigator.ClearAppBadge())">ClearAppBadge</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>SendBeacon</b>: Used to asynchronously transfer a small amount of data using HTTP from the User Agent to a web server
+            <b>SendBeacon</b>: <br />
+            Used to asynchronously transfer a small amount of data using HTTP from the User Agent to a web server
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @sendBeaconExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => navigator.SendBeacon())">SendBeacon</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>SetAppBadge</b>: Sets a badge on the icon associated with this app and returns a Promise that resolves with undefined
+            <b>SetAppBadge</b>: <br />
+            Sets a badge on the icon associated with this app and returns a Promise that resolves with undefined
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/setAppBadge" target="_blank">MDN</a>).
             <br /><br />
-
-            <b>Share</b>: Invokes the native sharing mechanism of the current platform
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share" target="_blank">MDN</a>).
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @setAppBadgeExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => navigator.SetAppBadge())">SetAppBadge</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
-            <b>Vibrate</b>: Causes vibration on devices with support for it. Does nothing if vibration support isn't available
+            <b>Share</b>: <br />
+            Invokes the native sharing mechanism of the current platform
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @shareExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="textValue" Label="Text" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitTextField @bind-Value="titleValue" Label="Title" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitTextField @bind-Value="urlValue" Label="Url" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="Share">Share</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Vibrate</b>: <br />
+            Causes vibration on devices with support for it. Does nothing if vibration support isn't available
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @vibrateExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => navigator.Vibrate(sosPattern))">Vibrate</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
         </div>
     </section>
 </div>
 
 <NavigationButtons Prev="Element" PrevUrl="/butil/element" Next="Storage" NextUrl="/butil/storage" />
+
+@code {
+    private string? deviceMemory;
+
+    private string? hardwareConcurrency;
+
+    private string? language;
+
+    private string? languages;
+
+    private string? maxTouchPoints;
+
+    private string? isOnLine;
+
+    private string? isPdfViewerEnabled;
+
+    private string? userAgent;
+
+    private string? isWebDriver;
+
+    private string? canShare;
+
+    private string? textValue;
+    private string? titleValue;
+    private string? urlValue;
+
+    private int[] sosPattern = [100, 30, 100, 30, 100, 30, 200, 30, 200, 30, 200, 30, 100, 30, 100, 30, 100];
+
+
+    private async Task GetDeviceMemory()
+    {
+        var result = await navigator.GetDeviceMemory();
+        deviceMemory = result.ToString();
+    }
+
+    private async Task GetHardwareConcurrency()
+    {
+        var result = await navigator.GetHardwareConcurrency();
+        hardwareConcurrency = result.ToString();
+    }
+
+    private async Task GetLanguage()
+    {
+        var result = await navigator.GetLanguage();
+        language = result.ToString();
+    }
+
+    private async Task GetLanguages()
+    {
+        var result = await navigator.GetLanguages();
+        languages = string.Join(",", result);
+    }
+
+    private async Task GetMaxTouchPoints()
+    {
+        var result = await navigator.GetMaxTouchPoints();
+        maxTouchPoints = result.ToString();
+    }
+
+    private async Task GetIsOnLine()
+    {
+        var result = await navigator.IsOnLine();
+        isOnLine = result.ToString();
+    }
+
+    private async Task GetIsPdfViewerEnabled()
+    {
+        var result = await navigator.IsPdfViewerEnabled();
+        isPdfViewerEnabled = result.ToString();
+    }
+
+    private async Task GetUserAgent()
+    {
+        var result = await navigator.GetUserAgent();
+        userAgent = result.ToString();
+    }
+
+    private async Task GetCanShare()
+    {
+        var result = await navigator.CanShare();
+        canShare = result.ToString();
+    }
+
+    private async Task Share()
+    {
+        var shareData = new ShareData()
+        {
+            Text = textValue,
+            title = titleValue,
+            url = urlValue
+        };
+
+        await navigator.Share(shareData);
+    }
+
+    private string getDeviceMemoryExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetDeviceMemory"">GetDeviceMemory</BitButton>
+
+<div>Device memory is: @deviceMemory</div>
+
+@code {
+    private string? deviceMemory;
+
+    private async Task GetDeviceMemory()
+    {
+        var result = await navigator.GetDeviceMemory();
+        deviceMemory = result.ToString();
+    }
+}";
+    private string getHardwareConcurrencyExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetHardwareConcurrency"">GetHardwareConcurrency</BitButton>
+
+<div>Hardware concurrency is: @hardwareConcurrency</div>
+
+@code {
+    private string? hardwareConcurrency;
+
+    private async Task GetHardwareConcurrency()
+    {
+        var result = await navigator.GetHardwareConcurrency();
+        hardwareConcurrency = result.ToString();
+    }
+}";
+    private string getLanguageExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetLanguage"">GetLanguage</BitButton>
+
+<div>Language: @language</div>
+
+@code {
+    private string? language;
+
+    private async Task GetLanguage()
+    {
+        var result = await navigator.GetLanguage();
+        language = result.ToString();
+    }
+}";
+    private string getLanguagesExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetLanguages"">GetLanguages</BitButton>
+
+<div>Languages: @languages</div>
+
+@code {
+    private string? languages;
+
+    private async Task GetLanguages()
+    {
+        var result = await navigator.GetLanguages();
+        languages = string.Join("","", result);
+    }
+}";
+    private string getMaxTouchPointsExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetMaxTouchPoints"">GetMaxTouchPoints</BitButton>
+
+<div>Max touch points: @maxTouchPoints</div>
+
+@code {
+    private string? maxTouchPoints;
+
+    private async Task GetMaxTouchPoints()
+    {
+        var result = await navigator.GetMaxTouchPoints();
+        maxTouchPoints = result.ToString();
+    }
+}";
+    private string isOnLineExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetIsOnLine"">GetIsOnLine</BitButton>
+
+<div>Is OnLine: @isOnLine</div>
+
+@code {
+    private string? isOnLine;
+
+    private async Task GetIsOnLine()
+    {
+        var result = await navigator.IsOnLine();
+        isOnLine = result.ToString();
+    }
+}";
+    private string isPdfViewerEnabledExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetIsPdfViewerEnabled"">GetIsPdfViewerEnabled</BitButton>
+
+<div>Is Pdf viewer enabled: @isPdfViewerEnabled</div>
+
+@code {
+    private string? isPdfViewerEnabled;
+
+    private async Task GetIsPdfViewerEnabled()
+    {
+        var result = await navigator.IsPdfViewerEnabled();
+        isPdfViewerEnabled = result.ToString();
+    }
+}";
+    private string getUserAgentExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetUserAgent"">GetUserAgent</BitButton>
+
+<div>User agent: @userAgent</div>
+
+@code {
+    private string? userAgent;
+
+    private async Task GetUserAgent()
+    {
+        var result = await navigator.GetUserAgent();
+        userAgent = result.ToString();
+    }
+}";
+    private string canShareExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@GetCanShare"">GetCanShare</BitButton>
+
+<div>Can share: @canShare</div>
+
+@code {
+    private string? canShare;
+
+    private async Task CanShare()
+    {
+        var result = await navigator.CanShare();
+        canShare = result.ToString();
+    }
+}";
+    private string clearAppBadgeExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@(() => navigator.ClearAppBadge())"">ClearAppBadge</BitButton>";
+    private string sendBeaconExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@(() => navigator.SendBeacon())"">SendBeacon</BitButton>";
+    private string setAppBadgeExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@(() => navigator.SetAppBadge())"">SetAppBadge</BitButton>";
+    private string shareExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitTextField @bind-Value=""textValue"" Label=""Text"" />
+
+<BitTextField @bind-Value=""titleValue"" Label=""Title"" />
+
+<BitTextField @bind-Value=""urlValue"" Label=""Url"" />
+
+<BitButton OnClick=""Share"">Share</BitButton>
+
+@code {
+    private string? textValue;
+    private string? titleValue;
+    private string? urlValue;
+
+    private async Task Share()
+    {
+        var shareData = new ShareData()
+        {
+            Text = textValue,
+            title = titleValue,
+            url = urlValue
+        };
+
+        await navigator.Share(shareData);
+    }
+}";
+    private string vibrateExampleCode =
+@"@inject Bit.Butil.Navigator navigator
+
+<BitButton OnClick=""@(() => navigator.Vibrate(sosPattern))"">Vibrate</BitButton>
+
+@code {
+    private int[] sosPattern = [100, 30, 100, 30, 100, 30, 200, 30, 200, 30, 200, 30, 100, 30, 100, 30, 100];
+}";
+}
