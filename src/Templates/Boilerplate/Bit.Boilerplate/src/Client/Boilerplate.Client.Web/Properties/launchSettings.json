@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Boilerplate.Web(BlazorStandaloneWebAssembly)": {
+        "Boilerplate.Web(BlazorWebAssemblyStandalone)": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,

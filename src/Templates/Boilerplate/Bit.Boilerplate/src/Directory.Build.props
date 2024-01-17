@@ -12,11 +12,11 @@
         <NeutralLanguage>en-US</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
         <PwaEnabled>false</PwaEnabled>
-        <BlazorStandaloneWebAssembly>false</BlazorStandaloneWebAssembly>
-        <!-- By enabling the BlazorStandaloneWebAssembly option, you gain the ability to
+        <BlazorWebAssemblyStandalone>false</BlazorWebAssemblyStandalone>
+        <!-- By enabling the BlazorWebAssemblyStandalone option, you gain the ability to
         deploy your Client.Web project on platforms such as GitHub/Cloudflare Pages and Azure Static Web Apps. -->
 
-        <PwaEnabled Condition=" '$(BlazorStandaloneWebAssembly)' == 'true' ">true</PwaEnabled>
+        <PwaEnabled Condition=" '$(BlazorWebAssemblyStandalone)' == 'true' ">true</PwaEnabled>
 
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">14.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">14.0</SupportedOSPlatformVersion>
@@ -29,7 +29,7 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
         <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
-        <DefineConstants Condition=" '$(BlazorStandaloneWebAssembly)' == 'true' ">$(DefineConstants);BlazorStandaloneWebAssembly</DefineConstants>
+        <DefineConstants Condition=" '$(BlazorWebAssemblyStandalone)' == 'true' ">$(DefineConstants);BlazorWebAssemblyStandalone</DefineConstants>
         <DefineConstants Condition=" '$(PwaEnabled)' == 'true' ">$(DefineConstants);PwaEnabled</DefineConstants>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->

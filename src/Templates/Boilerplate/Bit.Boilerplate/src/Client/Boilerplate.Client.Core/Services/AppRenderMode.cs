@@ -14,7 +14,7 @@ public static class AppRenderMode
 
     public static IComponentRenderMode Current =>
         BuildConfiguration.IsDebug() 
-        ? BlazorWebAssembly // For better development experience.
+        ? BlazorServer // For better development experience.
         : Auto; // For better production experience.
 
     /// <summary>

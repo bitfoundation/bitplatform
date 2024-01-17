@@ -79,7 +79,7 @@ jobs:
           sed -i 's/self.isPassive = self.disablePassiveFirstBoot = true;/self.isPassive = self.disablePassiveFirstBoot = false;/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.js
 
     - name: Publish static todo
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -p:BlazorStandaloneWebAssembly=true -o ${{env.DOTNET_ROOT}}/static
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true -o ${{env.DOTNET_ROOT}}/static
 
     - name: Upload static artifact
       uses: actions/upload-artifact@v3

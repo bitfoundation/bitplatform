@@ -34,5 +34,6 @@ self.defaultUrl = "/";
 self.caseInsensitiveUrl = true;
 self.noPrerenderQuery = 'no-prerender=true';
 self.isPassive = self.disablePassiveFirstBoot = true;
+self.errorTolerance = 'lax';
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

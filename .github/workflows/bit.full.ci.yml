@@ -40,7 +40,7 @@ jobs:
         dotnet ef database update
         cd ../../../
         dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
-        dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Web/TodoBPSqlite.Client.Web.csproj -c Release -p:BlazorStandaloneWebAssembly=true
+        dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Web/TodoBPSqlite.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true
 
     - name: Release build empty sample + offline db + Win exe
       run: |

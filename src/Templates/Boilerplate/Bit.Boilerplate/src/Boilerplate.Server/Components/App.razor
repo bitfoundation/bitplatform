@@ -35,6 +35,10 @@
     <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
     <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/Boilerplate.Client.Core.bundle.scp.css" />
 
+    @if (AppRenderMode.PrerenderEnabled is false || noPrerender)
+    {
+        <LoadingComponent />
+    }
     <Routes @rendermode=renderMode />
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
