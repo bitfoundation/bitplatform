@@ -45,7 +45,9 @@ The following apps are our open-source projects powered by the bit platform show
 4. [static-todo.bitplatform.dev](static-todo.bitplatform.dev): PWA with Blazor WebAssembly Standalone (Hosted on Cloudflare Pages)
 5. [adminpanel.bitplatform.dev](adminpanel.bitplatform.dev): PWA with Blazor WebAssembly
 
-<br/>
+[Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram. 
+
+Prerendering combined with PWA functionality delivers an experience akin to that of GitHub and Reddit. The bitplatform solution, seamlessly integrated with the innovative new .NET 8 project structure, stands as the exclusive remedy for such a scenario within the realm of Blazor.
 
 # How to contribute?
 
