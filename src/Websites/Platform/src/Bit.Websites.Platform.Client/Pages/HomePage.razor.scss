@@ -270,7 +270,7 @@
         align-items: center;
         margin: rem2(50px) 0;
         border-radius: rem2(4px);
-        background-color: $bit-color-background-secondary;
+        background-color: #0a153d;
 
         span {
             white-space: nowrap;
@@ -432,6 +432,7 @@
     margin: 5rem 0;
     padding: 5rem 0;
     text-align: center;
+    background-color: $bit-color-background-secondary;
 
     @include lt-md {
         padding: 5rem 0;
