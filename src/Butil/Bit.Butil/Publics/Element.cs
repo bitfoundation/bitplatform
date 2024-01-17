@@ -78,7 +78,7 @@ public class Element(IJSRuntime js)
     /// <summary>
     /// Removes the named attribute from the current node.
     /// </summary>
-    public async Task<string> RemoveAttribute(ElementReference element, string name)
+    public async Task RemoveAttribute(ElementReference element, string name)
         => await js.ElementRemoveAttribute(element, name);
 
     /// <summary>
@@ -103,11 +103,6 @@ public class Element(IJSRuntime js)
     /// </summary>
     public async Task Scroll(ElementReference element, double? x, double? y)
         => await js.ElementScroll(element, null, x, y);
-    /// <summary>
-    /// Scrolls to a particular set of coordinates inside a given element.
-    /// </summary>
-    public async Task Scroll(ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await js.ElementScroll(element, options, x, y);
 
     /// <summary>
     /// Scrolls an element by the given amount.
@@ -119,32 +114,22 @@ public class Element(IJSRuntime js)
     /// </summary>
     public async Task ScrollBy(ElementReference element, double? x, double? y)
         => await js.ElementScrollBy(element, null, x, y);
-    /// <summary>
-    /// Scrolls an element by the given amount.
-    /// </summary>
-    public async Task ScrollBy(ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await js.ElementScrollBy(element, options, x, y);
 
     /// <summary>
     /// Scrolls the page until the element gets into the view.
     /// </summary>
     public async Task ScrollIntoView(ElementReference element)
-        => await ScrollIntoView(element, null, null);
+        => await js.ElementScrollIntoView(element, null, null);
     /// <summary>
     /// Scrolls the page until the element gets into the view.
     /// </summary>
     public async Task ScrollIntoView(ElementReference element, bool alignToTop)
-        => await ScrollIntoView(element, alignToTop, null);
+        => await js.ElementScrollIntoView(element, alignToTop, null);
     /// <summary>
     /// Scrolls the page until the element gets into the view.
     /// </summary>
     public async Task ScrollIntoView(ElementReference element, ScrollIntoViewOptions options)
-        => await ScrollIntoView(element, null, options);
-    /// <summary>
-    /// Scrolls the page until the element gets into the view.
-    /// </summary>
-    public async Task ScrollIntoView(ElementReference element, bool? alignToTop, ScrollIntoViewOptions? options)
-        => await js.ElementScrollIntoView(element, alignToTop, options);
+        => await js.ElementScrollIntoView(element, null, options);
 
     /// <summary>
     /// Sets the value of a named attribute of the current node.
@@ -161,7 +146,7 @@ public class Element(IJSRuntime js)
     /// <summary>
     /// Toggles a boolean attribute, removing it if it is present and adding it if it is not present, on the specified element.
     /// </summary>
-    public async Task ToggleAttribute(ElementReference element, string name, bool? force = null)
+    public async Task<bool> ToggleAttribute(ElementReference element, string name, bool? force = null)
         => await js.ElementToggleAttribute(element, name, force);
 
     /// <summary>

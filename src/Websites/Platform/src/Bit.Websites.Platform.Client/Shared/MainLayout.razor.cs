@@ -9,11 +9,16 @@ public partial class MainLayout : IDisposable
     private bool isDocsRoute;
     private bool isTemplateDocRoute;
     private bool isBswupDocRoute;
+    private bool isBesqlDocRoute;
+    private bool isButilDocRoute;
+
+    private List<BitNavItem> navItems = [];
 
 
-    private readonly List<BitNavItem> templatesNavItems = new()
-    {
+    private readonly List<BitNavItem> templatesNavItems =
+    [
         new BitNavItem { Text = "Overview", Url = "/templates/overview", AdditionalUrls = new string[] { "/admin-panel/overview", "/todo-template/overview" } },
+        new BitNavItem { Text = "Samples", Url = "/templates/samples" },
         new BitNavItem { Text = "Development prerequisites", Url = "/templates/development-prerequisites", AdditionalUrls = new string[] { "/admin-panel/development-prerequisites", "/todo-template/development-prerequisites" } },
         new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = new string[] { "/admin-panel/create-project", "/todo-template/create-project" } },
         new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = new string[] { "/admin-panel/project-structure", "/todo-template/project-structure" } },
@@ -27,22 +32,48 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Settings", Url = "/templates/settings", AdditionalUrls = new string[] { "/admin-panel/settings", "/todo-template/settings" } },
         new BitNavItem { Text = "Exception handling", Url = "/templates/exception-handling", AdditionalUrls = new string[] { "/admin-panel/exception-handling", "/todo-template/exception-handling" } },
         new BitNavItem { Text = "Multilingualism", Url = "/templates/multilingualism", AdditionalUrls = new string[] { "/admin-panel/multilingualism", "/todo-template/multilingualism" } },
-    };
+    ];
 
-    private readonly List<BitNavItem> bswupNavItems = new()
-    {
+    private readonly List<BitNavItem> bswupNavItems =
+    [
         new BitNavItem { Text = "Overview", Url = "/bswup/overview" },
         new BitNavItem { Text = "Install", Url = "/bswup/install" },
         new BitNavItem { Text = "Scripts", Url = "/bswup/scripts" },
         new BitNavItem { Text = "Events", Url = "/bswup/events" },
         new BitNavItem { Text = "Service Worker", Url = "/bswup/service-worker" },
-        new BitNavItem { Text = "Caching", Url = "/bswup/caching" },
-    };
+        new BitNavItem { Text = "BswupProgress", Url = "/bswup/progress" },
+    ];
+
+    private readonly List<BitNavItem> besqlNavItems =
+    [
+        new BitNavItem { Text = "Overview", Url = "/besql/overview" },
+        new BitNavItem { Text = "Install", Url = "/besql/install" },
+        new BitNavItem { Text = "Usage", Url = "/besql/usage" },
+    ];
+
+    private readonly List<BitNavItem> butilNavItems =
+    [
+        new BitNavItem { Text = "Overview", Url = "/butil/overview" },
+        new BitNavItem { Text = "Install", Url = "/butil/install" },
+        new BitNavItem { Text = "Setup", Url = "/butil/setup" },
+        new BitNavItem { Text = "Window", Url = "/butil/window" },
+        new BitNavItem { Text = "Document", Url = "/butil/document" },
+        new BitNavItem { Text = "Keyboard", Url = "/butil/keyboard" },
+        new BitNavItem { Text = "Console", Url = "/butil/console" },
+        new BitNavItem { Text = "History", Url = "/butil/history" },
+        new BitNavItem { Text = "Element", Url = "/butil/element" },
+        new BitNavItem { Text = "Navigator", Url = "/butil/navigator" },
+        new BitNavItem { Text = "Storage", Url = "/butil/storage" },
+        new BitNavItem { Text = "Location", Url = "/butil/location" },
+        new BitNavItem { Text = "Screen", Url = "/butil/screen" },
+        new BitNavItem { Text = "Cookie", Url = "/butil/cookie" },
+        new BitNavItem { Text = "Crypto", Url = "/butil/Crypto" },
+    ];
 
 
     protected override Task OnInitializedAsync()
     {
-        SetCurrentUrl();
+        SetNavItems();
 
         navigationManager.LocationChanged += OnLocationChanged;
 
@@ -51,19 +82,26 @@ public partial class MainLayout : IDisposable
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        SetCurrentUrl();
+        SetNavItems();
 
         StateHasChanged();
     }
 
-    private void SetCurrentUrl()
+    private void SetNavItems()
     {
         var currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
 
         isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
         isBswupDocRoute = currentUrl.Contains("bswup");
+        isBesqlDocRoute = currentUrl.Contains("besql");
+        isButilDocRoute = currentUrl.Contains("butil");
+        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute;
 
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute;
+        navItems = isTemplateDocRoute ? templatesNavItems
+                 : isBswupDocRoute ? bswupNavItems
+                 : isBesqlDocRoute ? besqlNavItems
+                 : isButilDocRoute ? butilNavItems
+                 : [];
     }
 
     public void Dispose()

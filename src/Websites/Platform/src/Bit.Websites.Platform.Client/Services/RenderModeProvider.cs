@@ -18,6 +18,6 @@ public static class RenderModeProvider
 #if DEBUG
     PrerenderEnabledBlazorServer; // Or BlazorServer, for better development experience.
 #else
-    PrerenderEnabledAuto;
+    PrerenderEnabledBlazorWasm;
 #endif
 }

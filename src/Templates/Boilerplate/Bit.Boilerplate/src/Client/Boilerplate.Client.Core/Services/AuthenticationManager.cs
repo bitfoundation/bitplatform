@@ -92,11 +92,13 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         await storageService.SetItem("refresh_token", tokenResponseDto!.RefreshToken, rememberMe is true);
         if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
         {
-            await cookie.Set(new ButilCookie
+            await cookie.Set(new()
             {
                 Name = "access_token",
                 Value = tokenResponseDto.AccessToken,
-                MaxAge = tokenResponseDto.ExpiresIn
+                MaxAge = tokenResponseDto.ExpiresIn,
+                SameSite = SameSite.Strict,
+                Secure = BuildConfiguration.IsRelease()
             });
         }
     }

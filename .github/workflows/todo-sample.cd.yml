@@ -50,8 +50,13 @@ jobs:
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
 
-    - name: Enable pre rendering
-      run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
+    - name: Configure app render mode
+      run: |
+          sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
+          sed -i 's/Auto;/BlazorWebAssembly;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
+
+    - name: Changes for static-todo.bitplatform.dev - Part 1
+      run:  sed -i 's/http:\/\/localhost:4030/https:\/\/static-todo.bitplatform.dev/g' TodoSample/src/TodoSample.Server/Startup/Middlewares.cs
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
@@ -64,6 +69,23 @@ jobs:
       with:
         name: server-bundle
         path: ${{env.DOTNET_ROOT}}/server
+
+    - name: Changes for static-todo.bitplatform.dev - Part 2
+      run:  sed -i 's/public static readonly bool PrerenderEnabled = true;/public static readonly bool PrerenderEnabled = false;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
+
+    - name: Configure bswup
+      run: |
+          sed -i 's/self.noPrerenderQuery/\/\/ self.noPrerenderQuery/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.js
+          sed -i 's/self.isPassive = self.disablePassiveFirstBoot = true;/self.isPassive = self.disablePassiveFirstBoot = false;/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.js
+
+    - name: Publish static todo
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true -o ${{env.DOTNET_ROOT}}/static
+
+    - name: Upload static artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: static-bundle
+        path: ${{env.DOTNET_ROOT}}/static
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -198,8 +220,8 @@ jobs:
     - name: Install maui
       run: cd src && dotnet workload install maui-android
 
-    - name: Install Android Dependencies
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:InstallAndroidDependencies -f:net8.0-android -p:AcceptAndroidSDKLicenses=True -p:AndroidSdkPath="/usr/local/lib/android/sdk/"
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
@@ -322,6 +344,26 @@ jobs:
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+
+    - name: Delete App Icon
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
+
+    - name: Extract App Icon from env
+      uses: timheuer/base64-to-file@v1
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
+          fileName: 'appicon.svg'
+          encodedString: ${{ vars.TODO_ICON }}
+
+    - name: Delete App Splash Screen
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
+
+    - name: Extract App Splash Screen from env
+      uses: timheuer/base64-to-file@v1
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
+          fileName: 'splash.svg'
+          encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore

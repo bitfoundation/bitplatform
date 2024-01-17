@@ -1,0 +1,223 @@
+﻿@page "/butil/element"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/element"
+            Title="Element - Butil"
+            Description="Element class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Element</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Element class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser Element features you need to inject the Bit.Butil.Element class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.Element element
+
+...
+&lt;div @@ref="elementRef">Test element&lt;/div>
+...
+
+@@code {
+    private ElementReference elementRef;
+    ...
+    var rect = await element.GetBoundingClientRect(elementRef);
+    // or
+    var rect = await elementRef.GetBoundingClientRect();
+    ...
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <b>Blur</b>: Removes keyboard focus from the currently focused element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/blur" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetAttribute</b>: Retrieves the value of the named attribute from the current node and returns it as a string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetAttributeNames</b>: Returns an array of attribute names from the current element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttributeNames" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetBoundingClientRect</b>: Returns the size of an element and its position relative to the viewport
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>HasAttribute</b>: Returns a boolean value indicating if the element has the specified attribute or not
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>HasPointerCapture</b>: Indicates whether the element on which it is invoked has pointer capture for the pointer identified by the given pointer ID
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasPointerCapture" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>Matches</b>: Returns a boolean value indicating whether or not the element would be selected by the specified selector string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/matches" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>ReleasePointerCapture</b>: Releases (stops) pointer capture that was previously set for a specific pointer event
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/releasePointerCapture" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>Remove</b>: Removes the element from the children list of its parent
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/CharacterData/remove" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>RemoveAttribute</b>: Removes the named attribute from the current node
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/removeAttribute" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>RequestFullScreen</b>: Asynchronously asks the browser to make the element fullscreen
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>RequestPointerLock</b>: Allows to asynchronously ask for the pointer to be locked on the given element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/requestPointerLock" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>Scroll</b>: Scrolls to a particular set of coordinates inside a given element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scroll" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>ScrollBy</b>: Scrolls an element by the given amount
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollBy" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>ScrollIntoView</b>: Scrolls the page until the element gets into the view
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetAttribute</b>: Sets the value of a named attribute of the current node
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetPointerCapture</b>: Designates a specific element as the capture target of future pointer events
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>ToggleAttribute</b>: Toggles a boolean attribute, removing it if it is present and adding it if it is not present, on the specified element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetAccessKey</b>, <b>GetAccessKey</b>: Gets/Sets a string representing the access key assigned to the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/accessKey" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetClassName</b>, <b>GetClassName</b>: Gets/Sets a string representing the class of the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/className" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetClientHeight</b>: Returns a number representing the inner height of the element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientHeight" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetClientLeft</b>: Returns a number representing the width of the left border of the element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetClientTop</b>: Returns a number representing the width of the top border of the element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetClientWidth</b>: Returns a number representing the inner width of the element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetId</b>, <b>GetId</b>: Gets/Sets a string representing the id of the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetInnerHtml</b>, <b>GetInnerHtml</b>: Gets/Sets a string representing the markup of the element's content
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetOuterHtml</b>, <b>GetOuterHtml</b>: Gets/Sets a string representing the markup of the element including its content. When used as a setter, replaces the element with nodes parsed from the given string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetScrollHeight</b>: Returns a number representing the scroll view height of an element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetScrollLeft</b>: A number representing the left scroll offset of the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetScrollTop</b>: A number representing number of pixels the top of the element is scrolled vertically
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetScrollWidth</b>: Returns a number representing the scroll view width of the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetTagName</b>: Returns a string with the name of the tag for the given element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetContentEditable</b>, <b>GetContentEditable</b>: Gets/Sets the contentEditable property, which specifies whether or not the element is editable
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/contentEditable" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>IsContentEditable</b>: Returns a boolean value indicating whether or not the content of the element can be edited
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/isContentEditable" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetDir</b>, <b>GetDir</b>: Gets/Sets the text writing directionality of the content of the current element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dir" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetEnterKeyHint</b>, <b>GetEnterKeyHint</b>: Gets/Sets the enterKeyHint property, which is an enumerated property defining what action label (or icon) to present for the enter key on virtual keyboards
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/enterKeyHint" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetHidden</b>, <b>GetHidden</b>: Gets/Sets the hidden property, which reflects the value of the element's hidden attribute
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/hidden" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetInert</b>, <b>GetInert</b>: Gets/Sets the inert property, which reflects the value of the element's inert attribute. It is a boolean value that, when present, makes the browser "ignore" user input events for the element, including focus events and events from assistive technologies
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inert" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetInnerText</b>, <b>GetInnerText</b>: Gets/Sets the innerText property, which represents the rendered text content of a node and its descendants
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/innerText" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetInputMode</b>, <b>GetInputMode</b>: Gets/Sets the inputMode property, which reflects the value of the element's inputmode attribute
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inputMode" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetOffsetHeight</b>: Returns the height of an element, including vertical padding and borders in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/offsetHeight" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetOffsetLeft</b>: Returns the number of pixels that the upper left corner of the current element is offset to the left within the offsetParent node
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/offsetLeft" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetOffsetTop</b>: Returns the distance from the outer border of the current element (including its margin) to the top padding edge of the offsetParent, the closest positioned ancestor element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/offsetTop" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GetOffsetWidth</b>: The layout width of an element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/offsetWidth" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>SetTabIndex</b>, <b>GetTabIndex</b>: Gets/Sets a number representing the position of the element in the tabbing order
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/tabIndex" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="History" PrevUrl="/butil/history" Next="Navigator" NextUrl="/butil/navigator" />

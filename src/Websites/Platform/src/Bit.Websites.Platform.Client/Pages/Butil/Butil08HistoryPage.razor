@@ -1,0 +1,324 @@
+﻿@page "/butil/history"
+@inherits AppComponentBase
+@inject Bit.Butil.History history
+
+<PageOutlet Url="butil/history"
+            Title="History - Butil"
+            Description="History class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>History</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the History class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser history features you need to inject the Bit.Butil.History class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.History history
+
+@@code {
+    await history.GoBack();
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <b>GetLength</b>: Returns an Integer representing the number of elements in the session history, including the currently loaded page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/length" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode1
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetLength">GetLength</BitButton>
+                            <br />
+                            <br />
+                            <div>History length is: @historyLength</div>
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetScrollRestoration</b>, <b>GetScrollRestoration</b>: Gets/Sets default scroll restoration behavior on history navigation. This property can be either auto or manual
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode2
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitCheckbox @bind-Value="isScrollRestorationManual" Label="@(isScrollRestorationManual ? "Manual" : "Auto")" />
+                            <br />
+                            <BitButton OnClick="@SetScrollRestoration">SetScrollRestoration</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetState</b>: Returns an any value representing the state at the top of the history stack
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/state" target="_blank">MDN</a>).
+            <br /><br />
+
+            <b>GoBack</b>: This asynchronous method goes to the previous page in session history, the same action as when the user clicks the browser's Back button. Calling this method to go back beyond the first page in the session history has no effect and doesn't raise an exception
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/back" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode4
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => history.GoBack())">GoBack</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GoForward</b>: This asynchronous method goes to the next page in session history, the same action as when the user clicks the browser's Forward button. Calling this method to go forward beyond the most recent page in the session history has no effect and doesn't raise an exception
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/forward" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode5
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => history.GoForward())">GoForward</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Go</b>: Asynchronously loads a page from the session history, identified by its relative location to the current page, for example -1 for the previous page or 1 for the next page. Calling this method without parameters or a value of 0 reloads the current page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/go" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode6
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitSpinButton @bind-Value="delta" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@Go">Go</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>PushState</b>: Pushes the given data onto the session history stack with the specified title (and, if provided, URL)
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/pushState" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode7
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="pushStateUrl" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@PushState">PushState</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ReplaceState</b>: Updates the most recent entry on the history stack to have the specified data, title, and, if provided, URL
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @exampleCode8
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="replaceStateUrl" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@ReplaceState">ReplaceState</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>AddPopState</b>, <b>RemovePopState</b>: The popstate event of the Window interface is fired when the active history entry changes while the user navigates the session history
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Console" PrevUrl="/butil/console" Next="Element" NextUrl="/butil/element" />
+
+@code {
+    private string? historyLength;
+
+    private bool isScrollRestorationManual;
+
+    private double delta;
+
+    private string pushStateUrl = "butil/history#push-state";
+
+    private string replaceStateUrl = "butil/history#replace-state";
+
+
+    private async Task GetLength()
+    {
+        var result = await history.GetLength();
+        historyLength = result.ToString();
+    }
+
+    private async Task SetScrollRestoration()
+    {
+        await history.SetScrollRestoration(isScrollRestorationManual ? ScrollRestoration.Manual : ScrollRestoration.Auto);
+    }
+
+    private async Task Go()
+    {
+        await history.Go((int)delta);
+    }
+
+    private async Task PushState()
+    {
+        await history.PushState(url: pushStateUrl);
+    }
+
+    private async Task ReplaceState()
+    {
+        await history.ReplaceState(url: replaceStateUrl);
+    }
+
+    private string exampleCode1 =
+    @"@inject Bit.Butil.History history
+
+<BitButton OnClick=""@GetLength"">GetLength</BitButton>
+
+<div>History length is: @historyLength</div>
+
+@code {
+    private string? historyLength;
+
+    private async Task GetLength()
+    {
+        var result = await history.GetLength();
+        historyLength = result.ToString();
+    }
+}";
+    private string exampleCode2 =
+    @"@inject Bit.Butil.History history
+
+<BitCheckbox @bind-Value=""isScrollRestorationManual"" Label=""@(isScrollRestorationManual ? ""Manual"" : ""Auto"")"" />
+
+<BitButton OnClick=""@SetScrollRestoration"">SetScrollRestoration</BitButton>
+
+@code {
+    private bool isScrollRestorationManual;
+
+    private async Task SetScrollRestoration()
+    {
+        await history.SetScrollRestoration(isScrollRestorationManual ? ScrollRestoration.Manual : ScrollRestoration.Auto);
+    }
+}";
+    private string exampleCode4 =
+    @"@inject Bit.Butil.History history
+
+<BitButton OnClick=""@(() => history.GoBack())"">GoBack</BitButton>";
+    private string exampleCode5 =
+    @"@inject Bit.Butil.History history
+
+<BitButton OnClick=""@(() => history.GoForward())"">GoForward</BitButton>";
+    private string exampleCode6 =
+    @"@inject Bit.Butil.History history
+
+<BitSpinButton @bind-Value=""delta"" Mode=""BitSpinButtonMode.Inline"" />
+
+<BitButton OnClick=""@Go"">Go</BitButton>
+
+@code {
+    private double delta;
+
+    private async Task Go()
+    {
+        await history.Go((int)delta);
+    }
+}";
+    private string exampleCode7 =
+    @"@inject Bit.Butil.History history
+
+<BitTextField @bind-Value=""pushStateUrl"" Style=""max-width: 18.75rem;"" />
+
+<BitButton OnClick=""@PushState"">PushState</BitButton>
+
+@code {
+    private string pushStateUrl = ""butil/history#push-state"";
+
+    private async Task PushState()
+    {
+        await history.PushState(url: pushStateUrl);
+    }
+}";
+    private string exampleCode8 =
+    @"@inject Bit.Butil.History history
+
+<BitTextField @bind-Value=""replaceStateUrl"" Style=""max-width: 18.75rem;"" />
+
+<BitButton OnClick=""@ReplaceState"">ReplaceState</BitButton>
+
+@code {
+    private string replaceStateUrl = ""butil/history#replace-state"";
+
+    private async Task ReplaceState()
+    {
+        await history.ReplaceState(url: replaceStateUrl);
+    }
+}";
+}

@@ -52,7 +52,7 @@ public static class ElementReferenceExtensions
     public static async ValueTask Remove(this ElementReference element)
         => await GetJSRuntime(element).ElementRemove(element);
 
-    public static async ValueTask<string> RemoveAttribute(this ElementReference element, string name)
+    public static async ValueTask RemoveAttribute(this ElementReference element, string name)
         => await GetJSRuntime(element).ElementRemoveAttribute(element, name);
 
     public static async ValueTask RequestFullScreen(this ElementReference element, FullScreenOptions? options)
@@ -61,14 +61,22 @@ public static class ElementReferenceExtensions
     public static async ValueTask RequestPointerLock(this ElementReference element)
         => await GetJSRuntime(element).ElementRequestPointerLock(element);
 
-    public static async ValueTask Scroll(this ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await GetJSRuntime(element).ElementScroll(element, options, x, y);
+    public static async ValueTask Scroll(this ElementReference element, ScrollToOptions? options)
+        => await GetJSRuntime(element).ElementScroll(element, options, null, null);
+    public static async ValueTask Scroll(this ElementReference element, double? x, double? y)
+        => await GetJSRuntime(element).ElementScroll(element, null, x, y);
 
-    public static async ValueTask ScrollBy(this ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await GetJSRuntime(element).ElementScrollBy(element, options, x, y);
+    public static async ValueTask ScrollBy(this ElementReference element, ScrollToOptions? options)
+        => await GetJSRuntime(element).ElementScrollBy(element, options, null, null);
+    public static async ValueTask ScrollBy(this ElementReference element, double? x, double? y)
+        => await GetJSRuntime(element).ElementScrollBy(element, null, x, y);
 
-    public static async ValueTask ScrollIntoView(this ElementReference element, bool? alignToTop, ScrollIntoViewOptions? options)
-        => await GetJSRuntime(element).ElementScrollIntoView(element, alignToTop, options);
+    public static async ValueTask ScrollIntoView(this ElementReference element)
+        => await GetJSRuntime(element).ElementScrollIntoView(element, null, null);
+    public static async ValueTask ScrollIntoView(this ElementReference element, bool alignToTop)
+        => await GetJSRuntime(element).ElementScrollIntoView(element, alignToTop, null);
+    public static async ValueTask ScrollIntoView(this ElementReference element, ScrollIntoViewOptions options)
+        => await GetJSRuntime(element).ElementScrollIntoView(element, null, options);
 
     public static async ValueTask SetAttribute(this ElementReference element, string name, string value)
         => await GetJSRuntime(element).ElementSetAttribute(element, name, value);
@@ -76,7 +84,7 @@ public static class ElementReferenceExtensions
     public static async ValueTask SetPointerCapture(this ElementReference element, int pointerId)
         => await GetJSRuntime(element).ElementSetPointerCapture(element, pointerId);
 
-    public static async ValueTask ToggleAttribute(this ElementReference element, string name, bool? force)
+    public static async ValueTask<bool> ToggleAttribute(this ElementReference element, string name, bool? force)
         => await GetJSRuntime(element).ElementToggleAttribute(element, name, force);
 
     public static async ValueTask<string> GetAccessKey(this ElementReference element)

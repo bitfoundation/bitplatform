@@ -30,11 +30,20 @@ public partial class MainWindow
         services.AddWindowsServices();
         InitializeComponent();
         BlazorWebView.Services = services.BuildServiceProvider();
+        BlazorWebView.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(App.Current.Properties["Culture"]?.ToString());
+        BlazorWebView.Services.GetRequiredService<IPubSubService>().Subscribe(PubSubMessages.CULTURE_CHANGED, async culture =>
+        {
+            App.Current.Shutdown();
+            Application.Restart();
+        });
         BlazorWebView.Loaded += async delegate
         {
             await BlazorWebView.WebView.EnsureCoreWebView2Async();
-            while ((await BlazorWebView.WebView.ExecuteScriptAsync("Blazor.start()")) is "null")
-                await Task.Yield();
+
+            BlazorWebView.WebView.NavigationCompleted += async delegate
+            {
+                await BlazorWebView.WebView.ExecuteScriptAsync("Blazor.start()");
+            };
         };
     }
 }

@@ -13,7 +13,7 @@ internal static class ElementJsInterop
         => await js.InvokeAsync<string>("BitButil.element.getAttribute", element, name);
 
     internal static async ValueTask<string[]> ElementGetAttributeNames(this IJSRuntime js, ElementReference element)
-        => await js.InvokeAsync<string[]>("BitButil.element.getAttribute", element);
+        => await js.InvokeAsync<string[]>("BitButil.element.getAttributeNames", element);
 
     internal static async ValueTask<Rect> ElementGetBoundingClientRect(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<Rect>("BitButil.element.getBoundingClientRect", element);
@@ -36,23 +36,23 @@ internal static class ElementJsInterop
     internal static async ValueTask ElementRemove(this IJSRuntime js, ElementReference element)
         => await js.InvokeVoidAsync("BitButil.element.remove", element);
 
-    internal static async ValueTask<string> ElementRemoveAttribute(this IJSRuntime js, ElementReference element, string name)
-        => await js.InvokeAsync<string>("BitButil.element.removeAttribute", element, name);
+    internal static async ValueTask ElementRemoveAttribute(this IJSRuntime js, ElementReference element, string name)
+        => await js.InvokeVoidAsync("BitButil.element.removeAttribute", element, name);
 
     internal static async ValueTask ElementRequestFullScreen(this IJSRuntime js, ElementReference element, FullScreenOptions? options)
-        => await js.InvokeVoidAsync("BitButil.element.requestFullScreen", element, options);
+        => await js.InvokeVoidAsync("BitButil.element.requestFullScreen", element, options?.ToJsObject());
 
     internal static async ValueTask ElementRequestPointerLock(this IJSRuntime js, ElementReference element)
         => await js.InvokeVoidAsync("BitButil.element.requestPointerLock", element);
 
     internal static async ValueTask ElementScroll(this IJSRuntime js, ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await js.InvokeVoidAsync("BitButil.element.scroll", element, options, x, y);
+        => await js.InvokeVoidAsync("BitButil.element.scroll", element, options?.ToJsObject(), x, y);
 
     internal static async ValueTask ElementScrollBy(this IJSRuntime js, ElementReference element, ScrollToOptions? options, double? x, double? y)
-        => await js.InvokeVoidAsync("BitButil.element.scrollBy", element, options, x, y);
+        => await js.InvokeVoidAsync("BitButil.element.scrollBy", element, options?.ToJsObject(), x, y);
 
     internal static async ValueTask ElementScrollIntoView(this IJSRuntime js, ElementReference element, bool? alignToTop, ScrollIntoViewOptions? options)
-        => await js.InvokeVoidAsync("BitButil.element.scrollIntoView", element, alignToTop, options);
+        => await js.InvokeVoidAsync("BitButil.element.scrollIntoView", element, alignToTop, options?.ToJsObject());
 
     internal static async ValueTask ElementSetAttribute(this IJSRuntime js, ElementReference element, string name, string value)
         => await js.InvokeVoidAsync("BitButil.element.setAttribute", element, name, value);
@@ -60,8 +60,8 @@ internal static class ElementJsInterop
     internal static async ValueTask ElementSetPointerCapture(this IJSRuntime js, ElementReference element, int pointerId)
         => await js.InvokeVoidAsync("BitButil.element.setPointerCapture", element, pointerId);
 
-    internal static async ValueTask ElementToggleAttribute(this IJSRuntime js, ElementReference element, string name, bool? force)
-        => await js.InvokeVoidAsync("BitButil.element.toggleAttribute", element, name, force);
+    internal static async ValueTask<bool> ElementToggleAttribute(this IJSRuntime js, ElementReference element, string name, bool? force)
+        => await js.InvokeAsync<bool>("BitButil.element.toggleAttribute", element, name, force);
 
     internal static async ValueTask<string> ElementGetAccessKey(this IJSRuntime js, ElementReference element)
         => await js.InvokeAsync<string>("BitButil.element.getAccessKey", element);

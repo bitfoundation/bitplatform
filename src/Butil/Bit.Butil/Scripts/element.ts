@@ -12,7 +12,7 @@ var BitButil = BitButil || {};
         matches(element: HTMLElement, selectors: string) { return element.matches(selectors) },
         releasePointerCapture(element: HTMLElement, pointerId: number) { element.releasePointerCapture(pointerId) },
         remove(element: HTMLElement) { element.remove() },
-        removeAttribute(element: HTMLElement, name: string) { return element.removeAttribute(name) },
+        removeAttribute(element: HTMLElement, name: string) { element.removeAttribute(name) },
         requestFullScreen(element: HTMLElement, options?: FullscreenOptions) { return element.requestFullscreen(options) },
         requestPointerLock(element: HTMLElement) { return element.requestPointerLock() },
         scroll,

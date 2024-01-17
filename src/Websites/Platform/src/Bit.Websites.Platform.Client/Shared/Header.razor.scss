@@ -199,6 +199,7 @@
 
 ::deep {
     .header-nav-close-btn {
+        z-index: 2;
         top: rem2(10px);
         right: rem2(10px);
         width: rem2(44px);
@@ -235,7 +236,6 @@
     cursor: default;
     position: absolute;
     flex-flow: row nowrap;
-    max-height: rem2(350px);
     border-radius: rem2(4px);
     padding: rem2(8px) rem2(16px);
     box-shadow: $bit-box-shadow-callout;
@@ -245,7 +245,7 @@
     @include sm {
         padding: 0;
         overflow: auto;
-        max-height: rem2(222px);
+        max-height: 25rem;
         flex-flow: column nowrap;
     }
 
@@ -275,7 +275,6 @@
     .menu-item {
         display: flex;
         cursor: pointer;
-        margin: rem2(8px) 0;
         align-items: center;
         flex-flow: row nowrap;
         border-radius: rem2(4px);
