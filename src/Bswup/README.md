@@ -158,5 +158,6 @@ The other settings are:
 - `isPassive`: Enables the Bswup's passive mode. In this mode, the assets won't be cached in advance but rather upon initial request.
 - `disablePassiveFirstBoot`: Disables downloading the Blazor's boot files in first time of Passive mode.
 - `enableIntegrityCheck`: Enables the default integrity check available in browsers by setting the `integrity` attribute of the request object created in the service-worker to fetch the assets.
+- `errorTolerance`: Determines how the Bswup should handle the errors while downloading assets. Possible values are: `strict`, `lax`, `config`.
 - `enableDiagnostics`: Enables diagnostics by pushing service-worker logs to the browser console.
 - `enableFetchDiagnostics`: Enables fetch event diagnostics by pushing service-worker fetch event logs to the browser console.
