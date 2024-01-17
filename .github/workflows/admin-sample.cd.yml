@@ -50,6 +50,15 @@ jobs:
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
+
+    - name: Configure app render mode
+      run: |
+          sed -i 's/Auto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
+
+    - name: Configure bswup
+      run: |
+          sed -i 's/self.noPrerenderQuery/\/\/ self.noPrerenderQuery/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.js
+          sed -i 's/self.isPassive = self.disablePassiveFirstBoot = true;/self.isPassive = self.disablePassiveFirstBoot = false;/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.js
       
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore

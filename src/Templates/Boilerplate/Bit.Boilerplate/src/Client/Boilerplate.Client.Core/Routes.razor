@@ -5,7 +5,7 @@
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData">
                     <Authorizing>
-                        <LoadingComponent Color="#FFF" />
+                        <LoadingComponent />
                     </Authorizing>
                     <NotAuthorized>
                         <NotAuthorizedPage />
@@ -16,7 +16,7 @@
                 <NotFoundPage />
             </NotFound>
             <Navigating>
-                <LoadingComponent Color="#FFF" />
+                <LoadingComponent />
             </Navigating>
         </Router>
     </LayoutView>

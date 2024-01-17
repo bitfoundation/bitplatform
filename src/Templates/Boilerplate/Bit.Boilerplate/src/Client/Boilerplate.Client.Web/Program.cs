@@ -1,6 +1,15 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+﻿//-:cnd:noEmit
+#if BlazorWebAssemblyStandalone
+using Microsoft.AspNetCore.Components.Web;
+#endif
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+#if BlazorWebAssemblyStandalone
+builder.RootComponents.Add<Routes>("#app-container");
+builder.RootComponents.Add<HeadOutlet>("head::after");
+#endif
 
 builder.Configuration.AddClientConfigurations();
 
