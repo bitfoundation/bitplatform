@@ -245,7 +245,7 @@
     @include sm {
         padding: 0;
         overflow: auto;
-        max-height: rem2(222px);
+        max-height: 25rem;
         flex-flow: column nowrap;
     }
 
