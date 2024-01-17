@@ -1,5 +1,7 @@
 ﻿@page "/butil/storage"
 @inherits AppComponentBase
+@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
 
 <PageOutlet Url="butil/storage"
             Title="Storage - Butil"
@@ -22,8 +24,8 @@
 @@inject Bit.Butil.SessionStorage sessionStorage
 
 @@code {
-    await localStorage.setItem("my-key", "my-value");
-    await sessionStorage.setItem("my-key2", "my-value2");
+    await localStorage.SetItem("my-key", "my-value");
+    await sessionStorage.SetItem("my-key2", "my-value2");
 }</pre>
         </div>
     </section>
@@ -31,31 +33,361 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
         <div class="section-card-txt">
+            <br />
             <b>GetLength</b>: Returns an integer representing the number of data items stored in the Storage object
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/length" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getLengthExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetLength">GetLength</BitButton>
+                            <br />
+                            <br />
+                            <div>LocalStorage length: @localLength</div>
+                            <br />
+                            <div>SessionStorage length: @sessionLength</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
             <b>GetKey</b>: When passed a number n, this method will return the name of the nth key in the storage
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/userAgent" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getKeyExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitSpinButton @bind-Value="keyIndex" Mode="BitSpinButtonMode.Inline" Min="0" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@GetKey">GetKey</BitButton>
+                            <br />
+                            <br />
+                            <div>LocalStorage key: @localKey</div>
+                            <br />
+                            <div>SessionStorage key: @sessionKey</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
             <b>GetItem</b>: When passed a key name, will return that key's value
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @getItemExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="currentLocalItemKey" Label="LocalStorage key" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitTextField @bind-Value="currentSessionItemKey" Label="SessionStorage key" Style="max-width: 18.75rem;" />
+                            <br />
+                            <br />
+                            <BitButton OnClick="@GetItem">GetItem</BitButton>
+                            <br />
+                            <br />
+                            <div>LocalStorage item: @currentLocalItem</div>
+                            <br />
+                            <div>SessionStorage item: @currentSessionItem</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
             <b>SetItem</b>: When passed a key name and value, will add that key to the storage, or update that key's value if it already exists
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @setItemExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newLocalItemKey" Label="LocalStorage key" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitTextField @bind-Value="newSessionItemKey" Label="SessionStorage key" Style="max-width: 18.75rem;" />
+                            <br />
+                            <br />
+                            <BitButton OnClick="@SetItem">SetItem</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
             <b>RemoveItem</b>: When passed a key name, will remove that key from the storage
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @removeItemExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="localItemKey" Label="LocalStorage key" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitTextField @bind-Value="sessionItemKey" Label="SessionStorage key" Style="max-width: 18.75rem;" />
+                            <br />
+                            <br />
+                            <BitButton OnClick="@RemoveItem">RemoveItem</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
             <br /><br />
 
             <b>Clear</b>: When invoked, will empty all keys out of the storage
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/clear" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @clearItemExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@Clear">Clear</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
         </div>
     </section>
 </div>
 
 <NavigationButtons Prev="Navigator" PrevUrl="/butil/navigator" Next="Location" NextUrl="/butil/location" />
+
+@code {
+    private string? localLength;
+    private string? sessionLength;
+
+    private double keyIndex;
+    private string? localKey;
+    private string? sessionKey;
+
+    private string? currentLocalItemKey;
+    private string? currentSessionItemKey;
+    private string? currentLocalItem;
+    private string? currentSessionItem;
+
+    private string? newLocalItemKey;
+    private string? newSessionItemKey;
+
+    private string? localItemKey;
+    private string? sessionItemKey;
+
+
+    private async Task GetLength()
+    {
+        var localResult = await localStorage.GetLength();
+        localLength = localResult.ToString();
+
+        var sessionResult = await sessionStorage.GetLength();
+        sessionLength = sessionResult.ToString();
+    }
+
+    private async Task GetKey()
+    {
+        localKey = await localStorage.GetKey((int)keyIndex);
+
+        sessionKey = await sessionStorage.GetKey((int)keyIndex);
+    }
+
+    private async Task GetItem()
+    {
+        currentLocalItem = await localStorage.GetItem(currentLocalItemKey);
+
+        currentSessionItem = await sessionStorage.GetItem(currentSessionItemKey);
+    }
+
+    private async Task SetItem()
+    {
+        await localStorage.SetItem(newLocalItemKey, newLocalItemKey);
+
+        await sessionStorage.SetItem(newSessionItemKey, newSessionItemKey);
+    }
+
+    private async Task RemoveItem()
+    {
+        await localStorage.RemoveItem(localItemKey);
+
+        await sessionStorage.RemoveItem(sessionItemKey);
+    }
+
+    private async Task Clear()
+    {
+        await localStorage.Clear();
+
+        await sessionStorage.Clear();
+    }
+
+    private string getLengthExampleCode =
+@"@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+
+<BitButton OnClick=""@GetLength"">GetLength</BitButton>
+
+<div>LocalStorage length: @localLength</div>
+
+<div>SessionStorage length: @sessionLength</div>
+
+@code {
+    private string? localLength;
+    private string? sessionLength;
+
+    private async Task GetLength()
+    {
+        var localResult = await localStorage.GetLength();
+        localLength = localResult.ToString();
+
+        var sessionResult = await sessionStorage.GetLength();
+        sessionLength = sessionResult.ToString();
+    }
+}";
+    private string getKeyExampleCode =
+@"@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+
+<BitSpinButton @bind-Value=""keyIndex"" />
+
+<BitButton OnClick=""@GetKey"">GetKey</BitButton>
+
+<div>LocalStorage key: @localKey</div>
+
+<div>SessionStorage key: @sessionKey</div>
+
+@code {
+    private double keyIndex;
+    private string? localKey;
+    private string? sessionKey;
+
+    private async Task GetKey()
+    {
+        localKey = await localStorage.GetKey((int)keyIndex);
+
+        sessionKey = await sessionStorage.GetKey((int)keyIndex);
+    }
+}";
+    private string getItemExampleCode =
+@"@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+
+<BitTextField @bind-Value=""currentLocalItemKey"" Label=""LocalStorage key"" />
+
+<BitTextField @bind-Value=""currentSessionItemKey"" Label=""SessionStorage key"" />
+
+<BitButton OnClick=""@GetItem"">GetItem</BitButton>
+
+<div>LocalStorage item: @currentLocalItem</div>
+
+<div>SessionStorage item: @currentSessionItem</div>
+
+@code {
+    private string? currentLocalItemKey;
+    private string? currentSessionItemKey;
+    private string? currentLocalItem;
+    private string? currentSessionItem;
+
+    private async Task GetItem()
+    {
+        currentLocalItem = await localStorage.GetItem(currentLocalItemKey);
+
+        currentSessionItem = await sessionStorage.GetItem(currentSessionItemKey);
+    }
+}";
+    private string setItemExampleCode =
+@"@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+
+<BitTextField @bind-Value=""newLocalItemKey"" Label=""LocalStorage key"" />
+
+<BitTextField @bind-Value=""newSessionItemKey"" Label=""SessionStorage key"" />
+
+<BitButton OnClick=""@SetItem"">SetItem</BitButton>
+
+@code {
+    private string? newLocalItemKey;
+    private string? newSessionItemKey;
+
+    private async Task SetItem()
+    {
+        await localStorage.SetItem(newLocalItemKey, newLocalItemKey);
+
+        await sessionStorage.SetItem(newSessionItemKey, newSessionItemKey);
+    }
+}";
+    private string removeItemExampleCode =
+@"@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+
+<BitTextField @bind-Value=""localItemKey"" Label=""LocalStorage key"" />
+
+<BitTextField @bind-Value=""sessionItemKey"" Label=""SessionStorage key"" />
+
+<BitButton OnClick=""@RemoveItem"">RemoveItem</BitButton>
+
+@code {
+    private string? localItemKey;
+    private string? sessionItemKey;
+
+    private async Task RemoveItem()
+    {
+        await localStorage.RemoveItem(localItemKey);
+
+        await sessionStorage.RemoveItem(sessionItemKey);
+    }
+}";
+    private string clearItemExampleCode =
+@"@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+
+<BitButton OnClick=""@Clear"">Clear</BitButton>
+
+@code {
+    private async Task Clear()
+    {
+        await localStorage.Clear();
+
+        await sessionStorage.Clear();
+    }
+}";
+}
