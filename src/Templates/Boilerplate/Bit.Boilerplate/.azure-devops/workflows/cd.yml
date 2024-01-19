@@ -13,7 +13,7 @@ variables:
 jobs:
 
 - job: build_api_blazor
-  displayName: 'build api + blazor'
+  displayName: 'build api + blazor web'
 
   pool:
     vmImage: 'ubuntu-22.04'

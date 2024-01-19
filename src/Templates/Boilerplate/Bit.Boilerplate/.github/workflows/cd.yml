@@ -18,7 +18,7 @@ permissions:
 jobs:
 
   build_api_blazor:
-    name: build api + blazor
+    name: build api + blazor web
     runs-on: ubuntu-22.04
 
     steps:
@@ -218,7 +218,7 @@ jobs:
         path: src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.*
 
   build_blazor_hybrid_iOS:
-    name: build blazor hybrid (iOS)
+    name: build blazor hybrid (iOS-macOS)
     runs-on: macos-13
   
     steps:
