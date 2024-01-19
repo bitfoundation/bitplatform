@@ -28,7 +28,6 @@ main {
         padding: rem2(40px);
         max-width: calc(100% - $NavMenuWidth);
         background-color: $bit-color-background-secondary;
-        padding-bottom: 0; // important, don't move this line!
 
         @include md {
             max-width: 100%;
@@ -193,12 +192,12 @@ main {
 ::deep .code-box {
     width: 100%;
     display: flex;
+    padding: 1rem;
     overflow-x: auto;
-    padding: rem2(8px);
     user-select: text;
-    margin: rem2(16px) 0;
     white-space: nowrap;
     align-items: center;
+    margin: rem2(16px) 0;
     box-sizing: border-box;
     -webkit-user-select: text;
     justify-content: flex-start;
