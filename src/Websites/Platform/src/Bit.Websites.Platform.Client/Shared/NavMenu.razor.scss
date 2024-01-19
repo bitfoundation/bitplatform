@@ -21,11 +21,10 @@
     background-color: $bit-color-background-primary;
 
     @include lt-lg {
-        height: 100vh;
-        position: fixed;
-        z-index: 1200;
-        top: 0;
         inset: 0;
+        height: 100vh;
+        z-index: 1200;
+        position: fixed;
     }
 
     @include sm {
@@ -50,28 +49,16 @@
 }
 
 .nav-menu-shadow {
-    position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1101;
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .search-box-container {
     width: 100%;
+    box-sizing: border-box;
     padding: rem2(24px) rem2(22px);
-    box-sizing: border-box;
-}
-
-.nav-menu-list {
-    width: 100%;
-    height: calc(100% - #{rem2(89px)});
-    box-sizing: border-box;
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    &::-webkit-scrollbar {
-        width: 0;
-    }
 }
 
 ::deep .nav-menu-search-box {
@@ -79,68 +66,20 @@
     height: rem2(40px);
 
     input::-webkit-input-placeholder {
-        font-size: rem2(14px);
         font-weight: 500;
+        font-size: rem2(14px);
     }
 }
 
-::deep .side-nav {
-    .link-enabled-nourl {
-        font-weight: 600;
-        font-size: rem2(14px);
-        line-height: rem2(32px);
-        color: #323130;
-    }
+.nav-menu-list {
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    height: calc(100% - #{rem2(89px)});
+    max-height: calc(100% - #{rem2(89px)});
 
-    .chevron-btn {
-        &:hover {
-            color: #323130;
-        }
-
-        i {
-            height: 100%;
-            transform: rotate( -90deg);
-        }
-
-        .expand {
-            height: 100%;
-            transform: rotate(0deg);
-        }
-    }
-
-    .group-content {
-        margin-bottom: 0;
-    }
-
-    .link-txt {
-        white-space: nowrap;
-    }
-
-    .link-enabled-hasurl {
-        height: rem2(40px);
-        box-sizing: border-box;
-        font-size: rem2(14px);
-        font-weight: 400;
-        line-height: rem2(26px);
-        color: #323130;
-
-        &:hover {
-            color: #323130;
-        }
-    }
-
-    .selected {
-        font-weight: unset;
-        color: $B6Color;
-
-        &:after {
-            border-left: rem2(4px) solid $B6Color;
-        }
-    }
-}
-
-::deep .searched-side-nav {
-    .link-enabled-hasurl {
-        padding: 0 20px 0 27px !important;
+    &::-webkit-scrollbar {
+        width: 0;
     }
 }
