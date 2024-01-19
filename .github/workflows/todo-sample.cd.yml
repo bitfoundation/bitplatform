@@ -130,7 +130,7 @@ jobs:
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
-    runs-on: ubuntu-22.04
+    runs-on: windows-2022
   
     steps:
      
@@ -166,7 +166,7 @@ jobs:
   
     - name: Publish
       run: |
-          cd TodoSample/src/Client/TodoSample.Client.Windows/ && dotnet publish TodoSample.Client.Windows.csproj -c Release -o ./publish -p:EnableWindowsTargeting=true
+          cd TodoSample/src/Client/TodoSample.Client.Windows/ && dotnet publish TodoSample.Client.Windows.csproj -c Release -o ./publish
           dotnet tool restore
           dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e TodoSample.Client.Windows.exe -r win-x64 --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle TodoSample
   
