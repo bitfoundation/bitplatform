@@ -165,7 +165,9 @@ jobs:
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Windows/TodoSample.Client.Windows.csproj -c Release -o ./publish -p:EnableWindowsTargeting=true
+      run: |
+          cd TodoSample/src/Client/TodoSample.Client.Windows/ && dotnet publish TodoSample.Client.Windows.csproj -c Release -o ./publish -p:EnableWindowsTargeting=true
+          dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e TodoSample.Client.Windows.exe --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle TodoSample
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
