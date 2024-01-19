@@ -8,6 +8,8 @@
         <UseWPF>true</UseWPF>
         <UseWindowsForms>true</UseWindowsForms>
         <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
+        <StartupObject>Boilerplate.Client.Windows.Program</StartupObject>
+        <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,12 +25,15 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.6" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
+        <PackageReference Include="Velopack" Version="0.0.193-gee309b2" />
         
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+        
+        <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <ItemGroup>

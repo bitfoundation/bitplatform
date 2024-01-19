@@ -216,46 +216,6 @@ jobs:
       with:
         name: android-bundle
         path: src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.*
-  
-  build_blazor_hybrid_maccatalyst:
-     name: build blazor hybrid (maccatalyst)
-     runs-on: macos-13
-   
-     steps:
-      
-     - name: Checkout source code
-       uses: actions/checkout@v3
-      
-     - name: Setup .NET
-       uses: actions/setup-dotnet@v3
-       with:
-         global-json-file: global.json
-
-     - uses: actions/setup-node@v3
-       with:
-        node-version: 18
-   
-     - name: Update appsettings.json api server address
-       uses: microsoft/variable-substitution@v1 
-       with:
-         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
-       env:
-         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
-     - name: Install maui
-       run: cd src && dotnet workload install maui
-   
-     - name: Generate CSS/JS files
-       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
-   
-     - name: Build pkg
-       run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:CreatePackage=true -f net8.0-maccatalyst
-   
-     - name: Upload artifact
-       uses: actions/upload-artifact@v2
-       with:
-         name: mac-pkg-bundle
-         path: src/Client/Boilerplate.Client.Maui/bin/release/net8.0-maccatalyst/*.pkg
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
