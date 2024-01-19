@@ -114,13 +114,13 @@ jobs:
         WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj
   
     - name: Publish
       run: |
-          cd src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Windows/ && dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Debug -o ./publish
+          cd src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Windows/ && dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o ./publish
           dotnet tool restore
-          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x64 --framework net8.0.1-x64-desktop --icon .\wwwroot\favicon.ico --packTitle "Bit Blazor UI"
+          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x64 --framework net8.0.1-x64-desktop --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
