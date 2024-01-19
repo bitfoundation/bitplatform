@@ -168,7 +168,7 @@ jobs:
       run: |
           cd TodoSample/src/Client/TodoSample.Client.Windows/ && dotnet publish TodoSample.Client.Windows.csproj -c Release -o ./publish -p:EnableWindowsTargeting=true
           dotnet tool restore
-          dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e TodoSample.Client.Windows.exe --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle TodoSample
+          dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e TodoSample.Client.Windows.exe --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle TodoSample -r win-x64
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
