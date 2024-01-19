@@ -174,7 +174,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: ./Release
+        path: TodoSample/src/Client/TodoSample.Client.Windows/Release
   
   # build_blazor_hybrid_android:
   #   name: build blazor hybrid (android)
