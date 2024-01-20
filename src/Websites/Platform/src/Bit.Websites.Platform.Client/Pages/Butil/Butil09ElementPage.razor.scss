@@ -18,3 +18,7 @@
 .code-box {
     @include CodeBox;
 }
+
+::-webkit-input-placeholder {
+    color: $bit-color-primary-text;
+}
