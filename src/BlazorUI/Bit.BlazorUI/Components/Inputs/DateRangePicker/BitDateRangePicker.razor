@@ -460,6 +460,16 @@
                         <div style="@Styles?.Divider" class="bit-dtrp-dvd @Classes?.Divider"></div>
                     }
 
+                    var startTimeIncreaseHourDisabled = CanChangeTime(true, true, true);
+                    var startTimeDecreaseHourDisabled = CanChangeTime(false, true, true);
+                    var startTimeIncreaseMinuteDisabled = CanChangeTime(true, false, true);
+                    var startTimeDecreaseMinuteDisabled = CanChangeTime(false, false, true);
+
+                    var endTimeIncreaseHourDisabled = CanChangeTime(true, true, false);
+                    var endTimeDecreaseHourDisabled = CanChangeTime(false, true, false);
+                    var endTimeIncreaseMinuteDisabled = CanChangeTime(true, false, false);
+                    var endTimeDecreaseMinuteDisabled = CanChangeTime(false, false, false);
+
                     <div style="@Styles?.TimePickerWrapper" class="bit-dtrp-twp @Classes?.TimePickerWrapper">
                         <div style="@Styles?.TimePickerHeader" class="bit-dtrp-pkh bit-dtrp-tph @Classes?.TimePickerHeader">
                             <div style="@Styles?.TimePickerNavWrapper" class="bit-dtrp-nbc @Classes?.TimePickerNavWrapper">
@@ -483,7 +493,9 @@
                                             @onpointerdown="() => HandleOnPointerDown(true, true, true)"
                                             type="button"
                                             style="@Styles?.StartTimeIncreaseHourButton"
-                                            class="bit-dtrp-tbt @Classes?.StartTimeIncreaseHourButton">
+                                            class="bit-dtrp-tbt @Classes?.StartTimeIncreaseHourButton"
+                                            disabled="@startTimeIncreaseHourDisabled"
+                                            aria-disabled="@startTimeIncreaseHourDisabled">
                                         <i style="@Styles?.StartTimeIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.StartTimeIncreaseHourIcon" aria-hidden="true" />
                                     </button>
                                     <input @ref="_startTimeHourInputRef"
@@ -502,7 +514,9 @@
                                             @onpointerdown="() => HandleOnPointerDown(false, true, true)"
                                             type="button"
                                             style="@Styles?.StartTimeDecreaseHourButton"
-                                            class="bit-dtrp-tbt @Classes?.StartTimeDecreaseHourButton">
+                                            class="bit-dtrp-tbt @Classes?.StartTimeDecreaseHourButton"
+                                            disabled="@startTimeDecreaseHourDisabled"
+                                            aria-disabled="@startTimeDecreaseHourDisabled">
                                         <i style="@Styles?.StartTimeDecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.StartTimeDecreaseHourIcon" aria-hidden="true" />
                                     </button>
                                 </div>
@@ -513,7 +527,9 @@
                                             @onpointerdown="() => HandleOnPointerDown(true, false, true)"
                                             type="button"
                                             style="@Styles?.StartTimeIncreaseMinuteButton"
-                                            class="bit-dtrp-tbt @Classes?.StartTimeIncreaseMinuteButton">
+                                            class="bit-dtrp-tbt @Classes?.StartTimeIncreaseMinuteButton"
+                                            disabled="@startTimeIncreaseMinuteDisabled"
+                                            aria-disabled="@startTimeIncreaseMinuteDisabled">
                                         <i style="@Styles?.StartTimeIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.StartTimeIncreaseMinuteIcon" aria-hidden="true" />
                                     </button>
                                     <input @ref="_startTimeMinuteInputRef"
@@ -532,7 +548,9 @@
                                             @onpointerdown="() => HandleOnPointerDown(false, false, true)"
                                             type="button"
                                             style="@Styles?.StartTimeDecreaseMinuteButton"
-                                            class="bit-dtrp-tbt @Classes?.StartTimeDecreaseMinuteButton">
+                                            class="bit-dtrp-tbt @Classes?.StartTimeDecreaseMinuteButton"
+                                            disabled="@startTimeDecreaseMinuteDisabled"
+                                            aria-disabled="@startTimeDecreaseMinuteDisabled">
                                         <i style="@Styles?.StartTimeDecreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.StartTimeDecreaseMinuteIcon" aria-hidden="true" />
                                     </button>
                                 </div>
@@ -564,7 +582,9 @@
                                             @onpointerdown="() => HandleOnPointerDown(true, true, false)"
                                             type="button"
                                             style="@Styles?.EndTimeIncreaseHourButton"
-                                            class="bit-dtrp-tbt @Classes?.EndTimeIncreaseHourButton">
+                                            class="bit-dtrp-tbt @Classes?.EndTimeIncreaseHourButton"
+                                            disabled="@endTimeIncreaseHourDisabled"
+                                            aria-disabled="@endTimeIncreaseHourDisabled">
                                         <i style="@Styles?.EndTimeIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.EndTimeIncreaseHourIcon" aria-hidden="true" />
                                     </button>
                                     <input @ref="_endTimeHourInputRef"
@@ -583,7 +603,9 @@
                                             @onpointerdown="() => HandleOnPointerDown(false, true, false)"
                                             type="button"
                                             style="@Styles?.EndTimeDecreaseHourButton"
-                                            class="bit-dtrp-tbt @Classes?.EndTimeDecreaseHourButton">
+                                            class="bit-dtrp-tbt @Classes?.EndTimeDecreaseHourButton"
+                                            disabled="@endTimeDecreaseHourDisabled"
+                                            aria-disabled="@endTimeDecreaseHourDisabled">
                                         <i style="@Styles?.EndTimeDecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.EndTimeDecreaseHourIcon" aria-hidden="true" />
                                     </button>
                                 </div>
@@ -594,7 +616,9 @@
                                             @onpointerdown="() => HandleOnPointerDown(true, false, false)"
                                             type="button"
                                             style="@Styles?.EndTimeIncreaseMinuteButton"
-                                            class="bit-dtrp-tbt @Classes?.EndTimeIncreaseMinuteButton">
+                                            class="bit-dtrp-tbt @Classes?.EndTimeIncreaseMinuteButton"
+                                            disabled="@endTimeIncreaseMinuteDisabled"
+                                            aria-disabled="@endTimeIncreaseMinuteDisabled">
                                         <i style="@Styles?.EndTimeIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.EndTimeIncreaseMinuteIcon" aria-hidden="true" />
                                     </button>
                                     <input @ref="_endTimeMinuteInputRef"
@@ -613,7 +637,9 @@
                                             @onpointerdown="() => HandleOnPointerDown(false, false, false)"
                                             type="button"
                                             style="@Styles?.EndTimeDecreaseMinuteButton"
-                                            class="bit-dtrp-tbt @Classes?.EndTimeDecreaseMinuteButton">
+                                            class="bit-dtrp-tbt @Classes?.EndTimeDecreaseMinuteButton"
+                                            disabled="@endTimeDecreaseMinuteDisabled"
+                                            aria-disabled="@endTimeDecreaseMinuteDisabled">
                                         <i style="@Styles?.EndTimeDecreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.EndTimeDecreaseMinuteIcon" aria-hidden="true" />
                                     </button>
                                 </div>
