@@ -1,4 +1,5 @@
-﻿@using Bit.BlazorUI.Demo.Client.Web.Components
+﻿@using Bit.BlazorUI.Demo.Client.Core.Shared
+@using Bit.BlazorUI.Demo.Client.Web.Components
 
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
@@ -53,6 +54,10 @@
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.bundle.scp.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia-bit.css" />
 
+    @if (AppRenderMode.PrerenderEnabled is false || noPrerender)
+    {
+        <LoadingComponent />
+    }
     <Routes @rendermode=renderMode />
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
