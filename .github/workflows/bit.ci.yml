@@ -28,7 +28,7 @@ jobs:
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
 
     - name: MSBuild prerelease
-      run: dotnet build src/Bit-CI-release.sln -p:EnableWindowsTargeting=true
+      run: dotnet build src/Bit-CI-release.sln
 
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
@@ -59,7 +59,7 @@ jobs:
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Build
-      run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false -p:EnableWindowsTargeting=true
       
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
