@@ -60,7 +60,10 @@
                         <BitPivotItem HeaderText="Result">
                             <br />
                             <BitButton OnClick=GetInnerHeight>GetInnerHeight</BitButton>
-                            <div style="margin-top: 1rem;">InnerHeight is: @innerHeight</div>
+                            <br />
+                            <br />
+                            <div>InnerHeight is: @innerHeight</div>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
@@ -82,7 +85,10 @@
                         <BitPivotItem HeaderText="Result">
                             <br />
                             <BitButton OnClick=GetInnerWidth>GetInnerWidth</BitButton>
-                            <div style="margin-top: 1rem;">InnerWidth is: @innerWidth</div>
+                            <br />
+                            <br />
+                            <div>InnerWidth is: @innerWidth</div>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
@@ -119,7 +125,10 @@
                         <BitPivotItem HeaderText="Result">
                             <br />
                             <BitButton OnClick=GetOrigin>GetOrigin</BitButton>
-                            <div style="margin-top: 1rem;">Origin is: @origin</div>
+                            <br />
+                            <br />
+                            <div>Origin is: @origin</div>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
@@ -141,7 +150,10 @@
                         <BitPivotItem HeaderText="Result">
                             <br />
                             <BitButton OnClick=GetOuterHeight>GetOuterHeight</BitButton>
-                            <div style="margin-top: 1rem;">OuterHeight is: @outerHeight</div>
+                            <br />
+                            <br />
+                            <div>OuterHeight is: @outerHeight</div>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
@@ -163,7 +175,10 @@
                         <BitPivotItem HeaderText="Result">
                             <br />
                             <BitButton OnClick=GetOuterWidth>GetOuterWidth</BitButton>
-                            <div style="margin-top: 1rem;">OuterWidth is: @outerWidth</div>
+                            <br />
+                            <br />
+                            <div>OuterWidth is: @outerWidth</div>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
@@ -207,7 +222,10 @@
                             <BitTextField @bind-Value="btoaValue" Style="max-width: 18.75rem;" />
                             <br />
                             <BitButton OnClick=EncodeData>EncodeData</BitButton>
-                            <div style="margin-top: 1rem;">Encoded data is: @btoaText</div>
+                            <br />
+                            <br />
+                            <div>Encoded data is: @btoaText</div>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
@@ -231,7 +249,10 @@
                             <BitTextField @bind-Value="atobValue" Style="max-width: 18.75rem;" />
                             <br />
                             <BitButton OnClick=DecodeData>DecodeData</BitButton>
-                            <div style="margin-top: 1rem;">Decoded text is: @atobText</div>
+                            <br />
+                            <br />
+                            <div>Decoded text is: @atobText</div>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
@@ -253,6 +274,7 @@
                         <BitPivotItem HeaderText="Result">
                             <br />
                             <BitButton OnClick="@(() => window.Alert("Alert from C#"))">ShowAlert</BitButton>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
@@ -284,6 +306,7 @@
                         <BitPivotItem HeaderText="Result">
                             <br />
                             <BitButton OnClick="@(() => window.Confirm("Confirm from C#"))">ShowConfirm</BitButton>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
