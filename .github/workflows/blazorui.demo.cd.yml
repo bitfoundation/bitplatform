@@ -114,7 +114,7 @@ jobs:
         WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj
+      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -c Release
   
     - name: Publish
       run: |
