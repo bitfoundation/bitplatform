@@ -17,7 +17,7 @@ permissions:
 jobs:
 
   build_api_blazor:
-    name: build api + blazor
+    name: build api + blazor web
     runs-on: ubuntu-22.04
 
     steps:
@@ -127,38 +127,39 @@ jobs:
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-    - name: Create project from Boilerplate
-      run: |
-       cd src/Templates/Boilerplate && dotnet build -c Release
-       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin
-  
     - uses: actions/setup-node@v3
       with:
         node-version: 18
 
+    - name: Create project from Boilerplate
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --windows
+  
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
         files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
-    - name: Install maui
-      run: cd src && dotnet workload install maui
+        WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
   
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
-    - name: Build exe
-      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+    - name: Publish
+      run: |
+          cd AdminPanel/src/Client/AdminPanel.Client.Windows/ && dotnet publish AdminPanel.Client.Windows.csproj -c Release -o ./publish
+          dotnet tool restore
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e AdminPanel.Client.Windows.exe -r win-x64 --framework net8.0.1-x64-desktop --icon .\wwwroot\favicon.ico --packTitle AdminPanel
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86
+        path: AdminPanel/src/Client/AdminPanel.Client.Windows/Releases
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -220,55 +221,8 @@ jobs:
         name: android-bundle
         path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net8.0-android/*-Signed.*
   
-  build_blazor_hybrid_maccatalyst:
-     name: build blazor hybrid (maccatalyst)
-     runs-on: macos-13
-   
-     steps:
-      
-     - name: Checkout source code
-       uses: actions/checkout@v3
-      
-     - name: Setup .NET
-       uses: actions/setup-dotnet@v3
-       with:
-         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
-
-     - uses: actions/setup-node@v3
-       with:
-        node-version: 18
-
-     - name: Create project from Boilerplate
-       run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin
-   
-     - name: Update appsettings.json api server address
-       uses: microsoft/variable-substitution@v1 
-       with:
-         files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
-       env:
-         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
-     - name: Install maui
-       run: cd src && dotnet workload install maui
-   
-     - name: Generate CSS/JS files
-       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
-   
-     - name: Build pkg
-       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:CreatePackage=true -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net8.0-maccatalyst
-   
-     - name: Upload artifact
-       uses: actions/upload-artifact@v2
-       with:
-         name: mac-pkg-bundle
-         path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net8.0-maccatalyst/*.pkg
-
   build_blazor_hybrid_ios:
-    name: build blazor hybrid (ios)
+    name: build blazor hybrid (iOS-macOS)
     runs-on: macos-13
   
     steps:
