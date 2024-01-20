@@ -9,14 +9,13 @@ footer {
     box-sizing: border-box;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    background-color: $bit-color-background-secondary;
 }
 
 section {
     width: 100%;
     position: relative;
-    max-width: rem2(1200px);
     box-sizing: border-box;
+    max-width: rem2(1200px);
     padding: rem2(100px) rem2(16px);
 
     &:first-child {
@@ -24,13 +23,9 @@ section {
         gap: rem2(40px);
         align-items: center;
         grid-auto-columns: 1fr;
+        grid-template-rows: auto;
         grid-template-columns: 1fr 1fr;
         justify-content: space-between;
-        grid-template-rows: auto;
-
-        @include lg {
-            grid-template-columns: 1fr 1.75fr;
-        }
     }
 
     &:last-child {
@@ -53,6 +48,25 @@ section {
     }
 }
 
+a {
+    text-decoration: none;
+}
+
+.links-container {
+    gap: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.column {
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
 .bit-logo {
     width: rem2(32px);
     height: rem2(27px);
@@ -65,22 +79,21 @@ section {
 
 .go-to-top {
     bottom: 0;
-    right: rem2(2px);
     cursor: pointer;
+    right: rem2(2px);
     position: absolute;
     padding: rem2(8px) rem2(12px);
-    color: #EEEE;
-    background-color: #888;
-}
+    background-color: $bit-color-background-secondary;
 
-a {
-    text-decoration: none;
+    &:hover {
+        background-color: $bit-color-action-hover-background-secondary;
+    }
 }
 
 .address-info {
     display: flex;
-    flex-flow: column nowrap;
     gap: rem2(3px);
+    flex-flow: column nowrap;
 
     @include sm {
         margin-bottom: rem2(30px);
@@ -93,10 +106,10 @@ a {
     }
 
     .address, .tel {
-        color: #3E5060;
+        color: $bit-color-primary-main;
 
         &:hover {
-            color: #4A5AAB;
+            color: $bit-color-action-hover-primary;
         }
     }
 
@@ -113,58 +126,19 @@ a {
     }
 }
 
-.links-container {
-    gap: 20px;
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.column {
-    height: 100%;
-    display: flex;
-    align-items: flex-start;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-}
-
-.col-title {
-    margin: 0;
-    color: #1A2027;
-    line-height: 1.5;
-    font-weight: 700;
-    letter-spacing: 0;
-    font-size: rem2(14px);
-}
-
-.footer-link {
-    margin-top: rem2(10px);
-    color: #3E5060;
-    font-size: rem2(14px);
-    line-height: 1.5;
-    letter-spacing: 0;
-    font-weight: 400;
-    text-decoration: none;
-
-    &:hover {
-        color: #007FFF;
-        text-decoration: underline;
-    }
-}
-
 .copy-right-txt {
-    font-size: rem2(14px);
     line-height: 1.5;
-    letter-spacing: 0;
     font-weight: 400;
-    color: #3E5060;
+    letter-spacing: 0;
+    font-size: rem2(14px);
     margin-top: rem2(16px);
 }
 
 .social-link-group {
     display: flex;
+    align-items: center;
     flex-flow: row nowrap;
     justify-content: center;
-    align-items: center;
 
     @include sm {
         margin-bottom: rem2(8px);

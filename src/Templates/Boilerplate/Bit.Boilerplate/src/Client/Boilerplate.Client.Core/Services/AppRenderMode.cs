@@ -13,7 +13,9 @@ public static class AppRenderMode
     public static IComponentRenderMode NoPrerenderBlazorWebAssembly => new InteractiveWebAssemblyRenderMode(prerender: false);
 
     public static IComponentRenderMode Current =>
-        BuildConfiguration.IsDebug() ? BlazorServer /*For better development experience*/ : Auto;
+        BuildConfiguration.IsDebug() 
+        ? BlazorServer // For better development experience.
+        : Auto; // For better production experience.
 
     /// <summary>
     /// To enable/disable pwa support, navigate to Directory.Build.props and modify the PwaEnabled flag.

@@ -30,6 +30,19 @@
                 }
             ]
         },
+        "UserSecretsId": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF256",
+            "parameters": {
+                "defaultFormat": "D" //Guid format 
+            },
+            "onlyIf": [
+                {
+                    "after": "<UserSecretsId>"
+                }
+            ]
+        },
         "SeedDataProductCreatedOn": {
             "type": "generated",
             "generator": "now",
@@ -139,18 +152,22 @@
                 },
                 {
                     "condition": "(pipeline != GitHub)",
-                    "exclude": [ ".github/**" ]
+                    "exclude": [
+                        ".github/**"
+                    ]
                 },
                 {
                     "condition": "(pipeline != Azure)",
-                    "exclude": [ ".azure-devops/**" ]
+                    "exclude": [
+                        ".azure-devops/**"
+                    ]
                 },
                 {
                     "condition": "(sample != Admin)",
                     "exclude": [
-                        "src/Shared/Dtos/Categories/**",
-                        "src/Shared/Dtos/Dashboard/**",
-                        "src/Shared/Dtos/Products/**",
+                        "src/Boilerplate.Shared/Dtos/Categories/**",
+                        "src/Boilerplate.Shared/Dtos/Dashboard/**",
+                        "src/Boilerplate.Shared/Dtos/Products/**",
                         "src/Boilerplate.Server/Controllers/Categories/**",
                         "src/Boilerplate.Server/Controllers/Products/**",
                         "src/Boilerplate.Server/Controllers/Dashboard/**",
@@ -171,7 +188,7 @@
                 {
                     "condition": "(sample != Todo)",
                     "exclude": [
-                        "src/Shared/Dtos/Todo/**",
+                        "src/Boilerplate.Shared/Dtos/Todo/**",
                         "src/Boilerplate.Server/Controllers/Todo/**",
                         "src/Boilerplate.Server/Mappers/TodoMapper.cs",
                         "src/Boilerplate.Server/Models/Todo/**",

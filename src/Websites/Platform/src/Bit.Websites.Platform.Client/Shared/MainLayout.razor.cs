@@ -10,6 +10,7 @@ public partial class MainLayout : IDisposable
     private bool isTemplateDocRoute;
     private bool isBswupDocRoute;
     private bool isBesqlDocRoute;
+    private bool isButilDocRoute;
 
     private List<BitNavItem> navItems = [];
 
@@ -17,6 +18,7 @@ public partial class MainLayout : IDisposable
     private readonly List<BitNavItem> templatesNavItems =
     [
         new BitNavItem { Text = "Overview", Url = "/templates/overview", AdditionalUrls = new string[] { "/admin-panel/overview", "/todo-template/overview" } },
+        new BitNavItem { Text = "Samples", Url = "/templates/samples" },
         new BitNavItem { Text = "Development prerequisites", Url = "/templates/development-prerequisites", AdditionalUrls = new string[] { "/admin-panel/development-prerequisites", "/todo-template/development-prerequisites" } },
         new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = new string[] { "/admin-panel/create-project", "/todo-template/create-project" } },
         new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = new string[] { "/admin-panel/project-structure", "/todo-template/project-structure" } },
@@ -39,7 +41,7 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Scripts", Url = "/bswup/scripts" },
         new BitNavItem { Text = "Events", Url = "/bswup/events" },
         new BitNavItem { Text = "Service Worker", Url = "/bswup/service-worker" },
-        new BitNavItem { Text = "Caching", Url = "/bswup/caching" },
+        new BitNavItem { Text = "BswupProgress", Url = "/bswup/progress" },
     ];
 
     private readonly List<BitNavItem> besqlNavItems =
@@ -47,6 +49,25 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Overview", Url = "/besql/overview" },
         new BitNavItem { Text = "Install", Url = "/besql/install" },
         new BitNavItem { Text = "Usage", Url = "/besql/usage" },
+    ];
+
+    private readonly List<BitNavItem> butilNavItems =
+    [
+        new BitNavItem { Text = "Overview", Url = "/butil/overview" },
+        new BitNavItem { Text = "Install", Url = "/butil/install" },
+        new BitNavItem { Text = "Setup", Url = "/butil/setup" },
+        new BitNavItem { Text = "Window", Url = "/butil/window" },
+        new BitNavItem { Text = "Document", Url = "/butil/document" },
+        new BitNavItem { Text = "Keyboard", Url = "/butil/keyboard" },
+        new BitNavItem { Text = "Console", Url = "/butil/console" },
+        new BitNavItem { Text = "History", Url = "/butil/history" },
+        new BitNavItem { Text = "Element", Url = "/butil/element" },
+        new BitNavItem { Text = "Navigator", Url = "/butil/navigator" },
+        new BitNavItem { Text = "Storage", Url = "/butil/storage" },
+        new BitNavItem { Text = "Location", Url = "/butil/location" },
+        new BitNavItem { Text = "Screen", Url = "/butil/screen" },
+        new BitNavItem { Text = "Cookie", Url = "/butil/cookie" },
+        new BitNavItem { Text = "Crypto", Url = "/butil/Crypto" },
     ];
 
 
@@ -73,11 +94,13 @@ public partial class MainLayout : IDisposable
         isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
         isBswupDocRoute = currentUrl.Contains("bswup");
         isBesqlDocRoute = currentUrl.Contains("besql");
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute;
+        isButilDocRoute = currentUrl.Contains("butil");
+        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute;
 
         navItems = isTemplateDocRoute ? templatesNavItems
                  : isBswupDocRoute ? bswupNavItems
                  : isBesqlDocRoute ? besqlNavItems
+                 : isButilDocRoute ? butilNavItems
                  : [];
     }
 

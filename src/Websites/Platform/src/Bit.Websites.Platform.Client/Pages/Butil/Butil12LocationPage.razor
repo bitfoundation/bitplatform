@@ -1,0 +1,742 @@
+﻿@page "/butil/location"
+@inherits AppComponentBase
+@inject Bit.Butil.Location location
+
+<PageOutlet Url="butil/location"
+            Title="Location - Butil"
+            Description="Location class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Location</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Location class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser location features you need to inject the Bit.Butil.Location class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.Location location
+
+@@code {
+    await location.Reload();
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>SetHref</b>, <b>GetHref</b>: <br />
+            Gets/Sets the href of the location and then the associated document navigates to the new page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/href" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @hrefExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newHref" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetHref">SetHref</BitButton>
+                            &nbsp;
+                            <BitButton OnClick="@GetHref">GetHref</BitButton>
+                            <br />
+                            <br />
+                            <div>Href: @currentHref</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetProtocol</b>, <b>GetProtocol</b>: <br />
+            Gets/Sets a string containing the protocol scheme of the URL, including the final ':'
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/protocol" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @protocolExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newProtocol" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetProtocol">SetProtocol</BitButton>
+                            &nbsp;
+                            <BitButton OnClick="@GetProtocol">GetProtocol</BitButton>
+                            <br />
+                            <br />
+                            <div>Protocol: @currentProtocol</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetHost</b>, <b>GetHost</b>: <br />
+            Gets/Sets a string containing the host, that is the hostname, a ':', and the port of the URL
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/host" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @hostExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newHost" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetHost">SetHost</BitButton>
+                            &nbsp;
+                            <BitButton OnClick="@GetHost">GetHost</BitButton>
+                            <br />
+                            <br />
+                            <div>Host: @currentHost</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetHostname</b>, <b>GetHostname</b>: <br />
+            Gets/Sets the hostname of the location and then the associated document navigates to the new page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hostname" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @hostnameExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newHostname" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetHostname">SetHostname</BitButton>
+                            &nbsp;
+                            <BitButton OnClick="@GetHostname">GetHostname</BitButton>
+                            <br />
+                            <br />
+                            <div>Hostname: @currentHostname</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetPort</b>, <b>GetPort</b>: <br />
+            Gets/Sets the port of the location and then the associated document navigates to the new page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/port" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @portExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newPort" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetPort">SetPort</BitButton>
+                            &nbsp;
+                            <BitButton OnClick="@GetPort">GetPort</BitButton>
+                            <br />
+                            <br />
+                            <div>Port: @currentPort</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetPathname</b>, <b>GetPathname</b>: <br />
+            Gets/Sets a string containing an initial '/' followed by the path of the URL, not including the query string or fragment
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/pathname" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @pathnameExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newPathname" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetPathname">SetPathname</BitButton>
+                            &nbsp;
+                            <BitButton OnClick="@GetPathname">GetPathname</BitButton>
+                            <br />
+                            <br />
+                            <div>Pathname: @currentPathname</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetSearch</b>, <b>GetSearch</b>: <br />
+            Gets/Sets a string containing a '#' followed by the fragment identifier of the URL
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/pathname" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @searchExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newSearch" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetSearch">SetSearch</BitButton>
+                            &nbsp;
+                            <BitButton OnClick="@GetSearch">GetSearch</BitButton>
+                            <br />
+                            <br />
+                            <div>Search: @currentSearch</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetHash</b>, <b>GetHash</b>: <br />
+            Gets/Sets the hash of the location and then the associated document navigates to the new page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @hashExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newHash" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetHash">SetHash</BitButton>
+                            &nbsp;
+                            <BitButton OnClick="@GetHash">GetHash</BitButton>
+                            <br />
+                            <br />
+                            <div>Hash: @currentHash</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+            
+            <b>GetOrigin</b>: <br />
+            Returns a string containing the canonical form of the origin of the specific location
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/origin" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @originExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@GetOrigin">GetOrigin</BitButton>
+                            <br />
+                            <br />
+                            <div>Origin: @currentOrigin</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+            
+            <b>Assign</b>: <br />
+            Loads the resource at the URL provided in parameter
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/assign" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @assignExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newAssign" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetAssign">Assign</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+            
+            <b>Reload</b>: <br />
+            Reloads the current URL, like the Refresh button
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/reload" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @reloadExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitButton OnClick="@(() => location.Reload())">Reload</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
+            
+            <b>Replace</b>: <br />
+            Replaces the current resource with the one at the provided URL (redirects to the provided URL)
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/replace" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @replaceExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="newReplace" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@SetReplace">Replace</BitButton>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Storage" PrevUrl="/butil/storage" Next="Screen" NextUrl="/butil/screen" />
+
+@code {
+    private string? newHref;
+    private string? currentHref;
+
+    private string? newProtocol;
+    private string? currentProtocol;
+
+    private string? newHost;
+    private string? currentHost;
+
+    private string? newHostname;
+    private string? currentHostname;
+
+    private string? newPort;
+    private string? currentPort;
+
+    private string? newPathname;
+    private string? currentPathname;
+    
+    private string? newSearch;
+    private string? currentSearch;
+    
+    private string? newHash;
+    private string? currentHash;
+    
+    private string? currentOrigin;
+
+    private string? newAssign;
+
+    private string? newReplace;
+
+
+    private async Task GetHref()
+    {
+        currentHref = await location.GetHref();
+    }
+
+    private async Task SetHref()
+    {
+        await location.SetHref(newHref!);
+    }
+
+    private async Task GetProtocol()
+    {
+        currentProtocol = await location.GetProtocol();
+    }
+
+    private async Task SetProtocol()
+    {
+        await location.SetProtocol(newProtocol!);
+    }
+
+    private async Task GetHost()
+    {
+        currentHost = await location.GetHost();
+    }
+
+    private async Task SetHost()
+    {
+        await location.SetHost(newHost!);
+    }
+
+    private async Task GetHostname()
+    {
+        currentHostname = await location.GetHostname();
+    }
+
+    private async Task SetHostname()
+    {
+        await location.SetHostname(newHostname!);
+    }
+
+    private async Task GetPort()
+    {
+        currentPort = await location.GetPort();
+    }
+
+    private async Task SetPort()
+    {
+        await location.SetPort(newPort!);
+    }
+
+    private async Task GetPathname()
+    {
+        currentPathname = await location.GetPathname();
+    }
+
+    private async Task SetPathname()
+    {
+        await location.SetPathname(newPathname!);
+    }
+
+    private async Task GetSearch()
+    {
+        currentSearch = await location.GetSearch();
+    }
+
+    private async Task SetSearch()
+    {
+        await location.SetSearch(newSearch!);
+    }
+
+    private async Task GetHash()
+    {
+        currentHash = await location.GetHash();
+    }
+
+    private async Task SetHash()
+    {
+        await location.SetHash(newHash!);
+    }
+
+    private async Task GetOrigin()
+    {
+        currentOrigin = await location.GetOrigin();
+    }
+
+    private async Task SetAssign()
+    {
+        await location.Assign(newAssign!);
+    }
+
+    private async Task SetReplace()
+    {
+        await location.Replace(newReplace!);
+    }
+
+
+    private string hrefExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newHref"" />
+
+<BitButton OnClick=""@SetHref"">SetHref</BitButton>
+
+<BitButton OnClick=""@GetHref"">GetHref</BitButton>
+
+<div>Href: @currentHref</div>
+
+@code {
+    private string? newHref;
+    private string? currentHref;
+
+    private async Task GetHref()
+    {
+        currentHref = await location.GetHref();
+    }
+
+    private async Task SetHref()
+    {
+        await location.SetHref(newHref!);
+    }
+}";
+    private string protocolExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newProtocol"" />
+
+<BitButton OnClick=""@SetProtocol"">SetProtocol</BitButton>
+
+<BitButton OnClick=""@GetProtocol"">GetProtocol</BitButton>
+
+<div>Protocol: @currentProtocol</div>
+
+@code {
+    private string? newProtocol;
+    private string? currentProtocol;
+
+    private async Task GetProtocol()
+    {
+        currentProtocol = await location.GetProtocol();
+    }
+
+    private async Task SetProtocol()
+    {
+        await location.SetProtocol(newProtocol!);
+    }
+}";
+    private string hostExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newHost"" />
+
+<BitButton OnClick=""@SetHost"">SetHost</BitButton>
+
+<BitButton OnClick=""@GetHost"">GetHost</BitButton>
+
+<div>Host: @currentHost</div>
+
+@code {
+    private string? newHost;
+    private string? currentHost;
+
+    private async Task GetHost()
+    {
+        currentHost = await location.GetHost();
+    }
+
+    private async Task SetHost()
+    {
+        await location.SetHost(newHost!);
+    }
+}";
+    private string hostnameExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newHostname"" />
+
+<BitButton OnClick=""@SetHostname"">SetHostname</BitButton>
+
+<BitButton OnClick=""@GetHostname"">GetHostname</BitButton>
+
+<div>Hostname: @currentHostname</div>
+
+@code {
+    private string? newHostname;
+    private string? currentHostname;
+
+    private async Task GetHostname()
+    {
+        currentHostname = await location.GetHostname();
+    }
+
+    private async Task SetHostname()
+    {
+        await location.SetHostname(newHostname!);
+    }
+}";
+    private string portExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newPort"" />
+
+<BitButton OnClick=""@SetPort"">SetPort</BitButton>
+
+<BitButton OnClick=""@GetPort"">GetPort</BitButton>
+
+<div>Port: @currentPort</div>
+
+@code {
+    private string? newPort;
+    private string? currentPort;
+
+    private async Task GetPort()
+    {
+        currentPort = await location.GetPort();
+    }
+
+    private async Task SetPort()
+    {
+        await location.SetPort(newPort!);
+    }
+}";
+    private string pathnameExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newPathname"" />
+
+<BitButton OnClick=""@SetPathname"">SetPathname</BitButton>
+
+<BitButton OnClick=""@GetPathname"">GetPathname</BitButton>
+
+<div>Pathname: @currentPathname</div>
+
+@code {
+    private string? newPathname;
+    private string? currentPathname;
+
+    private async Task GetPathname()
+    {
+        currentPathname = await location.GetPathname();
+    }
+
+    private async Task SetPathname()
+    {
+        await location.SetPathname(newPathname!);
+    }
+}";
+    private string searchExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newSearch"" />
+
+<BitButton OnClick=""@SetSearch"">SetSearch</BitButton>
+
+<BitButton OnClick=""@GetSearch"">GetSearch</BitButton>
+
+<div>Search: @currentSearch</div>
+
+@code {
+    private string? newSearch;
+    private string? currentSearch;
+
+    private async Task GetSearch()
+    {
+        currentSearch = await location.GetSearch();
+    }
+
+    private async Task SetSearch()
+    {
+        await location.SetSearch(newSearch!);
+    }
+}";
+    private string hashExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newHash"" />
+
+<BitButton OnClick=""@SetHash"">SetHash</BitButton>
+
+<BitButton OnClick=""@GetHash"">GetHash</BitButton>
+
+<div>Hash: @currentHash</div>
+
+@code {
+    private string? newHash;
+    private string? currentHash;
+
+    private async Task GetHash()
+    {
+        currentHash = await location.GetHash();
+    }
+
+    private async Task SetHash()
+    {
+        await location.SetHash(newHash!);
+    }
+}";
+    private string originExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitButton OnClick=""@GetOrigin"">GetOrigin</BitButton>
+
+<div>Origin: @currentOrigin</div>
+
+@code {
+    private string? currentOrigin;
+
+    private async Task GetOrigin()
+    {
+        currentOrigin = await location.GetOrigin();
+    }
+}";
+    private string assignExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newAssign"" />
+
+<BitButton OnClick=""@SetAssign"">Assign</BitButton>
+
+@code {
+    private string? newAssign;
+
+    private async Task SetAssign()
+    {
+        await location.Assign(newAssign!);
+    }
+}";
+    private string reloadExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitButton OnClick=""@(() => location.Reload())"">Reload</BitButton>";
+    private string replaceExampleCode =
+@"@inject Bit.Butil.Location location
+
+<BitTextField @bind-Value=""newReplace"" />
+
+<BitButton OnClick=""@SetReplace"">Replace</BitButton>
+
+@code {
+    private string? newReplace;
+
+    private async Task SetReplace()
+    {
+        await location.Replace(newReplace!);
+    }
+}";
+}

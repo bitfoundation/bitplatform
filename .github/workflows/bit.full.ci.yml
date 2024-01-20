@@ -40,6 +40,7 @@ jobs:
         dotnet ef database update
         cd ../../../
         dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
+        dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Web/TodoBPSqlite.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true
 
     - name: Release build empty sample + offline db + Win exe
       run: |
@@ -64,7 +65,7 @@ jobs:
       run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -c Release
 
     - name: Release build bit blazor ui demo
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -c Release -p:RunAOTCompilation=false
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
 
     - name: Create projects from BlazorEmpty project template with different parameters
       run: |

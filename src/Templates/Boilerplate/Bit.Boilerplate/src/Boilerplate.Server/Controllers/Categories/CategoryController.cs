@@ -77,7 +77,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
-        DbContext.Remove(new Category { Id = id });
+        DbContext.Categories.Remove(new() { Id = id });
 
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 
