@@ -1,3 +1,4 @@
+@import '../../Styles/abstracts/_vars.scss';
 @import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
@@ -27,13 +28,13 @@
         position: relative;
         padding: rem2(30px);
         flex-flow: row nowrap;
-        min-width: rem2(2000px);
-        margin-left: rem2(20px);
         box-sizing: border-box;
+        min-width: rem2(2000px);
         min-height: rem2(500px);
+        margin-left: rem2(20px);
         transition: max-height 0.3s;
-        height: calc(100vh - 120px);
         border-bottom-left-radius: rem2(2px);
+        height: calc(100vh - #{$HeaderHeight});
 
         @include gt-md {
             max-height: rem2(700px);

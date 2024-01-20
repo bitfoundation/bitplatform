@@ -1,5 +1,6 @@
 ﻿@page "/butil/crypto"
 @inherits AppComponentBase
+@inject Bit.Butil.Crypto crypto
 
 <PageOutlet Url="butil/crypto"
             Title="Crypto - Butil"
@@ -21,7 +22,7 @@
 @@inject Bit.Butil.Crypto crypto
 
 @@code {
-    await Crypto.Encrypt(...);
+    await crypto.Encrypt(...);
 }</pre>
         </div>
     </section>
@@ -29,14 +30,156 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
         <div class="section-card-txt">
-            <b>Encrypt</b>: The Encrypt method of the Crypto interface that encrypts data
+            <br />
+            <b>Encrypt</b>: <br />
+            The Encrypt method of the Crypto interface that encrypts data
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt" target="_blank">MDN</a>).
             <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @encryptExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="encryptText" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@Encrypt">Encrypt</BitButton>
+                            <br />
+                            <br />
+                            <div>Encrypted text: @encryptedText</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
+            <br /><br />
 
-            <b>Decrypt</b>: The Decrypt method of the Crypto interface that decrypts data
+            <b>Decrypt</b>: <br />
+            The Decrypt method of the Crypto interface that decrypts data
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <ChildContent>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Code">
+                            <pre class="code-box">
+                                @decryptExampleCode
+                            </pre>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Result">
+                            <br />
+                            <BitTextField @bind-Value="decryptText" Style="max-width: 18.75rem;" />
+                            <br />
+                            <BitButton OnClick="@Decrypt">Decrypt</BitButton>
+                            <br />
+                            <br />
+                            <div>Decrypted text: @decryptedText</div>
+                            <br />
+                        </BitPivotItem>
+                    </BitPivot>
+                </ChildContent>
+            </BitAccordion>
         </div>
     </section>
 </div>
 
 <NavigationButtons Prev="Cookie" PrevUrl="/butil/cookie" />
+
+
+@code {
+    private byte[] iv = new byte[16];
+    private byte[] key = new byte[16];
+
+    private string? encryptText;
+    private byte[]? encryptedBytes;
+    private string? encryptedText;
+
+    private string? decryptText;
+    private byte[]? decryptedBytes;
+    private string? decryptedText;
+
+
+    protected override async Task OnInitAsync()
+    {
+        System.Security.Cryptography.RandomNumberGenerator.Fill(iv);
+        System.Security.Cryptography.RandomNumberGenerator.Fill(key);
+    }
+
+    private async Task Encrypt()
+    {
+        var textAsUtf8Bytes = System.Text.Encoding.UTF8.GetBytes(encryptText!);
+        encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+        encryptedText = BitConverter.ToString(encryptedBytes!);
+    }
+
+    private async Task Decrypt()
+    {
+        decryptedBytes = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, encryptedBytes!, iv: iv);
+        decryptedText = System.Text.Encoding.UTF8.GetString(decryptedBytes);
+    }
+
+
+    private string encryptExampleCode =
+@"@inject Bit.Butil.Crypto crypto
+
+<BitTextField @bind-Value=""encryptText"" />
+
+<BitButton OnClick=""@Encrypt"">Encrypt</BitButton>
+
+<div>Encrypted text: @encryptedText</div>
+
+@code {
+    private byte[] iv = new byte[16];
+    private byte[] key = new byte[16];
+
+    private string? encryptText;
+    private byte[]? encryptedBytes;
+    private string? encryptedText;
+
+    protected override async Task OnInitAsync()
+    {
+        System.Security.Cryptography.RandomNumberGenerator.Fill(iv);
+        System.Security.Cryptography.RandomNumberGenerator.Fill(key);
+    }
+
+    private async Task Encrypt()
+    {
+        var textAsUtf8Bytes = System.Text.Encoding.UTF8.GetBytes(encryptText!);
+        encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+        encryptedText = BitConverter.ToString(encryptedBytes!);
+    }
+}";
+    private string decryptExampleCode =
+@"@inject Bit.Butil.Crypto crypto
+
+<BitTextField @bind-Value=""decryptText"" />
+
+<BitButton OnClick=""@Decrypt"">Decrypt</BitButton>
+
+<div>Decrypted text: @decryptedText</div>
+
+@code {
+    private byte[] iv = new byte[16];
+    private byte[] key = new byte[16];
+
+    private string? decryptText;
+    private byte[]? decryptedBytes;
+    private string? decryptedText;
+
+    protected override async Task OnInitAsync()
+    {
+        System.Security.Cryptography.RandomNumberGenerator.Fill(iv);
+        System.Security.Cryptography.RandomNumberGenerator.Fill(key);
+    }
+
+    private async Task Decrypt()
+    {
+        decryptedBytes = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, encryptedBytes!, iv: iv);
+        decryptedText = System.Text.Encoding.UTF8.GetString(decryptedBytes);
+    }
+}";
+}
