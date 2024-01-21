@@ -159,6 +159,7 @@ jobs:
           dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-x64 -r win-x64
           ren .\publish-x64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
           dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish
+          del /f .\publish\AdminPanel.Client.Windows.exe
           echo D | xcopy .\publish-arm64 .\publish-result /s /e /h
           echo A | xcopy .\publish-x86 .\publish-result /s /e /h
           echo A | xcopy .\publish-x64 .\publish-result /s /e /h
