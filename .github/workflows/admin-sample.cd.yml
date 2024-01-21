@@ -162,8 +162,6 @@ jobs:
           timeout 5
           ren .\publish\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
           dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish
-          timeout 5
-          del /f .\publish\AdminPanel.Client.Windows.exe
           dotnet tool restore
           dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e AdminPanel.Client.Windows-x64.exe -r win-x64 --framework net8.0.1-x64-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle AdminPanel
   
