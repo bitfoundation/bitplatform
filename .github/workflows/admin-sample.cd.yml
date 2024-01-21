@@ -149,6 +149,9 @@ jobs:
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
+    - name: Install winget
+      uses: Cyberboss/install-winget@v1
+
     - name: Publish
       run: |
           cd AdminPanel/src/Client/AdminPanel.Client.Windows/
