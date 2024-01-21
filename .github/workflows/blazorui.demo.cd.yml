@@ -126,7 +126,6 @@ jobs:
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-x64 -r win-x64
           ren .\publish-x64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x64.exe
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish
-          del /f .\publish\TodoSample.Client.Windows.exe
           echo D | xcopy .\publish-arm64 .\publish-result /s /e /h
           echo A | xcopy .\publish-x86 .\publish-result /s /e /h
           echo A | xcopy .\publish-x64 .\publish-result /s /e /h
