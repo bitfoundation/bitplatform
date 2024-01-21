@@ -168,27 +168,25 @@ jobs:
       targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
 
   - task: Bash@3
-    displayName: 'Install maui'
-    inputs:
-      targetType: 'inline'
-      script: cd src && dotnet workload install maui
-
-  - task: Bash@3
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
       script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
 
   - task: Bash@3
-    displayName: 'Build exe'
+    displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0'
+      script: |
+        cd src/Client/Boilerplate.Client.Maui/
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish -r win-x86
+        dotnet tool restore
+        dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Boilerplate.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle Boilerplate
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
     inputs:
-      targetPath: 'src/Client/Boilerplate.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86'
+      targetPath: 'src/Client/Boilerplate.Client.Windows/Releases'
       artifact: 'win-exe-bundle'
       publishLocation: 'pipeline'
 

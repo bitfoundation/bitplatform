@@ -149,20 +149,21 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
   
-    - name: Install maui
-      run: cd src && dotnet workload install maui
-  
     - name: Generate CSS/JS files
       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   
-    - name: Build exe
-      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+    - name: Publish
+      run: |
+          cd src/Client/Boilerplate.Client.Maui/
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish -r win-x86
+          dotnet tool restore
+          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Boilerplate.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle Boilerplate
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: src/Client/Boilerplate.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86
+        path: src/Client/Boilerplate.Client.Windows/Releases
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
