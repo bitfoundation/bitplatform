@@ -150,21 +150,15 @@ jobs:
       run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
-      shell: powershell
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-arm64
-          Start-Sleep -s 5
+          dotnet build -c Release && dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-arm64
           ren .\publish\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-arm64.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-x86
-          Start-Sleep -s 5
+          dotnet build -c Release && dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-x86
           ren .\publish\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x86.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-x64
-          Start-Sleep -s 5
+          dotnet build -c Release && dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-x64
           ren .\publish\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish
-          Start-Sleep -s 5
-          Remove-Item -Path .\publish\AdminPanel.Client.Windows.exe
+          dotnet build -c Release && dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish
           dotnet tool restore
           dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e AdminPanel.Client.Windows-x64.exe -r win-x64 --framework net8.0.1-x64-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle AdminPanel
   
