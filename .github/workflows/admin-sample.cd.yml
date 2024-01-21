@@ -122,13 +122,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
 
-    - name: Install winget
-      uses: Cyberboss/install-winget@v1
-     
-    - name: Install .NET 8
-      run: |
-        winget install Microsoft.DotNet.Sdk.8 --disable-interactivity --accept-source-agreements
-        winget install Microsoft.DotNet.DesktopRuntime.8 --disable-interactivity --accept-source-agreements -a x86
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
 
     - uses: actions/setup-node@v3
       with:
@@ -136,35 +133,40 @@ jobs:
 
     - name: Create project from Boilerplate
       run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
+        cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --windows
+        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --windows
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
+        files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
 
     - name: Publish
       run: |
-          cd AdminPanel/src/Client/AdminPanel.Client.Windows/
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o ./publish -r win-x86
-          dotnet tool restore
-          winget uninstall Microsoft.DotNet.Sdk.8
-          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e AdminPanel.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle AdminPanel
+          cd AdminPanel\src\Client\AdminPanel.Client.Windows\
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-arm64
+          ren .\publish\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-arm64.exe
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-x86
+          ren .\publish\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x86.exe
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish -r win-x64
+          ren .\publish\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish
+          del /f .\publish\AdminPanel.Client.Windows.exe
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e AdminPanel.Client.Windows-x64.exe -r win-x64 --framework net8.0.1-x64-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle AdminPanel
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: AdminPanel/src/Client/AdminPanel.Client.Windows/Releases
+        path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
