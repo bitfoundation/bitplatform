@@ -121,11 +121,12 @@ jobs:
      
     - name: Checkout source code
       uses: actions/checkout@v3
+
+    - name: Install winget
+      uses: Cyberboss/install-winget@v1
      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+    - name: Install .NET 8.0.1
+      run: winget install Microsoft.DotNet.Sdk.8 --disable-interactivity --accept-source-agreements
 
     - uses: actions/setup-node@v3
       with:
@@ -148,15 +149,13 @@ jobs:
   
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks --no-restore
-  
-    - name: Install winget
-      uses: Cyberboss/install-winget@v1
 
     - name: Publish
       run: |
           cd AdminPanel/src/Client/AdminPanel.Client.Windows/
           dotnet publish AdminPanel.Client.Windows.csproj -c Release -o ./publish -r win-x86
           dotnet tool restore
+          winget uninstall Microsoft.DotNet.Sdk.8
           winget install Microsoft.DotNet.DesktopRuntime.8 --disable-interactivity --accept-source-agreements -a x86
           dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e AdminPanel.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle AdminPanel
   
