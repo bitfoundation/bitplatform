@@ -120,11 +120,11 @@ jobs:
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-arm64 -r win-arm64
-          ren .\publish-arm64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-arm64.exe
+          ren .\publish-arm64\Bit.BlazorUI.Demo.Client.Windows.exe Bit.BlazorUI.Demo.Client.Windows-arm64.exe
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-x86 -r win-x86
-          ren .\publish-x86\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x86.exe
+          ren .\publish-x86\Bit.BlazorUI.Demo.Client.Windows.exe Bit.BlazorUI.Demo.Client.Windows-x86.exe
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-x64 -r win-x64
-          ren .\publish-x64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x64.exe
+          ren .\publish-x64\Bit.BlazorUI.Demo.Client.Windows.exe Bit.BlazorUI.Demo.Client.Windows-x64.exe
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish
           echo D | xcopy .\publish-arm64 .\publish-result /s /e /h
           echo A | xcopy .\publish-x86 .\publish-result /s /e /h
