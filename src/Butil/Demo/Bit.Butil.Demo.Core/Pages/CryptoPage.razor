@@ -6,12 +6,12 @@
 
 <h1>Crypto</h1>
 
-<pre style="font-family:Consolas">
+<pre style="font-family:Consolas; overflow: auto;">
 @@inject Bit.Butil.Crypto crypto
 
 @@code {
     ...
-    await Crypto.Encrypt(...);
+    await crypto.Encrypt(...);
     ...
 }
 </pre>
@@ -30,10 +30,11 @@
 <button @onclick="Encrypt">Encrypt</button>
 <br />
 <br />
-<button @onclick="Decrypt">Decrypt</button>
-<br />
 <br />
 <input @bind="@outputText" />
+<br />
+<br />
+<button @onclick="Decrypt">Decrypt</button>
 
 @code {
     private string inputText;
