@@ -124,7 +124,7 @@ jobs:
           dotnet tool restore
           winget uninstall Microsoft.DotNet.Sdk.8
           winget install Microsoft.DotNet.DesktopRuntime.8 --disable-interactivity --accept-source-agreements -a x86
-          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
+          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2

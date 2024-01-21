@@ -184,7 +184,7 @@ jobs:
         dotnet tool restore
         winget uninstall Microsoft.DotNet.Sdk.8
         winget install Microsoft.DotNet.DesktopRuntime.8 --disable-interactivity --accept-source-agreements -a x86
-        dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Boilerplate.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle Boilerplate
+        dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Boilerplate.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle Boilerplate
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
