@@ -4,14 +4,6 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 
-.bit-theme-dark .light-theme {
-    display: none;
-}
-
-.bit-theme-light .dark-theme {
-    display: none;
-}
-
 .page-container {
     width: 100%;
     display: flex;
@@ -24,6 +16,7 @@
     .hero-gradient {
         left: 50%;
         width: 100%;
+        display: none;
         top: rem2(-200px);
         position: absolute;
         max-width: rem2(1200px);
@@ -39,6 +32,14 @@
         margin: auto;
         max-width: rem2(1200px);
     }
+}
+
+.bit-theme-dark .dark-theme {
+    display: unset;
+}
+
+.bit-theme-light .light-theme {
+    display: unset;
 }
 
 .page-section {
