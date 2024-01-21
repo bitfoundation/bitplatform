@@ -16,20 +16,33 @@
     .hero-gradient {
         left: 50%;
         width: 100%;
+        top: -12rem;
         display: none;
-        top: rem2(-200px);
         position: absolute;
         max-width: rem2(1200px);
         transform: translateX(-50%);
 
+        @include lt-xl {
+            top: -8rem;
+        }
+
         @include lt-lg {
-            top: rem2(-100px);
+            top: -3rem;
+        }
+
+        @include lt-md {
+            top: 4rem;
+        }
+
+        @include lt-sm {
+            top: 8rem;
         }
     }
 
     .hero-image {
         width: 100%;
         margin: auto;
+        display: none;
         max-width: rem2(1200px);
     }
 }
