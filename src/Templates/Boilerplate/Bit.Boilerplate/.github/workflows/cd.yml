@@ -133,10 +133,11 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: global.json
+    - name: Install winget
+      uses: Cyberboss/install-winget@v1
+     
+    - name: Install .NET 8.0.1
+      run: winget install Microsoft.DotNet.Sdk.8 --disable-interactivity --accept-source-agreements
 
     - uses: actions/setup-node@v3
       with:
@@ -157,6 +158,8 @@ jobs:
           cd src/Client/Boilerplate.Client.Maui/
           dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish -r win-x86
           dotnet tool restore
+          winget uninstall Microsoft.DotNet.Sdk.8
+          winget install Microsoft.DotNet.DesktopRuntime.8 --disable-interactivity --accept-source-agreements -a x86
           dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Boilerplate.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop --icon .\wwwroot\favicon.ico --packTitle Boilerplate
   
     - name: Upload artifact
