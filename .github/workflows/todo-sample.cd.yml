@@ -140,7 +140,7 @@ jobs:
     - name: Install winget
       uses: Cyberboss/install-winget@v1
      
-    - name: Install .NET 8.0.1
+    - name: Install .NET 8
       run: winget install Microsoft.DotNet.Sdk.8 --disable-interactivity --accept-source-agreements
 
     - uses: actions/setup-node@v3
