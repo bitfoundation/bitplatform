@@ -136,7 +136,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        global-json-file: src\global.json
+        global-json-file: global.json
 
     - uses: actions/setup-node@v3
       with:
