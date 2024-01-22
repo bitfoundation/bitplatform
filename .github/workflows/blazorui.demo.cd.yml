@@ -126,12 +126,14 @@ jobs:
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
           ren .\bin\publish-x64\Bit.BlazorUI.Demo.Client.Windows.exe Bit.BlazorUI.Demo.Client.Windows-x64.exe
           dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish
+          del .\bin\publish\Bit.BlazorUI.Demo.Client.Windows.exe
           echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
-          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows-x64.exe -r win-x64 --framework net8.0.1-x64-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
+          set PATH='C:\Program Files (x86)\dotnet';%PATH%
+          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows-x86.exe -r win-x86 --framework net8.0.1-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
