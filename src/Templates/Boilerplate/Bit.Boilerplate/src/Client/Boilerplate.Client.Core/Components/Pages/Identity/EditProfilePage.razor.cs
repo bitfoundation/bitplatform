@@ -30,7 +30,7 @@ public partial class EditProfilePage
         {
             await LoadEditProfileData();
 
-            var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessTokenAsync);
+            var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
 
             profileImageUploadUrl = $"{Configuration.GetApiServerAddress()}api/Attachment/UploadProfileImage?access_token={access_token}";
             profileImageUrl = $"{Configuration.GetApiServerAddress()}api/Attachment/GetProfileImage?access_token={access_token}";
