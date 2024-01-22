@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil15CryptoPage
+public partial class Butil04CryptoPage
 {
     private byte[] iv = new byte[16];
     private byte[] key = new byte[16];

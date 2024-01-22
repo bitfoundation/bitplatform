@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil12LocationPage
+public partial class Butil14LocationPage
 {
     private string? newHref;
     private string? currentHref;

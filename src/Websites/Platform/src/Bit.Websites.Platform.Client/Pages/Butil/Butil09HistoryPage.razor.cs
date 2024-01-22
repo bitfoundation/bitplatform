@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil08HistoryPage
+public partial class Butil09HistoryPage
 {
     private string? historyLength;
 
