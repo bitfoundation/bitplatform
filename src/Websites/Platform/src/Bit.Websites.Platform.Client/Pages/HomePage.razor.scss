@@ -4,14 +4,6 @@
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 
-.bit-theme-dark .light-theme {
-    display: none;
-}
-
-.bit-theme-light .dark-theme {
-    display: none;
-}
-
 .page-container {
     width: 100%;
     display: flex;
@@ -24,21 +16,43 @@
     .hero-gradient {
         left: 50%;
         width: 100%;
-        top: rem2(-200px);
+        top: -12rem;
+        display: none;
         position: absolute;
         max-width: rem2(1200px);
         transform: translateX(-50%);
 
+        @include lt-xl {
+            top: -8rem;
+        }
+
         @include lt-lg {
-            top: rem2(-100px);
+            top: -3rem;
+        }
+
+        @include lt-md {
+            top: 4rem;
+        }
+
+        @include lt-sm {
+            top: 8rem;
         }
     }
 
     .hero-image {
         width: 100%;
         margin: auto;
+        display: none;
         max-width: rem2(1200px);
     }
+}
+
+.bit-theme-dark .dark-theme {
+    display: unset;
+}
+
+.bit-theme-light .light-theme {
+    display: unset;
 }
 
 .page-section {

@@ -13,10 +13,13 @@ $screen-md-max: rem2(900px);
 $screen-md-min: rem2(601px);
 
 $screen-sm-max: rem2(600px);
+$screen-sm-min: rem2(401px);
+
+$screen-xs-max: rem2(400px);
 
 // media devices
 @mixin xs {
-    @media screen and (max-width: 440px) {
+    @media screen and (max-width: #{$screen-xs-max}) {
         @content;
     }
 }
@@ -45,8 +48,8 @@ $screen-sm-max: rem2(600px);
 }
 
 // media lt queries
-@mixin lt-md {
-    @media screen and (max-width: #{$screen-md-min}) {
+@mixin lt-xl {
+    @media screen and (max-width: #{$screen-xl-min}) {
         @content;
     }
 }
@@ -57,15 +60,21 @@ $screen-sm-max: rem2(600px);
     }
 }
 
-@mixin lt-xl {
-    @media screen and (max-width: #{$screen-xl-min}) {
+@mixin lt-md {
+    @media screen and (max-width: #{$screen-md-min}) {
+        @content;
+    }
+}
+
+@mixin lt-sm {
+    @media screen and (max-width: #{$screen-sm-min}) {
         @content;
     }
 }
 
 // media gt queries
-@mixin gt-sm {
-    @media screen and (min-width: #{$screen-sm-max}) {
+@mixin gt-lg {
+    @media screen and (min-width: #{$screen-lg-max}) {
         @content;
     }
 }
@@ -76,8 +85,8 @@ $screen-sm-max: rem2(600px);
     }
 }
 
-@mixin gt-lg {
-    @media screen and (min-width: #{$screen-lg-max}) {
+@mixin gt-sm {
+    @media screen and (min-width: #{$screen-sm-max}) {
         @content;
     }
 }
