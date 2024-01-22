@@ -124,6 +124,7 @@ jobs:
           publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
 
+#if (windows == true)
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-2022
@@ -176,6 +177,7 @@ jobs:
       with:
         name: win-exe-bundle
         path: src\Client\Boilerplate.Client.Windows\Releases
+#endif
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
