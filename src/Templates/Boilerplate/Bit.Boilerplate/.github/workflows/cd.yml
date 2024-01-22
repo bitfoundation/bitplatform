@@ -132,12 +132,11 @@ jobs:
      
     - name: Checkout source code
       uses: actions/checkout@v3
-     
-    - name: Install winget
-      uses: Cyberboss/install-winget@v1
-     
-    - name: Install .NET 8
-      run: winget install Microsoft.DotNet.Sdk.8 --disable-interactivity --accept-source-agreements
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: src\global.json
 
     - uses: actions/setup-node@v3
       with:
@@ -146,27 +145,36 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
-  
+      run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+
     - name: Publish
       run: |
-          cd src/Client/Boilerplate.Client.Maui/
-          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish -r win-x86
+          cd src\Client\Boilerplate.Client.Windows\
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-arm64 -r win-arm64
+          ren .\publish-arm64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-arm64.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-x86 -r win-x86
+          ren .\publish-x86\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x86.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-x64 -r win-x64
+          ren .\publish-x64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x64.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish
+          echo D | xcopy .\publish-arm64 .\publish-result /s /e /h
+          echo A | xcopy .\publish-x86 .\publish-result /s /e /h
+          echo A | xcopy .\publish-x64 .\publish-result /s /e /h
+          echo A | xcopy .\publish .\publish-result /s /e /h
           dotnet tool restore
-          winget uninstall Microsoft.DotNet.Sdk.8
-          winget install Microsoft.DotNet.DesktopRuntime.8 --disable-interactivity --accept-source-agreements -a x86
-          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish -e Boilerplate.Client.Windows.exe -r win-x86 --framework net8.0.1-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle Boilerplate
+          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows-x64.exe -r win-x64 --framework net8.0.1-x64-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: src/Client/Boilerplate.Client.Windows/Releases
+        path: src\Client\Boilerplate.Client.Windows\Releases
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
