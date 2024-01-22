@@ -122,10 +122,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
+    # - name: Setup .NET
+    #   uses: actions/setup-dotnet@v3
+    #   with:
+    #     global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
         
     - name: Setup .NET x86
       uses: actions/setup-dotnet@v3
@@ -171,7 +171,6 @@ jobs:
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
-          $env:PATH = "C:\Program Files (x86)\dotnet;" + $env:Path
           dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.1-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
