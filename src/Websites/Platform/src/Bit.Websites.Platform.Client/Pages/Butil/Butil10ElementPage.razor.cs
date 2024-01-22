@@ -300,17 +300,17 @@ public partial class Butil10ElementPage
 
     private async Task SetInnerHTML()
     {
-        await innerHTMLElementRef.SetInnerHTML(newInnerHTML!);
+        await innerHTMLElementRef.SetInnerHtml(newInnerHTML!);
     }
 
     private async Task GetInnerHTML()
     {
-        currentInnerHTML = await innerHTMLElementRef.GetInnerHTML();
+        currentInnerHTML = await innerHTMLElementRef.GetInnerHtml();
     }
 
     private async Task GetOuterHTML()
     {
-        currentOuterHTML = await outerHTMLElementRef.GetOuterHTML();
+        currentOuterHTML = await outerHTMLElementRef.GetOuterHtml();
     }
 
     private async Task GetScrollHeight()
