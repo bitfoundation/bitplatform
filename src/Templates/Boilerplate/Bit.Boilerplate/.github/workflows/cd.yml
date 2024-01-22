@@ -148,7 +148,7 @@ jobs:
         files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
+        WindowsUpdateSettings.FilesUrl: https://windows-boilerplate.bitplatform.dev
   
     - name: Generate CSS/JS files
       run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore

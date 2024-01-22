@@ -9,6 +9,7 @@ variables:
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   AppSettings.IdentitySettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
   ApiServerAddress: 'https://bp.bitplatform.dev/'
+  WindowsUpdateSettings.FilesUrl: 'https://windows-boilerplate.bitplatform.dev'
 
 jobs:
 
