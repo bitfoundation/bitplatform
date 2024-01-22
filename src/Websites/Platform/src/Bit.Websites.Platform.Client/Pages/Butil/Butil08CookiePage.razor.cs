@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil14CookiePage
+public partial class Butil08CookiePage
 {
     private string? newCookieName;
     private string? newCookieValue;

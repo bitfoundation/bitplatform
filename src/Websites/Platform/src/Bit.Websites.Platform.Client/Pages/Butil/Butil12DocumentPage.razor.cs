@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil05DocumentPage
+public partial class Butil12DocumentPage
 {
     private bool isDesignModeOn;
 

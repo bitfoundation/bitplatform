@@ -56,18 +56,18 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Overview", Url = "/butil/overview" },
         new BitNavItem { Text = "Install", Url = "/butil/install" },
         new BitNavItem { Text = "Setup", Url = "/butil/setup" },
-        new BitNavItem { Text = "Window", Url = "/butil/window" },
-        new BitNavItem { Text = "Document", Url = "/butil/document" },
+        new BitNavItem { Text = "Crypto", Url = "/butil/Crypto" },
         new BitNavItem { Text = "Keyboard", Url = "/butil/keyboard" },
         new BitNavItem { Text = "Console", Url = "/butil/console" },
+        new BitNavItem { Text = "Storage", Url = "/butil/storage" },
+        new BitNavItem { Text = "Cookie", Url = "/butil/cookie" },
         new BitNavItem { Text = "History", Url = "/butil/history" },
         new BitNavItem { Text = "Element", Url = "/butil/element" },
+        new BitNavItem { Text = "Window", Url = "/butil/window" },
+        new BitNavItem { Text = "Document", Url = "/butil/document" },
         new BitNavItem { Text = "Navigator", Url = "/butil/navigator" },
-        new BitNavItem { Text = "Storage", Url = "/butil/storage" },
         new BitNavItem { Text = "Location", Url = "/butil/location" },
         new BitNavItem { Text = "Screen", Url = "/butil/screen" },
-        new BitNavItem { Text = "Cookie", Url = "/butil/cookie" },
-        new BitNavItem { Text = "Crypto", Url = "/butil/Crypto" },
     ];
 
 
