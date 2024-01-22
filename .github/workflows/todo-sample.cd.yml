@@ -167,17 +167,17 @@ jobs:
     - name: Publish
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish-arm64 -r win-arm64
-          ren .\publish-arm64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-arm64.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish-x86 -r win-x86
-          ren .\publish-x86\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x86.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish-x64 -r win-x64
-          ren .\publish-x64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x64.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish
-          echo D | xcopy .\publish-arm64 .\publish-result /s /e /h
-          echo A | xcopy .\publish-x86 .\publish-result /s /e /h
-          echo A | xcopy .\publish-x64 .\publish-result /s /e /h
-          echo A | xcopy .\publish .\publish-result /s /e /h
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64
+          ren .\bin\publish-arm64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-arm64.exe
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86
+          ren .\bin\publish-x86\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x86.exe
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
+          ren .\bin\publish-x64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x64.exe
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish
+          echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
           dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows-x64.exe -r win-x64 --framework net8.0.1-x64-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
   
