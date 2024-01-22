@@ -24,14 +24,14 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.BlazorUI" Version="8.7.3-pre-01" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.7.3-pre-01" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.7.3-pre-01" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.3-pre-01">
+        <PackageReference Include="Bit.BlazorUI" Version="8.7.3-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.7.3-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.7.3-pre-02" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.3-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.3-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.7.3-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
