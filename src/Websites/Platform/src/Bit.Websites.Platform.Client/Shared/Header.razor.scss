@@ -118,6 +118,7 @@
 .toggle-theme-btn {
     padding: 0;
     border: none;
+    display: none;
     cursor: pointer;
     height: rem2(35px);
     border-radius: 50%;
@@ -144,12 +145,12 @@
     }
 }
 
-.bit-theme-dark .light-theme {
-    display: none;
+.bit-theme-dark .dark-theme {
+    display: unset;
 }
 
-.bit-theme-light .dark-theme {
-    display: none;
+.bit-theme-light .light-theme {
+    display: unset;
 }
 
 .header-second-row {

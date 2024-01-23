@@ -6,10 +6,24 @@ public partial class BitLoadingDemo
     {
         new()
         {
-            Name = "Size",
-            Type = "int",
-            DefaultValue = "64",
-            Description = "The Size of the loading component in px."
+            Name = "ChildClass",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom CSS class for the root element of the component.",
+        },
+        new()
+        {
+            Name = "ChildStyle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom CSS style for the root element of the component.",
+        },
+        new()
+        {
+            Name = "Class",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom CSS class for the root element of the component.",
         },
         new()
         {
@@ -17,6 +31,20 @@ public partial class BitLoadingDemo
             Type = "string",
             DefaultValue = "#FFFFFF",
             Description = "The Color of the loading component compatible with colors in CSS."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "int",
+            DefaultValue = "64",
+            Description = "The Size of the loading component in px."
+        },
+        new()
+        {
+            Name = "Style",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom CSS style for the root element of the component.",
         }
     };
     

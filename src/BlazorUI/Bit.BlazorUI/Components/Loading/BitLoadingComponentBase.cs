@@ -12,6 +12,26 @@ public class BitLoadingComponentBase : ComponentBase
     /// </summary>
     [Parameter] public string Color { get; set; } = "#FFFFFF";
 
+    /// <summary>
+    /// Custom CSS class for the root element of the component.
+    /// </summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// Custom CSS style for the root element of the component.
+    /// </summary>
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>
+    /// Custom CSS class for the child element(s) of the component.
+    /// </summary>
+    [Parameter] public string? ChildClass { get; set; }
+
+    /// <summary>
+    /// Custom CSS style for the child element(s) of the component.
+    /// </summary>
+    [Parameter] public string? ChildStyle { get; set; }
+
     protected virtual int OriginalSize { get; set; } = 80;
 
     protected string Convert(double value)

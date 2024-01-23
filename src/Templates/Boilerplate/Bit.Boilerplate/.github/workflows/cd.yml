@@ -18,7 +18,7 @@ permissions:
 jobs:
 
   build_api_blazor:
-    name: build api + blazor
+    name: build api + blazor web
     runs-on: ubuntu-22.04
 
     steps:
@@ -124,6 +124,7 @@ jobs:
           publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
 
+#if (windows == true)
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-2022
@@ -132,7 +133,7 @@ jobs:
      
     - name: Checkout source code
       uses: actions/checkout@v3
-     
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
@@ -145,24 +146,38 @@ jobs:
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  
-    - name: Install maui
-      run: cd src && dotnet workload install maui
+        WindowsUpdateSettings.FilesUrl: https://windows-boilerplate.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
-  
-    - name: Build exe
-      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:WindowsPackageType=None -p:SelfContained=true -p:WindowsAppSDKSelfContained=true -p:GenerateAppxPackageOnBuild=false -p:RuntimeIdentifier=win10-x86 -p:UseRidGraph=true -f net8.0-windows10.0.19041.0
+      run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+
+    - name: Publish
+      run: |
+          cd src\Client\Boilerplate.Client.Windows\
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64
+          ren .\bin\publish-arm64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-arm64.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86
+          ren .\bin\publish-x86\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x86.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
+          ren .\bin\publish-x64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x64.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish
+          del .\bin\publish\Boilerplate.Client.Windows.exe
+          echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish .\publish-result /s /e /h
+          dotnet tool restore
+          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows-x64.exe -r win-x64 --framework net8.0.1-x64-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: win-exe-bundle
-        path: src/Client/Boilerplate.Client.Maui/bin/release/net8.0-windows10.0.19041.0/win10-x86
+        path: src\Client\Boilerplate.Client.Windows\Releases
+#endif
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
@@ -216,49 +231,9 @@ jobs:
       with:
         name: android-bundle
         path: src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.*
-  
-  build_blazor_hybrid_maccatalyst:
-     name: build blazor hybrid (maccatalyst)
-     runs-on: macos-13
-   
-     steps:
-      
-     - name: Checkout source code
-       uses: actions/checkout@v3
-      
-     - name: Setup .NET
-       uses: actions/setup-dotnet@v3
-       with:
-         global-json-file: global.json
-
-     - uses: actions/setup-node@v3
-       with:
-        node-version: 18
-   
-     - name: Update appsettings.json api server address
-       uses: microsoft/variable-substitution@v1 
-       with:
-         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
-       env:
-         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-
-     - name: Install maui
-       run: cd src && dotnet workload install maui
-   
-     - name: Generate CSS/JS files
-       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
-   
-     - name: Build pkg
-       run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:CreatePackage=true -f net8.0-maccatalyst
-   
-     - name: Upload artifact
-       uses: actions/upload-artifact@v2
-       with:
-         name: mac-pkg-bundle
-         path: src/Client/Boilerplate.Client.Maui/bin/release/net8.0-maccatalyst/*.pkg
 
   build_blazor_hybrid_iOS:
-    name: build blazor hybrid (iOS)
+    name: build blazor hybrid (iOS-macOS)
     runs-on: macos-13
   
     steps:

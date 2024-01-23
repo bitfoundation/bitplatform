@@ -30,6 +30,19 @@
                 }
             ]
         },
+        "UserSecretsId": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF256",
+            "parameters": {
+                "defaultFormat": "D" //Guid format 
+            },
+            "onlyIf": [
+                {
+                    "after": "<UserSecretsId>"
+                }
+            ]
+        },
         "SeedDataProductCreatedOn": {
             "type": "generated",
             "generator": "now",
@@ -139,11 +152,15 @@
                 },
                 {
                     "condition": "(pipeline != GitHub)",
-                    "exclude": [ ".github/**" ]
+                    "exclude": [
+                        ".github/**"
+                    ]
                 },
                 {
                     "condition": "(pipeline != Azure)",
-                    "exclude": [ ".azure-devops/**" ]
+                    "exclude": [
+                        ".azure-devops/**"
+                    ]
                 },
                 {
                     "condition": "(sample != Admin)",

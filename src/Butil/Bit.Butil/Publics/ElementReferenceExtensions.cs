@@ -114,14 +114,14 @@ public static class ElementReferenceExtensions
     public static async ValueTask SetId(this ElementReference element, string value)
         => await GetJSRuntime(element).ElementSetId(element, value);
 
-    public static async ValueTask<string> GetInnerHTML(this ElementReference element)
+    public static async ValueTask<string> GetInnerHtml(this ElementReference element)
         => await GetJSRuntime(element).ElementGetInnerHTML(element);
-    public static async ValueTask SetInnerHTML(this ElementReference element, string value)
+    public static async ValueTask SetInnerHtml(this ElementReference element, string value)
         => await GetJSRuntime(element).ElementSetInnerHTML(element, value);
 
-    public static async ValueTask<string> GetOuterHTML(this ElementReference element)
+    public static async ValueTask<string> GetOuterHtml(this ElementReference element)
         => await GetJSRuntime(element).ElementGetOuterHTML(element);
-    public static async ValueTask SetOuterHTML(this ElementReference element, string value)
+    public static async ValueTask SetOuterHtml(this ElementReference element, string value)
         => await GetJSRuntime(element).ElementSetOuterHTML(element, value);
 
     public static async ValueTask<float> GetScrollHeight(this ElementReference element)

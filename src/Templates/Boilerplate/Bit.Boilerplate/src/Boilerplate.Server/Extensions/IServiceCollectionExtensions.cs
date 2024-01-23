@@ -39,13 +39,19 @@ public static class IServiceCollectionExtensions
         services.AddClientWebServices();
     }
 
-    public static void AddIdentity(this IServiceCollection services, IConfiguration configuration)
+    public static void AddIdentity(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment hostEnv)
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appSettings.IdentitySettings;
 
         var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
         var certificate = new X509Certificate2(certificatePath, appSettings.IdentitySettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
+
+        bool isBoilerplateTestCertificate = certificate.Thumbprint is "55140A8C935AB5202949071E5781E6946CD60606"; // The default test certificate is still in use
+        if (isBoilerplateTestCertificate && hostEnv.IsDevelopment() is false)
+        {
+            throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path IdentityCertificate.pfx --password P@ssw0rdP@ssw0rd' command (or your preferred method for generating PFX files) in the server project's folder.");
+        }
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()

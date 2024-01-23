@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil04WindowPage
+public partial class Butil11WindowPage
 {
     private float innerHeight;
 

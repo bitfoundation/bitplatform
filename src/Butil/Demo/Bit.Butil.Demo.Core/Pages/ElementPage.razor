@@ -185,24 +185,24 @@ else
 <hr />
 <br />
 
-<input @bind-value="innerHTML" />
+<input @bind-value="innerHtml" />
 <br />
 <br />
-<button @onclick="SetInnerHTML">SetInnerHTML</button>
+<button @onclick="SetInnerHtml">SetInnerHtml</button>
 &nbsp;
-<button @onclick="GetInnerHTML">GetInnerHTML</button>
+<button @onclick="GetInnerHtml">GetInnerHtml</button>
 
 <br />
 <br />
 <hr />
 <br />
 
-<input @bind-value="outerHTML" />
+<input @bind-value="outerHtml" />
 <br />
 <br />
-<button @onclick="SetOuterHTML">SetOuterHTML</button>
+<button @onclick="SetOuterHtml">SetOuterHtml</button>
 &nbsp;
-<button @onclick="GetOuterHTML">GetOuterHTML</button>
+<button @onclick="GetOuterHtml">GetOuterHtml</button>
 
 <br />
 <br />
@@ -380,9 +380,9 @@ else
 
     private string idName = "target";
 
-    private string innerHTML = "<div style=\"height: 10rem\">Element</div>";
+    private string innerHtml = "<div style=\"height: 10rem\">Element</div>";
 
-    private string outerHTML = "<div style=\"max-width:6rem; max-height:6rem; color: white; overflow: auto; background: dodgerblue;\"><div style=\"height: 10rem\">Element</div></div>";
+    private string outerHtml = "<div style=\"max-width:6rem; max-height:6rem; color: white; overflow: auto; background: dodgerblue;\"><div style=\"height: 10rem\">Element</div></div>";
 
     private string innerText = "Element";
 
@@ -569,26 +569,26 @@ else
         await console.Log("Element Id:", await elementRef.GetId());
     }
 
-    private async Task SetInnerHTML()
+    private async Task SetInnerHtml()
     {
-        await elementRef.SetInnerHTML(innerHTML);
-        await console.Log($"Element InnerHTML has been successfuly set to \"{innerHTML}\"");
+        await elementRef.SetInnerHtml(innerHtml);
+        await console.Log($"Element InnerHtml has been successfuly set to \"{innerHtml}\"");
     }
 
-    private async Task GetInnerHTML()
+    private async Task GetInnerHtml()
     {
-        await console.Log("Element InnerHTML:", await elementRef.GetInnerHTML());
+        await console.Log("Element InnerHtml:", await elementRef.GetInnerHtml());
     }
 
-    private async Task SetOuterHTML()
+    private async Task SetOuterHtml()
     {
-        await elementRef.SetOuterHTML(outerHTML);
-        await console.Log($"Element OuterHTML has been successfuly set to \"{outerHTML}\"");
+        await elementRef.SetOuterHtml(outerHtml);
+        await console.Log($"Element OuterHtml has been successfuly set to \"{outerHtml}\"");
     }
 
-    private async Task GetOuterHTML()
+    private async Task GetOuterHtml()
     {
-        await console.Log("Element OuterHTML:", await elementRef.GetOuterHTML());
+        await console.Log("Element OuterHtml:", await elementRef.GetOuterHtml());
     }
 
     private async Task SetInnerText()

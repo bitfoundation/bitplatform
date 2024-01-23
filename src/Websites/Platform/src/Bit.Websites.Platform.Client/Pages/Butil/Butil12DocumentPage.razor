@@ -31,27 +31,34 @@
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
         <div class="section-card-txt">
-            <b>AddEventListener</b>, <b>RemoveEventListener</b>: Sets up a function that will be called whenever the specified event is delivered to the document
+            <br />
+            <b>AddEventListener</b>, <b>RemoveEventListener</b>: <br />
+            Sets up a function that will be called whenever the specified event is delivered to the document
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>GetCharacterSet</b>: Returns the character set being used by the document
+            <b>GetCharacterSet</b>: <br />
+            Returns the character set being used by the document
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/characterSet" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>GetCompatMode</b>: Indicates whether the document is rendered in quirks or strict mode
+            <b>GetCompatMode</b>: <br />
+            Indicates whether the document is rendered in quirks or strict mode
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/compatMode" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>GetContentType</b>: Returns the Content-Type from the MIME Header of the current document
+            <b>GetContentType</b>: <br />
+            Returns the Content-Type from the MIME Header of the current document
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/contentType" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>GetDocumentURI</b>: Returns the document location as a string
+            <b>GetDocumentURI</b>: <br />
+            Returns the document location as a string
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/documentURI" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>SetDesignMode</b>, <b>GetDesignMode</b>: Gets/Sets ability to edit the whole document
+            <b>SetDesignMode</b>, <b>GetDesignMode</b>: <br />
+            Gets/Sets ability to edit the whole document
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
@@ -59,7 +66,7 @@
                     <BitPivot>
                         <BitPivotItem HeaderText="Code">
                             <pre class="code-box">
-                                @exampleCode1
+                                @designModeExampleCode
                             </pre>
                         </BitPivotItem>
                         <BitPivotItem HeaderText="Result">
@@ -67,61 +74,43 @@
                             <BitCheckbox @bind-Value="isDesignModeOn" Label="@(isDesignModeOn ? "On" : "Off")" />
                             <br />
                             <BitButton OnClick=SetDesignMode>SetDesignMode</BitButton>
+                            <br />
                         </BitPivotItem>
                     </BitPivot>
                 </ChildContent>
             </BitAccordion>
             <br /><br />
 
-            <b>SetDir</b>, <b>GetDir</b>: Gets/Sets directionality (Rtl/Ltr) of the document
+            <b>SetDir</b>, <b>GetDir</b>: <br />
+            Gets/Sets directionality (Rtl/Ltr) of the document
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/dir" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>SetTitle</b>, <b>GetTitle</b>: Gets/Sets the title of the current document
+            <b>SetTitle</b>, <b>GetTitle</b>: <br />
+            Gets/Sets the title of the current document
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/title" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>GetReferrer</b>: Returns the URI of the page that linked to this page
+            <b>GetReferrer</b>: <br />
+            Returns the URI of the page that linked to this page
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/referrer" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>GetUrl</b>: Returns the document location as a string
+            <b>GetUrl</b>: <br />
+            Returns the document location as a string
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/URL" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>ExitFullscreen</b>: Stops document's fullscreen element from being displayed fullscreen
+            <b>ExitFullscreen</b>: <br />
+            Stops document's fullscreen element from being displayed fullscreen
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/exitFullscreen" target="_blank">MDN</a>).
-            <br /><br />
+            <br /><br /><br />
 
-            <b>ExitPointerLock</b>: Release the pointer lock
+            <b>ExitPointerLock</b>: <br />
+            Release the pointer lock
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/exitPointerLock" target="_blank">MDN</a>).
         </div>
     </section>
 </div>
 
 <NavigationButtons Prev="Window" PrevUrl="/butil/window" Next="Keyboard" NextUrl="/butil/keyboard" />
-
-@code {
-    private bool isDesignModeOn;
-
-    private async Task SetDesignMode()
-    {
-        await document.SetDesignMode(isDesignModeOn ? DesignMode.On : DesignMode.Off);
-    }
-
-    private string exampleCode1 =
-@"@inject Bit.Butil.Document document
-
-<BitCheckbox @bind-Value=""isDesignModeOn"" Label=""@(isDesignModeOn ? ""On"" : ""Off"")"" />
-
-<BitButton OnClick=SetDesignMode>SetDesignMode</BitButton>
-
-@code {
-    private bool isDesignModeOn;
-
-    private async Task SetDesignMode()
-    {
-        await document.SetDesignMode(isDesignModeOn ? DesignMode.On : DesignMode.Off);
-    }
-}";
-}
