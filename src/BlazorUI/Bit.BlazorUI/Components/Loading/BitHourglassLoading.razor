@@ -2,14 +2,14 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .blazor-loading-hourglass {
+    .bit-ldn-Hourglass {
         display: inline-block;
         position: relative;
         width: @(Size)px;
         height: @(Size)px;
     }
 
-        .blazor-loading-hourglass:after {
+        .bit-ldn-Hourglass:after {
             content: " ";
             display: block;
             border-radius: 50%;
@@ -19,10 +19,10 @@
             box-sizing: border-box;
             border: @(Convert(32))px solid @Color;
             border-color: @Color transparent @Color transparent;
-            animation: blazor-loading-hourglass 1.2s infinite;
+            animation: bit-ldn-Hourglass 1.2s infinite;
         }
 
-    @@keyframes blazor-loading-hourglass {
+    @@keyframes bit-ldn-Hourglass {
         0% {
             transform: rotate(0);
             animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
@@ -38,4 +38,5 @@
         }
     }
 </style>
-<div class="blazor-loading-hourglass"></div>
+
+<div style="@Style" class="bit-ldn-Hourglass @Class"></div>
