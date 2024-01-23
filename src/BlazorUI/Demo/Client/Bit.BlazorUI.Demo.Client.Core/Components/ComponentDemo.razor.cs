@@ -13,7 +13,7 @@ public partial class ComponentDemo
 
 
 
-    private List<ComponentParameter> _componentBaseParameters { get; set; } = new()
+    private List<ComponentParameter> _componentBaseParameters = new()
     {
         new()
         {
