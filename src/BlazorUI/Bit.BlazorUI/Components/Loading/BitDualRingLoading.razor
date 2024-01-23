@@ -2,13 +2,13 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .bit-ldn-DuaRing {
+    .bit-ldn-DualRing {
         display: inline-block;
         width: @(Size)px;
         height: @(Size)px;
     }
 
-        .bit-ldn-DuaRing:after {
+        .bit-ldn-DualRing:after {
             content: " ";
             display: block;
             width: @(Convert(64))px;
@@ -17,10 +17,10 @@
             border-radius: 50%;
             border: @(Convert(6))px solid @Color;
             border-color: @Color transparent @Color transparent;
-            animation: bit-ldn-DuaRing 1.2s linear infinite;
+            animation: bit-ldn-DualRing 1.2s linear infinite;
         }
 
-    @@keyframes bit-ldn-DuaRing {
+    @@keyframes bit-ldn-DualRing {
         0% {
             transform: rotate(0deg);
         }
@@ -31,4 +31,4 @@
     }
 </style>
 
-<div style="@Style" class="bit-ldn-DuaRing @Class"></div>
+<div style="@Style" class="bit-ldn-DualRing @Class"></div>
