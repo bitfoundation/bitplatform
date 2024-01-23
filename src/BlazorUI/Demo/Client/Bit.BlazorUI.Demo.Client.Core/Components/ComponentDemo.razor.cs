@@ -10,7 +10,7 @@ public partial class ComponentDemo
     [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = new();
     [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = new();
     [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = new();
-
+    
 
 
     private readonly List<ComponentParameter> _componentBaseParameters = new()
@@ -118,7 +118,7 @@ public partial class ComponentDemo
 
 
 
-    private readonly List<string> _inputComponents = new() {
+    private readonly List<string> _inputComponents = new() { 
         "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumericTextField", "OtpInput", "Rating",
         "SearchBox", "SpinButton", "TextField", "TimePicker", "Toggle"
     };
