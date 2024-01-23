@@ -10,7 +10,10 @@ public partial class ComponentDemo
     [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = new();
     [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = new();
     [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = new();
-    [Parameter] public List<ComponentParameter>? ComponentBaseParameters { get; set; } = new()
+
+
+
+    private List<ComponentParameter> _componentBaseParameters { get; set; } = new()
     {
         new()
         {
