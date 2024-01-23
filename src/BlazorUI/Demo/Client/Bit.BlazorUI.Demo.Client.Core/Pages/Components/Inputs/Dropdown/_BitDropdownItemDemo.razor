@@ -411,10 +411,14 @@
             <div>
                 <BitDropdown @bind-Value="comboBoxValue"
                              Label="Single select dropdown"
-                             Items="GetBasicItems()"
+                             Items="comboBoxItems"
                              Placeholder="Select an option"
-                             IsComboBox="true"
-                             ShowChips="true"
+                             DynamicValueGenerator="(BitDropdownItem<string> item) => HandleDynamicValueGenerator(item)"
+                             ValueSetter="(BitDropdownItem<string> item, string? value) => HandleValueSetter(item, value)"
+                             TextSetter="(string? text, BitDropdownItem<string> item) => HandleTextSetter(text, item)"
+                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"
+                             Combo
+                             Chips
                              Dynamic />
                 <BitLabel>Value: @comboBoxValue</BitLabel>
             </div>
@@ -422,11 +426,15 @@
             <div>
                 <BitDropdown @bind-Values="comboBoxValues"
                              Label="Multi select combo box"
-                             Items="GetBasicItems()"
+                             Items="comboBoxItems"
                              Placeholder="Select options"
                              IsMultiSelect="true"
-                             IsComboBox="true"
-                             ShowChips="true"
+                             DynamicValueGenerator="(BitDropdownItem<string> item) => HandleDynamicValueGenerator(item)"
+                             ValueSetter="(BitDropdownItem<string> item, string? value) => HandleValueSetter(item, value)"
+                             TextSetter="(string? text, BitDropdownItem<string> item) => HandleTextSetter(text, item)"
+                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"
+                             Combo
+                             Chips
                              Dynamic />
                 <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
             </div>

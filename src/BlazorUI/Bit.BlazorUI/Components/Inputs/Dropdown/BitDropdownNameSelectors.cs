@@ -61,9 +61,4 @@ public class BitDropdownNameSelectors<TItem, TValue>
     /// The Value field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, TValue?> Value { get; set; } = new(nameof(BitDropdownItem<TValue>.Value));
-
-    /// <summary>
-    /// The IsDynamic field name and selector of the custom input class.
-    /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsDynamic { get; set; } = new(nameof(BitDropdownItem<TValue>.IsDynamic));
 }

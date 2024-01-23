@@ -916,26 +916,55 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     private readonly string example12RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValue""
              Label=""Single select combo box""
-             Items=""GetBasicCustoms()""
+             Items=""comboBoxCustoms""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an option""
-             IsComboBox=""true""
-             ShowChips=""true""
+             DynamicValueGenerator=""(BitDropdownCustom item) => HandleDynamicValueGenerator(item)""
+             ValueSetter=""(BitDropdownCustom item, string? value) => HandleValueSetter(item, value)""
+             TextSetter=""(string? text, BitDropdownCustom item) => HandleTextSetter(text, item)""
+             OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)""
+             Combo
+             Chips
              Dynamic />
 <BitLabel>Value: @comboBoxValue</BitLabel>
+
 <BitDropdown @bind-Values=""comboBoxValues""
              Label=""Multi select combo box""
-             Items=""GetBasicCustoms()""
+             Items=""comboBoxCustoms""
              NameSelectors=""nameSelectors""
              Placeholder=""Select options""
              IsMultiSelect=""true""
-             IsComboBox=""true""
-             ShowChips=""true""
+             DynamicValueGenerator=""(BitDropdownCustom item) => HandleDynamicValueGenerator(item)""
+             ValueSetter=""(BitDropdownCustom item, string? value) => HandleValueSetter(item, value)""
+             TextSetter=""(string? text, BitDropdownCustom item) => HandleTextSetter(text, item)""
+             OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)""
+             Combo
+             Chips
              Dynamic />
 <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
     private readonly string example12CsharpCode = @"
 private string? comboBoxValue;
 private ICollection<string?> comboBoxValues = [];
+
+private string? HandleDynamicValueGenerator(BitDropdownCustom item)
+{
+    return item.Text;
+}
+
+private void HandleValueSetter(BitDropdownCustom item, string? value)
+{
+    item.Value = value;
+}
+
+private void HandleTextSetter(string? text, BitDropdownCustom item)
+{
+    item.Text = text;
+}
+
+private void HandleOnDynamicAdd(BitDropdownCustom item)
+{
+    comboBoxCustoms.Add(item);
+}
 
 public class BitDropdownCustom
 {
@@ -951,7 +980,7 @@ public class BitDropdownCustom
     public string? Value { get; set; }
 }
 
-private List<BitDropdownCustom> GetBasicCustoms() => new()
+private List<BitDropdownCustom> comboBoxCustoms = new()
 {
     new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
     new() { Text = ""Apple"", Value = ""f-app"" },

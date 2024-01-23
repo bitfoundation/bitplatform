@@ -77,6 +77,19 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Carrot", Value = "v-car", CssClass = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", CssClass = "custom-veg" }
     };
+    private List<BitDropdownCustom> comboBoxCustoms = new()
+    {
+        new() { Text = "Fruits", Type = BitDropdownItemType.Header },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora", Disabled = true },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Vegetables", Type = BitDropdownItemType.Header },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" }
+    };
 
 
 
@@ -128,6 +141,26 @@ public partial class _BitDropdownCustomDemo
     private void HandleInvalidSubmit()
     {
         successMessage = string.Empty;
+    }
+
+    private string? HandleDynamicValueGenerator(BitDropdownCustom item)
+    {
+        return item.Text;
+    }
+
+    private void HandleValueSetter(BitDropdownCustom item, string? value)
+    {
+        item.Value = value;
+    }
+
+    private void HandleTextSetter(string? text, BitDropdownCustom item)
+    {
+        item.Text = text;
+    }
+
+    private void HandleOnDynamicAdd(BitDropdownCustom item)
+    {
+        comboBoxCustoms.Add(item);
     }
 
     private async ValueTask<BitDropdownItemsProviderResult<BitDropdownCustom>> LoadItems(

@@ -47,7 +47,7 @@
               aria-atomic="true"
               aria-invalid="false">
 
-            @if (ShowChips is false && _text.HasValue())
+            @if (Chips is false && _text.HasValue())
             {
                 @if (TextTemplate is not null)
                 {
@@ -58,7 +58,7 @@
                     @_text
                 }
             }
-            else if (IsComboBox is false)
+            else if (Combo is false)
             {
                 @if (PlaceholderTemplate is not null)
                 {
@@ -69,9 +69,9 @@
                     @Placeholder
                 }
             }
-            else if (ShowChips)
+            else if (Chips)
             {
-                @foreach (var item in SelectedItems)
+                @foreach (var item in _selectedItems)
                 {
                     <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
                         @GetText(item)
@@ -80,7 +80,7 @@
                 }
             }
 
-            @if (IsComboBox)
+            @if (Combo)
             {
                 <input @ref="_comboBoxInputRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnChange"
                        style="@Styles?.ComboBoxInput"
@@ -97,7 +97,7 @@
 
         @if (IsEnabled && ShowClearButton && SelectedItems.Count > 0)
         {
-            <button @onclick="HandleOnClickClear" @onclick:stopPropagation
+            <button @onclick="HandleOnClearClick" @onclick:stopPropagation
                     type="button"
                     style="@Styles?.ClearButton"
                     class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
@@ -167,7 +167,7 @@
             <div id="@_headerId">@CalloutHeaderTemplate</div>
         }
 
-        @if (ShowSearchBox && IsComboBox is false)
+        @if (ShowSearchBox && Combo is false)
         {
             <div style="@Styles?.SearchBoxContainer"
                  class="@GetSearchBoxClasses() @Classes?.SearchBoxContainer">

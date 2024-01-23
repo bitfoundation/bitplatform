@@ -670,11 +670,15 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
 <BitDropdown @bind-Value=""comboBoxValue""
              Label=""Single select combo box""
              Placeholder=""Select an option""
-             IsComboBox=""true""
-             ShowChips=""true""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => HandleDynamicValueGenerator(item)""
+             ValueSetter=""(BitDropdownOption<string> item, string? value) => HandleValueSetter(item, value)""
+             TextSetter=""(string? text, BitDropdownOption<string> item) => HandleTextSetter(text, item)""
+             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
+             Combo
+             Chips
              Dynamic
              TItem=""BitDropdownOption<string>"" TValue=""string"">
-    @foreach (var item in basicItems)
+    @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
@@ -685,11 +689,15 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
              Label=""Multi select combo box""
              Placeholder=""Select options""
              IsMultiSelect=""true""
-             IsComboBox=""true""
-             ShowChips=""true""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => HandleDynamicValueGenerator(item)""
+             ValueSetter=""(BitDropdownOption<string> item, string? value) => HandleValueSetter(item, value)""
+             TextSetter=""(string? text, BitDropdownOption<string> item) => HandleTextSetter(text, item)""
+             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
+             Combo
+             Chips
              Dynamic
              TItem=""BitDropdownOption<string>"" TValue=""string"">
-    @foreach (var item in basicItems)
+    @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
@@ -699,7 +707,27 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
 private string? comboBoxValue;
 private ICollection<string?> comboBoxValues = [];
 
-private readonly List<BitDropdownItem<string>> basicItems = new()
+private string? HandleDynamicValueGenerator(BitDropdownOption<string> item)
+{
+    return item.Text;
+}
+
+private void HandleValueSetter(BitDropdownOption<string> item, string? value)
+{
+    item.Value = value;
+}
+
+private void HandleTextSetter(string? text, BitDropdownOption<string> item)
+{
+    item.Text = text;
+}
+
+private void HandleOnDynamicAdd(BitDropdownOption<string> item)
+{
+    basicItems.Add(new() { Text = item.Text, Value = item.Value });
+}
+
+private readonly List<BitDropdownItem<string>> comboBoxItems = new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
     new() { Text = ""Apple"", Value = ""f-app"" },

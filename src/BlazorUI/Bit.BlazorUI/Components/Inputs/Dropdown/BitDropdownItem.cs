@@ -61,9 +61,4 @@ public class BitDropdownItem<TValue>
     /// The value of the dropdown item.
     /// </summary>
     public TValue? Value { get; set; }
-
-    /// <summary>
-    /// Determines whether the dynamic combo-box item is added.
-    /// </summary>
-    public bool IsDynamic { get; internal set; }
 }

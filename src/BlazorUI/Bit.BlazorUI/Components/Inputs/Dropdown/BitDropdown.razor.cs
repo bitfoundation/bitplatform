@@ -1,24 +1,23 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
 namespace Bit.BlazorUI;
 
-public partial class BitDropdown<TItem, TValue> where TItem : class
+public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 {
     private bool IsOpenHasBeenSet;
     private bool ValuesHasBeenSet;
-    private bool SelectedItemHasBeenSet;
-    private bool SelectedItemsHasBeenSet;
 
     private bool isRtl;
     private bool isOpen;
     private bool isRequired;
-    private bool showChips;
-    private List<TItem> selectedItems = [];
+    private bool chips;
     private ICollection<TValue?>? values = Array.Empty<TValue?>();
 
     private List<TItem> _items = [];
+    private List<TItem> _selectedItems = [];
     private List<TItem> _lastShowItems = [];
 
     private string _dropdownId = string.Empty;
@@ -34,13 +33,12 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private int? _totalItems;
     private string? _searchText;
     private bool _isValuesChanged;
-    private string? _selectedItemId;
-    private bool _valueTypeIsString;
     private bool _inputSearchHasFocus;
     private ElementReference _searchInputRef;
     private ElementReference _comboBoxInputRef;
     private Virtualize<TItem>? _virtualizeElement;
     private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
+    private ICollection<TItem>? items;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -255,47 +253,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     [Parameter] public Func<ICollection<TItem>, string, ICollection<TItem>>? SearchFunction { get; set; }
 
     /// <summary>
-    /// The selected item in single select mode. (two-way bound)
-    /// </summary>
-    [Parameter]
-    public TItem? SelectedItem
-    {
-        get => SelectedItems?.FirstOrDefault();
-        set
-        {
-            if (SelectedItems?.FirstOrDefault() == value) return;
-
-            SelectedItems?.Clear();
-            if (value is not null)
-            {
-                SelectedItems?.Add(value);
-            }
-            ClassBuilder.Reset();
-            _ = SelectedItemChanged.InvokeAsync(value);
-        }
-    }
-    [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
-
-    /// <summary>
-    /// The selected items in multi select mode. (two-way bound)
-    /// </summary>
-    [Parameter]
-    public List<TItem> SelectedItems
-    {
-        get => selectedItems;
-        set
-        {
-            if (value == null || selectedItems == value) return;
-            if (selectedItems.TrueForAll(value.Contains) && selectedItems.Count == value.Count) return;
-
-            selectedItems = value;
-            ClassBuilder.Reset();
-            _ = SelectedItemsChanged.InvokeAsync(value);
-        }
-    }
-    [Parameter] public EventCallback<List<TItem>> SelectedItemsChanged { get; set; }
-
-    /// <summary>
     /// Shows the clear button when an item is selected.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
@@ -354,28 +311,28 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// <summary>
     /// Activates the ComboBox feature in BitDropDown component.
     /// </summary>
-    [Parameter] public bool IsComboBox { get; set; }
+    [Parameter] public bool Combo { get; set; }
 
     /// <summary>
     /// Shows the selected items like chips in the BitDropdown.
     /// </summary>
     [Parameter]
-    public bool ShowChips
+    public bool Chips
     {
-        get => showChips;
+        get => chips;
         set
         {
-            if (showChips == value) return;
+            if (chips == value) return;
 
-            showChips = value;
+            chips = value;
             ClassBuilder.Reset();
         }
     }
 
     /// <summary>
-    /// The callback that is called when a new item is added in ComboBox mode.
+    /// The callback that is called when a new item is on added Dynamic ComboBox mode.
     /// </summary>
-    [Parameter] public EventCallback<string> OnAddedComboBox { get; set; }
+    [Parameter] public EventCallback<TItem> OnDynamicAdd { get; set; }
 
     /// <summary>
     /// It is allowed to add a new item in the ComboBox mode.
@@ -392,6 +349,30 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     /// </summary>
     [Parameter] public Func<ICollection<TItem>, string, TItem>? FindItemFunction { get; set; }
 
+    /// <summary>
+    /// The callback that is called for setting text on a text property in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    [Parameter] public Action<string, TItem>? TextSetter { get; set; }
+
+    /// <summary>
+    /// The callback that is called for setting text on a IsSelected property in a custom items.
+    /// </summary>
+    [Parameter] public Action<bool, TItem>? IsSelectedSetter { get; set; }
+
+    /// <summary>
+    /// The callback that is called for setting text on a value property in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    [Parameter] public Action<TItem, TValue>? ValueSetter { get; set; }
+
+    /// <summary>
+    /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    [Parameter] public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
+
+
+    public IReadOnlyList<TItem> SelectedItems => IsMultiSelect ? _selectedItems : Array.Empty<TItem>();
+    public TItem? SelectedItem => IsMultiSelect ? default : _selectedItems.FirstOrDefault();
+
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -399,17 +380,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        _selectedItemId = null;
         IsOpen = false;
         StateHasChanged();
-    }
-
-    [JSInvokable("SetSelectedItemId")]
-    public void SetSelectedItemId(string? id)
-    {
-        if (id.HasNoValue()) return;
-
-        _selectedItemId = id;
     }
 
     public async Task UnselectItem(TItem? item)
@@ -422,25 +394,20 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         }
         else
         {
-            await HandleOnClickClear();
+            await HandleOnClearClick();
         }
     }
 
     internal void RegisterOption(BitDropdownOption<TValue> option)
     {
-        if (IsComboBox && option.ItemType == BitDropdownItemType.Normal && option.Id.HasNoValue())
-        {
-            option.Id = Guid.NewGuid().ToString();
-        }
-
         _items.Add((option as TItem)!);
 
         var comparer = EqualityComparer<TValue>.Default;
         if (IsMultiSelect)
         {
-            if (ValuesHasBeenSet || SelectedItemsHasBeenSet)
+            if (ValuesHasBeenSet)
             {
-                Values ??= SelectedItems.Select(GetValue).ToArray();
+                Values ??= _selectedItems.Select(GetValue).ToArray();
                 if (Values is not null && Values.Any())
                 {
                     //var validValues = Values.Where(dv => _items.Any(i => comparer.Equals(dv, GetValue(i))));
@@ -448,8 +415,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                     var items = _items.FindAll(i => Values.Any(vv => comparer.Equals(vv, GetValue(i))));
                     ClearAllItemsIsSelected();
                     items.ForEach(i => SetIsSelected(i, true));
-                    SelectedItems = items;
-                    _text = string.Join(MultiSelectDelimiter, SelectedItems.Select(GetText));
+                    _selectedItems = items;
+                    _text = string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
                 }
             }
             else if (DefaultValues is not null)
@@ -461,16 +428,16 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                     var items = _items.FindAll(i => validValues.Any(vv => comparer.Equals(vv, GetValue(i))));
                     ClearAllItemsIsSelected();
                     items.ForEach(i => SetIsSelected(i, true));
-                    SelectedItems = items;
-                    _text = string.Join(MultiSelectDelimiter, SelectedItems.Select(GetText));
+                    _selectedItems = items;
+                    _text = string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
                 }
             }
         }
         else
         {
-            if (ValueHasBeenSet || SelectedItemHasBeenSet)
+            if (ValueHasBeenSet)
             {
-                Value ??= GetValue(SelectedItem);
+                Value ??= GetValue(_selectedItems.FirstOrDefault());
                 if (Value is not null)
                 {
                     var item = _items.Find(i => comparer.Equals(GetValue(i), Value));
@@ -479,8 +446,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                         CurrentValue = Value;
                         ClearAllItemsIsSelected();
                         SetIsSelected(item, true);
-                        SelectedItem = item;
-                        _text = GetText(SelectedItem) ?? string.Empty;
+                        _selectedItems.Clear();
+                        _selectedItems.Add(item);
+                        _text = GetText(item) ?? string.Empty;
                     }
                 }
             }
@@ -492,8 +460,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                     CurrentValue = DefaultValue;
                     ClearAllItemsIsSelected();
                     SetIsSelected(item, true);
-                    SelectedItem = item;
-                    _text = GetText(SelectedItem) ?? string.Empty;
+                    _selectedItems.Clear();
+                    _selectedItems.Add(item);
+                    _text = GetText(item) ?? string.Empty;
                 }
             }
         }
@@ -506,9 +475,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         var item = (option as TItem)!;
         _items.Remove(item);
 
-        if (SelectedItems.Contains(item))
+        if (_selectedItems.Contains(item))
         {
-            SelectedItems = SelectedItems.FindAll(i => i != item);
+            _selectedItems = _selectedItems.FindAll(i => i != item);
         }
 
         var value = GetValue(item);
@@ -539,29 +508,28 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             if (isSelected)
             {
-                SelectedItems.Add(item);
+                _selectedItems.Add(item);
             }
             else
             {
-                SelectedItems.Remove(item);
+                _selectedItems.Remove(item);
             }
 
             ClassBuilder.Reset();
 
-            _text = string.Join(MultiSelectDelimiter, SelectedItems.Select(GetText));
+            _text = string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
 
-            CurrentValue = GetValue(SelectedItems.FirstOrDefault());
+            CurrentValue = GetValue(_selectedItems.FirstOrDefault());
 
-            Values = SelectedItems.Select(GetValue).ToArray();
+            Values = _selectedItems.Select(GetValue).ToArray();
 
             await OnSelectItem.InvokeAsync(item);
-            await SelectedItemsChanged.InvokeAsync(SelectedItems);
         }
         else
         {
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            var oldSelectedItem = SelectedItem;
+            var oldSelectedItem = _selectedItems.FirstOrDefault();
 
             var isSameItemSelected = oldSelectedItem == item;
 
@@ -572,9 +540,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
             SetIsSelected(item, true);
 
-            SelectedItems.Clear();
+            _selectedItems.Clear();
 
-            SelectedItems.Add(item);
+            _selectedItems.Add(item);
 
             ClassBuilder.Reset();
 
@@ -591,10 +559,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             if (isSameItemSelected && IsReselectable is false) return;
 
             await OnSelectItem.InvokeAsync(item);
-            await SelectedItemChanged.InvokeAsync(item);
         }
 
-        await OnChange.InvokeAsync(SelectedItems.ToArray());
+        await OnChange.InvokeAsync([.. _selectedItems]);
 
         StateHasChanged();
     }
@@ -615,30 +582,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             stringBuilder.Append($" {RootElementClass}-ids");
         }
 
-        if (IsComboBox && _selectedItemId.HasValue() && GetIsHidden(item) is false && GetIsEnabled(item) && GetItemType(item) == BitDropdownItemType.Normal)
-        {
-            var id = GetId(item);
-            if (id.HasValue() && id == _selectedItemId)
-            {
-                stringBuilder.Append($" {RootElementClass}-sli");
-            }
-        }
-
         return stringBuilder.ToString();
-    }
-
-    internal string? GetItemCssClasses(TItem item)
-    {
-        if (IsComboBox && _selectedItemId.HasValue() && GetIsHidden(item) is false && GetIsEnabled(item) && GetItemType(item) == BitDropdownItemType.Normal)
-        {
-            var id = GetId(item);
-            if (id.HasValue() && id == _selectedItemId)
-            {
-                return $"{RootElementClass}-sli";
-            }
-        }
-
-        return null;
     }
 
     internal int? GetTotalItems()
@@ -669,9 +613,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
         ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
 
-        ClassBuilder.Register(() => SelectedItems?.Count > 0 ? $"{RootElementClass}-hvl" : string.Empty);
+        ClassBuilder.Register(() => _selectedItems?.Count > 0 ? $"{RootElementClass}-hvl" : string.Empty);
 
-        ClassBuilder.Register(() => ShowChips ? $"{RootElementClass}-sch" : string.Empty);
+        ClassBuilder.Register(() => Chips ? $"{RootElementClass}-sch" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -681,11 +625,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
     protected override void OnInitialized()
     {
-        Type _valueType = typeof(TValue);
-        _valueType = Nullable.GetUnderlyingType(_valueType) ?? _valueType;
-
-        _valueTypeIsString = _valueType == typeof(string);
-
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _scrollContainerId = $"{_dropdownId}-scroll-container";
@@ -700,7 +639,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             _items = [];
         }
 
-        SelectedItems ??= [];
+        _selectedItems ??= [];
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
@@ -716,23 +655,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         if (Items is not null)
         {
             _items = [.. Items];
-
-            if (IsComboBox)
-            {
-                _items.ForEach(item =>
-                {
-                    if (GetItemType(item) == BitDropdownItemType.Normal && GetId(item).HasNoValue())
-                    {
-                        SetId(item);
-                    }
-                });
-            }
         }
 
-        InitValues();
         InitSelectedItemsAndText();
     }
-
 
     protected override bool TryParseValueFromString(string? value, out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
@@ -759,76 +685,26 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         base.Dispose(disposing);
     }
 
-
-
-    private void InitValues()
-    {
-        var comparer = EqualityComparer<TValue>.Default;
-
-        if (Items is not null)
-        {
-            if (IsMultiSelect)
-            {
-                if (Values is null || Values.Any() is false) return;
-
-                Values = Values.Where(v => _items.Exists(i => comparer.Equals(GetValue(i), v))).
-                            Union(IsComboBox && Dynamic ? SelectedItems.Where(GetIsSelectedAndIsDynamic).Select(GetValue) : Array.Empty<TValue>()).
-                            ToArray();
-            }
-            else
-            {
-                if (CurrentValue is null) return;
-                if (_items.Exists(i => comparer.Equals(GetValue(i), CurrentValue))) return;
-                if (SelectedItems.Exists(GetIsSelectedAndIsDynamic)) return;
-
-                CurrentValue = default;
-            }
-        }
-        else if (ItemsProvider is not null && (SelectedItems?.Any() ?? false))
-        {
-            if (IsMultiSelect)
-            {
-                bool isEqual = SelectedItems.Select(GetValue).OrderBy(i => i).SequenceEqual(Values!.OrderBy(v => v));
-                if (isEqual) return;
-
-                Values = SelectedItems.Select(GetValue).ToArray();
-            }
-            else
-            {
-                if (comparer.Equals(CurrentValue, GetValue(SelectedItem))) return;
-
-                CurrentValue = GetValue(SelectedItem);
-            }
-        }
-    }
-
     private void InitSelectedItemsAndText()
     {
         var comparer = EqualityComparer<TValue>.Default;
 
         if (Items is not null)
         {
-            if (IsComboBox && Dynamic)
-            {
-                SelectedItems.RemoveAll(i => GetIsDynamic(i) is false);
-            }
-            else
-            {
-                SelectedItems.Clear();
-            }
+            _selectedItems.Clear();
             ClearAllItemsIsSelected();
 
             if (IsMultiSelect)
             {
-                if (ValuesHasBeenSet || _isValuesChanged)
+                if ((ValuesHasBeenSet || _isValuesChanged) && Values is not null)
                 {
                     foreach (var item in _items)
                     {
                         if (GetItemType(item) != BitDropdownItemType.Normal) continue;
-                        if (Values is null || Values.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
+                        if (Values.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
 
                         SetIsSelected(item, true);
-                        SelectedItems.Add(item);
+                        _selectedItems.Add(item);
                     }
                 }
                 else if (DefaultValues is not null && DefaultValues.Any())
@@ -839,20 +715,19 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                         if (DefaultValues!.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
 
                         SetIsSelected(item, true);
-                        SelectedItems.Add(item);
+                        _selectedItems.Add(item);
                     }
                 }
-                _ = SelectedItemsChanged.InvokeAsync(SelectedItems);
             }
             else
             {
-                if (CurrentValue is not null)
+                if (ValueHasBeenSet && CurrentValue is not null)
                 {
                     var item = _items.Find(i => comparer.Equals(GetValue(i), CurrentValue) && GetItemType(i) == BitDropdownItemType.Normal);
                     if (item is not null)
                     {
                         SetIsSelected(item, true);
-                        SelectedItems.Add(item);
+                        _selectedItems.Add(item);
                     }
                 }
                 else if (DefaultValue is not null)
@@ -861,23 +736,22 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                     if (item is not null)
                     {
                         SetIsSelected(item, true);
-                        SelectedItems.Add(item);
+                        _selectedItems.Add(item);
                     }
                 }
-                _ = SelectedItemChanged.InvokeAsync(SelectedItem);
             }
             ClassBuilder.Reset();
         }
 
-        if (SelectedItems.Any())
+        if (_selectedItems.Any())
         {
             if (IsMultiSelect)
             {
-                _text = string.Join(MultiSelectDelimiter, SelectedItems.Select(GetText));
+                _text = string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
             }
             else
             {
-                _text = GetText(SelectedItem) ?? string.Empty;
+                _text = GetText(_selectedItems.FirstOrDefault()) ?? string.Empty;
             }
         }
         else
@@ -893,7 +767,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
         if (IsOpen is false) return;
 
-        _selectedItemId = null;
         IsOpen = false;
         await ToggleCallout();
 
@@ -957,7 +830,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private async Task ClearComboBoxInput()
     {
         if (IsEnabled is false) return;
-        if (IsComboBox is false) return;
+        if (Combo is false) return;
         if (_searchText.HasNoValue()) return;
 
         _searchText = null;
@@ -966,8 +839,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     private async ValueTask FocusOnComboBoxInput()
     {
         if (IsEnabled is false) return;
-        if (IsComboBox is false) return;
         if (IsOpen is false) return;
+        if (Combo is false) return;
 
         await _comboBoxInputRef.FocusAsync();
     }
@@ -1010,7 +883,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         await _virtualizeElement.RefreshDataAsync();
     }
 
-    private async Task HandleOnClickClear()
+    private async Task HandleOnClearClick()
     {
         if (IsEnabled is false) return;
 
@@ -1018,25 +891,22 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         {
             if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
-            SelectedItems.ForEach(i => SetIsSelected(i, false));
-            SelectedItems.Clear();
+            _selectedItems.ForEach(i => SetIsSelected(i, false));
+            _selectedItems.Clear();
             ClassBuilder.Reset();
 
             Values = Array.Empty<TValue?>();
-            await SelectedItemsChanged.InvokeAsync(SelectedItems);
         }
         else
         {
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            if (SelectedItems.Count > 0)
+            if (_selectedItems.Count > 0)
             {
-                SetIsSelected(SelectedItem!, false);
-                SelectedItems.Clear();
+                SetIsSelected(_selectedItems.FirstOrDefault()!, false);
+                _selectedItems.Clear();
                 ClassBuilder.Reset();
             }
-
-            await SelectedItemChanged.InvokeAsync(SelectedItem);
         }
 
         _text = string.Empty;
@@ -1057,7 +927,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
                                 DropDirection,
                                 IsRtl,
                                 _scrollContainerId,
-                                ShowSearchBox ? 32 : 0,
+                                ShowSearchBox && Combo is false ? 32 : 0,
                                 CalloutHeaderTemplate is not null ? _headerId : "",
                                 CalloutFooterTemplate is not null ? _footerId : "",
                                 true,
@@ -1084,7 +954,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         var comparer = EqualityComparer<TValue>.Default;
         foreach (var item in providerResult.Items)
         {
-            SetIsSelected(item, GetItemType(item) == BitDropdownItemType.Normal && SelectedItems.Exists(si => comparer.Equals(GetValue(si), GetValue(item))));
+            SetIsSelected(item, GetItemType(item) == BitDropdownItemType.Normal && _selectedItems.Exists(si => comparer.Equals(GetValue(si), GetValue(item))));
         }
 
         _lastShowItems = [.. providerResult.Items];
@@ -1364,44 +1234,22 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
     {
         if (item is BitDropdownItem<TValue> dropdownItem)
         {
-            return dropdownItem.IsDynamic;
+            return EqualityComparer<TValue>.Default.Equals(dropdownItem.Value, default);
         }
 
         if (item is BitDropdownOption<TValue> dropdownOption)
         {
-            return dropdownOption.IsDynamic;
+            return EqualityComparer<TValue>.Default.Equals(dropdownOption.Value, default);
         }
 
-        if (NameSelectors is null) return false;
+        if (NameSelectors is null) return default;
 
-        if (NameSelectors.IsDynamic.Selector is not null)
+        if (NameSelectors.Value.Selector is not null)
         {
-            return NameSelectors.IsDynamic.Selector!(item);
+            return EqualityComparer<TValue>.Default.Equals(NameSelectors.Value.Selector!(item), default);
         }
 
-        return item.GetValueFromProperty<bool>(NameSelectors.IsDynamic.Name);
-    }
-
-    private bool GetIsSelectedAndIsDynamic(TItem item)
-    {
-        if (item is BitDropdownItem<TValue> dropdownItem)
-        {
-            return dropdownItem.IsSelected && dropdownItem.IsDynamic;
-        }
-
-        if (item is BitDropdownOption<TValue> dropdownOption)
-        {
-            return dropdownOption.IsSelected && dropdownOption.IsDynamic;
-        }
-
-        if (NameSelectors is null) return false;
-
-        if (NameSelectors.IsSelected.Selector is not null && NameSelectors.IsDynamic.Selector is not null)
-        {
-            return NameSelectors.IsSelected.Selector!(item) && NameSelectors.IsDynamic.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<bool>(NameSelectors.IsSelected.Name) && item.GetValueFromProperty<bool>(NameSelectors.IsDynamic.Name);
+        return EqualityComparer<TValue>.Default.Equals(item.GetValueFromProperty<TValue?>(NameSelectors.Value.Name), default);
     }
 
     private bool CheckInvalidForSelect(TItem item)
@@ -1447,44 +1295,18 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
         {
             dropdownItem.IsSelected = value;
         }
-
-        if (item is BitDropdownOption<TValue> dropdownOption)
+        else if (item is BitDropdownOption<TValue> dropdownOption)
         {
             dropdownOption.IsSelected = value;
         }
-
-        if (NameSelectors is null) return;
-
-        // we need to think about a proper solution to use Selector for setting the value!
-        //if (NameSelectors.IsSelected.Selector is not null)
-        //{
-        //    NameSelectors.IsSelected.Selector!(item);
-        //}
-
-        item.SetValueToProperty(NameSelectors.IsSelected.Name, value);
-    }
-
-    private void SetId(TItem item)
-    {
-        if (item is BitDropdownItem<TValue> dropdownItem)
+        else if (IsSelectedSetter is not null)
         {
-            dropdownItem.Id = Guid.NewGuid().ToString();
+            IsSelectedSetter(value, item);
         }
-
-        if (item is BitDropdownOption<TValue> dropdownOption)
+        else if (NameSelectors is not null && NameSelectors.IsSelected.Name.HasValue())
         {
-            dropdownOption.Id = Guid.NewGuid().ToString();
+            item.SetValueToProperty(NameSelectors.IsSelected.Name, value);
         }
-
-        if (NameSelectors is null) return;
-
-        // we need to think about a proper solution to use Selector for setting the value!
-        //if (NameSelectors.Id.Selector is not null)
-        //{
-        //    NameSelectors.Id.Selector!(item);
-        //}
-
-        item.SetValueToProperty(NameSelectors.Id.Name, Guid.NewGuid().ToString());
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
@@ -1507,20 +1329,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             _searchText = string.Empty;
             await CloseCallout();
         }
-        else if (eventArgs.Key == "Backspace")
+        else if (eventArgs.Key == "Backspace" && _searchText.HasNoValue())
         {
-            if (_searchText.HasNoValue())
-            {
-                await RemoveLastSelectedItem();
-            }
-        }
-        else if (eventArgs.Key == "ArrowUp")
-        {
-            await ChangeSelectedItem(true);
-        }
-        else if (eventArgs.Key == "ArrowDown")
-        {
-            await ChangeSelectedItem(false);
+            await RemoveLastSelectedItem();
         }
     }
 
@@ -1549,48 +1360,28 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
 
     private async Task RemoveLastSelectedItem()
     {
-        if (SelectedItems.Any() is false) return;
+        if (_selectedItems.Any() is false) return;
 
         if (IsMultiSelect)
         {
-            var lastItem = SelectedItems.Last();
+            var lastItem = _selectedItems.Last();
             await HandleOnItemClick(lastItem);
         }
         else
         {
-            await HandleOnClickClear();
+            await HandleOnClearClick();
         }
     }
 
     private async Task AddDynamicItem()
     {
-        if (_selectedItemId.HasValue())
-        {
-            TItem? selectItem = null;
-            if (ItemsProvider is not null)
-            {
-                selectItem = _lastShowItems.Find(i => GetId(i) == _selectedItemId!);
-            }
-            else if (_items is not null)
-            {
-                selectItem = _items.Find(i => GetId(i) == _selectedItemId!);
-            }
-
-            if (selectItem is not null)
-            {
-                await HandleOnItemClick(selectItem);
-
-                return;
-            }
-        }
-
         if (_searchText.HasNoValue()) return;
 
-        if (SelectedItems.Count > 0)
+        if (_selectedItems.Count > 0)
         {
             var hasItem = ExistsSelectedItemFunction is not null ?
-                        ExistsSelectedItemFunction.Invoke(SelectedItems, _searchText!) :
-                        SelectedItems.Exists(i => GetText(i).HasValue() && _searchText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
+                          ExistsSelectedItemFunction.Invoke(_selectedItems, _searchText!) :
+                          _selectedItems.Exists(i => GetText(i).HasValue() && _searchText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
 
             if (hasItem) return;
         }
@@ -1619,12 +1410,13 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             {
                 Text = text,
                 Title = text,
-                Value = _valueTypeIsString ? text.ConvertTo<TValue>() : default,
-                IsEnabled = true,
-                IsDynamic = true
+                Value = default,
+                IsEnabled = true
             };
 
+            SetValue(dropdownItem as TItem);
             await HandleOnItemClick(dropdownItem as TItem);
+            await OnDynamicAdd.InvokeAsync(dropdownItem as TItem);
         }
         else if (typeof(TItem) == typeof(BitDropdownOption<TValue>))
         {
@@ -1632,23 +1424,48 @@ public partial class BitDropdown<TItem, TValue> where TItem : class
             {
                 Text = text,
                 Title = text,
-                Value = _valueTypeIsString ? text.ConvertTo<TValue>() : default,
-                IsEnabled = true,
-                IsDynamic = true
+                Value = default,
+                IsEnabled = true
             };
 
+            SetValue(dropdownOption as TItem);
             await HandleOnItemClick(dropdownOption as TItem);
+            await OnDynamicAdd.InvokeAsync(dropdownOption as TItem);
         }
+        else
+        {
+            var customItem = new TItem();
 
-        await OnAddedComboBox.InvokeAsync(text);
+            if (TextSetter is not null)
+            {
+                TextSetter(text!, customItem);
+            }
+            else if (NameSelectors is not null && NameSelectors.Text.Name.HasValue())
+            {
+                customItem.SetValueToProperty(NameSelectors.Text.Name, text!);
+            }
+
+            if (ValueSetter is not null && DynamicValueGenerator is not null)
+            {
+                SetValue(customItem);
+            }
+            else if (NameSelectors is not null && NameSelectors.Value.Name.HasValue() && DynamicValueGenerator is not null)
+            {
+                customItem.SetValueToProperty(NameSelectors.Value.Name, DynamicValueGenerator(customItem)!);
+            }
+
+            await HandleOnItemClick(customItem);
+            await OnDynamicAdd.InvokeAsync(customItem);
+        }
     }
 
-    private async Task ChangeSelectedItem(bool isArrowUp)
+    private void SetValue(TItem? item)
     {
-        if (IsOpen is false) return;
-        if (ItemsProvider is not null && _lastShowItems.Exists(CheckInvalidForSelect)) return;
-        if (_items is not null && _items.Exists(CheckInvalidForSelect)) return;
+        if (item is null) return;
+        if (ValueSetter is null) return;
+        if (DynamicValueGenerator is null) return;
 
-        await _js.InvokeVoidAsync("BitDropdown.changeSelectedItem", _dotnetObj, _comboBoxInputRef, _scrollContainerId, IsMultiSelect, isArrowUp);
+        TValue? value = DynamicValueGenerator(item);
+        ValueSetter(item, value);
     }
 }
