@@ -38,9 +38,11 @@
 }</pre>
         <div class="section-card-txt">
             <b>Note</b>: IdentityCertificatePassword referring to the password of the
-            <b>IdentityCertificate.pfx</b> file in the Server project that used as certificate file
-            for store the public key and etc for validating incoming JWT tokens.
-            To create PFX file run the following commands in PowerShell with the desired password and file path for your pfx file.
+            <b>IdentityCertificate.pfx</b> file in the Server project.
+            To store the public key and other necessary information for validating incoming JWT tokens, a PFX file is employed.
+            The same PFX file is utilized to empower the ASP.NET Core Data Protection API.
+            Various methods exist for creating a PFX file. You may choose to follow your preferred approach for generating PFX files.
+            Alternatively, you can execute the following command, specifying the desired password and path for your PFX file.
         </div>
         <pre class="code-box">dotnet dev-certs https --export-path IdentityCertificate.pfx --password P@ssw0rdP@ssw0rd</pre>
         <b>Note</b>: Replace P@ssw0rdP@ssw0rd with strong password and use that as IdentityCertificatePassword's value in appsettings.json
