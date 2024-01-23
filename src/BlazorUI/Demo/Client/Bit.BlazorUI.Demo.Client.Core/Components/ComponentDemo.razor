@@ -33,14 +33,17 @@
             <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
         }
 
-        <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+        @if (ComponentBaseParameters is not null)
+        {
+            <ComponentParametersTable Name="BitComponentBase" Parameters="ComponentBaseParameters" />
 
-        <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+            <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
 
-        <ComponentClassesTable Classes="ComponentSubClasses" />
+            <ComponentClassesTable Classes="ComponentSubClasses" />
 
-        <ComponentEnumsTable Enums="ComponentSubEnums" />
+            <ComponentEnumsTable Enums="ComponentSubEnums" />
 
-        <ComponentEnumsTable Enums="_componentBaseSubEnums" />
+            <ComponentEnumsTable Enums="_componentBaseSubEnums" />
+        }
     </section>
 </div>
