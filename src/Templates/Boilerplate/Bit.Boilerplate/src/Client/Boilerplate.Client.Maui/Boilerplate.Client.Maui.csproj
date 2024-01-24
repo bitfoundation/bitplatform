@@ -66,7 +66,7 @@
 
         <!-- App icon for all platforms -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0065EF" />
-        
+
         <!-- Customize App icon for Android -->
         <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Update="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68" />
 
