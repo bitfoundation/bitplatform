@@ -76,7 +76,7 @@
                                 {
                                     <div style="@Styles?.ItemImageContainer" class="bit-chg-iic @Classes?.ItemImageContainer">
                                         <div style="@Styles?.ItemImageWrapper" class="bit-chg-iiw @Classes?.ItemImageWrapper">
-                                            <div style="@($"width:{imageSize.Width}px; height:{imageSize.Height}px;") @Styles?.ItemImageDiv"
+                                            <div style="@(FormattableString.Invariant($"width:{imageSize.Width}px; height:{imageSize.Height}px;")) @Styles?.ItemImageDiv"
                                                  class="bit-chg-iim @Classes?.ItemImageDiv">
                                                 <img src="@(isChecked ? GetSelectedImageSrc(item) : imageSrc)"
                                                      alt="@GetImageAlt(item)"

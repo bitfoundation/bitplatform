@@ -160,7 +160,7 @@ public partial class BitSwiper : IDisposable
         var swipeSpeed = distance / time;
 
         var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
-        await _js.SetStyle(_swiper, "transitionDuration", $"{transitionTime}ms");
+        await _js.SetStyle(_swiper, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
 
         var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
         await Swipe(x);
@@ -245,7 +245,7 @@ public partial class BitSwiper : IDisposable
             if (x > _swiperEffectiveWidth) x = _swiperEffectiveWidth;
         }
 
-        await _js.SetStyle(_swiper, "transform", $"translateX({NumUtils.ToInvariantString(x)}px)");
+        await _js.SetStyle(_swiper, "transform", FormattableString.Invariant($"translateX({x}px)"));
 
         SetNavigationButtonsVisibility(x);
     }
