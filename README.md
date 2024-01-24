@@ -7,6 +7,7 @@
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
 [![Nuget downloads](https://img.shields.io/badge/packages_download-4.4M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
+[![](https://dcbadge.vercel.app/api/server/RMdqR5p3?style=flat-square&compact=true)](https://discord.gg/RMdqR5p3)
 
 <br/>
 
