@@ -19,14 +19,14 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/href">https://developer.mozilla.org/en-US/docs/Web/API/Location/href</see>
     /// </summary>
     public async Task<string> GetHref()
-        => await js.LocationGetHref();
+        => await js.InvokeAsync<string>("BitButil.location.getHref");
     /// <summary>
     /// Sets the href of the location andn then the associated document navigates to the new page.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/href">https://developer.mozilla.org/en-US/docs/Web/API/Location/href</see>
     /// </summary>
     public async Task SetHref(string value)
-        => await js.LocationSetHref(value);
+        => await js.InvokeVoidAsync("BitButil.location.setHref", value);
 
     /// <summary>
     /// A string containing the protocol scheme of the URL, including the final ':'.
@@ -34,14 +34,14 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/protocol">https://developer.mozilla.org/en-US/docs/Web/API/Location/protocol</see>
     /// </summary>
     public async Task<string> GetProtocol()
-        => await js.LocationGetProtocol();
+        => await js.InvokeAsync<string>("BitButil.location.getProtocol");
     /// <summary>
     /// Sets the protocol scheme of the URL and then the associated document navigates to the new page.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/protocol">https://developer.mozilla.org/en-US/docs/Web/API/Location/protocol</see>
     /// </summary>
     public async Task SetProtocol(string value)
-        => await js.LocationSetProtocol(value);
+        => await js.InvokeVoidAsync("BitButil.location.setProtocol", value);
 
     /// <summary>
     /// A string containing the host, that is the hostname, a ':', and the port of the URL.
@@ -49,14 +49,14 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/host">https://developer.mozilla.org/en-US/docs/Web/API/Location/host</see>
     /// </summary>
     public async Task<string> GetHost()
-        => await js.LocationGetHost();
+        => await js.InvokeAsync<string>("BitButil.location.getHost");
     /// <summary>
     /// Sets the host of the location and then the associated document navigates to the new page.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/host">https://developer.mozilla.org/en-US/docs/Web/API/Location/host</see>
     /// </summary>
     public async Task SetHost(string value)
-        => await js.LocationSetHost(value);
+        => await js.InvokeVoidAsync("BitButil.location.setHost", value);
 
     /// <summary>
     /// A string containing the domain of the URL.
@@ -64,14 +64,14 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hostname">https://developer.mozilla.org/en-US/docs/Web/API/Location/hostname</see>
     /// </summary>
     public async Task<string> GetHostname()
-        => await js.LocationGetHostname();
+        => await js.InvokeAsync<string>("BitButil.location.getHostname");
     /// <summary>
     /// Sets the hostname of the location and then the associated document navigates to the new page.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hostname">https://developer.mozilla.org/en-US/docs/Web/API/Location/hostname</see>
     /// </summary>
     public async Task SetHostname(string value)
-        => await js.LocationSetHostname(value);
+        => await js.InvokeVoidAsync("BitButil.location.setHostname", value);
 
     /// <summary>
     /// A string containing the port number of the URL.
@@ -79,14 +79,14 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/port">https://developer.mozilla.org/en-US/docs/Web/API/Location/port</see>
     /// </summary>
     public async Task<string> GetPort()
-        => await js.LocationGetPort();
+        => await js.InvokeAsync<string>("BitButil.location.getPort");
     /// <summary>
     /// Sets the port of the location and then the associated document navigates to the new page.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/port">https://developer.mozilla.org/en-US/docs/Web/API/Location/port</see>
     /// </summary>
     public async Task SetPort(string value)
-        => await js.LocationSetPort(value);
+        => await js.InvokeVoidAsync("BitButil.location.setPort", value);
 
     /// <summary>
     /// A string containing an initial '/' followed by the path of the URL, not including the query string or fragment.
@@ -94,14 +94,14 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/pathname">https://developer.mozilla.org/en-US/docs/Web/API/Location/pathname</see>
     /// </summary>
     public async Task<string> GetPathname()
-        => await js.LocationGetPathname();
+        => await js.InvokeAsync<string>("BitButil.location.getPathname");
     /// <summary>
     /// Sets the pathname of the location and then the associated document navigates to the new page.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/pathname">https://developer.mozilla.org/en-US/docs/Web/API/Location/pathname</see>
     /// </summary>
     public async Task SetPathname(string value)
-        => await js.LocationSetPathname(value);
+        => await js.InvokeVoidAsync("BitButil.location.setPathname", value);
 
     /// <summary>
     /// A string containing a '?' followed by the parameters or "querystring" of the URL.
@@ -109,14 +109,14 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/search">https://developer.mozilla.org/en-US/docs/Web/API/Location/search</see>
     /// </summary>
     public async Task<string> GetSearch()
-        => await js.LocationGetSearch();
+        => await js.InvokeAsync<string>("BitButil.location.getSearch");
     /// <summary>
     /// Sets the search of the location and then the associated document navigates to the new page.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/search">https://developer.mozilla.org/en-US/docs/Web/API/Location/search</see>
     /// </summary>
     public async Task SetSearch(string value)
-        => await js.LocationSetSearch(value);
+        => await js.InvokeVoidAsync("BitButil.location.setSearch", value);
 
     /// <summary>
     /// A string containing a '#' followed by the fragment identifier of the URL.
@@ -124,14 +124,14 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash">https://developer.mozilla.org/en-US/docs/Web/API/Location/hash</see>
     /// </summary>
     public async Task<string> GetHash()
-        => await js.LocationGetHash();
+        => await js.InvokeAsync<string>("BitButil.location.getHash");
     /// <summary>
     /// Sets the hash of the location and then the associated document navigates to the new page.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash">https://developer.mozilla.org/en-US/docs/Web/API/Location/hash</see>
     /// </summary>
     public async Task SetHash(string value)
-        => await js.LocationSetHash(value);
+        => await js.InvokeVoidAsync("BitButil.location.setHash", value);
 
     /// <summary>
     /// Returns a string containing the canonical form of the origin of the specific location.
@@ -139,7 +139,7 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/origin">https://developer.mozilla.org/en-US/docs/Web/API/Location/origin</see>
     /// </summary>
     public async Task<string> GetOrigin()
-        => await js.LocationGetOrigin();
+        => await js.InvokeAsync<string>("BitButil.location.origin");
 
     /// <summary>
     /// Loads the resource at the URL provided in parameter.
@@ -147,7 +147,7 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/assign">https://developer.mozilla.org/en-US/docs/Web/API/Location/assign</see>
     /// </summary>
     public async Task Assign(string url)
-        => await js.LocationAssign(url);
+        => await js.InvokeVoidAsync("BitButil.location.assign", url);
 
     /// <summary>
     /// Reloads the current URL, like the Refresh button.
@@ -155,7 +155,7 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/reload">https://developer.mozilla.org/en-US/docs/Web/API/Location/reload</see>
     /// </summary>
     public async Task Reload()
-        => await js.LocationReload();
+        => await js.InvokeVoidAsync("BitButil.location.reload");
 
     /// <summary>
     /// Replaces the current resource with the one at the provided URL (redirects to the provided URL).
@@ -163,5 +163,5 @@ public class Location(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location/replace">https://developer.mozilla.org/en-US/docs/Web/API/Location/replace</see>
     /// </summary>
     public async Task Replace(string url)
-        => await js.LocationReplace(url);
+        => await js.InvokeVoidAsync("BitButil.location.replace", url);
 }

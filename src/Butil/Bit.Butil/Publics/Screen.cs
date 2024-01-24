@@ -23,7 +23,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/availHeight">https://developer.mozilla.org/en-US/docs/Web/API/Screen/availHeight</see>
     /// </summary>
     public async Task<float> GetAvailableHeight()
-        => await js.ScreenGetAvailableHeight();
+        => await js.InvokeAsync<float>("BitButil.screen.availHeight");
 
     /// <summary>
     /// Returns the amount of horizontal space in pixels available to the window.
@@ -31,7 +31,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/availWidth">https://developer.mozilla.org/en-US/docs/Web/API/Screen/availWidth</see>
     /// </summary>
     public async Task<float> GetAvailableWidth()
-        => await js.ScreenGetAvailableWidth();
+        => await js.InvokeAsync<float>("BitButil.screen.availWidth");
 
     /// <summary>
     /// Returns the color depth of the screen.
@@ -39,7 +39,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/colorDepth">https://developer.mozilla.org/en-US/docs/Web/API/Screen/colorDepth</see>
     /// </summary>
     public async Task<byte> GetColorDepth()
-        => await js.ScreenGetColorDepth();
+        => await js.InvokeAsync<byte>("BitButil.screen.colorDepth");
 
     /// <summary>
     /// Returns the height of the screen in pixels.
@@ -47,7 +47,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/height">https://developer.mozilla.org/en-US/docs/Web/API/Screen/height</see>
     /// </summary>
     public async Task<float> GetHeight()
-        => await js.ScreenGetHeight();
+        => await js.InvokeAsync<float>("BitButil.screen.height");
 
     /// <summary>
     /// Returns true if the user's device has multiple screens, and false if not.
@@ -55,7 +55,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/isExtended">https://developer.mozilla.org/en-US/docs/Web/API/Screen/isExtended</see>
     /// </summary>
     public async Task<bool> IsExtended()
-        => await js.ScreenIsExtended();
+        => await js.InvokeAsync<bool>("BitButil.screen.isExtended");
 
     /// <summary>
     /// Gets the bit depth of the screen.
@@ -63,7 +63,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/pixelDepth">https://developer.mozilla.org/en-US/docs/Web/API/Screen/pixelDepth</see>
     /// </summary>
     public async Task<byte> GetPixelDepth()
-        => await js.ScreenGetPixelDepth();
+        => await js.InvokeAsync<byte>("BitButil.screen.pixelDepth");
 
     /// <summary>
     /// Returns the width of the screen.
@@ -71,7 +71,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/width">https://developer.mozilla.org/en-US/docs/Web/API/Screen/width</see>
     /// </summary>
     public async Task<float> GetWidth()
-        => await js.ScreenGetWidth();
+        => await js.InvokeAsync<float>("BitButil.screen.width");
 
     /// <summary>
     /// Fired on a specific screen when it changes in some way — width or height, 
@@ -84,7 +84,7 @@ public class Screen(IJSRuntime js) : IDisposable
         var listenerId = ScreenListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.ScreenAddChange(ScreenListenersManager.InvokeMethodName, listenerId);
+        await js.InvokeVoidAsync("BitButil.screen.addChange", ScreenListenersManager.InvokeMethodName, listenerId);
 
         return listenerId;
     }
@@ -124,7 +124,7 @@ public class Screen(IJSRuntime js) : IDisposable
             _handlers.TryRemove(id, out _);
         }
 
-        _ = js.ScreenRemoveChange(ids);
+        _ = js.InvokeVoidAsync("BitButil.screen.removeChange", ids);
     }
 
     public async Task RemoveAllChanges()
@@ -135,7 +135,7 @@ public class Screen(IJSRuntime js) : IDisposable
 
         ScreenListenersManager.RemoveListeners(ids);
 
-        _ = js.ScreenRemoveChange(ids);
+        _ = js.InvokeVoidAsync("BitButil.screen.removeChange", ids);
     }
 
     public void Dispose()

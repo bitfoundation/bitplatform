@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -15,29 +16,42 @@ public class Cookie(IJSRuntime js)
     /// Gets all cookies registered on the current document.
     /// </summary>
     public async Task<ButilCookie[]> GetAll()
-        => await js.CookieGetAll();
+    {
+        var cookie = await js.InvokeAsync<string>("BitButil.cookie.get");
+        return cookie.Split(';').Select(ButilCookie.Parse).ToArray();
+    }
 
     /// <summary>
     /// Returns a cookie by providing the cookie name.
     /// </summary>
     public async Task<ButilCookie?> Get(string name)
-        => await js.CookieGet(name);
+    {
+        var allCookies = await GetAll();
+        return allCookies.FirstOrDefault(c => c.Name == name);
+    }
 
     /// <summary>
     /// Removes a cookie by providing the its name.
     /// </summary>
     public async Task Remove(string name)
-        => await js.CookieRemove(name);
+    {
+        var cookie = new ButilCookie { Name = name, MaxAge = 0, Expires = null };
+        await Set(cookie);
+    }
 
     /// <summary>
     /// Removes a cookie.
     /// </summary>
     public async Task Remove(ButilCookie cookie)
-        => await js.CookieRemove(cookie);
+    {
+        cookie.MaxAge = 0;
+        cookie.Expires = null;
+        await Set(cookie);
+    }
 
     /// <summary>
     /// Sets a cookie.
     /// </summary>
     public async Task Set(ButilCookie cookie)
-        => await js.CookieSet(cookie);
+        => await js.InvokeVoidAsync("BitButil.cookie.set", cookie.ToString());
 }

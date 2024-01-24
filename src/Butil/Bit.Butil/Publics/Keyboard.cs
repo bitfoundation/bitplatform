@@ -15,7 +15,10 @@ public class Keyboard(IJSRuntime js) : IDisposable
         var listenerId = KeyboardListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.KeyboardAdd(KeyboardListenersManager.InvokeMethodName, listenerId, code,
+        await js.InvokeVoidAsync("BitButil.keyboard.add",
+            KeyboardListenersManager.InvokeMethodName,
+            listenerId,
+            code,
             modifiers.HasFlag(ButilModifiers.Alt),
             modifiers.HasFlag(ButilModifiers.Ctrl),
             modifiers.HasFlag(ButilModifiers.Meta),
@@ -50,7 +53,7 @@ public class Keyboard(IJSRuntime js) : IDisposable
             _handlers.TryRemove(id, out _);
         }
 
-        _ = js.KeyboardRemove(ids);
+        _ = js.InvokeVoidAsync("BitButil.keyboard.remove", ids);
     }
 
     public async Task RemoveAll()
@@ -61,7 +64,7 @@ public class Keyboard(IJSRuntime js) : IDisposable
 
         KeyboardListenersManager.RemoveListeners(ids);
 
-        await js.KeyboardRemove(ids);
+        await js.InvokeVoidAsync("BitButil.keyboard.remove", ids);
     }
 
     public void Dispose()
