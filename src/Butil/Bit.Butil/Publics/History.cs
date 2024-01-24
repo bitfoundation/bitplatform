@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Microsoft.JSInterop;
-using System.Reflection;
 
 namespace Bit.Butil;
 

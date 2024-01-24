@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
