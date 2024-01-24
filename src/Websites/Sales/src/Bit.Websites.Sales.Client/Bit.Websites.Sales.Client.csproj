@@ -25,7 +25,9 @@
         <EmbeddedResource Include="appsettings.json" />
 
         <PackageReference Include="Bit.BlazorUI" Version="8.7.4" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.7.4" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.7.4" PrivateAssets="all" ExcludeAssets="runtime">
+            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.7.4" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.4">
             <PrivateAssets>all</PrivateAssets>

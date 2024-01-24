@@ -44,7 +44,9 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
-        <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" PrivateAssets="all" ExcludeAssets="runtime">
+          <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </ProjectReference>
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Demo.Shared\Bit.BlazorUI.Demo.Shared.csproj" />
     </ItemGroup>
