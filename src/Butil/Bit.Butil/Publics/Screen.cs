@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.Butil;
 
@@ -79,6 +80,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenListenersManager))]
     public async Task<Guid> AddChange(Action handler)
     {
         var listenerId = ScreenListenersManager.AddListener(handler);

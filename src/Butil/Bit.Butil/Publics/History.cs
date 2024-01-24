@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.Butil;
 
@@ -84,6 +85,7 @@ public class History(IJSRuntime js) : IDisposable
     /// <summary>
     /// The popstate event of the Window interface is fired when the active history entry changes while the user navigates the session history.
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HistoryListenersManager))]
     public async Task<Guid> AddPopState(Action<object> handler)
     {
         var listenerId = HistoryListenersManager.AddListener(handler);
