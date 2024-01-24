@@ -27,7 +27,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.6" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
-        <PackageReference Include="Velopack" Version="0.0.226" />
+        <PackageReference Include="Velopack" Version="0.0.219" />
 
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
