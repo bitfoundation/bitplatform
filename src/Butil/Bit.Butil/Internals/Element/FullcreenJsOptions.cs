@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-internal class FullScreenJsOptions
+internal class FullcreenJsOptions
 {
     public string NavigationUI { get; set; } = default!;
 }
