@@ -387,24 +387,27 @@ public static class ElementReferenceExtensions
     /// </summary>
     public static async ValueTask<Hidden> GetHidden(this ElementReference element)
     {
-        var value = await GetJSRuntime(element).InvokeAsync<string>("BitButil.element.getHidden", element);
-        return value switch
+        var value = await GetJSRuntime(element).InvokeAsync<object>("BitButil.element.getHidden", element);
+        await GetJSRuntime(element).InvokeVoidAsync("console.log", "the hidden is:", value);
+        await GetJSRuntime(element).InvokeVoidAsync("console.log", "value:", Convert.ToBoolean(value));
+        var v = value switch
         {
-            "true" => Hidden.True,
-            "until-found" => Hidden.UntilFound,
+            ((object)true) => Hidden.True,
+            ((object)"until-found") => Hidden.UntilFound,
             _ => Hidden.False
         };
+        return v;
     }
     /// <summary>
     /// The HTMLElement property hidden reflects the value of the element's hidden attribute.
     /// </summary>
     public static async ValueTask SetHidden(this ElementReference element, Hidden value)
     {
-        var v = value switch
+        object v = value switch
         {
-            Hidden.True => "true",
+            Hidden.True => true,
             Hidden.UntilFound => "until-found",
-            _ => "false",
+            _ => false,
         };
         await GetJSRuntime(element).InvokeVoidAsync("BitButil.element.setHidden", element, v);
     }

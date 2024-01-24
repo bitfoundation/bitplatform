@@ -659,7 +659,7 @@ else
 
     private async Task GetHidden()
     {
-        await console.Log("Element Hidden:", await elementRef.GetHidden());
+        await console.Log("Element Hidden:", (await elementRef.GetHidden()).ToString());
     }
 
     private async Task SetDir()
