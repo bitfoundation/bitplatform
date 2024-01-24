@@ -21,14 +21,16 @@
 <hr />
 <br />
 
-<div @ref="elementRef" @onpointerdown="HandleOnPointerDown"
-     id="target"
-     style="max-width:6rem;
+<div style="background:white; padding:0 2rem; position:sticky; top:10px; border-bottom:1px solid;">
+    <div @ref="elementRef" @onpointerdown="HandleOnPointerDown"
+         id="target"
+         style="max-width:6rem;
             max-height:6rem;
             color: white;
             overflow: auto;
             background: dodgerblue;">
-    <div style="height: 10rem">Element</div>
+        <div style="height: 100rem">Element</div>
+    </div>
 </div>
 
 <br />
@@ -57,10 +59,12 @@
 <hr />
 <br />
 
-X: <input type="number" @bind-value="scrollX"/>
+X:
+<input type="number" @bind-value="scrollX" />
 <br />
 <br />
-Y: <input type="number" @bind-value="scrollY"/>
+Y:
+<input type="number" @bind-value="scrollY" />
 <br />
 <br />
 <button @onclick="Scroll">Scroll</button>
@@ -70,10 +74,12 @@ Y: <input type="number" @bind-value="scrollY"/>
 <hr />
 <br />
 
-X: <input type="number" @bind-value="scrollByX"/>
+X:
+<input type="number" @bind-value="scrollByX" />
 <br />
 <br />
-Y: <input type="number" @bind-value="scrollByY"/>
+Y:
+<input type="number" @bind-value="scrollByY" />
 <br />
 <br />
 <button @onclick="ScrollBy">ScrollBy</button>
@@ -491,24 +497,24 @@ else
 
     private async Task Scroll()
     {
-        var scrollOptions = new ScrollToOptions() { Top = scrollY, Left = scrollX, Behavior = ScrollBehavior.Smooth };
+        var scrollOptions = new ScrollOptions() { Top = scrollY, Left = scrollX, Behavior = ScrollBehavior.Smooth };
         await elementRef.Scroll(scrollOptions);
     }
 
     private async Task ScrollBy()
     {
-        var scrollOptions = new ScrollToOptions() { Top = scrollByY, Left = scrollByX, Behavior = ScrollBehavior.Smooth };
+        var scrollOptions = new ScrollOptions() { Top = scrollByY, Left = scrollByX, Behavior = ScrollBehavior.Smooth };
         await elementRef.ScrollBy(scrollOptions);
     }
 
     private async Task ScrollIntoView()
     {
-        var scrollOptions = new ScrollIntoViewOptions() 
-        { 
-            Inline = ScrollLogicalPosition.Center,
-            Block = ScrollLogicalPosition.Center,
-            Behavior = ScrollBehavior.Smooth
-        };
+        var scrollOptions = new ScrollIntoViewOptions()
+            {
+                Inline = ScrollLogicalPosition.Center,
+                Block = ScrollLogicalPosition.Center,
+                Behavior = ScrollBehavior.Smooth
+            };
 
         await elementRef.ScrollIntoView(scrollOptions);
     }

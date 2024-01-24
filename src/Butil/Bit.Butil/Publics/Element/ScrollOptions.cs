@@ -1,6 +1,6 @@
 ﻿namespace Bit.Butil;
 
-public class ScrollToOptions
+public class ScrollOptions
 {
     public ScrollBehavior? Behavior { get; set; }
 
@@ -8,7 +8,7 @@ public class ScrollToOptions
 
     public double? Left { get; set; }
 
-    public object ToJsObject()
+    internal ScrollJsOptions ToJsObject()
     {
         var behavior = Behavior switch
         {
@@ -17,11 +17,11 @@ public class ScrollToOptions
             _ => "auto",
         };
 
-        return new
+        return new()
         {
             Behavior = behavior,
-            Top,
-            Left
+            Top = Top,
+            Left = Left
         };
     }
 }

@@ -426,13 +426,13 @@ Y: <input type="number" @bind-value="scrollByY"/>
 
     private async Task Scroll()
     {
-        var scrollOptions = new ScrollToOptions() { Top = scrollY, Left = scrollX, Behavior = ScrollBehavior.Smooth };
+        var scrollOptions = new ScrollOptions() { Top = scrollY, Left = scrollX, Behavior = ScrollBehavior.Smooth };
         await window.Scroll(scrollOptions);
     }
 
     private async Task ScrollBy()
     {
-        var scrollOptions = new ScrollToOptions() { Top = scrollByY, Left = scrollByX, Behavior = ScrollBehavior.Smooth };
+        var scrollOptions = new ScrollOptions() { Top = scrollByY, Left = scrollByX, Behavior = ScrollBehavior.Smooth };
         await window.ScrollBy(scrollOptions);
     }
 
