@@ -106,7 +106,7 @@ public static class ElementReferenceExtensions
     /// <summary>
     /// Asynchronously asks the browser to make the element fullscreen.
     /// </summary>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FullcreenJsOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FullScreenJsOptions))]
     public static async ValueTask RequestFullScreen(this ElementReference element, FullScreenOptions? options)
         => await GetJSRuntime(element).InvokeVoidAsync("BitButil.element.requestFullScreen", element, options?.ToJsObject());
 

@@ -4,7 +4,7 @@ public class FullScreenOptions
 {
     public FullScreenNavigationUI? NavigationUI { get; set; }
 
-    internal FullcreenJsOptions ToJsObject()
+    internal FullScreenJsOptions ToJsObject()
     {
         var navigationUI = NavigationUI switch
         {
