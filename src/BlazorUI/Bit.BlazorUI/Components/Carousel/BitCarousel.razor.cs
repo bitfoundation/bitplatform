@@ -162,8 +162,8 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < itemsCount; i++)
         {
             var item = AllItems[i];
-            item.InternalStyle = $"width:{NumUtils.ToInvariantString(rect.Width / VisibleItemsCount)}px;display:block";
-            item.InternalTransformStyle = $"transform:translateX({sign * 100 * i}%)";
+            item.InternalStyle = FormattableString.Invariant($"width:{(rect.Width / VisibleItemsCount)}px;display:block");
+            item.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({sign * 100 * i}%)");
         }
 
         _pagesCount = (int)Math.Ceiling((decimal)itemsCount / VisibleItemsCount);
@@ -241,7 +241,7 @@ public partial class BitCarousel : IDisposable
             o.InternalTransitionStyle = "";
             var x = sign * 100 * (offset + (sign * i));
             x = Direction == BitDirection.LeftToRight ? x : -x;
-            o.InternalTransformStyle = $"transform:translateX({x}%)";
+            o.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
         }
 
         StateHasChanged();
@@ -253,19 +253,19 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < currents.Length; i++)
         {
             var c = currents[i];
-            c.InternalTransitionStyle = $"transition:all {NumUtils.ToInvariantString(AnimationDuration)}s";
+            c.InternalTransitionStyle = FormattableString.Invariant($"transition:all {AnimationDuration}s");
             var x = -sign * 100 * (scrollCount + (-sign * i));
             x = Direction == BitDirection.LeftToRight ? x : -x;
-            c.InternalTransformStyle = $"transform:translateX({x}%)";
+            c.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
         }
 
         for (int i = 0; i < others.Length; i++)
         {
             var o = others[i];
-            o.InternalTransitionStyle = $"transition:all {NumUtils.ToInvariantString(AnimationDuration)}s";
+            o.InternalTransitionStyle = FormattableString.Invariant($"transition:all {AnimationDuration}s");
             var x = 100 * (offset + i);
             x = Direction == BitDirection.LeftToRight ? x : -x;
-            o.InternalTransformStyle = $"transform:translateX({x}%)";
+            o.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
         }
 
         _currentIndices = newIndices;

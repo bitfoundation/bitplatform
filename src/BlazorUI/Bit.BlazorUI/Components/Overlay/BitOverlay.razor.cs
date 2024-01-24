@@ -67,7 +67,7 @@ public partial class BitOverlay
         ClassBuilder.Register(() => IsVisible ? $"{RootElementClass}-vis" : "");
         ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : "");
 
-        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : "");
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : "");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

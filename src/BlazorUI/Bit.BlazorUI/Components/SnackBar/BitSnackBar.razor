@@ -42,7 +42,7 @@
 
             @if (AutoDismiss)
             {
-                <span style="animation-duration: @($"{AutoDismissTime.TotalSeconds}s"); @Styles?.ProgressBar"
+                <span style="animation-duration: @(FormattableString.Invariant($"{AutoDismissTime.TotalSeconds}s")); @Styles?.ProgressBar"
                       class="bit-snb-pbr @Classes?.ProgressBar"></span>
             }
         </div>
