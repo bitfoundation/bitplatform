@@ -1,17 +1,14 @@
 ﻿@page "/element"
 @inject Bit.Butil.Console console
-@inject Bit.Butil.Element element
 
 <PageTitle>Element Samples</PageTitle>
 
 <h1>Element</h1>
 
 <pre style="font-family:Consolas; overflow: auto;">
-@@inject Bit.Butil.Element element
-
 @@code {
     ...
-    var rect = await element.GetBoundingClientRect();
+    var rect = await elementRef.GetBoundingClientRect();
     ...
 }
 </pre>

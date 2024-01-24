@@ -4,6 +4,7 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <IsTrimmable>true</IsTrimmable>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net8.0'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
