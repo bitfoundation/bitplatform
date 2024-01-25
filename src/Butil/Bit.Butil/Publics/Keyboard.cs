@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -10,6 +11,7 @@ public class Keyboard(IJSRuntime js) : IDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(KeyboardListenersManager))]
     public async Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
     {
         var listenerId = KeyboardListenersManager.AddListener(handler);

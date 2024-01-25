@@ -8,7 +8,7 @@ public class ScrollIntoViewOptions
 
     public ScrollLogicalPosition? Inline { get; set; }
 
-    public object ToJsObject()
+    internal ScrollIntoViewJsOptions ToJsObject()
     {
         var behavior = Behavior switch
         {
@@ -33,7 +33,7 @@ public class ScrollIntoViewOptions
             _ => "start",
         };
 
-        return new
+        return new()
         {
             Behavior = behavior,
             Block = block,

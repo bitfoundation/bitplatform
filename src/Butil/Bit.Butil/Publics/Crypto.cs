@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -16,6 +17,10 @@ public class Crypto(IJSRuntime js)
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt">https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt</see>
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesCtrCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesCbcCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AesGcmCryptoAlgorithmParams))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RsaOaepCryptoAlgorithmParams))]
     public ValueTask<byte[]> Encrypt<T>(T algorithm, byte[] key, byte[] data, CryptoKeyHash? keyHash = null) where T : ICryptoAlgorithmParams
     {
         if (algorithm.GetType() == typeof(RsaOaepCryptoAlgorithmParams))
