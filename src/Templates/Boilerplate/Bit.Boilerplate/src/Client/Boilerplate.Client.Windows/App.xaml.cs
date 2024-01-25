@@ -33,5 +33,16 @@ public partial class App
         using StreamWriter writer = new StreamWriter(stream);
         writer.Write(JsonSerializer.Serialize(Properties));
     }
+
+    private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            ((MainWindow)MainWindow).BlazorWebView.Services.GetRequiredService<IExceptionHandler>().Handle(e.Exception);
+        }
+        catch { }
+
+        e.Handled = true;
+    }
 }
 
