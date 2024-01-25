@@ -195,7 +195,7 @@ public partial class Butil10ElementPage
 
     private async Task Scroll()
     {
-        var scrollOptions = new ScrollToOptions() 
+        var scrollOptions = new ScrollOptions() 
         {
             Top = scrollY,
             Left = scrollX,
@@ -207,7 +207,7 @@ public partial class Butil10ElementPage
 
     private async Task ScrollBy()
     {
-        var scrollOptions = new ScrollToOptions()
+        var scrollOptions = new ScrollOptions()
         { 
             Top = scrollByY,
             Left = scrollByX,
