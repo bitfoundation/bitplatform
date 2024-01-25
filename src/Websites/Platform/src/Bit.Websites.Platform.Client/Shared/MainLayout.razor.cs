@@ -56,7 +56,7 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Overview", Url = "/butil/overview" },
         new BitNavItem { Text = "Install", Url = "/butil/install" },
         new BitNavItem { Text = "Setup", Url = "/butil/setup" },
-        new BitNavItem { Text = "Crypto", Url = "/butil/Crypto" },
+        new BitNavItem { Text = "Crypto", Url = "/butil/crypto" },
         new BitNavItem { Text = "Keyboard", Url = "/butil/keyboard" },
         new BitNavItem { Text = "Console", Url = "/butil/console" },
         new BitNavItem { Text = "Storage", Url = "/butil/storage" },
