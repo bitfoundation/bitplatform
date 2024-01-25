@@ -59,12 +59,10 @@
 <hr />
 <br />
 
-X:
-<input type="number" @bind-value="scrollX" />
+X: <input type="number" @bind-value="scrollX" />
 <br />
 <br />
-Y:
-<input type="number" @bind-value="scrollY" />
+Y: <input type="number" @bind-value="scrollY" />
 <br />
 <br />
 <button @onclick="Scroll">Scroll</button>
@@ -74,12 +72,10 @@ Y:
 <hr />
 <br />
 
-X:
-<input type="number" @bind-value="scrollByX" />
+X: <input type="number" @bind-value="scrollByX" />
 <br />
 <br />
-Y:
-<input type="number" @bind-value="scrollByY" />
+Y: <input type="number" @bind-value="scrollByY" />
 <br />
 <br />
 <button @onclick="ScrollBy">ScrollBy</button>
@@ -510,11 +506,11 @@ else
     private async Task ScrollIntoView()
     {
         var scrollOptions = new ScrollIntoViewOptions()
-            {
-                Inline = ScrollLogicalPosition.Center,
-                Block = ScrollLogicalPosition.Center,
-                Behavior = ScrollBehavior.Smooth
-            };
+        {
+            Inline = ScrollLogicalPosition.Center,
+            Block = ScrollLogicalPosition.Center,
+            Behavior = ScrollBehavior.Smooth
+        };
 
         await elementRef.ScrollIntoView(scrollOptions);
     }
