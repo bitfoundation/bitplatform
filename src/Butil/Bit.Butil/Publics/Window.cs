@@ -263,7 +263,7 @@ public class Window(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scroll">https://developer.mozilla.org/en-US/docs/Web/API/Window/scroll</see>
     /// </summary>
-    public async Task Scroll(ScrollToOptions? options)
+    public async Task Scroll(ScrollOptions? options)
         => await js.InvokeVoidAsync("BitButil.window.scroll", options?.ToJsObject(), null, null);
     /// <summary>
     /// Scrolls the window to a particular place in the document.
@@ -278,7 +278,7 @@ public class Window(IJSRuntime js)
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollBy">https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollBy</see>
     /// </summary>
-    public async Task ScrollBy(ScrollToOptions? options)
+    public async Task ScrollBy(ScrollOptions? options)
         => await js.InvokeVoidAsync("BitButil.window.scrollBy", options?.ToJsObject(), null, null);
     /// <summary>
     /// Scrolls the document in the window by the given amount.

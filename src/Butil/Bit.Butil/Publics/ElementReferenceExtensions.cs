@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
 
@@ -105,6 +106,7 @@ public static class ElementReferenceExtensions
     /// <summary>
     /// Asynchronously asks the browser to make the element fullscreen.
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FullScreenJsOptions))]
     public static async ValueTask RequestFullScreen(this ElementReference element, FullScreenOptions? options)
         => await GetJSRuntime(element).InvokeVoidAsync("BitButil.element.requestFullScreen", element, options?.ToJsObject());
 
@@ -117,7 +119,8 @@ public static class ElementReferenceExtensions
     /// <summary>
     /// Scrolls to a particular set of coordinates inside a given element.
     /// </summary>
-    public static async ValueTask Scroll(this ElementReference element, ScrollToOptions? options)
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScrollJsOptions))]
+    public static async ValueTask Scroll(this ElementReference element, ScrollOptions? options)
         => await GetJSRuntime(element).InvokeVoidAsync("BitButil.element.scroll", element, options?.ToJsObject(), null, null);
     /// <summary>
     /// Scrolls to a particular set of coordinates inside a given element.
@@ -128,7 +131,7 @@ public static class ElementReferenceExtensions
     /// <summary>
     /// Scrolls an element by the given amount.
     /// </summary>
-    public static async ValueTask ScrollBy(this ElementReference element, ScrollToOptions? options)
+    public static async ValueTask ScrollBy(this ElementReference element, ScrollOptions? options)
         => await GetJSRuntime(element).InvokeVoidAsync("BitButil.element.scrollBy", element, options?.ToJsObject(), null, null);
     /// <summary>
     /// Scrolls an element by the given amount.
@@ -149,6 +152,7 @@ public static class ElementReferenceExtensions
     /// <summary>
     /// Scrolls the page until the element gets into the view.
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScrollIntoViewJsOptions))]
     public static async ValueTask ScrollIntoView(this ElementReference element, ScrollIntoViewOptions options)
         => await GetJSRuntime(element).InvokeVoidAsync("BitButil.element.scrollIntoView", element, null, options?.ToJsObject());
 
