@@ -21,7 +21,7 @@
 <hr />
 <br />
 
-<div style="background:white; padding:0 2rem; position:sticky; top:10px; border-bottom:1px solid;">
+<div style="background:white; padding:1rem 0; position:sticky; top:10px; border-bottom:1px solid;">
     <div @ref="elementRef" @onpointerdown="HandleOnPointerDown"
          id="target"
          style="max-width:6rem;
@@ -661,7 +661,7 @@ else
 
     private async Task GetHidden()
     {
-        await console.Log("Element Hidden:", await elementRef.GetHidden());
+        await console.Log("Element Hidden:", (await elementRef.GetHidden()).ToString());
     }
 
     private async Task SetDir()
