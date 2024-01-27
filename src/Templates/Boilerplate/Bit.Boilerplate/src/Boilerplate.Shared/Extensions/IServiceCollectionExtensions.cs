@@ -12,7 +12,7 @@ public static class IServiceCollectionExtensions
         // Define authorization policies here to seamlessly integrate them across various components,
         // including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
         // and programmatically in C# by injecting IAuthorizationService for enhanced security and access control.
-        services.AddAuthorizationCore(options => options.AddPolicy("AdminOnly", authPolicyBuilder => authPolicyBuilder.RequireRole("Admin")));
+        services.AddAuthorizationCore(options => options.AddPolicy("AdminsOnly", authPolicyBuilder => authPolicyBuilder.RequireRole("Admin")));
 
         services.AddLocalization();
 
