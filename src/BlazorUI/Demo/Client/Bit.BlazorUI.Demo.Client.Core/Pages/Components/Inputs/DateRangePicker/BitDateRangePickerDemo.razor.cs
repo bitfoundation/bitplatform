@@ -220,15 +220,15 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "MaxRangeDays",
-            Type = "int?",
+            Name = "MaxDayRange",
+            Type = "uint",
             DefaultValue = "null",
             Description = "The maximum range of days allowed for selection in DateRangePicker.",
         },
         new()
         {
-            Name = "MaxRangeTime",
-            Type = "int?",
+            Name = "MaxTimeRange",
+            Type = "TimeSpan?",
             DefaultValue = "null",
             Description = "The maximum range of time allowed for selection in DateRangePicker.",
         },
