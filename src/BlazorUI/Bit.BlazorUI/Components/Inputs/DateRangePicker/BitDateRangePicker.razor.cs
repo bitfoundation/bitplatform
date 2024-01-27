@@ -1714,7 +1714,7 @@ public partial class BitDateRangePicker
         return MaxTimeRange.Value.TotalMinutes > Math.Abs((startTime - endTime).TotalMinutes);
     }
 
-    private bool IsDisabledDecreaseOrIncreaseButton(bool isNext, bool isHour, bool isStartTime)
+    private bool IsDisabledIncreaseOrDecreaseButton(bool isNext, bool isHour, bool isStartTime)
     {
         if (MaxTimeRange.HasValue is false) return false;
 
