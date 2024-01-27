@@ -460,15 +460,15 @@
                         <div style="@Styles?.Divider" class="bit-dtrp-dvd @Classes?.Divider"></div>
                     }
 
-                    var startTimeIncreaseHourDisabled = CanChangeTime(true, true, true);
-                    var startTimeDecreaseHourDisabled = CanChangeTime(false, true, true);
-                    var startTimeIncreaseMinuteDisabled = CanChangeTime(true, false, true);
-                    var startTimeDecreaseMinuteDisabled = CanChangeTime(false, false, true);
+                    var startTimeIncreaseHourDisabled = IncreaseOrDecreaseIsDisabled(true, true, true);
+                    var startTimeDecreaseHourDisabled = IncreaseOrDecreaseIsDisabled(false, true, true);
+                    var startTimeIncreaseMinuteDisabled = IncreaseOrDecreaseIsDisabled(true, false, true);
+                    var startTimeDecreaseMinuteDisabled = IncreaseOrDecreaseIsDisabled(false, false, true);
 
-                    var endTimeIncreaseHourDisabled = CanChangeTime(true, true, false);
-                    var endTimeDecreaseHourDisabled = CanChangeTime(false, true, false);
-                    var endTimeIncreaseMinuteDisabled = CanChangeTime(true, false, false);
-                    var endTimeDecreaseMinuteDisabled = CanChangeTime(false, false, false);
+                    var endTimeIncreaseHourDisabled = IncreaseOrDecreaseIsDisabled(true, true, false);
+                    var endTimeDecreaseHourDisabled = IncreaseOrDecreaseIsDisabled(false, true, false);
+                    var endTimeIncreaseMinuteDisabled = IncreaseOrDecreaseIsDisabled(true, false, false);
+                    var endTimeDecreaseMinuteDisabled = IncreaseOrDecreaseIsDisabled(false, false, false);
 
                     <div style="@Styles?.TimePickerWrapper" class="bit-dtrp-twp @Classes?.TimePickerWrapper">
                         <div style="@Styles?.TimePickerHeader" class="bit-dtrp-pkh bit-dtrp-tph @Classes?.TimePickerHeader">
