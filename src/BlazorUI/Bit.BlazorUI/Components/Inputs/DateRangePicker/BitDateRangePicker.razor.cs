@@ -1476,10 +1476,10 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate.HasValue is false && CurrentValue.EndDate.HasValue is false) return;
 
-        var endTimeIsBiggerInOneDay = CurrentValue.StartDate.HasValue && CurrentValue.EndDate.HasValue &&
+        var isEndTimeBiggerInOneDayRange = CurrentValue.StartDate.HasValue && CurrentValue.EndDate.HasValue &&
             CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate!.Value.Date &&
             new TimeSpan(_startTimeHour, _startTimeMinute, 0) > new TimeSpan(_endTimeHour, _endTimeMinute, 0);
-        if (endTimeIsBiggerInOneDay)
+        if (isEndTimeBiggerInOneDayRange)
         {
             _startTimeHour = _endTimeHour;
             _startTimeMinute = _endTimeMinute;
@@ -1714,7 +1714,7 @@ public partial class BitDateRangePicker
         return MaxTimeRange.Value.TotalMinutes > Math.Abs((startTime - endTime).TotalMinutes);
     }
 
-    private bool IsDisabledIncreaseOrDecreaseButton(bool isNext, bool isHour, bool isStartTime)
+    private bool IsIncreaseOrDecreaseButtonDisabled(bool isNext, bool isHour, bool isStartTime)
     {
         if (MaxTimeRange.HasValue is false) return false;
 

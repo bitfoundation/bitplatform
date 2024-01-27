@@ -460,15 +460,15 @@
                         <div style="@Styles?.Divider" class="bit-dtrp-dvd @Classes?.Divider"></div>
                     }
 
-                    var startTimeIncreaseHourDisabled = IsDisabledIncreaseOrDecreaseButton(true, true, true);
-                    var startTimeDecreaseHourDisabled = IsDisabledIncreaseOrDecreaseButton(false, true, true);
-                    var startTimeIncreaseMinuteDisabled = IsDisabledIncreaseOrDecreaseButton(true, false, true);
-                    var startTimeDecreaseMinuteDisabled = IsDisabledIncreaseOrDecreaseButton(false, false, true);
+                    var startTimeIncreaseHourDisabled = IsIncreaseOrDecreaseButtonDisabled(true, true, true);
+                    var startTimeDecreaseHourDisabled = IsIncreaseOrDecreaseButtonDisabled(false, true, true);
+                    var startTimeIncreaseMinuteDisabled = IsIncreaseOrDecreaseButtonDisabled(true, false, true);
+                    var startTimeDecreaseMinuteDisabled = IsIncreaseOrDecreaseButtonDisabled(false, false, true);
 
-                    var endTimeIncreaseHourDisabled = IsDisabledIncreaseOrDecreaseButton(true, true, false);
-                    var endTimeDecreaseHourDisabled = IsDisabledIncreaseOrDecreaseButton(false, true, false);
-                    var endTimeIncreaseMinuteDisabled = IsDisabledIncreaseOrDecreaseButton(true, false, false);
-                    var endTimeDecreaseMinuteDisabled = IsDisabledIncreaseOrDecreaseButton(false, false, false);
+                    var endTimeIncreaseHourDisabled = IsIncreaseOrDecreaseButtonDisabled(true, true, false);
+                    var endTimeDecreaseHourDisabled = IsIncreaseOrDecreaseButtonDisabled(false, true, false);
+                    var endTimeIncreaseMinuteDisabled = IsIncreaseOrDecreaseButtonDisabled(true, false, false);
+                    var endTimeDecreaseMinuteDisabled = IsIncreaseOrDecreaseButtonDisabled(false, false, false);
 
                     <div style="@Styles?.TimePickerWrapper" class="bit-dtrp-twp @Classes?.TimePickerWrapper">
                         <div style="@Styles?.TimePickerHeader" class="bit-dtrp-pkh bit-dtrp-tph @Classes?.TimePickerHeader">
