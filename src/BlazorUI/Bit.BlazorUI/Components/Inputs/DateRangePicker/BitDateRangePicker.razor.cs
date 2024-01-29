@@ -444,9 +444,9 @@ public partial class BitDateRangePicker
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
-    /// The callback for selecting a date in the DateRangePicker.
+    /// Callback for when the value changes in the DateRangePicker.
     /// </summary>
-    [Parameter] public EventCallback<BitDateRangePickerValue> OnSelectDate { get; set; }
+    [Parameter] public EventCallback<BitDateRangePickerValue> OnChange { get; set; }
 
     /// <summary>
     /// The placeholder text of the DateRangePicker's input.
@@ -714,7 +714,7 @@ public partial class BitDateRangePicker
 
         CurrentValueAsString = e.Value?.ToString();
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)
@@ -782,7 +782,7 @@ public partial class BitDateRangePicker
 
         GenerateMonthData(_currentYear, _currentMonth);
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SelectMonth(int month)
@@ -1490,6 +1490,8 @@ public partial class BitDateRangePicker
             StartDate = GetDateTimeOffset(CurrentValue.StartDate, _startTimeHour, _startTimeMinute),
             EndDate = GetDateTimeOffset(CurrentValue.EndDate, _endTimeHour, _endTimeMinute)
         };
+
+        _ = OnChange.InvokeAsync(CurrentValue);
     }
 
     private DateTimeOffset? GetDateTimeOffset(DateTimeOffset? date, int hour, int minute)

@@ -286,9 +286,9 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "OnSelectDate",
+            Name = "OnChange",
             Type = "EventCallback<BitDateRangePickerValue?>",
-            Description = "The callback for selecting a date in the DateRangePicker.",
+            Description = "Callback for when the value changes in the DateRangePicker.",
             LinkType = LinkType.Link,
             Href = "#date-range-picker-value",
         },
