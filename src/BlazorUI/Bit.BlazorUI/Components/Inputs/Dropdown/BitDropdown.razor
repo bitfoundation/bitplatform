@@ -47,7 +47,11 @@
               aria-atomic="true"
               aria-invalid="false">
 
-            @if (Chips is false && _text.HasValue())
+            @{
+                var text = GetText();
+            }
+
+            @if (Chips is false && text.HasValue())
             {
                 @if (TextTemplate is not null)
                 {
@@ -55,7 +59,7 @@
                 }
                 else
                 {
-                    @_text
+                    @text
                 }
             }
             else if (Combo is false)

@@ -175,8 +175,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Placeholder=""Select items""
              IsMultiSelect=""true""
              OnSelectItem=""(BitDropdownItem<string> item) => selectedItem2 = item"" />
-<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
-<BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>";
+<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>";
     private readonly string example3CsharpCode = @"
 private string controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
@@ -607,16 +606,14 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
     private readonly string example12RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValue""
-             Label=""Single select dropdown""
-             Items=""comboBoxItems""
-             Placeholder=""Select an option""
-             DynamicValueGenerator=""(BitDropdownItem<string> item) => HandleDynamicValueGenerator(item)""
-             ValueSetter=""(BitDropdownItem<string> item, string? value) => HandleValueSetter(item, value)""
-             TextSetter=""(string? text, BitDropdownItem<string> item) => HandleTextSetter(text, item)""
-             OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)""
-             Combo
-             Chips
-             Dynamic />
+                Label=""Single select dropdown""
+                Items=""comboBoxItems""
+                Placeholder=""Select an option""
+                NameSelectors=""nameSelectors""
+                OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)""
+                Combo
+                Chips
+                Dynamic />
 <BitLabel>Value: @comboBoxValue</BitLabel>
 
 <BitDropdown @bind-Values=""comboBoxValues""
@@ -624,9 +621,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""comboBoxItems""
              Placeholder=""Select options""
              IsMultiSelect=""true""
-             DynamicValueGenerator=""(BitDropdownItem<string> item) => HandleDynamicValueGenerator(item)""
-             ValueSetter=""(BitDropdownItem<string> item, string? value) => HandleValueSetter(item, value)""
-             TextSetter=""(string? text, BitDropdownItem<string> item) => HandleTextSetter(text, item)""
+             NameSelectors=""nameSelectors""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)""
              Combo
              Chips
@@ -636,25 +631,12 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 private string? comboBoxValue;
 private ICollection<string?> comboBoxValues = [];
 
-private string? HandleDynamicValueGenerator(BitDropdownItem<string> item)
+private BitDropdownNameSelectors<BitDropdownItem<string>, string> nameSelectors = new()
 {
-    return item.Text;
-}
-
-private void HandleValueSetter(BitDropdownItem<string> item, string? value)
-{
-    item.Value = value;
-}
-
-private void HandleTextSetter(string? text, BitDropdownItem<string> item)
-{
-    item.Text = text;
-}
-
-private void HandleOnDynamicAdd(BitDropdownItem<string> item)
-{
-    comboBoxItems.Add(item);
-}
+    DynamicValueGenerator = ((BitDropdownItem<string> item) => item.Text),
+    ValueSetter = ((BitDropdownItem<string> item, string? value) => item.Value = value),
+    TextSetter = ((string? text, BitDropdownItem<string> item) => item.Text = text)
+};
 
 private List<BitDropdownItem<string>> comboBoxItems = new()
 {

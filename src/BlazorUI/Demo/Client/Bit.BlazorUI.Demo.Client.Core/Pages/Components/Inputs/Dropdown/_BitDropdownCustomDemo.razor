@@ -140,7 +140,6 @@
                              NameSelectors="nameSelectors"
                              OnSelectItem="(BitDropdownCustom item) => selectedItem2 = item" />
                 <BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
-                <BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>
             </div>
         </div>
     </ExamplePreview>
@@ -422,11 +421,8 @@
                 <BitDropdown @bind-Value="comboBoxValue"
                              Label="Single select combo box"
                              Items="comboBoxCustoms"
-                             NameSelectors="nameSelectors"
+                             NameSelectors="comboBoxNameSelectors"
                              Placeholder="Select an option"
-                             DynamicValueGenerator="(BitDropdownCustom item) => HandleDynamicValueGenerator(item)"
-                             ValueSetter="(BitDropdownCustom item, string? value) => HandleValueSetter(item, value)"
-                             TextSetter="(string? text, BitDropdownCustom item) => HandleTextSetter(text, item)"
                              OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)"
                              Combo
                              Chips
@@ -438,12 +434,9 @@
                 <BitDropdown @bind-Values="comboBoxValues"
                              Label="Multi select combo box"
                              Items="comboBoxCustoms"
-                             NameSelectors="nameSelectors"
+                             NameSelectors="comboBoxNameSelectors"
                              Placeholder="Select options"
                              IsMultiSelect="true"
-                             DynamicValueGenerator="(BitDropdownCustom item) => HandleDynamicValueGenerator(item)"
-                             ValueSetter="(BitDropdownCustom item, string? value) => HandleValueSetter(item, value)"
-                             TextSetter="(string? text, BitDropdownCustom item) => HandleTextSetter(text, item)"
                              OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)"
                              Combo
                              Chips

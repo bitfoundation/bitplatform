@@ -74,6 +74,12 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Lettuce", Value = "v-let" }
     };
 
+    private BitDropdownNameSelectors<BitDropdownItem<string>, string> nameSelectors = new()
+    {
+        DynamicValueGenerator = ((BitDropdownItem<string> item) => item.Text),
+        ValueSetter = ((BitDropdownItem<string> item, string? value) => item.Value = value),
+        TextSetter = ((string? text, BitDropdownItem<string> item) => item.Text = text)
+    };
 
 
     private string controlledValue = "f-app";
@@ -124,21 +130,6 @@ public partial class _BitDropdownItemDemo
     private void HandleInvalidSubmit()
     {
         successMessage = string.Empty;
-    }
-
-    private string? HandleDynamicValueGenerator(BitDropdownItem<string> item)
-    {
-        return item.Text;
-    }
-
-    private void HandleValueSetter(BitDropdownItem<string> item, string? value)
-    {
-        item.Value = value;
-    }
-
-    private void HandleTextSetter(string? text, BitDropdownItem<string> item)
-    {
-        item.Text = text;
     }
 
     private void HandleOnDynamicAdd(BitDropdownItem<string> item)

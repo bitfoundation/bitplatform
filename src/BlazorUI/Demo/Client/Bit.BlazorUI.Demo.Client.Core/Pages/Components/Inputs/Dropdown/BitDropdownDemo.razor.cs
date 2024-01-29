@@ -422,13 +422,6 @@ public partial class BitDropdownDemo
                },
                new()
                {
-                   Name = "IsSelected",
-                   Type = "bool",
-                   DefaultValue = "null",
-                   Description = "Determines if the dropdown item is selected."
-               },
-               new()
-               {
                    Name = "ItemType",
                    Type = "BitDropdownItemType",
                    DefaultValue = "BitDropdownItemType.Normal",
@@ -617,15 +610,6 @@ public partial class BitDropdownDemo
                    Type = "BitNameSelectorPair<TItem, bool>",
                    DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsHidden))",
                    Description = "The IsHidden field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               },
-               new()
-               {
-                   Name = "IsSelected",
-                   Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsSelected))",
-                   Description = "The IsSelected field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },

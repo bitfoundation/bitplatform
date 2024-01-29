@@ -14,12 +14,29 @@ public partial class _BitDropdownCustomDemo
         Data = { Selector = c => c.Payload },
         IsEnabled = { Selector = c => c.Disabled is false },
         IsHidden = { Selector = c => c.Visible is false },
-        IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
         ItemType = { Selector = c => c.Type },
         Style = { Selector = c => c.CssStyle },
         Text = { Selector = c => c.Text },
         Title = { Selector = c => c.Title },
         Value = { Selector = c => c.Value },
+    };
+
+    private BitDropdownNameSelectors<BitDropdownCustom, string?> comboBoxNameSelectors = new()
+    {
+        AriaLabel = { Selector = c => c.Label },
+        Class = { Selector = c => c.CssClass },
+        Id = { Selector = c => c.Key },
+        Data = { Selector = c => c.Payload },
+        IsEnabled = { Selector = c => c.Disabled is false },
+        IsHidden = { Selector = c => c.Visible is false },
+        ItemType = { Selector = c => c.Type },
+        Style = { Selector = c => c.CssStyle },
+        Text = { Selector = c => c.Text },
+        Title = { Selector = c => c.Title },
+        Value = { Selector = c => c.Value },
+        DynamicValueGenerator = ((BitDropdownCustom item) => item.Text),
+        ValueSetter = ((BitDropdownCustom item, string? value) => item.Value = value),
+        TextSetter = ((string? text, BitDropdownCustom item) => item.Text = text)
     };
 
 
@@ -141,21 +158,6 @@ public partial class _BitDropdownCustomDemo
     private void HandleInvalidSubmit()
     {
         successMessage = string.Empty;
-    }
-
-    private string? HandleDynamicValueGenerator(BitDropdownCustom item)
-    {
-        return item.Text;
-    }
-
-    private void HandleValueSetter(BitDropdownCustom item, string? value)
-    {
-        item.Value = value;
-    }
-
-    private void HandleTextSetter(string? text, BitDropdownCustom item)
-    {
-        item.Text = text;
     }
 
     private void HandleOnDynamicAdd(BitDropdownCustom item)

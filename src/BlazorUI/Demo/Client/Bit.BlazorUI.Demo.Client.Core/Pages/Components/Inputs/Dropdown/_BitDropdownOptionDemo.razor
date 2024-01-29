@@ -210,7 +210,6 @@
                     }
                 </BitDropdown>
                 <BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
-                <BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>
             </div>
         </div>
     </ExamplePreview>
@@ -536,9 +535,7 @@
                 <BitDropdown @bind-Value="comboBoxValue"
                              Label="Single select combo box"
                              Placeholder="Select an option"
-                             DynamicValueGenerator="(BitDropdownOption<string> item) => HandleDynamicValueGenerator(item)"
-                             ValueSetter="(BitDropdownOption<string> item, string? value) => HandleValueSetter(item, value)"
-                             TextSetter="(string? text, BitDropdownOption<string> item) => HandleTextSetter(text, item)"
+                             NameSelectors="nameSelectors"
                              OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
                              Combo
                              Chips
@@ -557,9 +554,7 @@
                              Label="Multi select combo box"
                              Placeholder="Select options"
                              IsMultiSelect="true"
-                             DynamicValueGenerator="(BitDropdownOption<string> item) => HandleDynamicValueGenerator(item)"
-                             ValueSetter="(BitDropdownOption<string> item, string? value) => HandleValueSetter(item, value)"
-                             TextSetter="(string? text, BitDropdownOption<string> item) => HandleTextSetter(text, item)"
+                             NameSelectors="nameSelectors"
                              OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
                              Combo
                              Chips

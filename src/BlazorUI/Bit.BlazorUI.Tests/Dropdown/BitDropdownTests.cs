@@ -229,7 +229,7 @@ public class BitDropdownTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var items = BitDropdownTests.GetDropdownItems();
+        var items = GetDropdownItems();
         var defaultSelectedMultipleValueList = defaultValues.Split(",").ToArray();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
@@ -239,20 +239,17 @@ public class BitDropdownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-tcn");
-        var defaultSelectedItems = items.FindAll(i => defaultSelectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
+        var defaultSelectedItems = component.Instance.SelectedItems.ToList();
         var expectedText = "";
 
         defaultSelectedItems.ForEach(i =>
         {
-            if (i.IsSelected && i.ItemType == BitDropdownItemType.Normal)
+            if (expectedText.HasValue())
             {
-                if (expectedText.HasValue())
-                {
-                    expectedText += component.Instance.MultiSelectDelimiter;
-                }
-
-                expectedText += i.Text;
+                expectedText += component.Instance.MultiSelectDelimiter;
             }
+
+            expectedText += i.Text;
         });
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
@@ -266,7 +263,7 @@ public class BitDropdownTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var items = BitDropdownTests.GetDropdownItems();
+        var items = GetDropdownItems();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
@@ -286,7 +283,7 @@ public class BitDropdownTests : BunitTestContext
     ]
     public void BitDropdownTextWithValuesAndDefaultValuesShouldInitCorrect(string defaultValues, string values)
     {
-        var items = BitDropdownTests.GetDropdownItems();
+        var items = GetDropdownItems();
         var defaultSelectedMultipleValueList = defaultValues.Split(",").ToArray();
         var selectedMultipleValueList = values.Split(",").ToArray();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
@@ -298,20 +295,17 @@ public class BitDropdownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-tcn");
-        var selectedItems = items.FindAll(i => selectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
+        var selectedItems = component.Instance.SelectedItems.ToList();
         var expectedText = new StringBuilder();
 
         selectedItems.ForEach(i =>
         {
-            if (i.IsSelected && i.ItemType == BitDropdownItemType.Normal)
+            if (expectedText.Length > 0)
             {
-                if (expectedText.Length > 0)
-                {
-                    expectedText.Append(component.Instance.MultiSelectDelimiter);
-                }
-
-                expectedText.Append(i.Text);
+                expectedText.Append(component.Instance.MultiSelectDelimiter);
             }
+
+            expectedText.Append(i.Text);
         });
 
         Assert.AreEqual(expectedText.ToString(), textSpan.InnerHtml);

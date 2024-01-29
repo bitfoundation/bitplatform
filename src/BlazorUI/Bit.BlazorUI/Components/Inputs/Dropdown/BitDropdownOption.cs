@@ -38,11 +38,6 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     [Parameter] public bool IsHidden { get; set; }
 
     /// <summary>
-    /// Determines if the dropdown option is selected.
-    /// </summary>
-    [Parameter] public bool IsSelected { get; set; }
-
-    /// <summary>
     /// The type of the dropdown option.
     /// </summary>
     [Parameter] public BitDropdownItemType ItemType { get; set; } = BitDropdownItemType.Normal;

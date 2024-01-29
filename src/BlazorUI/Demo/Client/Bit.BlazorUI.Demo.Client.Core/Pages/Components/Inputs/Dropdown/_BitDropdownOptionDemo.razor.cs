@@ -68,6 +68,12 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Lettuce", Value = "v-let" }
     };
 
+    private BitDropdownNameSelectors<BitDropdownOption<string>, string> nameSelectors = new()
+    {
+        DynamicValueGenerator = ((BitDropdownOption<string> item) => item.Text),
+        ValueSetter = ((BitDropdownOption<string> item, string? value) => item.Value = value),
+        TextSetter = ((string? text, BitDropdownOption<string> item) => item.Text = text)
+    };
 
 
     private string controlledValue = "f-app";
@@ -113,23 +119,8 @@ public partial class _BitDropdownOptionDemo
         successMessage = string.Empty;
     }
 
-    private string? HandleDynamicValueGenerator(BitDropdownOption<string> item)
-    {
-        return item.Text;
-    }
-
-    private void HandleValueSetter(BitDropdownOption<string> item, string? value)
-    {
-        item.Value = value;
-    }
-
-    private void HandleTextSetter(string? text, BitDropdownOption<string> item)
-    {
-        item.Text = text;
-    }
-
     private void HandleOnDynamicAdd(BitDropdownOption<string> item)
     {
-        basicItems.Add(new() { Text = item.Text, Value = item.Value });
+        comboBoxItems.Add(new() { Text = item.Text, Value = item.Value });
     }
 }
