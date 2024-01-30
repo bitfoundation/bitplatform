@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil06ConsolePage
+public partial class Butil07ConsolePage
 {
     private string value = "Test";
 

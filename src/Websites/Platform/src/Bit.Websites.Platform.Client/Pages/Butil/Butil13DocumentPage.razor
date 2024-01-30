@@ -62,22 +62,20 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                <ChildContent>
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @designModeExampleCode
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @designModeExampleCode
                             </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitCheckbox @bind-Value="isDesignModeOn" Label="@(isDesignModeOn ? "On" : "Off")" />
-                            <br />
-                            <BitButton OnClick=SetDesignMode>SetDesignMode</BitButton>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
-                </ChildContent>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitCheckbox @bind-Value="isDesignModeOn" Label="@(isDesignModeOn ? "On" : "Off")" />
+                        <br />
+                        <BitButton OnClick=SetDesignMode>SetDesignMode</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 
