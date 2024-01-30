@@ -50,16 +50,16 @@ public partial class Butil05ClipboardPage
     private string writeTextExampleCode =
 @"@inject Bit.Butil.Clipboard clipboard
 
-<BitButton OnClick=""ReadText"">ReadText</BitButton>
+<BitTextField @bind-Value=""newClipboardText"" />
 
-<div>Clipboard text: @clipboardText</div>
+<BitButton OnClick=""WriteText"">WriteText</BitButton>
 
 @code {
-    private string clipboardText = string.Empty;
+    private string newClipboardText = string.Empty;
 
-    private async Task ReadText()
+    private async Task WriteText()
     {
-        clipboardText = await clipboard.ReadText();
+        await clipboard.WriteText(newClipboardText);
     }
 }";
 
@@ -86,7 +86,7 @@ public partial class Butil05ClipboardPage
     private string writeExampleCode =
 @"@inject Bit.Butil.Clipboard clipboard
 
-<BitTextField @bind-Value=""newText"" Style=""max-width: 18.75rem;"" />
+<BitTextField @bind-Value=""newText"" />
 
 <BitButton OnClick=""Write"">Write</BitButton>
 
