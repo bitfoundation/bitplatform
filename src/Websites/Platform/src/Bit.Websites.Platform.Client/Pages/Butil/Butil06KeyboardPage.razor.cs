@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil05KeyboardPage
+public partial class Butil06KeyboardPage
 {
     private BitSearchBox searchBox = default!;
 
@@ -14,7 +14,7 @@ public partial class Butil05KeyboardPage
 
 
     private string addExampleCode =
-@"@inject Bit.Butil.Document document
+@"@inject Bit.Butil.Keyboard keyboard
 
 <div>Press Ctrl+F to focus on search box</div>
 

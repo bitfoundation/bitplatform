@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil15ScreenPage
+public partial class Butil16ScreenPage
 {
     private string? availableHeight;
 
