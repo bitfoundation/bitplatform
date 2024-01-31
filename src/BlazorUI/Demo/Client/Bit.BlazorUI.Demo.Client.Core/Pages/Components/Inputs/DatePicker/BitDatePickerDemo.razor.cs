@@ -908,7 +908,8 @@ public partial class BitDatePickerDemo
 <BitDatePicker Label=""PlaceHolder"" Placeholder=""Select a date"" />
 <BitDatePicker Label=""Week numbers"" ShowWeekNumbers=""true"" />
 <BitDatePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
-<BitDatePicker Label=""TimePicker"" ShowTimePicker=""true"" />";
+<BitDatePicker Label=""TimePicker"" ShowTimePicker=""true"" />
+<BitDatePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />";
 
     private readonly string example2RazorCode = @"
 <BitDatePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
