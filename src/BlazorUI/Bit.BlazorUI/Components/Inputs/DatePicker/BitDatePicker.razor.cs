@@ -112,12 +112,13 @@ public partial class BitDatePicker
     private bool _isTimePickerOverlayOnTop;
     private bool _showTimePickerAsOverlayInternal;
     private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
-    private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
+    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
     private string _datePickerId = string.Empty;
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _inputId;
+    private ElementReference _inputRef = default!;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
 
@@ -467,6 +468,11 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
 
+    /// <summary>
+    /// Whether the clear button should be shown or not when the BitDatePicker has a value.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
+
 
     public Task OpenCallout()
     {
@@ -643,6 +649,18 @@ public partial class BitDatePicker
         }
 
         await OnSelectDate.InvokeAsync(CurrentValue);
+    }
+
+    private async Task HandleOnClearButtonClick()
+    {
+        if (IsEnabled is false) return;
+
+        CurrentValue = null;
+
+        _hour = 0;
+        _minute = 0;
+
+        await _inputRef.FocusAsync();
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)

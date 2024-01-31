@@ -278,6 +278,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the clear button should be shown or not when the BitDatePicker has a value."
+        },
+        new()
+        {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
