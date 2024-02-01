@@ -13,6 +13,6 @@ builder.Services.AddServerServices(builder.Environment, builder.Configuration);
 
 var app = builder.Build();
 
-app.ConfiureAppMiddlewares(builder.Environment, builder.Configuration);
+app.ConfiureMiddlewares(builder.Environment, builder.Configuration);
 
 await app.RunAsync();

@@ -17,7 +17,7 @@ public static class WebApplicationExtensions
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    public static void ConfiureAppMiddlewares(this WebApplication app, IHostEnvironment env, IConfiguration configuration)
+    public static void ConfiureMiddlewares(this WebApplication app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
 
