@@ -674,12 +674,14 @@ public partial class BitDatePicker
         int selectedMonth = FindMonth(weekIndex, dayIndex);
         var isNotInCurrentMonth = IsInCurrentMonth(weekIndex, dayIndex) is false;
 
-        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth)
+        //The number of days displayed in the picker is about 34 days, and if the selected day is less than 15, it means that the next month has been selected in next year.
+        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth && _currentDay < 15)
         {
             _currentYear++;
         }
 
-        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth)
+        //The number of days displayed in the picker is about 34 days, and if the selected day is greater than 15, it means that the previous month has been selected in previous year.
+        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth && _currentDay > 15)
         {
             _currentYear--;
         }
