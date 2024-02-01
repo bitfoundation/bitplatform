@@ -81,6 +81,31 @@
     color: $color-foreground-secondary;
 }
 
+.bit-dtrp-clr {
+    display: flex;
+    width: spacing(3.75);
+    height: spacing(3.75);
+    justify-content: center;
+    align-items: center;
+    background-color: $color-background-secondary;
+    cursor: pointer;
+
+    i {
+        speak: none;
+        width: unset;
+        pointer-events: none;
+        display: inline-block;
+        font-size: spacing(1.5);
+        color: $color-foreground-secondary;
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+}
+
 .bit-dtrp-inp {
     margin: 0;
     outline: 0;

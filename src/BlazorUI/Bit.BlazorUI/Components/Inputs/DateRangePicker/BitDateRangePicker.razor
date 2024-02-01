@@ -20,7 +20,8 @@
     }
     <div style="@Styles?.InputWrapper" class="bit-dtrp-wrp @Classes?.InputWrapper" id="@_dateRangePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div style="@Styles?.InputContainer" class="bit-dtrp-icn @Classes?.InputContainer">
-            <input @attributes="InputHtmlAttributes"
+            <input @ref="_inputRef"
+                   @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
                    @onchange="@HandleOnChange"
                    @onfocusin="@HandleOnFocusIn"
@@ -40,6 +41,18 @@
                    aria-labelledby="@(Label.HasValue() ? _labelId : null)"
                    style="@Styles?.Input"
                    class="bit-dtrp-inp@(AllowTextInput ? " bit-dtrp-ein" : null) @Classes?.Input" />
+
+            @if (IsEnabled && ShowClearButton && CurrentValue?.StartDate is not null)
+            {
+                <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
+                        style="@Styles?.ClearButton"
+                        class="bit-dtrp-clr @Classes?.ClearButton"
+                        type="button"
+                        aria-hidden="true"
+                        aria-label="Clear date">
+                    <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                </button>
+            }
 
             @if (IconTemplate is not null)
             {

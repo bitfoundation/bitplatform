@@ -301,6 +301,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the clear button should be shown or not when the DateRangePicker has a value."
+        },
+        new()
+        {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
@@ -979,7 +986,8 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker=""true"" />
 <BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
-<BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />";
+<BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />
+<BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />";
 
     private readonly string example2RazorCode = @"
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
