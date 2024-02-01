@@ -1,23 +1,22 @@
-﻿//-:cnd:noEmit
-using System.Net;
+﻿using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Web;
 using Boilerplate.Client.Core.Services;
-using Boilerplate.Server.Components;
+using Boilerplate.Server;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
 
-namespace Boilerplate.Server.Startup;
+namespace Microsoft.AspNetCore.Builder;
 
-public class Middlewares
+public static class WebApplicationExtensions
 {
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    public static void Use(WebApplication app, IHostEnvironment env, IConfiguration configuration)
+    public static void ConfiureAppMiddlewares(this WebApplication app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
 
