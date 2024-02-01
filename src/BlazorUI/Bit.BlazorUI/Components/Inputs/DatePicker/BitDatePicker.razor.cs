@@ -660,6 +660,9 @@ public partial class BitDatePicker
         _hour = 0;
         _minute = 0;
 
+        _selectedDateWeek = null;
+        _selectedDateDayOfWeek = null;
+
         await _inputRef.FocusAsync();
     }
 
