@@ -183,6 +183,7 @@ public partial class BitDateRangePicker
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _inputId;
+    private ElementReference _inputRef = default!;
     private ElementReference _startTimeHourInputRef = default!;
     private ElementReference _startTimeMinuteInputRef = default!;
     private ElementReference _endTimeHourInputRef = default!;
@@ -533,6 +534,11 @@ public partial class BitDateRangePicker
     /// </summary>
     [Parameter] public TimeSpan? MaxTimeRange { get; set; }
 
+    /// <summary>
+    /// Whether the clear button should be shown or not when the DateRangePicker has a value.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
+
 
     public Task OpenCallout()
     {
@@ -715,6 +721,26 @@ public partial class BitDateRangePicker
         CurrentValueAsString = e.Value?.ToString();
 
         await OnChange.InvokeAsync(CurrentValue);
+    }
+
+    private async Task HandleOnClearButtonClick()
+    {
+        if (IsEnabled is false) return;
+
+        CurrentValue = new();
+
+        _startTimeHour = 0;
+        _startTimeMinute = 0;
+
+        _endTimeHour = MaxTimeRange.HasValue ? MaxTimeRange.Value.Hours : 23;
+        _endTimeMinute = MaxTimeRange.HasValue ? MaxTimeRange.Value.Minutes : 59;
+
+        _selectedStartDateWeek = null;
+        _selectedEndDateWeek = null;
+        _selectedStartDateDayOfWeek = null;
+        _selectedEndDateDayOfWeek = null;
+
+        await _inputRef.FocusAsync();
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)
