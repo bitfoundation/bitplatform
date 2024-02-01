@@ -1,4 +1,5 @@
-﻿//#if (sample == "Todo")
+﻿//+:cnd:noEmit
+//#if (sample == "Todo")
 using Boilerplate.Shared.Dtos.Todo;
 //#elif (sample == "Admin")
 using Boilerplate.Shared.Dtos.Categories;
