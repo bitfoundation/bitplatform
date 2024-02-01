@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Swashbuckle.AspNetCore.SwaggerGen;
+namespace Boilerplate.Server.Services;
 
 /// <summary>
 /// https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
@@ -10,11 +11,9 @@ public class ODataOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        if (operation.Parameters == null) operation.Parameters = new List<OpenApiParameter>();
+        if (operation.Parameters is null) operation.Parameters = [];
 
-        var descriptor = context.ApiDescription.ActionDescriptor as ControllerActionDescriptor;
-
-        if (descriptor is null)
+        if (context.ApiDescription.ActionDescriptor is not ControllerActionDescriptor descriptor)
             return;
 
         var odataQueryOptionsParameter = descriptor!.Parameters.SingleOrDefault(p => typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType));

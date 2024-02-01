@@ -8,6 +8,9 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
         <WarningsAsErrors>$(WarningsAsErrors);CS0114</WarningsAsErrors>
+		
+		<!-- You have the flexibility to modify all of these properties using the -p parameters during the build process. -->
+		<!-- Examples: dotnet publish -c Release -p:MultilingualEnabled=false OR dotnet build -p:PwaEnabled=false -->
 
         <NeutralLanguage>en-US</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
