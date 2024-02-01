@@ -47,6 +47,11 @@ jobs:
         dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --windows
         dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
 
+    - name: Release build empty sample without api
+      run: |
+        dotnet new bit-bp --name ApiFalse --database other --sample none --pipeline azure --api false
+        dotnet build ApiFalse/ApiFalse.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
+
     - name: Release build admin panel sample + SqlServer database
       run: |
         dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github
