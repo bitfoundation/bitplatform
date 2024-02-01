@@ -115,7 +115,7 @@ public static class WebApplicationExtensions
         }
 
         // Handle the rest of requests with blazor
-        var blazorApp = app.MapRazorComponents<App>()
+        var blazorApp = app.MapRazorComponents<Boilerplate.Server.Components.App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
