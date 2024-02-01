@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.VisualBasic;
 
 namespace Bit.BlazorUI;
 
@@ -160,6 +161,11 @@ public partial class BitNumericTextField<TValue>
     }
 
     /// <summary>
+    /// The format of the number in the numeric text field.
+    /// </summary>
+    [Parameter] public string NumberFormat { get; set; } = "{0}";
+
+    /// <summary>
     /// Callback for when the numeric text field value change.
     /// </summary>
     [Parameter] public EventCallback<TValue> OnChange { get; set; }
@@ -222,11 +228,6 @@ public partial class BitNumericTextField<TValue>
     /// Custom CSS styles for different parts of the BitNumericTextField.
     /// </summary>
     [Parameter] public BitNumericTextFieldClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// A text is shown after the numeric text field value.
-    /// </summary>
-    [Parameter] public string Suffix { get; set; } = string.Empty;
 
     /// <summary>
     /// Whether to show the increment and decrement buttons.
@@ -511,7 +512,7 @@ public partial class BitNumericTextField<TValue>
 
     private void SetDisplayValue()
     {
-        _intermediateValue = CurrentValueAsString + Suffix;
+        _intermediateValue = CurrentValueAsString;
     }
 
     private static string? GetCleanValue(string? value)
@@ -654,8 +655,8 @@ public partial class BitNumericTextField<TValue>
 
     private double Normalize(double value) => Math.Round(value, _precision);
     private double NormalizeDecimal(decimal value) => Convert.ToDouble(Math.Round(value, _precision));
-    private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : Suffix.HasNoValue() ? CurrentValue : default;
-    private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
+    private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : CurrentValue;
+    private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : CurrentValueAsString;
     private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
     private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
     private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, _typeOfValue, CultureInfo.InvariantCulture) : default;
@@ -766,6 +767,14 @@ public partial class BitNumericTextField<TValue>
         result = default;
         validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
         return false;
+    }
+
+    protected override string? FormatValueAsString(TValue? value)
+    {
+        if (value is null) return null;
+
+        var normalValue = Normalize(GetDoubleValueOrDefault(value).Value);
+        return string.Format(NumberFormat, normalValue);
     }
 
     protected override void Dispose(bool disposing)

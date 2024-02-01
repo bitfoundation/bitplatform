@@ -185,18 +185,24 @@ public class BitNumericTextFieldIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(" cm"),
-         DataRow(" Inch"),
-         DataRow(" foot")
+         DataRow("{0} cm", 0),
+         DataRow("{0} Inch", 24),
+         DataRow("{0} foot", 100),
+         DataRow("{0:0} foot", 1000)
     ]
-    public void BitNumericTextFieldShouldHaveSuffixWhenItsPropertySet(string suffix)
+    public void BitNumericTextFieldShouldHaveNumberFormaWhenItsPropertySet(string numberFormat, int defaultValue)
     {
-        var component = RenderComponent<BitNumericTextField<int>>(parameters => parameters.Add(p => p.Suffix, suffix));
+        var component = RenderComponent<BitNumericTextField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, defaultValue);
+            parameters.Add(p => p.NumberFormat, numberFormat);
+        });
 
         var input = component.Find("input");
         var inputValue = input.GetAttribute("value");
+        var expectedValue = string.Format(numberFormat, defaultValue);
 
-        Assert.IsTrue(inputValue.Contains(suffix));
+        Assert.AreEqual(expectedValue, inputValue);
     }
 
     [DataTestMethod,
@@ -426,19 +432,22 @@ public class BitNumericTextFieldIntTests : BunitTestContext
 
     [DataTestMethod,
          DataRow(3, null),
-         DataRow(3, " cm"),
+         DataRow(3, "{0} cm"),
          DataRow(null, null)
     ]
-    public void BitNumericTextFieldInputShouldHaveCorrectAriaValueNow(int? ariaValueNow, string suffix)
+    public void BitNumericTextFieldInputShouldHaveCorrectAriaValueNow(int? ariaValueNow, string numberFormat)
     {
         var component = RenderComponent<BitNumericTextField<int?>>(parameters =>
         {
             parameters.Add(p => p.AriaValueNow, ariaValueNow);
-            parameters.Add(p => p.Suffix, suffix);
+            if (numberFormat.HasValue())
+            {
+                parameters.Add(p => p.NumberFormat, numberFormat);
+            }
         });
 
         var input = component.Find("input");
-        var expectedResult = ariaValueNow.HasValue ? ariaValueNow : suffix.HasNoValue() ? component.Instance.Value : null;
+        var expectedResult = ariaValueNow.HasValue ? ariaValueNow : numberFormat.HasNoValue() ? component.Instance.Value : null;
         var attributeValue = input.GetAttribute("aria-valuenow");
 
         if (expectedResult.HasValue is false)
@@ -453,20 +462,23 @@ public class BitNumericTextFieldIntTests : BunitTestContext
 
     [DataTestMethod,
          DataRow("3", null, 0),
-         DataRow(null, " cm", 0),
+         DataRow(null, "{0} cm", 0),
          DataRow(null, null, 0)
     ]
-    public void BitNumericTextFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string suffix, int precision)
+    public void BitNumericTextFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string numberFormat, int precision)
     {
-        var component = RenderComponent<BitNumericTextField<int>>(parameters =>
+        var component = RenderComponent<BitNumericTextField<double>>(parameters =>
         {
             parameters.Add(p => p.AriaValueText, ariaValueText);
-            parameters.Add(p => p.Suffix, suffix);
             parameters.Add(p => p.Precision, precision);
+            if (numberFormat.HasValue())
+            {
+                parameters.Add(p => p.NumberFormat, numberFormat);
+            }
         });
 
         var input = component.Find("input");
-        var expectedResult = ariaValueText.HasValue() ? ariaValueText : suffix.HasValue() ? $"{Normalize(component.Instance.Value, precision)}{suffix}" : null;
+        var expectedResult = ariaValueText.HasValue() ? ariaValueText : numberFormat.HasValue() ? string.Format(numberFormat, Normalize(component.Instance.Value, precision)) : component.Instance.Value.ToString();
         Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
     }
 
@@ -585,14 +597,15 @@ public class BitNumericTextFieldIntTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(5, 0, 100, "25"),
-         DataRow(5, 0, 100, "112"),
-         DataRow(5, 0, 100, "-5"),
-         DataRow(5, 0, 100, "text123")
+         DataRow(50.02, 0, 100, "25"),
+         DataRow(50.02, 0, 100, "112.2"),
+         DataRow(50.02, 0, 100, "62.72"),
+         DataRow(50.02, 0, 100, "-5"),
+         DataRow(50.02, 0, 100, "text123")
     ]
-    public void BitNumericTextFieldEnterKeyDownTest(int defaultValue, int min, int max, string userInput)
+    public void BitNumericTextFieldEnterKeyDownTest(double defaultValue, int min, int max, string userInput)
     {
-        var component = RenderComponent<BitNumericTextField<int>>(parameters =>
+        var component = RenderComponent<BitNumericTextField<double>>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.Max, max);
@@ -611,17 +624,17 @@ public class BitNumericTextFieldIntTests : BunitTestContext
         };
         input.KeyDown(keyboardArgs);
         var inputValue = component.Instance.Value;
-        int? expectedResult = 0;
-        var isNumber = int.TryParse(userInput, out var numericValue);
+        double? expectedResult = 0;
+        var isNumber = double.TryParse(userInput, out var numericValue);
         if (isNumber)
         {
-            expectedResult = Normalize(numericValue, 1);
+            expectedResult = Normalize(numericValue, 0);
             if (expectedResult > max) expectedResult = max;
             if (expectedResult < min) expectedResult = min;
         }
         else
         {
-            expectedResult = defaultValue;
+            expectedResult = Normalize(defaultValue, 0);
         }
 
         Assert.AreEqual(expectedResult, inputValue);
@@ -633,9 +646,9 @@ public class BitNumericTextFieldIntTests : BunitTestContext
          DataRow(5, 0, 100, "-5"),
          DataRow(5, 0, 100, "text123")
     ]
-    public void BitNumericTextFieldOnBlurTest(int defaultValue, int min, int max, string userInput)
+    public void BitNumericTextFieldOnBlurTest(double defaultValue, int min, int max, string userInput)
     {
-        var component = RenderComponent<BitNumericTextField<int>>(parameters =>
+        var component = RenderComponent<BitNumericTextField<double>>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.Max, max);
@@ -650,8 +663,8 @@ public class BitNumericTextFieldIntTests : BunitTestContext
         input.Change(changeArgs);
         input.Blur();
         var inputValue = component.Instance.Value;
-        int? expectedResult = 0;
-        var isNumber = int.TryParse(userInput, out var numericValue);
+        double? expectedResult = 0;
+        var isNumber = double.TryParse(userInput, out var numericValue);
         if (isNumber)
         {
             expectedResult = Normalize(numericValue, 1);
@@ -914,8 +927,8 @@ public class BitNumericTextFieldIntTests : BunitTestContext
         Assert.AreEqual(!isInvalid, NumericTextField.ClassList.Contains("bit-inv"));
     }
 
-    private int? Normalize(int? value, int precision) =>
-        value.HasValue ? (int?)Math.Round((double)value.Value, precision) : null;
+    private double? Normalize(double? value, int precision) =>
+        value.HasValue ? (double?)Math.Round(value.Value, precision) : null;
 
     private int CalculatePrecision(int value)
     {
