@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IWindowsServiceCollectionExtensions
+public static partial class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientWindowsServices(this IServiceCollection services)
     {

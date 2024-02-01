@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IMacServiceCollectionExtensions
+public static partial class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientMacServices(this IServiceCollection services)
     {
