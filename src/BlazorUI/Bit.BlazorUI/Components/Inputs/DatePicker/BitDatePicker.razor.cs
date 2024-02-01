@@ -674,12 +674,12 @@ public partial class BitDatePicker
         int selectedMonth = FindMonth(weekIndex, dayIndex);
         var isNotInCurrentMonth = IsInCurrentMonth(weekIndex, dayIndex) is false;
 
-        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth)
+        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth && _currentDay < 15)
         {
             _currentYear++;
         }
 
-        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth)
+        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth && _currentDay > 15)
         {
             _currentYear--;
         }
