@@ -1,19 +1,19 @@
-﻿//-:cnd:noEmit
-using System.IO.Compression;
+﻿using System.IO.Compression;
+using Boilerplate.Server.Services;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
+//#if (api == true)
 using System.Net.Mail;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Boilerplate.Server;
 using Boilerplate.Server.Models.Identity;
-using Boilerplate.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -23,27 +23,9 @@ public static class IServiceCollectionExtensions
     {
         // Services being registered here can get injected into controllers and services in Server project.
 
-        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
-
         services.AddExceptionHandler<ServerExceptionHandler>();
 
         services.AddBlazor(configuration);
-
-        //+:cnd:noEmit
-
-        services.AddCors();
-
-        services
-            .AddControllers()
-            .AddOData(options => options.EnableQueryFeatures())
-            .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
-            .ConfigureApiBehaviorOptions(options =>
-            {
-                options.InvalidModelStateResponseFactory = context =>
-                {
-                    throw new ResourceValidationException(context.ModelState.Select(ms => (ms.Key, ms.Value!.Errors.Select(e => new LocalizedString(e.ErrorMessage, e.ErrorMessage)).ToArray())).ToArray());
-                };
-            });
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -64,6 +46,24 @@ public static class IServiceCollectionExtensions
         })
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
+
+        //#if (api == true)
+
+        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+
+        services.AddCors();
+
+        services
+            .AddControllers()
+            .AddOData(options => options.EnableQueryFeatures())
+            .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    throw new ResourceValidationException(context.ModelState.Select(ms => (ms.Key, ms.Value!.Errors.Select(e => new LocalizedString(e.ErrorMessage, e.ErrorMessage)).ToArray())).ToArray());
+                };
+            });
 
         services.AddDbContext<AppDbContext>(options =>
         {
@@ -127,6 +127,8 @@ public static class IServiceCollectionExtensions
                 fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
             }
         }
+
+        //#endif
     }
 
     public static void AddBlazor(this IServiceCollection services, IConfiguration configuration)
@@ -157,6 +159,7 @@ public static class IServiceCollectionExtensions
         services.AddClientWebServices();
     }
 
+    //#if (api == true)
     public static void AddIdentity(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment hostEnv)
     {
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
@@ -312,4 +315,6 @@ public static class IServiceCollectionExtensions
 
         return services;
     }
+
+    //#endif
 }

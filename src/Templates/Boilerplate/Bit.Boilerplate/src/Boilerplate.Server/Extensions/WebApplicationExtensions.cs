@@ -1,14 +1,16 @@
-﻿//-:cnd:noEmit
-using System.Net;
+﻿using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Web;
 using Boilerplate.Client.Core.Services;
-using Boilerplate.Server;
-using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components.Endpoints;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
+
+//#if (api == true)
+using Boilerplate.Server;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
+//#endif
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -63,14 +65,18 @@ public static class WebApplicationExtensions
             }
         });
 
+        //#if (api == true)
         // 0.0.0.0 origins are essential for the proper functioning of BlazorHybrid's WebView, while localhost:4030 is a prerequisite for BlazorWebAssemblyStandalone testing.
         app.UseCors(options => options.WithOrigins("https://0.0.0.0", "app://0.0.0.0", "http://localhost:4030")
             .AllowAnyHeader().AllowAnyMethod());
+        //#endif
 
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.UseAntiforgery();
+
+        //#if (api == true)
 
         app.UseSwagger();
 
@@ -85,6 +91,8 @@ public static class WebApplicationExtensions
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
+        //#endif
+
         app.MapGet("/.well-known/apple-app-site-association", async () =>
         {
             // https://branch.io/resources/aasa-validator/ 
@@ -92,6 +100,8 @@ public static class WebApplicationExtensions
             var path = Path.Combine("wwwroot/.well-known", "apple-app-site-association");
             return Results.Stream(File.OpenRead(path), contentType, "apple-app-site-association");
         }).ExcludeFromDescription();
+
+        //#if (api == true)
 
         app.MapControllers().RequireAuthorization();
 
@@ -113,6 +123,8 @@ public static class WebApplicationExtensions
                         options.UseRelativeWebhookPath = false;
             });
         }
+
+        //#endif
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Boilerplate.Server.Components.App>()

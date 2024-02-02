@@ -1,5 +1,16 @@
 {
     "profiles": {
+        //#if (api == true)
+        "Boilerplate.Server": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true,
+            "applicationUrl": "http://localhost:5030"
+        },
+        //#else
         "Boilerplate.Server-Swagger": {
             "commandName": "Project",
             "launchBrowser": true,
@@ -10,6 +21,7 @@
             "dotnetRunMessages": true,
             "applicationUrl": "http://localhost:5030"
         },
+        //#endif
         "Boilerplate.Server-BlazorWebAssembly": {
             "commandName": "Project",
             "launchBrowser": true,
