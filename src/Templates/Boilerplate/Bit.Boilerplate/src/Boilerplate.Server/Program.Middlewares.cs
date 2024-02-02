@@ -7,20 +7,22 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Http.Extensions;
 
 //#if (api == true)
-using Boilerplate.Server;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
 //#endif
 
-namespace Microsoft.AspNetCore.Builder;
+namespace Boilerplate.Server;
 
-public static class WebApplicationExtensions
+public static partial class Program
 {
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    public static void ConfiureMiddlewares(this WebApplication app, IHostEnvironment env, IConfiguration configuration)
+    public static void ConfiureMiddlewares(this WebApplication app)
     {
+        var configuration = app.Configuration;
+        var env = app.Environment;
+
         app.UseForwardedHeaders();
 
         if (AppRenderMode.MultilingualEnabled)

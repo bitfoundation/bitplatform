@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddClientSharedServices(this IServiceCollection services)
+    public static IServiceCollection AddClientCoreProjectServices(this IServiceCollection services)
     {
         // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, macOS)
 
@@ -36,7 +36,7 @@ public static class IServiceCollectionExtensions
 
         services.AddBitButilServices();
         services.AddBitBlazorUIServices();
-        services.AddSharedServices();
+        services.AddSharedProjectServices();
 
         //#if (offlineDb == true)
         services.AddBesqlDbContextFactory<OfflineDbContext>();

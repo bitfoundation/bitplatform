@@ -2,7 +2,7 @@
 
 public static partial class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddClientiOSServices(this IServiceCollection services)
+    public static IServiceCollection AddClientMauiProjectIosServices(this IServiceCollection services)
     {
         // Services registered in this class can be injected in iOS.
 

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using System.Net.Mail;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using Boilerplate.Server;
 using Boilerplate.Server.Models.Identity;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -15,17 +14,21 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 //#endif
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Boilerplate.Server;
 
-public static class IServiceCollectionExtensions
+public static partial class Program
 {
-    public static void AddServerServices(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
+    private static void ConfigureServices(this WebApplicationBuilder builder)
     {
+        var services = builder.Services;
+        var configuration = builder.Configuration;
+        var env = builder.Environment;
+
         // Services being registered here can get injected into controllers and services in Server project.
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
-        services.AddBlazor(configuration);
+        AddBlazor(builder);
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -92,9 +95,9 @@ public static class IServiceCollectionExtensions
 
         services.AddSwaggerGen();
 
-        services.AddIdentity(configuration, env);
+        AddIdentity(builder);
 
-        services.AddHealthChecks(env, configuration);
+        AddHealthChecks(builder);
 
         services.AddTransient<HtmlRenderer>();
 
@@ -131,8 +134,11 @@ public static class IServiceCollectionExtensions
         //#endif
     }
 
-    public static void AddBlazor(this IServiceCollection services, IConfiguration configuration)
+    private static void AddBlazor(WebApplicationBuilder builder)
     {
+        var services = builder.Services;
+        var configuration = builder.Configuration;
+
         services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
         services.AddTransient(sp =>
@@ -160,8 +166,11 @@ public static class IServiceCollectionExtensions
     }
 
     //#if (api == true)
-    public static void AddIdentity(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment hostEnv)
+    private static void AddIdentity(WebApplicationBuilder builder)
     {
+        var services = builder.Services;
+        var configuration = builder.Configuration;
+        var env = builder.Environment;
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appSettings.IdentitySettings;
 
@@ -169,7 +178,7 @@ public static class IServiceCollectionExtensions
         var certificate = new X509Certificate2(certificatePath, appSettings.IdentitySettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
         bool isTestCertificate = certificate.Thumbprint is "55140A8C935AB5202949071E5781E6946CD60606"; // The default test certificate is still in use
-        if (isTestCertificate && hostEnv.IsDevelopment() is false)
+        if (isTestCertificate && env.IsDevelopment() is false)
         {
             throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path IdentityCertificate.pfx --password P@ssw0rdP@ssw0rd' command (or your preferred method for generating PFX files) in the server project's folder.");
         }
@@ -239,8 +248,10 @@ public static class IServiceCollectionExtensions
         services.AddAuthorization();
     }
 
-    public static void AddSwaggerGen(this IServiceCollection services)
+    private static void AddSwaggerGen(WebApplicationBuilder builder)
     {
+        var services = builder.Services;
+
         services.AddSwaggerGen(options =>
         {
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.xml"));
@@ -276,8 +287,12 @@ public static class IServiceCollectionExtensions
         });
     }
 
-    public static IServiceCollection AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
+    private static void AddHealthChecks(WebApplicationBuilder builder)
     {
+        var configuration = builder.Configuration;
+        var services = builder.Services;
+        var env = builder.Environment;
+
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
         var healthCheckSettings = appSettings.HealthCheckSettings;

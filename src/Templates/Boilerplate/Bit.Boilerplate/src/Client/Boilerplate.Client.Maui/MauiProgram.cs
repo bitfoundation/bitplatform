@@ -18,25 +18,6 @@ public static class MauiProgram
 
         var services = builder.Services;
 
-        services.AddMauiBlazorWebView();
-
-        if (BuildConfiguration.IsDebug())
-        {
-            services.AddBlazorWebViewDeveloperTools();
-        }
-
-        Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
-
-        services.AddTransient(sp =>
-        {
-            var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
-            HttpClient httpClient = new(handler)
-            {
-                BaseAddress = apiServerAddress
-            };
-            return httpClient;
-        });
-
         services.AddClientMauiServices();
 
         builder.ConfigureLifecycleEvents(lifecycle =>
