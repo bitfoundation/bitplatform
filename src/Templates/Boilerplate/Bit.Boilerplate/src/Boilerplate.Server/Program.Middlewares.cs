@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿//+:cnd:noEmit
+using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Web;

@@ -52,7 +52,7 @@
             }
         },
         "database": {
-            "displayName": "Backend Database",
+            "displayName": "Backend database",
             "type": "parameter",
             "datatype": "choice",
             "defaultValue": "SqlServer",
@@ -72,7 +72,7 @@
             ]
         },
         "pipeline": {
-            "displayName": "CI-CD Pipeline",
+            "displayName": "CI-CD pipeline",
             "type": "parameter",
             "datatype": "choice",
             "defaultValue": "GitHub",

@@ -1,4 +1,5 @@
-﻿using System.IO.Compression;
+﻿//+:cnd:noEmit
+using System.IO.Compression;
 using Boilerplate.Server.Services;
 using Boilerplate.Client.Web;
 using Microsoft.AspNetCore.HttpOverrides;
