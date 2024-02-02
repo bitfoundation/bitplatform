@@ -4,7 +4,7 @@ public static partial class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientMauiProjectMacCatalystServices(this IServiceCollection services)
     {
-        // Services registered in this class can be injected in macOS.
+        // Services being registered here can get injected in Maui/macOS.
 
         return services;
     }

@@ -4,7 +4,7 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Boilerplate.Client.Maui;
 
-public static class MauiProgram
+public static partial class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
@@ -16,9 +16,7 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .Configuration.AddClientConfigurations();
 
-        var services = builder.Services;
-
-        services.AddClientMauiServices();
+        builder.ConfigureServices();
 
         builder.ConfigureLifecycleEvents(lifecycle =>
         {

@@ -7,7 +7,7 @@ public static partial class Program
 {
     public static void ConfigureServices(this WebAssemblyHostBuilder builder)
     {
-        // Services being registered here can get injected in web (blazor web assembly & blazor server)
+        // Services being registered here can get injected in web project only.
 
         var services = builder.Services;
         var configuration = builder.Configuration;
@@ -22,6 +22,13 @@ public static partial class Program
         }
 
         services.AddTransient(sp => new HttpClient(sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler")) { BaseAddress = apiServerAddress });
+
+        services.AddClientWebProjectServices();
+    }
+
+    public static void AddClientWebProjectServices(this IServiceCollection services)
+    {
+        // Services being registered here can get injected in both web project and server (during prerendering).
 
         services.AddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
         services.AddTransient<IExceptionHandler, WebExceptionHandler>();

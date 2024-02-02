@@ -11,7 +11,7 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientCoreProjectServices(this IServiceCollection services)
     {
-        // Services registered in this class can be injected in client side (Web, Android, iOS, Windows, macOS)
+        // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
 
         services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
 

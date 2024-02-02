@@ -6,7 +6,7 @@ public static partial class MauiProgram
 {
     public static void ConfigureServices(this MauiAppBuilder builder)
     {
-        // Services registered in this class can be injected in Android, iOS, Windows, and macOS.
+        // Services being registered here can get injected in Maui (Android, iOS, macOS, Windows)
 
         var services = builder.Services;
         var configuration = builder.Configuration;

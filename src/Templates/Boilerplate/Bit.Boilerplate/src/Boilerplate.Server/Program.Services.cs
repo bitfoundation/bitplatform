@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using Boilerplate.Server.Services;
+using Boilerplate.Client.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 //#if (api == true)
@@ -20,11 +21,11 @@ public static partial class Program
 {
     private static void ConfigureServices(this WebApplicationBuilder builder)
     {
+        // Services being registered here can get injected in server project only.
+
         var services = builder.Services;
         var configuration = builder.Configuration;
         var env = builder.Environment;
-
-        // Services being registered here can get injected into controllers and services in Server project.
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
@@ -162,7 +163,7 @@ public static partial class Program
 
         services.AddMvc();
 
-        services.AddClientWebServices();
+       services.AddClientWebProjectServices();
     }
 
     //#if (api == true)
@@ -298,7 +299,7 @@ public static partial class Program
         var healthCheckSettings = appSettings.HealthCheckSettings;
 
         if (healthCheckSettings.EnableHealthChecks is false)
-            return services;
+            return;
 
         services.AddHealthChecksUI(setupSettings: setup =>
         {
@@ -327,8 +328,6 @@ public static partial class Program
                     }
                 });
         }
-
-        return services;
     }
 
     //#endif

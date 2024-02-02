@@ -7,6 +7,8 @@ public static partial class Program
 {
     public static void ConfigureServices(this IServiceCollection services)
     {
+        // Services being registered here can get injected in windows project only.
+
         ConfigurationBuilder configurationBuilder = new();
         configurationBuilder.AddClientConfigurations();
         var configuration = configurationBuilder.Build();
