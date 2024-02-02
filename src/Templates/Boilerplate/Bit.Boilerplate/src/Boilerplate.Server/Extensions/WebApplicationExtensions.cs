@@ -4,20 +4,20 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Web;
 using Boilerplate.Client.Core.Services;
-using Boilerplate.Server.Components;
+using Boilerplate.Server;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
 
-namespace Boilerplate.Server.Startup;
+namespace Microsoft.AspNetCore.Builder;
 
-public class Middlewares
+public static class WebApplicationExtensions
 {
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    public static void Use(WebApplication app, IHostEnvironment env, IConfiguration configuration)
+    public static void ConfiureMiddlewares(this WebApplication app, IHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
 
@@ -115,7 +115,7 @@ public class Middlewares
         }
 
         // Handle the rest of requests with blazor
-        var blazorApp = app.MapRazorComponents<App>()
+        var blazorApp = app.MapRazorComponents<Boilerplate.Server.Components.App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());

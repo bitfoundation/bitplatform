@@ -9,10 +9,10 @@ if (BuildConfiguration.IsDebug() && OperatingSystem.IsWindows())
     builder.WebHost.UseUrls("http://localhost:5030", "http://*:5030");
 }
 
-Boilerplate.Server.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);
+builder.Services.AddServerServices(builder.Environment, builder.Configuration);
 
 var app = builder.Build();
 
-Boilerplate.Server.Startup.Middlewares.Use(app, builder.Environment, builder.Configuration);
+app.ConfiureMiddlewares(builder.Environment, builder.Configuration);
 
 await app.RunAsync();

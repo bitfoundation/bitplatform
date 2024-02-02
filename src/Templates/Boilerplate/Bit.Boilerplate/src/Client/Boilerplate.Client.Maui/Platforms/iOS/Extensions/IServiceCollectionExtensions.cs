@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IiOSServiceCollectionExtensions
+public static partial class IServiceCollectionExtensions
 {
     public static IServiceCollection AddClientiOSServices(this IServiceCollection services)
     {
