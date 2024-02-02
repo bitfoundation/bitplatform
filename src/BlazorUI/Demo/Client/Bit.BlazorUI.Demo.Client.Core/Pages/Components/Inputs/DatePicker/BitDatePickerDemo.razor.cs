@@ -258,9 +258,9 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "OnSelectDate",
+            Name = "OnChange",
             Type = "EventCallback<DateTimeOffset?>",
-            Description = "The callback for selecting a date in the DatePicker."
+            Description = "The callback for when the value changes in the DatePicker."
         },
         new()
         {
