@@ -384,9 +384,9 @@ public partial class BitDatePicker
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
-    /// The callback for selecting a date in the DatePicker.
+    /// The callback for when the value changes in the DatePicker.
     /// </summary>
-    [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
+    [Parameter] public EventCallback<DateTimeOffset?> OnChange { get; set; }
 
     /// <summary>
     /// The text of selected date aria-atomic of the DatePicker.
@@ -648,7 +648,7 @@ public partial class BitDatePicker
             }
         }
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnClearButtonClick()
@@ -702,7 +702,7 @@ public partial class BitDatePicker
 
         GenerateMonthData(_currentYear, _currentMonth);
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SelectMonth(int month)
@@ -1218,7 +1218,7 @@ public partial class BitDatePicker
         var currentValueDay = Culture.Calendar.GetDayOfMonth(CurrentValue.Value.LocalDateTime);
         CurrentValue = new DateTimeOffset(Culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0), DateTimeOffset.Now.Offset);
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnTimeHourFocus()
