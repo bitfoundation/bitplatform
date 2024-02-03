@@ -21,7 +21,7 @@ public static partial class Program
             apiServerAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), apiServerAddress);
         }
 
-        services.AddTransient(sp => new HttpClient(sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler")) { BaseAddress = apiServerAddress });
+        services.TryAddTransient(sp => new HttpClient(sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler")) { BaseAddress = apiServerAddress });
 
         services.AddClientWebProjectServices();
     }
@@ -30,8 +30,8 @@ public static partial class Program
     {
         // Services being registered here can get injected in both web project and server (during prerendering).
 
-        services.AddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, WebExceptionHandler>();
+        services.TryAddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
+        services.TryAddTransient<IExceptionHandler, WebExceptionHandler>();
 
         services.AddClientCoreProjectServices();
     }

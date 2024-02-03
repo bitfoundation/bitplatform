@@ -25,8 +25,8 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddTransient<HttpClientHandler>();
 
-        services.AddScoped<AuthenticationStateProvider, AuthenticationManager>();
-        services.AddScoped(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddScoped<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
+        services.TryAddScoped(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.TryAddTransient<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
@@ -36,11 +36,12 @@ public static class IServiceCollectionExtensions
 
         services.AddBitButilServices();
         services.AddBitBlazorUIServices();
-        services.AddSharedProjectServices();
 
         //#if (offlineDb == true)
         services.AddBesqlDbContextFactory<OfflineDbContext>();
         //#endif
+
+        services.AddSharedProjectServices();
         return services;
     }
 

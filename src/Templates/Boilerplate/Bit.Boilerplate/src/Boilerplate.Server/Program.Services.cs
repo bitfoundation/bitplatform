@@ -30,8 +30,6 @@ public static partial class Program
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
-        AddBlazor(builder);
-
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.All;
@@ -91,7 +89,7 @@ public static partial class Program
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.TryAddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
@@ -101,7 +99,7 @@ public static partial class Program
 
         AddHealthChecks(builder);
 
-        services.AddTransient<HtmlRenderer>();
+        services.TryAddTransient<HtmlRenderer>();
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
 
@@ -133,6 +131,8 @@ public static partial class Program
             }
         }
 
+        AddBlazor(builder);
+
         //#endif
     }
 
@@ -141,9 +141,9 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+        services.TryAddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
-        services.AddTransient(sp =>
+        services.TryAddTransient(sp =>
         {
             Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 

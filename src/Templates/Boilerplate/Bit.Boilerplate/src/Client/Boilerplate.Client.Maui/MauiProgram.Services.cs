@@ -20,7 +20,7 @@ public static partial class MauiProgram
 
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
 
-        services.AddTransient(sp =>
+        services.TryAddTransient(sp =>
         {
             var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)

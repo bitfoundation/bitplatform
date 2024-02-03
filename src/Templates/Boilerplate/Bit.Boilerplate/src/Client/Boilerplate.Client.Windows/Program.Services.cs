@@ -12,10 +12,10 @@ public static partial class Program
         ConfigurationBuilder configurationBuilder = new();
         configurationBuilder.AddClientConfigurations();
         var configuration = configurationBuilder.Build();
-        services.AddTransient<IConfiguration>(sp => configuration);
+        services.TryAddTransient<IConfiguration>(sp => configuration);
 
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
-        services.AddTransient(sp =>
+        services.TryAddTransient(sp =>
         {
             var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
@@ -32,8 +32,8 @@ public static partial class Program
         }
 
         services.TryAddTransient<IStorageService, WindowsStorageService>();
-        services.AddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, WindowsExceptionHandler>();
+        services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
+        services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
 
         services.AddClientCoreProjectServices();
     }
