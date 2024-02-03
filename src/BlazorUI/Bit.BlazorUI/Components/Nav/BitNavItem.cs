@@ -15,9 +15,14 @@ public class BitNavItem
     public string? AriaLabel { get; set; }
 
     /// <summary>
+    /// Custom CSS class for the nav item.
+    /// </summary>
+    public string? Class { get; set; }
+
+    /// <summary>
     /// A list of items to render as children of the current item
     /// </summary>
-    public List<BitNavItem> ChildItems { get; set; } = new List<BitNavItem>();
+    public List<BitNavItem> ChildItems { get; set; } = [];
 
     /// <summary>
     /// Aria label when items is collapsed and can be expanded
@@ -66,7 +71,7 @@ public class BitNavItem
     public string? Key { get; set; }
 
     /// <summary>
-    /// Custom style for the each item element.
+    /// Custom CSS style for the nav item.
     /// </summary>
     public string? Style { get; set; }
 

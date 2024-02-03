@@ -1,12 +1,12 @@
 ﻿
 namespace Bit.BlazorUI;
 
-public partial class BitNavOption : IDisposable
+public partial class BitNavOption : ComponentBase, IDisposable
 {
     private bool _disposed;
 
 
-    internal IList<BitNavOption> Items { get; set; } = new List<BitNavOption>();
+    internal IList<BitNavOption> Items { get; set; } = [];
 
 
     [CascadingParameter] protected BitNav<BitNavOption> Nav { get; set; } = default!;
@@ -102,8 +102,6 @@ public partial class BitNavOption : IDisposable
     [Parameter] public IEnumerable<string>? AdditionalUrls { get; set; }
 
 
-
-    protected override string RootElementClass => "bit-nvgo";
 
     protected override async Task OnInitializedAsync()
     {
