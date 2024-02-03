@@ -1,12 +1,13 @@
-﻿using System.IO.Compression;
+﻿//+:cnd:noEmit
+using System.IO.Compression;
 using Boilerplate.Server.Services;
+using Boilerplate.Client.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 //#if (api == true)
 using System.Net.Mail;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using Boilerplate.Server;
 using Boilerplate.Server.Models.Identity;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -15,17 +16,19 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 //#endif
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Boilerplate.Server;
 
-public static class IServiceCollectionExtensions
+public static partial class Program
 {
-    public static void AddServerServices(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
+    private static void ConfigureServices(this WebApplicationBuilder builder)
     {
-        // Services being registered here can get injected into controllers and services in Server project.
+        // Services being registered here can get injected in server project only.
+
+        var services = builder.Services;
+        var configuration = builder.Configuration;
+        var env = builder.Environment;
 
         services.AddExceptionHandler<ServerExceptionHandler>();
-
-        services.AddBlazor(configuration);
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -86,17 +89,17 @@ public static class IServiceCollectionExtensions
 
         services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
 
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.TryAddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
         services.AddSwaggerGen();
 
-        services.AddIdentity(configuration, env);
+        AddIdentity(builder);
 
-        services.AddHealthChecks(env, configuration);
+        AddHealthChecks(builder);
 
-        services.AddTransient<HtmlRenderer>();
+        services.TryAddTransient<HtmlRenderer>();
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
 
@@ -128,14 +131,19 @@ public static class IServiceCollectionExtensions
             }
         }
 
+        AddBlazor(builder);
+
         //#endif
     }
 
-    public static void AddBlazor(this IServiceCollection services, IConfiguration configuration)
+    private static void AddBlazor(WebApplicationBuilder builder)
     {
-        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+        var services = builder.Services;
+        var configuration = builder.Configuration;
 
-        services.AddTransient(sp =>
+        services.TryAddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+
+        services.TryAddTransient(sp =>
         {
             Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
@@ -156,12 +164,15 @@ public static class IServiceCollectionExtensions
 
         services.AddMvc();
 
-        services.AddClientWebServices();
+       services.AddClientWebProjectServices();
     }
 
     //#if (api == true)
-    public static void AddIdentity(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment hostEnv)
+    private static void AddIdentity(WebApplicationBuilder builder)
     {
+        var services = builder.Services;
+        var configuration = builder.Configuration;
+        var env = builder.Environment;
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
         var settings = appSettings.IdentitySettings;
 
@@ -169,7 +180,7 @@ public static class IServiceCollectionExtensions
         var certificate = new X509Certificate2(certificatePath, appSettings.IdentitySettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
         bool isTestCertificate = certificate.Thumbprint is "55140A8C935AB5202949071E5781E6946CD60606"; // The default test certificate is still in use
-        if (isTestCertificate && hostEnv.IsDevelopment() is false)
+        if (isTestCertificate && env.IsDevelopment() is false)
         {
             throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path IdentityCertificate.pfx --password P@ssw0rdP@ssw0rd' command (or your preferred method for generating PFX files) in the server project's folder.");
         }
@@ -239,8 +250,10 @@ public static class IServiceCollectionExtensions
         services.AddAuthorization();
     }
 
-    public static void AddSwaggerGen(this IServiceCollection services)
+    private static void AddSwaggerGen(WebApplicationBuilder builder)
     {
+        var services = builder.Services;
+
         services.AddSwaggerGen(options =>
         {
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.xml"));
@@ -276,14 +289,18 @@ public static class IServiceCollectionExtensions
         });
     }
 
-    public static IServiceCollection AddHealthChecks(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
+    private static void AddHealthChecks(WebApplicationBuilder builder)
     {
+        var configuration = builder.Configuration;
+        var services = builder.Services;
+        var env = builder.Environment;
+
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
         var healthCheckSettings = appSettings.HealthCheckSettings;
 
         if (healthCheckSettings.EnableHealthChecks is false)
-            return services;
+            return;
 
         services.AddHealthChecksUI(setupSettings: setup =>
         {
@@ -312,8 +329,6 @@ public static class IServiceCollectionExtensions
                     }
                 });
         }
-
-        return services;
     }
 
     //#endif
