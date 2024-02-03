@@ -606,7 +606,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
     private readonly string example12RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValue""
-                Label=""Single select dropdown""
+                Label=""Single select combo box""
                 Items=""comboBoxItems""
                 Placeholder=""Select an option""
                 NameSelectors=""nameSelectors""
