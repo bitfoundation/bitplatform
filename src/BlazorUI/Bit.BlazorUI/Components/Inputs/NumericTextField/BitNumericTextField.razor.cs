@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.VisualBasic;
 
 namespace Bit.BlazorUI;
 
@@ -20,7 +19,7 @@ public partial class BitNumericTextField<TValue>
     private double? _internalMax;
     private int _precision;
     private string? _intermediateValue;
-    private string _inputId = $"input_{Guid.NewGuid()}";
+    private readonly string _inputId;
     private Timer? _timer;
     private ElementReference _inputRef;
     private ElementReference _buttonIncrement;
@@ -39,6 +38,7 @@ public partial class BitNumericTextField<TValue>
         _isDecimals = _typeOfValue == typeof(float) || _typeOfValue == typeof(double) || _typeOfValue == typeof(decimal);
         _minGenericValue = GetMinValue();
         _maxGenericValue = GetMaxValue();
+        _inputId = $"input_{Guid.NewGuid()}";
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -370,12 +370,12 @@ public partial class BitNumericTextField<TValue>
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         await ApplyValueChange(action);
-        if (action is BitNumericTextFieldAction.Increment && OnIncrement.HasDelegate is true)
+        if (action is BitNumericTextFieldAction.Increment && OnIncrement.HasDelegate)
         {
             await OnIncrement.InvokeAsync(CurrentValue);
         }
 
-        if (action is BitNumericTextFieldAction.Decrement && OnDecrement.HasDelegate is true)
+        if (action is BitNumericTextFieldAction.Decrement && OnDecrement.HasDelegate)
         {
             await OnDecrement.InvokeAsync(CurrentValue);
         }
@@ -392,7 +392,7 @@ public partial class BitNumericTextField<TValue>
                 await CheckIntermediateValueAndSetValue();
                 await ApplyValueChange(BitNumericTextFieldAction.Increment);
 
-                if (OnIncrement.HasDelegate is true)
+                if (OnIncrement.HasDelegate)
                 {
                     await OnIncrement.InvokeAsync(CurrentValue);
                 }
@@ -402,7 +402,7 @@ public partial class BitNumericTextField<TValue>
                 await CheckIntermediateValueAndSetValue();
                 await ApplyValueChange(BitNumericTextFieldAction.Decrement);
 
-                if (OnDecrement.HasDelegate is true)
+                if (OnDecrement.HasDelegate)
                 {
                     await OnDecrement.InvokeAsync(CurrentValue);
                 }
@@ -773,7 +773,7 @@ public partial class BitNumericTextField<TValue>
     {
         if (value is null) return null;
 
-        var normalValue = Normalize(GetDoubleValueOrDefault(value).Value);
+        var normalValue = Normalize(GetDoubleValueOrDefault(value)!.Value);
         return string.Format(NumberFormat, normalValue);
     }
 
