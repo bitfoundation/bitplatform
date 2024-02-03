@@ -134,7 +134,6 @@
                              IsMultiSelect="true"
                              OnSelectItem="(BitDropdownItem<string> item) => selectedItem2 = item" />
                 <BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
-                <BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>
             </div>
         </div>
     </ExamplePreview>
@@ -401,6 +400,39 @@
             {
                 <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@successMessage</BitMessageBar>
             }
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ComboBox" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitDropdown @bind-Value="comboBoxValue"
+                             Label="Single select dropdown"
+                             Items="comboBoxItems"
+                             Placeholder="Select an option"
+                             NameSelectors="nameSelectors"
+                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"
+                             Combo
+                             Chips
+                             Dynamic />
+                <BitLabel>Value: @comboBoxValue</BitLabel>
+            </div>
+            <br>
+            <div>
+                <BitDropdown @bind-Values="comboBoxValues"
+                             Label="Multi select combo box"
+                             Items="comboBoxItems"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             NameSelectors="nameSelectors"
+                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"
+                             Combo
+                             Chips
+                             Dynamic />
+                <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
+            </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

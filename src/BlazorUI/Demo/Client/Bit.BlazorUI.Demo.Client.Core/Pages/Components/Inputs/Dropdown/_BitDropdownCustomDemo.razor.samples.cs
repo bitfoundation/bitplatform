@@ -33,7 +33,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -61,7 +60,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -137,7 +135,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? CssStyle { get; set; }
     public string? Text { get; set; }
@@ -181,7 +178,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Style = { Selector = c => c.CssStyle },
     Text = { Selector = c => c.Text },
@@ -241,8 +237,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              DefaultValue=""@string.Empty""
              NameSelectors=""nameSelectors""
              OnSelectItem=""(BitDropdownCustom item) => selectedItem2 = item"" />
-<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
-<BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>";
+<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>";
     private readonly string example3CsharpCode = @"
 private string? controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
@@ -260,7 +255,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -288,7 +282,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -390,7 +383,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -422,7 +414,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -443,7 +434,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -471,7 +461,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -522,7 +511,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -550,7 +538,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -593,7 +580,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -621,7 +607,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -689,7 +674,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -717,7 +701,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -753,7 +736,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -789,7 +771,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -817,7 +798,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
@@ -878,7 +858,6 @@ public class BitDropdownCustom
     public object? Payload { get; set; }
     public bool Disabled { get; set; }
     public bool Visible { get; set; } = true;
-    public bool IsSelected { get; set; }
     public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
     public string? Text { get; set; }
     public string? Title { get; set; }
@@ -906,10 +885,86 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     Data = { Selector = c => c.Payload },
     IsEnabled = { Selector = c => c.Disabled is false },
     IsHidden = { Selector = c => c.Visible is false },
-    IsSelected = { Name = nameof(BitDropdownCustom.IsSelected) },
     ItemType = { Selector = c => c.Type },
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },
+};";
+
+    private readonly string example12RazorCode = @"
+<BitDropdown @bind-Value=""comboBoxValue""
+             Label=""Single select combo box""
+             Items=""comboBoxCustoms""
+             NameSelectors=""comboBoxNameSelectors""
+             Placeholder=""Select an option""
+             OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)""
+             Combo
+             Chips
+             Dynamic />
+<BitLabel>Value: @comboBoxValue</BitLabel>
+
+<BitDropdown @bind-Values=""comboBoxValues""
+             Label=""Multi select combo box""
+             Items=""comboBoxCustoms""
+             NameSelectors=""comboBoxNameSelectors""
+             Placeholder=""Select options""
+             IsMultiSelect=""true""
+             OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)""
+             Combo
+             Chips
+             Dynamic />
+<BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
+    private readonly string example12CsharpCode = @"
+private string? comboBoxValue;
+private ICollection<string?> comboBoxValues = [];
+
+private void HandleOnDynamicAdd(BitDropdownCustom item)
+{
+    comboBoxCustoms.Add(item);
+}
+
+public class BitDropdownCustom
+{
+    public string? Label { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
+private List<BitDropdownCustom> comboBoxCustoms = new()
+{
+    new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { Type = BitDropdownItemType.Divider },
+    new() { Text = ""Vegetables"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private BitDropdownNameSelectors<BitDropdownCustom, string?> comboBoxNameSelectors = new()
+{
+    AriaLabel = { Selector = c => c.Label },
+    Class = { Selector = c => c.CssClass },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Style = { Selector = c => c.CssStyle },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
+    DynamicValueGenerator = ((BitDropdownCustom item) => item.Text),
+    ValueSetter = ((BitDropdownCustom item, string? value) => item.Value = value),
+    TextSetter = ((string? text, BitDropdownCustom item) => item.Text = text)
 };";
 }

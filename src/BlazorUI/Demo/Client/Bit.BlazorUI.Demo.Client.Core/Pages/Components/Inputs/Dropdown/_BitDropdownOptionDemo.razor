@@ -210,7 +210,6 @@
                     }
                 </BitDropdown>
                 <BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
-                <BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>
             </div>
         </div>
     </ExamplePreview>
@@ -525,6 +524,49 @@
             {
                 <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@successMessage</BitMessageBar>
             }
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ComboBox" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitDropdown @bind-Value="comboBoxValue"
+                             Label="Single select combo box"
+                             Placeholder="Select an option"
+                             NameSelectors="nameSelectors"
+                             OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
+                             Combo
+                             Chips
+                             Dynamic
+                             TItem="BitDropdownOption<string>" TValue="string">
+                    @foreach (var item in comboBoxItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Value: @comboBoxValue</BitLabel>
+            </div>
+            <br>
+            <div>
+                <BitDropdown @bind-Values="comboBoxValues"
+                             Label="Multi select combo box"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             NameSelectors="nameSelectors"
+                             OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
+                             Combo
+                             Chips
+                             Dynamic
+                             TItem="BitDropdownOption<string>" TValue="string">
+                    @foreach (var item in comboBoxItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
+            </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

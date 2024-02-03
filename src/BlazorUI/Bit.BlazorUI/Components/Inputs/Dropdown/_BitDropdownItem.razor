@@ -4,11 +4,11 @@
 
 @{
     var itemType = Dropdown.GetItemType(Item);
-    var id = @Dropdown.GetId(Item);
+    var id = Dropdown.GetId(Item);
     var text = Dropdown.GetText(Item);
     var isHidden = Dropdown.GetIsHidden(Item);
     var isEnabled = Dropdown.GetIsEnabled(Item);
-    var isSelected = Dropdown.GetIsSelected(Item);
+    var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
 }
 
 <div style="@Dropdown.GetStyle(Item)" class="@Dropdown.GetClass(Item)">
@@ -64,7 +64,7 @@
                     disabled=@(isEnabled is false)
                     tabindex="@(isEnabled ? 0 : -1)"
                     style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemButton"
-                    class="bit-drp-itm@(isSelected ? $" bit-drp-sel" : "") @Dropdown.Classes?.ItemButton"
+                    class="bit-drp-itm@(isSelected ? " bit-drp-sel" : "") @Dropdown.Classes?.ItemButton"
                     aria-label="@Dropdown.GetAriaLabel(Item)"
                     aria-setsize="@Dropdown.GetTotalItems()"
                     aria-disabled="@(isEnabled is false)"

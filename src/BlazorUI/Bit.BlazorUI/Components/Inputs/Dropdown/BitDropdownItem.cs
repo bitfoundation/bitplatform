@@ -33,11 +33,6 @@ public class BitDropdownItem<TValue>
     public bool IsHidden { get; set; }
 
     /// <summary>
-    /// Determines if the dropdown item is selected.
-    /// </summary>
-    public bool IsSelected { get; internal set; }
-
-    /// <summary>
     /// The type of the dropdown item.
     /// </summary>
     public BitDropdownItemType ItemType { get; set; } = BitDropdownItemType.Normal;

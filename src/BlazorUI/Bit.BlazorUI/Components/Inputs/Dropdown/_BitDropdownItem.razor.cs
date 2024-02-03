@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class _BitDropdownItem<TItem, TValue> : ComponentBase where TItem : class
+public partial class _BitDropdownItem<TItem, TValue> : ComponentBase where TItem : class, new()
 {
     [Parameter] public TItem Item { get; set; } = default!;
 

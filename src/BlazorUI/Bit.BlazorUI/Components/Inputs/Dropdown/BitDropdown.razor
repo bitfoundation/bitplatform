@@ -47,7 +47,11 @@
               aria-atomic="true"
               aria-invalid="false">
 
-            @if (_text.HasValue())
+            @{
+                var text = GetText();
+            }
+
+            @if (Chips is false && text.HasValue())
             {
                 @if (TextTemplate is not null)
                 {
@@ -55,10 +59,10 @@
                 }
                 else
                 {
-                    @_text
+                    @text
                 }
             }
-            else
+            else if (Combo is false)
             {
                 @if (PlaceholderTemplate is not null)
                 {
@@ -69,11 +73,35 @@
                     @Placeholder
                 }
             }
+            else if (Chips)
+            {
+                @foreach (var item in _selectedItems)
+                {
+                    <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
+                        @GetText(item)
+                        <i style="@Styles?.ChipsRemoveIcon" class="bit-icon bit-icon--Cancel @Classes?.ChipsRemoveIcon" @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation />
+                    </span>
+                }
+            }
+
+            @if (Combo)
+            {
+                <input @ref="_comboBoxInputRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnChange"
+                       style="@Styles?.ComboBoxInput"
+                       class="bit-drp-inp @Classes?.ComboBoxInput"
+                       type="text"
+                       role="searchbox"
+                       value="@_searchText"
+                       aria-label="@AriaLabel"
+                       placeholder="@Placeholder"
+                       autocomplete="@BitAutoCompleteValue.NewPassword"
+                       disabled="@(IsEnabled is false)" />
+            }
         </span>
 
-        @if (ShowClearButton && SelectedItems.Count > 0 && IsEnabled)
+        @if (IsEnabled && ShowClearButton && SelectedItems.Count > 0)
         {
-            <button @onclick="Clear" @onclick:stopPropagation
+            <button @onclick="HandleOnClearClick" @onclick:stopPropagation
                     type="button"
                     style="@Styles?.ClearButton"
                     class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
@@ -143,7 +171,7 @@
             <div id="@_headerId">@CalloutHeaderTemplate</div>
         }
 
-        @if (ShowSearchBox)
+        @if (ShowSearchBox && Combo is false)
         {
             <div style="@Styles?.SearchBoxContainer"
                  class="@GetSearchBoxClasses() @Classes?.SearchBoxContainer">
