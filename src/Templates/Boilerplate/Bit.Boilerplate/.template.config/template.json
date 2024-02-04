@@ -131,6 +131,9 @@
         }
     },
     "postActions": [],
+    "primaryOutputs": [
+        { "path": "Boilerplate.sln" }
+    ],
     "sources": [
         {
             "modifiers": [
