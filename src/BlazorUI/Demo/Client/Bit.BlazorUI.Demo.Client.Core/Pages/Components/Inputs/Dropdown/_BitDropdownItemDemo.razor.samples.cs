@@ -175,8 +175,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Placeholder=""Select items""
              IsMultiSelect=""true""
              OnSelectItem=""(BitDropdownItem<string> item) => selectedItem2 = item"" />
-<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>
-<BitLabel>IsSelected: @selectedItem2?.IsSelected</BitLabel>";
+<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>";
     private readonly string example3CsharpCode = @"
 private string controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
@@ -592,6 +591,54 @@ private async Task HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }
 
 private List<BitDropdownItem<string>> GetBasicItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
+
+    private readonly string example12RazorCode = @"
+<BitDropdown @bind-Value=""comboBoxValue""
+                Label=""Single select combo box""
+                Items=""comboBoxItems""
+                Placeholder=""Select an option""
+                NameSelectors=""nameSelectors""
+                OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)""
+                Combo
+                Chips
+                Dynamic />
+<BitLabel>Value: @comboBoxValue</BitLabel>
+
+<BitDropdown @bind-Values=""comboBoxValues""
+             Label=""Multi select combo box""
+             Items=""comboBoxItems""
+             Placeholder=""Select options""
+             IsMultiSelect=""true""
+             NameSelectors=""nameSelectors""
+             OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)""
+             Combo
+             Chips
+             Dynamic />
+<BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
+    private readonly string example12CsharpCode = @"
+private string? comboBoxValue;
+private ICollection<string?> comboBoxValues = [];
+
+private BitDropdownNameSelectors<BitDropdownItem<string>, string> nameSelectors = new()
+{
+    DynamicValueGenerator = ((BitDropdownItem<string> item) => item.Text),
+    ValueSetter = ((BitDropdownItem<string> item, string? value) => item.Value = value),
+    TextSetter = ((string? text, BitDropdownItem<string> item) => item.Text = text)
+};
+
+private List<BitDropdownItem<string>> comboBoxItems = new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
     new() { Text = ""Apple"", Value = ""f-app"" },
