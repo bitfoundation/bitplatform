@@ -40,7 +40,7 @@
                             </div>
 
                             <br />
-                            <hr style="width:100%" />
+                            <br />
                             <br />
 
                             <div class="margin-top">
@@ -116,7 +116,7 @@
                 <ComponentExampleBox Title="Custom Styles" RazorCode="@example6NavItemRazorCode" CsharpCode="@example6NavItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
-                            <BitNav Items="BitPlatformNavMenu"
+                            <BitNav Items="CustomStyleNavMenu"
                                     Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
                                                       ToggleButton = "color: cyan;",
                                                       Item = "color: red;",
@@ -162,7 +162,7 @@
                             <div>
                                 <BitLabel>Basic</BitLabel>
                                 <BitNav Items="CustomFoodNavMenu"
-                                        Mode="BitNavMode.Manual" 
+                                        Mode="BitNavMode.Manual"
                                         DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                         NameSelectors="@(new() { Text =  { Selector = item => item.Name },
                                                                  IconName =  { Selector = item => item.Icon },
@@ -171,7 +171,7 @@
                             </div>
 
                             <br />
-                            <hr style="width:100%" />
+                            <br />
                             <br />
 
                             <div class="margin-top">
@@ -211,7 +211,7 @@
                                                                  CollapseAriaLabel =  { Name = nameof(CarMenu.CollapsedAriaLabel) },
                                                                  ExpandAriaLabel =  { Name = nameof(CarMenu.ExpandedAriaLabel) },
                                                                  ChildItems =  { Name = nameof(CarMenu.Links) },
-                                                                 Description =  { Name = nameof(CarMenu.Comment) } })" >
+                                                                 Description =  { Name = nameof(CarMenu.Comment) } })">
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
                                             <BitIcon IconName="@BitIconName.FavoriteStarFill" />
@@ -228,7 +228,7 @@
                                         NameSelectors="@(new() { Text =  { Selector = item => item.Name },
                                                                  IconName =  { Selector = item => item.Icon },
                                                                  ChildItems =  { Selector = item => item.Childs },
-                                                                 Description =  { Selector = item => item.Comment } })" >
+                                                                 Description =  { Selector = item => item.Comment } })">
                                     <ItemTemplate Context="item">
                                         <div class="nav-custom-item">
                                             <BitCheckbox />
@@ -267,7 +267,7 @@
                 <ComponentExampleBox Title="Custom Styles" RazorCode="@example6CustomItemRazorCode" CsharpCode="@example6CustomItemCsharpCode" Id="example6">
                     <ExamplePreview>
                         <div class="example-box">
-                            <BitNav Items="CustomBitPlatformNavMenu"
+                            <BitNav Items="CustomCustomStyleNavMenu"
                                     NameSelectors="@(new() { IconName =  { Name = nameof(BitPlatformMenu.Icon) },
                                                              ChildItems =  { Name = nameof(BitPlatformMenu.Links) },
                                                              Description =  { Name = nameof(BitPlatformMenu.Comment) } })"
@@ -290,6 +290,7 @@
                                               ExpandAriaLabel="bit platform Expanded"
                                               CollapseAriaLabel="bit platform Collapsed">
                                     <BitNavOption Text="Home" IconName="@BitIconName.Home" Url="https://bitplatform.dev/" Target="_blank" />
+                                    <BitNavOption IsSeparator />
                                     <BitNavOption Text="Products & Services">
                                         <BitNavOption Text="Project Templates">
                                             <BitNavOption IconName="@BitIconName.ToDoLogoOutline" Text="Todo sample" Url="https://bitplatform.dev/templates/overview" Target="_blank" />
@@ -303,7 +304,11 @@
                                     <BitNavOption Text="About" IconName="@BitIconName.Info" Url="https://bitplatform.dev/about-us" Target="_blank" />
                                     <BitNavOption Text="Contact us" IconName="@BitIconName.Contact" Url="https://bitplatform.dev/contact-us" Target="_blank" />
                                 </BitNavOption>
-
+                                <BitNavOption IsSeparator>
+                                    <Template>
+                                        <div style="width:100%;height:0;border:2px dashed"></div>
+                                    </Template>
+                                </BitNavOption>
                                 <BitNavOption Text="Community"
                                               ExpandAriaLabel="Community Expanded"
                                               CollapseAriaLabel="Community Collapsed">
@@ -393,7 +398,7 @@
                             </div>
 
                             <br />
-                            <hr style="width:100%" />
+                            <br />
                             <br />
 
                             <div class="margin-top">
@@ -618,6 +623,7 @@
             ChildItems = new()
             {
                 new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new() { IsSeparator = true },
                 new()
                 {
                     Text = "Products & Services",
@@ -641,6 +647,11 @@
                 new() { Text = "About", IconName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
                 new() { Text = "Contact us", IconName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             },
+        },
+        new()
+        {
+            IsSeparator = true,
+            Template = (BitNavItem item) => @<div style="width:100%;height:0;border:2px dashed"></div>
         },
         new()
         {
@@ -764,6 +775,52 @@
         new() { Text = "Ice Cream" },
         new() { Text = "Cookie" },
     };
+    // Custom style
+    private static readonly List<BitNavItem> CustomStyleNavMenu = new()
+    {
+        new()
+        {
+            Text = "bit platform",
+            Description = "the bit platform description",
+            ChildItems = new()
+            {
+                new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new()
+                {
+                    Text = "Products & Services",
+                    ChildItems = new()
+                    {
+                        new()
+                        {
+                            Text = "Project Templates",
+                            ChildItems = new()
+                            {
+                                new() { Text = "Todo sample", IconName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "AdminPanel sample", IconName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                            }
+                        },
+                        new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                    }
+                },
+                new() { Text = "Pricing", IconName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", IconName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", IconName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+            },
+        },
+        new()
+        {
+            Text = "Community",
+            ChildItems = new()
+            {
+                new() { Text = "LinkedIn", IconName = BitIconName.LinkedInLogo , Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "Twitter", IconName = BitIconName.Globe , Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "GitHub repo", IconName = BitIconName.GitGraph , Url = "https://github.com/bitfoundation/bitplatform" },
+            }
+        },
+        new() { Text = "Iconography", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
+    };
 
     private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
     private BitNavItem? SelectedItemNav = FoodNavMenu[0].ChildItems[2];
@@ -784,6 +841,7 @@
             Links = new()
             {
                 new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new() { IsSeparator = true },
                 new()
                 {
                     Text = "Products & Services",
@@ -807,6 +865,11 @@
                 new() { Text = "About", Icon = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
                 new() { Text = "Contact us", Icon = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             },
+        },
+        new()
+        {
+            IsSeparator = true,
+            Template = (BitPlatformMenu item) => @<div style="width:100%;height:0;border:2px dashed"></div>
         },
         new()
         {
@@ -929,6 +992,52 @@
         },
         new() { Name = "Ice Cream" },
         new() { Name = "Cookie" },
+    };
+    // Basic
+    private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
+    {
+        new()
+        {
+            Text = "bit platform",
+            Comment = "the bit platform description",
+            Links = new()
+            {
+                new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new()
+                {
+                    Text = "Products & Services",
+                    Links = new()
+                    {
+                        new()
+                        {
+                            Text = "Project Templates",
+                            Links = new()
+                            {
+                                new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "AdminPanel sample", Icon = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                            }
+                        },
+                        new() { Text = "BlazorUI", Icon = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+                        new() { Text = "Cloud hosting solutions", Icon = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "Bit academy", Icon = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                    }
+                },
+                new() { Text = "Pricing", Icon = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "About", Icon = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "Contact us", Icon = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+            },
+        },
+        new()
+        {
+            Text = "Community",
+            Links = new()
+            {
+                new() { Text = "Linkedin", Icon = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "Twitter", Icon = BitIconName.Globe, Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "Github repo", Icon = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
+            }
+        },
+        new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
     };
 
     private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();

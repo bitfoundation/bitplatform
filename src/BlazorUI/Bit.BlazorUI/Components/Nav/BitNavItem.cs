@@ -63,6 +63,11 @@ public class BitNavItem
     public bool IsExpanded { get; set; }
 
     /// <summary>
+    /// Indicates that the nav item should render as a separator.
+    /// </summary>
+    public bool IsSeparator { get; set; }
+
+    /// <summary>
     /// A unique value to use as a key or id of the nav item.
     /// </summary>
     public string? Key { get; set; }

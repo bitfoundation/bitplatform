@@ -34,7 +34,7 @@ public partial class BitNavOption : ComponentBase, IDisposable
     /// <summary>
     /// A list of options to render as children of the current nav option.
     /// </summary>
-    public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Aria label when options is collapsed and can be expanded.
@@ -75,6 +75,11 @@ public partial class BitNavOption : ComponentBase, IDisposable
     /// Whether or not the nav option is in an expanded state.
     /// </summary>
     [Parameter] public bool IsExpanded { get; set; }
+
+    /// <summary>
+    /// Indicates that the nav option should render as a separator.
+    /// </summary>
+    [Parameter] public bool IsSeparator { get; set; }
 
     /// <summary>
     /// A unique value to use as a key or id of the nav option.

@@ -366,6 +366,28 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         return item.GetValueFromProperty(NameSelectors.IsExpanded.Name, false);
     }
 
+    internal bool GetIsSeparator(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.IsSeparator;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.IsSeparator;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsSeparator.Selector is not null)
+        {
+            return NameSelectors.IsSeparator.Selector!(item) ?? false;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsSeparator.Name, false);
+    }
+
     internal string? GetKey(TItem item)
     {
         if (item is BitNavItem navItem)

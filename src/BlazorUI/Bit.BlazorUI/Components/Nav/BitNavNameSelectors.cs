@@ -63,6 +63,11 @@ public class BitNavNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool?> IsExpanded { get; set; } = new(nameof(BitNavItem.IsExpanded));
 
     /// <summary>
+    /// The IsSeparator field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool?> IsSeparator { get; set; } = new(nameof(BitNavItem.IsSeparator));
+
+    /// <summary>
     /// The Key field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Key { get; set; } = new(nameof(BitNavItem.Key));
