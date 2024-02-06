@@ -1,61 +1,18 @@
-﻿using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem> : IDisposable where TItem : class
 {
-    private const string ARIA_CURRENT_FIELD = nameof(BitNavItem.AriaCurrent);
-    private const string ARIA_LABEL_FIELD = nameof(BitNavItem.AriaLabel);
-    private const string CHILD_ITEMS_FIELD = nameof(BitNavItem.ChildItems);
-    private const string COLLAPSE_ARIA_LABEL_FIELD = nameof(BitNavItem.CollapseAriaLabel);
-    private const string DATA_FIELD = nameof(BitNavItem.Data);
-    private const string DESCRIPTION_FIELD = nameof(BitNavItem.Description);
-    private const string EXPAND_ARIA_LABEL_FIELD = nameof(BitNavItem.ExpandAriaLabel);
-    private const string FORCE_ANCHOR_FIELD = nameof(BitNavItem.ForceAnchor);
-    private const string ICON_NAME_FIELD = nameof(BitNavItem.IconName);
-    private const string IS_ENABLED_FIELD = nameof(BitNavItem.IsEnabled);
-    private const string IS_EXPANDED_FIELD = nameof(BitNavItem.IsExpanded);
-    private const string KEY_FIELD = nameof(BitNavItem.Key);
-    private const string STYLE_FIELD = nameof(BitNavItem.Style);
-    private const string TARGET_FIELD = nameof(BitNavItem.Target);
-    private const string TEMPLATE_FIELD = nameof(BitNavItem.Template);
-    private const string TEMPLATE_RENDER_MODE_FIELD = nameof(BitNavItem.TemplateRenderMode);
-    private const string TEXT_FIELD = nameof(BitNavItem.Text);
-    private const string TITLE_FIELD = nameof(BitNavItem.Title);
-    private const string URL_FIELD = nameof(BitNavItem.Url);
-    private const string ADDITIONAL_URLS_FIELD = nameof(BitNavItem.AdditionalUrls);
-
-
     private bool SelectedItemHasBeenSet;
     private TItem? selectedItem;
 
-    private string _internalAriaCurrentField = ARIA_CURRENT_FIELD;
-    private string _internalAriaLabelField = ARIA_LABEL_FIELD;
-    private string _internalChildItemsField = CHILD_ITEMS_FIELD;
-    private string _internalCollapseAriaLabelField = COLLAPSE_ARIA_LABEL_FIELD;
-    private string _internalDataField = DATA_FIELD;
-    private string _internalDescriptionField = DESCRIPTION_FIELD;
-    private string _internalExpandAriaLabelField = EXPAND_ARIA_LABEL_FIELD;
-    private string _internalForceAnchorField = FORCE_ANCHOR_FIELD;
-    private string _internalIconNameField = ICON_NAME_FIELD;
-    private string _internalIsEnabledField = IS_ENABLED_FIELD;
-    private string _internalIsExpandedField = IS_EXPANDED_FIELD;
-    private string _internalKeyField = KEY_FIELD;
-    private string _internalStyleField = STYLE_FIELD;
-    private string _internalTargetField = TARGET_FIELD;
-    private string _internalTemplateField = TEMPLATE_FIELD;
-    private string _internalTemplateRenderModeField = TEMPLATE_RENDER_MODE_FIELD;
-    private string _internalTextField = TEXT_FIELD;
-    private string _internalTitleField = TITLE_FIELD;
-    private string _internalUrlField = URL_FIELD;
-    private string _internalAdditionalUrlsField = ADDITIONAL_URLS_FIELD;
 
 
-    internal List<TItem> _items = new();
-    private IEnumerable<TItem>? _oldItems = default!;
-    internal Dictionary<TItem, bool> _itemExpandStates = new();
     private bool _disposed;
+    internal List<TItem> _items = [];
+    private IEnumerable<TItem>? _oldItems = default!;
+    internal Dictionary<TItem, bool> _itemExpandStates = [];
 
 
 
@@ -64,43 +21,9 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
 
     /// <summary>
-    /// Aria-current token for active nav item.
-    /// Must be a valid token value, and defaults to 'page'.
-    /// </summary>
-    [Parameter] public string AriaCurrentField { get; set; } = ARIA_CURRENT_FIELD;
-
-    /// <summary>
-    /// Aria-current token for active nav item.
-    /// Must be a valid token value, and defaults to 'page'.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, BitNavAriaCurrent>>? AriaCurrentFieldSelector { get; set; }
-
-    /// <summary>
-    /// Aria label for the item.
-    /// Ignored if collapseAriaLabel or expandAriaLabel is provided.
-    /// </summary>
-    [Parameter] public string AriaLabelField { get; set; } = ARIA_LABEL_FIELD;
-
-    /// <summary>
-    /// Aria label for the item.
-    /// Ignored if collapseAriaLabel or expandAriaLabel is provided.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? AriaLabelFieldSelector { get; set; }
-
-    /// <summary>
     /// Items to render as children.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>
-    /// A list of items to render as children of the current item.
-    /// </summary>
-    [Parameter] public string ChildItemsField { get; set; } = CHILD_ITEMS_FIELD;
-
-    /// <summary>
-    /// A list of items to render as children of the current item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, IList<TItem>>>? ChildItemsFieldSelector { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitNav component.
@@ -108,61 +31,9 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Aria label when group is collapsed.
-    /// </summary>
-    [Parameter] public string CollapseAriaLabelField { get; set; } = COLLAPSE_ARIA_LABEL_FIELD;
-
-    /// <summary>
-    /// Aria label when group is collapsed.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? CollapseAriaLabelFieldSelector { get; set; }
-
-    /// <summary>
-    /// The field name of the Data property.
-    /// </summary>
-    [Parameter] public string DataField { get; set; } = DATA_FIELD;
-
-    /// <summary>
-    /// The field selector of the Data property.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? DataFieldSelector { get; set; }
-
-    /// <summary>
-    /// The field name of the Description property.
-    /// </summary>
-    [Parameter] public string DescriptionField { get; set; } = DESCRIPTION_FIELD;
-
-    /// <summary>
-    /// The field selector of the Description property.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? DescriptionFieldSelector { get; set; }
-
-    /// <summary>
     /// The initially selected item in manual mode.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
-
-    /// <summary>
-    /// Aria label when group is expanded.
-    /// </summary>
-    [Parameter] public string ExpandAriaLabelField { get; set; } = EXPAND_ARIA_LABEL_FIELD;
-
-    /// <summary>
-    /// Aria label when group is expanded.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? ExpandAriaLabelFieldSelector { get; set; }
-
-    /// <summary>
-    /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. 
-    /// (Links without onClick defined will render as anchors by default.)
-    /// </summary>
-    [Parameter] public string ForceAnchorField { get; set; } = FORCE_ANCHOR_FIELD;
-
-    /// <summary>
-    /// (Optional) By default, any link with onClick defined will render as a button. Set this property to true to override that behavior. 
-    /// (Links without onClick defined will render as anchors by default.)
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? ForceAnchorFieldSelector { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the group header is rendered.
@@ -175,39 +46,9 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
-    /// Name of an icon to render next to the item button.
-    /// </summary>
-    [Parameter] public string IconNameField { get; set; } = ICON_NAME_FIELD;
-
-    /// <summary>
-    /// Name of an icon to render next to the item button.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? IconNameFieldSelector { get; set; }
-
-    /// <summary>
-    /// Whether or not the item is disabled.
-    /// </summary>
-    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
-
-    /// <summary>
-    /// Whether or not the item is disabled.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
-
-    /// <summary>
-    /// Whether or not the group is in an expanded state.
-    /// </summary>
-    [Parameter] public string IsExpandedField { get; set; } = IS_EXPANDED_FIELD;
-
-    /// <summary>
-    /// Whether or not the group is in an expanded state.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsExpandedFieldSelector { get; set; }
-
-    /// <summary>
     /// A collection of item to display in the navigation bar.
     /// </summary>
-    [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
+    [Parameter] public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to customize how content inside the item is rendered.
@@ -220,19 +61,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
-    /// A unique value to use as a key or id of the item.
-    /// </summary>
-    [Parameter] public string KeyField { get; set; } = KEY_FIELD;
-
-    /// <summary>
-    /// A unique value to use as a key or id of the item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? KeyFieldSelector { get; set; }
-
-    /// <summary>
     /// Determines how the navigation will be handled.
     /// </summary>
     [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
+
+    /// <summary>
+    /// Names and selectors of the custom input type properties.
+    /// </summary>
+    [Parameter] public BitNavNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
     /// Callback invoked when an item is clicked.
@@ -248,6 +84,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// Callback invoked when an item is selected.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
+
+    /// <summary>
+    /// Alias of ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
     /// The way to render nav items.
@@ -277,89 +118,10 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
     /// <summary>
-    /// Custom style for the each item element.
-    /// </summary>
-    [Parameter] public string StyleField { get; set; } = STYLE_FIELD;
-
-    /// <summary>
-    /// Custom style for the each item element.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? StyleFieldSelector { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the BitNav component.
     /// </summary>
     [Parameter] public BitNavClassStyles? Styles { get; set; }
 
-    /// <summary>
-    /// Link target, specifies how to open the item link.
-    /// </summary>
-    [Parameter] public string TargetField { get; set; } = TARGET_FIELD;
-
-    /// <summary>
-    /// Link target, specifies how to open the item link.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TargetFieldSelector { get; set; }
-
-    /// <summary>
-    /// The field name of the Template property in the nav item class.
-    /// </summary>
-    [Parameter] public string TemplateField { get; set; } = TEMPLATE_FIELD;
-
-    /// <summary>
-    /// The field selector of the Template property in the nav item class.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, RenderFragment>>? TemplateFieldSelector { get; set; }
-
-    /// <summary>
-    /// The field name of the TemplateRenderMode property in the nav item class.
-    /// </summary>
-    [Parameter] public string TemplateRenderModeField { get; set; } = TEMPLATE_RENDER_MODE_FIELD;
-
-    /// <summary>
-    /// The field selector of the TemplateRenderMode property in the nav item class.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, BitNavItemTemplateRenderMode>>? TemplateRenderModeFieldSelector { get; set; }
-
-    /// <summary>
-    /// Text to render for the item.
-    /// </summary>
-    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
-
-    /// <summary>
-    /// Text to render for the item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TextFieldSelector { get; set; }
-
-    /// <summary>
-    /// Text for the item tooltip.
-    /// </summary>
-    [Parameter] public string TitleField { get; set; } = TITLE_FIELD;
-
-    /// <summary>
-    /// Text for the item tooltip.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? TitleFieldSelector { get; set; }
-
-    /// <summary>
-    /// URL to navigate for the item link.
-    /// </summary>
-    [Parameter] public string UrlField { get; set; } = URL_FIELD;
-
-    /// <summary>
-    /// URL to navigate for the item link.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, string>>? UrlFieldSelector { get; set; }
-
-    /// <summary>
-    /// Alternative URLs to be considered when auto mode tries to detect the selected item by the current URL.
-    /// </summary>
-    [Parameter] public string AdditionalUrlsField { get; set; } = ADDITIONAL_URLS_FIELD;
-
-    /// <summary>
-    /// Alternative URLs to be considered when auto mode tries to detect the selected item by the current URL.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, IEnumerable<string>>>? AdditionalUrlsFieldSelector { get; set; }
 
 
     internal BitNavAriaCurrent GetAriaCurrent(TItem item)
@@ -374,7 +136,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.AriaCurrent;
         }
 
-        return item.GetValueFromProperty(_internalAriaCurrentField, BitNavAriaCurrent.Page);
+        if (NameSelectors is null) return BitNavAriaCurrent.Page;
+
+        if (NameSelectors.AriaCurrent.Selector is not null)
+        {
+            return NameSelectors.AriaCurrent.Selector!(item) ?? BitNavAriaCurrent.Page;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.AriaCurrent.Name, BitNavAriaCurrent.Page);
     }
 
     internal string? GetAriaLabel(TItem item)
@@ -389,22 +158,58 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.AriaLabel;
         }
 
-        return item.GetValueFromProperty<string?>(_internalAriaLabelField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AriaLabel.Selector is not null)
+        {
+            return NameSelectors.AriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
+    }
+
+    internal string? GetClass(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Class;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Class;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Class.Selector is not null)
+        {
+            return NameSelectors.Class.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
     internal List<TItem> GetChildItems(TItem item)
     {
         if (item is BitNavItem navItem)
         {
-            return navItem.ChildItems as List<TItem> ?? new List<TItem>();
+            return navItem.ChildItems as List<TItem> ?? [];
         }
 
         if (item is BitNavOption navOption)
         {
-            return navOption.Items as List<TItem> ?? new List<TItem>();
+            return navOption.ChildItems as List<TItem> ?? [];
         }
 
-        return item.GetValueFromProperty(_internalChildItemsField, new List<TItem>())!;
+        if (NameSelectors is null) return [];
+
+        if (NameSelectors.ChildItems.Selector is not null)
+        {
+            return NameSelectors.ChildItems.Selector!(item) ?? [];
+        }
+
+        return item.GetValueFromProperty<List<TItem>>(NameSelectors.ChildItems.Name, [])!;
     }
 
     internal string? GetCollapseAriaLabel(TItem item)
@@ -419,7 +224,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.CollapseAriaLabel;
         }
 
-        return item.GetValueFromProperty<string?>(_internalCollapseAriaLabelField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.CollapseAriaLabel.Selector is not null)
+        {
+            return NameSelectors.CollapseAriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.CollapseAriaLabel.Name);
     }
 
     internal string? GetDescription(TItem item)
@@ -434,7 +246,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Description;
         }
 
-        return item.GetValueFromProperty<string?>(_internalDescriptionField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Description.Selector is not null)
+        {
+            return NameSelectors.Description.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Description.Name);
     }
 
     internal string? GetExpandAriaLabel(TItem item)
@@ -449,7 +268,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.ExpandAriaLabel;
         }
 
-        return item.GetValueFromProperty<string?>(_internalExpandAriaLabelField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.ExpandAriaLabel.Selector is not null)
+        {
+            return NameSelectors.ExpandAriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.ExpandAriaLabel.Name);
     }
 
     internal bool GetForceAnchor(TItem item)
@@ -464,7 +290,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.ForceAnchor;
         }
 
-        return item.GetValueFromProperty(_internalForceAnchorField, false);
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.ForceAnchor.Selector is not null)
+        {
+            return NameSelectors.ForceAnchor.Selector!(item) ?? false;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.ForceAnchor.Name, false);
     }
 
     internal string? GetIconName(TItem item)
@@ -479,7 +312,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.IconName;
         }
 
-        return item.GetValueFromProperty<string?>(_internalIconNameField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            return NameSelectors.IconName.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
     internal bool GetIsEnabled(TItem item)
@@ -494,7 +334,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.IsEnabled;
         }
 
-        return item.GetValueFromProperty(_internalIsEnabledField, true);
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.IsEnabled.Selector is not null)
+        {
+            return NameSelectors.IsEnabled.Selector!(item) ?? true;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
 
     private bool? GetIsExpanded(TItem item)
@@ -509,22 +356,36 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.IsExpanded;
         }
 
-        return item.GetValueFromProperty<bool?>(_internalIsExpandedField, null);
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsExpanded.Selector is not null)
+        {
+            return NameSelectors.IsExpanded.Selector!(item) ?? false;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsExpanded.Name, false);
     }
 
     internal string? GetKey(TItem item)
     {
         if (item is BitNavItem navItem)
         {
-            return navItem.Key ?? navItem.Text;
+            return navItem.Key;
         }
 
         if (item is BitNavOption navOption)
         {
-            return navOption.Key ?? navOption.Text;
+            return navOption.Key;
         }
 
-        return item.GetValueFromProperty(_internalKeyField, GetText(item) ?? string.Empty);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Key.Selector is not null)
+        {
+            return NameSelectors.Key.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
     }
 
     internal string? GetStyle(TItem item)
@@ -539,7 +400,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Style;
         }
 
-        return item.GetValueFromProperty<string?>(_internalStyleField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
     internal string? GetTarget(TItem item)
@@ -554,7 +422,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Target;
         }
 
-        return item.GetValueFromProperty<string?>(_internalTargetField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Target.Selector is not null)
+        {
+            return NameSelectors.Target.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Target.Name);
     }
 
     internal RenderFragment<TItem>? GetTemplate(TItem item)
@@ -569,7 +444,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Template as RenderFragment<TItem>;
         }
 
-        return item.GetValueFromProperty<RenderFragment<TItem>?>(_internalTemplateField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Template.Selector is not null)
+        {
+            return NameSelectors.Template.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
     internal BitNavItemTemplateRenderMode GetTemplateRenderMode(TItem item)
@@ -584,7 +466,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.TemplateRenderMode;
         }
 
-        return item.GetValueFromProperty<BitNavItemTemplateRenderMode>(_internalTemplateRenderModeField);
+        if (NameSelectors is null) return BitNavItemTemplateRenderMode.Normal;
+
+        if (NameSelectors.TemplateRenderMode.Selector is not null)
+        {
+            return NameSelectors.TemplateRenderMode.Selector!(item) ?? BitNavItemTemplateRenderMode.Normal;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.TemplateRenderMode.Name, BitNavItemTemplateRenderMode.Normal);
     }
 
     internal string? GetText(TItem item)
@@ -599,7 +488,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Text;
         }
 
-        return item.GetValueFromProperty<string>(_internalTextField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Text.Selector is not null)
+        {
+            return NameSelectors.Text.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
     internal string? GetTitle(TItem item)
@@ -614,7 +510,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Title;
         }
 
-        return item.GetValueFromProperty<string?>(_internalTitleField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Title.Selector is not null)
+        {
+            return NameSelectors.Title.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
     }
 
     internal string? GetUrl(TItem item)
@@ -629,7 +532,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.Url;
         }
 
-        return item.GetValueFromProperty<string?>(_internalUrlField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Url.Selector is not null)
+        {
+            return NameSelectors.Url.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Url.Name);
     }
 
     internal IEnumerable<string>? GetAdditionalUrls(TItem item)
@@ -644,7 +554,14 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             return navOption.AdditionalUrls;
         }
 
-        return item.GetValueFromProperty<IEnumerable<string>?>(_internalAdditionalUrlsField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AdditionalUrls.Selector is not null)
+        {
+            return NameSelectors.AdditionalUrls.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<IEnumerable<string>?>(NameSelectors.AdditionalUrls.Name);
     }
 
 
@@ -699,6 +616,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         _items.Remove((option as TItem)!);
         StateHasChanged();
     }
+    
+    internal string GetItemKey(TItem item)
+    {
+        return GetKey(item) ?? Guid.NewGuid().ToString();
+    }
 
 
 
@@ -716,28 +638,6 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
-        _internalAriaCurrentField = AriaCurrentFieldSelector?.GetName() ?? AriaCurrentField;
-        _internalAriaLabelField = AriaLabelFieldSelector?.GetName() ?? AriaLabelField;
-        _internalChildItemsField = ChildItemsFieldSelector?.GetName() ?? ChildItemsField;
-        _internalCollapseAriaLabelField = CollapseAriaLabelFieldSelector?.GetName() ?? CollapseAriaLabelField;
-        _internalDataField = DataFieldSelector?.GetName() ?? DataField;
-        _internalDescriptionField = DescriptionFieldSelector?.GetName() ?? DescriptionField;
-        _internalExpandAriaLabelField = ExpandAriaLabelFieldSelector?.GetName() ?? ExpandAriaLabelField;
-        _internalForceAnchorField = ForceAnchorFieldSelector?.GetName() ?? ForceAnchorField;
-        _internalIconNameField = IconNameFieldSelector?.GetName() ?? IconNameField;
-        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
-        _internalIsExpandedField = IsExpandedFieldSelector?.GetName() ?? IsExpandedField;
-        _internalKeyField = KeyFieldSelector?.GetName() ?? KeyField;
-        _internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
-        _internalTargetField = TargetFieldSelector?.GetName() ?? TargetField;
-        _internalTemplateField = TemplateFieldSelector?.GetName() ?? TemplateField;
-        _internalTemplateRenderModeField = TargetFieldSelector?.GetName() ?? TemplateRenderModeField;
-        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
-        _internalTitleField = TitleFieldSelector?.GetName() ?? TitleField;
-        _internalUrlField = UrlFieldSelector?.GetName() ?? UrlField;
-        _internalAdditionalUrlsField = AdditionalUrlsFieldSelector?.GetName() ?? AdditionalUrlsField;
-
-
         if (ChildContent is null && Items.Any())
         {
             _items = Items.ToList();
@@ -825,7 +725,9 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
             navOption.IsExpanded = value;
         }
 
-        item.SetValueToProperty(_internalIsExpandedField, value);
+        if (NameSelectors is null) return;
+
+        item.SetValueToProperty(NameSelectors.IsExpanded.Name, value);
     }
 
 

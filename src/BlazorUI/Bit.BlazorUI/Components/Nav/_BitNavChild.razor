@@ -1,7 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @typeparam TItem
 
-<li role="listitem">
+<li role="listitem" style="@Nav.GetStyle(Item)" class="@Nav.GetClass(Item)">
     @{
         var template = Nav.GetTemplate(Item);
         var templateRenderMode = Nav.GetTemplateRenderMode(Item);
@@ -201,9 +201,9 @@
     {
         <ul role="list">
             <CascadingValue Value="this" IsFixed="true">
-                @foreach (var childItem in childItems)
+                @foreach (var item in childItems)
                 {
-                    <_BitNavChild @key="Nav.GetKey(childItem)" Item="childItem" Depth="Depth + 1" />
+                    <_BitNavChild @key="Nav.GetItemKey(item)" Item="item" Depth="Depth + 1" />
                 }
             </CascadingValue>
         </ul>
