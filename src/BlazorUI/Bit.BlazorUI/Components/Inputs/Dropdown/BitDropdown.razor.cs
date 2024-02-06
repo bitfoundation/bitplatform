@@ -495,18 +495,14 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     internal int? GetTotalItems()
     {
-        return null;
+        if (Items is null) return null;
 
-        // This code was removed because it caused performance issues when the items parameter had a large number of records.
+        if (_totalItems.HasValue is false)
+        {
+            _totalItems = Items.Count(i => GetItemType(i) == BitDropdownItemType.Normal);
+        }
 
-        //if (Items is null) return null;
-
-        //if (_totalItems.HasValue is false)
-        //{
-        //    _totalItems = Items.Count(i => GetItemType(i) == BitDropdownItemType.Normal);
-        //}
-
-        //return _totalItems.Value;
+        return _totalItems.Value;
     }
 
     internal int? GetItemPosInSet(TItem item)
@@ -772,7 +768,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         return className.ToString();
     }
 
-    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_labelId} {_dropdownTextContainerId}" : $"{_dropdownTextContainerId}";
+    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
 
     private async Task SearchVirtualized()
     {
