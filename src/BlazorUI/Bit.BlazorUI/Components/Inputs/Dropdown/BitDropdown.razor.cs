@@ -15,7 +15,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     private bool chips;
     private ICollection<TValue?>? values = Array.Empty<TValue?>();
 
-    private List<TItem> _internalItems = [];
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShowItems = [];
 
@@ -35,7 +34,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     private ElementReference _comboBoxInputRef;
     private Virtualize<TItem>? _virtualizeElement;
     private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
-    private ICollection<TItem>? _items;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -162,19 +160,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// <summary>
     /// The list of items to display in the callout.
     /// </summary>
-    [Parameter]
-    public ICollection<TItem>? Items
-    {
-        get => _items;
-        set
-        {
-            if (_items == value && value is null) return;
-            if (_internalItems is not null && value is not null && _internalItems!.All(value.Contains) && _internalItems!.Count == value.Count) return;
-
-            _items = value;
-            _internalItems = [.. _items];
-        }
-    }
+    [Parameter] public ICollection<TItem>? Items { get; set; }
 
     /// <summary>
     /// The height of each item in pixels for virtualization.
@@ -393,7 +379,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     internal void RegisterOption(BitDropdownOption<TValue> option)
     {
-        _internalItems.Add((option as TItem)!);
+        Items.Add((option as TItem)!);
 
         UpdateSelectedItemsFromValues();
 
@@ -403,7 +389,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     internal void UnregisterOption(BitDropdownOption<TValue> option)
     {
         var item = (option as TItem)!;
-        _internalItems.Remove(item);
+        Items.Remove(item);
 
         if (_selectedItems.Contains(item))
         {
@@ -509,11 +495,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     internal int? GetTotalItems()
     {
-        if (_internalItems is null) return null;
+        if (Items is null) return null;
 
         if (_totalItems.HasValue is false)
         {
-            _totalItems = _internalItems.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal).Count;
+            _totalItems = Items.Count(i => GetItemType(i) == BitDropdownItemType.Normal);
         }
 
         return _totalItems.Value;
@@ -521,7 +507,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     internal int? GetItemPosInSet(TItem item)
     {
-        return _internalItems?.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal).IndexOf(item) + 1;
+        return null;
+
+        // This code was removed because it caused performance issues when the items parameter had a large number of records.
+        //return Items?.Where(i => GetItemType(i) == BitDropdownItemType.Normal).ToList().IndexOf(item) + 1;
     }
 
     internal bool GetIsSelected(TItem item)
@@ -573,7 +562,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         if (ItemsProvider is null && Items is null)
         {
-            _internalItems = [];
+            Items = [];
         }
 
         _selectedItems ??= [];
@@ -626,7 +615,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     private void UpdateSelectedItemsFromValues()
     {
-        var items = ItemsProvider is not null ? _lastShowItems : _internalItems;
+        var items = ItemsProvider is not null ? _lastShowItems : Items;
+        if (items is null) return;
+
         if (ItemsProvider is null)
         {
             _selectedItems.Clear();
@@ -648,7 +639,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         }
         else
         {
-            var item = items.Find(i => comparer.Equals(GetValue(i), CurrentValue) && GetItemType(i) == BitDropdownItemType.Normal);
+            var item = items.FirstOrDefault(i => comparer.Equals(GetValue(i), CurrentValue) && GetItemType(i) == BitDropdownItemType.Normal);
 
             if (item is not null)
             {
@@ -749,14 +740,14 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         await _comboBoxInputRef.FocusAsync();
     }
 
-    private List<TItem> GetSearchedItems()
+    private ICollection<TItem> GetSearchedItems()
     {
         return _searchText.HasNoValue()
-                ? _internalItems
+                ? Items
                 : SearchFunction is not null
-                    ? [.. SearchFunction.Invoke(_internalItems, _searchText!)]
-                    : _internalItems.FindAll(i => GetItemType(i) == BitDropdownItemType.Normal
-                                          && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false));
+                    ? SearchFunction.Invoke(Items, _searchText!)
+                    : Items.Where(i => GetItemType(i) == BitDropdownItemType.Normal
+                                          && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false)).ToArray();
     }
 
     private string GetSearchBoxClasses()
@@ -777,7 +768,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         return className.ToString();
     }
 
-    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_labelId} {_dropdownTextContainerId}" : $"{_dropdownTextContainerId}";
+    private string GetDropdownAriaLabelledby => Label.HasValue() ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
 
     private async Task SearchVirtualized()
     {
@@ -1208,12 +1199,12 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
             if (hasItem) return;
         }
 
-        var searchItems = ItemsProvider is not null ? _lastShowItems : _internalItems;
+        var searchItems = ItemsProvider is not null ? _lastShowItems : Items;
         if (searchItems is not null && searchItems.Count > 0)
         {
             var item = FindItemFunction is not null ?
-                    FindItemFunction.Invoke(searchItems, _searchText!) :
-                    (searchItems).Find(i => GetText(i).HasValue() && _searchText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
+                       FindItemFunction.Invoke(searchItems, _searchText!) :
+                       (searchItems).FirstOrDefault(i => GetText(i).HasValue() && _searchText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
 
             if (item is not null && GetIsSelected(item) is false)
             {
