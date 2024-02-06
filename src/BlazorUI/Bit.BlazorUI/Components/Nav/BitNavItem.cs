@@ -23,7 +23,7 @@ public class BitNavItem
     public List<BitNavItem> ChildItems { get; set; } = [];
 
     /// <summary>
-    /// Aria label when items is collapsed and can be expanded.
+    /// Aria label when nav item is collapsed and can be expanded.
     /// </summary>
     public string? CollapseAriaLabel { get; set; }
 
@@ -38,7 +38,7 @@ public class BitNavItem
     public string? Description { get; set; }
 
     /// <summary>
-    /// Aria label when group is collapsed and can be expanded.
+    /// Aria label when nav item is collapsed and can be expanded.
     /// </summary>
     public string? ExpandAriaLabel { get; set; }
 

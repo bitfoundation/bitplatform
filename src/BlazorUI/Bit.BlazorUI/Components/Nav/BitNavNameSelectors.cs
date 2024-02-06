@@ -3,7 +3,7 @@
 public class BitNavNameSelectors<TItem>
 {
     /// <summary>
-    /// The AriaLabel field name and selector of the custom input class.
+    /// The AriaCurrent field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, BitNavAriaCurrent?> AriaCurrent { get; set; } = new(nameof(BitNavItem.AriaCurrent));
 

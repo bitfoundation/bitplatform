@@ -37,7 +37,7 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Aria label when options is collapsed and can be expanded.
+    /// Aria label when nav  option is collapsed and can be expanded.
     /// </summary>
     [Parameter] public string? CollapseAriaLabel { get; set; }
 
@@ -52,7 +52,7 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public string? Description { get; set; }
 
     /// <summary>
-    /// Aria label when group is collapsed and can be expanded.
+    /// Aria label when nav option is collapsed and can be expanded.
     /// </summary>
     [Parameter] public string? ExpandAriaLabel { get; set; }
 
