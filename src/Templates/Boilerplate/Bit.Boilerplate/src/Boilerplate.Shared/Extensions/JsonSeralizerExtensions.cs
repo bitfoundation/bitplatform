@@ -14,7 +14,7 @@ public static class JsonSerializerOptionsExtensions
             return (JsonTypeInfo<T>)result;
         }
 
-        throw new InvalidOperationException($"Add {GetTypeDisplayName(typeof(T))} to the {nameof(AppJsonContext)}");
+        throw new InvalidOperationException($"Add [JsonSerializable(typeof({GetTypeDisplayName(typeof(T))}))] to the {nameof(AppJsonContext)}");
     }
 
     private static string GetTypeDisplayName(Type type)

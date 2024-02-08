@@ -48,7 +48,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
 
 
     [HttpGet]
-    public async Task<ProductPercentagePerCategoryResponseDto[]> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
+    public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
     {
         var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
 
@@ -63,6 +63,6 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
                  CategoryName = c!.Name,
                  CategoryColor = c.Color,
                  ProductPercentage = (float)decimal.Divide(c.Products!.Count(), productsTotalCount) * 100
-             }).ToArrayAsync(cancellationToken);
+             }).ToListAsync(cancellationToken);
     }
 }

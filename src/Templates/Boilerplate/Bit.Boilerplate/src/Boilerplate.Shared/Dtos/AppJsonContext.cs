@@ -23,7 +23,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(List<ProductsCountPerCategoryResponseDto>))]
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
 [JsonSerializable(typeof(List<ProductSaleStatResponseDto>))]
-[JsonSerializable(typeof(ProductPercentagePerCategoryResponseDto[]))]
+[JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
 [JsonSerializable(typeof(ProductDto))]
 [JsonSerializable(typeof(PagedResult<ProductDto>))]
 [JsonSerializable(typeof(List<ProductDto>))]
