@@ -41,7 +41,7 @@ public partial class AddOrEditProductModal
 
         try
         {
-            var categoryList = await (await categoryController.Get(CurrentCancellationToken)).ToListAsync(CurrentCancellationToken);
+            var categoryList = await categoryController.Get(CurrentCancellationToken);
 
             allCategoryList = categoryList.Select(c => new BitDropdownItem<string>()
             {

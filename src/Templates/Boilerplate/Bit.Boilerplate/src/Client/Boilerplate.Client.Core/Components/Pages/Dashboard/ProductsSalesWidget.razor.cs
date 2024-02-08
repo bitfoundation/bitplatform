@@ -33,7 +33,7 @@ public partial class ProductsSalesWidget
         {
             isLoading = true;
 
-            var data = await (await dashboardController.GetProductsSalesStats(CurrentCancellationToken)).ToListAsync(CurrentCancellationToken);
+            var data = await dashboardController.GetProductsSalesStats(CurrentCancellationToken);
 
             BitChartBarDataset<decimal> chartDataSet = [.. data.Select(d => d.SaleAmount)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();
