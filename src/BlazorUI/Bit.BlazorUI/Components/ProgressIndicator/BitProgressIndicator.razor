@@ -7,13 +7,13 @@
      class="@ClassBuilder.Value">
     @if (LabelTemplate is not null)
     {
-        <div class="bit-pin-lbl" id="@LabelId">
+        <div style="@Styles?.LabelContainer" class="bit-pin-lbl @Classes?.LabelContainer" id="@LabelId">
             @LabelTemplate
         </div>
     }
     else if (Label.HasValue())
     {
-        <div class="bit-pin-lbl" id="@LabelId">
+        <div style="@Styles?.LabelContainer" class="bit-pin-lbl @Classes?.LabelContainer" id="@LabelId">
             @Label
         </div>
     }
@@ -26,9 +26,9 @@
         }
         else
         {
-            <div class="bit-pin-wrp" style="@(FormattableString.Invariant($"height: {BarHeight}px;"))">
-                <div class="bit-pin-trc"></div>
-                <div class="bit-pin-bar"
+            <div style="@($"height: {BarHeight}px;") @Styles?.IndicatorWrapper" class="bit-pin-wrp @Classes?.IndicatorWrapper">
+                <div style="@Styles?.Tracker" class="bit-pin-trc @Classes?.Tracker"></div>
+                <div class="bit-pin-bar @Classes?.Bar"
                      role="progressbar"
                      aria-labelledby="@LabelId"
                      aria-valuetext="@AriaValueText"
@@ -36,7 +36,7 @@
                      aria-valuemin="@(PercentComplete is not null ? 0 : null)"
                      aria-valuemax="@(PercentComplete is not null ? 100 : null)"
                      aria-valuenow="@(PercentComplete is not null ? Math.Floor(PercentComplete.Value) : null)"
-                     style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%" : string.Empty)};")">
+                     style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%;" : string.Empty)} {(BarColor.HasValue() ? $"background-color: {BarColor};" : string.Empty)}") @Styles?.Bar">
                 </div>
             </div>
         }
@@ -44,13 +44,13 @@
 
     @if (DescriptionTemplate is not null)
     {
-        <div class="bit-pin-des" id="@DescriptionId">
+        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@DescriptionId">
             @DescriptionTemplate
         </div>
     }
     else if (Description.HasValue())
     {
-        <div class="bit-pin-des" id="@DescriptionId">
+        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@DescriptionId">
             @Description
         </div>
     }
