@@ -22,7 +22,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     }
 
     [HttpGet]
-    public async Task<IAsyncEnumerable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken)
+    public IQueryable<ProductsCountPerCategoryResponseDto> GetProductsCountPerCategoryStats()
     {
         return DbContext.Categories
             .Select(c => new ProductsCountPerCategoryResponseDto()
@@ -30,11 +30,11 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
                 CategoryName = c.Name,
                 CategoryColor = c.Color,
                 ProductCount = c.Products!.Count()
-            }).AsAsyncEnumerable();
+            });
     }
 
     [HttpGet]
-    public async Task<IAsyncEnumerable<ProductSaleStatResponseDto>> GetProductsSalesStats(CancellationToken cancellationToken)
+    public IQueryable<ProductSaleStatResponseDto> GetProductsSalesStats()
     {
         Random rand = new Random();
         return DbContext.Products.Include(p => p.Category)
@@ -43,7 +43,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
                  ProductName = p.Name,
                  CategoryColor = p.Category!.Color,
                  SaleAmount = rand.Next(1, 10) * p.Price
-             }).AsAsyncEnumerable();
+             });
     }
 
 
