@@ -73,22 +73,22 @@ public class BitNumericTextFieldClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the BitTextField's prefix container.
+    /// Custom CSS classes/styles for the numeric text field's prefix container.
     /// </summary>
     public string? PrefixContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the BitTextField's prefix.
+    /// Custom CSS classes/styles for the numeric text field's prefix.
     /// </summary>
     public string? Prefix { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the BitTextField's suffix container.
+    /// Custom CSS classes/styles for the numeric text field's suffix container.
     /// </summary>
     public string? SuffixContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the BitTextField's suffix.
+    /// Custom CSS classes/styles for the numeric text field's suffix.
     /// </summary>
     public string? Suffix { get; set; }
 }
