@@ -94,8 +94,8 @@ public partial class BitColorPicker : IDisposable
 
 
     public string? Hex => _color.Hex;
-    public string? Rgb => $"rgb({_color.R},{_color.G},{_color.B})";
-    public string? Rgba => $"rgba({_color.R},{_color.G},{_color.B},{_color.A})";
+    public string? Rgb => FormattableString.Invariant($"rgb({_color.R},{_color.G},{_color.B})");
+    public string? Rgba => FormattableString.Invariant($"rgba({_color.R},{_color.G},{_color.B},{_color.A})");
     public (double Hue, double Saturation, double Value) Hsv => _color.Hsv;
 
 

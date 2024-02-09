@@ -136,6 +136,13 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
+            Name = "NumberFormat",
+            Type = "string",
+            DefaultValue = "{0}",
+            Description = "The format of the number in the numeric text field.",
+        },
+        new()
+        {
             Name = "OnChange",
             Type = "EventCallback<TValue>",
             Description = "Callback for when the numeric text field value change.",
@@ -205,13 +212,6 @@ public partial class BitNumericTextFieldDemo
             LinkType = LinkType.Link,
             Href = "#numerictextfield-class-styles",
             Description = "Custom CSS styles for different parts of the BitNumericTextField.",
-        },
-        new()
-        {
-            Name = "Suffix",
-            Type = "string",
-            DefaultValue = "string.Empty",
-            Description = "A text is shown after the numeric text field value.",
         },
         new()
         {
@@ -427,8 +427,8 @@ public partial class BitNumericTextFieldDemo
                      DecrementIconName=""@BitIconName.DislikeSolid"" />";
 
     private readonly string example4RazorCode = @"
-<BitNumericTextField Label=""Height"" DefaultValue=""150"" Suffix="" cm"" />
-<BitNumericTextField Label=""Weight"" DefaultValue=""50"" Suffix="" kg"" />";
+<BitNumericTextField Label=""Height"" DefaultValue=""150"" NumberFormat=""{0} cm"" />
+<BitNumericTextField Label=""Weight"" DefaultValue=""2500"" NumberFormat=""{0,0:N0} kg"" />";
 
     private readonly string example5RazorCode = @"
 <style>

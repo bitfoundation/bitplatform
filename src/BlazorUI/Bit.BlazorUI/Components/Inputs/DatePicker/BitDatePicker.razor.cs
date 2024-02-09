@@ -112,12 +112,13 @@ public partial class BitDatePicker
     private bool _isTimePickerOverlayOnTop;
     private bool _showTimePickerAsOverlayInternal;
     private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
-    private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
+    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
     private string _datePickerId = string.Empty;
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _inputId;
+    private ElementReference _inputRef = default!;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
 
@@ -383,9 +384,9 @@ public partial class BitDatePicker
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
-    /// The callback for selecting a date in the DatePicker.
+    /// The callback for when the value changes in the DatePicker.
     /// </summary>
-    [Parameter] public EventCallback<DateTimeOffset?> OnSelectDate { get; set; }
+    [Parameter] public EventCallback<DateTimeOffset?> OnChange { get; set; }
 
     /// <summary>
     /// The text of selected date aria-atomic of the DatePicker.
@@ -466,6 +467,11 @@ public partial class BitDatePicker
     /// Show month picker on top of date picker when visible.
     /// </summary>
     [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
+
+    /// <summary>
+    /// Whether the clear button should be shown or not when the BitDatePicker has a value.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
 
 
     public Task OpenCallout()
@@ -642,7 +648,22 @@ public partial class BitDatePicker
             }
         }
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
+    }
+
+    private async Task HandleOnClearButtonClick()
+    {
+        if (IsEnabled is false) return;
+
+        CurrentValue = null;
+
+        _hour = 0;
+        _minute = 0;
+
+        _selectedDateWeek = null;
+        _selectedDateDayOfWeek = null;
+
+        await _inputRef.FocusAsync();
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)
@@ -656,12 +677,14 @@ public partial class BitDatePicker
         int selectedMonth = FindMonth(weekIndex, dayIndex);
         var isNotInCurrentMonth = IsInCurrentMonth(weekIndex, dayIndex) is false;
 
-        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth)
+        //The number of days displayed in the picker is about 34 days, and if the selected day is less than 15, it means that the next month has been selected in next year.
+        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth && _currentDay < 15)
         {
             _currentYear++;
         }
 
-        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth)
+        //The number of days displayed in the picker is about 34 days, and if the selected day is greater than 15, it means that the previous month has been selected in previous year.
+        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth && _currentDay > 15)
         {
             _currentYear--;
         }
@@ -679,7 +702,7 @@ public partial class BitDatePicker
 
         GenerateMonthData(_currentYear, _currentMonth);
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SelectMonth(int month)
@@ -1195,7 +1218,7 @@ public partial class BitDatePicker
         var currentValueDay = Culture.Calendar.GetDayOfMonth(CurrentValue.Value.LocalDateTime);
         CurrentValue = new DateTimeOffset(Culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0), DateTimeOffset.Now.Offset);
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnTimeHourFocus()

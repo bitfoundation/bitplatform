@@ -11,7 +11,6 @@ public static class BitButil
         services.AddTransient<Keyboard>();
         services.AddTransient<Console>();
         services.AddTransient<History>();
-        services.AddTransient<Element>();
         services.AddTransient<Navigator>();
         services.AddTransient<LocalStorage>();
         services.AddTransient<SessionStorage>();
@@ -19,6 +18,7 @@ public static class BitButil
         services.AddTransient<Screen>();
         services.AddTransient<Cookie>();
         services.AddTransient<Crypto>();
+        services.AddTransient<Clipboard>();
 
         return services;
     }

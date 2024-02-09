@@ -4,7 +4,7 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Boilerplate.Client.Maui;
 
-public static class MauiProgram
+public static partial class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
@@ -16,28 +16,7 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .Configuration.AddClientConfigurations();
 
-        var services = builder.Services;
-
-        services.AddMauiBlazorWebView();
-
-        if (BuildConfiguration.IsDebug())
-        {
-            services.AddBlazorWebViewDeveloperTools();
-        }
-
-        Uri.TryCreate(builder.Configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
-
-        services.AddTransient(sp =>
-        {
-            var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
-            HttpClient httpClient = new(handler)
-            {
-                BaseAddress = apiServerAddress
-            };
-            return httpClient;
-        });
-
-        services.AddClientMauiServices();
+        builder.ConfigureServices();
 
         builder.ConfigureLifecycleEvents(lifecycle =>
         {

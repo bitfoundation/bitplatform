@@ -38,7 +38,7 @@
                    class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName) @Classes?.UnselectedIcon">
                 </i>
                 <i aria-hidden="true"
-                   style=@($"width:{percentage}%; {Styles?.SelectedIcon}")
+                   style=@(FormattableString.Invariant($"width:{percentage}%; {Styles?.SelectedIcon}"))
                    class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName) @Classes?.SelectedIcon">
                 </i>
             </div>

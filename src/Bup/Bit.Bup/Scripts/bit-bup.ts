@@ -1,4 +1,4 @@
-﻿window['bit-bup version'] = '8.7.4';
+﻿window['bit-bup version'] = '8.7.5';
 
 declare const Blazor: any;
 

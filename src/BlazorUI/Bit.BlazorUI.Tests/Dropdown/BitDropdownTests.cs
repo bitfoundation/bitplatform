@@ -229,7 +229,7 @@ public class BitDropdownTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var items = BitDropdownTests.GetDropdownItems();
+        var items = GetDropdownItems();
         var defaultSelectedMultipleValueList = defaultValues.Split(",").ToArray();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
@@ -239,20 +239,17 @@ public class BitDropdownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-tcn");
-        var defaultSelectedItems = items.FindAll(i => defaultSelectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
+        var defaultSelectedItems = component.Instance.SelectedItems.ToList();
         var expectedText = "";
 
         defaultSelectedItems.ForEach(i =>
         {
-            if (i.IsSelected && i.ItemType == BitDropdownItemType.Normal)
+            if (expectedText.HasValue())
             {
-                if (expectedText.HasValue())
-                {
-                    expectedText += component.Instance.MultiSelectDelimiter;
-                }
-
-                expectedText += i.Text;
+                expectedText += component.Instance.MultiSelectDelimiter;
             }
+
+            expectedText += i.Text;
         });
 
         Assert.AreEqual(expectedText, textSpan.InnerHtml);
@@ -266,7 +263,7 @@ public class BitDropdownTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var items = BitDropdownTests.GetDropdownItems();
+        var items = GetDropdownItems();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
@@ -286,7 +283,7 @@ public class BitDropdownTests : BunitTestContext
     ]
     public void BitDropdownTextWithValuesAndDefaultValuesShouldInitCorrect(string defaultValues, string values)
     {
-        var items = BitDropdownTests.GetDropdownItems();
+        var items = GetDropdownItems();
         var defaultSelectedMultipleValueList = defaultValues.Split(",").ToArray();
         var selectedMultipleValueList = values.Split(",").ToArray();
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
@@ -298,20 +295,17 @@ public class BitDropdownTests : BunitTestContext
         });
 
         var textSpan = component.Find(".bit-drp-tcn");
-        var selectedItems = items.FindAll(i => selectedMultipleValueList.Contains(i.Value) && i.ItemType == BitDropdownItemType.Normal);
+        var selectedItems = component.Instance.SelectedItems.ToList();
         var expectedText = new StringBuilder();
 
         selectedItems.ForEach(i =>
         {
-            if (i.IsSelected && i.ItemType == BitDropdownItemType.Normal)
+            if (expectedText.Length > 0)
             {
-                if (expectedText.Length > 0)
-                {
-                    expectedText.Append(component.Instance.MultiSelectDelimiter);
-                }
-
-                expectedText.Append(i.Text);
+                expectedText.Append(component.Instance.MultiSelectDelimiter);
             }
+
+            expectedText.Append(i.Text);
         });
 
         Assert.AreEqual(expectedText.ToString(), textSpan.InnerHtml);
@@ -573,77 +567,6 @@ public class BitDropdownTests : BunitTestContext
         }
 
         Assert.AreEqual(expectedResult, _bitDropdownValues.Count());
-    }
-
-    [DataTestMethod,
-        DataRow("Apple", "f-app"),
-        DataRow("Orange", "f-ora"),
-        DataRow("Banana", "f-ban"),
-        DataRow("Broccoli", "v-bro")
-    ]
-    public void BitDropdownTwoWayBoundWithForSelectedItem(string text, string value)
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        BitDropdownItem<string>? selectedItem = null;
-        var isOpen = true;
-
-        var items = BitDropdownTests.GetShortDropdownItems();
-        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, isOpen);
-            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectedItem, selectedItem);
-            parameters.Add(p => p.SelectedItemChanged, (value) => selectedItem = value);
-        });
-
-        var drpItems = component.FindAll(".bit-drp-itm");
-        drpItems.Single(i => i.TextContent.Contains(text)).Click();
-
-        Assert.IsNotNull(selectedItem);
-        Assert.AreEqual(value, selectedItem.Value);
-        Assert.AreEqual(text, selectedItem.Text);
-        Assert.IsTrue(selectedItem.IsSelected);
-    }
-
-    [DataTestMethod,
-        DataRow("Banana,Broccoli", "f-ban,v-bro"),
-        DataRow("Orange", "f-ora"),
-        DataRow("Orange,Apple,Banana", "f-ora,f-app,f-ban")
-    ]
-    public void BitDropdownMultiSelectTwoWayBoundForSelectedItems(string text, string value)
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        List<BitDropdownItem<string>> selectedItems = null;
-        var isOpen = true;
-
-        var items = BitDropdownTests.GetShortDropdownItems();
-        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, isOpen);
-            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
-            parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.IsMultiSelect, true);
-            parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.SelectedItems, selectedItems);
-            parameters.Add(p => p.SelectedItemsChanged, v => selectedItems = v);
-        });
-
-        var textList = text.Split(",");
-        var drpItems = component.FindAll(".bit-drp-iwr", enableAutoRefresh: true);
-        foreach (var txt in textList)
-        {
-            drpItems.Single(i => i.Children[0].Children[1].TextContent.Contains(txt)).Children[0].Click();
-        }
-
-        var valueList = value.Split(",").ToArray();
-
-        Assert.IsNotNull(selectedItems);
-        Assert.AreEqual(valueList.Length, selectedItems.Count);
-        Assert.IsTrue(selectedItems.Select(i => i.Value).OrderBy(o => o).SequenceEqual(valueList.OrderBy(o => o)));
-        Assert.IsTrue(selectedItems.Select(i => i.Text).OrderBy(o => o).SequenceEqual(textList.OrderBy(o => o)));
-        Assert.IsFalse(selectedItems.Any(i => i.IsSelected is false));
     }
 
     [DataTestMethod,

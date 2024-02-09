@@ -60,7 +60,26 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Carrot", Value = "v-car", Class = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", Class = "custom-veg" }
     };
+    private List<BitDropdownItem<string>> comboBoxItems = new()
+    {
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" }
+    };
 
+    private BitDropdownNameSelectors<BitDropdownItem<string>, string> nameSelectors = new()
+    {
+        DynamicValueGenerator = ((BitDropdownItem<string> item) => item.Text),
+        ValueSetter = ((BitDropdownItem<string> item, string? value) => item.Value = value),
+        TextSetter = ((string? text, BitDropdownItem<string> item) => item.Text = text)
+    };
 
 
     private string controlledValue = "f-app";
@@ -78,6 +97,8 @@ public partial class _BitDropdownItemDemo
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
+    private string? comboBoxValue;
+    private ICollection<string?> comboBoxValues = [];
 
     protected override void OnInitialized()
     {
@@ -109,6 +130,11 @@ public partial class _BitDropdownItemDemo
     private void HandleInvalidSubmit()
     {
         successMessage = string.Empty;
+    }
+
+    private void HandleOnDynamicAdd(BitDropdownItem<string> item)
+    {
+        comboBoxItems.Add(item);
     }
 
     private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> LoadItems(

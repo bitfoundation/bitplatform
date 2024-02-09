@@ -78,6 +78,32 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Dynamic",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "It is allowed to add a new item in the ComboBox mode.",
+        },
+        new()
+        {
+            Name = "DynamicValueGenerator",
+            Type = "Func<TItem, TValue>?",
+            DefaultValue = "null",
+            Description = "The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.",
+        },
+        new()
+        {
+            Name = "ExistsSelectedItemFunction",
+            Type = "Func<ICollection<TItem>, string, bool>",
+            Description = "Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.",
+        },
+        new()
+        {
+            Name = "FindItemFunction",
+            Type = "Func<ICollection<TItem>, string, TItem>",
+            Description = "Custom search function to be used in place of the default search algorithm for checking existing an item in items in the ComboBox mode.",
+        },
+        new()
+        {
             Name = "IsMultiSelect",
             Type = "bool",
             DefaultValue = "false",
@@ -150,6 +176,20 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "IsSelectedSetter",
+            Type = "Action<bool, TItem>?",
+            DefaultValue = "null",
+            Description = "The callback that is called for setting text on a IsSelected property in a custom items.",
+        },
+        new()
+        {
+            Name = "Combo",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Activates the ComboBox feature in BitDropDown component.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -218,6 +258,12 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "OnDynamicAdd",
+            Type = "EventCallback<string>",
+            Description = "The callback that is called when a new item is on added Dynamic ComboBox mode.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -246,20 +292,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "SelectedItem",
-            Type = "TItem?",
-            DefaultValue = "null",
-            Description = "The selected item in single select mode. (two-way bound)",
-        },
-        new()
-        {
-            Name = "SelectedItems",
-            Type = "List<TItem>",
-            DefaultValue = "new List<TItem>()",
-            Description = "The selected items in multi select mode. (two-way bound)",
-        },
-        new()
-        {
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
@@ -271,6 +303,13 @@ public partial class BitDropdownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Shows the SearchBox element in the callout.",
+        },
+        new()
+        {
+            Name = "Chips",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the selected items like chips in the BitDropdown.",
         },
         new()
         {
@@ -297,10 +336,24 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "TextSetter",
+            Type = "Action<string, TItem>?",
+            DefaultValue = "null",
+            Description = "The callback that is called for setting text on a text property in a custom item when a new item is on added Dynamic ComboBox mode.",
+        },
+        new()
+        {
             Name = "Values",
             Type = "ICollection<TValue?>",
             DefaultValue = "null",
             Description = "The key values of the selected items in multi select mode. (two-way bound)",
+        },
+        new()
+        {
+            Name = "ValueSetter",
+            Type = "Action<TItem, TValue>?",
+            DefaultValue = "null",
+            Description = "The callback that is called for setting text on a value property in a custom item when a new item is on added Dynamic ComboBox mode.",
         },
         new()
         {
@@ -366,13 +419,6 @@ public partial class BitDropdownDemo
                    Type = "bool",
                    DefaultValue = "null",
                    Description = "Determines if the dropdown item is hidden."
-               },
-               new()
-               {
-                   Name = "IsSelected",
-                   Type = "bool",
-                   DefaultValue = "null",
-                   Description = "Determines if the dropdown item is selected."
                },
                new()
                {
@@ -564,15 +610,6 @@ public partial class BitDropdownDemo
                    Type = "BitNameSelectorPair<TItem, bool>",
                    DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsHidden))",
                    Description = "The IsHidden field name and selector of the custom input class.",
-                   LinkType = LinkType.Link,
-                   Href = "#name-selector-pair"
-               },
-               new()
-               {
-                   Name = "IsSelected",
-                   Type = "BitNameSelectorPair<TItem, bool>",
-                   DefaultValue = "new(nameof(BitDropdownItem<TValue>.IsSelected))",
-                   Description = "The IsSelected field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },

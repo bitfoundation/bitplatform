@@ -183,6 +183,7 @@ public partial class BitDateRangePicker
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _inputId;
+    private ElementReference _inputRef = default!;
     private ElementReference _startTimeHourInputRef = default!;
     private ElementReference _startTimeMinuteInputRef = default!;
     private ElementReference _endTimeHourInputRef = default!;
@@ -444,9 +445,9 @@ public partial class BitDateRangePicker
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
-    /// The callback for selecting a date in the DateRangePicker.
+    /// Callback for when the value changes in the DateRangePicker.
     /// </summary>
-    [Parameter] public EventCallback<BitDateRangePickerValue> OnSelectDate { get; set; }
+    [Parameter] public EventCallback<BitDateRangePickerValue> OnChange { get; set; }
 
     /// <summary>
     /// The placeholder text of the DateRangePicker's input.
@@ -532,6 +533,11 @@ public partial class BitDateRangePicker
     /// The maximum range of time allowed for selection in DateRangePicker.
     /// </summary>
     [Parameter] public TimeSpan? MaxTimeRange { get; set; }
+
+    /// <summary>
+    /// Whether the clear button should be shown or not when the DateRangePicker has a value.
+    /// </summary>
+    [Parameter] public bool ShowClearButton { get; set; }
 
 
     public Task OpenCallout()
@@ -714,7 +720,27 @@ public partial class BitDateRangePicker
 
         CurrentValueAsString = e.Value?.ToString();
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
+    }
+
+    private async Task HandleOnClearButtonClick()
+    {
+        if (IsEnabled is false) return;
+
+        CurrentValue = new();
+
+        _startTimeHour = 0;
+        _startTimeMinute = 0;
+
+        _endTimeHour = MaxTimeRange.HasValue ? MaxTimeRange.Value.Hours : 23;
+        _endTimeMinute = MaxTimeRange.HasValue ? MaxTimeRange.Value.Minutes : 59;
+
+        _selectedStartDateWeek = null;
+        _selectedEndDateWeek = null;
+        _selectedStartDateDayOfWeek = null;
+        _selectedEndDateDayOfWeek = null;
+
+        await _inputRef.FocusAsync();
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)
@@ -735,12 +761,14 @@ public partial class BitDateRangePicker
         int selectedMonth = FindMonth(weekIndex, dayIndex);
         var isNotInCurrentMonth = IsInCurrentMonth(weekIndex, dayIndex) is false;
 
-        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth)
+        //The number of days displayed in the picker is about 34 days, and if the selected day is less than 15, it means that the next month has been selected in next year.
+        if (selectedMonth < _currentMonth && _currentMonth == 12 && isNotInCurrentMonth && currentDay < 15)
         {
             _currentYear++;
         }
 
-        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth)
+        //The number of days displayed in the picker is about 34 days, and if the selected day is greater than 15, it means that the previous month has been selected in previous year.
+        if (selectedMonth > _currentMonth && _currentMonth == 1 && isNotInCurrentMonth && currentDay > 15)
         {
             _currentYear--;
         }
@@ -782,7 +810,7 @@ public partial class BitDateRangePicker
 
         GenerateMonthData(_currentYear, _currentMonth);
 
-        await OnSelectDate.InvokeAsync(CurrentValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SelectMonth(int month)
@@ -1476,7 +1504,10 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate.HasValue is false && CurrentValue.EndDate.HasValue is false) return;
 
-        if (CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate!.Value.Date && new TimeSpan(_startTimeHour, _startTimeMinute, 0) > new TimeSpan(_endTimeHour, _endTimeMinute, 0))
+        var isEndTimeBiggerInOneDayRange = CurrentValue.StartDate.HasValue && CurrentValue.EndDate.HasValue &&
+            CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate!.Value.Date &&
+            new TimeSpan(_startTimeHour, _startTimeMinute, 0) > new TimeSpan(_endTimeHour, _endTimeMinute, 0);
+        if (isEndTimeBiggerInOneDayRange)
         {
             _startTimeHour = _endTimeHour;
             _startTimeMinute = _endTimeMinute;
@@ -1487,6 +1518,8 @@ public partial class BitDateRangePicker
             StartDate = GetDateTimeOffset(CurrentValue.StartDate, _startTimeHour, _startTimeMinute),
             EndDate = GetDateTimeOffset(CurrentValue.EndDate, _endTimeHour, _endTimeMinute)
         };
+
+        _ = OnChange.InvokeAsync(CurrentValue);
     }
 
     private DateTimeOffset? GetDateTimeOffset(DateTimeOffset? date, int hour, int minute)
@@ -1711,9 +1744,9 @@ public partial class BitDateRangePicker
         return MaxTimeRange.Value.TotalMinutes > Math.Abs((startTime - endTime).TotalMinutes);
     }
 
-    private bool CanChangeTime(bool isNext, bool isHour, bool isStartTime)
+    private bool IsIncreaseOrDecreaseButtonDisabled(bool isNext, bool isHour, bool isStartTime)
     {
-        if (MaxTimeRange.HasValue is false) return true;
+        if (MaxTimeRange.HasValue is false) return false;
 
         var startTimeHour = _startTimeHour;
         var endTimeHour = _endTimeHour;

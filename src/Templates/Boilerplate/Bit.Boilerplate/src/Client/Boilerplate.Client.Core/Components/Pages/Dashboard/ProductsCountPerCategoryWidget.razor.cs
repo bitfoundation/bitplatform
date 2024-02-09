@@ -33,7 +33,7 @@ public partial class ProductsCountPerCategoryWidget
         {
             isLoading = true;
 
-            var data = await (await dashboardController.GetProductsCountPerCategoryStats(CurrentCancellationToken)).ToListAsync(CurrentCancellationToken);
+            var data = await dashboardController.GetProductsCountPerCategoryStats(CurrentCancellationToken);
 
             BitChartBarDataset<int> chartDataSet = [.. data.Select(d => d.ProductCount)];
             chartDataSet.BackgroundColor = data.Select(d => d.CategoryColor ?? string.Empty).ToArray();

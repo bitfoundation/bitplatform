@@ -32,7 +32,7 @@ public partial class NavMenu : IDisposable
             {
                 new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = new string[] { "/components/check-box" } },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = new string[] { "/components/choice-group" }, Description = "Radio, RadioButton" },
-                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect" },
+                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect, ComboBox" },
                 new() { Text = "Rating", Url = "/components/rating" },
                 new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = new string[] { "/components/search-box" } },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },

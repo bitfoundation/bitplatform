@@ -152,3 +152,8 @@
         color: $color-foreground-disabled;
     }
 }
+
+.bit-nav-sep {
+    height: 0;
+    border: 1px solid $color-border-secondary;
+}

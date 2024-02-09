@@ -1,17 +1,14 @@
 ﻿@page "/element"
 @inject Bit.Butil.Console console
-@inject Bit.Butil.Element element
 
 <PageTitle>Element Samples</PageTitle>
 
 <h1>Element</h1>
 
 <pre style="font-family:Consolas; overflow: auto;">
-@@inject Bit.Butil.Element element
-
 @@code {
     ...
-    var rect = await element.GetBoundingClientRect();
+    var rect = await elementRef.GetBoundingClientRect();
     ...
 }
 </pre>
@@ -24,14 +21,16 @@
 <hr />
 <br />
 
-<div @ref="elementRef" @onpointerdown="HandleOnPointerDown"
-     id="target"
-     style="max-width:6rem;
+<div style="background:white; padding:1rem 0; position:sticky; top:10px; border-bottom:1px solid;">
+    <div @ref="elementRef" @onpointerdown="HandleOnPointerDown"
+         id="target"
+         style="max-width:6rem;
             max-height:6rem;
             color: white;
             overflow: auto;
             background: dodgerblue;">
-    <div style="height: 10rem">Element</div>
+        <div style="height: 100rem">Element</div>
+    </div>
 </div>
 
 <br />
@@ -60,10 +59,10 @@
 <hr />
 <br />
 
-X: <input type="number" @bind-value="scrollX"/>
+X: <input type="number" @bind-value="scrollX" />
 <br />
 <br />
-Y: <input type="number" @bind-value="scrollY"/>
+Y: <input type="number" @bind-value="scrollY" />
 <br />
 <br />
 <button @onclick="Scroll">Scroll</button>
@@ -73,10 +72,10 @@ Y: <input type="number" @bind-value="scrollY"/>
 <hr />
 <br />
 
-X: <input type="number" @bind-value="scrollByX"/>
+X: <input type="number" @bind-value="scrollByX" />
 <br />
 <br />
-Y: <input type="number" @bind-value="scrollByY"/>
+Y: <input type="number" @bind-value="scrollByY" />
 <br />
 <br />
 <button @onclick="ScrollBy">ScrollBy</button>
@@ -494,20 +493,20 @@ else
 
     private async Task Scroll()
     {
-        var scrollOptions = new ScrollToOptions() { Top = scrollY, Left = scrollX, Behavior = ScrollBehavior.Smooth };
+        var scrollOptions = new ScrollOptions() { Top = scrollY, Left = scrollX, Behavior = ScrollBehavior.Smooth };
         await elementRef.Scroll(scrollOptions);
     }
 
     private async Task ScrollBy()
     {
-        var scrollOptions = new ScrollToOptions() { Top = scrollByY, Left = scrollByX, Behavior = ScrollBehavior.Smooth };
+        var scrollOptions = new ScrollOptions() { Top = scrollByY, Left = scrollByX, Behavior = ScrollBehavior.Smooth };
         await elementRef.ScrollBy(scrollOptions);
     }
 
     private async Task ScrollIntoView()
     {
-        var scrollOptions = new ScrollIntoViewOptions() 
-        { 
+        var scrollOptions = new ScrollIntoViewOptions()
+        {
             Inline = ScrollLogicalPosition.Center,
             Block = ScrollLogicalPosition.Center,
             Behavior = ScrollBehavior.Smooth
@@ -662,7 +661,7 @@ else
 
     private async Task GetHidden()
     {
-        await console.Log("Element Hidden:", await elementRef.GetHidden());
+        await console.Log("Element Hidden:", (await elementRef.GetHidden()).ToString());
     }
 
     private async Task SetDir()

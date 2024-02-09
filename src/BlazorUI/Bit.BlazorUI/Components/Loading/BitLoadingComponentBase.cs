@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Globalization;
+
+namespace Bit.BlazorUI;
 
 public class BitLoadingComponentBase : ComponentBase
 {
@@ -36,6 +38,6 @@ public class BitLoadingComponentBase : ComponentBase
 
     protected string Convert(double value)
     {
-        return NumUtils.ToInvariantString(value * Size / OriginalSize);
+        return (value * Size / OriginalSize).ToString(CultureInfo.InvariantCulture);
     }
 }

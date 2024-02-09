@@ -21,7 +21,8 @@
 
     <div style="@Styles?.InputWrapper" class="bit-dtp-wrp @Classes?.InputWrapper" id="@_datePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div style="@Styles?.InputContainer" class="bit-dtp-icn @Classes?.InputContainer">
-            <input @attributes="InputHtmlAttributes"
+            <input @ref="_inputRef"
+                   @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
                    @oninput="@HandleOnChange"
                    @onfocusin="@HandleOnFocusIn"
@@ -41,6 +42,20 @@
                    aria-labelledby="@((LabelTemplate is not null || Label.HasValue()) ? _labelId : null)"
                    style="@Styles?.Input"
                    class="bit-dtp-inp@(AllowTextInput ? " bit-dtp-ein" : null) @Classes?.Input" />
+
+            @if (IsEnabled && ShowClearButton && CurrentValue.HasValue)
+            {
+                <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
+                        style="@Styles?.ClearButton"
+                        class="bit-dtp-clr @Classes?.ClearButton"
+                        type="button"
+                        aria-hidden="true"
+                        aria-label="Clear date"
+                        disabled="@(CurrentValue.HasValue is false)">
+                    <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                </button>
+            }
+
             @if (IconTemplate is not null)
             {
                 @IconTemplate

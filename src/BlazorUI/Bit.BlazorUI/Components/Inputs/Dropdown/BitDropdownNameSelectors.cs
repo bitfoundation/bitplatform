@@ -33,11 +33,6 @@ public class BitDropdownNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, bool> IsHidden { get; set; } = new(nameof(BitDropdownItem<TValue>.IsHidden));
 
     /// <summary>
-    /// The IsSelected field name and selector of the custom input class.
-    /// </summary>
-    public BitNameSelectorPair<TItem, bool> IsSelected { get; set; } = new(nameof(BitDropdownItem<TValue>.IsSelected));
-
-    /// <summary>
     /// The ItemType field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, BitDropdownItemType> ItemType { get; set; } = new(nameof(BitDropdownItem<TValue>.ItemType));
@@ -61,4 +56,24 @@ public class BitDropdownNameSelectors<TItem, TValue>
     /// The Value field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, TValue?> Value { get; set; } = new(nameof(BitDropdownItem<TValue>.Value));
+
+    /// <summary>
+    /// The callback that is called for setting text on a text property in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    public Action<string, TItem>? TextSetter { get; set; }
+
+    /// <summary>
+    /// The callback that is called for setting text on a IsSelected property in a custom items.
+    /// </summary>
+    public Action<bool, TItem>? IsSelectedSetter { get; set; }
+
+    /// <summary>
+    /// The callback that is called for setting text on a value property in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    public Action<TItem, TValue>? ValueSetter { get; set; }
+
+    /// <summary>
+    /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
 }

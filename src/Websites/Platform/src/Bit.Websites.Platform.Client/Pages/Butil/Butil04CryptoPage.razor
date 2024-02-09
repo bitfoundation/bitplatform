@@ -36,25 +36,23 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                <ChildContent>
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @encryptExampleCode
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @encryptExampleCode
                             </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitTextField @bind-Value="encryptText" Style="max-width: 18.75rem;" />
-                            <br />
-                            <BitButton OnClick="@Encrypt">Encrypt</BitButton>
-                            <br />
-                            <br />
-                            <div>Encrypted text: @encryptedText</div>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
-                </ChildContent>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="encryptText" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@Encrypt">Encrypt</BitButton>
+                        <br />
+                        <br />
+                        <div>Encrypted text: @encryptedText</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 
@@ -63,28 +61,26 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                <ChildContent>
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @decryptExampleCode
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @decryptExampleCode
                             </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitTextField @bind-Value="decryptText" Style="max-width: 18.75rem;" />
-                            <br />
-                            <BitButton OnClick="@Decrypt">Decrypt</BitButton>
-                            <br />
-                            <br />
-                            <div>Decrypted text: @decryptedText</div>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
-                </ChildContent>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="decryptText" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@Decrypt">Decrypt</BitButton>
+                        <br />
+                        <br />
+                        <div>Decrypted text: @decryptedText</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
         </div>
     </section>
 </div>
 
-<NavigationButtons Prev="Cookie" PrevUrl="/butil/cookie" />
+<NavigationButtons Prev="Setup" PrevUrl="/butil/setup" Next="Clipboard" NextUrl="/butil/clipboard" />

@@ -229,17 +229,17 @@ public partial class BitPersona
 
         if (splits.Length == 2)
         {
-            return $"{splits[0][0]}{splits[1][0]}";
+            return FormattableString.Invariant($"{splits[0][0]}{splits[1][0]}");
         }
 
         if (splits.Length == 3)
         {
-            return $"{splits[0][0]}{splits[2][0]}";
+            return FormattableString.Invariant($"{splits[0][0]}{splits[2][0]}");
         }
 
         if (splits.Length != 0)
         {
-            return $"{splits[0][0]}";
+            return FormattableString.Invariant($"{splits[0][0]}");
         }
 
         return string.Empty;

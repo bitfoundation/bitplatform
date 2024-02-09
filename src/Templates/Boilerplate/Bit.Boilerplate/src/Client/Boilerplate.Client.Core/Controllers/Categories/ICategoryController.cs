@@ -21,5 +21,5 @@ public interface ICategoryController : IAppController
     Task<PagedResult<CategoryDto>> GetCategories(CancellationToken cancellationToken = default) => default!;
 
     [HttpGet]
-    Task<IAsyncEnumerable<CategoryDto>> Get(CancellationToken cancellationToken) => default!;
+    Task<List<CategoryDto>> Get(CancellationToken cancellationToken) => default!;
 }

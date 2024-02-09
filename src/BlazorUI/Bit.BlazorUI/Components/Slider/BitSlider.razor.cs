@@ -365,10 +365,10 @@ public partial class BitSlider
     {
         if (IsRanged)
         {
-            _styleProgress = $"--l: {_firstInputValue}; --h: {_secondInputValue}; --min: {Min}; --max: {Max}";
+            _styleProgress = FormattableString.Invariant($"--l: {_firstInputValue}; --h: {_secondInputValue}; --min: {Min}; --max: {Max}");
             if (IsVertical)
             {
-                _styleContainer = $"width: {_inputHeight}px; height: {_inputHeight}px;";
+                _styleContainer = FormattableString.Invariant($"width: {_inputHeight}px; height: {_inputHeight}px;");
                 StateHasChanged();
             }
         }
@@ -376,12 +376,12 @@ public partial class BitSlider
         {
             if (IsVertical)
             {
-                _styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max}; width: {_inputHeight}px; transform: rotate(270deg) translateX(-{(_inputHeight - 12)}px);";
+                _styleProgress = FormattableString.Invariant($"--value: {Value}; --min: {Min}; --max: {Max}; width: {_inputHeight}px; transform: rotate(270deg) translateX(-{(_inputHeight - 12)}px);");
                 StateHasChanged();
             }
             else
             {
-                _styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
+                _styleProgress = FormattableString.Invariant($"--value: {Value}; --min: {Min}; --max: {Max};");
             }
         }
     }

@@ -103,7 +103,7 @@
                                 for (int i = 1; i <= 12; ++i)
                                 {
                                     var _i = i;
-                                    <div class="bit-ctp-stk bit-ctp-hr" style="@($"transform: rotateZ({_i * 30}deg);")" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                    <div class="bit-ctp-stk bit-ctp-hr" style="@(FormattableString.Invariant($"transform: rotateZ({_i * 30}deg);"))" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
                                 }
                             }
                             else
@@ -121,7 +121,7 @@
                                 for (int i = 1; i <= 12; ++i)
                                 {
                                     var _i = i;
-                                    <div class="bit-ctp-stk" style="@($"transform: rotateZ({_i * 30}deg);")">
+                                    <div class="bit-ctp-stk" style="@(FormattableString.Invariant($"transform: rotateZ({_i * 30}deg);"))">
                                         <div class="bit-ctp-inr" @onclick="(() => HandleOnHourClockHandClick(_i))" @onpointerover="(() => HandleOnHourPointerOver(_i))" @onclick:stopPropagation="true"></div>
                                         <div class="bit-ctp-otr" @onclick="(() => HandleOnHourClockHandClick((_i + 12) % 24))" @onpointerover="(() => HandleOnHourPointerOver((_i + 12) % 24))" @onclick:stopPropagation="true"></div>
                                     </div>
@@ -140,7 +140,7 @@
                             @for (int i = 0; i < 60; ++i)
                             {
                                 var _i = i;
-                                <div class="bit-ctp-stk bit-ctp-min" style="@($"transform: rotateZ({_i * 6}deg);")" @onclick="(() => HandleOnMinuteClockHandClick(_i))" @onpointerover="(() => HandleOnMinutePointerOver(_i))" @onclick:stopPropagation="true"></div>
+                                <div class="bit-ctp-stk bit-ctp-min" style="@(FormattableString.Invariant($"transform: rotateZ({_i * 6}deg);"))" @onclick="(() => HandleOnMinuteClockHandClick(_i))" @onpointerover="(() => HandleOnMinutePointerOver(_i))" @onclick:stopPropagation="true"></div>
                             }
                         </div>
                     }

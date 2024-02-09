@@ -220,15 +220,15 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "MaxRangeDays",
-            Type = "int?",
+            Name = "MaxDayRange",
+            Type = "uint",
             DefaultValue = "null",
             Description = "The maximum range of days allowed for selection in DateRangePicker.",
         },
         new()
         {
-            Name = "MaxRangeTime",
-            Type = "int?",
+            Name = "MaxTimeRange",
+            Type = "TimeSpan?",
             DefaultValue = "null",
             Description = "The maximum range of time allowed for selection in DateRangePicker.",
         },
@@ -286,9 +286,9 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "OnSelectDate",
+            Name = "OnChange",
             Type = "EventCallback<BitDateRangePickerValue?>",
-            Description = "The callback for selecting a date in the DateRangePicker.",
+            Description = "Callback for when the value changes in the DateRangePicker.",
             LinkType = LinkType.Link,
             Href = "#date-range-picker-value",
         },
@@ -298,6 +298,13 @@ public partial class BitDateRangePickerDemo
             Type = "string",
             DefaultValue = "string.Empty",
             Description = "The placeholder text of the DateRangePicker's input.",
+        },
+        new()
+        {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the clear button should be shown or not when the DateRangePicker has a value."
         },
         new()
         {
@@ -979,7 +986,8 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker=""true"" />
 <BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
-<BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />";
+<BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />
+<BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />";
 
     private readonly string example2RazorCode = @"
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />

@@ -83,6 +83,21 @@ public class BitDropdownClassStyles
     public string? SearchBoxInput { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the ComboBox input of the BitDropdown.
+    /// </summary>
+    public string? ComboBoxInput { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the chips container of the BitDropdown.
+    /// </summary>
+    public string? Chips { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the chips's remove icon of the BitDropdown.
+    /// </summary>
+    public string? ChipsRemoveIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the search box's clear button container of the BitDropdown.
     /// </summary>
     public string? SearchBoxClearButtonContainer { get; set; }

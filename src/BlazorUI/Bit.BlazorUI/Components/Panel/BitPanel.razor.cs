@@ -138,7 +138,7 @@ public partial class BitPanel
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
@@ -204,6 +204,6 @@ public partial class BitPanel
     {
         if (Size == 0) return string.Empty;
 
-        return $"{(Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width")}:{Size}px";
+        return FormattableString.Invariant($"{(Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width")}:{Size}px");
     }
 }

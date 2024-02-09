@@ -1,61 +1,63 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
-		<BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
-		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
-		<!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
-		<InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
-		<HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
-		<!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
-		<WasmEnableSIMD>false</WasmEnableSIMD>
-		<ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
-		<BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
-		<NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
-		<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-		<!--/+:msbuild-conditional:noEmit -->
-		<WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
-		<!--/-:msbuild-conditional:noEmit -->
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
+        <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
+        <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
+        <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
+        <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
+        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
+        <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <!--/+:msbuild-conditional:noEmit -->
+        <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
+        <!--/-:msbuild-conditional:noEmit -->
+        <WasmBuildNative>true</WasmBuildNative>
+    </PropertyGroup>
 
-	<ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
-		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.js" />
-	</ItemGroup>
+    <ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.js" />
+    </ItemGroup>
 
-	<ItemGroup Condition=" '$(BlazorWebAssemblyStandalone)' == 'false' ">
-		<Content Remove="wwwroot\index.html" />
-		<None Remove="Properties\launchSettings.json" />
-	</ItemGroup>
+    <ItemGroup Condition=" '$(BlazorWebAssemblyStandalone)' == 'false' ">
+        <Content Remove="wwwroot\index.html" />
+        <None Remove="Properties\launchSettings.json" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.1" PrivateAssets="all" />
-		<PackageReference Include="Bit.Bswup" Version="8.7.4" />
-		<PackageReference Include="Bit.CodeAnalyzers" Version="8.7.4">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Bit.SourceGenerators" Version="8.7.4">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.1" PrivateAssets="all" />
+        <PackageReference Include="Bit.Bswup" Version="8.7.5" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="8.7.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
+    <ItemGroup>
+        <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
 
-		<Using Include="Microsoft.JSInterop" />
-		<Using Include="Boilerplate.Client.Core" />
-		<Using Include="Boilerplate.Client.Core.Services.Contracts" />
-		<Using Include="Boilerplate.Client.Core.Services" />
-		<Using Include="Boilerplate.Client.Core.Components.Layout" />
-	</ItemGroup>
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="Boilerplate.Client.Core" />
+        <Using Include="Boilerplate.Client.Core.Services.Contracts" />
+        <Using Include="Boilerplate.Client.Core.Services" />
+        <Using Include="Boilerplate.Client.Core.Components.Layout" />
+    </ItemGroup>
 
-	<!--/+:msbuild-conditional:noEmit -->
-	<ItemGroup Condition=" '$(sample)' == 'Admin'  or '$(sample)' == ''">
-		<BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
-	</ItemGroup>
-	<!--/-:msbuild-conditional:noEmit -->
+    <!--/+:msbuild-conditional:noEmit -->
+    <ItemGroup Condition=" '$(sample)' == 'Admin'  or '$(sample)' == ''">
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+    </ItemGroup>
+    <!--/-:msbuild-conditional:noEmit -->
 
 </Project>

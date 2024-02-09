@@ -3,7 +3,7 @@ using Velopack;
 
 namespace Boilerplate.Client.Windows;
 
-public class Program
+public partial class Program
 {
     [STAThread]
     public static void Main(string[] args)

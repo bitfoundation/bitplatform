@@ -130,7 +130,7 @@ public partial class BitModal : IDisposable
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
     protected override Task OnInitializedAsync()

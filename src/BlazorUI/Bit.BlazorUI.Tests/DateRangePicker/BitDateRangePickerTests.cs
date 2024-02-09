@@ -84,13 +84,13 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerCalendarItemsShouldRespectIsEnabled(bool isEnabled)
     {
         var isOpen = true;
-        var selectedDateValue = 0;
+        var changeValue = 0;
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.OnSelectDate, () => selectedDateValue++);
+            parameters.Add(p => p.OnChange, () => changeValue++);
         });
 
         var dateItems = component.FindAll(".bit-dtrp-dbt");
@@ -98,7 +98,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Random random = new();
         int randomNumber = random.Next(0, dateItems.Count - 1);
         dateItems[randomNumber].Click();
-        Assert.AreEqual(isEnabled ? 1 : 0, selectedDateValue);
+        Assert.AreEqual(isEnabled ? 1 : 0, changeValue);
     }
 
     [DataTestMethod]

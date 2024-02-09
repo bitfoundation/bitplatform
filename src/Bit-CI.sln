@@ -232,7 +232,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.NewDemo", "Bswup\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.NewDemo.Client", "Bswup\Bit.Bswup.NewDemo\Bit.Bswup.NewDemo.Client\Bit.Bswup.NewDemo.Client.csproj", "{610E87D1-63A1-4D78-BA84-6E90DDDCF138}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.Windows", "..\..\bitplatform\src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Bit.BlazorUI.Demo.Client.Windows.csproj", "{62F75EFA-BF6D-4B61-8CA9-6E071806827B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.Windows", "BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Bit.BlazorUI.Demo.Client.Windows.csproj", "{62F75EFA-BF6D-4B61-8CA9-6E071806827B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Windows", "Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj", "{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1209,6 +1211,26 @@ Global
 		{62F75EFA-BF6D-4B61-8CA9-6E071806827B}.Release|x64.Build.0 = Release|Any CPU
 		{62F75EFA-BF6D-4B61-8CA9-6E071806827B}.Release|x86.ActiveCfg = Release|Any CPU
 		{62F75EFA-BF6D-4B61-8CA9-6E071806827B}.Release|x86.Build.0 = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|x64.Build.0 = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Debug|x86.Build.0 = Debug|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|iPhone.Build.0 = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|x64.ActiveCfg = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|x64.Build.0 = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|x86.ActiveCfg = Release|Any CPU
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1277,6 +1299,7 @@ Global
 		{A572BB00-354D-4C66-8DE1-946C96CA4172} = {C6EBC527-A489-44B4-A951-D023107A577F}
 		{610E87D1-63A1-4D78-BA84-6E90DDDCF138} = {C6EBC527-A489-44B4-A951-D023107A577F}
 		{62F75EFA-BF6D-4B61-8CA9-6E071806827B} = {D7242830-A91D-4729-BF2D-B1E7E141953E}
+		{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7} = {EEAF80AE-EC5F-4E55-BD4D-CE7075D67C90}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA107107-478F-477A-872B-787CEA7DD9B8}

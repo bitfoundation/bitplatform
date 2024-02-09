@@ -3,29 +3,32 @@
 public class BitNavItem
 {
     /// <summary>
-    /// Aria-current token for active nav links.
-    /// Must be a valid token value, and defaults to 'page'
+    /// Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'.
     /// </summary>
     public BitNavAriaCurrent AriaCurrent { get; set; } = BitNavAriaCurrent.Page;
 
     /// <summary>
-    /// Aria label for nav link.
-    /// Ignored if collapseAriaLabel or expandAriaLabel is provided
+    /// Aria label for nav item. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.
     /// </summary>
     public string? AriaLabel { get; set; }
 
     /// <summary>
-    /// A list of items to render as children of the current item
+    /// Custom CSS class for the nav item.
     /// </summary>
-    public List<BitNavItem> ChildItems { get; set; } = new List<BitNavItem>();
+    public string? Class { get; set; }
 
     /// <summary>
-    /// Aria label when items is collapsed and can be expanded
+    /// A list of items to render as children of the current nav item.
+    /// </summary>
+    public List<BitNavItem> ChildItems { get; set; } = [];
+
+    /// <summary>
+    /// Aria label when nav item is collapsed and can be expanded.
     /// </summary>
     public string? CollapseAriaLabel { get; set; }
 
     /// <summary>
-    /// The custom data for the nav item to provide additional state for the item.
+    /// The custom data for the nav item to provide additional state.
     /// </summary>
     public object? Data { get; set; }
 
@@ -35,73 +38,77 @@ public class BitNavItem
     public string? Description { get; set; }
 
     /// <summary>
-    /// Aria label when group is collapsed and can be expanded.
+    /// Aria label when nav item is collapsed and can be expanded.
     /// </summary>
     public string? ExpandAriaLabel { get; set; }
 
     /// <summary>
-    /// (Optional) By default, any link with onClick defined will render as a button. 
-    /// Set this property to true to override that behavior. (Links without onClick defined will render as anchors by default.)
+    /// Forces an anchor element render instead of button.
     /// </summary>
     public bool ForceAnchor { get; set; }
 
     /// <summary>
-    /// Name of an icon to render next to this link button
+    /// Name of an icon to render next to the nav item.
     /// </summary>
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the link is disabled
+    /// Whether or not the nav item is enabled.
     /// </summary>
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// Whether or not the link is in an expanded state
+    /// Whether or not the nav item is in an expanded state.
     /// </summary>
     public bool IsExpanded { get; set; }
 
     /// <summary>
-    /// A unique value to use as a key or id of the item
+    /// Indicates that the nav item should render as a separator.
+    /// </summary>
+    public bool IsSeparator { get; set; }
+
+    /// <summary>
+    /// A unique value to use as a key or id of the nav item.
     /// </summary>
     public string? Key { get; set; }
 
     /// <summary>
-    /// Custom style for the each item element.
+    /// Custom CSS style for the nav item.
     /// </summary>
     public string? Style { get; set; }
 
     /// <summary>
-    /// Link target, specifies how to open the link.
+    /// Link target, specifies how to open the nav item's link.
     /// </summary>
     public string? Target { get; set; }
 
     /// <summary>
-    /// The custom template for the BitNavItem to render.
+    /// The custom template for the nav item to render.
     /// </summary>
     public RenderFragment<BitNavItem>? Template { get; set; }
 
     /// <summary>
-    /// The render mode of the BitNavItem's custom template.
+    /// The render mode of the nav item's custom template.
     /// </summary>
     public BitNavItemTemplateRenderMode TemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
-    /// Text to render for this link.
+    /// Text to render for the nav item.
     /// </summary>
     public string Text { get; set; } = string.Empty;
 
     /// <summary>
-    /// Text for title tooltip.
+    /// Text for the tooltip of the nav item.
     /// </summary>
     public string? Title { get; set; }
 
     /// <summary>
-    /// URL to navigate to for this link.
+    /// The nav item's link URL.
     /// </summary>
     public string? Url { get; set; }
 
     /// <summary>
-    /// Alternative URLs to be considered when auto mode tries to detect the selected item by the current URL.
+    /// Alternative URLs to be considered when auto mode tries to detect the selected nav item by the current URL.
     /// </summary>
     public IEnumerable<string>? AdditionalUrls { get; set; }
 }
