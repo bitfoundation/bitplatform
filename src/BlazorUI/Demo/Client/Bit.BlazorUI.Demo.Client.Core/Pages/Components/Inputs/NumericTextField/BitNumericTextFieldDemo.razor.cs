@@ -199,6 +199,27 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
+            Name = "Prefix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Prefix displayed before the numeric field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.",
+        },
+        new()
+        {
+            Name = "PrefixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Shows the custom prefix for numeric field.",
+        },
+        new()
+        {
+            Name = "ShowButtons",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to show the increment and decrement buttons.",
+        },
+        new()
+        {
             Name = "Step",
             Type = "TValue?",
             DefaultValue = "null",
@@ -215,10 +236,17 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
-            Name = "ShowButtons",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether to show the increment and decrement buttons.",
+            Name = "Suffix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Suffix displayed after the numeric field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.",
+        },
+        new()
+        {
+            Name = "SuffixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Shows the custom suffix for numeric field.",
         },
         new()
         {
@@ -533,4 +561,11 @@ private BitNumericTextFieldValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example9RazorCode = @"
+<BitNumericTextField TValue=""int"" Label=""Prefix"" Prefix=""Distance:"" />
+<BitNumericTextField TValue=""int"" Label=""Suffix"" Suffix=""km"" />
+<BitNumericTextField TValue=""int"" Label=""Prefix and Suffix"" Prefix=""Distance:"" Suffix=""km"" />
+<BitNumericTextField TValue=""int"" Label=""Step & Buttons"" Prefix=""Distance:"" Suffix=""km"" Step=""1"" ShowButtons=""true"" />
+<BitNumericTextField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" IsEnabled=""false"" />";
 }

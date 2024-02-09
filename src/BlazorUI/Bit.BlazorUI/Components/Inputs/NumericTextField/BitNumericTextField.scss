@@ -30,6 +30,11 @@
             background: $color-background-disabled;
         }
 
+        .bit-ntf-pre,
+        .bit-ntf-suf {
+            color: $color-foreground-disabled;
+        }
+
         .bit-ntf-aup, .bit-ntf-adn {
             cursor: default;
             pointer-events: none;
@@ -183,5 +188,23 @@
         inset: spacing(-0.125);
         border-radius: $shape-border-radius;
         border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
+
+.bit-ntf-pre,
+.bit-ntf-suf {
+    height: 100%;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0 spacing(1.25);
+    min-height: spacing(3.75);
+    color: $color-foreground-primary;
+    background: $color-background-secondary;
+
+    span {
+        font-size: spacing(1.75);
+        padding-bottom: spacing(0.125);
     }
 }
