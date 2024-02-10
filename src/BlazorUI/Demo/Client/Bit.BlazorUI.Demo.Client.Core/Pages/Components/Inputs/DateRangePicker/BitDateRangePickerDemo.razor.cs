@@ -220,17 +220,10 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "MaxDayRange",
-            Type = "uint",
-            DefaultValue = "null",
-            Description = "The maximum range of days allowed for selection in DateRangePicker.",
-        },
-        new()
-        {
-            Name = "MaxTimeRange",
+            Name = "MaxRange",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "The maximum range of time allowed for selection in DateRangePicker.",
+            Description = "The maximum range of day and times allowed for selection in DateRangePicker.",
         },
         new()
         {
@@ -993,7 +986,7 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddMonths(-2)"" MaxDate=""DateTimeOffset.Now.AddMonths(1)"" />
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />
-<BitDateRangePicker MaxDayRange=""2"" MaxTimeRange=""TimeSpan.FromHours(4.5)"" ShowTimePicker=""true"" />";
+<BitDateRangePicker MaxRange=""new TimeSpan(2, 4, 30, 0)"" ShowTimePicker=""true"" />";
 
     private readonly string example3RazorCode = @"
 <BitDateRangePicker Label=""DateFormat: 'dd=MM(yy)'"" DateFormat=""dd=MM(yy)"" />

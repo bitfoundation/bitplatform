@@ -50,9 +50,8 @@
                 <div>Max: Now.AddYears(+1)</div>
                 <BitDateRangePicker MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
                 <br /><br />
-                <div>MaxDayRange: 2 days</div>
-                <div>MaxTimeRange: 4 hours and 30 minutes</div>
-                <BitDateRangePicker MaxDayRange="2" MaxTimeRange="TimeSpan.FromHours(4.5)" ShowTimePicker="true" />
+                <div>MaxRange: 2 days, 4 hours and 30 minutes</div>
+                <BitDateRangePicker MaxRange="new TimeSpan(2, 4, 30, 0)" ShowTimePicker="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
