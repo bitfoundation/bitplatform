@@ -244,6 +244,28 @@ public partial class BitNumericTextField<TValue>
     /// </summary>
     [Parameter] public string ValidationMessage { get; set; } = "The {0} field is not valid.";
 
+    /// <summary>
+    /// Prefix displayed before the numeric field contents. This is not included in the value.
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>
+    /// Shows the custom prefix for numeric field.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Suffix displayed after the numeric field contents. This is not included in the value. 
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// Shows the custom suffix for numeric field.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+
 
 
     protected override string RootElementClass => "bit-ntf";

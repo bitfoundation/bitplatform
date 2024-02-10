@@ -42,6 +42,19 @@
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
+        @if (PrefixTemplate is not null)
+        {
+            @PrefixTemplate
+        }
+        else if (Prefix.HasValue())
+        {
+            <div style="@Styles?.PrefixContainer" class="bit-ntf-pre @Classes?.PrefixContainer">
+                <span style="@Styles?.Prefix" class="@Classes?.Prefix">
+                    @Prefix
+                </span>
+            </div>
+        }
+
         <input @ref="@_inputRef"
                @attributes="@InputHtmlAttributes"
                @onblur="e => HandleOnBlur(e)"
@@ -105,6 +118,19 @@
                     </span>
                 </button>
             </span>
+        }
+
+        @if (SuffixTemplate is not null)
+        {
+            @SuffixTemplate
+        }
+        else if (Suffix.HasValue())
+        {
+            <div style="@Styles?.SuffixContainer" class="bit-ntf-suf @Classes?.SuffixContainer">
+                <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                    @Suffix
+                </span>
+            </div>
         }
     </div>
 </div>
