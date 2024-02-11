@@ -25,7 +25,9 @@
             }
 
             &:focus {
-                border-color: $color-state-error;
+                &::after {
+                    border-color: $color-state-error;
+                }
             }
         }
     }
