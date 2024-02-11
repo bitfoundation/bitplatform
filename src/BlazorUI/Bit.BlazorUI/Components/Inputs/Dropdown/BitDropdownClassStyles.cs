@@ -151,4 +151,24 @@ public class BitDropdownClassStyles
     /// Custom CSS classes/styles for the item divider of the BitDropdown.
     /// </summary>
     public string? ItemDivider { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the dropdown's prefix container.
+    /// </summary>
+    public string? PrefixContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the dropdown's prefix.
+    /// </summary>
+    public string? Prefix { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the dropdown's suffix container.
+    /// </summary>
+    public string? SuffixContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the dropdown's suffix.
+    /// </summary>
+    public string? Suffix { get; set; }
 }
