@@ -40,6 +40,19 @@
          aria-labelledby="@GetDropdownAriaLabelledby"
          aria-controls="@(IsOpen ? _calloutId : null)">
 
+        @if (PrefixTemplate is not null)
+        {
+            @PrefixTemplate
+        }
+        else if (Prefix.HasValue())
+        {
+            <span style="@Styles?.PrefixContainer" class="bit-drp-pre @Classes?.PrefixContainer">
+                <span style="@Styles?.Prefix" class="@Classes?.Prefix">
+                    @Prefix
+                </span>
+            </span>
+        }
+
         <span id="@_dropdownTextContainerId"
               style="@Styles?.TextContainer"
               class="bit-drp-tcn @Classes?.TextContainer"
@@ -47,7 +60,7 @@
               aria-atomic="true"
               aria-invalid="false">
 
-            @{
+           @{
                 var text = GetText();
             }
 
@@ -121,6 +134,19 @@
                    class="bit-icon bit-icon--@CaretDownIconName @Classes?.CaretDownIcon" />
             }
         </span>
+
+        @if (SuffixTemplate is not null)
+        {
+            @SuffixTemplate
+        }
+        else if (Suffix.HasValue())
+        {
+            <span style="@Styles?.SuffixContainer" class="bit-drp-suf @Classes?.SuffixContainer">
+                <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                    @Suffix
+                </span>
+            </span>
+        }
     </div>
 
     <div @onclick="CloseCallout"

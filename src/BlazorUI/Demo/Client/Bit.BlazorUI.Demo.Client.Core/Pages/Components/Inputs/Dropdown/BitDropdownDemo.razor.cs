@@ -264,6 +264,20 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Prefix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Prefix displayed before the dropdown contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.",
+        },
+        new()
+        {
+            Name = "PrefixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Shows the custom prefix for dropdown.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -319,6 +333,20 @@ public partial class BitDropdownDemo
             Description = "Custom CSS styles for different parts of the BitDropdown.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
+        },
+        new()
+        {
+            Name = "Suffix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Suffix displayed after the dropdown contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.",
+        },
+        new()
+        {
+            Name = "SuffixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Shows the custom suffix for dropdown.",
         },
         new()
         {

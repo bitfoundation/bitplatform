@@ -346,6 +346,28 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// </summary>
     [Parameter] public Func<ICollection<TItem>, string, TItem>? FindItemFunction { get; set; }
 
+    /// <summary>
+    /// Prefix displayed before the BitDropdown contents. This is not included in the value.
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>
+    /// Shows the custom prefix for BitDropdown.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Suffix displayed after the BitDropdown contents. This is not included in the value. 
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// Shows the custom suffix for BitDropdown.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+
 
 
     public IReadOnlyList<TItem> SelectedItems => IsMultiSelect ? _selectedItems : Array.Empty<TItem>();

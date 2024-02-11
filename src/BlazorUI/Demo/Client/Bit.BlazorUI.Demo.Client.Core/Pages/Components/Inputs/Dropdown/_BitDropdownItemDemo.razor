@@ -436,3 +436,41 @@
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitDropdown Label="Prefix"
+                         Prefix="Fruits:"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+
+            <BitDropdown Label="Suffix"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+            
+
+            <BitDropdown Label="Prefix and Suffix"
+                         Prefix="Fruits:"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+            
+            <BitDropdown Label="Disabled"
+                         Prefix="Fruits:"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string"
+                         IsEnabled="false" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
