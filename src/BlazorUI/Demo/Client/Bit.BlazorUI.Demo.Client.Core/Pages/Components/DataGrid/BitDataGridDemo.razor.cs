@@ -436,172 +436,29 @@ public partial class BitDataGridDemo
     }
 
     private readonly string example1RazorCode = @"
-<style scoped>
-    .grid {
-        width: 100%;
-        display: inline-flex;
-        flex-direction: column;
-        border: 1px solid #e9eaed;
-    }
-
-    .grid .flag {
-        width: 32px;
-        height: 16px;
-        vertical-align: middle;
-    }
-
+<style>
     .grid-container {
         overflow: auto;
+    }
+    .grid .flag {
+        vertical-align: middle;
     }
 
     .grid .column--large {
         width: 220px;
     }
 
-    .grid th:nth-child(1) .col-options-button {
-        background-image: none;
+    .grid .col-options-button {
         cursor: pointer;
     }
 
-    .grid th:nth-child(1) .col-options-button:before {
-        display: inline-block;
-        font-family: ""Fabric MDL2"";
-        font-style: normal;
-        font-weight: normal;
-        content: ""\e721"";
-        position: relative;
-        top: 2px;
-    }
-
-    .grid th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
-        display: inline-block;
-        font-family: ""Fabric MDL2"";
-        font-style: normal;
-        font-weight: normal;
-        content: ""⇅"";
-        position: relative;
-        top: -2px;
-    }
-
-    .grid .bitdatagrid-paginator {
-        margin-top: 0;
-        padding: 0.5rem;
-    }
-
-    .grid .bitdatagrid-paginator .pagination-text {
-        padding-top: 3px;
-    }
-
-    .grid .bitdatagrid-paginator nav button {
-        border-radius: 0.25rem;
-    }
-
-    .grid .bitdatagrid-paginator nav button:before {
-        vertical-align: middle;
-    }
-
-    .grid .bitdatagrid-paginator nav button:not([disabled]) {
-        background-color: #eee;
-    }
-
-    .grid .bitdatagrid-paginator nav button:not([disabled]):hover {
-        background-color: #d0d1d5;
-    }
-
-    .grid .bitdatagrid-paginator nav button[disabled] {
-        color: #a19f9d;
-    }
-
     .grid table {
-        position: relative;
-        min-width: 100%;
-        border-collapse: separate;
+        width: 100%;
         border-spacing: 0;
-        text-indent: initial;
-    }
-
-    .grid thead th:not(:last-child) {
-        border-right: 1px solid #e9eaed;
-    }
-
-    .grid thead .col-width-draghandle {
-        cursor: col-resize;
-        width: 3px;
-    }
-
-    .grid thead .col-width-draghandle:active {
-        background: unset;
-    }
-
-    .grid thead .col-width-draghandle :after {
-        left: 3px;
-        border-left: unset;
-    }
-
-    .grid thead .col-width-draghandle:hover {
-        background: unset;
-    }
-
-    .grid th {
-        background-color: #f4f5f9;
-        padding: 0.5rem;
-        display: table-cell;
-        vertical-align: inherit;
-        font-weight: bold;
-        border-bottom: 1px solid #e9eaed;
     }
 
     .grid tr {
         height: 41px;
-    }
-
-    .grid tr:nth-child(even) {
-        background: #f4f5f9;
-    }
-
-    .grid tr:nth-child(odd) {
-        background: #FFF;
-    }
-
-    .grid tr:last-child > td {
-        border-bottom: none;
-    }
-
-    .grid td {
-        border-bottom: 1px solid #e9eaed;
-        color: #4f4f50;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .grid td:not(:last-child) {
-        border-right: 1px solid #e9eaed;
-    }
-
-    .grid .sort-indicator {
-        margin-left: auto;
-    }
-
-    .grid .col-width-draghandle:after {
-        border-left: unset;
-    }
-
-    .grid .col-title-text {
-        color: #262526;
-    }
-
-    .grid .col-header-content {
-        padding-right: 0px;
-    }
-
-    .grid button.col-title:active, .grid .col-options-button:active {
-        background-color: unset;
-    }
-
-    .grid button.col-title:hover, .grid .col-options-button:hover {
-        background-color: unset;
     }
 </style>
 
@@ -670,34 +527,37 @@ public class MedalsModel
 @using System.Text.Json;
 @inject HttpClient HttpClient
 
-<style scoped>
+<style>
     .grid {
-        height: 25rem;
+        height: 15rem;
         overflow-y: auto;
     }
 
     .grid table {
-        min-width: 100%;
-    }
-
-    .grid thead {
-        position: sticky;
-        top: 0;
-        background-color: #d8d8d8;
-        outline: 1px solid gray;
-        z-index: 1;
+        width: 100%;
     }
 
     .grid tr {
-        height: 30px;
-        border-bottom: 0.5px solid silver;
+        height: 35px;
+    }
+
+    .grid thead {
+        top: 0;
+        z-index: 1;
+        position: sticky;
+        background-color: $bit-color-secondary-dark;
     }
 
     .grid tbody td {
-        white-space: nowrap;
-        overflow: hidden;
         max-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
         text-overflow: ellipsis;
+    }
+
+    .search-panel {
+        max-width: 15rem;
+        margin-top: 2rem;
     }
 </style>
 
@@ -712,11 +572,8 @@ public class MedalsModel
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
-     <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
-     </div>
-</div>
-";
+    <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
+</div>";
     private readonly string example2CsharpCode = @"
 BitDataGrid<FoodRecall>? dataGrid;
 string _virtualSampleNameFilter = string.Empty;
@@ -908,34 +765,37 @@ public class Openfda
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
-<style scoped>
+<style>
     .grid {
-        height: 25rem;
+        height: 15rem;
         overflow-y: auto;
     }
 
     .grid table {
-        min-width: 100%;
-    }
-
-    .grid thead {
-        position: sticky;
-        top: 0;
-        background-color: #d8d8d8;
-        outline: 1px solid gray;
-        z-index: 1;
+        width: 100%;
     }
 
     .grid tr {
-        height: 30px;
-        border-bottom: 0.5px solid silver;
+        height: 35px;
+    }
+
+    .grid thead {
+        top: 0;
+        z-index: 1;
+        position: sticky;
+        background-color: $bit-color-secondary-dark;
     }
 
     .grid tbody td {
-        white-space: nowrap;
-        overflow: hidden;
         max-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
         text-overflow: ellipsis;
+    }
+
+    .search-panel {
+        max-width: 15rem;
+        margin-top: 2rem;
     }
 </style>
 
@@ -947,11 +807,8 @@ public class Openfda
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
-     <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" />
-     </div>
-</div>
-";
+    <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" />
+</div>";
     private readonly string example3CsharpCode = @"
 
 // To make following aspnetcore controller work, simply change services.AddControllers(); to services.AddControllers().AddOData(options => options.EnableQueryFeatures())

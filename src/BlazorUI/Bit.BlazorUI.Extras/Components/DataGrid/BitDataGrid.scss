@@ -13,8 +13,8 @@
     .col-header-content {
         /* We want the th elements to be display:flex, but they also have to be display:table-cell to avoid breaking the layout.
        So .col-header-content is an immediate child with display:flex. */
-        position: relative;
         display: flex;
+        position: relative;
         align-items: center;
     }
     /* Deep to make it easy for people adding a sort-indicator element in a custom HeaderTemplate */
@@ -29,11 +29,11 @@
     .col-sort-asc .sort-indicator:before,
     .col-sort-desc .sort-indicator:before {
         //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
-        display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI' !important;
+        content: "\E96E";
         font-style: normal;
         font-weight: normal;
-        content: "\E96E";
+        display: inline-block;
+        font-family: 'Fabric MDL2 bit BlazorUI' !important;
     }
 
     .col-sort-desc .sort-indicator {
@@ -41,40 +41,45 @@
     }
     /* Deep to make it easy for people adding a col-options-button element in a custom HeaderTemplate */
     th .col-options-button {
-        border: none;
-        padding: 0; /* So that even if the text on the button is wide, it gets properly centered */
-        width: 1rem;
-        align-self: stretch;
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="1.5 0 21 24" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16" /></svg>') center center / 1rem no-repeat;
+        background: unset;
+    }
+
+    th .col-options-button:before {
+        content: "\E712";
+        font-style: normal;
+        font-weight: normal;
+        display: inline-block;
+        font-family: 'Fabric MDL2 bit BlazorUI' !important;
     }
 
     .col-options {
-        position: absolute;
-        background: white;
-        border: 1px solid silver;
         left: 0;
-        padding: 1rem;
         z-index: 1;
+        padding: 1rem;
+        border: 1px solid;
+        position: absolute;
+        border-color: var(--bit-clr-brd-primary);
+        background-color: var(--bit-clr-bg-secondary);
     }
 
     .col-justify-end .col-options {
-        left: unset;
         right: 0;
+        left: unset;
     }
 
     .col-width-draghandle {
-        position: absolute;
         top: 0;
         bottom: 0;
         right: 0rem;
         cursor: ew-resize;
+        position: absolute;
     }
 
     .col-width-draghandle:after {
-        content: ' ';
-        position: absolute;
         top: 0;
         bottom: 0;
+        content: ' ';
+        position: absolute;
         border-left: 1px solid black;
     }
 
@@ -103,17 +108,17 @@
     /*==================================================================*/
     /* Contains the title text and sort indicator, and expands to fill as much of the col width as it can */
     .col-title {
+        padding: 0;
+        flex-grow: 1;
         display: flex; /* So that we can make col-title-text expand as much as possible, and still hide overflow with ellipsis */
         min-width: 0px;
-        flex-grow: 1;
-        padding: 0;
     }
     /* If the column is sortable, its title is rendered as a button element for accessibility and to support navigation by tab */
     button.col-title {
         border: none;
+        cursor: pointer;
         background: none;
         position: relative;
-        cursor: pointer;
     }
 
     .col-justify-center .col-title {
@@ -125,9 +130,9 @@
     }
     /* We put the column title text in its own element primarily so that it can use text-overflow: ellipsis */
     .col-title-text {
-        text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+        text-overflow: ellipsis;
     }
     /*========================================================*/
     /*default theme*/
@@ -169,49 +174,20 @@
         width: 1.5rem;
     }
 
-    button.col-title:hover,
-    .col-options-button:hover {
-        background-color: rgba(128, 128, 128, 0.2);
-    }
-
-    button.col-title:active,
-    .col-options-button:active {
-        background-color: rgba(128, 128, 128, 0.5);
-    }
-
     > thead .col-width-draghandle {
         width: 1rem;
         right: calc(var(--col-gap)/2 - 0.5rem);
     }
 
-    > thead .col-width-draghandle:hover {
-        background: rgba(128, 128, 128, 0.2);
-    }
-
-    > thead .col-width-draghandle:active {
-        background: rgba(128, 128, 128, 0.4);
-    }
-
-    > thead .col-width-draghandle:hover:after,
-    > thead .col-width-draghandle:active:after {
-        border-color: black;
-    }
-
     > thead .col-width-draghandle:after {
-        border-color: #ccc;
-        left: 0.5rem;
         top: 5px;
         bottom: 5px;
-    }
-
-    .col-options {
-        box-shadow: 0 3px 8px 1px #aaa;
-        border-color: #ddd;
-        border-radius: 0.3rem;
+        left: 0.5rem;
+        border-color: var(--bit-clr-brd-primary);
     }
 
     > tbody > tr > td.grid-cell-placeholder:after {
-        content: '\2026';
         opacity: 0.75;
+        content: '\2026';
     }
 }
