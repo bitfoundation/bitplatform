@@ -19,6 +19,7 @@ public partial class BitNumericTextField<TValue>
     private double? _internalMax;
     private int _precision;
     private string? _intermediateValue;
+    private readonly string _labelId;
     private readonly string _inputId;
     private Timer? _timer;
     private ElementReference _inputRef;
@@ -38,7 +39,8 @@ public partial class BitNumericTextField<TValue>
         _isDecimals = _typeOfValue == typeof(float) || _typeOfValue == typeof(double) || _typeOfValue == typeof(decimal);
         _minGenericValue = GetMinValue();
         _maxGenericValue = GetMaxValue();
-        _inputId = $"input_{Guid.NewGuid()}";
+        _inputId = $"BitNumericTextField-{UniqueId}-input";
+        _labelId = $"BitNumericTextField-{UniqueId}-label";
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -680,7 +682,6 @@ public partial class BitNumericTextField<TValue>
     private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : CurrentValue;
     private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : CurrentValueAsString;
     private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
-    private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
     private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, _typeOfValue, CultureInfo.InvariantCulture) : default;
     private double? GetDoubleValueOrDefault(TValue? value, double? defaultValue = null) => value is null ? defaultValue : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
 

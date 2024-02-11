@@ -20,7 +20,7 @@
 
             @if (LabelTemplate is not null)
             {
-                <label id="@GetLabelId" for="@_inputId">
+                <label id="@_labelId" for="@_inputId">
                     @LabelTemplate
                 </label>
             }
@@ -28,7 +28,7 @@
             {
                 <label style="@Styles?.Label"
                        class="bit-ntf-lbl @Classes?.Label"
-                       id="@GetLabelId"
+                       id="@_labelId"
                        for="@_inputId">
                     @Label
                 </label>
@@ -73,7 +73,7 @@
                aria-valuemax="@Max"
                placeholder="@Placeholder"
                value="@_intermediateValue"
-               aria-labelledby="@GetLabelId"
+               aria-labelledby="@_labelId"
                disabled="@(IsEnabled is false)"
                aria-valuenow="@GetAriaValueNow"
                aria-valuetext="@GetAriaValueText"
