@@ -84,11 +84,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.5">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.5">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
