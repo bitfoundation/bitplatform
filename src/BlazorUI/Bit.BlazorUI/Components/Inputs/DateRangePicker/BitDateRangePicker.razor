@@ -574,14 +574,16 @@
                                         <button @onclick="() => HandleOnAmClick(true)"
                                                 type="button"
                                                 style="@Styles?.StartTimeAmButton"
-                                                class="bit-dtrp-tbt bit-dtrp-bam @(IsAm(_startTimeHour) is true ? "bit-dtrp-bns" : string.Empty) @Classes?.StartTimeAmButton">
+                                                class="bit-dtrp-tbt bit-dtrp-bam @(IsAm(_startTimeHour) is true ? "bit-dtrp-bns" : string.Empty) @Classes?.StartTimeAmButton"
+                                                disabled="@(IsAm(_startTimeHour) is true || IsAmPmButtonDisabled(true, true))">
                                             @Culture.DateTimeFormat.AMDesignator
                                         </button>
 
                                         <button @onclick="() => HandleOnPmClick(true)"
                                                 type="button"
                                                 style="@Styles?.StartTimePmButton"
-                                                class="bit-dtrp-tbt bit-dtrp-bpm @(IsAm(_startTimeHour) is false ? "bit-dtrp-bns" : string.Empty) @Classes?.StartTimePmButton">
+                                                class="bit-dtrp-tbt bit-dtrp-bpm @(IsAm(_startTimeHour) is false ? "bit-dtrp-bns" : string.Empty) @Classes?.StartTimePmButton"
+                                                disabled="@(IsAm(_startTimeHour) is false || IsAmPmButtonDisabled(false, true))">
                                             @Culture.DateTimeFormat.PMDesignator
                                         </button>
                                     </div>
@@ -663,14 +665,16 @@
                                         <button @onclick="() => HandleOnAmClick(false)"
                                                 type="button"
                                                 style="@Styles?.EndTimeAmButton"
-                                                class="bit-dtrp-tbt bit-dtrp-bam @(IsAm(_endTimeHour) is true ? "bit-dtrp-bns" : string.Empty) @Classes?.EndTimeAmButton">
+                                                class="bit-dtrp-tbt bit-dtrp-bam @(IsAm(_endTimeHour) is true ? "bit-dtrp-bns" : string.Empty) @Classes?.EndTimeAmButton"
+                                                disabled="@(IsAm(_endTimeHour) is false || IsAmPmButtonDisabled(true, false))">
                                             @Culture.DateTimeFormat.AMDesignator
                                         </button>
 
                                         <button @onclick="() => HandleOnPmClick(false)"
                                                 type="button"
                                                 style="@Styles?.EndTimePmButton"
-                                                class="bit-dtrp-tbt bit-dtrp-bpm @(IsAm(_endTimeHour) is false ? "bit-dtrp-bns" : string.Empty) @Classes?.EndTimePmButton">
+                                                class="bit-dtrp-tbt bit-dtrp-bpm @(IsAm(_endTimeHour) is false ? "bit-dtrp-bns" : string.Empty) @Classes?.EndTimePmButton"
+                                                disabled="@(IsAm(_endTimeHour) is false || IsAmPmButtonDisabled(false, false))">
                                             @Culture.DateTimeFormat.PMDesignator
                                         </button>
                                     </div>
