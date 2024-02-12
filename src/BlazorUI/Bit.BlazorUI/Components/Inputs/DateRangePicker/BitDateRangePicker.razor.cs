@@ -600,7 +600,7 @@ public partial class BitDateRangePicker
         _startTimeHour = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Hour : 23;
         _startTimeMinute = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Minute : 0;
 
-        _endTimeHour = 23; //CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Hour : (MaxRange.HasValue && MaxRange.Value.TotalHours < 24 ? (int)MaxRange.Value.TotalHours : 23);
+        _endTimeHour = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Hour : (MaxRange.HasValue && MaxRange.Value.TotalHours < 24 ? (int)MaxRange.Value.TotalHours : 23);
         _endTimeMinute = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Minute : (MaxRange.HasValue && MaxRange.Value.Days < 1 && MaxRange.Value.Minutes < 60 ? (int)MaxRange.Value.Minutes : 59);
 
         GenerateCalendarData(startDateTime.DateTime);
@@ -1798,6 +1798,56 @@ public partial class BitDateRangePicker
                 endTimeMinute = ChangeMinute(endTimeMinute, isNext);
             }
         }
+
+        return IsButtonDisabled(startTimeHour, startTimeMinute, endTimeHour, endTimeMinute);
+    }
+
+    private bool IsAmPmButtonDisabled(bool isAm, bool isStartTime)
+    {
+        if (MaxRange.HasValue is false) return false;
+
+        var startTimeHour = _startTimeHour;
+        var endTimeHour = _endTimeHour;
+
+        if (isStartTime)
+        {
+            if (isAm)
+            {
+                startTimeHour %= 12;  // "12:-- am" is "00:--" in 24h
+            }
+            else
+            {
+                if (startTimeHour <= 12) // "12:-- pm" is "12:--" in 24h
+                {
+                    startTimeHour += 12;
+                }
+
+                startTimeHour %= 24;
+            }
+        }
+        else
+        {
+            if (isAm)
+            {
+                endTimeHour %= 12;  // "12:-- am" is "00:--" in 24h
+            }
+            else
+            {
+                if (endTimeHour <= 12) // "12:-- pm" is "12:--" in 24h
+                {
+                    endTimeHour += 12;
+                }
+
+                endTimeHour %= 24;
+            }
+        }
+
+        return IsButtonDisabled(startTimeHour, _startTimeMinute, endTimeHour, _endTimeMinute);
+    }
+
+    private bool IsButtonDisabled(int startTimeHour, int startTimeMinute, int endTimeHour, int endTimeMinute)
+    {
+        if (MaxRange.HasValue is false) return false;
 
         var startTime = new TimeSpan(startTimeHour, startTimeMinute, 0);
         var endTime = new TimeSpan(endTimeHour, endTimeMinute, 0);
