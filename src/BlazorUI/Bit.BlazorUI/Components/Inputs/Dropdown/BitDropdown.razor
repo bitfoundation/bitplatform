@@ -112,7 +112,7 @@
             }
         </span>
 
-        @if (IsEnabled && ShowClearButton && SelectedItems.Count > 0)
+        @if (IsEnabled && ShowClearButton && _selectedItems.Count > 0)
         {
             <button @onclick="HandleOnClearClick" @onclick:stopPropagation
                     type="button"
@@ -282,7 +282,7 @@
     </div>
 
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
-        @foreach (var item in SelectedItems)
+        @foreach (var item in _selectedItems)
         {
             <option value="@GetValue(item)" selected>@GetText(item)</option>
         }
