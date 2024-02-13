@@ -17,8 +17,8 @@
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
-            style="@GetStyle(SelectedItem);@Styles?.ItemButton"
-            class="bit-mnb-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.ItemButton">
+            style="@GetStyle(SelectedItem);@Styles?.OperatorButton"
+            class="bit-mnb-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.OperatorButton">
         @if (Sticky)
         {
             var template = GetTemplate(SelectedItem);
@@ -93,12 +93,12 @@
             {
                 if (Sticky && item == SelectedItem) continue;
 
-                var isEnabled = GetIsEnabled(item);
                 var template = GetTemplate(item);
-                <li role="presentation">
+                var isEnabled = GetIsEnabled(item);
+                <li role="presentation" @key="GetKey(item)">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
-                            aria-disabled="@isEnabled"
+                            aria-disabled="@(isEnabled is false)"
                             type="@_buttonType.GetValue()"
                             tabindex="@(isEnabled ? 0 : -1)"
                             style="@GetStyle(item);@Styles?.ItemButton"
