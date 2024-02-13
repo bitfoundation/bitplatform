@@ -32,7 +32,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Auto & Multiple with max-size limitation" RazorCode="@example3RazorCode" CsharpCode="@example1CsharpCode" Id="example3">
+    <ComponentExampleBox Title="MaxSize" RazorCode="@example3RazorCode" CsharpCode="@example1CsharpCode" Id="example3">
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically with limited size.</div>
             <div>
@@ -45,7 +45,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Individual & Multiple (limited by extensions format)" RazorCode="@example4RazorCode" CsharpCode="@example1CsharpCode" Id="example4">
+    <ComponentExampleBox Title="AllowedExtensions" RazorCode="@example4RazorCode" CsharpCode="@example1CsharpCode" Id="example4">
         <ExamplePreview>
             <div class="example-desc">Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.</div>
             <div>
@@ -73,22 +73,23 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Auto & Multiple with calling all upload complete event" RazorCode="@example6RazorCode" CsharpCode="@example1CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example1CsharpCode" Id="example6">
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically with calling all upload complete event.</div>
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="true"
-                               OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
-                               Label="Select or drag and drop files"
+                               MaxSize="1024 * 1024 * 500" 
                                UploadUrl="@ChunkedUploadUrl"
-                               MaxSize="1024 * 1024 * 500" />
+                               Label="Select or drag and drop files"
+                               OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
+                               OnUploading="@(info => info.HttpHeaders = new Dictionary<string, string> { {"key1", "value1"} })" />
             </div>
             <div class="example-desc">@onAllUploadsCompleteText</div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Auto & Multiple with custom http headers and query strings" RazorCode="@example7RazorCode" CsharpCode="@example1CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Configuring http request" RazorCode="@example7RazorCode" CsharpCode="@example1CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload and remove with custom http headers and query strings.</div>
             <div>
@@ -105,7 +106,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Non-Chunked FileUpload" RazorCode="@example8RazorCode" CsharpCode="@example1CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Non-Chunked" RazorCode="@example8RazorCode" CsharpCode="@example1CsharpCode" Id="example8">
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
@@ -208,7 +209,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Browse file" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="Public API" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div class="example-desc">Use a custom method for the open file selection dialog.</div>
             <div>
