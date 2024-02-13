@@ -528,7 +528,8 @@
         pointer-events: none;
         background-color: transparent;
 
-        .bit-dtrp-gti {
+        .bit-dtrp-gti,
+        .bit-icon {
             color: $color-foreground-disabled;
         }
     }
@@ -742,7 +743,7 @@
     font-weight: $typography-font-weight;
 }
 
-.bit-dtrp-bns, 
+.bit-dtrp-bns,
 .bit-dtrp-bns:disabled {
     color: $color-primary-text;
     background-color: $color-primary-main;
