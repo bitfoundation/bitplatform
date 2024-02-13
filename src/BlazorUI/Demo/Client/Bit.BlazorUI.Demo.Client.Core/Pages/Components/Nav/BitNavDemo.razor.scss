@@ -39,8 +39,8 @@
 .events-example-box {
     gap: 100px;
     display: flex;
-    align-items: center;
     flex-direction: row;
+    align-items: flex-start;
 
     ::deep {
         .bit-nav {

@@ -7,7 +7,6 @@ public class BitPlatformMenu
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
-    public bool IsSeparator { get; set; }
     public List<BitPlatformMenu> Links { get; set; } = [];
     public string? Comment { get; set; }
     public RenderFragment<BitPlatformMenu>? Template { get; set; }

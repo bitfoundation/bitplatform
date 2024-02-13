@@ -106,6 +106,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "ReversedChevron",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the location of the expander chevron."
+        },
+        new()
+        {
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
@@ -781,7 +788,6 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
         ChildItems = new()
         {
             new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
-            new() { IsSeparator = true },
             new()
             {
                 Text = ""Products & Services"",
@@ -805,11 +811,6 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
             new() { Text = ""About"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
             new() { Text = ""Contact us"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         },
-    },
-    new()
-    {
-        IsSeparator = true,
-        Template = (BitNavItem item) => @<div style=""width:100%;height:0;border:2px dashed""></div>
     },
     new()
     {
@@ -924,7 +925,7 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
             },
             new()
             {
-                Text = ""Pizzas"",
+                Text = ""Pizza"",
                 ChildItems = new List<BitNavItem>
                 {
                     new() { Text = ""Cheese Pizza"" },
@@ -1060,12 +1061,9 @@ private string SelectedItemText = FoodNavMenu[0].Items[2].Text;";
 <BitLabel>Item Template</BitLabel>
 <BitNav Items=""FoodNavMenu"" Mode=""BitNavMode.Manual"">
     <ItemTemplate Context=""item"">
-        <div class=""nav-custom-item @(item.IsEnabled is false ? ""disabled-item"" : """")"">
-            <BitCheckbox IsEnabled=""@(item.IsEnabled)"" />
-            @if (item.IconName.HasValue)
-            {
-                <BitIcon IconName=""@item.IconName.Value"" />
-            }
+        <div class=""nav-custom-item"">
+            <BitCheckbox />
+            <BitIcon IconName=""@item.IconName"" />
             <span>@item.Text</span>
         </div>
     </ItemTemplate>
@@ -1151,7 +1149,7 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
             },
             new()
             {
-                Text = ""Pizzas"",
+                Text = ""Pizza"",
                 ChildItems = new List<BitNavItem>
                 {
                     new() { Text = ""Cheese Pizza"" },
@@ -1180,7 +1178,6 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
 
     private readonly string example5NavItemRazorCode = @"
 <BitNav Items=""FoodNavMenu""
-        DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
         Mode=""BitNavMode.Manual""
         OnItemClick=""(BitNavItem item) => ClickedItem = item""
         OnSelectItem=""(BitNavItem item) => SelectedItem = item""
@@ -1212,7 +1209,7 @@ private static readonly List<BitNavItem> FoodNavMenu = new()
             },
             new()
             {
-                Text = ""Pizzas"",
+                Text = ""Pizza"",
                 ChildItems = new List<BitNavItem>
                 {
                     new() { Text = ""Cheese Pizza"" },
@@ -1310,7 +1307,6 @@ public class BitPlatformMenu
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
-    public bool IsSeparator { get; set; }
     public List<BitPlatformMenu> Links { get; set; } = [];
 }
 
@@ -1322,7 +1318,6 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         Links = new()
         {
             new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
-            new() { IsSeparator = true },
             new()
             {
                 Text = ""Products & Services"",
@@ -1346,11 +1341,6 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
             new() { Text = ""About"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
             new() { Text = ""Contact us"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         },
-    },
-    new()
-    {
-        IsSeparator = true,
-        Template = (BitPlatformMenu item) => @<div style=""width:100%;height:0;border:2px dashed""></div>
     },
     new()
     {
@@ -1503,7 +1493,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
             },
             new()
             {
-                Name = ""Pizzas"",
+                Name = ""Pizza"",
                 Childs = new List<FoodMenu>
                 {
                     new() { Name = ""Cheese Pizza"" },
@@ -1762,7 +1752,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
             },
             new()
             {
-                Name = ""Pizzas"",
+                Name = ""Pizza"",
                 Childs = new List<FoodMenu>
                 {
                     new() { Name = ""Cheese Pizza"" },
@@ -1792,7 +1782,6 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
     private readonly string example5CustomItemRazorCode = @"
 <BitNav Items=""CustomFoodNavMenu""
         Mode=""BitNavMode.Manual""
-        DefaultSelectedItem=""CustomFoodNavMenu[0].Childs[2]""
         OnItemClick=""(FoodMenu item) => CustomClickedItem = item""
         OnSelectItem=""(FoodMenu item) => CustomSelectedItem = item""
         OnItemToggle=""(FoodMenu item) => CustomToggledItem = item""
@@ -1834,7 +1823,7 @@ private static readonly List<FoodMenu> CustomFoodNavMenu = new()
             },
             new()
             {
-                Name = ""Pizzas"",
+                Name = ""Pizza"",
                 Childs = new List<FoodMenu>
                 {
                     new() { Name = ""Cheese Pizza"" },
@@ -1938,7 +1927,6 @@ private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
                     ExpandAriaLabel=""bit platform Expanded""
                     CollapseAriaLabel=""bit platform Collapsed"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
-        <BitNavOption IsSeparator />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
                 <BitNavOption IconName=""@BitIconName.ToDoLogoOutline"" Text=""Todo sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
@@ -1951,11 +1939,6 @@ private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
         <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
         <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
-    </BitNavOption>
-    <BitNavOption IsSeparator>
-        <Template>
-            <div style=""width:100%;height:0;border:2px dashed""></div>
-        </Template>
     </BitNavOption>
     <BitNavOption Text=""Community""
                     ExpandAriaLabel=""Community Expanded""
@@ -2003,17 +1986,16 @@ private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
 
     private readonly string example3NavOptionRazorCode = @"
 <BitLabel>Basic</BitLabel>
-<BitNav TItem=""BitNavOption""
-        Mode=""BitNavMode.Manual"">
-    <BitNavOption Text=""Fast-Foods""
-                  IconName=""@BitIconName.HeartBroken"">
-        <BitNavOption Text=""Burgers"">
+<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
+    <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
+                  IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
+        <BitNavOption Text=""Burgers"" Description=""List of burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
             <BitNavOption Text=""Bison Burger"" Key=""Bison Burger"" />
             <BitNavOption Text=""Wild Salmon Burger"" Key=""Wild Salmon Burger"" />
         </BitNavOption>
-        <BitNavOption Text=""Pizzas"">
+        <BitNavOption Text=""Pizza"">
             <BitNavOption Text=""Cheese Pizza"" Key=""Cheese Pizza"" />
             <BitNavOption Text=""Veggie Pizza"" Key=""Veggie Pizza"" />
             <BitNavOption Text=""Pepperoni Pizza"" Key=""Pepperoni Pizza"" />
@@ -2021,8 +2003,8 @@ private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
         </BitNavOption>
         <BitNavOption Text=""French Fries"" Key=""French Fries"" />
     </BitNavOption>
-    <BitNavOption Text=""Fruits"">
-        <BitNavOption Text=""Aplle"" Key=""Aplle"" />
+    <BitNavOption Text=""Fruits"" IconName=""@BitIconName.Health"">
+        <BitNavOption Text=""Apple"" Key=""Apple"" />
         <BitNavOption Text=""Orange"" Key=""Orange"" />
         <BitNavOption Text=""Benana"" Key=""Benana"" />
     </BitNavOption>
@@ -2031,18 +2013,16 @@ private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
 </BitNav>
 
 <BitLabel>Two-Way Bind</BitLabel>
-<BitNav TItem=""BitNavOption""
-        Mode=""BitNavMode.Manual"">
-    <BitNavOption Text=""Fast-Foods""
-                  IconName=""@BitIconName.HeartBroken""
-                  IsExpanded=""true"">
-        <BitNavOption Text=""Burgers"">
+<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
+    <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
+                  IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
+        <BitNavOption Text=""Burgers"" Description=""List of burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
             <BitNavOption Text=""Bison Burger"" Key=""Bison Burger"" />
             <BitNavOption Text=""Wild Salmon Burger"" Key=""Wild Salmon Burger"" />
         </BitNavOption>
-        <BitNavOption Text=""Pizzas"">
+        <BitNavOption Text=""Pizza"">
             <BitNavOption Text=""Cheese Pizza"" Key=""Cheese Pizza"" />
             <BitNavOption Text=""Veggie Pizza"" Key=""Veggie Pizza"" />
             <BitNavOption Text=""Pepperoni Pizza"" Key=""Pepperoni Pizza"" />
@@ -2050,7 +2030,7 @@ private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
         </BitNavOption>
         <BitNavOption Text=""French Fries"" Key=""French Fries"" />
     </BitNavOption>
-    <BitNavOption Text=""Fruits"">
+    <BitNavOption Text=""Fruits"" IconName=""@BitIconName.Health"">
         <BitNavOption Text=""Aplle"" Key=""Aplle"" />
         <BitNavOption Text=""Orange"" Key=""Orange"" />
         <BitNavOption Text=""Benana"" Key=""Benana"" />
@@ -2112,20 +2092,21 @@ private string SelectedOptionKey;";
 <BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
     <ItemTemplate Context=""option"">
         <div class=""nav-custom-item"">
-            <BitCheckbox IsEnabled=""@(option.IsEnabled)"" />
+            <BitCheckbox />
+            <BitIcon IconName=""@option.IconName"" />
             <span>@option.Text</span>
         </div>
     </ItemTemplate>
     <ChildContent>
-        <BitNavOption Text=""Fast-Foods""
-                      IsExpanded=""true"">
-            <BitNavOption Text=""Burgers"">
+        <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
+                      IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
+            <BitNavOption Text=""Burgers"" Description=""List of burgers"">
                 <BitNavOption Text=""Beef Burger"" />
                 <BitNavOption Text=""Veggie Burger"" />
                 <BitNavOption Text=""Bison Burger"" />
                 <BitNavOption Text=""Wild Salmon Burger"" />
             </BitNavOption>
-            <BitNavOption Text=""Pizzas"">
+            <BitNavOption Text=""Pizza"">
                 <BitNavOption Text=""Cheese Pizza"" />
                 <BitNavOption Text=""Veggie Pizza"" />
                 <BitNavOption Text=""Pepperoni Pizza"" />
@@ -2133,7 +2114,7 @@ private string SelectedOptionKey;";
             </BitNavOption>
             <BitNavOption Text=""French Fries"" />
         </BitNavOption>
-        <BitNavOption Text=""Fruits"">
+        <BitNavOption Text=""Fruits"" IconName=""@BitIconName.Health"">
             <BitNavOption Text=""Aplle"" />
             <BitNavOption Text=""Orange"" />
             <BitNavOption Text=""Benana"" />
@@ -2148,16 +2129,15 @@ private string SelectedOptionKey;";
         OnItemClick=""(BitNavOption option) => ClickedOption = option""
         OnSelectItem=""(BitNavOption option) => SelectedOption = option""
         OnItemToggle=""(BitNavOption option) => ToggledOption = option"">
-    <BitNavOption Text=""Fast-Foods""
-                  IconName=""@BitIconName.HeartBroken""
-                  IsExpanded=""true"">
-        <BitNavOption Text=""Burgers"">
+    <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
+                  IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
+        <BitNavOption Text=""Burgers"" Description=""List of burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
             <BitNavOption Text=""Bison Burger"" Key=""Bison Burger"" />
             <BitNavOption Text=""Wild Salmon Burger"" Key=""Wild Salmon Burger"" />
         </BitNavOption>
-        <BitNavOption Text=""Pizzas"">
+        <BitNavOption Text=""Pizza"">
             <BitNavOption Text=""Cheese Pizza"" Key=""Cheese Pizza"" />
             <BitNavOption Text=""Veggie Pizza"" Key=""Veggie Pizza"" />
             <BitNavOption Text=""Pepperoni Pizza"" Key=""Pepperoni Pizza"" />
@@ -2165,7 +2145,7 @@ private string SelectedOptionKey;";
         </BitNavOption>
         <BitNavOption Text=""French Fries"" Key=""French Fries"" />
     </BitNavOption>
-    <BitNavOption Text=""Fruits"">
+    <BitNavOption Text=""Fruits""  IconName=""@BitIconName.Health"">
         <BitNavOption Text=""Aplle"" Key=""Aplle"" />
         <BitNavOption Text=""Orange"" Key=""Orange"" />
         <BitNavOption Text=""Benana"" Key=""Benana"" />
