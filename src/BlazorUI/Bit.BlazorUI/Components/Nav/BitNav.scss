@@ -56,42 +56,40 @@
 }
 
 .bit-nav-ghd {
+    flex-grow: 1;
+    display: flex;
     font-weight: 500;
     font-size: spacing(2.25);
 }
 
 .bit-nav-itg {
+    flex-grow: 1;
     padding: spacing(1) 0;
 }
 
 .bit-nav-iit {
+    flex-grow: 1;
     display: flex;
     align-items: center;
 }
 
 .bit-nav-des {
+    display: flex;
     font-weight: normal;
     font-size: spacing(1.5);
+    padding: spacing(0.5) 0;
+    background: transparent;
+    padding-left: spacing(2.75);
     color: $color-foreground-disabled;
-
-    &.bit-nav-ide {
-        padding-left: spacing(2.75);
-    }
 }
 
 .bit-nav-ict {
     width: 100%;
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: column;
     box-sizing: border-box;
     min-height: spacing(5.5);
-    padding: 0 spacing(1) 0 0;
     border-radius: $shape-border-radius;
-
-    button, a {
-        padding: 0;
-        background-color: transparent;
-    }
 
     @media (hover: hover) {
         &:hover {
@@ -104,6 +102,11 @@
     }
 }
 
+.bit-nav-mct {
+    flex-grow: 1;
+    display: flex;
+}
+
 .bit-nav-itm {
     width: 100%;
     display: flex;
@@ -114,15 +117,20 @@
     align-items: center;
     white-space: nowrap;
     flex-flow: row nowrap;
-    margin: 0 spacing(0.5);
     text-overflow: ellipsis;
     font-size: spacing(1.75);
     color: $color-foreground-secondary;
 }
 
+.bit-nav-itm,
+.bit-nav-cbt {
+    padding: 0;
+    background-color: transparent;
+}
+
 .bit-nav-iic {
-    margin: 0 spacing(0.5);
     color: $color-primary-main;
+    margin-right: spacing(0.5);
 }
 
 .bit-nav-sel {

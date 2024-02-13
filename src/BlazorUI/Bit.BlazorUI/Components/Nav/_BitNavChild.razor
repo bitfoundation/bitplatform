@@ -13,6 +13,11 @@
         var text = Nav.GetText(Item);
         var childItems = Nav.GetChildItems(Item);
         var description = Nav.GetDescription(Item);
+        var iconName = Nav.GetIconName(Item);
+        var url = Nav.GetUrl(Item);
+        var title = Nav.GetTitle(Item);
+        var target = Nav.GetTarget(Item);
+        var renderLink = url.HasValue() || Nav.GetForceAnchor(Item);
     }
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
     {
@@ -56,19 +61,21 @@
                     if (description.HasValue())
                     {
                         <div class="bit-nav-itg">
-                            <div class="bit-nav-iit">
+                            <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                                 <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
-                            <span style="@Nav.Styles?.Description" class="bit-nav-des @Nav.Classes?.Description">
+                            <span style="@(Nav.ReversedChevron ? "padding-left: 0" : ""); @Nav.Styles?.Description" class="bit-nav-des @Nav.Classes?.Description">
                                 @description
                             </span>
                         </div>
                     }
                     else
                     {
-                        <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
-                        <span class="bit-nav-ghd">@text</span>
+                        <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
+                            <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                            <span class="bit-nav-ghd">@text</span>
+                        </div>
                     }
                 }
             </button>
@@ -91,73 +98,52 @@
         {
             <div name="@text"
                  class="bit-nav-ict @GetItemContainerClasses()"
-                 style="padding-left:@(childItems.Any() ? (Depth * 14) : (Depth * 14) + 30)px; @GetItemContainerStyles()">
+                 style="padding-left:@(childItems.Any() ? (Depth * 16 + (Nav.ReversedChevron ? 4 : 0)) : (Depth * 16 + (Nav.ReversedChevron ? 4 : 27)))px; @GetItemContainerStyles()">
 
-                @if (childItems.Any())
-                {
-                    <button @onclick="ToggleItem"
-                            type="button"
-                            tabindex="0"
-                            style="@Nav.Styles?.ToggleButton"
-                            class="bit-nav-cbt @Nav.Classes?.ToggleButton"
-                            aria-expanded="@(isExpanded ? "true" : "false")"
-                            aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
-                        <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
-                    </button>
-                }
-
-
-                @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
-                {
-                    @template(Item)
-                }
-                else if (Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
-                {
-                    @Nav.ItemTemplate(Item)
-                }
-                else
-                {
-                    var url = Nav.GetUrl(Item);
-                    var title = Nav.GetTitle(Item);
-                    @if (url.HasValue() || Nav.GetForceAnchor(Item))
+                <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
+                    @if (childItems.Any())
                     {
-                        var target = Nav.GetTarget(Item);
-                        <a @onclick="HandleOnClick"
-                           tabindex="-1"
-                           style="@GetItemStyles()"
-                           target="@target"
-                           aria-label="@Nav.GetAriaLabel(Item)"
-                           class="bit-nav-itm @GetItemClasses()"
-                           disabled="@(isEnabled is false)"
-                           href="@(isEnabled ? url : null)"
-                           title="@(title is not null ? title : text)"
-                           aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
-                           rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
-                            @if (template is not null)
-                            {
-                                @template(Item)
-                            }
-                            else if (Nav.ItemTemplate is not null)
-                            {
-                                @Nav.ItemTemplate(Item)
-                            }
-                            else
-                            {
-                                var iconName = Nav.GetIconName(Item);
-                                if (description.HasValue())
+                        <button @onclick="ToggleItem"
+                                type="button"
+                                tabindex="0"
+                                style="@Nav.Styles?.ToggleButton"
+                                class="bit-nav-cbt @Nav.Classes?.ToggleButton"
+                                aria-expanded="@(isExpanded ? "true" : "false")"
+                                aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
+                            <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                        </button>
+                    }
+
+                    @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
+                    {
+                        @template(Item)
+                    }
+                    else if (Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
+                    {
+                        @Nav.ItemTemplate(Item)
+                    }
+                    else
+                    {
+                        @if (renderLink)
+                        {
+                            <a @onclick="HandleOnClick"
+                               tabindex="-1"
+                               style="@GetItemStyles()"
+                               target="@target"
+                               aria-label="@Nav.GetAriaLabel(Item)"
+                               class="bit-nav-itm @GetItemClasses()"
+                               disabled="@(isEnabled is false)"
+                               href="@(isEnabled ? url : null)"
+                               title="@(title is not null ? title : text)"
+                               aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
+                               rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
+                                @if (template is not null)
                                 {
-                                    <div class="bit-nav-itg">
-                                        <div class="bit-nav-iit">
-                                            @if (iconName.HasValue())
-                                            {
-                                                <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
-                                            }
-                                            <span>@text</span>
-                                        </div>
-                                        <span style="@Nav.Styles?.Description" class="bit-nav-des @(iconName.HasValue() ? "bit-nav-ide" : "") @Nav.Classes?.Description">
-                                            @description
-                                        </span>
-                                    </div>
+                                    @template(Item)
+                                }
+                                else if (Nav.ItemTemplate is not null)
+                                {
+                                    @Nav.ItemTemplate(Item)
                                 }
                                 else
                                 {
@@ -167,7 +153,54 @@
                                     }
                                     <span>@text</span>
                                 }
-                            }
+                            </a>
+                        }
+                        else
+                        {
+                            <button @onclick="HandleOnClick"
+                                    type="button"
+                                    tabindex="-1"
+                                    style="@GetItemStyles()"
+                                    aria-label="@Nav.GetAriaLabel(Item)"
+                                    class="bit-nav-itm @GetItemClasses()"
+                                    disabled="@(isEnabled is false)"
+                                    title="@(title is not null ? title : text)"
+                                    aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)">
+                                @if (template is not null)
+                                {
+                                    @template(Item)
+                                }
+                                else if (Nav.ItemTemplate is not null)
+                                {
+                                    @Nav.ItemTemplate(Item)
+                                }
+                                else
+                                {
+                                    @if (iconName.HasValue())
+                                    {
+                                        <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
+                                    }
+                                    <span>@text</span>
+                                }
+                            </button>
+                        }
+                    }
+                </div>
+
+                @if (description.HasValue())
+                {
+                    @if (renderLink)
+                    {
+                        <a @onclick="HandleOnClick"
+                           tabindex="-1"
+                           target="@target"
+                           disabled="@(isEnabled is false)"
+                           href="@(isEnabled ? url : null)"
+                           title="@(title is not null ? title : text)"
+                           style="padding-left:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
+                           class="bit-nav-des @Nav.Classes?.Description"
+                           rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
+                            @description
                         </a>
                     }
                     else
@@ -175,47 +208,11 @@
                         <button @onclick="HandleOnClick"
                                 type="button"
                                 tabindex="-1"
-                                style="@GetItemStyles()"
-                                aria-label="@Nav.GetAriaLabel(Item)"
-                                class="bit-nav-itm @GetItemClasses()"
                                 disabled="@(isEnabled is false)"
                                 title="@(title is not null ? title : text)"
-                                aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)">
-                            @if (template is not null)
-                            {
-                                @template(Item)
-                            }
-                            else if (Nav.ItemTemplate is not null)
-                            {
-                                @Nav.ItemTemplate(Item)
-                            }
-                            else
-                            {
-                                var iconName = Nav.GetIconName(Item);
-                                if (description.HasValue())
-                                {
-                                    <div class="bit-nav-itg">
-                                        <div class="bit-nav-iit">
-                                            @if (iconName.HasValue())
-                                            {
-                                                <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
-                                            }
-                                            <span>@text</span>
-                                        </div>
-                                        <span style="@Nav.Styles?.Description" class="bit-nav-des @(iconName.HasValue() ? "bit-nav-ide" : "") @Nav.Classes?.Description">
-                                            @description
-                                        </span>
-                                    </div>
-                                }
-                                else
-                                {
-                                    @if (iconName.HasValue())
-                                    {
-                                        <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
-                                    }
-                                    <span>@text</span>
-                                }
-                            }
+                                style="padding-left:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
+                                class="bit-nav-des @Nav.Classes?.Description">
+                            @description
                         </button>
                     }
                 }

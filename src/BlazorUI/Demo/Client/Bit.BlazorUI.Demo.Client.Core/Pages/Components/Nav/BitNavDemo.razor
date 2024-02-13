@@ -64,7 +64,7 @@
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
-                                <BitLabel>Header Template (in Grouped mode)</BitLabel>
+                                <BitLabel>Header Template (Grouped)</BitLabel>
                                 <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped">
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
@@ -75,16 +75,17 @@
                                 </BitNav>
                             </div>
 
+                            <br />
+                            <br />
+                            <br />
+
                             <div class="margin-top">
                                 <BitLabel>Item Template</BitLabel>
                                 <BitNav Items="FoodNavMenu" Mode="BitNavMode.Manual">
                                     <ItemTemplate Context="item">
-                                        <div class="nav-custom-item @(item.IsEnabled is false ? "disabled-item" : "")">
-                                            <BitCheckbox IsEnabled="@(item.IsEnabled)" />
-                                            @if (item.IconName.HasValue())
-                                            {
-                                                <BitIcon IconName="@item.IconName" />
-                                            }
+                                        <div class="nav-custom-item">
+                                            <BitCheckbox />
+                                            <BitIcon IconName="@item.IconName" />
                                             <span>@item.Text</span>
                                         </div>
                                     </ItemTemplate>
@@ -98,16 +99,15 @@
                     <ExamplePreview>
                         <div class="events-example-box">
                             <BitNav Items="FoodNavMenu"
-                                    DefaultSelectedItem="FoodNavMenu[0].ChildItems[2]"
                                     Mode="BitNavMode.Manual"
                                     OnItemClick="(BitNavItem item) => ClickedItem = item"
                                     OnSelectItem="(BitNavItem item) => SelectedItem = item"
                                     OnItemToggle="(BitNavItem item) => ToggledItem = item" />
 
                             <div class="flex">
-                                <span>Clicked Item: @ClickedItem?.Text</span>
-                                <span>Selected Item: @SelectedItem?.Text</span>
-                                <span>Toggled Item: @(ToggledItem is null ? "N/A" : $"{ToggledItem.Text} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                                <span>Clicked Item: <b>@ClickedItem?.Text</b></span>
+                                <span>Selected Item: <b>@SelectedItem?.Text</b></span>
+                                <span>Toggled Item: <b>@(ToggledItem is null ? "N/A" : $"{ToggledItem.Text} ({(ToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</b></span>
                             </div>
                         </div>
                     </ExamplePreview>
@@ -200,7 +200,7 @@
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
-                                <BitLabel>Header Template (in Grouped mode)</BitLabel>
+                                <BitLabel>Header Template (Grouped)</BitLabel>
                                 <BitNav Items="CustomCarNavMenu"
                                         RenderType="BitNavRenderType.Grouped"
                                         NameSelectors="@(new() { Text =  { Name = nameof(CarMenu.Name) },
@@ -220,6 +220,10 @@
                                     </HeaderTemplate>
                                 </BitNav>
                             </div>
+
+                            <br />
+                            <br />
+                            <br />
 
                             <div class="margin-top">
                                 <BitLabel>Item Template</BitLabel>
@@ -247,7 +251,6 @@
                         <div class="events-example-box">
                             <BitNav Items="CustomFoodNavMenu"
                                     Mode="BitNavMode.Manual"
-                                    DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
                                     OnItemClick="(FoodMenu item) => CustomClickedItem = item"
                                     OnSelectItem="(FoodMenu item) => CustomSelectedItem = item"
                                     OnItemToggle="(FoodMenu item) => CustomToggledItem = item"
@@ -256,9 +259,9 @@
                                                              ChildItems =  { Selector = item => item.Childs },
                                                              Description =  { Selector = item => item.Comment } })" />
                             <div class="flex">
-                                <span>Clicked Item: @CustomClickedItem?.Name</span>
-                                <span>Selected Item: @CustomSelectedItem?.Name</span>
-                                <span>Toggled Item: @(CustomToggledItem is null ? "N/A" : $"{CustomToggledItem.Name} ({(CustomToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                                <span>Clicked Item: <b>@CustomClickedItem?.Name</b></span>
+                                <span>Selected Item: <b>@CustomSelectedItem?.Name</b></span>
+                                <span>Toggled Item: <b>@(CustomToggledItem is null ? "N/A" : $"{CustomToggledItem.Name} ({(CustomToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</b></span>
                             </div>
                         </div>
                     </ExamplePreview>
@@ -367,13 +370,10 @@
                         <div class="example-box">
                             <div>
                                 <BitLabel>Basic</BitLabel>
-                                <BitNav TItem="BitNavOption"
-                                        Mode="BitNavMode.Manual">
-                                    <BitNavOption Text="Fast food"
-                                                  Description="List of fast foods"
-                                                  IconName="@BitIconName.HeartBroken"
-                                                  IsExpanded="true">
-                                        <BitNavOption Text="Burger" Description="List of burgers">
+                                <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
+                                    <BitNavOption Text="Fast foods" Description="List of fast foods"
+                                                  IconName="@BitIconName.HeartBroken" IsExpanded="true">
+                                        <BitNavOption Text="Burgers" Description="List of burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                             <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
                                             <BitNavOption Text="Bison Burger" Key="Bison Burger" />
@@ -387,7 +387,7 @@
                                         </BitNavOption>
                                         <BitNavOption Text="French Fries" Key="French Fries" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Fruit" IconName="@BitIconName.Health">
+                                    <BitNavOption Text="Fruits" IconName="@BitIconName.Health">
                                         <BitNavOption Text="Apple" Key="Apple" />
                                         <BitNavOption Text="Orange" Key="Orange" />
                                         <BitNavOption Text="Benana" Key="Benana" />
@@ -404,11 +404,9 @@
                             <div class="margin-top">
                                 <BitLabel>Two-Way Bind</BitLabel>
                                 <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
-                                    <BitNavOption Text="Fast food"
-                                                  Description="List of fast foods"
-                                                  IconName="@BitIconName.HeartBroken"
-                                                  IsExpanded="true">
-                                        <BitNavOption Text="Burger" Description="List of burgers">
+                                    <BitNavOption Text="Fast foods" Description="List of fast foods"
+                                                  IconName="@BitIconName.HeartBroken" IsExpanded="true">
+                                        <BitNavOption Text="Burgers" Description="List of burgers">
                                             <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                             <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
                                             <BitNavOption Text="Bison Burger" Key="Bison Burger" />
@@ -422,7 +420,7 @@
                                         </BitNavOption>
                                         <BitNavOption Text="French Fries" Key="French Fries" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Fruit" IconName="@BitIconName.Health">
+                                    <BitNavOption Text="Fruits" IconName="@BitIconName.Health">
                                         <BitNavOption Text="Aplle" Key="Aplle" />
                                         <BitNavOption Text="Orange" Key="Orange" />
                                         <BitNavOption Text="Benana" Key="Benana" />
@@ -444,7 +442,7 @@
                     <ExamplePreview>
                         <div class="example-box">
                             <div>
-                                <BitLabel>Header Template (in Grouped mode)</BitLabel>
+                                <BitLabel>Header Template (Grouped)</BitLabel>
                                 <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
                                     <HeaderTemplate Context="item">
                                         <div class="nav-custom-header">
@@ -486,25 +484,30 @@
                                 </BitNav>
                             </div>
 
+                            <br />
+                            <br />
+                            <br />
+
                             <div class="margin-top">
-                                <BitLabel>Option Template</BitLabel>
+                                <BitLabel>Item Template</BitLabel>
                                 <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
                                     <ItemTemplate Context="option">
                                         <div class="nav-custom-item">
-                                            <BitCheckbox IsEnabled="@(option.IsEnabled)" />
+                                            <BitCheckbox />
+                                            <BitIcon IconName="@option.IconName" />
                                             <span>@option.Text</span>
                                         </div>
                                     </ItemTemplate>
                                     <ChildContent>
-                                        <BitNavOption Text="Fast-Foods"
-                                                      IsExpanded="true">
-                                            <BitNavOption Text="Burgers">
+                                        <BitNavOption Text="Fast foods" Description="List of fast foods"
+                                                      IconName="@BitIconName.HeartBroken" IsExpanded="true">
+                                            <BitNavOption Text="Burgers" Description="List of burgers">
                                                 <BitNavOption Text="Beef Burger" />
                                                 <BitNavOption Text="Veggie Burger" />
                                                 <BitNavOption Text="Bison Burger" />
                                                 <BitNavOption Text="Wild Salmon Burger" />
                                             </BitNavOption>
-                                            <BitNavOption Text="Pizzas">
+                                            <BitNavOption Text="Pizza">
                                                 <BitNavOption Text="Cheese Pizza" />
                                                 <BitNavOption Text="Veggie Pizza" />
                                                 <BitNavOption Text="Pepperoni Pizza" />
@@ -512,7 +515,7 @@
                                             </BitNavOption>
                                             <BitNavOption Text="French Fries" />
                                         </BitNavOption>
-                                        <BitNavOption Text="Fruits">
+                                        <BitNavOption Text="Fruits" IconName="@BitIconName.Health">
                                             <BitNavOption Text="Aplle" />
                                             <BitNavOption Text="Orange" />
                                             <BitNavOption Text="Benana" />
@@ -533,16 +536,15 @@
                                     OnItemClick="(BitNavOption option) => ClickedOption = option"
                                     OnSelectItem="(BitNavOption option) => SelectedOption = option"
                                     OnItemToggle="(BitNavOption option) => ToggledOption = option">
-                                <BitNavOption Text="Fast-Foods"
-                                              IconName="@BitIconName.HeartBroken"
-                                              IsExpanded="true">
-                                    <BitNavOption Text="Burgers">
+                                <BitNavOption Text="Fast foods" Description="List of fast foods"
+                                              IconName="@BitIconName.HeartBroken" IsExpanded="true">
+                                    <BitNavOption Text="Burgers" Description="List of burgers">
                                         <BitNavOption Text="Beef Burger" Key="Beef Burger" />
                                         <BitNavOption Text="Veggie Burger" Key="Veggie Burger" />
                                         <BitNavOption Text="Bison Burger" Key="Bison Burger" />
                                         <BitNavOption Text="Wild Salmon Burger" Key="Wild Salmon Burger" />
                                     </BitNavOption>
-                                    <BitNavOption Text="Pizzas">
+                                    <BitNavOption Text="Pizza">
                                         <BitNavOption Text="Cheese Pizza" Key="Cheese Pizza" />
                                         <BitNavOption Text="Veggie Pizza" Key="Veggie Pizza" />
                                         <BitNavOption Text="Pepperoni Pizza" Key="Pepperoni Pizza" />
@@ -550,7 +552,7 @@
                                     </BitNavOption>
                                     <BitNavOption Text="French Fries" Key="French Fries" />
                                 </BitNavOption>
-                                <BitNavOption Text="Fruits">
+                                <BitNavOption Text="Fruits"  IconName="@BitIconName.Health">
                                     <BitNavOption Text="Aplle" Key="Aplle" />
                                     <BitNavOption Text="Orange" Key="Orange" />
                                     <BitNavOption Text="Benana" Key="Benana" />
@@ -560,9 +562,9 @@
                             </BitNav>
 
                             <div class="flex">
-                                <span>Clicked Option: @ClickedOption?.Text</span>
-                                <span>Selected Option: @SelectedOption?.Text</span>
-                                <span>Toggled Option: @(ToggledOption is null ? "N/A" : $"{ToggledOption.Text} ({(ToggledOption.IsExpanded ? "Expanded" : "Collapsed")})")</span>
+                                <span>Clicked Option: <b>@ClickedOption?.Text</b></span>
+                                <span>Selected Option: <b>@SelectedOption?.Text</b></span>
+                                <span>Toggled Option: <b>@(ToggledOption is null ? "N/A" : $"{ToggledOption.Text} ({(ToggledOption.IsExpanded ? "Expanded" : "Collapsed")})")</b></span>
                             </div>
                         </div>
                     </ExamplePreview>
@@ -729,7 +731,7 @@
     {
         new()
         {
-            Text = "Fast food",
+            Text = "Fast foods",
             IconName = BitIconName.HeartBroken,
             IsExpanded = true,
             Description = "List of fast foods",
@@ -737,7 +739,7 @@
             {
                 new()
                 {
-                    Text = "Burger",
+                    Text = "Burgers",
                     Description = "List of burgers",
                     ChildItems = new()
                     {
@@ -763,7 +765,7 @@
         },
         new()
         {
-            Text = "Fruit",
+            Text = "Fruits",
             IconName = BitIconName.Health,
             ChildItems = new()
             {
@@ -947,7 +949,7 @@
     {
         new()
         {
-            Name = "Fast food",
+            Name = "Fast foods",
             Icon = BitIconName.HeartBroken,
             IsExpanded = true,
             Comment = "List of fast foods",
@@ -955,7 +957,7 @@
             {
                 new()
                 {
-                    Name = "Burger",
+                    Name = "Burgers",
                     Comment = "List of burgers",
                     Childs = new()
                     {
@@ -981,7 +983,7 @@
         },
         new()
         {
-            Name = "Fruit",
+            Name = "Fruits",
             Icon = BitIconName.Health,
             Childs = new()
             {
