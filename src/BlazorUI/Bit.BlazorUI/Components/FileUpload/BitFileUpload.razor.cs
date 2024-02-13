@@ -142,6 +142,11 @@ public partial class BitFileUpload : IDisposable
     [Parameter] public EventCallback<BitFileInfo> OnRemoveFailed { get; set; }
 
     /// <summary>
+    /// Callback for when a file upload is about to start.
+    /// </summary>
+    [Parameter] public EventCallback<BitFileInfo> OnUploading { get; set; }
+
+    /// <summary>
     /// Callback for when a file upload is done.
     /// </summary>
     [Parameter] public EventCallback<BitFileInfo> OnUploadComplete { get; set; }
@@ -232,6 +237,7 @@ public partial class BitFileUpload : IDisposable
         }
 
         await UpdateStatus(BitFileUploadStatus.InProgress, fileInfo);
+
         if (fileInfo is null)
         {
             foreach (var file in Files)
@@ -426,7 +432,12 @@ public partial class BitFileUpload : IDisposable
             to = fileInfo.Size;
         }
 
-        await _js.UploadFile(UniqueId, from, to, fileInfo.Index);
+        if (from == 0)
+        {
+            await OnUploading.InvokeAsync(fileInfo);
+        }
+
+        await _js.UploadFile(UniqueId, from, to, fileInfo.Index, fileInfo.HttpHeaders);
     }
 
     private async Task PauseUploadOneFile(int index)

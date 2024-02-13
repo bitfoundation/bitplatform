@@ -27,14 +27,14 @@
         return files;
     }
 
-    public static upload(id: string, from: number, to: number, index: number): void {
+    public static upload(id: string, from: number, to: number, index: number, headers: Record<string, string> = {}): void {
         const uploaders = this.fileUploaders.filter(u => u.id === id);
 
         if (index === -1) {
-            uploaders.forEach(u => u.upload(from, to));
+            uploaders.forEach(u => u.upload(from, to, headers));
         } else {
             const uploader = uploaders.filter(u => u.index === index)[0];
-            uploader.upload(from, to);
+            uploader.upload(from, to, headers);
         }
     }
 
@@ -133,7 +133,7 @@ class BitFileUploader {
         };
     }
 
-    upload(from: number, to: number): void {
+    upload(from: number, to: number, headers: Record<string, string>): void {
         const files = this.inputElement.files;
         if (files === null) return;
 
@@ -146,6 +146,10 @@ class BitFileUploader {
 
         Object.keys(this.headers).forEach(h => {
             this.xhr.setRequestHeader(h, this.headers[h]);
+        });
+
+        Object.keys(headers).forEach(h => {
+            this.xhr.setRequestHeader(h, headers[h]);
         });
 
         this.xhr.send(data);
