@@ -65,9 +65,11 @@
                                 <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
-                            <span style="@(Nav.ReversedChevron ? "padding-left: 0" : ""); @Nav.Styles?.Description" class="bit-nav-des @Nav.Classes?.Description">
+                            <div title="@description"
+                                 class="bit-nav-des @Nav.Classes?.Description"
+                                 style="@(Nav.ReversedChevron ? "padding-left: 0" : ""); @Nav.Styles?.Description">
                                 @description
-                            </span>
+                            </div>
                         </div>
                     }
                     else
@@ -194,9 +196,9 @@
                         <a @onclick="HandleOnClick"
                            tabindex="-1"
                            target="@target"
+                           title="@description"
                            disabled="@(isEnabled is false)"
                            href="@(isEnabled ? url : null)"
-                           title="@(title is not null ? title : text)"
                            style="padding-left:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
                            class="bit-nav-des @Nav.Classes?.Description"
                            rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
@@ -208,8 +210,8 @@
                         <button @onclick="HandleOnClick"
                                 type="button"
                                 tabindex="-1"
+                                title="@description"
                                 disabled="@(isEnabled is false)"
-                                title="@(title is not null ? title : text)"
                                 style="padding-left:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
                                 class="bit-nav-des @Nav.Classes?.Description">
                             @description

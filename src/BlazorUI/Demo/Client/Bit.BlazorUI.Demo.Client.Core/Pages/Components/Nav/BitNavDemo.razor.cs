@@ -788,7 +788,6 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
         ChildItems = new()
         {
             new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
-            new() { IsSeparator = true },
             new()
             {
                 Text = ""Products & Services"",
@@ -812,11 +811,6 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
             new() { Text = ""About"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
             new() { Text = ""Contact us"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         },
-    },
-    new()
-    {
-        IsSeparator = true,
-        Template = (BitNavItem item) => @<div style=""width:100%;height:0;border:2px dashed""></div>
     },
     new()
     {
@@ -1313,7 +1307,6 @@ public class BitPlatformMenu
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
-    public bool IsSeparator { get; set; }
     public List<BitPlatformMenu> Links { get; set; } = [];
 }
 
@@ -1325,7 +1318,6 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
         Links = new()
         {
             new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
-            new() { IsSeparator = true },
             new()
             {
                 Text = ""Products & Services"",
@@ -1349,11 +1341,6 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu = new()
             new() { Text = ""About"", Icon = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
             new() { Text = ""Contact us"", Icon = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         },
-    },
-    new()
-    {
-        IsSeparator = true,
-        Template = (BitPlatformMenu item) => @<div style=""width:100%;height:0;border:2px dashed""></div>
     },
     new()
     {
@@ -1940,7 +1927,6 @@ private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
                     ExpandAriaLabel=""bit platform Expanded""
                     CollapseAriaLabel=""bit platform Collapsed"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
-        <BitNavOption IsSeparator />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
                 <BitNavOption IconName=""@BitIconName.ToDoLogoOutline"" Text=""Todo sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
@@ -1953,11 +1939,6 @@ private static readonly List<BitPlatformMenu> CustomCustomStyleNavMenu = new()
         <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
         <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
-    </BitNavOption>
-    <BitNavOption IsSeparator>
-        <Template>
-            <div style=""width:100%;height:0;border:2px dashed""></div>
-        </Template>
     </BitNavOption>
     <BitNavOption Text=""Community""
                     ExpandAriaLabel=""Community Expanded""

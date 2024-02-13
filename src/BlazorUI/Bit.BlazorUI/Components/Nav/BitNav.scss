@@ -63,6 +63,7 @@
 }
 
 .bit-nav-itg {
+    width: 100%;
     flex-grow: 1;
     padding: spacing(1) 0;
 }
@@ -74,11 +75,16 @@
 }
 
 .bit-nav-des {
-    display: flex;
+    all: unset;
+    display: block;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
     font-weight: normal;
     font-size: spacing(1.5);
     padding: spacing(0.5) 0;
     background: transparent;
+    text-overflow: ellipsis;
     padding-left: spacing(2.75);
     color: $color-foreground-disabled;
 }
