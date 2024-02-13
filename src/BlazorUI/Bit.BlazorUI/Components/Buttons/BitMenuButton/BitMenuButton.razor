@@ -35,9 +35,9 @@
                 var iconName = GetIconName(SelectedItem);
                 @if (iconName.HasValue())
                 {
-                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                    <i style="@Styles?.OperatorButtonIcon" class="bit-icon bit-icon--@iconName @Classes?.OperatorButtonIcon" />
                 }
-                <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
+                <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
                     @GetText(SelectedItem)
                 </span>
             }
