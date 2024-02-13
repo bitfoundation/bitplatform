@@ -322,6 +322,27 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "OperatorButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for operator button of the BitMenuButton."
+               },
+               new()
+               {
+                   Name = "OperatorButtonIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for operator button icon of the BitMenuButton."
+               },
+               new()
+               {
+                   Name = "OperatorButtonText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for operator button text of the BitMenuButton."
+               },
+               new()
+               {
                    Name = "Callout",
                    Type = "string?",
                    DefaultValue = "null",
