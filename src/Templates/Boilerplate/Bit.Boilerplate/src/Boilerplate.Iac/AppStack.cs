@@ -132,8 +132,8 @@ public class AppStack : Stack
                 FtpsState = FtpsState.Disabled,
                 LinuxFxVersion = "DOTNETCORE|8.0",
                 AppCommandLine = "dotnet Boilerplate.Server.dll",
-                AppSettings =
-                [
+                AppSettings = new()
+                {
                     new NameValuePairArgs { Name = "ApplicationInsights__InstrumentationKey", Value = appInsights.InstrumentationKey },
                     new NameValuePairArgs { Name = "APPINSIGHTS_INSTRUMENTATIONKEY", Value = appInsights.InstrumentationKey },
                     new NameValuePairArgs { Name = "ASPNETCORE_ENVIRONMENT", Value = stackName == "test" ? "Test" : "Production" },
@@ -159,17 +159,17 @@ public class AppStack : Stack
                     {
                         Name = "AppSettings__IdentitySettings__IdentityCertificatePassword",
                         Value = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={identityCertificatePasswordSecretName})"
-                    },
-                ],
-                ConnectionStrings =
-                [
+                    }
+                },
+                ConnectionStrings = new()
+                {
                     new ConnStringInfoArgs
                     {
                         Name = "SqlServerConnectionString",
                         Type = ConnectionStringType.SQLAzure,
                         ConnectionString = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={sqlDatabaseConnectionStringSecretName})"
                     }
-                ]
+                }
             }
         });
 
