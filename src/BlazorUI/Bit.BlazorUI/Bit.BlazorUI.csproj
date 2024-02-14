@@ -33,11 +33,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Update="tsconfig.json">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-        </Content>
+        <Content Remove="tsconfig.json" />
+        <None Include="tsconfig.json" />
     </ItemGroup>
 
     <ItemGroup>
