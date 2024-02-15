@@ -301,9 +301,9 @@
 }
 
 .bit-ctp-num {
+    user-select: none;
     width: spacing(4);
     height: spacing(4);
-    user-select: none;
     position: absolute;
     border-radius: 50%;
     align-items: center;
