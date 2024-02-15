@@ -301,8 +301,8 @@
 }
 
 .bit-ctp-num {
-    user-select: none;
     width: spacing(4);
+    user-select: none;
     height: spacing(4);
     position: absolute;
     border-radius: 50%;
@@ -311,8 +311,8 @@
     justify-content: center;
     transition-duration: 120ms;
     transition-property: color;
-    color: $color-foreground-primary;
     bottom: calc(100% - spacing(4));
+    color: $color-foreground-primary;
     left: calc((100% - spacing(4))/2);
     background-color: transparent !important;
 
