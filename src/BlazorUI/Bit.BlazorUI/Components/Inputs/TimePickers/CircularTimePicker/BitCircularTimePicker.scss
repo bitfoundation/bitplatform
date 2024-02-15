@@ -311,9 +311,9 @@
     justify-content: center;
     transition-duration: 120ms;
     transition-property: color;
+    bottom: calc(100% - spacing(4));
     color: $color-foreground-primary;
     left: calc((100% - spacing(4))/2);
-    bottom: calc(100% - spacing(5.75));
     background-color: transparent !important;
 
     &.bit-ctp-sel {
