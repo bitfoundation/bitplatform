@@ -8,18 +8,18 @@
 
     @if (LabelTemplate is not null)
     {
-        <label class="bit-ctp-lbl" id="@_labelId" for="@_textFieldId">
+        <label class="bit-ctp-lbl" id="@_labelId" for="@_inputId">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label class="bit-ctp-lbl" id="@_labelId" for="@_textFieldId">
+        <label class="bit-ctp-lbl" id="@_labelId" for="@_inputId">
             @Label
         </label>
     }
 
-    <div class="bit-ctp-wrp" id="@_wrapperId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+    <div class="bit-ctp-wrp" id="@_circularTimePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div class="bit-ctp-fld-grp @(AllowTextInput ? "bit-ctp-edt-inp" : null)">
             <input @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
@@ -28,7 +28,7 @@
                    @onfocusout="@HandleOnFocusOut"
                    type="text"
                    role="combobox"
-                   id="@_textFieldId"
+                   id="@_inputId"
                    tabindex="@TabIndex"
                    aria-haspopup="dialog"
                    aria-label="@AriaLabel"
@@ -51,7 +51,9 @@
         </div>
     </div>
 
-    <div class="bit-ctp-ovl" id="@_overlayId" @onclick="CloseCallout"></div>
+    <div class="bit-ctp-ovl" 
+         style="display:@(IsOpen ? "block;" : "none;")"
+         @onclick="CloseCallout"></div>
 
     <div class="bit-ctp-cal @(IsResponsive ? "bit-ctp-rsp" : string.Empty)" id="@_calloutId">
         <div class="bit-ctp-mcal" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
