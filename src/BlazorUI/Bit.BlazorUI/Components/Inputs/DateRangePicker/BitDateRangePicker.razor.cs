@@ -672,6 +672,11 @@ public partial class BitDateRangePicker
             _isTimePickerOverlayOnTop = false;
         }
 
+        if (_showMonthPickerAsOverlayInternal is false && ShowTimePicker && _showTimePickerAsOverlayInternal is false)
+        {
+            _showMonthPickerAsOverlayInternal = true;
+        }
+
         if (CurrentValue is not null)
         {
             CheckCurrentCalendarMatchesCurrentValue();
@@ -1703,7 +1708,7 @@ public partial class BitDateRangePicker
             }
             else
             {
-                return (_showMonthPickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop is false) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false);
+                return _showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop is false && (_showTimePickerAsOverlayInternal is false || _isMonthPickerOverlayOnTop is false && _isTimePickerOverlayOnTop is false);
             }
         }
         else
@@ -1722,7 +1727,7 @@ public partial class BitDateRangePicker
             }
             else
             {
-                return (_showMonthPickerAsOverlayInternal is false && _isMonthPickerOverlayOnTop) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop && _isTimePickerOverlayOnTop is false);
+                return (_showMonthPickerAsOverlayInternal && _isMonthPickerOverlayOnTop) || (_showTimePickerAsOverlayInternal && _isMonthPickerOverlayOnTop && _isTimePickerOverlayOnTop is false);
             }
         }
         else
@@ -1895,6 +1900,7 @@ public partial class BitDateRangePicker
     {
         if (IsEnabled is false) return false;
 
+        _showMonthPicker = true;
         _isMonthPickerOverlayOnTop = false;
         _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
         _isTimePickerOverlayOnTop = false;

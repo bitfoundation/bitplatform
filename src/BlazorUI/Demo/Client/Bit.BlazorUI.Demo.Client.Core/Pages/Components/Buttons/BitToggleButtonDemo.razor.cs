@@ -170,6 +170,13 @@ public partial class BitToggleButtonDemo
                },
                new()
                {
+                   Name = "Checked",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the checked state of the BitToggleButton.",
+               },
+               new()
+               {
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
