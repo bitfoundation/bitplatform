@@ -156,7 +156,7 @@ public partial class BitToggleButton
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsChecked ? $"bit-tgb-chk {Styles?.Checked}" : string.Empty);
+        ClassBuilder.Register(() => IsChecked ? $"bit-tgb-chk {Classes?.Checked}" : string.Empty);
 
         ClassBuilder.Register(() => ButtonStyle switch
         {
@@ -179,7 +179,7 @@ public partial class BitToggleButton
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Styles?.Checked);
+        StyleBuilder.Register(() => IsChecked ? Styles?.Checked : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
