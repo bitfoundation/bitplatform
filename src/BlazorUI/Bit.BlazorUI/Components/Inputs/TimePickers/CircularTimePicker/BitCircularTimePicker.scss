@@ -312,8 +312,8 @@
     transition-duration: 120ms;
     transition-property: color;
     color: $color-foreground-primary;
-    left: calc((100% - spacing(4))/2);
     bottom: calc(100% - spacing(4));
+    left: calc((100% - spacing(4))/2);
     background-color: transparent !important;
 
     &.bit-ctp-sel {
