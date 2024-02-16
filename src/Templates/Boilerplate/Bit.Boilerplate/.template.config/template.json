@@ -166,7 +166,7 @@
               }
             ]
           },
-          "replaces": "com.bitplatform.BP.Template"
+          "replaces": "com.bitplatform.template"
         }
     },
     "postActions": [],
