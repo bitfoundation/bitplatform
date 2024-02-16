@@ -31,7 +31,7 @@ public class Cookie(IJSRuntime js)
     }
 
     /// <summary>
-    /// Returns a cookie by providing the cookie name.
+    /// Returns the cookie value by providing its name.
     /// </summary>
     public async Task<string?> GetValue(string name)
     {
@@ -40,7 +40,7 @@ public class Cookie(IJSRuntime js)
     }
 
     /// <summary>
-    /// Removes the cookie value by providing its name.
+    /// Removes a cookie by providing the its name.
     /// </summary>
     public async Task Remove(string name)
     {
