@@ -31,6 +31,15 @@ public class Cookie(IJSRuntime js)
     }
 
     /// <summary>
+    /// Returns a cookie by providing the cookie name.
+    /// </summary>
+    public async Task<string?> GetValue(string name)
+    {
+        var allCookies = await GetAll();
+        return allCookies.FirstOrDefault(c => c.Name == name)?.Value;
+    }
+
+    /// <summary>
     /// Removes a cookie by providing the its name.
     /// </summary>
     public async Task Remove(string name)
