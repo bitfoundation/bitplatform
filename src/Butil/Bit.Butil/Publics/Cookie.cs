@@ -40,7 +40,7 @@ public class Cookie(IJSRuntime js)
     }
 
     /// <summary>
-    /// Removes a cookie by providing the its name.
+    /// Removes the cookie value by providing its name.
     /// </summary>
     public async Task Remove(string name)
     {
