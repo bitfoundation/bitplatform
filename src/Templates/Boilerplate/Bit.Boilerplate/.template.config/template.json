@@ -128,6 +128,45 @@
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "true"
+        },
+        "nameToLower":{
+          "type": "generated",
+          "generator": "casing",
+          "parameters": {
+            "source" : "name",
+            "toLower": true
+          }
+        },
+        "nameToAppId": {
+          "type": "generated",
+          "generator": "regex",
+          "dataType": "string",
+          "parameters": {
+            "source": "nameToLower",
+            "steps": [
+              {
+                "regex": "[^a-z0-9_\\.]",
+                "replacement": ""
+              }
+            ]
+          }
+        },
+        "defaultAppId":{
+          "type": "generated",
+          "generator": "join",
+          "parameters": {
+            "symbols": [
+              {
+                "type": "const",
+                "value": "com.companyname."
+              },
+              {
+                "type": "ref",
+                "value": "nameToAppId"
+              }
+            ]
+          },
+          "replaces": "com.bitplatform.BP.Template"
         }
     },
     "postActions": [],
