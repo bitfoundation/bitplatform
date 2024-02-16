@@ -15,7 +15,7 @@
         <ApplicationTitle>Boilerplate</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.bitplatform.BP.Template</ApplicationId>
+        <ApplicationId>com.bitplatform.template</ApplicationId>
         <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</ApplicationIdGuid>
 
         <!-- Versions -->
