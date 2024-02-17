@@ -134,6 +134,12 @@
     background-color: transparent;
 }
 
+.bit-nav-cbt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .bit-nav-iic {
     color: $color-primary-main;
     margin-right: spacing(0.5);
