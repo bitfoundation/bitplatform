@@ -54,7 +54,7 @@
                                 <BitDropdown @bind-Value="SelectedItemText"
                                              Label="Select Item"
                                              Items="FoodMenuDropdownItems"
-                                             OnSelectItem="(BitDropdownItem<string> item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)" />
+                                             OnSelectItem="(BitDropdownItem<string> item) => SelectedItemNav = Flatten(FoodNavMenu).First(i => i.Text == item.Value)" />
                             </div>
                         </div>
                     </ExamplePreview>
@@ -85,7 +85,7 @@
                                     <ItemTemplate Context="item">
                                         <div class="nav-custom-item">
                                             <BitCheckbox />
-                                            <BitIcon IconName="@item.IconName" />
+                                            <BitIcon IconName="@item!.IconName" />
                                             <span>@item.Text</span>
                                         </div>
                                     </ItemTemplate>
@@ -813,12 +813,12 @@
     };
 
     private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
-    private BitNavItem? SelectedItemNav = FoodNavMenu[0].ChildItems[2];
+    private BitNavItem SelectedItemNav = FoodNavMenu[0].ChildItems[2];
     private string? SelectedItemText = FoodNavMenu[0].ChildItems[2].Text;
 
-    private BitNavItem ClickedItem;
-    private BitNavItem SelectedItem;
-    private BitNavItem ToggledItem;
+    private BitNavItem ClickedItem = default!;
+    private BitNavItem SelectedItem = default!;
+    private BitNavItem ToggledItem = default!;
 
 
     // Basic
@@ -1028,16 +1028,16 @@
     private FoodMenu CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
     private string? CustomSelectedFoodName = CustomFoodNavMenu[0].Childs[2].Name;
 
-    private FoodMenu CustomClickedItem;
-    private FoodMenu CustomSelectedItem;
-    private FoodMenu CustomToggledItem;
+    private FoodMenu CustomClickedItem = default!;
+    private FoodMenu CustomSelectedItem = default!;
+    private FoodMenu CustomToggledItem = default!;
 
 
     private string? SelectedOptionKey;
 
-    private BitNavOption ClickedOption;
-    private BitNavOption SelectedOption;
-    private BitNavOption ToggledOption;
+    private BitNavOption ClickedOption = default!;
+    private BitNavOption SelectedOption = default!;
+    private BitNavOption ToggledOption = default!;
 
 
     private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems = new()

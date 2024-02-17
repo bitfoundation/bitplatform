@@ -85,11 +85,11 @@ public partial class _BitChartTimeDemo
             Fill = BitChartFillingMode.Disabled
         };
 
-        DateTime now = DateTime.Now;
-        dataset3.Add(new BitChartTimePoint(now, BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartTimePoint(now.AddDays(2), BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartTimePoint(now.AddDays(3), BitChartDemoUtils.RandomScalingFactor()));
-        dataset3.Add(new BitChartTimePoint(now.AddDays(4), BitChartDemoUtils.RandomScalingFactor()));
+        var now = DateTimeOffset.Now;
+        dataset3.Add(new BitChartTimePoint(now.DateTime, BitChartDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartTimePoint(now.AddDays(2).DateTime, BitChartDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartTimePoint(now.AddDays(3).DateTime, BitChartDemoUtils.RandomScalingFactor()));
+        dataset3.Add(new BitChartTimePoint(now.AddDays(4).DateTime, BitChartDemoUtils.RandomScalingFactor()));
 
         _config.Data.Datasets.Add(dataset1);
         _config.Data.Datasets.Add(dataset2);
@@ -148,14 +148,14 @@ public partial class _BitChartTimeDemo
         if (_config.Data.Datasets.Count == 0)
             return;
 
-        DateTime now = DateTime.Now;
+        var now = DateTimeOffset.Now;
         _config.Data.Labels.Add(now.AddDays(_config.Data.Labels.Count).ToString("o"));
 
         foreach (IBitChartDataset dataset in _config.Data.Datasets)
         {
             if (dataset is IDataset<BitChartTimePoint> pointDataset)
             {
-                pointDataset.Add(new BitChartTimePoint(now.AddDays(pointDataset.Count), BitChartDemoUtils.RandomScalingFactor()));
+                pointDataset.Add(new BitChartTimePoint(now.AddDays(pointDataset.Count).DateTime, BitChartDemoUtils.RandomScalingFactor()));
             }
             else if (dataset is IDataset<int> intDataset)
             {

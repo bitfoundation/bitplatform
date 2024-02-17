@@ -378,11 +378,11 @@ public partial class BitDataGridDemo
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
 
-                return BitDataGridItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+                return BitDataGridItemsProviderResult.From(data!.Results!, data!.Meta!.Results!.Total);
             }
             catch
             {
-                return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+                return BitDataGridItemsProviderResult.From<FoodRecall>([], 0);
             }
         };
 
@@ -412,7 +412,7 @@ public partial class BitDataGridDemo
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+                return BitDataGridItemsProviderResult.From(data!.Items!, data!.TotalCount);
             }
             catch
             {

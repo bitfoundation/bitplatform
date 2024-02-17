@@ -110,13 +110,13 @@
 </ComponentDemo>
 
 @code {
-    IQueryable<CountryModel> allCountries;
-    BitDataGrid<FoodRecall> dataGrid;
-    BitDataGrid<ProductDto> productsDataGrid;
-    BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
-    BitDataGridItemsProvider<ProductDto> productsItemsProvider;
+    IQueryable<CountryModel> allCountries = default!;
+    BitDataGrid<FoodRecall> dataGrid = default!;
+    BitDataGrid<ProductDto> productsDataGrid = default!;
+    BitDataGridItemsProvider<FoodRecall> foodRecallProvider = default!;
+    BitDataGridItemsProvider<ProductDto> productsItemsProvider = default!;
     BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-    IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+    IQueryable<CountryModel>? FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
     string typicalSampleNameFilter = string.Empty;
     string _virtualSampleNameFilter = string.Empty;

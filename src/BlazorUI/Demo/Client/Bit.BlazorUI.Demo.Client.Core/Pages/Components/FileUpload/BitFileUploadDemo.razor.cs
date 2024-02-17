@@ -280,8 +280,8 @@ public partial class BitFileUploadDemo
     private string ChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
     private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
     private string RemoveUrl => $"{Configuration.GetApiServerAddress()}FileUpload/RemoveFile";
-    private BitFileUpload bitFileUpload;
-    private BitFileUpload bitFileUploadWithBrowseFile;
+    private BitFileUpload bitFileUpload = default!;
+    private BitFileUpload bitFileUploadWithBrowseFile = default!;
 
     private bool FileUploadIsEmpty() => !bitFileUpload.Files?.Any(f => f.Status != BitFileUploadStatus.Removed) ?? true;
 

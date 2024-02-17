@@ -419,28 +419,24 @@
         <div class="example-content">
             <div>
                 <BitDropdown @bind-Value="comboBoxValue"
+                             Combo Chips Dynamic 
                              Label="Single select combo box"
                              Items="comboBoxCustoms"
                              NameSelectors="comboBoxNameSelectors"
                              Placeholder="Select an option"
-                             OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)"
-                             Combo
-                             Chips
-                             Dynamic />
+                             OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
                 <BitLabel>Value: @comboBoxValue</BitLabel>
             </div>
             <br>
             <div>
                 <BitDropdown @bind-Values="comboBoxValues"
+                             Combo Chips Dynamic 
                              Label="Multi select combo box"
                              Items="comboBoxCustoms"
                              NameSelectors="comboBoxNameSelectors"
                              Placeholder="Select options"
                              IsMultiSelect="true"
-                             OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)"
-                             Combo
-                             Chips
-                             Dynamic />
+                             OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
                 <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
             </div>
         </div>
