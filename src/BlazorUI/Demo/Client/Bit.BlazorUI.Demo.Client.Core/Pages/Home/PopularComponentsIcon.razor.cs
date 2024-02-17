@@ -2,5 +2,5 @@
 
 public partial class PopularComponentsIcon
 {
-    [Parameter] public string ComponentName { get; set; }
+    [Parameter] public string ComponentName { get; set; } = default!;
 }

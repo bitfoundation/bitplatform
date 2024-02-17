@@ -36,7 +36,7 @@ public partial class _BitDropdownCustomDemo
         Value = { Selector = c => c.Value },
         DynamicValueGenerator = ((BitDropdownCustom item) => item.Text),
         ValueSetter = ((BitDropdownCustom item, string? value) => item.Value = value),
-        TextSetter = ((string? text, BitDropdownCustom item) => item.Text = text)
+        TextSetter = ((string text, BitDropdownCustom item) => item.Text = text)
     };
 
 
@@ -187,7 +187,7 @@ public partial class _BitDropdownCustomDemo
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-            var items = data!.Items.Select(i => new BitDropdownCustom
+            var items = data!.Items!.Select(i => new BitDropdownCustom
             {
                 Text = i.Name,
                 Value = i.Id.ToString(),

@@ -70,14 +70,16 @@ public partial class _BitDropdownOptionDemo
 
     private BitDropdownNameSelectors<BitDropdownOption<string>, string> nameSelectors = new()
     {
-        DynamicValueGenerator = ((BitDropdownOption<string> item) => item.Text),
-        ValueSetter = ((BitDropdownOption<string> item, string? value) => item.Value = value),
-        TextSetter = ((string? text, BitDropdownOption<string> item) => item.Text = text)
+        DynamicValueGenerator = ((BitDropdownOption<string> item) => item.Text ?? ""),
+#pragma warning disable BL0005 // Component parameter should not be set outside of its component.
+        ValueSetter = (BitDropdownOption<string> item, string value) => item.Value = value,
+        TextSetter = (string text, BitDropdownOption<string> item) => item.Text = text
+#pragma warning restore BL0005 // Component parameter should not be set outside of its component.
     };
 
 
     private string controlledValue = "f-app";
-    private ICollection<string?> controlledValues = new[] { "f-app", "f-ban" };
+    private ICollection<string?> controlledValues = ["f-app", "f-ban"];
 
     private BitDropdownOption<string>? changedItem;
     private BitDropdownOption<string>[] changedItems = Array.Empty<BitDropdownOption<string>>();
@@ -86,7 +88,7 @@ public partial class _BitDropdownOptionDemo
     private BitDropdownOption<string>? selectedItem2;
 
     private string? clearValue = "f-app";
-    private ICollection<string?> clearValues = new[] { "f-app", "f-ban" };
+    private ICollection<string?> clearValues = ["f-app", "f-ban"];
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();

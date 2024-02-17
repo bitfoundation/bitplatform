@@ -284,7 +284,7 @@ public partial class BitTimePickerDemo
     private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);
     private FormValidationTimePickerModel formValidationTimePickerModel = new();
     private string successMessage = string.Empty;
-    private BitTimePicker timePicker;
+    private BitTimePicker timePicker = default!;
 
     private async Task OpenCallout()
     {

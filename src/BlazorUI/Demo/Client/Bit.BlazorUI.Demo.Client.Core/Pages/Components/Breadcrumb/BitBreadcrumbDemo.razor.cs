@@ -365,23 +365,23 @@ public partial class BitBreadcrumbDemo
 
     private void HandleOnItemClick(BitBreadcrumbItem item)
     {
-        BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithControlled.First(i => i.IsSelected).IsSelected = false;
         item.IsSelected = true;
     }
     private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
     {
-        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithCustomized.First(i => i.IsSelected).IsSelected = false;
         item.IsSelected = true;
     }
 
     private void HandleOnItemClick(PageInfoModel item)
     {
-        BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithControlled.First(i => i.IsSelected).IsSelected = false;
         item.IsCurrent = true;
     }
     private void HandleOnCustomizedItemClick(PageInfoModel item)
     {
-        BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
+        BreadcrumbItemsWithCustomized.First(i => i.IsSelected).IsSelected = false;
         item.IsCurrent = true;
     }
 

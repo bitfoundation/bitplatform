@@ -215,7 +215,7 @@
                       DefaultSelectedKey="Foo"
                       LinkSize="@BitPivotLinkSize.Large"
                       HeadersOnly="true"
-                      OnItemClick="@(item => SelectedKey = item.Key)">
+                      OnItemClick="@(item => SelectedKey = item?.Key)">
                 <BitPivotItem HeaderText="Foo" Key="Foo"></BitPivotItem>
                 <BitPivotItem HeaderText="Bar" Key="Bar"></BitPivotItem>
                 <BitPivotItem HeaderText="Bas" Key="Bas"></BitPivotItem>
@@ -563,8 +563,8 @@
 </ComponentDemo>
 
 @code {
-    private string SelectedKey = "Foo";
-    private BitPivotItem SelectedPivotItem;
+    private string? SelectedKey = "Foo";
+    private BitPivotItem SelectedPivotItem = default!;
     private string OverridePivotSelectedKey = "1";
     private BitVisibility PivotItemVisibility;
     private bool PivotEnabled = true;

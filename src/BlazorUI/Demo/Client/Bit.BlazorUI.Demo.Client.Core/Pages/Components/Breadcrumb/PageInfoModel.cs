@@ -2,13 +2,13 @@
 
 public class PageInfoModel
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = default!;
 
-    public string Address { get; set; }
+    public string Address { get; set; } = default!;
 
-    public string HtmlClass { get; set; }
+    public string HtmlClass { get; set; } = default!;
 
-    public string HtmlStyle { get; set; }
+    public string HtmlStyle { get; set; } = default!;
 
     public bool IsCurrent { get; set; }
 

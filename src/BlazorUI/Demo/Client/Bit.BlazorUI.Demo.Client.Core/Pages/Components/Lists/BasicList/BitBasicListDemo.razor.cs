@@ -107,7 +107,7 @@ public partial class BitBasicListDemo
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-                return BitBasicListItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+                return BitBasicListItemsProviderResult.From(data!.Items!, data!.TotalCount);
             }
             catch
             {
@@ -119,7 +119,7 @@ public partial class BitBasicListDemo
         {
             try
             {
-                var query = new Dictionary<string, object>()
+                var query = new Dictionary<string, object?>()
                 {
                     { "$top", req.Count},
                     { "$skip", req.StartIndex }
@@ -129,7 +129,7 @@ public partial class BitBasicListDemo
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultCategoryOrProductDto);
 
-                return BitBasicListItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+                return BitBasicListItemsProviderResult.From(data!.Items!, data!.TotalCount);
             }
             catch
             {
