@@ -6,7 +6,7 @@ public partial class _BitDropdownCustomDemo
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
 
-    private BitDropdownNameSelectors<BitDropdownCustom, string> nameSelectors = new() 
+    private BitDropdownNameSelectors<BitDropdownCustom, string> nameSelectors = new()
     {
         AriaLabel = { Selector = c => c.Label },
         Class = { Selector = c => c.CssClass },
@@ -21,7 +21,7 @@ public partial class _BitDropdownCustomDemo
         Value = { Selector = c => c.Value },
     };
 
-    private BitDropdownNameSelectors<BitDropdownCustom, string?> comboBoxNameSelectors = new()
+    private BitDropdownNameSelectors<BitDropdownCustom, string> comboBoxNameSelectors = new()
     {
         AriaLabel = { Selector = c => c.Label },
         Class = { Selector = c => c.CssClass },
@@ -34,14 +34,14 @@ public partial class _BitDropdownCustomDemo
         Text = { Selector = c => c.Text },
         Title = { Selector = c => c.Title },
         Value = { Selector = c => c.Value },
-        DynamicValueGenerator = ((BitDropdownCustom item) => item.Text),
-        ValueSetter = ((BitDropdownCustom item, string? value) => item.Value = value),
-        TextSetter = ((string text, BitDropdownCustom item) => item.Text = text)
+        DynamicValueGenerator = (BitDropdownCustom item) => item.Text ?? "",
+        ValueSetter = (BitDropdownCustom item, string value) => item.Value = value,
+        TextSetter = (string text, BitDropdownCustom item) => item.Text = text
     };
 
 
-    private List<BitDropdownCustom> GetBasicCustoms() => new()
-    {
+    private List<BitDropdownCustom> GetBasicCustoms() =>
+    [
         new() { Text = "Fruits", Type = BitDropdownItemType.Header },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
@@ -52,9 +52,10 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Broccoli", Value = "v-bro" },
         new() { Text = "Carrot", Value = "v-car" },
         new() { Text = "Lettuce", Value = "v-let" }
-    };
-    private List<BitDropdownCustom> GetDataCustoms() => new()
-    {
+    ];
+
+    private List<BitDropdownCustom> GetDataCustoms() =>
+    [
         new() { Type = BitDropdownItemType.Header, Text = "Items" },
         new() { Text = "Item a", Value = "A", Payload = new DropdownItemData { IconName = "Memo" } },
         new() { Text = "Item b", Value = "B", Payload = new DropdownItemData { IconName = "Print" } },
@@ -64,11 +65,13 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Item d", Value = "D", Payload = new DropdownItemData { IconName = "Train" } },
         new() { Text = "Item e", Value = "E", Payload = new DropdownItemData { IconName = "Repair" } },
         new() { Text = "Item f", Value = "F", Payload = new DropdownItemData { IconName = "Running" } }
-    };
+    ];
+
     private ICollection<BitDropdownCustom>? virtualizeCustoms1;
     private ICollection<BitDropdownCustom>? virtualizeCustoms2;
-    private List<BitDropdownCustom> GetRtlCustoms() => new()
-    {
+
+    private List<BitDropdownCustom> GetRtlCustoms() =>
+    [
         new() { Type = BitDropdownItemType.Header, Text = "میوه ها" },
         new() { Text = "سیب", Value = "f-app" },
         new() { Text = "موز", Value = "f-ban" },
@@ -79,7 +82,7 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "کلم بروكلی", Value = "v-bro" },
         new() { Text = "هویج", Value = "v-car" },
         new() { Text = "کاهو", Value = "v-let" }
-    };
+    ];
     private ICollection<BitDropdownCustom>? dropDirectionCustoms;
     private List<BitDropdownCustom> GetStyleClassCustoms() => new()
     {
@@ -125,8 +128,8 @@ public partial class _BitDropdownCustomDemo
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
-    private string? comboBoxValue;
-    private ICollection<string?> comboBoxValues = [];
+    private string comboBoxValue = default!;
+    private ICollection<string> comboBoxValues = [];
 
     protected override void OnInitialized()
     {

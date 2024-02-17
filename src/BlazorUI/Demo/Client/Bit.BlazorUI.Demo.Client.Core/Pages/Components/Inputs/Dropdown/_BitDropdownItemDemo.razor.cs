@@ -19,6 +19,7 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Carrot", Value = "v-car" },
         new() { Text = "Lettuce", Value = "v-let" }
     ];
+
     private List<BitDropdownItem<string>> GetDataItems() =>
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Items" },
@@ -31,8 +32,10 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Item e", Value = "E", Data = new DropdownItemData { IconName = "Repair" } },
         new() { Text = "Item f", Value = "F", Data = new DropdownItemData { IconName = "Running" } }
     ];
+
     private ICollection<BitDropdownItem<string>>? virtualizeItems1;
     private ICollection<BitDropdownItem<string>>? virtualizeItems2;
+
     private List<BitDropdownItem<string>> GetRtlItems() =>
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "میوه ها" },
@@ -46,7 +49,9 @@ public partial class _BitDropdownItemDemo
         new() { Text = "هویج", Value = "v-car" },
         new() { Text = "کاهو", Value = "v-let" }
     ];
+
     private ICollection<BitDropdownItem<string>>? dropDirectionItems;
+
     private List<BitDropdownItem<string>> GetStyleClassItems() =>
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits", Style = "background-color:darkred" },
@@ -60,6 +65,7 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Carrot", Value = "v-car", Class = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", Class = "custom-veg" }
     ];
+
     private List<BitDropdownItem<string>> comboBoxItems =
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
@@ -76,7 +82,7 @@ public partial class _BitDropdownItemDemo
 
 
     private string controlledValue = "f-app";
-    private ICollection<string?> controlledValues = ["f-app", "f-ban"];
+    private ICollection<string> controlledValues = ["f-app", "f-ban"];
 
     private BitDropdownItem<string>? changedItem;
     private BitDropdownItem<string>[] changedItems = Array.Empty<BitDropdownItem<string>>();
@@ -90,8 +96,8 @@ public partial class _BitDropdownItemDemo
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
-    private string? comboBoxValue;
-    private ICollection<string?> comboBoxValues = [];
+    private string comboBoxValue = default!;
+    private ICollection<string> comboBoxValues = [];
 
     protected override void OnInitialized()
     {
