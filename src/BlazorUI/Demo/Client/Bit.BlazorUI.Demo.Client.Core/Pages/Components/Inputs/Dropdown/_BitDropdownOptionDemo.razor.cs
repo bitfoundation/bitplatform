@@ -68,15 +68,6 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Lettuce", Value = "v-let" }
     };
 
-    private BitDropdownNameSelectors<BitDropdownOption<string>, string> nameSelectors = new()
-    {
-        DynamicValueGenerator = ((BitDropdownOption<string> item) => item.Text ?? ""),
-#pragma warning disable BL0005 // Component parameter should not be set outside of its component.
-        ValueSetter = (BitDropdownOption<string> item, string value) => item.Value = value,
-        TextSetter = (string text, BitDropdownOption<string> item) => item.Text = text
-#pragma warning restore BL0005 // Component parameter should not be set outside of its component.
-    };
-
 
     private string controlledValue = "f-app";
     private ICollection<string?> controlledValues = ["f-app", "f-ban"];

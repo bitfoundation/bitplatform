@@ -6,7 +6,7 @@ public partial class _BitDropdownCustomDemo
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
 
-    private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new() 
+    private BitDropdownNameSelectors<BitDropdownCustom, string> nameSelectors = new() 
     {
         AriaLabel = { Selector = c => c.Label },
         Class = { Selector = c => c.CssClass },
@@ -110,8 +110,8 @@ public partial class _BitDropdownCustomDemo
 
 
 
-    private string? controlledValue = "f-app";
-    private ICollection<string?> controlledValues = new[] { "f-app", "f-ban" };
+    private string controlledValue = "f-app";
+    private ICollection<string> controlledValues = ["f-app", "f-ban"];
 
     private BitDropdownCustom? changedItem;
     private BitDropdownCustom[] changedItems = Array.Empty<BitDropdownCustom>();
@@ -119,8 +119,8 @@ public partial class _BitDropdownCustomDemo
     private BitDropdownCustom? selectedItem1;
     private BitDropdownCustom? selectedItem2;
 
-    private string? clearValue = "f-app";
-    private ICollection<string?> clearValues = new[] { "f-app", "f-ban" };
+    private string clearValue = "f-app";
+    private ICollection<string> clearValues = ["f-app", "f-ban"];
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();

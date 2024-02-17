@@ -667,13 +667,11 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
 
     private readonly string example11RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValue""
+             Combo Chips Dynamic
              Label=""Single select combo box""
              Placeholder=""Select an option""
              NameSelectors=""nameSelectors""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
-             Combo
-             Chips
-             Dynamic
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
     {
@@ -683,14 +681,12 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
 <BitLabel>Value: @comboBoxValue</BitLabel>
 
 <BitDropdown @bind-Values=""comboBoxValues""
+             Combo Chips Dynamic
              Label=""Multi select combo box""
              Placeholder=""Select options""
              IsMultiSelect=""true""
              NameSelectors=""nameSelectors""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
-             Combo
-             Chips
-             Dynamic
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
     {
