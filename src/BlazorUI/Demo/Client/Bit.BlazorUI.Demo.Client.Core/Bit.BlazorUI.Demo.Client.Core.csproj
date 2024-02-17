@@ -6,7 +6,6 @@
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
-        <NoWarn>BL0007;CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
