@@ -39,7 +39,7 @@
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
                         <pre class="code-box">
-                            @cookieExampleCode
+                            @getSetExampleCode
                             </pre>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
@@ -48,16 +48,16 @@
                         <br />
                         <BitTextField @bind-Value="newCookieValue" Label="Cookie value" Style="max-width: 18.75rem;" />
                         <br />
-                        <BitButton OnClick="@SetCookie">SetCookie</BitButton>
+                        <BitButton OnClick="@SetCookie">Set</BitButton>
                         <br />
                         <br />
                         <br />
-                        <BitTextField @bind-Value="currentCookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
+                        <BitTextField @bind-Value="getCookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
                         <br />
-                        <BitButton OnClick="@GetCookie">GetCookie</BitButton>
+                        <BitButton OnClick="@GetCookie">Get</BitButton>
                         <br />
                         <br />
-                        <div>Cookie value: @currentCookieValue</div>
+                        <div>Cookie value: @getCookieValue</div>
                         <br />
                     </BitPivotItem>
                 </BitPivot>
@@ -71,15 +71,39 @@
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
                         <pre class="code-box">
-                            @cookiesExampleCode
+                            @getAllExampleCode
                             </pre>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
-                        <BitButton OnClick="@GetAllCookies">GetAllCookies</BitButton>
+                        <BitButton OnClick="@GetAllCookies">GetAll</BitButton>
                         <br />
                         <br />
-                        <div>Cookies: @currentCookies</div>
+                        <div>Cookies: @getAllCookieValues</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetValue</b>: <br />
+            Returns the cookie value by providing its name.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @getValueExampleCode
+                            </pre>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="getValueCookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@GetValue">GetValue</BitButton>
+                        <br />
+                        <br />
+                        <div>Cookie value: @getValueCookieValue</div>
                         <br />
                     </BitPivotItem>
                 </BitPivot>
@@ -98,9 +122,9 @@
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
-                        <BitTextField @bind-Value="cookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
+                        <BitTextField @bind-Value="removeCookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
                         <br />
-                        <BitButton OnClick="@RemoveCookie">RemoveCookie</BitButton>
+                        <BitButton OnClick="@RemoveCookie">Remove</BitButton>
                         <br />
                     </BitPivotItem>
                 </BitPivot>
