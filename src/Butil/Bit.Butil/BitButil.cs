@@ -19,6 +19,7 @@ public static class BitButil
         services.AddTransient<Cookie>();
         services.AddTransient<Crypto>();
         services.AddTransient<Clipboard>();
+        services.AddTransient<VisualViewport>();
 
         return services;
     }
