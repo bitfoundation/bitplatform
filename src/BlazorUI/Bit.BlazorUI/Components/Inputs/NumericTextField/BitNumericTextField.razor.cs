@@ -12,6 +12,7 @@ public partial class BitNumericTextField<TValue>
     private TValue? step;
     private TValue? min;
     private TValue? max;
+    private bool required;
     private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Top;
 
     private double _internalStep;
@@ -268,6 +269,22 @@ public partial class BitNumericTextField<TValue>
     /// </summary>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
+    /// <summary>
+    /// Whether the associated input is required or not, add an asterisk "*" to its label.
+    /// </summary>
+    [Parameter]
+    public bool Required
+    {
+        get => required;
+        set
+        {
+            if (required == value) return;
+
+            required = value;
+            ClassBuilder.Reset();
+        }
+    }
+
 
 
     protected override string RootElementClass => "bit-ntf";
@@ -279,6 +296,10 @@ public partial class BitNumericTextField<TValue>
         ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
+
+        ClassBuilder.Register(() => IsEnabled && Required ? $"{RootElementClass}-req" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? $"{RootElementClass}-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
