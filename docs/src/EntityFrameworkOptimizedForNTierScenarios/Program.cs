@@ -66,7 +66,7 @@ namespace EntityFrameworkOptimizedForNTierScenarios
     public class CustomersDbContextForSharpRepository : DbContext
     {
         public CustomersDbContextForSharpRepository()
-            : base(new SqlConnection("Data Source=.;Initial Catalog=CustomersDb;Integrated Security=True"), contextOwnsConnection: true)
+            : base(new SqlConnection("Data Source=(localdb)\\mssqllocaldb;Initial Catalog=CustomersDb;Integrated Security=True"), contextOwnsConnection: true)
         {
             Configuration.ProxyCreationEnabled = false;
         }
@@ -103,13 +103,13 @@ namespace EntityFrameworkOptimizedForNTierScenarios
     public class CustomersDbContextForBitRepository : EfDbContextBase
     {
         public CustomersDbContextForBitRepository()
-            : base(new SqlConnection("Data Source=.;Initial Catalog=CustomersDb;Integrated Security=True"), contextOwnsConnection: true)
+            : base(new SqlConnection("Data Source=(localdb)\\mssqllocaldb;Initial Catalog=CustomersDb;Integrated Security=True"), contextOwnsConnection: true)
         {
 
         }
 
         public CustomersDbContextForBitRepository(IDbConnectionProvider dbConnectionProvider)
-            : base("Data Source=.;Initial Catalog=CustomersDb;Integrated Security=True", dbConnectionProvider)
+            : base("Data Source=(localdb)\\mssqllocaldb;Initial Catalog=CustomersDb;Integrated Security=True", dbConnectionProvider)
         {
 
         }

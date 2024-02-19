@@ -8,10 +8,10 @@
       "Version": "1"
     },
     "Configs": [
-      {
-        "Key": "AppConnectionString",
-        "Value": "Data Source=.;Initial Catalog=MyAppDb;Integrated Security=True;TrustServerCertificate=True;"
-      }
+        {
+            "Key": "AppConnectionString",
+            "Value": "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=MyAppDb;Integrated Security=True;TrustServerCertificate=True;"
+        }
     ]
   }
 ]

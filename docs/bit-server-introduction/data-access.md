@@ -49,7 +49,7 @@ See environments.json file
 "Configs": [
     {
         "Key": "AppConnectionString",
-        "Value": "Data Source=.;Initial Catalog=MyAppDb;Integrated Security=True;"
+        "Value": "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=MyAppDb;Integrated Security=True;"
     }
 ]
 ```
