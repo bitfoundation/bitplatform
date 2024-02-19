@@ -1,0 +1,35 @@
+﻿@page "/visualViewport"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.VisualViewport visualViewport
+
+<PageTitle>VisualViewport Samples</PageTitle>
+
+<h1>VisualViewport</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.VisualViewport visualViewport
+
+@@code {
+    ...
+    var offsetTop = await visualViewport.GetOffsetTop();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking</h3>
+
+<hr />
+<br />
+
+<button @onclick="GetOffsetLeft">Get OffsetLeft</button>
+
+@code {
+    private async Task GetOffsetLeft()
+    {
+        var offsetLeft = await visualViewport.GetOffsetLeft();
+        await console.Log("OffsetLeft:", offsetLeft);
+    }
+}
