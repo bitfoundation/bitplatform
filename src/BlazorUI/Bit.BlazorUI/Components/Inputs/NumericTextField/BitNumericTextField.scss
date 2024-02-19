@@ -208,3 +208,22 @@
         padding-bottom: spacing(0.125);
     }
 }
+
+.bit-ntf-req {
+    .bit-ntf-lbl::after {
+        content: "*";
+        color: $color-state-required;
+        margin-left: spacing(0.625);
+    }
+}
+
+.bit-ntf-rnl {
+    .bit-ntf-wrp::before {
+        content: "*";
+        position: absolute;
+        top: spacing(-0.625);
+        right: spacing(-1.25);
+        color: $color-state-required;
+        font-size: spacing(1.75);
+    }
+}
