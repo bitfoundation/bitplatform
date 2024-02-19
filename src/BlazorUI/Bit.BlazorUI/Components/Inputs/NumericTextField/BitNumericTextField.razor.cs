@@ -12,7 +12,7 @@ public partial class BitNumericTextField<TValue>
     private TValue? step;
     private TValue? min;
     private TValue? max;
-    private bool isRequired;
+    private bool required;
     private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Top;
 
     private double _internalStep;
@@ -273,14 +273,14 @@ public partial class BitNumericTextField<TValue>
     /// Whether the associated input is required or not, add an asterisk "*" to its label.
     /// </summary>
     [Parameter]
-    public bool IsRequired
+    public bool Required
     {
-        get => isRequired;
+        get => required;
         set
         {
-            if (isRequired == value) return;
+            if (required == value) return;
 
-            isRequired = value;
+            required = value;
             ClassBuilder.Reset();
         }
     }
@@ -297,9 +297,9 @@ public partial class BitNumericTextField<TValue>
 
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
 
-        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? $"{RootElementClass}-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && IsRequired && Label.HasNoValue() ? $"{RootElementClass}-rnl" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? $"{RootElementClass}-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

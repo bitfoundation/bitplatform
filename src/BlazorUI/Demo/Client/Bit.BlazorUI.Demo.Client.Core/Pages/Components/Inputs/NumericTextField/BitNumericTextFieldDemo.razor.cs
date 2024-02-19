@@ -99,7 +99,7 @@ public partial class BitNumericTextFieldDemo
         },
         new()
         {
-            Name = "IsRequired",
+            Name = "Required",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
@@ -439,7 +439,7 @@ public partial class BitNumericTextFieldDemo
 <BitNumericTextField Label=""Placeholder"" DefaultValue=""1"" Placeholder=""Enter a number..."" />
 <BitNumericTextField Label=""Step & Buttons"" Step=""1"" ShowButtons=""true"" />
 <BitNumericTextField Label=""Min & Max"" Step=""1"" Min=""-10"" Max=""10"" />
-<BitNumericTextField Label=""IsRequired"" TValue=""int"" IsRequired=""true"" />";
+<BitNumericTextField Label=""Required"" TValue=""int"" Required />";
 
     private readonly string example2RazorCode = @"
 <BitNumericTextField Label=""Label Top"" Step=""1"" LabelPosition=""BitNumericTextFieldLabelPosition.Top"" />
