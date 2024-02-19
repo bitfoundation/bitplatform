@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
-using System.Collections.Generic;
 
 namespace Bit.Butil;
 
@@ -174,17 +174,17 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
     {
         var toAwait = new List<Task>();
 
-        var t1 = RemoveAllResizes();
-        var t2 = RemoveAllScrolls();
+        var resizeValueTask = RemoveAllResizes();
+        var scrollValueTask = RemoveAllScrolls();
 
-        if (t1.IsCompleted is false)
+        if (resizeValueTask.IsCompleted is false)
         {
-            toAwait.Add(t1.AsTask());
+            toAwait.Add(resizeValueTask.AsTask());
         }
 
-        if (t2.IsCompleted is false)
+        if (scrollValueTask.IsCompleted is false)
         {
-            toAwait.Add(t2.AsTask());
+            toAwait.Add(scrollValueTask.AsTask());
         }
 
         await Task.WhenAll(toAwait);
