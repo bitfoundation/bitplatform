@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
+using System.Collections.Generic;
 
 namespace Bit.Butil;
 
@@ -15,8 +16,10 @@ namespace Bit.Butil;
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport</see>
 /// </summary>
 /// <param name="js"></param>
-public class VisualViewport(IJSRuntime js)
+public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 {
+    private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
+
     /// <summary>
     /// Returns the offset of the left edge of the visual viewport from the left edge of 
     /// the layout viewport in CSS pixels, or 0 if current document is not fully active.
@@ -84,4 +87,106 @@ public class VisualViewport(IJSRuntime js)
     /// <returns></returns>
     public async Task<double> GetScale()
         => await js.InvokeAsync<double>("BitButil.visualViewport.scale");
+
+    /// <summary>
+    /// Fired when the visual viewport is resized.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event</see>
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VisualViewportListenersManager))]
+    public async ValueTask<Guid> AddResize(Action handler)
+    {
+        var listenerId = VisualViewportListenersManager.AddListener(handler);
+        _handlers.TryAdd(listenerId, handler);
+
+        await js.InvokeVoidAsync("BitButil.visualViewport.addResize", VisualViewportListenersManager.InvokeMethodName, listenerId);
+
+        return listenerId;
+    }
+    public async ValueTask RemoveResize(Guid id)
+    {
+        VisualViewportListenersManager.RemoveListeners([id]);
+
+        await RemoveResize([id]);
+    }
+    private async ValueTask RemoveResize(Guid[] ids)
+    {
+        foreach (var id in ids)
+        {
+            _handlers.TryRemove(id, out _);
+        }
+
+        await js.InvokeVoidAsync("BitButil.visualViewport.removeResize", ids);
+    }
+    public async ValueTask RemoveAllResizes()
+    {
+        var ids = _handlers.Select(h => h.Key).ToArray();
+
+        _handlers.Clear();
+
+        VisualViewportListenersManager.RemoveListeners(ids);
+
+        await js.InvokeVoidAsync("BitButil.visualViewport.removeResize", ids);
+    }
+
+    /// <summary>
+    /// Fired when the visual viewport is scrolled.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event</see>
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(VisualViewportListenersManager))]
+    public async ValueTask<Guid> AddScroll(Action handler)
+    {
+        var listenerId = VisualViewportListenersManager.AddListener(handler);
+        _handlers.TryAdd(listenerId, handler);
+
+        await js.InvokeVoidAsync("BitButil.visualViewport.addScroll", VisualViewportListenersManager.InvokeMethodName, listenerId);
+
+        return listenerId;
+    }
+    public async ValueTask RemoveScroll(Guid id)
+    {
+        VisualViewportListenersManager.RemoveListeners([id]);
+
+        await RemoveScroll([id]);
+    }
+    private async ValueTask RemoveScroll(Guid[] ids)
+    {
+        foreach (var id in ids)
+        {
+            _handlers.TryRemove(id, out _);
+        }
+
+        await js.InvokeVoidAsync("BitButil.visualViewport.removeScroll", ids);
+    }
+    public async ValueTask RemoveAllScrolls()
+    {
+        var ids = _handlers.Select(h => h.Key).ToArray();
+
+        _handlers.Clear();
+
+        VisualViewportListenersManager.RemoveListeners(ids);
+
+        await js.InvokeVoidAsync("BitButil.visualViewport.removeScroll", ids);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        var toAwait = new List<Task>();
+
+        var t1 = RemoveAllResizes();
+        var t2 = RemoveAllScrolls();
+
+        if (t1.IsCompleted is false)
+        {
+            toAwait.Add(t1.AsTask());
+        }
+
+        if (t2.IsCompleted is false)
+        {
+            toAwait.Add(t2.AsTask());
+        }
+
+        await Task.WhenAll(toAwait);
+    }
 }
