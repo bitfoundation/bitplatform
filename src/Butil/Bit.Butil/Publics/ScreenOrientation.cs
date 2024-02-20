@@ -12,7 +12,7 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation</see>
 /// </summary>
-public class ScreenOrientation(IJSRuntime js): IAsyncDisposable
+public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action<OrientationState>> _handlers = new();
 
@@ -51,7 +51,7 @@ public class ScreenOrientation(IJSRuntime js): IAsyncDisposable
     /// </summary>
     public async Task Lock(OrientationLockType lockType)
     {
-        var type = lockType switch 
+        var type = lockType switch
         {
             OrientationLockType.Any => "any",
             OrientationLockType.Natural => "natural",
