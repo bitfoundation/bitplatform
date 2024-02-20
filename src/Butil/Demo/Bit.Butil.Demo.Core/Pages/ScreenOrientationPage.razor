@@ -1,0 +1,35 @@
+﻿@page "/screenOrientation"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.ScreenOrientation screenOrientation
+
+<PageTitle>ScreenOrientation Samples</PageTitle>
+
+<h1>ScreenOrientation</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.ScreenOrientation screenOrientation
+
+@@code {
+    ...
+    var angle = await screenOrientation.GetAngle();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking</h3>
+
+<hr />
+<br />
+
+<button @onclick="GetAngle">Get screen angle</button>
+
+@code {
+    private async Task GetAngle()
+    {
+        var angle = await screenOrientation.GetAngle();
+        await console.Log("Screen Angle:", angle);
+    }
+}
