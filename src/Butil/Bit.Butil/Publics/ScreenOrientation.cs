@@ -41,7 +41,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle</see>
     /// </summary>
     public async Task<ushort> GetAngle()
-        => await js.InvokeAsync<ushort>("Bit.Butil.screenOrientation.angle");
+        => await js.InvokeAsync<ushort>("BitButil.screenOrientation.angle");
 
     /// <summary>
     /// Locks the orientation of the containing document to the specified orientation.
