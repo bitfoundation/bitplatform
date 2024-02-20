@@ -7,7 +7,7 @@ namespace Bit.Butil;
 
 public static class VisualViewportListenersManager
 {
-    internal const string InvokeMethodName = "InvokeVisualViewportPopState";
+    internal const string InvokeMethodName = "InvokeVisualViewport";
 
     private static readonly ConcurrentDictionary<Guid, Listener> Listeners = [];
 
