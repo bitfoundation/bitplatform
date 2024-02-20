@@ -103,6 +103,24 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         return listenerId;
     }
+    /// <summary>
+    /// Fired when the visual viewport is resized.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event</see>
+    /// </summary>
+    public async Task<Guid[]> RemoveResize(Action handler)
+    {
+        var ids = VisualViewportListenersManager.RemoveListener(handler);
+
+        await RemoveResize(ids);
+
+        return ids;
+    }
+    /// <summary>
+    /// Fired when the visual viewport is resized.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event</see>
+    /// </summary>
     public async ValueTask RemoveResize(Guid id)
     {
         VisualViewportListenersManager.RemoveListeners([id]);
@@ -144,6 +162,24 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         return listenerId;
     }
+    /// <summary>
+    /// Fired when the visual viewport is scrolled.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event</see>
+    /// </summary>
+    public async Task<Guid[]> RemoveScroll(Action handler)
+    {
+        var ids = VisualViewportListenersManager.RemoveListener(handler);
+
+        await RemoveScroll(ids);
+
+        return ids;
+    }
+    /// <summary>
+    /// Fired when the visual viewport is scrolled.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event</see>
+    /// </summary>
     public async ValueTask RemoveScroll(Guid id)
     {
         VisualViewportListenersManager.RemoveListeners([id]);
