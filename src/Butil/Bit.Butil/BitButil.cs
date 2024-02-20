@@ -20,6 +20,7 @@ public static class BitButil
         services.AddTransient<Crypto>();
         services.AddTransient<Clipboard>();
         services.AddTransient<VisualViewport>();
+        services.AddTransient<ScreenOrientation>();
 
         return services;
     }
