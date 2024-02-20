@@ -13,7 +13,7 @@ var BitButil = BitButil || {};
 
     function addChange(methodName, listenerId) {
         const handler = e => {
-            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId);
+            DotNet.invokeMethodAsync('Bit.Butil', methodName, listenerId, { angle: e.target.angle, type: e.target.type });
         };
 
         _handlers[listenerId] = handler;
