@@ -1,15 +1,20 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.ComponentModel;
 
-internal static class StringExtensions
+namespace Bit.BlazorUI;
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StringExtensions
 {
-    internal static bool HasValue(this string? value, bool ignoreWhiteSpace = true)
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static bool HasValue(this string? value, bool ignoreWhiteSpace = true)
     {
         return ignoreWhiteSpace
             ? string.IsNullOrWhiteSpace(value) is false
             : string.IsNullOrEmpty(value) is false;
     }
 
-    internal static bool HasNoValue(this string? value, bool ignoreWhiteSpace = true)
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static bool HasNoValue(this string? value, bool ignoreWhiteSpace = true)
     {
         return ignoreWhiteSpace
             ? string.IsNullOrWhiteSpace(value)

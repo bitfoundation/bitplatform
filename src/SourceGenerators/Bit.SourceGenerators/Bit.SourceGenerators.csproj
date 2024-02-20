@@ -8,6 +8,8 @@
         <IsRoslynComponent>true</IsRoslynComponent>
         <PackageTags>$(PackageTags) Source-Generators</PackageTags>
         <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+        <SignAssembly>True</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>

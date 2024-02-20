@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
-[assembly: InternalsVisibleTo("Bit.BlazorUI.Demo.Client.Core")]
 namespace Bit.BlazorUI;
 
-internal static class EnumExtensions
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class EnumExtensions
 {
-    internal static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true, bool toLowerDisplayName = false)
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true, bool toLowerDisplayName = false)
     {
         if (enumValue is null) return null;
 

@@ -1,10 +1,9 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Bit.BlazorUI.Tests")]
 namespace Bit.BlazorUI;
 
-internal class BitInternalColor
+[EditorBrowsable(EditorBrowsableState.Never)]
+public class BitInternalColor
 {
     private string? _hex;
     private string? _rgb;
