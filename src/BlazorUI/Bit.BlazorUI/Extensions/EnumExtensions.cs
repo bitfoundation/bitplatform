@@ -8,7 +8,7 @@ namespace Bit.BlazorUI;
 
 internal static class EnumExtensions
 {
-    public static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true, bool toLowerDisplayName = false)
+    internal static string? GetDisplayName(this Enum enumValue, bool showNameIfHasNoDisplayName = true, bool toLowerDisplayName = false)
     {
         if (enumValue is null) return null;
 

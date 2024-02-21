@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System;
+
+namespace Bit.BlazorUI;
 
 internal class BitInternalColor
 {
