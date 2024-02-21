@@ -1,4 +1,4 @@
-﻿window['bit-bswup version'] = '8.7.6-pre-05';
+﻿window['bit-bswup version'] = '8.7.6-pre-06';
 
 declare const Blazor: any;
 
