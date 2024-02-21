@@ -4,8 +4,6 @@
         <LangVersion>11.0</LangVersion>
         <Nullable>enable</Nullable>
         <IsRoslynComponent>true</IsRoslynComponent>
-        <SignAssembly>True</SignAssembly>
-        <AssemblyOriginatorKeyFile>..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>
