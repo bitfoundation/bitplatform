@@ -33,9 +33,9 @@ jobs:
       with:
         node-version: 18
 
-    # - name: Delete AssemblyOriginatorKeyFile.snk
-    #   run: |
-    #     rm src/AssemblyOriginatorKeyFile.snk
+    - name: Delete AssemblyOriginatorKeyFile.snk
+      run: |
+        rm src/AssemblyOriginatorKeyFile.snk
 
     - name: Extract strong sign certificate from env
       uses: timheuer/base64-to-file@v1
