@@ -42,6 +42,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Include="..\..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />

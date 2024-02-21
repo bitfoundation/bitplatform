@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.ComponentModel.DataAnnotations;
+using System;
+using System.Linq;
 
-[assembly: InternalsVisibleTo("Bit.BlazorUI.Demo.Client.Core")]
 namespace Bit.BlazorUI;
 
 internal static class EnumExtensions
