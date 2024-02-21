@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+﻿namespace System;
 
 internal static class StringExtensions
 {
