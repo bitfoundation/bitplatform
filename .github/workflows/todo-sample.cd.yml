@@ -236,6 +236,26 @@ jobs:
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
+    - name: Delete App Icon
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
+
+    - name: Extract App Icon from env
+      uses: timheuer/base64-to-file@v1
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
+          fileName: 'appicon.svg'
+          encodedString: ${{ vars.TODO_ICON }}
+
+    - name: Delete App Splash Screen
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
+
+    - name: Extract App Splash Screen from env
+      uses: timheuer/base64-to-file@v1
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
+          fileName: 'splash.svg'
+          encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
+
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
   

@@ -6,7 +6,10 @@ public partial class MainPage
     private readonly IExceptionHandler exceptionHandler;
     private readonly IBitDeviceCoordinator deviceCoordinator;
 
-    public MainPage(IExceptionHandler exceptionHandler, IBitDeviceCoordinator deviceCoordinator)
+    public MainPage(IExceptionHandler exceptionHandler,
+        IBitDeviceCoordinator deviceCoordinator,
+        IPubSubService pubSubService,
+        IStorageService storageService)
     {
         this.exceptionHandler = exceptionHandler;
         this.deviceCoordinator = deviceCoordinator;
@@ -15,6 +18,20 @@ public partial class MainPage
 
         SetupBlazorWebView();
         SetupStatusBar();
+
+        pubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async _ =>
+        {
+            // It's an opportune moment to request a store review. (:
+
+            await Dispatcher.DispatchAsync(async () =>
+            {
+                if ((await storageService.GetItem("StoreReviewRequested")) is not "true")
+                {
+                    await storageService.SetItem("StoreReviewRequested", "true");
+                    await Plugin.StoreReview.CrossStoreReview.Current.RequestReview(testMode: BuildConfiguration.IsDebug());
+                }
+            });
+        });
     }
 
     private void SetupBlazorWebView()
