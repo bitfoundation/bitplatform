@@ -104,6 +104,7 @@
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.7" />
         <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.7" />
+        <PackageReference Include="Plugin.StoreReview" Version="6.0.0" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing
