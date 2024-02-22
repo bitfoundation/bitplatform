@@ -764,6 +764,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New version is available.
+        /// </summary>
+        public static string NewVersionIsAvailable {
+            get {
+                return ResourceManager.GetString("NewVersionIsAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         public static string No {
@@ -1309,6 +1318,15 @@ namespace Boilerplate.Shared.Resources {
         public static string UpdateConcurrencyException {
             get {
                 return ResourceManager.GetString("UpdateConcurrencyException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Would you like to update to the new version?.
+        /// </summary>
+        public static string UpdateToNewVersion {
+            get {
+                return ResourceManager.GetString("UpdateToNewVersion", resourceCulture);
             }
         }
         

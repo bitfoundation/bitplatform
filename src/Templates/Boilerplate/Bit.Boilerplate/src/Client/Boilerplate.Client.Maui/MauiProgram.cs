@@ -1,5 +1,6 @@
 ﻿//-:cnd:noEmit
 using Boilerplate.Client.Core;
+using Maui.AppStores;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Boilerplate.Client.Maui;
@@ -14,6 +15,7 @@ public static partial class MauiProgram
 
         builder
             .UseMauiApp<App>()
+            .UseAppStoreInfo()
             .Configuration.AddClientConfigurations();
 
         builder.ConfigureServices();

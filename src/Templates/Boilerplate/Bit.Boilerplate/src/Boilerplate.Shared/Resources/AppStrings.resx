@@ -451,6 +451,12 @@ Please confirm your email by clicking on the link.</value>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
+    <data name="NewVersionIsAvailable" xml:space="preserve">
+    <value>New version is available</value>
+  </data>
+    <data name="UpdateToNewVersion" xml:space="preserve">
+    <value>Would you like to update to the new version?</value>
+  </data>
     <!--#if (sample == "Todo") -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Add a todo</value>
