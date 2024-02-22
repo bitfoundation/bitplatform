@@ -117,4 +117,5 @@
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
     </PropertyGroup>
+
 </Project>
