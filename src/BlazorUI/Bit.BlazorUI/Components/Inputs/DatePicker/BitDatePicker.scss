@@ -498,7 +498,8 @@
         pointer-events: none;
         background-color: transparent;
 
-        .bit-dtp-gti {
+        .bit-dtp-gti,
+        .bit-icon {
             color: $color-foreground-disabled;
         }
     }
