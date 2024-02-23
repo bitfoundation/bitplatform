@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(api)' == 'true' OR '$(api)' == '' ">
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.5.0" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.6.0" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.2" />
@@ -49,7 +49,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.Network" Version="8.0.0" />
-        <PackageReference Include="Riok.Mapperly" Version="3.3.0" />
+        <PackageReference Include="Riok.Mapperly" Version="3.4.0" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
