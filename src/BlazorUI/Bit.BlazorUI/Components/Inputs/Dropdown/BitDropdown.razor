@@ -40,6 +40,19 @@
          aria-labelledby="@GetDropdownAriaLabelledby"
          aria-controls="@(IsOpen ? _calloutId : null)">
 
+        @if (PrefixTemplate is not null)
+        {
+            @PrefixTemplate
+        }
+        else if (Prefix.HasValue())
+        {
+            <span style="@Styles?.PrefixContainer" class="bit-drp-pre @Classes?.PrefixContainer">
+                <span style="@Styles?.Prefix" class="@Classes?.Prefix">
+                    @Prefix
+                </span>
+            </span>
+        }
+
         <span id="@_dropdownTextContainerId"
               style="@Styles?.TextContainer"
               class="bit-drp-tcn @Classes?.TextContainer"
@@ -47,7 +60,7 @@
               aria-atomic="true"
               aria-invalid="false">
 
-            @{
+           @{
                 var text = GetText();
             }
 
@@ -99,7 +112,7 @@
             }
         </span>
 
-        @if (IsEnabled && ShowClearButton && SelectedItems.Count > 0)
+        @if (IsEnabled && ShowClearButton && _selectedItems.Count > 0)
         {
             <button @onclick="HandleOnClearClick" @onclick:stopPropagation
                     type="button"
@@ -121,6 +134,19 @@
                    class="bit-icon bit-icon--@CaretDownIconName @Classes?.CaretDownIcon" />
             }
         </span>
+
+        @if (SuffixTemplate is not null)
+        {
+            @SuffixTemplate
+        }
+        else if (Suffix.HasValue())
+        {
+            <span style="@Styles?.SuffixContainer" class="bit-drp-suf @Classes?.SuffixContainer">
+                <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                    @Suffix
+                </span>
+            </span>
+        }
     </div>
 
     <div @onclick="CloseCallout"
@@ -256,7 +282,7 @@
     </div>
 
     <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
-        @foreach (var item in SelectedItems)
+        @foreach (var item in _selectedItems)
         {
             <option value="@GetValue(item)" selected>@GetText(item)</option>
         }

@@ -248,15 +248,15 @@ public partial class BitSearchBoxDemo
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
-    private string TwoWaySearchValue;
-    private string OnChangeSearchValue;
-    private string OnSearchValue;
-    private string SearchValue;
-    private string SearchValueWithSuggestFilterFunction;
-    private string SearchValueWithSearchDelay;
-    private string SearchValueWithMinSearchLength;
-    private string SearchValueWithMaxSuggestedItems;
-    private string ItemsProviderSearchValue;
+    private string? TwoWaySearchValue;
+    private string? OnChangeSearchValue;
+    private string? OnSearchValue;
+    private string? SearchValue;
+    private string? SearchValueWithSuggestFilterFunction;
+    private string? SearchValueWithSearchDelay;
+    private string? SearchValueWithMinSearchLength;
+    private string? SearchValueWithMaxSuggestedItems;
+    private string? ItemsProviderSearchValue;
 
     private readonly ValidationSearchBoxModel ValidationSearchBoxModel = new();
 
@@ -301,7 +301,7 @@ public partial class BitSearchBoxDemo
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-            return data!.Items.Select(i => i.Name).ToList();
+            return data!.Items!.Select(i => i.Name)!.ToList()!;
         }
         catch
         {

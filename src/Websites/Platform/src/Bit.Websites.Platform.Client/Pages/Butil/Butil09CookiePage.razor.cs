@@ -6,12 +6,15 @@ public partial class Butil09CookiePage
 {
     private string? newCookieName;
     private string? newCookieValue;
-    private string? currentCookieName;
-    private string? currentCookieValue;
+    private string? getCookieName;
+    private string? getCookieValue;
 
-    private string? currentCookies;
+    private string? getAllCookieValues;
 
-    private string? cookieName;
+    private string? getValueCookieName;
+    private string? getValueCookieValue;
+
+    private string? removeCookieName;
 
 
     private async Task SetCookie()
@@ -21,41 +24,46 @@ public partial class Butil09CookiePage
 
     private async Task GetCookie()
     {
-        var result = await cookie.Get(currentCookieName!);
-        currentCookieValue = result?.Value;
+        var result = await cookie.Get(getCookieName!);
+        getCookieValue = result?.Value;
     }
 
     private async Task GetAllCookies()
     {
-        currentCookies = string.Join<ButilCookie>(", ", await cookie.GetAll());
+        getAllCookieValues = string.Join<ButilCookie>(", ", await cookie.GetAll());
+    }
+
+    private async Task GetValue()
+    {
+        getValueCookieValue = await cookie.GetValue(getValueCookieName!);
     }
 
     private async Task RemoveCookie()
     {
-        await cookie.Remove(cookieName!);
+        await cookie.Remove(removeCookieName!);
     }
 
 
-    private string cookieExampleCode =
+    private string getSetExampleCode =
 @"@inject Bit.Butil.Cookie cookie
 
 <BitTextField @bind-Value=""newCookieName"" Label=""Cookie name"" />
 
 <BitTextField @bind-Value=""newCookieValue"" Label=""Cookie value"" />
 
-<BitButton OnClick=""@SetCookie"">SetCookie</BitButton>
+<BitButton OnClick=""@SetCookie"">Set</BitButton>
 
-<BitTextField @bind-Value=""currentCookieName"" Label=""Cookie name"" />
+<BitTextField @bind-Value=""getCookieName"" Label=""Cookie name"" />
 
-<BitButton OnClick=""@GetCookie"">GetCookie</BitButton>
+<BitButton OnClick=""@GetCookie"">Get</BitButton>
 
-<div>Cookie value: @currentCookieValue</div>
+<div>Cookie value: @getCookieValue</div>
 
 @code {
     private string? newCookieName;
     private string? newCookieValue;
-    private string? currentCookieName;
-    private string? currentCookieValue;
+    private string? getCookieName;
+    private string? getCookieValue;
 
     private async Task SetCookie()
     {
@@ -64,38 +72,60 @@ public partial class Butil09CookiePage
 
     private async Task GetCookie()
     {
-        var result = await cookie.Get(currentCookieName!);
+        var result = await cookie.Get(getCookieName!);
         currentCookieValue = result?.Value;
     }
 }";
-    private string cookiesExampleCode =
+
+    private string getAllExampleCode =
 @"@inject Bit.Butil.Cookie cookie
 
-<BitButton OnClick=""@GetAllCookies"">GetAllCookies</BitButton>
+<BitButton OnClick=""@GetAllCookies"">GetAll</BitButton>
 
-<div>Cookies: @currentCookies</div>
+<div>Cookies: @getAllCookieValues</div>
 
 @code {
-    private string? currentCookies;
+    private string? getAllCookieValues;
 
     private async Task GetAllCookies()
     {
-        currentCookies = string.Join<ButilCookie>("", "", await cookie.GetAll());
+        getAllCookieValues = string.Join<ButilCookie>("", "", await cookie.GetAll());
     }
 }";
+
+    private string getValueExampleCode =
+@"@inject Bit.Butil.Cookie cookie
+
+<BitTextField @bind-Value=""getValueCookieName"" Label=""Cookie name"" Style=""max-width: 18.75rem;"" />
+
+<BitButton OnClick=""@GetValue"">GetValue</BitButton>
+                        
+<div>Cookie value: @getValueCookieValue</div>
+
+@code {
+    private string? getValueCookieName;
+    private string? getValueCookieValue;
+
+    private async Task GetValue()
+    {
+        getValueCookieValue = await cookie.GetValue(getValueCookieName!);
+    }
+}";
+
+
     private string removeExampleCode =
 @"@inject Bit.Butil.Cookie cookie
 
-<BitTextField @bind-Value=""cookieName"" Label=""Cookie name"" />
+<BitTextField @bind-Value=""removeCookieName"" Label=""Cookie name"" />
 
-<BitButton OnClick=""@RemoveCookie"">RemoveCookie</BitButton>
+<BitButton OnClick=""@RemoveCookie"">Remove</BitButton>
 
 @code {
-    private string? cookieName;
+    private string? removeCookieName;
 
     private async Task RemoveCookie()
     {
-        await cookie.Remove(cookieName!);
+        await cookie.Remove(removeCookieName!);
     }
 }";
 }

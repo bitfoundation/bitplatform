@@ -16,16 +16,16 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.5">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.5">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.2" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 
         <Using Include="System.Net.Http.Json" />
@@ -39,6 +39,10 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Models" />
 
         <Watch Remove="*.scss" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="..\..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
     </ItemGroup>
 
     <ItemGroup>

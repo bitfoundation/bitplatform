@@ -22,6 +22,8 @@
                 <BitNumericTextField Label="Step & Buttons" Step="1" ShowButtons="true" />
                 <br />
                 <BitNumericTextField Label="Min & Max" Step="1" Min="-10" Max="10" />
+                <br />
+                <BitNumericTextField Label="Required" TValue="int" Required />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -147,6 +149,22 @@
                 {
                     <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@SuccessMessage</BitMessageBar>
                 }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example9RazorCode" Id="example9">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNumericTextField TValue="int" Label="Prefix" Prefix="Distance:" />
+                <br />
+                <BitNumericTextField TValue="int" Label="Suffix" Suffix="km" />
+                <br />
+                <BitNumericTextField TValue="int" Label="Prefix and Suffix" Prefix="Distance:" Suffix="km" />
+                <br />
+                <BitNumericTextField TValue="int" Label="Step & Buttons" Prefix="Distance:" Suffix="km" Step="1" ShowButtons="true" />
+                <br />
+                <BitNumericTextField TValue="int" Label="Disabled" Prefix="Distance:" Suffix="km" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

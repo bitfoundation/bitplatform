@@ -12,6 +12,7 @@ public partial class BitNumericTextField<TValue>
     private TValue? step;
     private TValue? min;
     private TValue? max;
+    private bool required;
     private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Top;
 
     private double _internalStep;
@@ -19,6 +20,7 @@ public partial class BitNumericTextField<TValue>
     private double? _internalMax;
     private int _precision;
     private string? _intermediateValue;
+    private readonly string _labelId;
     private readonly string _inputId;
     private Timer? _timer;
     private ElementReference _inputRef;
@@ -38,7 +40,8 @@ public partial class BitNumericTextField<TValue>
         _isDecimals = _typeOfValue == typeof(float) || _typeOfValue == typeof(double) || _typeOfValue == typeof(decimal);
         _minGenericValue = GetMinValue();
         _maxGenericValue = GetMaxValue();
-        _inputId = $"input_{Guid.NewGuid()}";
+        _inputId = $"BitNumericTextField-{UniqueId}-input";
+        _labelId = $"BitNumericTextField-{UniqueId}-label";
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -244,6 +247,44 @@ public partial class BitNumericTextField<TValue>
     /// </summary>
     [Parameter] public string ValidationMessage { get; set; } = "The {0} field is not valid.";
 
+    /// <summary>
+    /// Prefix displayed before the numeric field contents. This is not included in the value.
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>
+    /// Shows the custom prefix for numeric field.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Suffix displayed after the numeric field contents. This is not included in the value. 
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// Shows the custom suffix for numeric field.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+
+    /// <summary>
+    /// Whether the associated input is required or not, add an asterisk "*" to its label.
+    /// </summary>
+    [Parameter]
+    public bool Required
+    {
+        get => required;
+        set
+        {
+            if (required == value) return;
+
+            required = value;
+            ClassBuilder.Reset();
+        }
+    }
+
 
 
     protected override string RootElementClass => "bit-ntf";
@@ -255,6 +296,10 @@ public partial class BitNumericTextField<TValue>
         ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
+
+        ClassBuilder.Register(() => IsEnabled && Required ? $"{RootElementClass}-req" : string.Empty);
+
+        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? $"{RootElementClass}-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -658,7 +703,6 @@ public partial class BitNumericTextField<TValue>
     private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : CurrentValue;
     private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : CurrentValueAsString;
     private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
-    private string GetLabelId => Label.HasValue() ? $"label{Guid.NewGuid()}" : string.Empty;
     private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, _typeOfValue, CultureInfo.InvariantCulture) : default;
     private double? GetDoubleValueOrDefault(TValue? value, double? defaultValue = null) => value is null ? defaultValue : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
 

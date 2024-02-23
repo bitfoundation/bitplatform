@@ -5,21 +5,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.5">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.5">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.2" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.2" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-        <PackageReference Include="System.Text.Json" Version="8.0.1" />
-        <PackageReference Include="Riok.Mapperly" Version="3.3.0" PrivateAssets="all" ExcludeAssets="runtime">
+        <PackageReference Include="System.Text.Json" Version="8.0.2" />
+        <PackageReference Include="Riok.Mapperly" Version="3.4.0" PrivateAssets="all" ExcludeAssets="runtime">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>

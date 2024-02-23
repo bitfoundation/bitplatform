@@ -409,30 +409,62 @@
         <div class="example-content">
             <div>
                 <BitDropdown @bind-Value="comboBoxValue"
+                             Combo Chips Dynamic 
                              Label="Single select combo box"
                              Items="comboBoxItems"
                              Placeholder="Select an option"
-                             NameSelectors="nameSelectors"
-                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"
-                             Combo
-                             Chips
-                             Dynamic />
+                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
                 <BitLabel>Value: @comboBoxValue</BitLabel>
             </div>
             <br>
             <div>
                 <BitDropdown @bind-Values="comboBoxValues"
+                             Combo Chips Dynamic 
                              Label="Multi select combo box"
                              Items="comboBoxItems"
                              Placeholder="Select options"
                              IsMultiSelect="true"
-                             NameSelectors="nameSelectors"
-                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"
-                             Combo
-                             Chips
-                             Dynamic />
+                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
                 <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
             </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitDropdown Label="Prefix"
+                         Prefix="Fruits:"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+
+            <BitDropdown Label="Suffix"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+            
+
+            <BitDropdown Label="Prefix and Suffix"
+                         Prefix="Fruits:"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+            
+            <BitDropdown Label="Disabled"
+                         Prefix="Fruits:"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string"
+                         IsEnabled="false" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

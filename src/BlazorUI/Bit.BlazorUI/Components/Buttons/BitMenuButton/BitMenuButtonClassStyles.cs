@@ -8,6 +8,21 @@ public class BitMenuButtonClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for operator button of the BitMenuButton.
+    /// </summary>
+    public string? OperatorButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for operator button icon of the BitMenuButton.
+    /// </summary>
+    public string? OperatorButtonIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for operator button text of the BitMenuButton.
+    /// </summary>
+    public string? OperatorButtonText { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the callout container of the BitMenuButton.
     /// </summary>
     public string? Callout { get; set; }

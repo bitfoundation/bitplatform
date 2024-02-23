@@ -5,8 +5,8 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.DataGrid;
 
 public partial class BitDataGridDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
          new()
          {
             Name = "Items",
@@ -94,16 +94,16 @@ public partial class BitDataGridDemo
                             This is normally used in conjunction with a Paginator component or some other UI logic
                             that displays and updates the supplied BitDataGridPaginationState instance.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
          {
             Id = "BitDataGridColumnBase",
             Title = "BitDataGridColumnBase",
-            Parameters=new List<ComponentParameter>()
-            {
+            Parameters=
+            [
                 new()
                 {
                     Name = "Title",
@@ -124,49 +124,49 @@ public partial class BitDataGridDemo
                     Type = "BitDataGridAlign?",
                     DefaultValue = "null",
                     Description = "If specified, controls the justification of table header and body cells for this column.",
-                 },
-                 new()
-                    {
-                        Name = "HeaderTemplate",
-                        Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
-                        DefaultValue = "null",
-                        Description = @"An optional template for this column's header cell. If not specified, the default header template
-                                        includes the Title along with any applicable sort indicators and options buttons.",
-                    },
-                    new()
-                    {
-                        Name = "ColumnOptions",
-                        Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
-                        DefaultValue = "null",
-                        Description = @"If specified, indicates that this column has this associated options UI. A button to display this
-                                        UI will be included in the header cell by default.
-                                        If HeaderTemplate is used, it is left up to that template to render any relevant
-                                        ""show options"" UI and invoke the grid's BitDataGrid<TGridItem>.ShowColumnOptions(BitDataGridColumnBase<TGridItem>)).",
-                    },
-                    new()
-                    {
-                        Name = "Sortable",
-                        Type = "bool?",
-                        DefaultValue = "null",
-                        Description = @"Indicates whether the data should be sortable by this column.
-                                        The default value may vary according to the column type (for example, a BitDataGridTemplateColumn<TGridItem>
-                                        is sortable by default if any BitDataGridTemplateColumn<TGridItem>.SortBy parameter is specified).",
-                    },
-                    new()
-                    {
-                        Name = "IsDefaultSort",
-                        Type = "BitDataGridSortDirection?",
-                        DefaultValue = "null",
-                        Description = "If specified and not null, indicates that this column represents the initial sort order for the grid. The supplied value controls the default sort direction.",
-                    },
-                    new()
-                    {
-                        Name = "PlaceholderTemplate",
-                        Type = "RenderFragment<PlaceholderContext>?",
-                        DefaultValue = "null",
-                        Description = "If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.",
-                    }
-            },
+                },
+                new()
+                {
+                    Name = "HeaderTemplate",
+                    Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
+                    DefaultValue = "null",
+                    Description = @"An optional template for this column's header cell. If not specified, the default header template
+                                    includes the Title along with any applicable sort indicators and options buttons.",
+                },
+                new()
+                {
+                    Name = "ColumnOptions",
+                    Type = "RenderFragment<BitDataGridColumnBase<TGridItem>>?",
+                    DefaultValue = "null",
+                    Description = @"If specified, indicates that this column has this associated options UI. A button to display this
+                                    UI will be included in the header cell by default.
+                                    If HeaderTemplate is used, it is left up to that template to render any relevant
+                                    ""show options"" UI and invoke the grid's BitDataGrid<TGridItem>.ShowColumnOptions(BitDataGridColumnBase<TGridItem>)).",
+                },
+                new()
+                {
+                    Name = "Sortable",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = @"Indicates whether the data should be sortable by this column.
+                                    The default value may vary according to the column type (for example, a BitDataGridTemplateColumn<TGridItem>
+                                    is sortable by default if any BitDataGridTemplateColumn<TGridItem>.SortBy parameter is specified).",
+                },
+                new()
+                {
+                    Name = "IsDefaultSort",
+                    Type = "BitDataGridSortDirection?",
+                    DefaultValue = "null",
+                    Description = "If specified and not null, indicates that this column represents the initial sort order for the grid. The supplied value controls the default sort direction.",
+                },
+                new()
+                {
+                    Name = "PlaceholderTemplate",
+                    Type = "RenderFragment<PlaceholderContext>?",
+                    DefaultValue = "null",
+                    Description = "If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.",
+                }
+            ],
             Description = @"BitDataGrid has two built-in column types, BitDataGridPropertyColumn and BitDataGridTemplateColumn. You can also create your own column types by subclassing ColumnBase
                             The BitDataGridColumnBase type, which all column must derive from, offers some common parameters",
 
@@ -175,8 +175,8 @@ public partial class BitDataGridDemo
         {
             Id="BitDataGridPropertyColumn",
             Title = "BitDataGridPropertyColumn",
-            Parameters=new List<ComponentParameter>()
-            {
+            Parameters=
+            [
                 new()
                 {
                     Name = "Property",
@@ -190,15 +190,15 @@ public partial class BitDataGridDemo
                     DefaultValue = "null",
                     Description = "Optionally specifies a format string for the value. Using this requires the TProp type to implement IFormattable.",
                 },
-            },
+            ],
             Description = "It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically, and uses the property's name as its title if not otherwise set.",
         },
         new()
         {
             Id = "BitDataGridTemplateColumn",
             Title = "BitDataGridTemplateColumn",
-            Parameters = new List<ComponentParameter>()
-            {
+            Parameters =
+            [
                  new()
                  {
                     Name = "ChildContent",
@@ -212,7 +212,7 @@ public partial class BitDataGridDemo
                     DefaultValue = "null",
                     Description = "Optionally specifies sorting rules for this column.",
                  },
-            },
+            ],
             Description = @"It uses arbitrary Razor fragments to supply contents for its cells.
                             It can't infer the column's title or sort order automatically. 
                             also it's possible to add arbitrary Blazor components to your table cells.
@@ -220,44 +220,44 @@ public partial class BitDataGridDemo
 
         },
 
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
              Id = "BitDataGridAlign",
              Name = "BitDataGridAlign",
              Description = "Describes alignment for a BitDataGrid<TGridItem> column.",
-             Items = new List<ComponentEnumItem>()
-             {
-                 new ComponentEnumItem()
+             Items =
+             [
+                 new()
                  {
                       Name = "Left",
                       Value = "0",
                       Description = "Justifies the content against the start of the container."
                  },
-                 new ComponentEnumItem()
+                 new()
                  {
                       Name = "Center",
                       Value = "1",
                       Description = "Justifies the content at the center of the container."
                  },
-                 new ComponentEnumItem()
+                 new()
                  {
                       Name = "Right",
                       Value = "2",
                       Description = "Justifies the content at the end of the container."
                  },
 
-             }
+             ]
         },
-    };
+    ];
 
 
 
-    private readonly static CountryModel[] _countries = new[]
-    {
+    private static readonly CountryModel[] _countries =
+    [
         new CountryModel { Code = "AR", Name = "Argentina", Medals = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
         new CountryModel { Code = "AM", Name = "Armenia", Medals = new MedalsModel { Gold = 0, Silver = 2, Bronze = 2 } },
         new CountryModel { Code = "AU", Name = "Australia", Medals = new MedalsModel { Gold = 17, Silver = 7, Bronze = 22 } },
@@ -340,13 +340,13 @@ public partial class BitDataGridDemo
         new CountryModel { Code = "US", Name = "United States of America", Medals = new MedalsModel { Gold = 39, Silver = 41, Bronze = 33 } },
         new CountryModel { Code = "UZ", Name = "Uzbekistan", Medals = new MedalsModel { Gold = 3, Silver = 0, Bronze = 2 } },
         new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
-    };
+    ];
 
     [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
 
     private bool isLoadingAssemblies = true;
 
-    protected async override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         allCountries = _countries.AsQueryable();
 
@@ -378,11 +378,11 @@ public partial class BitDataGridDemo
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
 
-                return BitDataGridItemsProviderResult.From(data!.Results, data!.Meta.Results.Total);
+                return BitDataGridItemsProviderResult.From(data!.Results!, data!.Meta!.Results!.Total);
             }
             catch
             {
-                return BitDataGridItemsProviderResult.From<FoodRecall>(new List<FoodRecall> { }, 0);
+                return BitDataGridItemsProviderResult.From<FoodRecall>([], 0);
             }
         };
 
@@ -412,7 +412,7 @@ public partial class BitDataGridDemo
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-                return BitDataGridItemsProviderResult.From(data!.Items, (int)data!.TotalCount);
+                return BitDataGridItemsProviderResult.From(data!.Items!, data!.TotalCount);
             }
             catch
             {
@@ -436,56 +436,205 @@ public partial class BitDataGridDemo
     }
 
     private readonly string example1RazorCode = @"
-<style scoped>
-    .grid {
+<style>
+    .grid .grid-container {
+        overflow: auto;
+    }
+
+    .grid table {
         width: 100%;
-        display: inline-flex;
-        flex-direction: column;
-        border: 1px solid #e9eaed;
+        border-spacing: 0;
+    }
+
+    .grid tr {
+        height: 30px;
+    }
+</style>
+
+<div class=""grid"">
+    <div class=""grid-container"">
+        <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
+            <BitDataGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
+                <ColumnOptions>
+                    <BitSearchBox @bind-Value=""typicalSampleNameFilter""
+                                  Placeholder=""Search on Name""
+                                  InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                </ColumnOptions>
+            </BitDataGridPropertyColumn>
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" />
+        </BitDataGrid>
+    </div>
+    <BitDataGridPaginator Value=""@pagination"" />
+</div>";
+    private readonly string example1CsharpCode = @"
+private IQueryable<CountryModel> allCountries;
+private string typicalSampleNameFilter = string.Empty;
+private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+private IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+
+protected override async Task OnInitializedAsync()
+{
+    allCountries = _countries.AsQueryable();
+}
+
+private readonly static CountryModel[] _countries = new[]
+{
+    new CountryModel { Code = ""AR"", Name = ""Argentina"", MedalsModel = new MedalsModel { Gold = 0, Silver = 1, Bronze = 2 } },
+    new CountryModel { Code = ""AM"", Name = ""Armenia"", MedalsModel = new MedalsModel { Gold = 0, Silver = 2, Bronze = 2 } },
+    new CountryModel { Code = ""AU"", Name = ""Australia"", MedalsModel = new MedalsModel { Gold = 17, Silver = 7, Bronze = 22 } },
+    new CountryModel { Code = ""AT"", Name = ""Austria"", MedalsModel = new MedalsModel { Gold = 1, Silver = 1, Bronze = 5 } },
+    new CountryModel { Code = ""AZ"", Name = ""Azerbaijan"", MedalsModel = new MedalsModel { Gold = 0, Silver = 3, Bronze = 4 } },
+    new CountryModel { Code = ""BS"", Name = ""Bahamas"", MedalsModel = new MedalsModel { Gold = 2, Silver = 0, Bronze = 0 } },
+    new CountryModel { Code = ""BH"", Name = ""Bahrain"", MedalsModel = new MedalsModel { Gold = 0, Silver = 1, Bronze = 0 } },
+    // ...
+};
+
+public class CountryModel
+{
+    public string Code { get; set; }
+    public string Name { get; set; }
+    public MedalsModel MedalsModel { get; set; }
+}
+
+public class MedalsModel
+{
+    public int Gold { get; set; }
+    public int Silver { get; set; }
+    public int Bronze { get; set; }
+    public int Total => Gold + Silver + Bronze;
+}";
+
+    private readonly string example2RazorCode = @"
+<style>
+    .grid {
+        border: 1px solid;
+        border-color: var(--bit-clr-brd-primary);
+    }
+
+    .grid .grid-container {
+        overflow: auto;
     }
 
     .grid .flag {
-        width: 32px;
-        height: 16px;
         vertical-align: middle;
     }
 
-    .grid-container {
-        overflow: auto;
+    .grid table {
+        width: 100%;
+        border-spacing: 0;
+    }
+
+    .grid tr {
+        height: 42px;
+    }
+
+    .grid th {
+        padding: .5rem;
+        font-weight: bold;
+        display: table-cell;
+        vertical-align: inherit;
+        border-bottom: 1px solid;
+        background-color: var(--bit-clr-bg-secondary);
+        border-bottom-color: var(--bit-clr-brd-secondary);
+    }
+
+    .grid .col-options-button {
+        cursor: pointer;
+        background-image: none;
+    }
+
+    .grid .col-options-button:before {
+        top: 2px;
+        color: #7A7A7C;
+        content: ""\E721"";
+        position: relative;
+        font-style: normal;
+        font-weight: normal;
+        display: inline-block;
+        font-family: 'Fabric MDL2';
+    }
+
+    .grid .col-width-draghandle {
+        width: 3px;
+        cursor: col-resize;
+    }
+
+    .grid .col-width-draghandle:active {
+        background: unset;
+    }
+
+    .grid .col-width-draghandle:after {
+        left: 3px;
+        border-left: unset;
+    }
+
+    .grid .col-width-draghandle:hover {
+        background: unset;
     }
 
     .grid .column--large {
         width: 220px;
     }
 
-    .grid th:nth-child(1) .col-options-button {
-        background-image: none;
-        cursor: pointer;
-    }
-
-    .grid th:nth-child(1) .col-options-button:before {
-        display: inline-block;
-        font-family: ""Fabric MDL2"";
-        font-style: normal;
-        font-weight: normal;
-        content: ""\e721"";
-        position: relative;
-        top: 2px;
+    .grid th:not(:last-child) {
+        border-right: 1px solid;
+        border-right-color: var(--bit-clr-brd-secondary);
     }
 
     .grid th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
-        display: inline-block;
-        font-family: ""Fabric MDL2"";
+        top: -2px;
+        color: #7A7A7C;
+        content: ""\21C5"";
+        position: relative;
         font-style: normal;
         font-weight: normal;
-        content: ""⇅"";
-        position: relative;
-        top: -2px;
+        display: inline-block;
+        font-family: 'Fabric MDL2';
+    }
+
+    .grid tr:nth-child(even) {
+        background: var(--bit-clr-bg-secondary);
+    }
+
+    .grid tr:nth-child(odd) {
+        background: var(--bit-clr-bg-primary);
+    }
+
+    .grid tr:last-child > td {
+        border-bottom: none;
+    }
+
+    .grid td {
+        overflow: hidden;
+        white-space: nowrap;
+        padding: 0.25rem 0.5rem;
+        text-overflow: ellipsis;
+        border-bottom: 1px solid var(--bit-clr-brd-secondary);
+    }
+
+    .grid td:not(:last-child) {
+        border-right: 1px solid var(--bit-clr-brd-secondary);
+    }
+
+    .grid .sort-indicator {
+        margin-left: auto;
+    }
+
+    .grid .col-width-draghandle:after {
+        border-left: unset;
+    }
+
+    .grid .col-header-content {
+        padding-right: 0px;
     }
 
     .grid .bitdatagrid-paginator {
         margin-top: 0;
         padding: 0.5rem;
+        border-top: 1px solid;
     }
 
     .grid .bitdatagrid-paginator .pagination-text {
@@ -499,115 +648,11 @@ public partial class BitDataGridDemo
     .grid .bitdatagrid-paginator nav button:before {
         vertical-align: middle;
     }
-
-    .grid .bitdatagrid-paginator nav button:not([disabled]) {
-        background-color: #eee;
-    }
-
-    .grid .bitdatagrid-paginator nav button:not([disabled]):hover {
-        background-color: #d0d1d5;
-    }
-
-    .grid .bitdatagrid-paginator nav button[disabled] {
-        color: #a19f9d;
-    }
-
-    .grid table {
-        position: relative;
-        min-width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        text-indent: initial;
-    }
-
-    .grid thead th:not(:last-child) {
-        border-right: 1px solid #e9eaed;
-    }
-
-    .grid thead .col-width-draghandle {
-        cursor: col-resize;
-        width: 3px;
-    }
-
-    .grid thead .col-width-draghandle:active {
-        background: unset;
-    }
-
-    .grid thead .col-width-draghandle :after {
-        left: 3px;
-        border-left: unset;
-    }
-
-    .grid thead .col-width-draghandle:hover {
-        background: unset;
-    }
-
-    .grid th {
-        background-color: #f4f5f9;
-        padding: 0.5rem;
-        display: table-cell;
-        vertical-align: inherit;
-        font-weight: bold;
-        border-bottom: 1px solid #e9eaed;
-    }
-
-    .grid tr {
-        height: 41px;
-    }
-
-    .grid tr:nth-child(even) {
-        background: #f4f5f9;
-    }
-
-    .grid tr:nth-child(odd) {
-        background: #FFF;
-    }
-
-    .grid tr:last-child > td {
-        border-bottom: none;
-    }
-
-    .grid td {
-        border-bottom: 1px solid #e9eaed;
-        color: #4f4f50;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .grid td:not(:last-child) {
-        border-right: 1px solid #e9eaed;
-    }
-
-    .grid .sort-indicator {
-        margin-left: auto;
-    }
-
-    .grid .col-width-draghandle:after {
-        border-left: unset;
-    }
-
-    .grid .col-title-text {
-        color: #262526;
-    }
-
-    .grid .col-header-content {
-        padding-right: 0px;
-    }
-
-    .grid button.col-title:active, .grid .col-options-button:active {
-        background-color: unset;
-    }
-
-    .grid button.col-title:hover, .grid .col-options-button:hover {
-        background-color: unset;
-    }
 </style>
 
 <div class=""grid"">
     <div class=""grid-container"">
-        <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">                
+        <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
             <BitDataGridPropertyColumn Class=""column--large"" Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value=""typicalSampleNameFilter""
@@ -615,23 +660,25 @@ public partial class BitDataGridDemo
                                     InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
-                <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"" >
-                <img class=""flag"" src=""images/flags/@(context.Code).png"" />
+            <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"">
+                <img class=""flag"" src=""https://flagsapi.com/@(context.Code)/shiny/32.png"" loading=""lazy"" alt=""@(context.Code)"" />
             </BitDataGridTemplateColumn>
-            <BitDataGridPropertyColumn Property=""@(c => c.MedalsModel.Gold)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.MedalsModel.Silver)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.MedalsModel.Bronze)"" Sortable=""true"" />
-            <BitDataGridPropertyColumn Property=""@(c => c.MedalsModel.Total)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Gold)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Silver)"" Sortable=""true"" />
+            <BitDataGridPropertyColumn Property=""@(c => c.Medals.Bronze)"" Sortable=""true"" />
+            <BitDataGridTemplateColumn Title=""Action"" Align=""BitDataGridAlign.Center"">
+                <BitIconButton IconName=""@BitIconName.Edit"" Title=""Edit"" />
+                <BitIconButton IconName=""@BitIconName.Delete"" Title=""Delete"" />
+            </BitDataGridTemplateColumn>
         </BitDataGrid>
     </div>
     <BitDataGridPaginator Value=""@pagination"" />
 </div>";
-    private readonly string example1CsharpCode = @"
-IQueryable<CountryModel> allCountries;
-string typicalSampleNameFilter = string.Empty;
-BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
-string typicalSampleNameFilter = string.Empty;
+    private readonly string example2CsharpCode = @"
+private IQueryable<CountryModel> allCountries;
+private string typicalSampleNameFilter = string.Empty;
+private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
+private IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
 protected override async Task OnInitializedAsync()
 {
@@ -666,38 +713,41 @@ public class MedalsModel
 }
 ";
 
-    private readonly string example2RazorCode = @"
+    private readonly string example3RazorCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
 
-<style scoped>
+<style>
     .grid {
-        height: 25rem;
+        height: 15rem;
         overflow-y: auto;
     }
 
     .grid table {
-        min-width: 100%;
-    }
-
-    .grid thead {
-        position: sticky;
-        top: 0;
-        background-color: #d8d8d8;
-        outline: 1px solid gray;
-        z-index: 1;
+        width: 100%;
     }
 
     .grid tr {
-        height: 30px;
-        border-bottom: 0.5px solid silver;
+        height: 35px;
+    }
+
+    .grid thead {
+        top: 0;
+        z-index: 1;
+        position: sticky;
+        background-color: var(--bit-clr-bg-secondary);
     }
 
     .grid tbody td {
-        white-space: nowrap;
-        overflow: hidden;
         max-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
         text-overflow: ellipsis;
+    }
+
+    .search-panel {
+        max-width: 15rem;
+        margin-top: 2rem;
     }
 </style>
 
@@ -712,12 +762,9 @@ public class MedalsModel
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
-     <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
-     </div>
-</div>
-";
-    private readonly string example2CsharpCode = @"
+    <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
+</div>";
+    private readonly string example3CsharpCode = @"
 BitDataGrid<FoodRecall>? dataGrid;
 string _virtualSampleNameFilter = string.Empty;
 BitDataGridItemsProvider<FoodRecall> foodRecallProvider;
@@ -903,39 +950,42 @@ public class Openfda
 }
 ";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
-<style scoped>
+<style>
     .grid {
-        height: 25rem;
+        height: 15rem;
         overflow-y: auto;
     }
 
     .grid table {
-        min-width: 100%;
-    }
-
-    .grid thead {
-        position: sticky;
-        top: 0;
-        background-color: #d8d8d8;
-        outline: 1px solid gray;
-        z-index: 1;
+        width: 100%;
     }
 
     .grid tr {
-        height: 30px;
-        border-bottom: 0.5px solid silver;
+        height: 35px;
+    }
+
+    .grid thead {
+        top: 0;
+        z-index: 1;
+        position: sticky;
+        background-color: var(--bit-clr-bg-secondary);
     }
 
     .grid tbody td {
-        white-space: nowrap;
-        overflow: hidden;
         max-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
         text-overflow: ellipsis;
+    }
+
+    .search-panel {
+        max-width: 15rem;
+        margin-top: 2rem;
     }
 </style>
 
@@ -947,12 +997,9 @@ public class Openfda
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
-     <div class=""inline-block"">
-        <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" />
-     </div>
-</div>
-";
-    private readonly string example3CsharpCode = @"
+    <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" />
+</div>";
+    private readonly string example4CsharpCode = @"
 
 // To make following aspnetcore controller work, simply change services.AddControllers(); to services.AddControllers().AddOData(options => options.EnableQueryFeatures())
 // Note that this need Microsoft.AspNetCore.OData nuget package to be installed

@@ -1,10 +1,8 @@
 .bitdatagrid-paginator {
     display: flex;
     flex-wrap: wrap;
-    margin-top: 0.5rem;
-    padding: 0.25rem 0;
+    padding: 0.25rem;
     align-items: center;
-    border-top: 1px solid #ccc;
 
     .pagination-text {
         margin: 0 0.5rem;
@@ -12,17 +10,17 @@
     }
 
     nav {
+        gap: 0.5rem;
         display: flex;
         margin-left: auto;
-        gap: 0.5rem;
         align-items: center;
     }
 
     nav button {
         border: 0;
-        background: none center center / 1rem no-repeat;
         width: 2rem;
         height: 2rem;
+        background: none center center / 1rem no-repeat;
     }
 
     nav button[disabled] {
@@ -30,31 +28,31 @@
     }
 
     nav button:not([disabled]):hover {
-        background-color: #eee;
+        background-color: var(--bit-clr-act-hover-bg-pri);
     }
 
     nav button:not([disabled]):active {
-        background-color: #aaa;
+        background-color: var(--bit-clr-act-active-bg-pri);
     }
 
     .go-first:before,
     .go-last:before {
         //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="rotate(90) scale(0.8)" transform-origin="12 12"><path d="m 2,1.5 l 10,17.5 l 10,-17.5 l -10,7.75 l -10,-7.75 z"/><rect height="2" width="20" y="20.5" x="2"/></g></svg>');
-        display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI' !important;
+        content: "\F371";
         font-style: normal;
         font-weight: normal;
-        content: "\F371";
+        display: inline-block;
+        font-family: 'Fabric MDL2 bit BlazorUI' !important;
     }
 
     .go-previous:before,
     .go-next:before {
         //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="rotate(90)" transform-origin="12 12"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 11 z" /></g></svg>');
-        display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI' !important;
+        content: "\E96F";
         font-style: normal;
         font-weight: normal;
-        content: "\E96F";
+        display: inline-block;
+        font-family: 'Fabric MDL2 bit BlazorUI' !important;
     }
 
     .go-next, .go-last {

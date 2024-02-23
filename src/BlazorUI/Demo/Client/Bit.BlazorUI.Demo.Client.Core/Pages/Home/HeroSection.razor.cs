@@ -5,7 +5,7 @@ public partial class HeroSection
     private string _selectedColor = "#0065EF";
     private bool _isToggleChecked = true;
     private bool _isToggleUnChecked = false;
-    private string _pivotSelectedKey = "Overview";
+    private string? _pivotSelectedKey = "Overview";
 
     protected override Task OnInitAsync()
     {

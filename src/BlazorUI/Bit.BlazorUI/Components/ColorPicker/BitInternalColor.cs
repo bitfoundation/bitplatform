@@ -1,7 +1,5 @@
-﻿using System.Globalization;
-using System.Runtime.CompilerServices;
+﻿using System;
 
-[assembly: InternalsVisibleTo("Bit.BlazorUI.Tests")]
 namespace Bit.BlazorUI;
 
 internal class BitInternalColor

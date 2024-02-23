@@ -6,8 +6,8 @@ public partial class _BitDropdownItemDemo
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
 
-    private List<BitDropdownItem<string>> GetBasicItems() => new()
-    {
+    private List<BitDropdownItem<string>> GetBasicItems() =>
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
@@ -18,9 +18,10 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Broccoli", Value = "v-bro" },
         new() { Text = "Carrot", Value = "v-car" },
         new() { Text = "Lettuce", Value = "v-let" }
-    };
-    private List<BitDropdownItem<string>> GetDataItems() => new()
-    {
+    ];
+
+    private List<BitDropdownItem<string>> GetDataItems() =>
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "Items" },
         new() { Text = "Item a", Value = "A", Data = new DropdownItemData { IconName = "Memo" } },
         new() { Text = "Item b", Value = "B", Data = new DropdownItemData { IconName = "Print" } },
@@ -30,11 +31,13 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Item d", Value = "D", Data = new DropdownItemData { IconName = "Train" } },
         new() { Text = "Item e", Value = "E", Data = new DropdownItemData { IconName = "Repair" } },
         new() { Text = "Item f", Value = "F", Data = new DropdownItemData { IconName = "Running" } }
-    };
+    ];
+
     private ICollection<BitDropdownItem<string>>? virtualizeItems1;
     private ICollection<BitDropdownItem<string>>? virtualizeItems2;
-    private List<BitDropdownItem<string>> GetRtlItems() => new()
-    {
+
+    private List<BitDropdownItem<string>> GetRtlItems() =>
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "میوه ها" },
         new() { Text = "سیب", Value = "f-app" },
         new() { Text = "موز", Value = "f-ban" },
@@ -45,10 +48,12 @@ public partial class _BitDropdownItemDemo
         new() { Text = "کلم بروكلی", Value = "v-bro" },
         new() { Text = "هویج", Value = "v-car" },
         new() { Text = "کاهو", Value = "v-let" }
-    };
+    ];
+
     private ICollection<BitDropdownItem<string>>? dropDirectionItems;
-    private List<BitDropdownItem<string>> GetStyleClassItems() => new()
-    {
+
+    private List<BitDropdownItem<string>> GetStyleClassItems() =>
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits", Style = "background-color:darkred" },
         new() { Text = "Apple", Value = "f-app", Class = "custom-fruit" },
         new() { Text = "Banana", Value = "f-ban", Class = "custom-fruit" },
@@ -59,9 +64,10 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Broccoli", Value = "v-bro", Class = "custom-veg" },
         new() { Text = "Carrot", Value = "v-car", Class = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", Class = "custom-veg" }
-    };
-    private List<BitDropdownItem<string>> comboBoxItems = new()
-    {
+    ];
+
+    private List<BitDropdownItem<string>> comboBoxItems =
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
@@ -72,18 +78,11 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Broccoli", Value = "v-bro" },
         new() { Text = "Carrot", Value = "v-car" },
         new() { Text = "Lettuce", Value = "v-let" }
-    };
-
-    private BitDropdownNameSelectors<BitDropdownItem<string>, string> nameSelectors = new()
-    {
-        DynamicValueGenerator = ((BitDropdownItem<string> item) => item.Text),
-        ValueSetter = ((BitDropdownItem<string> item, string? value) => item.Value = value),
-        TextSetter = ((string? text, BitDropdownItem<string> item) => item.Text = text)
-    };
+    ];
 
 
     private string controlledValue = "f-app";
-    private ICollection<string?> controlledValues = new[] { "f-app", "f-ban" };
+    private ICollection<string> controlledValues = ["f-app", "f-ban"];
 
     private BitDropdownItem<string>? changedItem;
     private BitDropdownItem<string>[] changedItems = Array.Empty<BitDropdownItem<string>>();
@@ -92,13 +91,13 @@ public partial class _BitDropdownItemDemo
     private BitDropdownItem<string>? selectedItem2;
 
     private string? clearValue = "f-app";
-    private ICollection<string?> clearValues = new[] { "f-app", "f-ban" };
+    private ICollection<string?> clearValues = ["f-app", "f-ban"];
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
-    private string? comboBoxValue;
-    private ICollection<string?> comboBoxValues = [];
+    private string comboBoxValue = default!;
+    private ICollection<string> comboBoxValues = [];
 
     protected override void OnInitialized()
     {
@@ -159,7 +158,7 @@ public partial class _BitDropdownItemDemo
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-            var items = data!.Items.Select(i => new BitDropdownItem<string>
+            var items = data!.Items!.Select(i => new BitDropdownItem<string>
             {
                 Text = i.Name,
                 Value = i.Id.ToString(),

@@ -68,16 +68,9 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Lettuce", Value = "v-let" }
     };
 
-    private BitDropdownNameSelectors<BitDropdownOption<string>, string> nameSelectors = new()
-    {
-        DynamicValueGenerator = ((BitDropdownOption<string> item) => item.Text),
-        ValueSetter = ((BitDropdownOption<string> item, string? value) => item.Value = value),
-        TextSetter = ((string? text, BitDropdownOption<string> item) => item.Text = text)
-    };
-
 
     private string controlledValue = "f-app";
-    private ICollection<string?> controlledValues = new[] { "f-app", "f-ban" };
+    private ICollection<string?> controlledValues = ["f-app", "f-ban"];
 
     private BitDropdownOption<string>? changedItem;
     private BitDropdownOption<string>[] changedItems = Array.Empty<BitDropdownOption<string>>();
@@ -86,13 +79,13 @@ public partial class _BitDropdownOptionDemo
     private BitDropdownOption<string>? selectedItem2;
 
     private string? clearValue = "f-app";
-    private ICollection<string?> clearValues = new[] { "f-app", "f-ban" };
+    private ICollection<string?> clearValues = ["f-app", "f-ban"];
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
-    private string? comboBoxValue;
-    private ICollection<string?> comboBoxValues = [];
+    private string comboBoxValue = default!;
+    private ICollection<string> comboBoxValues = [];
 
 
     protected override void OnInitialized()

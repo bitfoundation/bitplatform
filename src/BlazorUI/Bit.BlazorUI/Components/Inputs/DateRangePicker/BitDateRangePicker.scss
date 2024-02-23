@@ -528,7 +528,8 @@
         pointer-events: none;
         background-color: transparent;
 
-        .bit-dtrp-gti {
+        .bit-dtrp-gti,
+        .bit-icon {
             color: $color-foreground-disabled;
         }
     }
@@ -568,6 +569,7 @@
     &:disabled {
         pointer-events: none;
         background-color: transparent;
+        color: $color-foreground-disabled;
 
         i {
             color: $color-foreground-disabled;
@@ -589,6 +591,7 @@
     padding: spacing(1.5);
     box-sizing: content-box;
     flex-flow: column nowrap;
+    min-width: spacing(24.5);
 }
 
 .bit-dtrp-pkc {
@@ -741,7 +744,8 @@
     font-weight: $typography-font-weight;
 }
 
-.bit-dtrp-bns {
+.bit-dtrp-bns,
+.bit-dtrp-bns:disabled {
     color: $color-primary-text;
     background-color: $color-primary-main;
 

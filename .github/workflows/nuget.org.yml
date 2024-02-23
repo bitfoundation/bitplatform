@@ -33,6 +33,17 @@ jobs:
       with:
         node-version: 18
 
+    - name: Delete AssemblyOriginatorKeyFile.snk
+      run: |
+        rm src/AssemblyOriginatorKeyFile.snk
+
+    - name: Extract strong sign certificate from env
+      uses: timheuer/base64-to-file@v1
+      with:
+          fileDir: './src/'
+          fileName: 'AssemblyOriginatorKeyFile.snk'
+          encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
+
     - name: Generate CSS/JS files BlazorUI
       run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net8.0
     - name: dotnet build BlazorUI

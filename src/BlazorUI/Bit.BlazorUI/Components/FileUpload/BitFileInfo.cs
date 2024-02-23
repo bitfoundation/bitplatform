@@ -22,4 +22,5 @@ public class BitFileInfo
     [JsonIgnore] public string? Message { get; internal set; }
     [JsonIgnore] public BitFileUploadStatus Status { get; internal set; }
     [JsonIgnore] internal DateTime? StartTimeUpload { get; set; }
+    [JsonIgnore] public IReadOnlyDictionary<string, string>? HttpHeaders { get; set; }
 }

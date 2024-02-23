@@ -564,4 +564,10 @@
     <data name="ProductsCount" xml:space="preserve">
     <value>Les produits comptent</value>
   </data>
+    <data name="NewVersionIsAvailable" xml:space="preserve">
+    <value>Une nouvelle version est disponible</value>
+  </data>
+    <data name="UpdateToNewVersion" xml:space="preserve">
+    <value>Souhaitez-vous mettre à jour vers la nouvelle version?</value>
+  </data>
 </root>
