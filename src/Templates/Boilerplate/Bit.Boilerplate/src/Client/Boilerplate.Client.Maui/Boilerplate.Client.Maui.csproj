@@ -104,6 +104,7 @@
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.7" />
         <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.7" />
+        <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.3" />
         <PackageReference Include="Plugin.StoreReview" Version="6.0.0" />
     </ItemGroup>
 
@@ -119,7 +120,6 @@
     </PropertyGroup>
 
     <Target Name="BeforeBuildTasks" BeforeTargets="BeforeBuild">
-        <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later"
-               Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
+        <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
     </Target>
 </Project>
