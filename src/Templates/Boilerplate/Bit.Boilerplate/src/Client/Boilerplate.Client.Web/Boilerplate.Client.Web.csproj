@@ -33,14 +33,8 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.2" PrivateAssets="all" />
         <PackageReference Include="Bit.Bswup" Version="8.7.6" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6" PrivateAssets="all" />
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
     </ItemGroup>
 
