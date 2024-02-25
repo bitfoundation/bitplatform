@@ -9,8 +9,8 @@
     <button @onclick="HandleOnClick"
             role="button"
             type="button"
-            style="@Styles?.HeaderContainer"
-            class="bit-acd-hdr @Classes?.HeaderContainer"
+            style="@Styles?.Header"
+            class="bit-acd-hdr @Classes?.Header"
             aria-expanded="@IsExpanded"
             tabindex="@(IsEnabled ? 0 : -1)">
         @if (HeaderTemplate is not null)
@@ -19,7 +19,7 @@
         }
         else
         {
-            <div style="@Styles?.Header" class="bit-acd-wrp @Classes?.Header">
+            <div style="@Styles?.HeaderContent" class="bit-acd-wrp @Classes?.HeaderContent">
                 <div style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
                     @Title
                 </div>

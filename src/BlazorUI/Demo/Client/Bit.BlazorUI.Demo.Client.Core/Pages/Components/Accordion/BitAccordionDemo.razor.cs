@@ -102,17 +102,17 @@ public partial class BitAccordionDemo
                 },
                 new()
                 {
-                    Name = "HeaderContainer",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the header container of the BitAccordion."
-                },
-                new()
-                {
                     Name = "Header",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the header of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "HeaderContent",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header content of the BitAccordion."
                 },
                 new()
                 {

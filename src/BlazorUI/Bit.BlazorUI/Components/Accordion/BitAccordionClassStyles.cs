@@ -13,14 +13,14 @@ public class BitAccordionClassStyles
     public string? Expanded { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the header container of the BitAccordion.
-    /// </summary>
-    public string? HeaderContainer { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the header of the BitAccordion.
     /// </summary>
     public string? Header { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the header content of the BitAccordion.
+    /// </summary>
+    public string? HeaderContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the title of the BitAccordion.
