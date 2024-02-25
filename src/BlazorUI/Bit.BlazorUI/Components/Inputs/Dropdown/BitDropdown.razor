@@ -60,7 +60,7 @@
               aria-atomic="true"
               aria-invalid="false">
 
-           @{
+            @{
                 var text = GetText();
             }
 
@@ -103,7 +103,7 @@
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
-                       role="searchbox"
+                       role="combobox"
                        value="@_searchText"
                        aria-label="@AriaLabel"
                        placeholder="@Placeholder"
@@ -236,6 +236,29 @@
                         </button>
                     </div>
                 }
+            </div>
+        }
+        else if (Combo && _isResponsiveMode)
+        {
+            <div style="@Styles?.ComboBoxContainer"
+                 class="bit-drp-cbi @Classes?.ComboBoxContainer">
+                <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnChange"
+                       style="@Styles?.ComboBoxInput"
+                       class="bit-drp-icb @Classes?.ComboBoxInput"
+                       type="text"
+                       role="combobox"
+                       value="@_searchText"
+                       aria-label="@AriaLabel"
+                       placeholder="@Placeholder"
+                       autocomplete="@BitAutoCompleteValue.NewPassword"
+                       disabled="@(IsEnabled is false)" />
+
+                <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
+                        type="button"
+                        style="@Styles?.AddItemComboButton"
+                        class="bit-drp-icn bit-drp-cai @Classes?.AddItemComboButton">
+                    <i class="bit-icon bit-icon--CalculatorAddition" />
+                </button>
             </div>
         }
 

@@ -309,7 +309,8 @@
     }
 }
 
-.bit-drp-inp {
+.bit-drp-inp,
+.bit-drp-icb {
     margin: 0;
     flex: 1 1 0;
     min-width: 0;
@@ -390,6 +391,38 @@
 .bit-drp-itx {
     line-height: spacing(2.5);
     color: $color-foreground-primary;
+}
+
+.bit-drp-cbi {
+    margin: 0;
+    display: flex;
+    box-shadow: none;
+    font-weight: 400;
+    border-radius: 0;
+    height: spacing(4);
+    align-items: stretch;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    color: $color-foreground-primary;
+    border-style: $shape-border-style;
+    border-color: $color-border-primary;
+    font-family: $typography-font-family;
+    border-width: 0 0 $shape-border-width;
+    background-color: $color-background-primary;
+    padding: spacing(0.125) 0 spacing(0.125) spacing(1);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary;
+
+            .bit-drp-sic {
+                i {
+                    color: $color-action-hover-primary;
+                }
+            }
+        }
+    }
 }
 
 .bit-drp-sb {
@@ -573,7 +606,8 @@
     background-color: transparent;
 }
 
-.bit-drp-clr {
+.bit-drp-clr,
+.bit-drp-cai {
     display: flex;
     right: spacing(3.5);
     width: spacing(3.75);

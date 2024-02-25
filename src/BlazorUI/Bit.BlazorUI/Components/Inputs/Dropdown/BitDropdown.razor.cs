@@ -29,9 +29,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     private int? _totalItems;
     private string? _searchText;
+    private bool _isResponsiveMode;
     private bool _inputSearchHasFocus;
     private ElementReference _searchInputRef;
     private ElementReference _comboBoxInputRef;
+    private ElementReference _comboBoxInputResponsiveRef;
     private Virtualize<TItem>? _virtualizeElement;
     private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
 
@@ -758,6 +760,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         if (IsEnabled is false) return;
         if (IsOpen is false) return;
         if (Combo is false) return;
+        if (_isResponsiveMode) return;
 
         await _comboBoxInputRef.FocusAsync();
     }
@@ -779,12 +782,16 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         if (_searchText.HasValue())
         {
-            className.Append($" {RootElementClass}-shv");
+            className.Append(' ')
+                     .Append(RootElementClass)
+                     .Append("-shv");
         }
 
         if (_inputSearchHasFocus)
         {
-            className.Append($" {RootElementClass}-shf");
+            className.Append(' ')
+                     .Append(RootElementClass)
+                     .Append("-shf");
         }
 
         return className.ToString();
@@ -820,11 +827,32 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         UpdateSelectedItemsFromValues();
     }
 
+    private async Task HandleOnAddItemComboClick()
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        _searchText = await _js.GetProperty(_comboBoxInputResponsiveRef, "value");
+
+        await AddDynamicItem();
+
+        _searchText = string.Empty;
+
+        if (_isResponsiveMode && IsMultiSelect)
+        {
+            await _comboBoxInputResponsiveRef.FocusAsync();
+
+            return;
+        }
+
+        await CloseCallout();
+    }
+
     private async Task ToggleCallout()
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleCallout(_dotnetObj,
+        _isResponsiveMode = await _js.ToggleCallout(_dotnetObj,
                                 _dropdownId,
                                 _calloutId,
                                 IsOpen,
@@ -1157,11 +1185,14 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         }
         else if (eventArgs.Key == "Enter")
         {
-            _searchText = await _js.GetProperty(_comboBoxInputRef, "value");
+            _searchText = await _js.GetProperty(_isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef, "value");
 
             await AddDynamicItem();
 
             _searchText = string.Empty;
+
+            if (_isResponsiveMode && IsMultiSelect) return;
+
             await CloseCallout();
         }
         else if (eventArgs.Key == "Backspace" && _searchText.HasNoValue())
