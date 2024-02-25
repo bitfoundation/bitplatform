@@ -68,12 +68,15 @@ public static partial class Program
                 };
             });
 
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddDbContextPool<AppDbContext>(options =>
         {
+            options.EnableSensitiveDataLogging(env.IsDevelopment())
+                .EnableDetailedErrors(env.IsDevelopment());
+
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-                dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                
             });
             //#endif
             //#if (IsInsideProjectTemplate == true)
@@ -82,7 +85,7 @@ public static partial class Program
             //#if (database == "Sqlite")
             options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
             {
-                dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                
             });
             //#endif
         });
