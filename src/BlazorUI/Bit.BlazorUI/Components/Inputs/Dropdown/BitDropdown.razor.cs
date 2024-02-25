@@ -846,18 +846,18 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         if (IsEnabled is false) return;
 
         _isResponsiveMode = await _js.ToggleCallout(_dotnetObj,
-                                _dropdownId,
-                                _calloutId,
-                                IsOpen,
-                                IsResponsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
-                                DropDirection,
-                                IsRtl,
-                                _scrollContainerId,
-                                ShowSearchBox && Combo is false ? 32 : 0,
-                                CalloutHeaderTemplate is not null ? _headerId : "",
-                                CalloutFooterTemplate is not null ? _footerId : "",
-                                true,
-                                RootElementClass);
+                                                    _dropdownId,
+                                                    _calloutId,
+                                                    IsOpen,
+                                                    IsResponsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
+                                                    DropDirection,
+                                                    IsRtl,
+                                                    _scrollContainerId,
+                                                    ShowSearchBox && Combo is false ? 32 : 0,
+                                                    CalloutHeaderTemplate is not null ? _headerId : "",
+                                                    CalloutFooterTemplate is not null ? _footerId : "",
+                                                    true,
+                                                    RootElementClass);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
