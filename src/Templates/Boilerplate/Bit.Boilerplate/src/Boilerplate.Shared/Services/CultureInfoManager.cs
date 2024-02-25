@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Boilerplate.Shared.Services;
+﻿namespace Boilerplate.Shared.Services;
 public class CultureInfoManager
 {
     public static (string name, string code) DefaultCulture { get; } = ("English", "en-US");
@@ -49,19 +47,9 @@ public class CultureInfoManager
     /// </summary>
     public static CultureInfo CustomizeCultureInfoForFaCulture(CultureInfo cultureInfo)
     {
-        cultureInfo.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(cultureInfo, new PersianCalendar());
-
         cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
         cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
-        cultureInfo.DateTimeFormat.AbbreviatedDayNames =
-        [
-            "ی", "د", "س", "چ", "پ", "ج", "ش"
-        ];
-        cultureInfo.DateTimeFormat.ShortestDayNames =
-        [
-            "ی", "د", "س", "چ", "پ", "ج", "ش"
-        ];
 
         return cultureInfo;
     }
