@@ -15,7 +15,7 @@ public class SignInRequestDto
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 
-    [NotMapped]
+    [JsonIgnore]
     [Display(Name = nameof(AppStrings.RememberMe))]
     public bool RememberMe { get; set; } = true;
 }
