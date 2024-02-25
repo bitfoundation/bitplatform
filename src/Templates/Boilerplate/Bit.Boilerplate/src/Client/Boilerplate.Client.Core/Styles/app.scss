@@ -32,7 +32,7 @@ p {
         user-select: none;
     }
 
-    &.bit-windows * {
+    &.bit-windows *, a {
         -webkit-user-drag: none;
     }
 }
