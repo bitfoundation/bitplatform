@@ -6,10 +6,12 @@ public partial class BitAccordionDemo
     {
         new()
         {
-            Name = "DefaultIsExpanded",
-            Type = "bool?",
+            Name = "Classes",
+            Type = "BitAccordionClassStyles?",
             DefaultValue = "null",
-            Description = "Default value of the IsExpanded."
+            Description = "Custom CSS classes for different parts of the BitAccordion.",
+            LinkType = LinkType.Link,
+            Href = "#accordion-class-styles"
         },
         new()
         {
@@ -17,6 +19,13 @@ public partial class BitAccordionDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of the Accordion."
+        },
+        new()
+        {
+            Name = "DefaultIsExpanded",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Default value of the IsExpanded."
         },
         new()
         {
@@ -53,10 +62,87 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitAccordionClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitAccordion.",
+            LinkType = LinkType.Link,
+            Href = "#accordion-class-styles"
+        },
+        new()
+        {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
             Description = "Title in the header of Accordion."
+        }
+    };
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "accordion-class-styles",
+            Title = "BitAccordionClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "Expanded",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the expanded state of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "Header",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "HeaderContent",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header content of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "Title",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the title of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the description of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "ChevronDownIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the chevron down icon of the BitAccordion."
+                },
+                new()
+                {
+                    Name = "Content",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the content of the BitAccordion."
+                }
+            }
         }
     };
 
