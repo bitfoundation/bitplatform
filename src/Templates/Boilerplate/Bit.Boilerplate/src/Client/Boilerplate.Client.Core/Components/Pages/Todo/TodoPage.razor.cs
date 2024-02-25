@@ -46,7 +46,7 @@ public partial class TodoPage : IDisposable
 
         try
         {
-            allTodoItems = await (await todoItemController.Get(CurrentCancellationToken)).ToListAsync(CurrentCancellationToken);
+            allTodoItems = await todoItemController.Get(CurrentCancellationToken);
 
             FilterViewTodoItems();
         }

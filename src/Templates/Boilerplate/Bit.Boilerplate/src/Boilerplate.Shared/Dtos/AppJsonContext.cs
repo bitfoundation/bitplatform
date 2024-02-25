@@ -19,6 +19,7 @@ namespace Boilerplate.Shared.Dtos;
 //#if (sample == "Todo")
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(PagedResult<TodoItemDto>))]
+[JsonSerializable(typeof(List<TodoItemDto>))]
 //#elif (sample == "Admin")
 [JsonSerializable(typeof(List<ProductsCountPerCategoryResponseDto>))]
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
