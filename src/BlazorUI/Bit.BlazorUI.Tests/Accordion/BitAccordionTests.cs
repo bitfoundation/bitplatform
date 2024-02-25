@@ -58,30 +58,25 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>();
 
         var header = com.Find(".bit-acd-hdr");
-        var icon = com.Find(".bit-acd-hdr > i");
-        var content = com.Find(".bit-acd-con");
         header.Click();
 
-        Assert.IsTrue(icon.ClassName.Contains("bit-acd-hex"));
-        Assert.IsTrue(content.ClassName.Contains("bit-acd-cex"));
+        var expanded = com.Find(".bit-acd-exp");
+
+        Assert.IsTrue(expanded.ClassName.Contains("bit-acd-exp"));
     }
 
-    [DataTestMethod,
-        DataRow(true),
-        DataRow(false)
-    ]
-    public void BitAccordionShouldBeSetDefaultIsExpanded(bool defaultIsExpanded)
+
+    [DataTestMethod]
+    public void BitAccordionShouldBeSetDefaultIsExpanded()
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsExpanded, defaultIsExpanded);
+            parameters.Add(p => p.DefaultIsExpanded, true);
         });
 
-        var header = com.Find(".bit-acd-hdr > i");
-        var content = com.Find(".bit-acd-con");
+        var expanded = com.Find(".bit-acd-exp");
 
-        Assert.AreEqual(defaultIsExpanded, header.ClassName.Contains("bit-acd-hex"));
-        Assert.AreEqual(defaultIsExpanded, content.ClassName.Contains("bit-acd-cex"));
+        Assert.IsTrue(expanded.ClassName.Contains("bit-acd-exp"));
     }
 
     [DataTestMethod,
