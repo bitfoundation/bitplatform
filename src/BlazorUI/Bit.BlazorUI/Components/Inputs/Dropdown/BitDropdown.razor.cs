@@ -500,18 +500,16 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     internal string GetItemWrapperCssClasses(TItem item)
     {
-        var stringBuilder = new StringBuilder(RootElementClass);
-
-        stringBuilder.Append("-iwr");
+        var stringBuilder = new StringBuilder("bit-drp-iwr");
 
         if (GetIsSelected(item))
         {
-            stringBuilder.Append($" {RootElementClass}-chd");
+            stringBuilder.Append(" bit-drp-chd");
         }
 
         if (GetIsEnabled(item) is false)
         {
-            stringBuilder.Append($" {RootElementClass}-ids");
+            stringBuilder.Append(" bit-drp-ids");
         }
 
         return stringBuilder.ToString();
@@ -777,21 +775,16 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     private string GetSearchBoxClasses()
     {
-        StringBuilder className = new StringBuilder(RootElementClass);
-        className.Append("-sb");
+        var className = new StringBuilder("bit-drp-sb");
 
         if (_searchText.HasValue())
         {
-            className.Append(' ')
-                     .Append(RootElementClass)
-                     .Append("-shv");
+            className.Append(" bit-drp-shv");
         }
 
         if (_inputSearchHasFocus)
         {
-            className.Append(' ')
-                     .Append(RootElementClass)
-                     .Append("-shf");
+            className.Append(" bit-drp-shf");
         }
 
         return className.ToString();
