@@ -18,5 +18,5 @@ public interface ITodoItemController : IAppController
     Task Delete(int id, CancellationToken cancellationToken = default);
 
     [HttpGet]
-    Task<IAsyncEnumerable<TodoItemDto>> Get(CancellationToken cancellationToken = default) => default!;
+    Task<List<TodoItemDto>> Get(CancellationToken cancellationToken = default) => default!;
 }
