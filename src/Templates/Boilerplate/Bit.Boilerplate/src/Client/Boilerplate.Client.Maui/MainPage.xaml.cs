@@ -67,6 +67,8 @@ public partial class MainPage
 
             handler.PlatformView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
+            handler.PlatformView.HapticFeedbackEnabled = false;
+
             Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
 
             settings.AllowFileAccessFromFileURLs =
