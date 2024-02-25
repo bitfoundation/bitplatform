@@ -1,59 +1,25 @@
 ﻿using System.Reflection;
-using System.Globalization;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Helpers;
 
 public static class CultureInfoHelper
 {
-    private static readonly FieldInfo _cultureDataField = typeof(TextInfo).GetField("_cultureData", BindingFlags.NonPublic | BindingFlags.Instance)!;
-    private static readonly FieldInfo _iReadingLayoutField =
-        Type.GetType("System.Globalization.CultureData, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e")!
-        .GetField("_iReadingLayout", BindingFlags.NonPublic | BindingFlags.Instance)!;
-
     public static CultureInfo GetFaIrCultureWithFarsiNames()
     {
         var cultureInfo = CultureInfo.CreateSpecificCulture("fa-IR");
-
-        cultureInfo.DateTimeFormat.MonthNames = new[]
-        {
-            "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", ""
-        };
-
-        cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
-        {
-            "فرور", "ارد", "خرد", "تیر", "مرد", "شهر", "مهر", "آبا", "آذر", "دی", "بهم", "اسف", ""
-        };
-
-        cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
-        cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = cultureInfo.DateTimeFormat.AbbreviatedMonthNames;
-        cultureInfo.DateTimeFormat.DayNames = new[]
-        {
-            "یکشنبه", "دوشنبه", "ﺳﻪشنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"
-        };
-
-        cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
-        {
-            "ی", "د", "س", "چ", "پ", "ج", "ش"
-        };
-
-        cultureInfo.DateTimeFormat.ShortestDayNames = new[]
-        {
-            "ی", "د", "س", "چ", "پ", "ج", "ش"
-        };
+        cultureInfo.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(cultureInfo, new PersianCalendar());
 
         cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
         cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
-        cultureInfo.DateTimeFormat.FirstDayOfWeek = DayOfWeek.Saturday;
-
-        var cultureData = _cultureDataField.GetValue(cultureInfo.TextInfo);
-
-        _iReadingLayoutField.SetValue(cultureData, 1 /*rtl*/); // this affects cultureInfo.TextInfo.IsRightToLeft
-
-        if (cultureInfo.DateTimeFormat.Calendar is not PersianCalendar)
-        {
-            cultureInfo.DateTimeFormat.Calendar = new PersianCalendar();
-        }
+        cultureInfo.DateTimeFormat.AbbreviatedDayNames =
+        [
+            "ی", "د", "س", "چ", "پ", "ج", "ش"
+        ];
+        cultureInfo.DateTimeFormat.ShortestDayNames =
+        [
+            "ی", "د", "س", "چ", "پ", "ج", "ش"
+        ];
 
         return cultureInfo;
     }
@@ -61,9 +27,10 @@ public static class CultureInfoHelper
     public static CultureInfo GetFaIrCultureWithFingilishNames()
     {
         var cultureInfo = CultureInfo.CreateSpecificCulture("fa-IR");
+        cultureInfo.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(cultureInfo, new PersianCalendar());
 
-        cultureInfo.DateTimeFormat.MonthNames = new[]
-        {
+        cultureInfo.DateTimeFormat.MonthNames =
+        [
             "Farvardin",
             "Ordibehesht",
             "Khordad",
@@ -77,10 +44,10 @@ public static class CultureInfoHelper
             "Bahman",
             "Esfand",
             ""
-        };
+        ];
 
-        cultureInfo.DateTimeFormat.AbbreviatedMonthNames = new[]
-        {
+        cultureInfo.DateTimeFormat.AbbreviatedMonthNames =
+        [
             "Far",
             "Ord",
             "Khr",
@@ -94,12 +61,12 @@ public static class CultureInfoHelper
             "Bah",
             "Esf",
             ""
-        };
+        ];
 
         cultureInfo.DateTimeFormat.MonthGenitiveNames = cultureInfo.DateTimeFormat.MonthNames;
         cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = cultureInfo.DateTimeFormat.AbbreviatedMonthNames;
-        cultureInfo.DateTimeFormat.DayNames = new[]
-        {
+        cultureInfo.DateTimeFormat.DayNames =
+        [
             "YekShanbe",
             "DoShanbe",
             "SeShanbe",
@@ -107,10 +74,10 @@ public static class CultureInfoHelper
             "PanjShanbe",
             "Jome",
             "Shanbe"
-        };
+        ];
 
-        cultureInfo.DateTimeFormat.AbbreviatedDayNames = new[]
-        {
+        cultureInfo.DateTimeFormat.AbbreviatedDayNames =
+        [
             "Yek",
             "Do",
             "Se",
@@ -118,10 +85,10 @@ public static class CultureInfoHelper
             "Pj",
             "Jom",
             "Shn"
-        };
+        ];
 
-        cultureInfo.DateTimeFormat.ShortestDayNames = new[]
-        {
+        cultureInfo.DateTimeFormat.ShortestDayNames =
+        [
             "Y",
             "D",
             "S",
@@ -129,21 +96,11 @@ public static class CultureInfoHelper
             "P",
             "J",
             "S"
-        };
+        ];
 
         cultureInfo.DateTimeFormat.AMDesignator = "G.Z";
         cultureInfo.DateTimeFormat.PMDesignator = "B.Z";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
-        cultureInfo.DateTimeFormat.FirstDayOfWeek = DayOfWeek.Saturday;
-
-        var cultureData = _cultureDataField.GetValue(cultureInfo.TextInfo);
-
-        _iReadingLayoutField.SetValue(cultureData, 1 /*rtl*/); // this affects cultureInfo.TextInfo.IsRightToLeft
-
-        if (cultureInfo.DateTimeFormat.Calendar is not PersianCalendar)
-        {
-            cultureInfo.DateTimeFormat.Calendar = new PersianCalendar();
-        }
 
         return cultureInfo;
     }
