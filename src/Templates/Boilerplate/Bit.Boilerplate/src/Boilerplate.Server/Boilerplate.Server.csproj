@@ -75,7 +75,7 @@
     <!-- https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container -->
     <PropertyGroup>
         <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
-        <EnableSdkContainerDebugging>True</EnableSdkContainerDebugging>
+        <EnableSdkContainerDebugging Condition="'$(Configuration)' == 'Debug'">True</EnableSdkContainerDebugging>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <DockerfileContext>..\..</DockerfileContext>

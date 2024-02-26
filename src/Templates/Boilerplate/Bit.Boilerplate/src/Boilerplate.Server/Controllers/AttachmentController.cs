@@ -1,7 +1,6 @@
 ﻿using Boilerplate.Server.Models.Identity;
 using ImageMagick;
 using Microsoft.AspNetCore.StaticFiles;
-using MimeTypes;
 using SystemFile = System.IO.File;
 
 namespace Boilerplate.Server.Controllers;
