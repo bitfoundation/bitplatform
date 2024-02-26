@@ -1,0 +1,60 @@
+﻿@page "/butil/screenOrientation"
+@inherits AppComponentBase
+@inject Bit.Butil.ScreenOrientation screenOrientation
+
+<PageOutlet Url="butil/screenOrientation"
+            Title="ScreenOrientation - Butil"
+            Description="ScreenOrientation class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>ScreenOrientation</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the ScreenOrientation class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser ScreenOrientation features you need to inject the Bit.Butil.ScreenOrientation class and use it like this:
+<pre class="code-box">
+@@inject Bit.Butil.ScreenOrientation screenOrientation
+
+@@code {
+    var angle = await screenOrientation.GetAngle();
+}</pre>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>GetAngle</b>: <br />
+            Returns the document's current orientation angle.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @getAngleExampleCode
+                        </pre>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetAngle">GetAngle</BitButton>
+                        <br />
+                        <br />
+                        <div>Angle: @angle</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="VisualViewport" PrevUrl="/butil/visualViewport" />
