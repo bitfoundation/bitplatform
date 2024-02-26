@@ -316,5 +316,11 @@
         "inputFile": "Pages/Butil/Butil16ScreenPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil17VisualViewportPage.razor.css",
+        "inputFile": "Pages/Butil/Butil17VisualViewportPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     }
 ]
