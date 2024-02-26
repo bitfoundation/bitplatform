@@ -238,10 +238,11 @@
                 }
             </div>
         }
-        else if (Combo && _isResponsiveMode)
+
+        @if (Combo && _isResponsiveMode)
         {
-            <div style="@Styles?.ComboBoxContainer"
-                 class="bit-drp-cbi @Classes?.ComboBoxContainer">
+            <div style="@Styles?.ResponsiveComboInputContainer"
+                 class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
                 <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnChange"
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-icb @Classes?.ComboBoxInput"
@@ -255,8 +256,8 @@
 
                 <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
                         type="button"
-                        style="@Styles?.AddItemComboButton"
-                        class="bit-drp-icn bit-drp-cai @Classes?.AddItemComboButton">
+                        style="@Styles?.ResponsiveAddItemComboButton"
+                        class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveAddItemComboButton">
                     <i class="bit-icon bit-icon--Add" />
                 </button>
             </div>

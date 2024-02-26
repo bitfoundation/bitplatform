@@ -173,12 +173,12 @@ public class BitDropdownClassStyles
     public string? Suffix { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the ComboBox container of the BitDropdown.
+    /// Custom CSS classes/styles for the ComboBox input container in responsive mode of the BitDropdown.
     /// </summary>
-    public string? ComboBoxContainer { get; set; }
+    public string? ResponsiveComboInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the add new item combo box button of the BitDropdown.
+    /// Custom CSS classes/styles for the add new item combo box button in responsive mode of the BitDropdown.
     /// </summary>
-    public string? AddItemComboButton { get; set; }
+    public string? ResponsiveAddItemComboButton { get; set; }
 }

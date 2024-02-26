@@ -825,8 +825,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        _searchText = await _js.GetProperty(_comboBoxInputResponsiveRef, "value");
-
         await AddDynamicItem();
 
         _searchText = string.Empty;
