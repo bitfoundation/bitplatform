@@ -180,5 +180,5 @@ public class BitDropdownClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the add new item combo box button in responsive mode of the BitDropdown.
     /// </summary>
-    public string? ResponsiveAddItemComboButton { get; set; }
+    public string? ResponsiveComboAddButton { get; set; }
 }
