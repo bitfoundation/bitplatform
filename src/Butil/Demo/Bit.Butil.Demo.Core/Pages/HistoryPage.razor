@@ -1,5 +1,4 @@
 ﻿@page "/history"
-@implements IDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.History history
 
@@ -131,10 +130,5 @@
     private async Task ReplaceState()
     {
         await history.ReplaceState(url: "/document");
-    }
-
-    public void Dispose()
-    {
-        history.Dispose();
     }
 }
