@@ -22,7 +22,7 @@ public static partial class MauiProgram
 
         services.TryAddTransient(sp =>
         {
-            var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
+            var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress
