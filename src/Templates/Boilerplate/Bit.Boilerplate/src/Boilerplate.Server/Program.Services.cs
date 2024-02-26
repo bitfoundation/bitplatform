@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.StaticFiles;
 //#endif
 
 namespace Boilerplate.Server;
@@ -103,6 +104,7 @@ public static partial class Program
         AddHealthChecks(builder);
 
         services.TryAddTransient<HtmlRenderer>();
+        services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
 
