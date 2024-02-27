@@ -28,7 +28,7 @@
         }
 
         .bit-cal-dbt.bit-cal-dtd {
-                background-color: $color-background-disabled;            
+            background-color: $color-background-disabled;
         }
     }
 }
@@ -271,6 +271,7 @@
         pointer-events: none;
         background-color: transparent;
 
+        .bit-icon,
         .bit-cal-gti {
             color: $color-foreground-disabled;
         }
