@@ -45,12 +45,12 @@ jobs:
     - name: Release build empty sample + offline db + Win exe
       run: |
         dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --windows
-        dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
+        dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false
 
     - name: Release build empty sample without api
       run: |
         dotnet new bit-bp --name ApiFalse --database other --sample none --pipeline azure --api false
-        dotnet build ApiFalse/ApiFalse.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
+        dotnet build ApiFalse/ApiFalse.sln -c Release -p:RunAOTCompilation=false
 
     - name: Release build admin panel sample + SqlServer database
       run: |
@@ -70,7 +70,7 @@ jobs:
       run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -c Release
 
     - name: Release build bit blazor ui demo
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -c Release -p:RunAOTCompilation=false -p:EnableWindowsTargeting=true
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -c Release -p:RunAOTCompilation=false
 
     - name: Create projects from BlazorEmpty project template with different parameters
       run: |

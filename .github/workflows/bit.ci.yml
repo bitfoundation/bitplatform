@@ -59,7 +59,7 @@ jobs:
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Build
-      run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false -p:EnableWindowsTargeting=true
+      run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false
       
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
