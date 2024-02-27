@@ -18,8 +18,8 @@
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0-pre-01" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0-pre-01" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.7" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2277.86" />
         <PackageReference Include="Velopack" Version="0.0.332" />
