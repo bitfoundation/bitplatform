@@ -1,5 +1,5 @@
 ﻿@page "/keyboard"
-@implements IDisposable
+@implements IAsyncDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.Keyboard keyboard
 
@@ -34,8 +34,8 @@
         base.OnInitialized();
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        keyboard.Dispose();
+        await keyboard.DisposeAsync();
     }
 }
