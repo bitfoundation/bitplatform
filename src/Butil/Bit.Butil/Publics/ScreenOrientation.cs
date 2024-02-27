@@ -97,7 +97,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event</see>
     /// </summary>
-    public async Task<Guid[]> RemoveChange(Action<OrientationState> handler)
+    public async ValueTask<Guid[]> RemoveChange(Action<OrientationState> handler)
     {
         var ids = ScreenOrientationListenersManager.RemoveListener(handler);
 
@@ -124,7 +124,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
             _handlers.TryRemove(id, out _);
         }
 
-        await js.InvokeVoidAsync("BitButil.screenOrientation.removeChange", ids);
+        await RemoveFromJs(ids);
     }
     public async ValueTask RemoveAllChanges()
     {
@@ -134,11 +134,27 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         ScreenOrientationListenersManager.RemoveListeners(ids);
 
+        await RemoveFromJs(ids);
+    }
+    private async ValueTask RemoveFromJs(Guid[] ids)
+    {
+        if (OperatingSystem.IsBrowser() is false) return;
+
         await js.InvokeVoidAsync("BitButil.screenOrientation.removeChange", ids);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await RemoveAllChanges();
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            await RemoveAllChanges();
+        }
     }
 }
