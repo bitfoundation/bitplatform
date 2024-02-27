@@ -91,6 +91,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         return listenerId;
     }
+
     /// <summary>
     /// The change event of the ScreenOrientation interface fires when the orientation of the 
     /// screen has changed, for example when a user rotates their mobile phone.
@@ -105,6 +106,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         return ids;
     }
+
     /// <summary>
     /// The change event of the ScreenOrientation interface fires when the orientation of the 
     /// screen has changed, for example when a user rotates their mobile phone.
@@ -117,8 +119,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         await RemoveChange([id]);
     }
+
     private async ValueTask RemoveChange(Guid[] ids)
     {
+        if (ids.Length == 0) return;
+
         foreach (var id in ids)
         {
             _handlers.TryRemove(id, out _);
@@ -126,8 +131,11 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         await RemoveFromJs(ids);
     }
+
     public async ValueTask RemoveAllChanges()
     {
+        if (_handlers.Count == 0) return;
+
         var ids = _handlers.Select(h => h.Key).ToArray();
 
         _handlers.Clear();
@@ -136,6 +144,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         await RemoveFromJs(ids);
     }
+
     private async ValueTask RemoveFromJs(Guid[] ids)
     {
         if (OperatingSystem.IsBrowser() is false) return;
