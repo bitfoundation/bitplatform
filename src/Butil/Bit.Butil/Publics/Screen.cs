@@ -13,7 +13,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen">https://developer.mozilla.org/en-US/docs/Web/API/Screen</see>
 /// </summary>
-public class Screen(IJSRuntime js) : IDisposable
+public class Screen(IJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 
@@ -81,7 +81,7 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ScreenListenersManager))]
-    public async Task<Guid> AddChange(Action handler)
+    public async ValueTask<Guid> AddChange(Action handler)
     {
         var listenerId = ScreenListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
@@ -97,11 +97,11 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
     /// </summary>
-    public Guid[] RemoveChange(Action handler)
+    public async ValueTask<Guid[]> RemoveChange(Action handler)
     {
         var ids = ScreenListenersManager.RemoveListener(handler);
 
-        RemoveChange(ids);
+        await RemoveChange(ids);
 
         return ids;
     }
@@ -112,36 +112,57 @@ public class Screen(IJSRuntime js) : IDisposable
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event">https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event</see>
     /// </summary>
-    public void RemoveChange(Guid id)
+    public async ValueTask RemoveChange(Guid id)
     {
         ScreenListenersManager.RemoveListeners([id]);
 
-        RemoveChange([id]);
+        await RemoveChange([id]);
     }
 
-    private void RemoveChange(Guid[] ids)
+    private async ValueTask RemoveChange(Guid[] ids)
     {
+        if (ids.Length == 0) return;
+
         foreach (var id in ids)
         {
             _handlers.TryRemove(id, out _);
         }
 
-        _ = js.InvokeVoidAsync("BitButil.screen.removeChange", ids);
+        await RemoveFromJs(ids);
     }
 
-    public async Task RemoveAllChanges()
+    public async ValueTask RemoveAllChanges()
     {
+        if (_handlers.Count == 0) return;
+
         var ids = _handlers.Select(h => h.Key).ToArray();
 
         _handlers.Clear();
 
         ScreenListenersManager.RemoveListeners(ids);
 
-        _ = js.InvokeVoidAsync("BitButil.screen.removeChange", ids);
+        await RemoveFromJs(ids);
     }
 
-    public void Dispose()
+    private async ValueTask RemoveFromJs(Guid[] ids)
     {
-        _ = RemoveAllChanges();
+        if (OperatingSystem.IsBrowser() is false) return;
+
+        await js.InvokeVoidAsync("BitButil.screen.removeChange", ids);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            await RemoveAllChanges();
+        }
     }
 }
