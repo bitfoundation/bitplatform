@@ -1,4 +1,5 @@
 ﻿@page "/visualViewport"
+@implements IAsyncDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.VisualViewport visualViewport
 
@@ -112,5 +113,10 @@
     {
         var scale = await visualViewport.GetScale();
         await console.Log("Scale:", scale);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await visualViewport.DisposeAsync();
     }
 }

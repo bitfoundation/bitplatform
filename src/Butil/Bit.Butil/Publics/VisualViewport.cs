@@ -103,12 +103,13 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         return listenerId;
     }
+
     /// <summary>
     /// Fired when the visual viewport is resized.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event</see>
     /// </summary>
-    public async Task<Guid[]> RemoveResize(Action handler)
+    public async ValueTask<Guid[]> RemoveResize(Action handler)
     {
         var ids = VisualViewportListenersManager.RemoveListener(handler);
 
@@ -116,6 +117,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         return ids;
     }
+
     /// <summary>
     /// Fired when the visual viewport is resized.
     /// <br/>
@@ -127,22 +129,22 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         await RemoveResize([id]);
     }
+
     private async ValueTask RemoveResize(Guid[] ids)
     {
+        if (ids.Length == 0) return;
+
         foreach (var id in ids)
         {
             _handlers.TryRemove(id, out _);
         }
 
-        await js.InvokeVoidAsync("BitButil.visualViewport.removeResize", ids);
+        await RemoveResizeFromJs(ids);
     }
-    public async ValueTask RemoveAllResizes()
+
+    private async ValueTask RemoveResizeFromJs(Guid[] ids)
     {
-        var ids = _handlers.Select(h => h.Key).ToArray();
-
-        _handlers.Clear();
-
-        VisualViewportListenersManager.RemoveListeners(ids);
+        if (OperatingSystem.IsBrowser() is false) return;
 
         await js.InvokeVoidAsync("BitButil.visualViewport.removeResize", ids);
     }
@@ -162,12 +164,13 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         return listenerId;
     }
+
     /// <summary>
     /// Fired when the visual viewport is scrolled.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event</see>
     /// </summary>
-    public async Task<Guid[]> RemoveScroll(Action handler)
+    public async ValueTask<Guid[]> RemoveScroll(Action handler)
     {
         var ids = VisualViewportListenersManager.RemoveListener(handler);
 
@@ -175,6 +178,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         return ids;
     }
+
     /// <summary>
     /// Fired when the visual viewport is scrolled.
     /// <br/>
@@ -186,6 +190,7 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 
         await RemoveScroll([id]);
     }
+
     private async ValueTask RemoveScroll(Guid[] ids)
     {
         foreach (var id in ids)
@@ -193,25 +198,31 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
             _handlers.TryRemove(id, out _);
         }
 
+        await RemoveScrollFromJs(ids);
+    }
+
+    private async ValueTask RemoveScrollFromJs(Guid[] ids)
+    {
+        if (OperatingSystem.IsBrowser() is false) return;
+
         await js.InvokeVoidAsync("BitButil.visualViewport.removeScroll", ids);
     }
-    public async ValueTask RemoveAllScrolls()
+
+
+    public async ValueTask RemoveAllEventHandlers()
     {
+        if (_handlers.Count == 0) return;
+
         var ids = _handlers.Select(h => h.Key).ToArray();
 
         _handlers.Clear();
 
         VisualViewportListenersManager.RemoveListeners(ids);
 
-        await js.InvokeVoidAsync("BitButil.visualViewport.removeScroll", ids);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
         var toAwait = new List<Task>();
 
-        var resizeValueTask = RemoveAllResizes();
-        var scrollValueTask = RemoveAllScrolls();
+        var resizeValueTask = RemoveResizeFromJs(ids);
+        var scrollValueTask = RemoveScrollFromJs(ids);
 
         if (resizeValueTask.IsCompleted is false)
         {
@@ -224,5 +235,20 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
         }
 
         await Task.WhenAll(toAwait);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            await RemoveAllEventHandlers();
+        }
     }
 }
