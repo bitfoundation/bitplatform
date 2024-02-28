@@ -11,7 +11,7 @@ namespace Boilerplate.Client.Core.Components;
 /// on the corresponding class instead of using `ErrorResourceType` on each property. Check out <see cref="SignUpRequestDto"/> for an example.
 /// However, you need to use <see cref="AppDataAnnotationsValidator"/> instead of <see cref="DataAnnotationsValidator"/> in Blazor EditForms for this method to work.
 /// </summary>
-public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
+public partial class AppDataAnnotationsValidator : AppComponentBase
 {
     private static readonly PropertyInfo otherPropertyNamePropertyInfo = typeof(CompareAttribute).GetProperty(nameof(CompareAttribute.OtherPropertyDisplayName))!;
 
@@ -196,14 +196,10 @@ public partial class AppDataAnnotationsValidator : AppComponentBase, IDisposable
         EditContext.NotifyValidationStateChanged();
     }
 
-    public override void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+        await base.DisposeAsync(disposing);
 
-    protected virtual void Dispose(bool disposing)
-    {
         if (disposed || disposing is false) return;
 
         if (EditContext is not null)
