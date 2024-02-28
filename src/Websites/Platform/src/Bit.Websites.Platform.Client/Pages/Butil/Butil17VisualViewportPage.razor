@@ -54,6 +54,157 @@
                 </BitPivot>
             </BitAccordion>
             <br /><br />
+
+            <b>GetOffsetTop</b>: <br />
+            Returns the offset of the top edge of the visual viewport from the top edge of
+            the layout viewport in CSS pixels, or 0 if current document is not fully active.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/offsetTop" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @getOffsetTopExampleCode
+                        </pre>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetOffsetTop">GetOffsetTop</BitButton>
+                        <br />
+                        <br />
+                        <div>OffsetTop: @offsetTop</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetPageLeft</b>: <br />
+            Returns the x coordinate of the left edge of the visual viewport relative to the
+            initial containing block origin, in CSS pixels, or 0 if current document is not fully active.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/pageLeft" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @getPageLeftExampleCode
+                        </pre>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetPageLeft">GetPageLeft</BitButton>
+                        <br />
+                        <br />
+                        <div>PageLeft: @pageLeft</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetPageTop</b>: <br />
+            Returns the y coordinate of the top edge of the visual viewport relative to the
+            initial containing block origin, in CSS pixels, or 0 if current document is not fully active.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/pageTop" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @getPageTopExampleCode
+                        </pre>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetPageTop">GetPageTop</BitButton>
+                        <br />
+                        <br />
+                        <div>PageTop: @pageTop</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetWidth</b>: <br />
+            Returns the width of the visual viewport, in CSS pixels, or 0 if current document is not fully active.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/width" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @getWidthExampleCode
+                        </pre>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetWidth">GetWidth</BitButton>
+                        <br />
+                        <br />
+                        <div>Width: @width</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetHeight</b>: <br />
+            Returns the height of the visual viewport, in CSS pixels, or 0 if current document is not fully active.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/height" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @getHeightExampleCode
+                        </pre>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetHeight">GetHeight</BitButton>
+                        <br />
+                        <br />
+                        <div>Height: @height</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetScale</b>: <br />
+            Returns the pinch-zoom scaling factor applied to the visual viewport, or 0 if current
+            document is not fully active, or 1 if there is no output device.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scale" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <pre class="code-box">
+                            @getScaleExampleCode
+                        </pre>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetScale">GetScale</BitButton>
+                        <br />
+                        <br />
+                        <div>Scale: @scale</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>AddResize</b>, <b>RemoveResize</b>: <br />
+            Fired when the visual viewport is resized.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/resize_event" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>AddScroll</b>, <b>RemoveScroll</b>: <br />
+            Fired when the visual viewport is scrolled.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scroll_event" target="_blank">MDN</a>).
         </div>
     </section>
 </div>
