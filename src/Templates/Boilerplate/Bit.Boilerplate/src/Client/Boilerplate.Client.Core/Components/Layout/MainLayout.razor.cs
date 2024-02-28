@@ -66,12 +66,13 @@ public partial class MainLayout : IDisposable
     public void Dispose()
     {
         Dispose(true);
+
         GC.SuppressFinalize(this);
     }
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposed) return;
+        if (disposed || disposing is false) return;
 
         authManager.AuthenticationStateChanged -= VerifyUserIsAuthenticatedOrNot;
 
