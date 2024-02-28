@@ -195,7 +195,7 @@ public partial class TodoPage : IDisposable
 
     public override void Dispose()
     {
-        keyboard.Dispose();
+        _ = keyboard.DisposeAsync();
         base.Dispose();
     }
 }
