@@ -1,10 +1,9 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class NavMenu : IDisposable
+public partial class NavMenu
 {
     private bool disposed;
     private bool isSignOutModalOpen;
@@ -132,14 +131,10 @@ public partial class NavMenu : IDisposable
         await IsMenuOpenChanged.InvokeAsync(false);
     }
 
-    public override void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+        await base.DisposeAsync(disposing);
 
-    protected virtual void Dispose(bool disposing)
-    {
         if (disposed || disposing is false) return;
 
         unsubscribe?.Invoke();
