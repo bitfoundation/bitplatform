@@ -311,7 +311,8 @@
     .menu-item--disabled {
         cursor: default;
 
-        .item-title {
+        .item-title,
+        .item-desc {
             color: $bit-color-foreground-disabled;
         }
 
