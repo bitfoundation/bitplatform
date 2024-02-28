@@ -4,7 +4,7 @@ using Boilerplate.Shared.Dtos.Todo;
 namespace Boilerplate.Client.Core.Components.Pages.Todo;
 
 [Authorize]
-public partial class TodoPage : IDisposable
+public partial class TodoPage
 {
     [AutoInject] Keyboard keyboard = default!;
     [AutoInject] ITodoItemController todoItemController = default!;
@@ -193,9 +193,13 @@ public partial class TodoPage : IDisposable
         }
     }
 
-    public override void Dispose()
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
-        _ = keyboard.DisposeAsync();
-        base.Dispose();
+        await base.DisposeAsync(true);
+
+        if (disposing)
+        {
+            await keyboard.DisposeAsync();
+        }
     }
 }
