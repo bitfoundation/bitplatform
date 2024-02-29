@@ -17,7 +17,7 @@
             height: @(Size)px;
             margin: @(Convert(8))px;
             border-radius: 50%;
-            background: @Color;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
             animation: bit-ldn-Circle 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
         }
 

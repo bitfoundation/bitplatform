@@ -11,11 +11,11 @@
 
         .bit-ldn-DotsRing div {
             position: absolute;
+            border-radius: 50%;
             width: @(Convert(6))px;
             height: @(Convert(6))px;
-            background: @Color;
-            border-radius: 50%;
             animation: bit-ldn-DotsRing 1.2s linear infinite;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
         }
 
             .bit-ldn-DotsRing div:nth-child(1) {

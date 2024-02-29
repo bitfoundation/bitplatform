@@ -18,12 +18,12 @@
                 content: " ";
                 display: block;
                 position: absolute;
+                border-radius: 20%;
                 top: @(Convert(3))px;
                 left: @(Convert(37))px;
                 width: @(Convert(6))px;
                 height: @(Convert(18))px;
-                border-radius: 20%;
-                background: @Color;
+                background: @(Color ?? "var(--bit-clr-fg-primary)");
             }
 
             .bit-ldn-Spinner div:nth-child(1) {
