@@ -12,23 +12,23 @@
     }
 
         .bit-ldn-Heart div {
+            position: absolute;
             top: @(Convert(32))px;
             left: @(Convert(32))px;
-            position: absolute;
             width: @(Convert(32))px;
             height: @(Convert(32))px;
-            background: @Color;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
             animation: bit-ldn-Heart 1.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
         }
 
             .bit-ldn-Heart div:after,
             .bit-ldn-Heart div:before {
                 content: " ";
-                position: absolute;
                 display: block;
+                position: absolute;
                 width: @(Convert(32))px;
                 height: @(Convert(32))px;
-                background: @Color;
+                background: @(Color ?? "var(--bit-clr-fg-primary)");
             }
 
             .bit-ldn-Heart div:before {

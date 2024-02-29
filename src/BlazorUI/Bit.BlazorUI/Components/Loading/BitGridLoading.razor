@@ -11,11 +11,11 @@
 
         .bit-ldn-Grid div {
             position: absolute;
+            border-radius: 50%;
             width: @(Convert(16))px;
             height: @(Convert(16))px;
-            border-radius: 50%;
-            background: @Color;
             animation: bit-ldn-Grid 1.2s linear infinite;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
         }
 
             .bit-ldn-Grid div:nth-child(1) {

@@ -11,13 +11,13 @@
         .bit-ldn-DualRing:after {
             content: " ";
             display: block;
+            border-radius: 50%;
+            margin: @(Convert(8))px;
             width: @(Convert(64))px;
             height: @(Convert(64))px;
-            margin: @(Convert(8))px;
-            border-radius: 50%;
             border: @(Convert(6))px solid @Color;
-            border-color: @Color transparent @Color transparent;
             animation: bit-ldn-DualRing 1.2s linear infinite;
+            border-color: @(Color ?? "var(--bit-clr-fg-primary)") transparent @(Color ?? "var(--bit-clr-fg-primary)") transparent;
         }
 
     @@keyframes bit-ldn-DualRing {

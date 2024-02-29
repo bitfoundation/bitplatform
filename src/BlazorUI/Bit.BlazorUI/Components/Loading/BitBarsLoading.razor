@@ -14,7 +14,7 @@
             position: absolute;
             left: @(Convert(8))px;
             width: @(Convert(16))px;
-            background: @Color;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
             animation: bit-ldn-Bars 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
         }
 
