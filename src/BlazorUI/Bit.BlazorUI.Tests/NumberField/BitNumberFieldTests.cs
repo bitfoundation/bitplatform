@@ -902,14 +902,14 @@ public class BitNumberFieldTests : BunitTestContext
 
         var isInvalid = value < 6 || value > 18;
 
-        var NumberField = component.Find(".bit-nfl");
+        var numberField = component.Find(".bit-nfl");
 
-        Assert.IsFalse(NumberField.ClassList.Contains("bit-inv"));
+        Assert.IsFalse(numberField.ClassList.Contains("bit-inv"));
 
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(isInvalid, NumberField.ClassList.Contains("bit-inv"));
+        Assert.AreEqual(isInvalid, numberField.ClassList.Contains("bit-inv"));
 
         var input = component.Find("input");
 
@@ -924,7 +924,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         input.Blur();
 
-        Assert.AreEqual(!isInvalid, NumberField.ClassList.Contains("bit-inv"));
+        Assert.AreEqual(!isInvalid, numberField.ClassList.Contains("bit-inv"));
     }
 
     private double? Normalize(double? value, int precision) =>
