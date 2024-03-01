@@ -53,7 +53,7 @@ public partial class BitNumberFieldDemo
             Name = "DefaultValue",
             Type = "TValue?",
             DefaultValue = "null",
-            Description = "Initial value of the numeric text field.",
+            Description = "Initial value of the number field.",
         },
         new()
         {
@@ -74,7 +74,7 @@ public partial class BitNumberFieldDemo
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Icon name for an icon to display alongside the numeric text field's label.",
+            Description = "Icon name for an icon to display alongside the number field's label.",
         },
         new()
         {
@@ -109,21 +109,21 @@ public partial class BitNumberFieldDemo
             Name = "Label",
             Type = "string",
             DefaultValue = "string.Empty",
-            Description = "Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers.",
+            Description = "Descriptive label for the number field, Label displayed above the number field and read by screen readers.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
+            Description = "Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
         },
         new()
         {
             Name = "LabelPosition",
             Type = "BitNumberFieldLabelPosition",
             DefaultValue = "BitNumberFieldLabelPosition.Top",
-            Description = "The position of the label in regards to the numeric textfield.",
+            Description = "The position of the label in regards to the number field.",
             LinkType = LinkType.Link,
             Href = "#labelPosition-enum"
         },
@@ -132,27 +132,27 @@ public partial class BitNumberFieldDemo
             Name = "Min",
             Type = "TValue?",
             DefaultValue = "null",
-            Description = "Min value of the numeric text field. If not provided, the numeric text field has minimum value.",
+            Description = "Min value of the number field. If not provided, the number field has minimum value.",
         },
         new()
         {
             Name = "Max",
             Type = "TValue?",
             DefaultValue = "null",
-            Description = "Max value of the numeric text field. If not provided, the numeric text field has max value.",
+            Description = "Max value of the number field. If not provided, the number field has max value.",
         },
         new()
         {
             Name = "NumberFormat",
             Type = "string",
             DefaultValue = "{0}",
-            Description = "The format of the number in the numeric text field.",
+            Description = "The format of the number in the number field.",
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<TValue>",
-            Description = "Callback for when the numeric text field value change.",
+            Description = "Callback for when the number field value change.",
         },
         new()
         {
@@ -230,7 +230,7 @@ public partial class BitNumberFieldDemo
             Name = "Step",
             Type = "TValue?",
             DefaultValue = "null",
-            Description = "Difference between two adjacent values of the numeric text field.",
+            Description = "Difference between two adjacent values of the number field.",
         },
         new()
         {
@@ -284,98 +284,98 @@ public partial class BitNumberFieldDemo
                     Name = "ButtonsContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's buttons (increment and decrement) container."
+                    Description = "Custom CSS classes/styles for the number field's buttons (increment and decrement) container."
                 },
                 new()
                 {
                     Name = "DecrementButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's decrement button."
+                    Description = "Custom CSS classes/styles for the number field's decrement button."
                 },
                 new()
                 {
                     Name = "DecrementIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's decrement icon."
+                    Description = "Custom CSS classes/styles for the number field's decrement icon."
                 },
                 new()
                 {
                     Name = "DecrementIconContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's decrement icon container."
+                    Description = "Custom CSS classes/styles for the number field's decrement icon container."
                 },
                 new()
                 {
                     Name = "IncrementButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's increment button."
+                    Description = "Custom CSS classes/styles for the number field's increment button."
                 },
                 new()
                 {
                     Name = "IncrementIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's increment icon."
+                    Description = "Custom CSS classes/styles for the number field's increment icon."
                 },
                 new()
                 {
                     Name = "IncrementIconContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's increment icon container."
+                    Description = "Custom CSS classes/styles for the number field's increment icon container."
                 },
                 new()
                 {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's label."
+                    Description = "Custom CSS classes/styles for the number field's label."
                 },
                 new()
                 {
                     Name = "LabelContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's label container."
+                    Description = "Custom CSS classes/styles for the number field's label container."
                 },
                 new()
                 {
                     Name = "Focused",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's focus state."
+                    Description = "Custom CSS classes/styles for the number field's focus state."
                 },
                 new()
                 {
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's icon."
+                    Description = "Custom CSS classes/styles for the number field's icon."
                 },
                 new()
                 {
                     Name = "Input",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's input."
+                    Description = "Custom CSS classes/styles for the number field's input."
                 },
                 new()
                 {
                     Name = "InputWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the wrapper of label and input in the numeric text field."
+                    Description = "Custom CSS classes/styles for the wrapper of label and input in the number field."
                 },
                 new()
                 {
                     Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's root element."
+                    Description = "Custom CSS classes/styles for the number field's root element."
                 }
             }
         }
@@ -393,13 +393,13 @@ public partial class BitNumberFieldDemo
                 new()
                 {
                     Name= "Top",
-                    Description="The label shows on the top of the numeric textfield.",
+                    Description="The label shows on the top of the numberfield.",
                     Value="0",
                 },
                 new()
                 {
                     Name= "Left",
-                    Description="The label shows on the left side of the numeric textfield.",
+                    Description="The label shows on the left side of the numberfield.",
                     Value="1",
                 }
             }

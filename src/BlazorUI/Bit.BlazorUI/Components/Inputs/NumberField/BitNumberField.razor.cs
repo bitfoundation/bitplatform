@@ -77,7 +77,7 @@ public partial class BitNumberField<TValue>
     [Parameter] public BitNumberFieldClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Initial value of the numeric text field.
+    /// Initial value of the number field.
     /// </summary>
     [Parameter] public TValue? DefaultValue { get; set; }
 
@@ -92,7 +92,7 @@ public partial class BitNumberField<TValue>
     [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
 
     /// <summary>
-    /// Icon name for an icon to display alongside the numeric text field's label.
+    /// Icon name for an icon to display alongside the number field's label.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
@@ -112,17 +112,17 @@ public partial class BitNumberField<TValue>
     [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
 
     /// <summary>
-    /// Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers.
+    /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
     /// </summary>
     [Parameter] public string Label { get; set; } = string.Empty;
 
     /// <summary>
-    /// Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
+    /// Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The position of the label in regards to the numeric text field.
+    /// The position of the label in regards to the number field.
     /// </summary>
     [Parameter]
     public BitNumberFieldLabelPosition LabelPosition
@@ -136,7 +136,7 @@ public partial class BitNumberField<TValue>
     }
 
     /// <summary>
-    /// Min value of the numeric text field. If not provided, the numeric text field has minimum value.
+    /// Min value of the number field. If not provided, the number field has minimum value.
     /// </summary>
     [Parameter]
     public TValue? Min
@@ -150,7 +150,7 @@ public partial class BitNumberField<TValue>
     }
 
     /// <summary>
-    /// Max value of the numeric text field. If not provided, the numeric text field has max value.
+    /// Max value of the number field. If not provided, the number field has max value.
     /// </summary>
     [Parameter]
     public TValue? Max
@@ -164,12 +164,12 @@ public partial class BitNumberField<TValue>
     }
 
     /// <summary>
-    /// The format of the number in the numeric text field.
+    /// The format of the number in the number field.
     /// </summary>
     [Parameter] public string NumberFormat { get; set; } = "{0}";
 
     /// <summary>
-    /// Callback for when the numeric text field value change.
+    /// Callback for when the number field value change.
     /// </summary>
     [Parameter] public EventCallback<TValue> OnChange { get; set; }
 
@@ -214,7 +214,7 @@ public partial class BitNumberField<TValue>
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
-    /// Difference between two adjacent values of the numeric text field.
+    /// Difference between two adjacent values of the number field.
     /// </summary>
     [Parameter]
     public TValue? Step
@@ -373,7 +373,7 @@ public partial class BitNumberField<TValue>
 
     private async Task HandleOnPointerDown(BitNumberFieldAction action, MouseEventArgs e)
     {
-        //Change focus from input to numeric text field
+        //Change focus from input to number field
         if (action == BitNumberFieldAction.Increment)
         {
             await _buttonIncrement.FocusAsync();

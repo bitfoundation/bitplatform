@@ -218,9 +218,9 @@ public class BitNumberFieldTests : BunitTestContext
 
         var labelPositionClass = labelPosition == BitNumberFieldLabelPosition.Left ? "lf" : "tp";
 
-        var NumberFieldButton = component.Find(".bit-nfl");
+        var numberFieldButton = component.Find(".bit-nfl");
 
-        Assert.IsTrue(NumberFieldButton.ClassList.Contains($"bit-nfl-l{labelPositionClass}"));
+        Assert.IsTrue(numberFieldButton.ClassList.Contains($"bit-nfl-l{labelPositionClass}"));
     }
 
     [DataTestMethod,
