@@ -135,10 +135,9 @@
     }
 }
 
-.intro-section {
+.what-section {
     margin: 5rem 0;
     padding: 5rem 0;
-    margin-top: 10rem;
     background-color: $bit-color-background-secondary;
 
     @include lt-md {
@@ -146,131 +145,13 @@
     }
 }
 
-.components-section {
-    .components-container {
-        gap: 1rem;
-        width: 100%;
-        display: flex;
-        align-items: stretch;
-        flex-flow: row nowrap;
-        justify-content: space-between;
+.why-section {
+    margin: 5rem 0;
+    padding: 5rem 0;
+    background-color: $bit-color-background-secondary;
 
-        @include lt-lg {
-            flex-flow: column;
-            align-items: center;
-        }
-    }
-
-    .components-content-container {
-        width: 65%;
-        display: flex;
-        max-width: rem2(700px);
-        align-items: flex-start;
-        flex-flow: column nowrap;
-        justify-content: space-between;
-
-        @include lt-lg {
-            width: 100%;
-            max-width: 100%;
-            flex-flow: column nowrap;
-            justify-content: flex-start;
-        }
-    }
-
-    .com-item-list {
-        display: flex;
-        flex-flow: row nowrap;
-        width: calc(100% + 40px);
-        padding-bottom: rem2(40px);
-        max-width: calc(100% + 40px);
-        flex-basis: calc(100% + 40px);
-
-        @include sm {
-            flex-wrap: wrap;
-        }
-
-        .com-item {
-            flex-grow: 0;
-            display: flex;
-            max-width: 50%;
-            flex-basis: 50%;
-            flex-flow: row nowrap;
-            padding-top: rem2(20px);
-
-            .com-item-content {
-                height: 100%;
-                display: flex;
-                flex-flow: column;
-                padding: rem2(5px);
-                padding-left: rem2(20px);
-                justify-content: center;
-                border-left: rem2(2px) solid #173A5E;
-            }
-
-            .com-item-value {
-                margin: 0;
-                font-weight: 400;
-                font-weight: 700;
-                line-height: 1.5;
-                font-size: rem2(28px);
-                letter-spacing: 0.2px;
-            }
-
-            .com-item-name {
-                margin: 0;
-                font-weight: 400;
-                line-height: 1.5;
-                letter-spacing: 0;
-                font-size: rem2(16px);
-            }
-        }
-    }
-
-    .com-link {
-        display: flex;
-        color: $B6Color;
-        cursor: pointer;
-        font-weight: 700;
-        align-items: center;
-        font-size: rem2(14px);
-        flex-flow: row nowrap;
-        line-height: rem2(32px);
-        transition: all 0.2s linear;
-
-        .com-link-arrow {
-            width: rem2(16px);
-            height: rem2(16px);
-            margin-left: rem2(8px);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-image: url('/images/arrow-right-blue-icon.svg');
-        }
-
-        &:hover {
-            transform: translateX(5px);
-        }
-    }
-
-    .image-container {
-        width: 45%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-
-        @include lt-lg {
-            width: 100%;
-        }
-
-        .image-link {
-            width: rem2(500px);
-            height: rem2(338px);
-            background-repeat: no-repeat;
-            background-position: center left;
-            background-image: url('/images/home/balzorui-bg.webp');
-            border-radius: rem2(6px);
-            box-shadow: $bit-box-shadow-callout;
-        }
+    @include lt-md {
+        padding: 5rem 0;
     }
 }
 
