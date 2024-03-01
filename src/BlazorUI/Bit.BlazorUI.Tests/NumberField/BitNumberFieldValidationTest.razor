@@ -1,43 +1,43 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitNumericTextField Min="@Min"
-                         Max="@Max"
-                         Step="@Step"
-                         @bind-Value="@TestModel.Value"
-                         IsEnabled="@IsEnabled"
-                         AriaDescription="@AriaDescription"
-                         AriaPositionInSet="@AriaPositionInSet"
-                         AriaSetSize="@AriaSetSize"
-                         AriaValueNow="@AriaValueNow"
-                         AriaValueText="@AriaValueText"
-                         AriaLabel="@AriaLabel"
-                         Suffix="@Suffix"
-                         LabelPosition="@LabelPosition"
-                         IconName="@IconName"
-                         IconAriaLabel="@IconAriaLabel"
-                         DecrementIconName="@DecrementIconName"
-                         IncrementIconName="@IncrementIconName"
-                         DecrementAriaLabel="@DecrementAriaLabel"
-                         IncrementAriaLabel="@IncrementAriaLabel"
-                         Label="@Label"
-                         Placeholder="@Placeholder"
-                         InputHtmlAttributes="@InputHtmlAttributes"
-                         Title="@Title"
-                         Precision="@Precision"
-                         DefaultValue="@DefaultValue"
-                         OnChange="(int? value) => OnChangeEventValue = value"
-                         OnBlur="@HandleBlur"
-                         OnFocus="@HandleFocus">
+    <BitNumberField Min="@Min"
+                    Max="@Max"
+                    Step="@Step"
+                    @bind-Value="@TestModel.Value"
+                    IsEnabled="@IsEnabled"
+                    AriaDescription="@AriaDescription"
+                    AriaPositionInSet="@AriaPositionInSet"
+                    AriaSetSize="@AriaSetSize"
+                    AriaValueNow="@AriaValueNow"
+                    AriaValueText="@AriaValueText"
+                    AriaLabel="@AriaLabel"
+                    Suffix="@Suffix"
+                    LeftLabel="@LeftLabel"
+                    IconName="@IconName"
+                    IconAriaLabel="@IconAriaLabel"
+                    DecrementIconName="@DecrementIconName"
+                    IncrementIconName="@IncrementIconName"
+                    DecrementAriaLabel="@DecrementAriaLabel"
+                    IncrementAriaLabel="@IncrementAriaLabel"
+                    Label="@Label"
+                    Placeholder="@Placeholder"
+                    InputHtmlAttributes="@InputHtmlAttributes"
+                    Title="@Title"
+                    Precision="@Precision"
+                    DefaultValue="@DefaultValue"
+                    OnChange="(int? value) => OnChangeEventValue = value"
+                    OnBlur="@HandleBlur"
+                    OnFocus="@HandleFocus">
         <LabelTemplate>
             @LabelTemplate
         </LabelTemplate>
-    </BitNumericTextField>
+    </BitNumberField>
 
 </EditForm>
 
 @code {
-    [Parameter] public BitNumericTextFieldLabelPosition LabelPosition { get; set; } = BitNumericTextFieldLabelPosition.Left;
+    [Parameter] public bool LeftLabel { get; set; }
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
     [Parameter] public int? AriaSetSize { get; set; }
@@ -47,7 +47,7 @@
     [Parameter] public int? Step { get; set; } = 1;
     [Parameter] public int? Min { get; set; }
     [Parameter] public int? Max { get; set; }
-    [Parameter] public BitNumericTextFieldIntTestModel TestModel { get; set; }
+    [Parameter] public BitNumberFieldTestModel TestModel { get; set; }
     [Parameter] public EventCallback<int> ValueChanged { get; set; }
     [Parameter] public string Suffix { get; set; } = string.Empty;
     [Parameter] public string IconName { get; set; }

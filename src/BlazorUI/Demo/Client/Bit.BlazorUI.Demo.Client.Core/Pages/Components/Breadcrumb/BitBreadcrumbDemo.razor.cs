@@ -257,7 +257,7 @@ public partial class BitBreadcrumbDemo
 
     private uint OverflowIndex = 2;
     private uint MaxDisplayedItems = 3;
-    private uint NumericTextFieldStep = 1;
+    private uint NumberFieldStep = 1;
     private int ItemsCount = 4;
     private int SelectedOptionNumber = 6;
     private int CustomizedSelectedOptionNumber = 4;
@@ -935,8 +935,8 @@ public partial class BitBreadcrumbDemo
         <BitButton OnClick=""RemoveBreadcrumbItem"">Remove Item</BitButton>
     </div>
     <div>
-        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
-        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""MaxDisplayedItems"" Step=""@NumberFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""OverflowIndex"" Step=""@NumberFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
     </div>
 </div>
 ";
@@ -958,8 +958,8 @@ public partial class BitBreadcrumbDemo
         <BitButton OnClick=""RemoveCustomItem"">Remove Item</BitButton>
     </div>
     <div>
-        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
-        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""MaxDisplayedItems"" Step=""@NumberFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""OverflowIndex"" Step=""@NumberFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
     </div>
 </div>
 ";
@@ -979,8 +979,8 @@ public partial class BitBreadcrumbDemo
         <BitButton OnClick=""() => ItemsCount--"">Remove Option</BitButton>
     </div>
     <div>
-        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedOption"" ShowArrows=""true"" />
-        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""MaxDisplayedItems"" Step=""@NumberFieldStep"" Label=""MaxDisplayedOption"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""OverflowIndex"" Step=""@NumberFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
     </div>
 </div>
 ";
@@ -1226,7 +1226,7 @@ private int SelectedOptionNumber = 6;
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-private uint NumericTextFieldStep = 1;
+private uint NumberFieldStep = 1;
 
 private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; } = new()
 {
@@ -1271,7 +1271,7 @@ private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-private uint NumericTextFieldStep = 1;
+private uint NumberFieldStep = 1;
 
 public class PageInfoModel
 {
@@ -1331,7 +1331,7 @@ private void RemoveCustomItem()
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-private uint NumericTextFieldStep = 1;
+private uint NumberFieldStep = 1;
 private int CustomizedSelectedOptionNumber = 4;
 
 

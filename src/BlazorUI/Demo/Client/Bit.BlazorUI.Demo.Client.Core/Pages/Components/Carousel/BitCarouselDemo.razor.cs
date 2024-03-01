@@ -322,7 +322,7 @@ public partial class BitCarouselDemo
     </div>
     <div class=""goto-container"">
         <BitButton Class=""goto-button"" OnClick=""GoTo"">GoTo</BitButton>
-        <BitNumericTextField @bind-Value=""index""></BitNumericTextField>
+        <BitNumberField @bind-Value=""index"" />
     </div>
 </div>";
     private readonly string example4CsCode = @"

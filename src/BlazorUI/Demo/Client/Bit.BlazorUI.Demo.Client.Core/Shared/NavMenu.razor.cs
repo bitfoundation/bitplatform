@@ -38,7 +38,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
                 new() { Text = "SpinButton", Url = "/components/spinbutton", AdditionalUrls = new string[] { "/components/spin-button" } },
                 new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = new string[] { "/components/text-field" }, Description = "TextInput" },
-                new() { Text = "NumericTextField", Url = "/components/numerictextfield", AdditionalUrls = new string[] { "/components/numeric-text-field" }, Description = "NumberInput" },
+                new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = new string[] { "/components/numerictextfield", "/components/numeric-text-field" }, Description = "NumberInput" },
                 new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = new string[] { "/components/otp-input" } },
                 new() { Text = "Toggle", Url = "/components/toggle", Description = "Switch" }
             }

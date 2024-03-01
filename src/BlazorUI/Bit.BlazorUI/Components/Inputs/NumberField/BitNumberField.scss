@@ -1,6 +1,6 @@
 ﻿@import "../../../Styles/functions.scss";
 
-.bit-ntf {
+.bit-nfl {
     display: flex;
     font-weight: 400;
     align-items: center;
@@ -8,34 +8,34 @@
     font-family: $typography-font-family;
 
     &.bit-dis {
-        .bit-ntf-lct {
+        .bit-nfl-lct {
             color: $color-foreground-disabled;
         }
 
-        .bit-ntf-lbl {
+        .bit-nfl-lbl {
             color: $color-foreground-disabled;
         }
 
-        .bit-ntf-wrp {
+        .bit-nfl-wrp {
             border: none;
             cursor: default;
             background: none;
             color: $color-foreground-disabled;
         }
 
-        .bit-ntf-inp {
+        .bit-nfl-inp {
             border: none;
             cursor: default;
             color: $color-foreground-disabled;
             background: $color-background-disabled;
         }
 
-        .bit-ntf-pre,
-        .bit-ntf-suf {
+        .bit-nfl-pre,
+        .bit-nfl-suf {
             color: $color-foreground-disabled;
         }
 
-        .bit-ntf-aup, .bit-ntf-adn {
+        .bit-nfl-aup, .bit-nfl-adn {
             cursor: default;
             pointer-events: none;
             color: $color-foreground-disabled;
@@ -45,28 +45,28 @@
     }
 
     &.bit-inv {
-        .bit-ntf-wrp {
+        .bit-nfl-wrp {
             border-color: $color-state-error;
         }
 
-        &.bit-ntf-fcs {
-            .bit-ntf-wrp::after {
+        &.bit-nfl-fcs {
+            .bit-nfl-wrp::after {
                 border-color: $color-state-error;
             }
         }
     }
 }
 
-.bit-ntf-ltp {
+.bit-nfl-ltp {
     flex-direction: column;
     align-items: flex-start;
 }
 
-.bit-ntf-llf {
+.bit-nfl-llf {
     flex-direction: row;
 }
 
-.bit-ntf-lct {
+.bit-nfl-lct {
     height: spacing(4);
     align-items: center;
     display: inline-flex;
@@ -75,12 +75,12 @@
     justify-content: flex-start;
 }
 
-.bit-ntf-lic {
+.bit-nfl-lic {
     font-size: spacing(2.5);
     padding: 0 spacing(0.625);
 }
 
-.bit-ntf-lbl {
+.bit-nfl-lbl {
     box-shadow: none;
     font-weight: 600;
     white-space: nowrap;
@@ -91,7 +91,7 @@
     color: $color-foreground-primary;
 }
 
-.bit-ntf-wrp {
+.bit-nfl-wrp {
     width: 100%;
     display: flex;
     height: spacing(4);
@@ -102,7 +102,7 @@
     border: $shape-border-width $shape-border-style $color-border-primary;
 }
 
-.bit-ntf-inp {
+.bit-nfl-inp {
     margin: 0;
     outline: 0;
     width: 100%;
@@ -125,13 +125,13 @@
     border-radius: $shape-border-radius 0 0 $shape-border-radius;
 }
 
-.bit-ntf-act {
+.bit-nfl-act {
     display: flex;
     flex-direction: column;
 }
 
-.bit-ntf-aup,
-.bit-ntf-adn {
+.bit-nfl-aup,
+.bit-nfl-adn {
     padding: 0;
     height: 50%;
     border: none;
@@ -156,15 +156,15 @@
     }
 }
 
-.bit-ntf-aup {
+.bit-nfl-aup {
     border-radius: 0 $shape-border-radius 0 0;
 }
 
-.bit-ntf-adn {
+.bit-nfl-adn {
     border-radius: 0 0 $shape-border-radius 0;
 }
 
-.bit-ntf-aic {
+.bit-nfl-aic {
     height: 100%;
     display: flex;
     flex-wrap: nowrap;
@@ -172,7 +172,7 @@
     justify-content: center;
 }
 
-.bit-ntf-bic {
+.bit-nfl-bic {
     margin: 0;
     flex-shrink: 0;
     height: spacing(2);
@@ -180,8 +180,8 @@
     line-height: spacing(2);
 }
 
-.bit-ntf-fcs {
-    .bit-ntf-wrp::after {
+.bit-nfl-fcs {
+    .bit-nfl-wrp::after {
         content: "";
         position: absolute;
         pointer-events: none;
@@ -191,8 +191,8 @@
     }
 }
 
-.bit-ntf-pre,
-.bit-ntf-suf {
+.bit-nfl-pre,
+.bit-nfl-suf {
     height: 100%;
     display: flex;
     flex-shrink: 0;
@@ -209,16 +209,16 @@
     }
 }
 
-.bit-ntf-req {
-    .bit-ntf-lbl::after {
+.bit-nfl-req {
+    .bit-nfl-lbl::after {
         content: "*";
         color: $color-state-required;
         margin-left: spacing(0.625);
     }
 }
 
-.bit-ntf-rnl {
-    .bit-ntf-wrp::before {
+.bit-nfl-rnl {
+    .bit-nfl-wrp::before {
         content: "*";
         position: absolute;
         top: spacing(-0.625);

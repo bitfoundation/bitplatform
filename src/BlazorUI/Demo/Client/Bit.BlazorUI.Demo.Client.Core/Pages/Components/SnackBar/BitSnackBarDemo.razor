@@ -39,7 +39,7 @@
                 </div>
                 <div>
                     <BitToggle @bind-Value="basicSnackBarAutoDismiss" Label="Auto Dismiss" />
-                    <BitNumericTextField @bind-Value="basicSnackBarDismissSeconds" Step="1" Min="1" Label="Dismiss Time (based on second)" />
+                    <BitNumberField @bind-Value="basicSnackBarDismissSeconds" Step="1" Min="1" Label="Dismiss Time (based on second)" />
                 </div>
             </div>
             <BitButton Style="margin-top: 20px;" OnClick="OpenBasicSnackBar">Show</BitButton>

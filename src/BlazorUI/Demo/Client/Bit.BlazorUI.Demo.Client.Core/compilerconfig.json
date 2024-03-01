@@ -246,8 +246,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Inputs/NumericTextField/BitNumericTextFieldDemo.razor.css",
-        "inputFile": "Pages/Components/Inputs/NumericTextField/BitNumericTextFieldDemo.razor.scss",
+        "outputFile": "Pages/Components/Inputs/NumberField/BitNumberFieldDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/NumberField/BitNumberFieldDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

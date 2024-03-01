@@ -119,7 +119,7 @@ public partial class ComponentDemo
 
 
     private readonly List<string> _inputComponents = new() { 
-        "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumericTextField", "OtpInput", "Rating",
+        "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
         "SearchBox", "SpinButton", "TextField", "TimePicker", "Toggle"
     };
     private readonly List<ComponentParameter> _inputBaseParameters = new()

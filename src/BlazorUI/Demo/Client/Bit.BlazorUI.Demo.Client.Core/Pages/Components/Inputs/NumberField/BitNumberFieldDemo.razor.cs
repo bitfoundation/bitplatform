@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumericTextField;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 
-public partial class BitNumericTextFieldDemo
+public partial class BitNumberFieldDemo
 {
     private readonly List<ComponentParameter> componentParameters = new()
     {
@@ -42,18 +42,18 @@ public partial class BitNumericTextFieldDemo
         new()
         {
             Name = "Classes",
-            Type = "BitNumericTextFieldClassStyles?",
+            Type = "BitNumberFieldClassStyles?",
             DefaultValue = "null",
             LinkType = LinkType.Link,
-            Href = "#numerictextfield-class-styles",
-            Description = "Custom CSS classes for different parts of the BitNumericTextField.",
+            Href = "#numberfield-class-styles",
+            Description = "Custom CSS classes for different parts of the BitNumberField.",
         },
         new()
         {
             Name = "DefaultValue",
             Type = "TValue?",
             DefaultValue = "null",
-            Description = "Initial value of the numeric text field.",
+            Description = "Initial value of the number field.",
         },
         new()
         {
@@ -74,7 +74,7 @@ public partial class BitNumericTextFieldDemo
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Icon name for an icon to display alongside the numeric text field's label.",
+            Description = "Icon name for an icon to display alongside the number field's label.",
         },
         new()
         {
@@ -109,50 +109,48 @@ public partial class BitNumericTextFieldDemo
             Name = "Label",
             Type = "string",
             DefaultValue = "string.Empty",
-            Description = "Descriptive label for the numeric text field, Label displayed above the numeric text field and read by screen readers.",
+            Description = "Descriptive label for the number field, Label displayed above the number field and read by screen readers.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Shows the custom Label for numeric text field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
+            Description = "Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitNumericTextFieldLabelPosition",
-            DefaultValue = "BitNumericTextFieldLabelPosition.Top",
-            Description = "The position of the label in regards to the numeric textfield.",
-            LinkType = LinkType.Link,
-            Href = "#labelPosition-enum"
+            Name = "LeftLabel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "The position of the label in regards to the number field.",
         },
         new()
         {
             Name = "Min",
             Type = "TValue?",
             DefaultValue = "null",
-            Description = "Min value of the numeric text field. If not provided, the numeric text field has minimum value.",
+            Description = "Min value of the number field. If not provided, the number field has minimum value.",
         },
         new()
         {
             Name = "Max",
             Type = "TValue?",
             DefaultValue = "null",
-            Description = "Max value of the numeric text field. If not provided, the numeric text field has max value.",
+            Description = "Max value of the number field. If not provided, the number field has max value.",
         },
         new()
         {
             Name = "NumberFormat",
             Type = "string",
             DefaultValue = "{0}",
-            Description = "The format of the number in the numeric text field.",
+            Description = "The format of the number in the number field.",
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<TValue>",
-            Description = "Callback for when the numeric text field value change.",
+            Description = "Callback for when the number field value change.",
         },
         new()
         {
@@ -230,16 +228,16 @@ public partial class BitNumericTextFieldDemo
             Name = "Step",
             Type = "TValue?",
             DefaultValue = "null",
-            Description = "Difference between two adjacent values of the numeric text field.",
+            Description = "Difference between two adjacent values of the number field.",
         },
         new()
         {
             Name = "Styles",
-            Type = "BitNumericTextFieldClassStyles?",
+            Type = "BitNumberFieldClassStyles?",
             DefaultValue = "null",
             LinkType = LinkType.Link,
-            Href = "#numerictextfield-class-styles",
-            Description = "Custom CSS styles for different parts of the BitNumericTextField.",
+            Href = "#numberfield-class-styles",
+            Description = "Custom CSS styles for different parts of the BitNumberField.",
         },
         new()
         {
@@ -275,8 +273,8 @@ public partial class BitNumericTextFieldDemo
     {
         new()
         {
-            Id = "numerictextfield-class-styles",
-            Title = "BitNumericTextFieldClassStyles",
+            Id = "numberfield-class-styles",
+            Title = "BitNumberFieldClassStyles",
             Parameters = new()
             {
                 new()
@@ -284,128 +282,102 @@ public partial class BitNumericTextFieldDemo
                     Name = "ButtonsContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's buttons (increment and decrement) container."
+                    Description = "Custom CSS classes/styles for the number field's buttons (increment and decrement) container."
                 },
                 new()
                 {
                     Name = "DecrementButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's decrement button."
+                    Description = "Custom CSS classes/styles for the number field's decrement button."
                 },
                 new()
                 {
                     Name = "DecrementIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's decrement icon."
+                    Description = "Custom CSS classes/styles for the number field's decrement icon."
                 },
                 new()
                 {
                     Name = "DecrementIconContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's decrement icon container."
+                    Description = "Custom CSS classes/styles for the number field's decrement icon container."
                 },
                 new()
                 {
                     Name = "IncrementButton",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's increment button."
+                    Description = "Custom CSS classes/styles for the number field's increment button."
                 },
                 new()
                 {
                     Name = "IncrementIcon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's increment icon."
+                    Description = "Custom CSS classes/styles for the number field's increment icon."
                 },
                 new()
                 {
                     Name = "IncrementIconContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's increment icon container."
+                    Description = "Custom CSS classes/styles for the number field's increment icon container."
                 },
                 new()
                 {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's label."
+                    Description = "Custom CSS classes/styles for the number field's label."
                 },
                 new()
                 {
                     Name = "LabelContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's label container."
+                    Description = "Custom CSS classes/styles for the number field's label container."
                 },
                 new()
                 {
                     Name = "Focused",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's focus state."
+                    Description = "Custom CSS classes/styles for the number field's focus state."
                 },
                 new()
                 {
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's icon."
+                    Description = "Custom CSS classes/styles for the number field's icon."
                 },
                 new()
                 {
                     Name = "Input",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's input."
+                    Description = "Custom CSS classes/styles for the number field's input."
                 },
                 new()
                 {
                     Name = "InputWrapper",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the wrapper of label and input in the numeric text field."
+                    Description = "Custom CSS classes/styles for the wrapper of label and input in the number field."
                 },
                 new()
                 {
                     Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the numeric text field's root element."
+                    Description = "Custom CSS classes/styles for the number field's root element."
                 }
             }
         }
     };
-
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
-        new()
-        {
-            Id = "labelPosition-enum",
-            Name = "BitNumericTextFieldLabelPosition",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the numeric textfield.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Left",
-                    Description="The label shows on the left side of the numeric textfield.",
-                    Value="1",
-                }
-            }
-        }
-    };
-
 
 
     private double oneWayValue;
@@ -416,7 +388,7 @@ public partial class BitNumericTextFieldDemo
     private int onChangeCounter;
 
     private string SuccessMessage = string.Empty;
-    private BitNumericTextFieldValidationModel validationModel = new();
+    private BitNumberFieldValidationModel validationModel = new();
 
     private async Task HandleValidSubmit()
     {
@@ -434,37 +406,37 @@ public partial class BitNumericTextFieldDemo
 
 
     private readonly string example1RazorCode = @"
-<BitNumericTextField Label=""Basic"" TValue=""int"" />
-<BitNumericTextField Label=""Disabled"" Step=""1"" IsEnabled=""false"" />
-<BitNumericTextField Label=""Placeholder"" DefaultValue=""1"" Placeholder=""Enter a number..."" />
-<BitNumericTextField Label=""Step & Buttons"" Step=""1"" ShowButtons=""true"" />
-<BitNumericTextField Label=""Min & Max"" Step=""1"" Min=""-10"" Max=""10"" />
-<BitNumericTextField Label=""Required"" TValue=""int"" Required />";
+<BitNumberField Label=""Basic"" TValue=""int"" />
+<BitNumberField Label=""Disabled"" Step=""1"" IsEnabled=""false"" />
+<BitNumberField Label=""Placeholder"" DefaultValue=""1"" Placeholder=""Enter a number..."" />
+<BitNumberField Label=""Step & Buttons"" Step=""1"" ShowButtons=""true"" />
+<BitNumberField Label=""Min & Max"" Step=""1"" Min=""-10"" Max=""10"" />
+<BitNumberField Label=""Required"" TValue=""int"" Required />";
 
     private readonly string example2RazorCode = @"
-<BitNumericTextField Label=""Label Top"" Step=""1"" LabelPosition=""BitNumericTextFieldLabelPosition.Top"" />
-<BitNumericTextField Label=""Label Left"" Step=""1"" LabelPosition=""BitNumericTextFieldLabelPosition.Left"" />
+<BitNumberField Label=""Label Top"" Step=""1"" />
+<BitNumberField Label=""Label Left"" Step=""1"" LeftLabel />
 
-<BitNumericTextField TValue=""int"">
+<BitNumberField TValue=""int"">
     <LabelTemplate>
         <div style=""display:flex;align-items:center;gap:10px"">
             <BitLabel Style=""color:green"">This is custom Label</BitLabel>
             <BitIcon IconName=""@BitIconName.Filter"" Style=""font-size:18px;""/>
         </div>
     </LabelTemplate>
-</BitNumericTextField>";
+</BitNumberField>";
 
     private readonly string example3RazorCode = @"
-<BitNumericTextField Label=""Label & Icon""  Step=""1"" IconName=""@BitIconName.Lightbulb"" />
+<BitNumberField Label=""Label & Icon""  Step=""1"" IconName=""@BitIconName.Lightbulb"" />
 
-<BitNumericTextField Label=""Increment & Decrement Icon""  Step=""1""
+<BitNumberField Label=""Increment & Decrement Icon""  Step=""1""
                      ShowButtons=""true""
                      IncrementIconName=""@BitIconName.LikeSolid""
                      DecrementIconName=""@BitIconName.DislikeSolid"" />";
 
     private readonly string example4RazorCode = @"
-<BitNumericTextField Label=""Height"" DefaultValue=""150"" NumberFormat=""{0} cm"" />
-<BitNumericTextField Label=""Weight"" DefaultValue=""2500"" NumberFormat=""{0,0:N0} kg"" />";
+<BitNumberField Label=""Height"" DefaultValue=""150"" NumberFormat=""{0} cm"" />
+<BitNumberField Label=""Weight"" DefaultValue=""2500"" NumberFormat=""{0,0:N0} kg"" />";
 
     private readonly string example5RazorCode = @"
 <style>
@@ -499,29 +471,29 @@ public partial class BitNumericTextFieldDemo
     }
 </style>
 
-<BitNumericTextField Label=""Styled"" DefaultValue=""10"" Style=""background:lightskyblue;border-radius:1rem;padding:0.5rem"" />
+<BitNumberField Label=""Styled"" DefaultValue=""10"" Style=""background:lightskyblue;border-radius:1rem;padding:0.5rem"" />
 
-<BitNumericTextField Label=""Classed"" DefaultValue=""20"" Class=""custom-class"" />
+<BitNumberField Label=""Classed"" DefaultValue=""20"" Class=""custom-class"" />
 
 
 
-<BitNumericTextField Label=""Styles"" DefaultValue=""1"" IconName=""@BitIconName.Microphone""
+<BitNumberField Label=""Styles"" DefaultValue=""1"" IconName=""@BitIconName.Microphone""
                      Styles=""@(new() { Root = ""background-color: pink;"",
                                        Icon = ""color: red;"",
                                        Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
                                        Input = ""padding: 0.5rem; background-color: goldenrod"" })"" />
 
-<BitNumericTextField Label=""Classes"" DefaultValue=""2""
+<BitNumberField Label=""Classes"" DefaultValue=""2""
                      Classes=""@(new() { Input = ""custom-input"",
                                         Focused = ""custom-focus"",
                                         Label = ""custom-label"",
                                         InputWrapper = ""custom-input-wrapper"" })"" />";
 
     private readonly string example6RazorCode = @"
-<BitNumericTextField Label=""One-way"" Value=""oneWayValue"" />
+<BitNumberField Label=""One-way"" Value=""oneWayValue"" />
 <BitRating @bind-Value=""oneWayValue"" />
 
-<BitNumericTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
+<BitNumberField Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitRating @bind-Value=""twoWayValue"" />";
     private readonly string example6CsharpCode = @"
 private double oneWayValue;
@@ -529,13 +501,13 @@ private double twoWayValue;
 ";
 
     private readonly string example7RazorCode = @"
-<BitNumericTextField Label=""OnIncrement & OnDecrement"" ShowButtons=""true""
+<BitNumberField Label=""OnIncrement & OnDecrement"" ShowButtons=""true""
                      OnIncrement=""(double v) => onIncrementCounter++""
                      OnDecrement=""(double v) => onDecrementCounter++"" />
 <BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
 <BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
 
-<BitNumericTextField Label=""OnChange"" OnChange=""(double v) => onChangeCounter++"" />
+<BitNumberField Label=""OnChange"" OnChange=""(double v) => onChangeCounter++"" />
 <BitLabel>OnChange Counter: @onChangeCounter</BitLabel>";
     private readonly string example7CsharpCode = @"
 private int onIncrementCounter;
@@ -552,28 +524,28 @@ private int onChangeCounter;";
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitNumericTextField Label=""Age"" @bind-Value=""@validationModel.AgeInYears"" />
+    <BitNumberField Label=""Age"" @bind-Value=""@validationModel.AgeInYears"" />
     <ValidationMessage For=""@(() => validationModel.AgeInYears)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
     private readonly string example8CsharpCode = @"
-public class BitNumericTextFieldValidationModel
+public class BitNumberFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
     [Range(1, 150, ErrorMessage = ""Nobody is that old"")]
     public double AgeInYears { get; set; }
 }
 
-private BitNumericTextFieldValidationModel validationModel = new();
+private BitNumberFieldValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
     private readonly string example9RazorCode = @"
-<BitNumericTextField TValue=""int"" Label=""Prefix"" Prefix=""Distance:"" />
-<BitNumericTextField TValue=""int"" Label=""Suffix"" Suffix=""km"" />
-<BitNumericTextField TValue=""int"" Label=""Prefix and Suffix"" Prefix=""Distance:"" Suffix=""km"" />
-<BitNumericTextField TValue=""int"" Label=""Step & Buttons"" Prefix=""Distance:"" Suffix=""km"" Step=""1"" ShowButtons=""true"" />
-<BitNumericTextField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" IsEnabled=""false"" />";
+<BitNumberField TValue=""int"" Label=""Prefix"" Prefix=""Distance:"" />
+<BitNumberField TValue=""int"" Label=""Suffix"" Suffix=""km"" />
+<BitNumberField TValue=""int"" Label=""Prefix and Suffix"" Prefix=""Distance:"" Suffix=""km"" />
+<BitNumberField TValue=""int"" Label=""Step & Buttons"" Prefix=""Distance:"" Suffix=""km"" Step=""1"" ShowButtons=""true"" />
+<BitNumberField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" IsEnabled=""false"" />";
 }
