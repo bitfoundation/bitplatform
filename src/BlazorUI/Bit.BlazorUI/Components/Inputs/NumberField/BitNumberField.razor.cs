@@ -13,7 +13,7 @@ public partial class BitNumberField<TValue>
     private TValue? min;
     private TValue? max;
     private bool required;
-    private BitNumberFieldLabelPosition labelPosition = BitNumberFieldLabelPosition.Top;
+    private bool leftLabel;
 
     private double _internalStep;
     private double? _internalMin;
@@ -125,12 +125,12 @@ public partial class BitNumberField<TValue>
     /// The position of the label in regards to the number field.
     /// </summary>
     [Parameter]
-    public BitNumberFieldLabelPosition LabelPosition
+    public bool LeftLabel
     {
-        get => labelPosition;
+        get => leftLabel;
         set
         {
-            labelPosition = value;
+            leftLabel = value;
             ClassBuilder.Reset();
         }
     }
@@ -295,7 +295,7 @@ public partial class BitNumberField<TValue>
 
         ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumberFieldLabelPosition.Left ? "llf" : "ltp")}");
+        ClassBuilder.Register(() => $"{RootElementClass}-{(LeftLabel ? "llf" : "ltp")}");
 
         ClassBuilder.Register(() => IsEnabled && Required ? $"{RootElementClass}-req" : string.Empty);
 
@@ -341,25 +341,20 @@ public partial class BitNumberField<TValue>
         await base.OnParametersSetAsync();
     }
 
-    private async Task ApplyValueChange(BitNumberFieldAction action)
+    private async Task ApplyValueChange(bool isIncrement)
     {
         double result = 0;
         bool isValid = false;
 
-        switch (action)
+        if (isIncrement)
         {
-            case BitNumberFieldAction.Increment:
-                result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value + _internalStep;
-                isValid = result <= _internalMax && result >= _internalMin;
-                break;
-
-            case BitNumberFieldAction.Decrement:
-                result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value - _internalStep;
-                isValid = result <= _internalMax && result >= _internalMin;
-                break;
-
-            default:
-                break;
+            result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value + _internalStep;
+            isValid = result <= _internalMax && result >= _internalMin;
+        }
+        else
+        {
+            result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value - _internalStep;
+            isValid = result <= _internalMax && result >= _internalMin;
         }
 
         if (isValid is false) return;
@@ -371,10 +366,10 @@ public partial class BitNumberField<TValue>
         StateHasChanged();
     }
 
-    private async Task HandleOnPointerDown(BitNumberFieldAction action, MouseEventArgs e)
+    private async Task HandleOnPointerDown(bool isIncrement, MouseEventArgs e)
     {
         //Change focus from input to number field
-        if (action == BitNumberFieldAction.Increment)
+        if (isIncrement)
         {
             await _buttonIncrement.FocusAsync();
         }
@@ -384,12 +379,12 @@ public partial class BitNumberField<TValue>
         }
 
 
-        await HandleOnPointerDownAction(action, e);
+        await HandleOnPointerDownAction(isIncrement, e);
         _timer = new Timer(async (_) =>
         {
             await InvokeAsync(async () =>
             {
-                await HandleOnPointerDownAction(action, e);
+                await HandleOnPointerDownAction(isIncrement, e);
                 StateHasChanged();
             });
         }, null, INITIAL_STEP_DELAY, STEP_DELAY);
@@ -409,18 +404,18 @@ public partial class BitNumberField<TValue>
         _intermediateValue = GetCleanValue(e.Value?.ToString());
     }
 
-    private async Task HandleOnPointerDownAction(BitNumberFieldAction action, MouseEventArgs e)
+    private async Task HandleOnPointerDownAction(bool isIncrement, MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        await ApplyValueChange(action);
-        if (action is BitNumberFieldAction.Increment && OnIncrement.HasDelegate)
+        await ApplyValueChange(isIncrement);
+        if (isIncrement && OnIncrement.HasDelegate)
         {
             await OnIncrement.InvokeAsync(CurrentValue);
         }
 
-        if (action is BitNumberFieldAction.Decrement && OnDecrement.HasDelegate)
+        if (isIncrement is false && OnDecrement.HasDelegate)
         {
             await OnDecrement.InvokeAsync(CurrentValue);
         }
@@ -435,7 +430,7 @@ public partial class BitNumberField<TValue>
         {
             case "ArrowUp":
                 await CheckIntermediateValueAndSetValue();
-                await ApplyValueChange(BitNumberFieldAction.Increment);
+                await ApplyValueChange(true);
 
                 if (OnIncrement.HasDelegate)
                 {
@@ -445,7 +440,7 @@ public partial class BitNumberField<TValue>
 
             case "ArrowDown":
                 await CheckIntermediateValueAndSetValue();
-                await ApplyValueChange(BitNumberFieldAction.Decrement);
+                await ApplyValueChange(false);
 
                 if (OnDecrement.HasDelegate)
                 {

@@ -1,5 +1,7 @@
 ﻿@page "/components/numberfield"
 @page "/components/number-field"
+@page "/components/numerictextfield"
+@page "/components/numeric-text-field"
 
 <PageOutlet Url="components/numberfield"
             Title="NumberField"
@@ -8,8 +10,7 @@
 <ComponentDemo ComponentName="NumberField"
                ComponentDescription="A NumberField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on. Also, give you the capability to show or hide increment and decrement keys."
                ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums">
+               ComponentSubClasses="componentSubClasses"">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
@@ -31,11 +32,11 @@
     <ComponentExampleBox Title="Label" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
-                <div>LabelPosition:</div>
+                <div>LeftLabel:</div>
                 <br />
-                <BitNumberField Label="Label Top" Step="1" LabelPosition="BitNumberFieldLabelPosition.Top" />
+                <BitNumberField Label="Label Top" Step="1" />
                 <br />
-                <BitNumberField Label="Label Left" Step="1" LabelPosition="BitNumberFieldLabelPosition.Left" />
+                <BitNumberField Label="Label Left" Step="1" LeftLabel />
                 <br /><br /><br />
                 <div>LabelTemplate:</div>
                 <br />

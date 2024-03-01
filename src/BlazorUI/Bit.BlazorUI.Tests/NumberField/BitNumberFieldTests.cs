@@ -19,6 +19,20 @@ public class BitNumberFieldTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
+    [DataTestMethod, DataRow("The placeholder")]
+    public void BitNumberFieldShouldHaveCorrectPlaceholder(string placeholder)
+    {
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
+        {
+            parameters.Add(p => p.Placeholder, placeholder);
+        });
+
+        var numericTextFieldPlaceholder = component.Find(".bit-nfl-inp");
+
+        Assert.IsTrue(numericTextFieldPlaceholder.HasAttribute("placeholder"));
+        Assert.AreEqual(numericTextFieldPlaceholder.GetAttribute("placeholder"), placeholder);
+    }
+
     [DataTestMethod,
          DataRow(null),
          DataRow("The Label")
@@ -206,17 +220,17 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(BitNumberFieldLabelPosition.Left),
-         DataRow(BitNumberFieldLabelPosition.Top)
+         DataRow(true),
+         DataRow(false)
     ]
-    public void BitNumberFieldShouldHaveLabelPositionClassName(BitNumberFieldLabelPosition labelPosition)
+    public void BitNumberFieldShouldHaveLabelPositionClassName(bool leftLabel)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.LabelPosition, labelPosition);
+            parameters.Add(p => p.LeftLabel, leftLabel);
         });
 
-        var labelPositionClass = labelPosition == BitNumberFieldLabelPosition.Left ? "lf" : "tp";
+        var labelPositionClass = leftLabel ? "lf" : "tp";
 
         var numberFieldButton = component.Find(".bit-nfl");
 

@@ -120,12 +120,10 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "LabelPosition",
-            Type = "BitNumberFieldLabelPosition",
-            DefaultValue = "BitNumberFieldLabelPosition.Top",
+            Name = "LeftLabel",
+            Type = "bool",
+            DefaultValue = "false",
             Description = "The position of the label in regards to the number field.",
-            LinkType = LinkType.Link,
-            Href = "#labelPosition-enum"
         },
         new()
         {
@@ -381,32 +379,6 @@ public partial class BitNumberFieldDemo
         }
     };
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
-        new()
-        {
-            Id = "labelPosition-enum",
-            Name = "BitNumberFieldLabelPosition",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "Top",
-                    Description="The label shows on the top of the numberfield.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Left",
-                    Description="The label shows on the left side of the numberfield.",
-                    Value="1",
-                }
-            }
-        }
-    };
-
-
 
     private double oneWayValue;
     private double twoWayValue;
@@ -442,8 +414,8 @@ public partial class BitNumberFieldDemo
 <BitNumberField Label=""Required"" TValue=""int"" Required />";
 
     private readonly string example2RazorCode = @"
-<BitNumberField Label=""Label Top"" Step=""1"" LabelPosition=""BitNumberFieldLabelPosition.Top"" />
-<BitNumberField Label=""Label Left"" Step=""1"" LabelPosition=""BitNumberFieldLabelPosition.Left"" />
+<BitNumberField Label=""Label Top"" Step=""1"" />
+<BitNumberField Label=""Label Left"" Step=""1"" LeftLabel />
 
 <BitNumberField TValue=""int"">
     <LabelTemplate>
