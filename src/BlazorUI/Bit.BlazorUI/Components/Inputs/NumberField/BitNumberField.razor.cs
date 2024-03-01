@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitNumericTextField<TValue>
+public partial class BitNumberField<TValue>
 {
     private const int INITIAL_STEP_DELAY = 400;
     private const int STEP_DELAY = 75;
@@ -13,7 +13,7 @@ public partial class BitNumericTextField<TValue>
     private TValue? min;
     private TValue? max;
     private bool required;
-    private BitNumericTextFieldLabelPosition labelPosition = BitNumericTextFieldLabelPosition.Top;
+    private BitNumberFieldLabelPosition labelPosition = BitNumberFieldLabelPosition.Top;
 
     private double _internalStep;
     private double? _internalMin;
@@ -32,7 +32,7 @@ public partial class BitNumericTextField<TValue>
     private readonly double _minGenericValue;
     private readonly double _maxGenericValue;
 
-    public BitNumericTextField()
+    public BitNumberField()
     {
         _typeOfValue = typeof(TValue);
         _typeOfValue = Nullable.GetUnderlyingType(_typeOfValue) ?? _typeOfValue;
@@ -40,8 +40,8 @@ public partial class BitNumericTextField<TValue>
         _isDecimals = _typeOfValue == typeof(float) || _typeOfValue == typeof(double) || _typeOfValue == typeof(decimal);
         _minGenericValue = GetMinValue();
         _maxGenericValue = GetMaxValue();
-        _inputId = $"BitNumericTextField-{UniqueId}-input";
-        _labelId = $"BitNumericTextField-{UniqueId}-label";
+        _inputId = $"BitNumberField-{UniqueId}-input";
+        _labelId = $"BitNumberField-{UniqueId}-label";
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -72,9 +72,9 @@ public partial class BitNumericTextField<TValue>
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitNumericTextField.
+    /// Custom CSS classes for different parts of the BitNumberField.
     /// </summary>
-    [Parameter] public BitNumericTextFieldClassStyles? Classes { get; set; }
+    [Parameter] public BitNumberFieldClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Initial value of the numeric text field.
@@ -125,7 +125,7 @@ public partial class BitNumericTextField<TValue>
     /// The position of the label in regards to the numeric text field.
     /// </summary>
     [Parameter]
-    public BitNumericTextFieldLabelPosition LabelPosition
+    public BitNumberFieldLabelPosition LabelPosition
     {
         get => labelPosition;
         set
@@ -228,9 +228,9 @@ public partial class BitNumericTextField<TValue>
     }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitNumericTextField.
+    /// Custom CSS styles for different parts of the BitNumberField.
     /// </summary>
-    [Parameter] public BitNumericTextFieldClassStyles? Styles { get; set; }
+    [Parameter] public BitNumberFieldClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Whether to show the increment and decrement buttons.
@@ -287,7 +287,7 @@ public partial class BitNumericTextField<TValue>
 
 
 
-    protected override string RootElementClass => "bit-ntf";
+    protected override string RootElementClass => "bit-nfl";
 
     protected override void RegisterCssClasses()
     {
@@ -295,7 +295,7 @@ public partial class BitNumericTextField<TValue>
 
         ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumericTextFieldLabelPosition.Left ? "llf" : "ltp")}");
+        ClassBuilder.Register(() => $"{RootElementClass}-{(LabelPosition == BitNumberFieldLabelPosition.Left ? "llf" : "ltp")}");
 
         ClassBuilder.Register(() => IsEnabled && Required ? $"{RootElementClass}-req" : string.Empty);
 
@@ -341,19 +341,19 @@ public partial class BitNumericTextField<TValue>
         await base.OnParametersSetAsync();
     }
 
-    private async Task ApplyValueChange(BitNumericTextFieldAction action)
+    private async Task ApplyValueChange(BitNumberFieldAction action)
     {
         double result = 0;
         bool isValid = false;
 
         switch (action)
         {
-            case BitNumericTextFieldAction.Increment:
+            case BitNumberFieldAction.Increment:
                 result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value + _internalStep;
                 isValid = result <= _internalMax && result >= _internalMin;
                 break;
 
-            case BitNumericTextFieldAction.Decrement:
+            case BitNumberFieldAction.Decrement:
                 result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value - _internalStep;
                 isValid = result <= _internalMax && result >= _internalMin;
                 break;
@@ -371,10 +371,10 @@ public partial class BitNumericTextField<TValue>
         StateHasChanged();
     }
 
-    private async Task HandleOnPointerDown(BitNumericTextFieldAction action, MouseEventArgs e)
+    private async Task HandleOnPointerDown(BitNumberFieldAction action, MouseEventArgs e)
     {
         //Change focus from input to numeric text field
-        if (action == BitNumericTextFieldAction.Increment)
+        if (action == BitNumberFieldAction.Increment)
         {
             await _buttonIncrement.FocusAsync();
         }
@@ -409,18 +409,18 @@ public partial class BitNumericTextField<TValue>
         _intermediateValue = GetCleanValue(e.Value?.ToString());
     }
 
-    private async Task HandleOnPointerDownAction(BitNumericTextFieldAction action, MouseEventArgs e)
+    private async Task HandleOnPointerDownAction(BitNumberFieldAction action, MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         await ApplyValueChange(action);
-        if (action is BitNumericTextFieldAction.Increment && OnIncrement.HasDelegate)
+        if (action is BitNumberFieldAction.Increment && OnIncrement.HasDelegate)
         {
             await OnIncrement.InvokeAsync(CurrentValue);
         }
 
-        if (action is BitNumericTextFieldAction.Decrement && OnDecrement.HasDelegate)
+        if (action is BitNumberFieldAction.Decrement && OnDecrement.HasDelegate)
         {
             await OnDecrement.InvokeAsync(CurrentValue);
         }
@@ -435,7 +435,7 @@ public partial class BitNumericTextField<TValue>
         {
             case "ArrowUp":
                 await CheckIntermediateValueAndSetValue();
-                await ApplyValueChange(BitNumericTextFieldAction.Increment);
+                await ApplyValueChange(BitNumberFieldAction.Increment);
 
                 if (OnIncrement.HasDelegate)
                 {
@@ -445,7 +445,7 @@ public partial class BitNumericTextField<TValue>
 
             case "ArrowDown":
                 await CheckIntermediateValueAndSetValue();
-                await ApplyValueChange(BitNumericTextFieldAction.Decrement);
+                await ApplyValueChange(BitNumberFieldAction.Decrement);
 
                 if (OnDecrement.HasDelegate)
                 {

@@ -1,29 +1,29 @@
-﻿@page "/components/numerictextfield"
-@page "/components/numeric-text-field"
+﻿@page "/components/numberfield"
+@page "/components/number-field"
 
-<PageOutlet Url="components/numerictextfield"
-            Title="NumericTextField"
-            Description="numerictextfield component of the bit BlazorUI components" />
+<PageOutlet Url="components/numberfield"
+            Title="NumberField"
+            Description="numberfield component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="NumericTextField"
-               ComponentDescription="A NumericTextField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on. Also, give you the capability to show or hide increment and decrement keys."
+<ComponentDemo ComponentName="NumberField"
+               ComponentDescription="A NumberField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on. Also, give you the capability to show or hide increment and decrement keys."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitNumericTextField Label="Basic" TValue="int" />
+                <BitNumberField Label="Basic" TValue="int" />
                 <br />
-                <BitNumericTextField Label="Disabled" Step="1" IsEnabled="false" />
+                <BitNumberField Label="Disabled" Step="1" IsEnabled="false" />
                 <br />
-                <BitNumericTextField Label="Placeholder" DefaultValue="1" Placeholder="Enter a number..." />
+                <BitNumberField Label="Placeholder" DefaultValue="1" Placeholder="Enter a number..." />
                 <br />
-                <BitNumericTextField Label="Step & Buttons" Step="1" ShowButtons="true" />
+                <BitNumberField Label="Step & Buttons" Step="1" ShowButtons="true" />
                 <br />
-                <BitNumericTextField Label="Min & Max" Step="1" Min="-10" Max="10" />
+                <BitNumberField Label="Min & Max" Step="1" Min="-10" Max="10" />
                 <br />
-                <BitNumericTextField Label="Required" TValue="int" Required />
+                <BitNumberField Label="Required" TValue="int" Required />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -33,20 +33,20 @@
             <div class="example-box">
                 <div>LabelPosition:</div>
                 <br />
-                <BitNumericTextField Label="Label Top" Step="1" LabelPosition="BitNumericTextFieldLabelPosition.Top" />
+                <BitNumberField Label="Label Top" Step="1" LabelPosition="BitNumberFieldLabelPosition.Top" />
                 <br />
-                <BitNumericTextField Label="Label Left" Step="1" LabelPosition="BitNumericTextFieldLabelPosition.Left" />
+                <BitNumberField Label="Label Left" Step="1" LabelPosition="BitNumberFieldLabelPosition.Left" />
                 <br /><br /><br />
                 <div>LabelTemplate:</div>
                 <br />
-                <BitNumericTextField TValue="int">
+                <BitNumberField TValue="int">
                     <LabelTemplate>
                         <div style="display:flex;align-items:center;gap:10px">
                             <BitLabel Style="color:green;">This is custom Label</BitLabel>
                             <BitIcon IconName="@BitIconName.Filter" Style="font-size:18px;"/>
                         </div>
                     </LabelTemplate>
-                </BitNumericTextField>
+                </BitNumberField>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -54,9 +54,9 @@
     <ComponentExampleBox Title="Icons" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
-                <BitNumericTextField Label="Label & Icon" Step="1" IconName="@BitIconName.Lightbulb" />
+                <BitNumberField Label="Label & Icon" Step="1" IconName="@BitIconName.Lightbulb" />
                 <br />
-                <BitNumericTextField Label="Increment & Decrement Icon" Step="1"
+                <BitNumberField Label="Increment & Decrement Icon" Step="1"
                                      ShowButtons="true"
                                      IncrementIconName="@BitIconName.LikeSolid"
                                      DecrementIconName="@BitIconName.DislikeSolid" />
@@ -67,9 +67,9 @@
     <ComponentExampleBox Title="NumberFormat" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
-                <BitNumericTextField Label="Height" DefaultValue="150" NumberFormat="{0} cm" />
+                <BitNumberField Label="Height" DefaultValue="150" NumberFormat="{0} cm" />
                 <br />
-                <BitNumericTextField Label="Weight" DefaultValue="2500" NumberFormat="{0,0:N0} kg" />
+                <BitNumberField Label="Weight" DefaultValue="2500" NumberFormat="{0,0:N0} kg" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -79,19 +79,19 @@
             <div class="example-box">
                 <div>Component's Style & Class:</div>
                 <br />
-                <BitNumericTextField Label="Styled" DefaultValue="10" Style="background:lightskyblue;border-radius:1rem;padding:0.5rem" />
+                <BitNumberField Label="Styled" DefaultValue="10" Style="background:lightskyblue;border-radius:1rem;padding:0.5rem" />
                 <br />
-                <BitNumericTextField Label="Classed" DefaultValue="20" Class="custom-class" />
+                <BitNumberField Label="Classed" DefaultValue="20" Class="custom-class" />
                 <br /><br /><br />
                 <div><b>Styles</b> & <b>Classes</b>:</div>
                 <br />
-                <BitNumericTextField Label="Styles" DefaultValue="1" IconName="@BitIconName.Microphone"
+                <BitNumberField Label="Styles" DefaultValue="1" IconName="@BitIconName.Microphone"
                                      Styles="@(new() { Root = "background-color: pink;",
                                                        Icon = "color: red;",
                                                        Label = "color: blue; font-weight: 900; font-size: 1.25rem;",
                                                        Input = "padding: 0.5rem; background-color: goldenrod" })" />
                 <br />
-                <BitNumericTextField Label="Classes" DefaultValue="2"
+                <BitNumberField Label="Classes" DefaultValue="2"
                                      Classes="@(new() { Input = "custom-input",
                                                         Focused = "custom-focus",
                                                         Label = "custom-label",
@@ -104,12 +104,12 @@
         <ExamplePreview>
             <div class="example-box">
                 <div>
-                    <BitNumericTextField Label="One-way" Value="oneWayValue" />
+                    <BitNumberField Label="One-way" Value="oneWayValue" />
                     <BitRating @bind-Value="oneWayValue" />
                 </div>
                 <br />
                 <div>
-                    <BitNumericTextField Label="Two-way" @bind-Value="twoWayValue" />
+                    <BitNumberField Label="Two-way" @bind-Value="twoWayValue" />
                     <BitRating @bind-Value="twoWayValue" />
                 </div>
             </div>
@@ -119,13 +119,13 @@
     <ComponentExampleBox Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="example-box">
-                <BitNumericTextField Label="OnIncrement & OnDecrement" ShowButtons="true"
+                <BitNumberField Label="OnIncrement & OnDecrement" ShowButtons="true"
                                      OnIncrement="(double v) => onIncrementCounter++"
                                      OnDecrement="(double v) => onDecrementCounter++" />
                 <BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
                 <BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
                 <br />
-                <BitNumericTextField Label="OnChange" OnChange="(double v) => onChangeCounter++" />
+                <BitNumberField Label="OnChange" OnChange="(double v) => onChangeCounter++" />
                 <BitLabel>OnChange Counter: @onChangeCounter</BitLabel>
             </div>
         </ExamplePreview>
@@ -139,7 +139,7 @@
                     <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
                         <DataAnnotationsValidator />
 
-                        <BitNumericTextField Label="Age" @bind-Value="@validationModel.AgeInYears" />
+                        <BitNumberField Label="Age" @bind-Value="@validationModel.AgeInYears" />
                         <ValidationMessage For="@(() => validationModel.AgeInYears)" />
                         <br />
                         <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
@@ -156,15 +156,15 @@
     <ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div class="example-box">
-                <BitNumericTextField TValue="int" Label="Prefix" Prefix="Distance:" />
+                <BitNumberField TValue="int" Label="Prefix" Prefix="Distance:" />
                 <br />
-                <BitNumericTextField TValue="int" Label="Suffix" Suffix="km" />
+                <BitNumberField TValue="int" Label="Suffix" Suffix="km" />
                 <br />
-                <BitNumericTextField TValue="int" Label="Prefix and Suffix" Prefix="Distance:" Suffix="km" />
+                <BitNumberField TValue="int" Label="Prefix and Suffix" Prefix="Distance:" Suffix="km" />
                 <br />
-                <BitNumericTextField TValue="int" Label="Step & Buttons" Prefix="Distance:" Suffix="km" Step="1" ShowButtons="true" />
+                <BitNumberField TValue="int" Label="Step & Buttons" Prefix="Distance:" Suffix="km" Step="1" ShowButtons="true" />
                 <br />
-                <BitNumericTextField TValue="int" Label="Disabled" Prefix="Distance:" Suffix="km" IsEnabled="false" />
+                <BitNumberField TValue="int" Label="Disabled" Prefix="Distance:" Suffix="km" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

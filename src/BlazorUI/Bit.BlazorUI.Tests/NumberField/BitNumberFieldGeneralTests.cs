@@ -1,10 +1,10 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.NumericTextField;
+namespace Bit.BlazorUI.Tests.NumberField;
 
 [TestClass]
-public class BitNumericTextFieldGeneralTests : BunitTestContext
+public class BitNumberFieldGeneralTests : BunitTestContext
 {
     [TestInitialize]
     public void SetupJsInteropMode()
@@ -13,14 +13,14 @@ public class BitNumericTextFieldGeneralTests : BunitTestContext
     }
 
     [DataTestMethod, DataRow("The placeholder")]
-    public void BitNumericTextFieldShouldHaveCorrectPlaceholder(string placeholder)
+    public void BitNumberFieldShouldHaveCorrectPlaceholder(string placeholder)
     {
-        var component = RenderComponent<BitNumericTextField<byte>>(parameters =>
+        var component = RenderComponent<BitNumberField<byte>>(parameters =>
         {
             parameters.Add(p => p.Placeholder, placeholder);
         });
 
-        var numericTextFieldPlaceholder = component.Find(".bit-ntf-inp");
+        var numericTextFieldPlaceholder = component.Find(".bit-nfl-inp");
 
         Assert.IsTrue(numericTextFieldPlaceholder.HasAttribute("placeholder"));
         Assert.AreEqual(numericTextFieldPlaceholder.GetAttribute("placeholder"), placeholder);

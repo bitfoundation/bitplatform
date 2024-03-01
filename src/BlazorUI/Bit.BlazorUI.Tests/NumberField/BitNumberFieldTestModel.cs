@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Bit.BlazorUI.Tests.NumericTextField.Int;
+namespace Bit.BlazorUI.Tests.NumberField;
 
-public class BitNumericTextFieldIntTestModel
+public class BitNumberFieldTestModel
 {
     [Range(6, 18)]
     public int? Value { get; set; }

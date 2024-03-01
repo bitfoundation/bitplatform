@@ -1,49 +1,49 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitNumericTextFieldClassStyles
+public class BitNumberFieldClassStyles
 {
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's buttons (increment and decrement) container.
+    /// Custom CSS classes/styles for the numeric field's buttons (increment and decrement) container.
     /// </summary>
     public string? ButtonsContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's decrement button.
+    /// Custom CSS classes/styles for the numeric field's decrement button.
     /// </summary>
     public string? DecrementButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's decrement icon.
+    /// Custom CSS classes/styles for the numeric field's decrement icon.
     /// </summary>
     public string? DecrementIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's decrement icon container.
+    /// Custom CSS classes/styles for the numeric field's decrement icon container.
     /// </summary>
     public string? DecrementIconContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's increment button.
+    /// Custom CSS classes/styles for the numeric field's increment button.
     /// </summary>
     public string? IncrementButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's increment icon.
+    /// Custom CSS classes/styles for the numeric field's increment icon.
     /// </summary>
     public string? IncrementIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's increment icon container.
+    /// Custom CSS classes/styles for the numeric field's increment icon container.
     /// </summary>
     public string? IncrementIconContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's label.
+    /// Custom CSS classes/styles for the numeric field's label.
     /// </summary>
     public string? Label { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's label container.
+    /// Custom CSS classes/styles for the numeric field's label container.
     /// </summary>
     public string? LabelContainer { get; set; }
 
@@ -53,42 +53,42 @@ public class BitNumericTextFieldClassStyles
     public string? Focused { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's icon.
+    /// Custom CSS classes/styles for the numeric field's icon.
     /// </summary>
     public string? Icon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's input.
+    /// Custom CSS classes/styles for the numeric field's input.
     /// </summary>
     public string? Input { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the wrapper of label and input in numeric text field.
+    /// Custom CSS classes/styles for the wrapper of label and input in numeric field.
     /// </summary>
     public string? InputWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's root element.
+    /// Custom CSS classes/styles for the numeric field's root element.
     /// </summary>
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's prefix container.
+    /// Custom CSS classes/styles for the numeric field's prefix container.
     /// </summary>
     public string? PrefixContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's prefix.
+    /// Custom CSS classes/styles for the numeric field's prefix.
     /// </summary>
     public string? Prefix { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's suffix container.
+    /// Custom CSS classes/styles for the numeric field's suffix container.
     /// </summary>
     public string? SuffixContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the numeric text field's suffix.
+    /// Custom CSS classes/styles for the numeric field's suffix.
     /// </summary>
     public string? Suffix { get; set; }
 }

@@ -1,7 +1,7 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitNumericTextField Min="@Min"
+    <BitNumberField Min="@Min"
                          Max="@Max"
                          Step="@Step"
                          @bind-Value="@TestModel.Value"
@@ -32,12 +32,12 @@
         <LabelTemplate>
             @LabelTemplate
         </LabelTemplate>
-    </BitNumericTextField>
+    </BitNumberField>
 
 </EditForm>
 
 @code {
-    [Parameter] public BitNumericTextFieldLabelPosition LabelPosition { get; set; } = BitNumericTextFieldLabelPosition.Left;
+    [Parameter] public BitNumberFieldLabelPosition LabelPosition { get; set; } = BitNumberFieldLabelPosition.Left;
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
     [Parameter] public int? AriaSetSize { get; set; }
@@ -47,7 +47,7 @@
     [Parameter] public int? Step { get; set; } = 1;
     [Parameter] public int? Min { get; set; }
     [Parameter] public int? Max { get; set; }
-    [Parameter] public BitNumericTextFieldIntTestModel TestModel { get; set; }
+    [Parameter] public BitNumberFieldTestModel TestModel { get; set; }
     [Parameter] public EventCallback<int> ValueChanged { get; set; }
     [Parameter] public string Suffix { get; set; } = string.Empty;
     [Parameter] public string IconName { get; set; }
