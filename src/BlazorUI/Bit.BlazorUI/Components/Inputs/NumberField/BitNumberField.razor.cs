@@ -130,6 +130,8 @@ public partial class BitNumberField<TValue>
         get => leftLabel;
         set
         {
+            if (leftLabel == value) return;
+            
             leftLabel = value;
             ClassBuilder.Reset();
         }
