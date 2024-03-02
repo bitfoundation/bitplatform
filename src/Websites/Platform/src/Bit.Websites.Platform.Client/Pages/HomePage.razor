@@ -12,37 +12,42 @@
         <div class="page-section-content">
             <div class="hero-section-content">
                 <BitTypography Variant="BitTypographyVariant.H5" Gutter Class="hero-subtitle">
-                    Let's build apps with
+                    Let's make apps with
                 </BitTypography>
                 <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="hero-title">
                     bit platform
                 </BitTypography>
                 <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle">
-                    Build everything for everywhere
+                    Plan &nbsp;&nbsp; Develop &nbsp;&nbsp; Deploy
                 </BitTypography>
                 <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle">
-                    using what you already know and love
+                    for multiple platforms
                 </BitTypography>
-                <br /><br />
-                <BitButton IconName="@BitIconName.ChevronRightMed"
-                           Href="@($"#{QUICK_START_SECTION_ID}")"
-                           Size="BitButtonSize.Large"
-                           IconPosition="BitButtonIconPosition.End"
-                           ButtonStyle="BitButtonStyle.Standard">
-                    Quick start
-                </BitButton>
             </div>
         </div>
     </section>
-    <img src="/images/home/hero-image-dark.svg" class="hero-image dark-theme" />
-    <img src="/images/home/hero-image-light.svg" class="hero-image light-theme" />
 
-    <section class="page-section intro-section">
+    <section class="page-section what-section">
         <div class="page-section-content">
             <BitTypography Variant="BitTypographyVariant.H6" Gutter>What is bit platform?</BitTypography>
             <br />
             <BitTypography Variant="BitTypographyVariant.H4">
-                It's a set of tools for <b>.net</b> developers to easily <b>code, build & deploy</b> their projects across <b>multiple platforms</b>.
+                A set of tools for <b>.NET</b> developers to easily <b>code, build & deploy</b> their projects across <b>multiple platforms</b>.
+            </BitTypography>
+        </div>
+    </section>
+
+    <img src="/images/home/hero-image-dark.svg" class="hero-image dark-theme" />
+    <img src="/images/home/hero-image-light.svg" class="hero-image light-theme" />
+
+    <section class="page-section why-section">
+        <div class="page-section-content">
+            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Why bit platform?</BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H5">
+                bit platform is the <b>best partner</b> for teams creating apps with <b>.NET</b> and <b>Blazor</b> utilizing best experts.
+                <br /><br />
+                Instead of using miscellaneous packages, with bit platform, you have a set of comprehensive tools to cover any requirement.
             </BitTypography>
         </div>
     </section>
@@ -64,72 +69,9 @@
                 <span class="animation-container"><span class="animated a-4">admin</span> <span class="animated a-4 delayed d-4">todo</span></span>
                 <span>--name</span> <span>MyAwesomeProject</span>
             </div>
-            <div class="template-card-list">
-                <div class="template-card">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Todo sample</BitTypography>
-                    <br />
-                    <div class="template-img-container">
-                        <img class="template-img" src="/images/home/todotemplate.webp" alt="Todo sample" />
-                    </div>
-                    <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                        The Todo sample is built with bit platform Boilerplate project template, ASP.NET Core, Identity, Web API, and EF Core and Blazor.
-                    </BitTypography>
-                    <br />
-                    <div class="links-container">
-                        <a class="template-link" href="@Urls.Templates">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.TodoTemplatePwaPrerendered"
-                                   Target="_blank" ButtonStyle="BitButtonStyle.Standard">Demo</BitButton>
-                    </div>
-                </div>
-                <div class="template-card">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>AdminPanel sample</BitTypography>
-                    <br />
-                    <div class="template-img-container">
-                        <img class="template-img" src="/images/home/adminpanel.webp" alt="AdminPanel sample" />
-                    </div>
-                    <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                        The AdminPanel sample is built with bit platform Boilerplate project template, ASP.NET Core, Identity, Web API, and EF Core and Blazor.
-                    </BitTypography>
-                    <br />
-                    <div class="links-container">
-                        <a class="template-link" href="@Urls.Templates">Learn more <span class="template-link-arrow"></span></a>
-                        <BitButton Href="@Urls.AdminPanelMultiLingual"
-                                   Target="_blank" ButtonStyle="BitButtonStyle.Standard">Demo</BitButton>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="page-section components-section">
-        <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Components</BitTypography>
-            <div class="components-container">
-                <div class="components-content-container">
-                    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-                        bit BlazorUI is an intuitive, versatile, and high-performance component library that streamlines coding and enhances productivity.
-                    </BitTypography>
-                    <div class="com-item-list">
-                        <div class="com-item">
-                            <div class="com-item-content">
-                                Native Blazor UI
-                                <br /><br />
-                                Dedicated dev team
-                                <br /><br />
-                                Easy to customize
-                                <br /><br />
-                                Performance centric
-                            </div>
-                        </div>
-                    </div>
-                    <a class="com-link" href="@Urls.Components" target="_blank">
-                        Read more about BlazorUI <span class="com-link-arrow"></span>
-                    </a>
-                </div>
-                <div class="image-container">
-                    <a href="@Urls.Components" target="_blank" class="image-link" />
-                </div>
-            </div>
+            <a class="template-link" href="@Urls.Templates">
+                Learn more <span class="template-link-arrow"></span>
+            </a>
         </div>
     </section>
 
@@ -149,6 +91,10 @@
                 </a>
                 <a target="_blank" title="Sass" class="tech-item sass-item" href="https://sass-lang.com/"></a>
             </div>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H4">
+                We've developed all of our websites with our own toolchain!
+            </BitTypography>
         </div>
     </section>
 
@@ -167,6 +113,18 @@
                         <div class="author-container">
                             <img class="customer-image" src="images/home/twitter/1.webp" />
                             <div class="customer-feedback-name">uɒɹɥəɯ</div>
+                        </div>
+                    </div>
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="customer-feedback-card">
+                        <a href="https://twitter.com/sameerrdubey/status/1761762309586690499" target="_blank"><div class="twitter-icon"></div></a>
+                        <div class="customer-feedback-txt">
+                            Great platform to make cutting-edge cross platform apps with c#, you become full-stack developer already with <span class="highlighted-txt">@@bitplatformhq</span>
+                        </div>
+                        <div class="author-container">
+                            <img class="customer-image" src="images/home/twitter/5.webp" />
+                            <div class="customer-feedback-name">Sameer Dubey</div>
                         </div>
                     </div>
                 </BitCarouselItem>
@@ -197,49 +155,6 @@
                     </div>
                 </BitCarouselItem>
             </BitCarousel>
-
-            <!-- TrustBox widget - Micro Review Count -->
-            @*<div class="trustpilot-widget" data-locale="en-US" data-template-id="5419b6a8b0d04a076446a9ad" data-businessunit-id="633c868bc3c26f911394fa13" data-style-height="24px" data-style-width="100%" data-theme="light" data-min-review-count="10" data-without-reviews-preferred-string-id="1" data-style-alignment="center">
-            <a href="https://www.trustpilot.com/review/bitplatform.dev" target="_blank" rel="noopener">Trustpilot</a>
-            </div>
-            <br/>
-            <div class="trustpilot-widget" data-locale="en-US" data-template-id="56278e9abfbbba0bdcd568bc" data-businessunit-id="633c868bc3c26f911394fa13" data-style-height="52px" data-style-width="100%">
-            <a href="https://www.trustpilot.com/review/bitplatform.dev" target="_blank" rel="noopener">Trustpilot</a>
-            </div>*@
-            <!-- End TrustBox widget -->
-        </div>
-    </section>
-
-    <section class="page-section quickstart-section" id="@QUICK_START_SECTION_ID" @ref="quickStartRef">
-        <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Quick start</BitTypography>
-            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>Quickly start with the bit platform products & tools</BitTypography>
-            <div class="quickstart-links">
-                <BitCompoundButton Id="blazorui-button"
-                                   Href="https://components.bitplatform.dev/getting-started"
-                                   ButtonStyle="BitButtonStyle.Standard">
-                    <PrimaryTemplate>
-                        <BitTypography Variant="BitTypographyVariant.H5">BlazorUI</BitTypography>
-                    </PrimaryTemplate>
-                    <SecondaryTemplate>
-                        <BitTypography Variant="BitTypographyVariant.Body2" Style="display:flex;align-items:center">
-                            Utilize bit BlazorUI components for your new project
-                        </BitTypography>
-                    </SecondaryTemplate>
-                </BitCompoundButton>
-                <BitCompoundButton Id="template-button"
-                                   Href="https://bitplatform.dev/templates/overview"
-                                   ButtonStyle="BitButtonStyle.Standard">
-                    <PrimaryTemplate>
-                        <BitTypography Variant="BitTypographyVariant.H5">Project templates</BitTypography>
-                    </PrimaryTemplate>
-                    <SecondaryTemplate>
-                        <BitTypography Variant="BitTypographyVariant.Body2" Style="display:flex;align-items:center">
-                            Build your next app with a full-featured template
-                        </BitTypography>
-                    </SecondaryTemplate>
-                </BitCompoundButton>
-            </div>
         </div>
     </section>
 </div>
