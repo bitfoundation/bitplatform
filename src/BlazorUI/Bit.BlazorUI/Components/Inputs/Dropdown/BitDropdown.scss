@@ -125,16 +125,17 @@
 .bit-drp-tcn {
     flex: 1;
     margin: 0;
+    padding: 0;
     outline: none;
     display: block;
     overflow: hidden;
     font-weight: 400;
     position: relative;
     white-space: nowrap;
-    padding: 0 spacing(1);
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
+    padding-left: spacing(1);
     line-height: spacing(3.75);
     border-radius: spacing(0.25);
 }
@@ -782,6 +783,11 @@
 
     .bit-drp-sb {
         padding: spacing(0.125) spacing(1) spacing(0.125) 0;
+    }
+
+    .bit-drp-tcn {
+        padding-left: 0;
+        padding-right: spacing(1);
     }
 
     .bit-drp-cls {
