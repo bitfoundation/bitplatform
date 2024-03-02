@@ -21,6 +21,13 @@
                             </div>
                         </a>
 
+                        <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil">
+                            <div class="menu-item-content">
+                                <div class="item-title">Butil</div>
+                                <div class="item-desc">Blazor Utilities for JavaScript</div>
+                            </div>
+                        </a>
+
                         <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup">
                             <div class="menu-item-content">
                                 <div class="item-title">Bswup (Blazor PWA)</div>
@@ -32,13 +39,6 @@
                             <div class="menu-item-content">
                                 <div class="item-title">Besql</div>
                                 <div class="item-desc">Blazor Entity Framework Sqlite</div>
-                            </div>
-                        </a>
-
-                        <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil">
-                            <div class="menu-item-content">
-                                <div class="item-title">Butil</div>
-                                <div class="item-desc">Blazor Utilities for JavaScript</div>
                             </div>
                         </a>
 
@@ -112,6 +112,13 @@
                         </div>
                     </a>
 
+                    <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Butil</div>
+                            <div class="item-desc">Blazor Utilities for JavaScript</div>
+                        </div>
+                    </a>
+
                     <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <div class="menu-item-content">
                             <div class="item-title">Bswup (Blazor PWA)</div>
@@ -123,13 +130,6 @@
                         <div class="menu-item-content">
                             <div class="item-title">Besql</div>
                             <div class="item-desc">Blazor Entity Framework Sqlite</div>
-                        </div>
-                    </a>
-
-                    <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <div class="menu-item-content">
-                            <div class="item-title">Butil</div>
-                            <div class="item-desc">Blazor Utilities for JavaScript</div>
                         </div>
                     </a>
 
