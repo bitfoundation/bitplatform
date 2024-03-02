@@ -9,8 +9,8 @@
         .bit-drp-lbl {
             &::after {
                 content: " *";
-                color: $color-state-required;
                 padding-right: spacing(1.5);
+                color: $color-state-required;
             }
         }
     }
@@ -35,14 +35,14 @@
     &.bit-dis {
         .bit-drp-wrp {
             cursor: default;
-            background-color: $color-background-disabled;
-            border-color: $color-border-disabled;
             color: $color-foreground-disabled;
+            border-color: $color-border-disabled;
+            background-color: $color-background-disabled;
 
             &:hover,
             &:active {
-                border-color: $color-border-disabled;
                 color: $color-foreground-disabled;
+                border-color: $color-border-disabled;
             }
 
             &:focus {
@@ -131,20 +131,20 @@
     font-weight: 400;
     position: relative;
     white-space: nowrap;
+    padding: 0 spacing(1);
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
     line-height: spacing(3.75);
     border-radius: spacing(0.25);
-    padding: 0 spacing(3.5) 0 spacing(1);
 }
 
 .bit-drp-sch {
     .bit-drp-tcn {
-        display: flex;
-        gap: spacing(0.5);
-        flex-wrap: wrap;
         height: unset;
+        display: flex;
+        flex-wrap: wrap;
+        gap: spacing(0.5);
         min-height: spacing(4);
         padding: spacing(1) spacing(3.5) spacing(1) spacing(1);
     }
@@ -152,12 +152,12 @@
 
 .bit-drp-chp {
     display: flex;
+    cursor: default;
     gap: spacing(0.5);
+    padding: 0 spacing(0.5);
     border-radius: spacing(0.25);
     background-color: $color-background-secondary;
-    padding: 0 spacing(0.5);
     border: $shape-border-width $shape-border-style $color-border-secondary;
-    cursor: default;
 
     i {
         cursor: pointer;
@@ -165,10 +165,10 @@
 }
 
 .bit-drp-icn {
-    cursor: pointer;
-    padding: 0 spacing(1);
     display: flex;
+    cursor: pointer;
     align-items: center;
+    padding: 0 spacing(1);
 
     i {
         speak: none;
@@ -782,10 +782,6 @@
 
     .bit-drp-sb {
         padding: spacing(0.125) spacing(1) spacing(0.125) 0;
-    }
-
-    .bit-drp-tcn {
-        padding: 0 spacing(1) 0 spacing(3.5);
     }
 
     .bit-drp-cls {
