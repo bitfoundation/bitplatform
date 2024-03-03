@@ -163,10 +163,10 @@ public class BitBreadcrumbTests : BunitTestContext
                 Assert.IsTrue(breadcrumb.GetAttribute("style").Contains(""));
                 break;
             case BitVisibility.Hidden:
-                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("visibility:hidden"));
+                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("visibility: hidden;"));
                 break;
             case BitVisibility.Collapsed:
-                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("display:none"));
+                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("display: none;"));
                 break;
         }
     }
