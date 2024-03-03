@@ -226,10 +226,10 @@ public class BitChoiceGroupTests : BunitTestContext
                 Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains(""));
                 break;
             case BitVisibility.Hidden:
-                Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("visibility: hidden;"));
+                Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("visibility:hidden"));
                 break;
             case BitVisibility.Collapsed:
-                Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("display: none;"));
+                Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("display:none"));
                 break;
         }
     }

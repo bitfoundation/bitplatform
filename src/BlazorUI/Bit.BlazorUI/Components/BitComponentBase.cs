@@ -143,6 +143,11 @@ public abstract partial class BitComponentBase : ComponentBase
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(Dir):
+                    Dir = (BitDir)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(Id):
                     Id = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -150,11 +155,6 @@ public abstract partial class BitComponentBase : ComponentBase
 
                 case nameof(IsEnabled):
                     IsEnabled = (bool)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
-                case nameof(Dir):
-                    Dir = (BitDir)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -184,8 +184,8 @@ public abstract partial class BitComponentBase : ComponentBase
             .Register(() => style)
             .Register(() => visibility switch
             {
-                BitVisibility.Hidden => "visibility: hidden;",
-                BitVisibility.Collapsed => "display: none;",
+                BitVisibility.Hidden => "visibility:hidden",
+                BitVisibility.Collapsed => "display:none",
                 _ => string.Empty
             });
 
