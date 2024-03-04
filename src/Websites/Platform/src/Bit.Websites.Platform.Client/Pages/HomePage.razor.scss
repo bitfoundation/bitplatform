@@ -14,28 +14,29 @@
     justify-content: flex-start;
 
     .hero-gradient {
+        top: 0;
         left: 50%;
-        width: 100%;
-        top: -12rem;
         display: none;
+        max-width: 70rem;
         position: absolute;
-        max-width: rem2(1200px);
-        transform: translateX(-50%);
+        transform: translate(-50%, -10%);
 
         @include lt-xl {
-            top: -8rem;
+            max-width: 65rem;
         }
 
         @include lt-lg {
-            top: -3rem;
+            max-width: 60rem;
         }
 
         @include lt-md {
-            top: 4rem;
+            max-width: 50rem;
+            transform: translate(-50%, -5%);
         }
 
         @include lt-sm {
-            top: 8rem;
+            max-width: 40rem;
+            transform: translate(-50%, 10%);
         }
     }
 
@@ -81,6 +82,10 @@
         padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
     }
 
+    @include lt-md {
+        padding-top: 9rem;
+    }
+
     .page-section-content {
         gap: 5rem;
         z-index: 2;
@@ -103,6 +108,11 @@
                 font-size: 9rem;
                 font-weight: 400;
             }
+
+            .hero-subtitle-1 {
+                font-weight: 700;
+                margin-bottom: 3rem;
+            }
         }
 
         @include lt-lg {
@@ -114,21 +124,42 @@
                     font-weight: normal;
                 }
 
-                .hero-subtitle {
+                .hero-subtitle-1 {
+                    margin: 2rem 0;
+                    font-size: 2rem;
+                }
+
+                .hero-subtitle-2 {
                     font-size: 1.5rem;
-                    font-weight: normal;
                 }
             }
         }
 
         @include lt-md {
             ::deep {
+                .hero-top-title {
+                    margin-bottom: 2rem;
+                }
+
                 .hero-title {
                     font-size: 4rem;
                 }
 
-                .hero-subtitle {
+                .hero-subtitle-1 {
+                    font-size: 1.5rem;
+                    margin: 2rem 0 1.5rem 0;
+                }
+            }
+        }
+
+        @include lt-sm {
+            ::deep {
+                .hero-top-title {
                     font-size: 1rem;
+                }
+
+                .hero-title {
+                    font-size: 3.5rem;
                 }
             }
         }
