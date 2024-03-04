@@ -31,6 +31,15 @@ public partial class ComponentDemo
         },
         new()
         {
+            Name = "Dir",
+            Type = "BitDir?",
+            DefaultValue = "null",
+            Description = "Determines the component direction.",
+            LinkType = LinkType.Link,
+            Href = "#component-dir",
+        },
+        new()
+        {
             Name = "HtmlAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
@@ -111,6 +120,30 @@ public partial class ComponentDemo
                     Name= "Collapsed",
                     Value="2",
                     Description="The component is hidden (display:none).",
+                }
+            }
+        },
+        new()
+        {
+            Id = "component-dir",
+            Name = "BitDir",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Ltr",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Rtl",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Auto",
+                    Value="2",
                 }
             }
         }

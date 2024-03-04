@@ -116,10 +116,10 @@ public partial class BitButtonDemo
         {
             Name = "LoadingLabelPosition",
             Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.Right",
+            DefaultValue = "BitLabelPosition.End",
             Description = "The position of the loading Label in regards to the spinner animation.",
             LinkType = LinkType.Link,
-            Href = "#spinner-position-enum"
+            Href = "#button-labelPosition-enum"
         },
         new()
         {
@@ -309,6 +309,39 @@ public partial class BitButtonDemo
                     Description="Renders the icon at the end of component.",
                     Value="1",
                 }
+            }
+        },
+        new()
+        {
+            Id = "button-labelPosition-enum",
+            Name = "BitLabelPosition",
+            Description = "",
+            Items = new()
+            {
+                new()
+                {
+                    Name= "Top",
+                    Description="The label shows on the top of the button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="The label shows on the end of the button.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="The label shows on the bottom of the button.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Start",
+                    Description="The label shows on the start of the button.",
+                    Value="3",
+                },
             }
         }
     };
@@ -556,19 +589,19 @@ private async Task LoadingTextClick()
 
     private readonly string example12RazorCode = @"
 <BitButton IsLoading=""true""
-           LoadingLabel=""Right...""
+           LoadingLabel=""End...""
            Style=""min-width: 6.5rem;""
            ButtonStyle=""BitButtonStyle.Standard""
-           LoadingLabelPosition=""BitLabelPosition.Right"">
-    Right
+           LoadingLabelPosition=""BitLabelPosition.End"">
+    End
 </BitButton>
 
 <BitButton IsLoading=""true""
-           LoadingLabel=""Left...""
+           LoadingLabel=""Start...""
            Style=""min-width: 6.5rem;""
-           LoadingLabelPosition=""BitLabelPosition.Left""
+           LoadingLabelPosition=""BitLabelPosition.Start""
            ButtonStyle=""BitButtonStyle.Standard"">
-    Left
+    Start
 </BitButton>
 
 <BitButton IsLoading=""true""
@@ -684,4 +717,12 @@ private async Task LoadingClassesClick()
     await Task.Delay(3000);
     classesIsLoading = false;
 }";
+
+    private readonly string example15RazorCode = @"
+<BitButton Dir=""BitDir.Rtl"">دکمه</BitButton>
+
+<BitButton IconName=""@BitIconName.Emoji"" Dir=""BitDir.Rtl"">دکمه با نماد</BitButton>
+
+<BitButton IsLoading LoadingLabel=""دکمه ی بارگذاری"" Dir=""BitDir.Rtl"" />
+";
 }

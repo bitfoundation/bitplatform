@@ -256,28 +256,27 @@
     <ComponentExampleBox Title="LoadingLabel position" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div>
-                Explore different loading label positions for buttons, including right, left, bottom, and top. Customize the loading labels and positions to enhance the user experience.
+                Explore different loading label positions for buttons, including start, end, bottom, and top. Customize the loading labels and positions to enhance the user experience.
             </div>
             <br />
             <div class="buttons-container">
                 <BitButton IsLoading="true"
-                           LoadingLabel="Right..."
+                           LoadingLabel="End..."
                            Style="min-width: 6.5rem;"
                            ButtonStyle="BitButtonStyle.Standard"
-                           LoadingLabelPosition="BitLabelPosition.Right">
-                    Right
+                           LoadingLabelPosition="BitLabelPosition.End">
+                    End
                 </BitButton>
                 <BitButton IsLoading="true"
-                           LoadingLabel="Left..."
+                           LoadingLabel="Start..."
                            Style="min-width: 6.5rem;"
-                           LoadingLabelPosition="BitLabelPosition.Left"
+                           LoadingLabelPosition="BitLabelPosition.Start"
                            ButtonStyle="BitButtonStyle.Standard">
-                    Left
+                    Start
                 </BitButton>
             </div>
             <br />
             <div class="buttons-container">
-
                 <BitButton IsLoading="true"
                            LoadingLabel="Bottom..."
                            Style="min-width: 6.5rem;"
@@ -360,6 +359,26 @@
                                               Spinner = "custom-spinner" })">
                     Standard
                 </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+        <ExamplePreview>
+            <div>
+                <div><b>Default</b>:</div>
+                <br />
+                <BitButton Dir="BitDir.Rtl">دکمه</BitButton>
+
+                <br /><br /><br />
+                <div><b>With icon</b>:</div>
+                <br />
+                <BitButton IconName="@BitIconName.Emoji" Dir="BitDir.Rtl">دکمه با نماد</BitButton>
+
+                <br /><br /><br />
+                <div><b>With loading</b>:</div>
+                <br />
+                <BitButton IsLoading LoadingLabel="دکمه ی بارگذاری" Dir="BitDir.Rtl" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
