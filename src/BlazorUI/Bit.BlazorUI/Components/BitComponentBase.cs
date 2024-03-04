@@ -5,6 +5,7 @@ public abstract partial class BitComponentBase : ComponentBase
     private string? style;
     private string? @class;
     private bool isEnabled = true;
+    private BitDir? dir;
     private BitVisibility visibility;
 
 
@@ -44,6 +45,22 @@ public abstract partial class BitComponentBase : ComponentBase
             if (@class == value) return;
 
             @class = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Determines the component direction.
+    /// </summary>
+    [Parameter]
+    public BitDir? Dir
+    {
+        get => dir;
+        set
+        {
+            if (dir == value) return;
+
+            dir = value;
             ClassBuilder.Reset();
         }
     }
@@ -126,6 +143,11 @@ public abstract partial class BitComponentBase : ComponentBase
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(Dir):
+                    Dir = (BitDir)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(Id):
                     Id = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -169,7 +191,8 @@ public abstract partial class BitComponentBase : ComponentBase
 
         ClassBuilder
               .Register(() => RootElementClass)
-              .Register(() => (IsEnabled ? string.Empty : "bit-dis"));
+              .Register(() => (IsEnabled ? string.Empty : "bit-dis"))
+              .Register(() => (Dir == BitDir.Rtl ? "bit-rtl" : string.Empty));
 
         RegisterCssClasses();
 
