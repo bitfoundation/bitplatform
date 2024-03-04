@@ -19,13 +19,13 @@
                 </BitTypography>
                 <BitTypography Variant="BitTypographyVariant.H3" Gutter Class="hero-subtitle-1">
                     <span style="color:darkorange">Code</span>
-                    &nbsp;&nbsp; 
+                    &nbsp;&nbsp;
                     <span style="color:blueviolet">Build</span>
-                    &nbsp;&nbsp; 
+                    &nbsp;&nbsp;
                     <span style="color:darkgreen">Deploy</span>
                 </BitTypography>
                 <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle-2">
-                    for multiple platforms
+                    across multiple platforms
                 </BitTypography>
             </div>
         </div>
@@ -56,11 +56,18 @@
         </div>
     </section>
 
-    <section class="page-section templates-section">
+    <section class="page-section products-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Project templates</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Products</BitTypography>
             <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-                Visual studio and .NET project templates that enable high-quality, speedy cross-platform development
+                bit platform provides a variety of tools helping developers and teams to make better apps.
+            </BitTypography>
+
+            <br /><br />
+
+            <BitTypography Variant="BitTypographyVariant.H4" Gutter>Boilerplate</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                bit Boilerplate is a Visual studio and .NET project template that enables high-quality, speedy cross-platform development
                 for PWA/SSR enabled websites and Android, iOS, macOS, Windows apps.
             </BitTypography>
             <div class="template-terminal">
@@ -74,6 +81,73 @@
                 <span>--name</span> <span>MyAwesomeProject</span>
             </div>
             <a class="template-link" href="@Urls.Templates">
+                Learn more <span class="template-link-arrow"></span>
+            </a>
+
+            <br /><br />
+
+            <BitTypography Variant="BitTypographyVariant.H4" Gutter>Butil</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                bit Butil helps C# developers to access the browser APIs that are only accessible through JavaScript in C#.
+            </BitTypography>
+            <div>
+                <pre class="code-box">@@inject Bit.Butil.Crypto crypto
+
+@@code {
+    var encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+}</pre>
+            </div>
+            <a class="template-link" href="@Urls.Butil">
+                Learn more <span class="template-link-arrow"></span>
+            </a>
+
+            <br /><br />
+
+            <BitTypography Variant="BitTypographyVariant.H4" Gutter>Bswup</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                bit Bswup is a set of tools that assists developers in making the most out of the Service Worker when building apps with Blazor.
+            </BitTypography>
+            <div>
+                <img src="/images/bswup/bswup4-1.webp" style="margin-bottom:0.5rem" />
+                <img src="/images/bswup/bswup4-2.webp" />
+            </div>
+            <br />
+            <a class="template-link" href="@Urls.Bswup">
+                Learn more <span class="template-link-arrow"></span>
+            </a>
+
+            <br /><br />
+
+            <BitTypography Variant="BitTypographyVariant.H4" Gutter>Besql</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                bit Besql facilitates the use of Entity Framework and sqlite in web browsers with Blazor WebAssembly.
+            </BitTypography>
+            <div>
+                <pre class="code-box">services.AddBesqlDbContextFactory();</pre>
+            </div>
+            <a class="template-link" href="@Urls.Besql">
+                Learn more <span class="template-link-arrow"></span>
+            </a>
+
+            <br /><br />
+
+            <BitTypography Variant="BitTypographyVariant.H4" Gutter>BlazorUI</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering),
+                saving you time and making development enjoyable.
+            </BitTypography>
+            <div>
+                <pre class="code-box">
+&lt;BitDropdown @@bind-Values="comboValues"
+             Combo Chips Dynamic
+             Label="Multi select combo box"
+             Placeholder="Select options"
+             Items="comboBoxItems"
+             IsMultiSelect="true"
+             IsResponsive="true"
+             OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></pre>
+            </div>
+            <a class="template-link" href="@Urls.Components" target="_blank">
                 Learn more <span class="template-link-arrow"></span>
             </a>
         </div>

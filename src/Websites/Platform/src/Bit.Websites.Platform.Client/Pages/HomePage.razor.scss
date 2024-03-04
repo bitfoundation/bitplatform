@@ -1,4 +1,5 @@
 ﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/bit-css-variables.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
@@ -138,15 +139,19 @@
         @include lt-md {
             ::deep {
                 .hero-top-title {
+                    font-size: 1.25rem;
+                }
+
+                .hero-top-title {
                     margin-bottom: 2rem;
                 }
 
                 .hero-title {
-                    font-size: 4rem;
+                    font-size: 4.3rem;
                 }
 
                 .hero-subtitle-1 {
-                    font-size: 1.5rem;
+                    font-size: 1.75rem;
                     margin: 2rem 0 1.5rem 0;
                 }
             }
@@ -161,6 +166,10 @@
                 .hero-title {
                     font-size: 3.5rem;
                 }
+
+                .hero-subtitle-1 {
+                    font-size: 1.5rem;
+                }
             }
         }
     }
@@ -169,6 +178,7 @@
 .what-section {
     margin: 5rem 0;
     padding: 5rem 0;
+    box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-secondary;
 
     @include lt-md {
@@ -179,6 +189,7 @@
 .why-section {
     margin: 5rem 0;
     padding: 5rem 0;
+    box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-secondary;
 
     @include lt-md {
@@ -186,7 +197,7 @@
     }
 }
 
-.templates-section {
+.products-section {
     .template-terminal {
         display: flex;
         color: #f0f0f0;
@@ -194,7 +205,7 @@
         flex-wrap: wrap;
         padding: rem2(50px);
         align-items: center;
-        margin: rem2(50px) 0;
+        margin: rem2(25px) 0;
         border-radius: rem2(4px);
         background-color: #0a153d;
 
@@ -358,6 +369,7 @@
     margin: 5rem 0;
     padding: 5rem 0;
     text-align: center;
+    box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-secondary;
 
     @include lt-md {
@@ -507,38 +519,6 @@
     }
 }
 
-.quickstart-section {
-    margin: 5rem 0;
-    padding: 5rem 0;
-    text-align: center;
-    scroll-margin: 7rem;
-    background-color: $bit-color-background-secondary;
-
-    @include lt-md {
-        padding: 5rem 0;
-    }
-
-    .quickstart-links {
-        gap: 1rem;
-        display: flex;
-        margin-top: 2rem;
-        justify-content: center;
-
-        @include lt-xl {
-            flex-flow: column;
-            align-items: center;
-        }
-
-        ::deep a {
-            min-width: rem2(360px);
-        }
-
-        @include xs {
-            align-items: stretch;
-
-            ::deep a {
-                min-width: unset;
-            }
-        }
-    }
+.code-box {
+    @include CodeBox;
 }
