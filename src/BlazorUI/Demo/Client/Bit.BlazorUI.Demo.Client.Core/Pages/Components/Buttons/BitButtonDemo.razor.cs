@@ -720,8 +720,38 @@ private async Task LoadingClassesClick()
 }";
 
     private readonly string example15RazorCode = @"
-<BitButton Dir=""BitDir.Rtl"">دکمه</BitButton>
-<BitButton IconName=""@BitIconName.Emoji"" Dir=""BitDir.Rtl"">دکمه با نماد</BitButton>
-<BitButton IsLoading LoadingLabel=""دکمه ی بارگذاری"" Dir=""BitDir.Rtl"" />
+<BitButton Dir=""BitDir.Rtl""
+           IconName=""@BitIconName.Emoji""
+           ButtonStyle=""BitButtonStyle.Primary"">
+    دکمه با نماد
+</BitButton>
+
+<BitButton Dir=""BitDir.Rtl""
+           IconName=""@BitIconName.Emoji""
+           ButtonStyle=""BitButtonStyle.Standard"">
+    دکمه با نماد
+</BitButton>
+
+<BitButton Dir=""BitDir.Rtl""
+           IconName=""@BitIconName.Emoji""
+           ButtonStyle=""BitButtonStyle.Text"">
+    دکمه با نماد
+</BitButton>
+
+
+<BitButton IsLoading
+           Dir=""BitDir.Rtl""
+           LoadingLabel=""دکمه ی بارگذاری""
+           ButtonStyle=""BitButtonStyle.Primary"" />
+
+<BitButton IsLoading
+           Dir=""BitDir.Rtl""
+           LoadingLabel=""دکمه ی بارگذاری""
+           ButtonStyle=""BitButtonStyle.Standard"" />
+
+<BitButton IsLoading
+           Dir=""BitDir.Rtl""
+           LoadingLabel=""دکمه ی بارگذاری""
+           ButtonStyle=""BitButtonStyle.Text"" />
 ";
 }
