@@ -111,9 +111,10 @@
 
     .member-card {
         gap: 1rem;
-        width: 25rem;
         display: flex;
         flex-flow: row;
+        min-width: 21rem;
+        max-width: 21rem;
         padding: rem2(20px);
         border-radius: rem2(4px);
         justify-content: flex-start;
