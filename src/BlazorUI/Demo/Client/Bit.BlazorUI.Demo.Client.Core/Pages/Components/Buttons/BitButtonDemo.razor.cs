@@ -700,6 +700,7 @@ private async Task LoadingTextClick()
                               Spinner = ""custom-spinner"" })"">
     Standard
 </BitButton>";
+
     private readonly string example14CsharpCode = @"
 private bool stylesIsLoading;
 private bool classesIsLoading;
@@ -717,4 +718,40 @@ private async Task LoadingClassesClick()
     await Task.Delay(3000);
     classesIsLoading = false;
 }";
+
+    private readonly string example15RazorCode = @"
+<BitButton Dir=""BitDir.Rtl""
+           IconName=""@BitIconName.Emoji""
+           ButtonStyle=""BitButtonStyle.Primary"">
+    دکمه با نماد
+</BitButton>
+
+<BitButton Dir=""BitDir.Rtl""
+           IconName=""@BitIconName.Emoji""
+           ButtonStyle=""BitButtonStyle.Standard"">
+    دکمه با نماد
+</BitButton>
+
+<BitButton Dir=""BitDir.Rtl""
+           IconName=""@BitIconName.Emoji""
+           ButtonStyle=""BitButtonStyle.Text"">
+    دکمه با نماد
+</BitButton>
+
+
+<BitButton IsLoading
+           Dir=""BitDir.Rtl""
+           LoadingLabel=""دکمه ی بارگذاری""
+           ButtonStyle=""BitButtonStyle.Primary"" />
+
+<BitButton IsLoading
+           Dir=""BitDir.Rtl""
+           LoadingLabel=""دکمه ی بارگذاری""
+           ButtonStyle=""BitButtonStyle.Standard"" />
+
+<BitButton IsLoading
+           Dir=""BitDir.Rtl""
+           LoadingLabel=""دکمه ی بارگذاری""
+           ButtonStyle=""BitButtonStyle.Text"" />
+";
 }
