@@ -551,6 +551,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an option""
              Items=""comboBoxCustoms""
              NameSelectors=""comboBoxNameSelectors""
+             DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
 <BitLabel>Value: @comboBoxValue</BitLabel>
 
@@ -562,6 +563,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              IsMultiSelect=""true""
              IsResponsive=""true""
              NameSelectors=""comboBoxNameSelectors""
+             DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
 <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
     private readonly string example7CsharpCode = @"
@@ -613,7 +615,6 @@ private BitDropdownNameSelectors<BitDropdownCustom, string> comboBoxNameSelector
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },
-    DynamicValueGenerator = (BitDropdownCustom item) => item.Text ?? "",
     ValueSetter = (BitDropdownCustom item, string value) => item.Value = value,
     TextSetter = (string? text, BitDropdownCustom item) => item.Text = text
 };";

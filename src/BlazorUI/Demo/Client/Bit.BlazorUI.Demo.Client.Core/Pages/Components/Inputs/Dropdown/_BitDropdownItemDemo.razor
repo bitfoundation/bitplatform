@@ -273,6 +273,7 @@
                              Label="Single select combo box"
                              Placeholder="Select an option"
                              Items="comboBoxItems"
+                             DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
                              OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
                 <BitLabel>Value: @comboBoxValue</BitLabel>
             </div>
@@ -285,6 +286,7 @@
                              Items="comboBoxItems"
                              IsMultiSelect="true"
                              IsResponsive="true"
+                             DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
                              OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
                 <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
             </div>

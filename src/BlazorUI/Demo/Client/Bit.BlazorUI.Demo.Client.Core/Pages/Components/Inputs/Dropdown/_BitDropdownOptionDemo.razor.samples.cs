@@ -491,6 +491,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
              Combo Chips Dynamic
              Label=""Single select combo box""
              Placeholder=""Select an option""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
@@ -506,6 +507,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
              Placeholder=""Select options""
              IsMultiSelect=""true""
              IsResponsive=""true""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)

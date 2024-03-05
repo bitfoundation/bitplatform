@@ -384,6 +384,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Label=""Single select combo box""
              Placeholder=""Select an option""
              Items=""comboBoxItems""
+             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <BitLabel>Value: @comboBoxValue</BitLabel>
 
@@ -394,6 +395,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""comboBoxItems""
              IsMultiSelect=""true""
              IsResponsive=""true""
+             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
     private readonly string example7CsharpCode = @"
