@@ -2,6 +2,7 @@
 
 .bit-spn {
     display: flex;
+    gap: spacing(1);
     justify-content: center;
 
     @keyframes bit-spn-animation {
@@ -17,19 +18,19 @@
 
 .bit-spn-snr {
     border-radius: 50%;
-    animation: bit-spn-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
     border-width: spacing(0.1875);
     border-style: $shape-border-style;
     border-color: $color-border-secondary;
     border-top-color: $color-primary-main;
+    animation: bit-spn-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
 
 .bit-spn-lbl {
     text-align: center;
     font-size: spacing(1.5);
+    margin: spacing(0.25) 0;
     color: $color-primary-main;
-    margin: spacing(0.25) spacing(1);
 }
 
 .bit-spn-alb {
@@ -73,35 +74,19 @@
 .bit-spn-top {
     align-items: center;
     flex-direction: column-reverse;
-
-    .bit-spn-lbl {
-        margin: 0 0 spacing(1);
-    }
 }
 
-.bit-spn-lft {
+.bit-spn-end {
     align-items: center;
     flex-direction: row-reverse;
-
-    .bit-spn-lbl {
-        margin: 0 spacing(1) 0 0;
-    }
 }
 
-.bit-spn-rgt {
+.bit-spn-srt {
     align-items: center;
     flex-direction: row;
-
-    .bit-spn-lbl {
-        margin: 0 0 0 spacing(1);
-    }
 }
 
 .bit-spn-btm {
     align-items: center;
     flex-direction: column;
-
-    .bit-spn-lbl {
-        margin: spacing(1) 0 0;
-    }
 }

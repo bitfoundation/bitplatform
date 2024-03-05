@@ -38,8 +38,8 @@ public partial class BitSpinner
         ClassBuilder.Register(() => LabelPosition switch
         {
             BitLabelPosition.Top => $"{RootElementClass}-top",
-            BitLabelPosition.Left => $"{RootElementClass}-lft",
-            BitLabelPosition.Right => $"{RootElementClass}-rgt",
+            BitLabelPosition.Start => $"{RootElementClass}-srt",
+            BitLabelPosition.End => $"{RootElementClass}-end",
             BitLabelPosition.Bottom => $"{RootElementClass}-btm",
             _ => string.Empty
         });
