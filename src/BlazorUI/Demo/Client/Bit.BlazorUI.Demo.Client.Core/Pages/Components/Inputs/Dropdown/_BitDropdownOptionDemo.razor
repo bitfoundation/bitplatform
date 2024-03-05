@@ -398,7 +398,7 @@
                              Combo Chips Dynamic
                              Label="Single select combo box"
                              Placeholder="Select an option"
-                             NameSelectors="nameSelectors"
+                             DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
                              OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
                              TItem="BitDropdownOption<string>" TValue="string">
                     @foreach (var item in comboBoxItems)
@@ -416,7 +416,7 @@
                              Placeholder="Select options"
                              IsMultiSelect="true"
                              IsResponsive="true"
-                             NameSelectors="nameSelectors"
+                             DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
                              OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
                              TItem="BitDropdownOption<string>" TValue="string">
                     @foreach (var item in comboBoxItems)

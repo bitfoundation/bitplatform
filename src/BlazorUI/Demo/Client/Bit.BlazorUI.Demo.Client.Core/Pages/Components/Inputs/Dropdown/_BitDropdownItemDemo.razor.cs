@@ -99,13 +99,6 @@ public partial class _BitDropdownItemDemo
     private string comboBoxValue = default!;
     private ICollection<string> comboBoxValues = [];
 
-    private BitDropdownNameSelectors<BitDropdownItem<string>, string> nameSelectors = new()
-    {
-        DynamicValueGenerator = ((BitDropdownItem<string> item) => item.Text),
-        ValueSetter = ((BitDropdownItem<string> item, string? value) => item.Value = value),
-        TextSetter = ((string? text, BitDropdownItem<string> item) => item.Text = text)
-    };
-
     protected override void OnInitialized()
     {
         virtualizeItems1 = Enumerable.Range(1, 10_000)

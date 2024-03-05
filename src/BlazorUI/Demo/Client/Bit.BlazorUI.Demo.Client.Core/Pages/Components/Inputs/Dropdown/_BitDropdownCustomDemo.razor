@@ -280,6 +280,7 @@
                              Placeholder="Select an option"
                              Items="comboBoxCustoms"
                              NameSelectors="comboBoxNameSelectors"
+                             DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
                              OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
                 <BitLabel>Value: @comboBoxValue</BitLabel>
             </div>
@@ -293,6 +294,7 @@
                              IsMultiSelect="true"
                              IsResponsive="true"
                              NameSelectors="comboBoxNameSelectors"
+                             DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
                              OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
                 <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
             </div>

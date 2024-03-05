@@ -370,6 +370,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// </summary>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
+    /// <summary>
+    /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    [Parameter] public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
+
 
 
     public IReadOnlyList<TItem> SelectedItems => IsMultiSelect ? _selectedItems : Array.Empty<TItem>();
@@ -1271,7 +1276,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
                 IsEnabled = true
             };
 
-            SetValue(dropdownItem as TItem);
+            if (DynamicValueGenerator is not null)
+            {
+                dropdownItem.Value = DynamicValueGenerator(dropdownItem as TItem);
+            }
             await AddOrRemoveSelectedItem(dropdownItem as TItem, true);
             await OnDynamicAdd.InvokeAsync(dropdownItem as TItem);
         }
@@ -1285,7 +1293,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
                 IsEnabled = true
             };
 
-            SetValue(dropdownOption as TItem);
+            if (DynamicValueGenerator is not null)
+            {
+                dropdownOption.Value = DynamicValueGenerator(dropdownOption as TItem);
+            }
             await AddOrRemoveSelectedItem(dropdownOption as TItem, true);
             await OnDynamicAdd.InvokeAsync(dropdownOption as TItem);
         }
@@ -1302,29 +1313,19 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
                 customItem.SetValueToProperty(NameSelectors.Text.Name, text!);
             }
 
-            if (NameSelectors?.ValueSetter is not null && NameSelectors?.DynamicValueGenerator is not null)
+            if (NameSelectors?.ValueSetter is not null && DynamicValueGenerator is not null)
             {
-                SetValue(customItem);
+                TValue? value = DynamicValueGenerator(customItem);
+                NameSelectors.ValueSetter(customItem, value);
             }
-            else if (NameSelectors is not null && NameSelectors.Value.Name.HasValue() && NameSelectors.DynamicValueGenerator is not null)
+            else if (NameSelectors is not null && NameSelectors.Value.Name.HasValue() && DynamicValueGenerator is not null)
             {
-                customItem.SetValueToProperty(NameSelectors.Value.Name, NameSelectors.DynamicValueGenerator(customItem)!);
+                customItem.SetValueToProperty(NameSelectors.Value.Name, DynamicValueGenerator(customItem)!);
             }
 
             await AddOrRemoveSelectedItem(customItem, true);
             await OnDynamicAdd.InvokeAsync(customItem);
         }
-    }
-
-    private void SetValue(TItem? item)
-    {
-        if (item is null) return;
-        if (NameSelectors is null) return;
-        if (NameSelectors.ValueSetter is null) return;
-        if (NameSelectors.DynamicValueGenerator is null) return;
-
-        TValue? value = NameSelectors.DynamicValueGenerator(item);
-        NameSelectors.ValueSetter(item, value);
     }
 
     private string? GetText()

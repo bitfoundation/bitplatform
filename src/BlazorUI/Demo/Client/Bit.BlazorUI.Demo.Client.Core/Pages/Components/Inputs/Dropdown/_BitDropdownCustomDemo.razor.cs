@@ -34,7 +34,6 @@ public partial class _BitDropdownCustomDemo
         Text = { Selector = c => c.Text },
         Title = { Selector = c => c.Title },
         Value = { Selector = c => c.Value },
-        DynamicValueGenerator = (BitDropdownCustom item) => item.Text ?? "",
         ValueSetter = (BitDropdownCustom item, string value) => item.Value = value,
         TextSetter = (string text, BitDropdownCustom item) => item.Text = text
     };

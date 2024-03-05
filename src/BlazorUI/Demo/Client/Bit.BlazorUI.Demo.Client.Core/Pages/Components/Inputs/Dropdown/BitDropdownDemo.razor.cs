@@ -686,6 +686,24 @@ public partial class BitDropdownDemo
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },
+               new()
+               {
+                   Name = "TextSetter",
+                   Type = "Action<string, TItem>?",
+                   Description = "The callback that is called for setting text on a Text property in a custom item when a new item is on added Dynamic ComboBox mode.",
+               },
+               new()
+               {
+                   Name = "ValueSetter",
+                   Type = "Action<TItem, TItem>?",
+                   Description = "The callback that is called for setting value on a Value property in a custom item when a new item is on added Dynamic ComboBox mode.",
+               },
+               new()
+               {
+                   Name = "IsSelectedSetter",
+                   Type = "Action<bool, TValue>",
+                   Description = "The callback that is called for setting isSelected on a IsSelected property in a custom item when a new item is on added Dynamic ComboBox mode.",
+               },
             },
         },
         new()

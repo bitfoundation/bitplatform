@@ -87,13 +87,6 @@ public partial class _BitDropdownOptionDemo
     private string comboBoxValue = default!;
     private ICollection<string> comboBoxValues = [];
 
-    private BitDropdownNameSelectors<BitDropdownOption<string>, string> nameSelectors = new()
-    {
-        DynamicValueGenerator = ((BitDropdownOption<string> item) => item.Text),
-        ValueSetter = ((BitDropdownOption<string> item, string? value) => item.Value = value),
-        TextSetter = ((string? text, BitDropdownOption<string> item) => item.Text = text)
-    };
-
 
     protected override void OnInitialized()
     {
