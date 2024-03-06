@@ -1,4 +1,5 @@
 ﻿using System.Dynamic;
+using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -19,15 +20,17 @@ internal static class BitChartJsInterop
         {
             NamingStrategy = new CamelCaseNamingStrategy(true, false)
         },
-        Converters =
-        {
-            new IsoDateTimeConverter()
-        }
+        Converters = { new IsoDateTimeConverter() }
     };
 
-    public static async Task InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
+    public static async ValueTask InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
     {
         await jsRuntime.InvokeVoidAsync($"{BitChartJsInteropName}.initChartJs", scripts);
+    }
+
+    public static async ValueTask RemoveChart(this IJSRuntime jsRuntime, string canvasId)
+    {
+        await jsRuntime.InvokeVoidAsync($"{BitChartJsInteropName}.removeChart", canvasId);
     }
 
     /// <summary>
