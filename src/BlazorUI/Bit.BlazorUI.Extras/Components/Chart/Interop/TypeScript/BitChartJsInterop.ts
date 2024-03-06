@@ -59,8 +59,9 @@ class BitChart {
     public removeChart(canvasId: string) {
         if (!this._bitCharts.has(canvasId)) return;
 
-        var chart = this._bitCharts.get(canvasId);
-        chart?.destroy();
+        var chart = this._bitCharts.get(canvasId)!;
+        chart.destroy();
+        chart.config = {};
         this._bitCharts.delete(canvasId);
     }
 
