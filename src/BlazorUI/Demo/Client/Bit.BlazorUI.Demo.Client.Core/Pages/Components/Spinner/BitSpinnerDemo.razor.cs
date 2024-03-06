@@ -149,5 +149,8 @@ public partial class BitSpinnerDemo
 <BitSpinner LabelPosition=""BitLabelPosition.Top"" Label=""I am definitely loading..."" />
 <BitSpinner LabelPosition=""BitLabelPosition.Bottom"" Label=""Seriously, still loading..."" />
 <BitSpinner LabelPosition=""BitLabelPosition.Start"" Label=""Wait, wait..."" />
-<BitSpinner LabelPosition=""BitLabelPosition.End"" Label=""Nope, still loading..."" />";
+<BitSpinner LabelPosition=""BitLabelPosition.End"" Label=""Nope, still loading..."" />
+
+<BitSpinner Dir=""BitDir.Rtl"" LabelPosition=""BitLabelPosition.Start"" Label=""در حال بار گذاری..."" />
+<BitSpinner Dir=""BitDir.Rtl"" LabelPosition=""BitLabelPosition.End"" Label=""در حال بار گذاری..."" />";
 }
