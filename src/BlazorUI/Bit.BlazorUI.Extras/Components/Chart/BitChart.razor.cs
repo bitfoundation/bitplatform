@@ -91,6 +91,7 @@ public partial class BitChart : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
+
         GC.SuppressFinalize(this);
     }
 
