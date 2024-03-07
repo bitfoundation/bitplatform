@@ -95,7 +95,7 @@
                        autocomplete="@BitAutoCompleteValue.NewPassword"
                        disabled="@(IsEnabled is false)" />
             }
-            else if (_selectedItems.Count < 1)
+            else if (_selectedItems.Count == 0)
             {
                 @if (PlaceholderTemplate is not null)
                 {
