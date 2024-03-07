@@ -106,7 +106,7 @@
                        role="combobox"
                        value="@_searchText"
                        aria-label="@AriaLabel"
-                       placeholder="@Placeholder"
+                       placeholder="@(text.HasNoValue() ? Placeholder : "")"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
                        disabled="@(IsEnabled is false)" />
             }
