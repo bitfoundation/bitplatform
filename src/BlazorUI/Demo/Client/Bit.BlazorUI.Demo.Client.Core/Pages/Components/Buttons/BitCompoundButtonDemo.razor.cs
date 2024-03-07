@@ -526,4 +526,19 @@ private void HandleInvalidSubmit()
 Visible: [ <BitCompoundButton Visibility=""BitVisibility.Visible"" Text=""Visible"" SecondaryText=""This Button is a visible compound button""></BitCompoundButton> ]
 Hidden: [ <BitCompoundButton Text=""Hidden"" SecondaryText=""This Button is a hidden compound button"" Visibility=""BitVisibility.Hidden""></BitCompoundButton> ]
 Collapsed: [ <BitCompoundButton Text=""Collapsed"" SecondaryText=""This Button is a collapsed compound button"" Visibility=""BitVisibility.Collapsed""></BitCompoundButton> ]";
+
+    private readonly string example13RazorCode = @"
+<BitCompoundButton Dir=""BitDir.Rtl"" 
+                   IconName=""@BitIconName.Emoji"" 
+                   SecondaryText=""محل قرار گیری نماد در ابتدا"">
+    پیش فرض (ابتدا)
+</BitCompoundButton>
+
+<BitCompoundButton Dir=""BitDir.Rtl""
+                   IconName=""@BitIconName.Emoji2""
+                   ButtonStyle=""BitButtonStyle.Standard""
+                   IconPosition=""BitButtonIconPosition.End""
+                   SecondaryText=""محل قرار گیری نماد در انتها"">
+    انتها
+</BitCompoundButton>";
 }
