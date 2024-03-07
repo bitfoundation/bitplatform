@@ -559,7 +559,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an option""
              Items=""comboBoxCustoms""
              NameSelectors=""comboBoxNameSelectors"" />
-<BitLabel>Value: @comboBoxValueSample2</BitLabel>
+<strong>Value: @comboBoxValueSample2</strong>
 
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
