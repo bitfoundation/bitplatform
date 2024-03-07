@@ -367,4 +367,19 @@ private bool example52Value;";
 Visible: [ <BitToggleButton Visibility=""BitVisibility.Visible"">Visible toggle button</BitToggleButton> ]
 Hidden: [ <BitToggleButton Visibility=""BitVisibility.Hidden"">Hidden toggle button</BitToggleButton> ]
 Collapsed: [ <BitToggleButton Visibility=""BitVisibility.Collapsed"">Collapsed toggle button</BitToggleButton> ]";
+
+    private readonly string example9RazorCode = @"
+<BitToggleButton Dir=""BitDir.Rtl""
+                 OffText=""صدا وصل"" OnText=""صدا قطع""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
+
+<BitToggleButton Dir=""BitDir.Rtl""
+                 OffText=""صدا وصل"" OnText=""صدا قطع""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
+                 ButtonStyle=""BitButtonStyle.Standard"" />
+
+<BitToggleButton Dir=""BitDir.Rtl""
+                 OffText=""صدا وصل"" OnText=""صدا قطع""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
+                 ButtonStyle=""BitButtonStyle.Text"" />";
 }
