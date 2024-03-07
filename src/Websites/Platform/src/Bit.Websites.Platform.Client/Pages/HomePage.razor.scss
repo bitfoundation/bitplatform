@@ -49,12 +49,28 @@
     }
 }
 
-.bit-theme-dark .dark-theme {
-    display: unset;
+.bit-theme-dark {
+    .dark-theme {
+        display: unset;
+    }
 }
 
-.bit-theme-light .light-theme {
-    display: unset;
+.bit-theme-light {
+    .light-theme {
+        display: unset;
+    }
+}
+
+.highlight-1 {
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
+}
+
+.highlight-2 {
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(241deg, #982ff7 20%, #524add 56%, #6668eb 84%);
 }
 
 .page-section {
@@ -69,10 +85,22 @@
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    max-width: rem2(1200px);
     box-sizing: border-box;
+    max-width: rem2(1200px);
     padding-left: rem2(20px);
     padding-right: rem2(20px);
+}
+
+.section-title-container {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.section-title-line {
+    height: 2px;
+    flex-grow: 1;
+    background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
 }
 
 .hero-section {
@@ -107,12 +135,14 @@
         ::deep {
             .hero-title {
                 font-size: 9rem;
-                font-weight: 400;
+                font-weight: 600;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-image: linear-gradient(313deg, #e23b3b 23%, #6668eb 87%);
             }
 
-            .hero-subtitle-1 {
-                font-weight: 700;
-                margin-bottom: 3rem;
+            .hero-subtitle {
+                text-align: center;
             }
         }
 
@@ -122,15 +152,9 @@
             ::deep {
                 .hero-title {
                     font-size: 6rem;
-                    font-weight: normal;
                 }
 
-                .hero-subtitle-1 {
-                    margin: 2rem 0;
-                    font-size: 2rem;
-                }
-
-                .hero-subtitle-2 {
+                .hero-subtitle {
                     font-size: 1.5rem;
                 }
             }
@@ -138,59 +162,77 @@
 
         @include lt-md {
             ::deep {
-                .hero-top-title {
-                    font-size: 1.25rem;
-                }
-
-                .hero-top-title {
-                    margin-bottom: 2rem;
-                }
-
                 .hero-title {
-                    font-size: 4.3rem;
+                    font-size: 4rem;
                 }
 
-                .hero-subtitle-1 {
-                    font-size: 1.75rem;
-                    margin: 2rem 0 1.5rem 0;
+                .hero-subtitle {
+                    font-size: 1.25rem;
                 }
             }
         }
 
         @include lt-sm {
             ::deep {
-                .hero-top-title {
-                    font-size: 1rem;
-                }
-
                 .hero-title {
                     font-size: 3.5rem;
                 }
 
-                .hero-subtitle-1 {
-                    font-size: 1.5rem;
+                .hero-subtitle {
+                    font-size: 1rem;
                 }
             }
         }
     }
 }
 
-.what-section {
-    margin: 5rem 0;
-    padding: 5rem 0;
-    box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-secondary;
+::deep {
+    .text-title {
+        line-height: 1.1;
+        font-size: 6rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
 
-    @include lt-md {
-        padding: 5rem 0;
+        @include lt-xl {
+            font-size: 5rem;
+        }
+
+        @include lt-lg {
+            font-size: 3.25rem;
+            margin-bottom: 1rem;
+        }
+
+        @include lt-md {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @include lt-sm {
+            margin-bottom: 0;
+            font-size: 1.75rem;
+        }
+    }
+
+    .text-subtitle {
+        font-size: 2.25rem;
+
+        @include lt-xl {
+            font-size: 2rem;
+        }
+
+        @include lt-lg {
+            font-size: 1.75rem;
+        }
+
+        @include lt-md {
+            font-size: 1rem;
+        }
     }
 }
 
-.why-section {
+.text-section {
     margin: 5rem 0;
     padding: 5rem 0;
-    box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-secondary;
 
     @include lt-md {
         padding: 5rem 0;
@@ -198,6 +240,8 @@
 }
 
 .products-section {
+    padding-top: 0;
+
     .template-terminal {
         display: flex;
         color: #f0f0f0;
@@ -427,20 +471,20 @@
 .customer-section {
     ::deep .customer-feedback-carousel {
         width: 100%;
-        height: rem2(300px);
+        height: 20rem;
         margin: rem2(32px) auto;
     }
 
     .customer-feedback-card {
         width: 100%;
         height: 100%;
+        padding: 2rem;
         display: flex;
         position: relative;
         box-sizing: border-box;
         align-items: flex-start;
         flex-flow: column nowrap;
         justify-content: flex-start;
-        padding: rem2(46px) rem2(40px);
 
         @include md {
             padding: rem2(28px) rem2(25px);
@@ -448,6 +492,10 @@
 
         @include sm {
             padding: rem2(24px);
+        }
+
+        a {
+            display: inherit;
         }
     }
 
