@@ -58,17 +58,17 @@ public class BitDropdownNameSelectors<TItem, TValue>
     public BitNameSelectorPair<TItem, TValue?> Value { get; set; } = new(nameof(BitDropdownItem<TValue>.Value));
 
     /// <summary>
-    /// The callback that is called for setting text on a Text property in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// The setter function for updating Text property of custom item in Dynamic ComboBox mode upon new item addition.
     /// </summary>
     public Action<string, TItem>? TextSetter { get; set; }
 
     /// <summary>
-    /// The callback that is called for setting value on a Value property in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.
     /// </summary>
     public Action<TItem, TValue>? ValueSetter { get; set; }
 
     /// <summary>
-    /// The callback that is called for setting isSelected on a IsSelected property in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// The setter function for updating IsSelected property of custom item in Dynamic ComboBox mode upon new item addition.
     /// </summary>
     public Action<bool, TItem>? IsSelectedSetter { get; set; }
 }
