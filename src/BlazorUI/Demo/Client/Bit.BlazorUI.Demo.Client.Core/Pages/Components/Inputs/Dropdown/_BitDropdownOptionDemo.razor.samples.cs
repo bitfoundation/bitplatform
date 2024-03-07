@@ -498,7 +498,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     }
 </BitDropdown>
 <strong>Value: @comboBoxValueSample1</strong>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
              Label=""Single select combo box""
@@ -510,7 +510,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     }
 </BitDropdown>
 <strong>Value: @comboBoxValueSample2</strong>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
              Label=""Single select combo box""
@@ -524,7 +524,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     }
 </BitDropdown>
 <strong>Value: @comboBoxValueSample3</strong>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
              Label=""Single select combo box""
@@ -539,7 +539,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     }
 </BitDropdown>
 <strong>Value: @comboBoxValueSample4</strong>
-<br />
+
 <BitDropdown @bind-Values=""comboBoxValues""
                 Combo Chips Dynamic
                 Label=""Multi select combo box""

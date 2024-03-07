@@ -386,7 +386,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""comboBoxItems"" />
 <strong>Value: @comboBoxValueSample1</strong>
 </div>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
              Label=""Single select combo box""
@@ -394,7 +394,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""comboBoxItems"" />
 <strong>Value: @comboBoxValueSample2</strong>
 </div>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
              Label=""Single select combo box""
@@ -404,7 +404,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <strong>Value: @comboBoxValueSample3</strong>
 </div>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
              Label=""Single select combo box""
@@ -414,7 +414,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <strong>Value: @comboBoxValueSample4</strong>
-<br />
+
 <BitDropdown @bind-Values=""comboBoxValues""
              Combo Chips Dynamic
              Label=""Multi select combo box""

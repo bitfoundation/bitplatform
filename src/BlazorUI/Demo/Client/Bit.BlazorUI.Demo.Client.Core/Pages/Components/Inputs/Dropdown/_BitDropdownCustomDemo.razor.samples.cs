@@ -552,7 +552,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Items=""comboBoxCustoms""
              NameSelectors=""comboBoxNameSelectors"" />
 <strong>Value: @comboBoxValueSample1</strong>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
              Label=""Single select combo box & chips""
@@ -560,7 +560,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Items=""comboBoxCustoms""
              NameSelectors=""comboBoxNameSelectors"" />
 <BitLabel>Value: @comboBoxValueSample2</BitLabel>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
              Label=""Single select combo box & dynamic""
@@ -570,7 +570,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
 <strong>Value: @comboBoxValueSample3</strong>
-<br />
+
 <BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
              Label=""Single select combo box, chips & dynamic""
@@ -581,7 +581,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
 <strong>Value: @comboBoxValueSample4</strong>
-<br />
+
 <BitDropdown @bind-Values=""comboBoxValues""
              Combo Chips Dynamic
              Label=""Multi select combo box, chips & dynamic""
