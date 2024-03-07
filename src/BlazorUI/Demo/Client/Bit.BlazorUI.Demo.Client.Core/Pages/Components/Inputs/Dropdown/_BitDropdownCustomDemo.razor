@@ -272,32 +272,67 @@
 
 <ComponentExampleBox Title="ComboBox" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
-        <div class="example-content">
-            <div>
-                <BitDropdown @bind-Value="comboBoxValue"
-                             Combo Chips Dynamic
-                             Label="Single select combo box"
-                             Placeholder="Select an option"
-                             Items="comboBoxCustoms"
-                             NameSelectors="comboBoxNameSelectors"
-                             DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
-                             OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
-                <BitLabel>Value: @comboBoxValue</BitLabel>
-            </div>
-            <br>
-            <div>
-                <BitDropdown @bind-Values="comboBoxValues"
-                             Combo Chips Dynamic
-                             Label="Multi select combo box"
-                             Placeholder="Select options"
-                             Items="comboBoxCustoms"
-                             IsMultiSelect="true"
-                             IsResponsive="true"
-                             NameSelectors="comboBoxNameSelectors"
-                             DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
-                             OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
-                <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
-            </div>
+        <div class="example-desc">When the <strong>Combo</strong> parameter is true, you can type in BitDropdown input and search between items.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample1"
+                         Combo
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
+                         Items="comboBoxCustoms"
+                         NameSelectors="comboBoxNameSelectors" />
+            <strong>Value: @comboBoxValueSample1</strong>
+        </div>
+        <br />
+        <div class="example-desc">When the <strong>Chips</strong> parameter is true, shows the selected items like chips in the ComboBox.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample2"
+                         Combo Chips
+                         Label="Single select combo box & chips"
+                         Placeholder="Select an option"
+                         Items="comboBoxCustoms"
+                         NameSelectors="comboBoxNameSelectors" />
+            <BitLabel>Value: @comboBoxValueSample2</BitLabel>
+        </div>
+        <br />
+        <div class="example-desc">When the <strong>Dynamic</strong> parameter is true, you can add a new item in the ComboBox.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample3"
+                         Combo Dynamic
+                         Label="Single select combo box & dynamic"
+                         Placeholder="Select an option"
+                         Items="comboBoxCustoms"
+                         NameSelectors="comboBoxNameSelectors"
+                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
+                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+            <strong>Value: @comboBoxValueSample3</strong>
+        </div>
+        <br />
+        <div class="example-desc">When the <strong>Combo</strong>, <strong>Chips</strong> and <strong>Dynamic</strong> parameters are true, you can add a new item in the ComboBox (pressing the enter key or touching the add button on the mobile).</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample4"
+                         Combo Chips Dynamic
+                         Label="Single select combo box, chips & dynamic"
+                         Placeholder="Select an option"
+                         Items="comboBoxCustoms"
+                         IsResponsive="true"
+                         NameSelectors="comboBoxNameSelectors"
+                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
+                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+            <strong>Value: @comboBoxValueSample4</strong>
+
+            <br />
+
+            <BitDropdown @bind-Values="comboBoxValues"
+                         Combo Chips Dynamic
+                         Label="Multi select combo box, chips & dynamic"
+                         Placeholder="Select options"
+                         Items="comboBoxCustoms"
+                         IsMultiSelect="true"
+                         IsResponsive="true"
+                         NameSelectors="comboBoxNameSelectors"
+                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
+                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+            <strong>Values: @string.Join(',', comboBoxValues)</strong>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
