@@ -214,6 +214,7 @@ private byte controlledAccordionExpandedItem = 1;";
                 @bind-IsExpanded=""AccordionToggleIsExpanded"">
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
 </BitAccordion>";
+
     private readonly string example4CsharpCode = @"
 private bool AccordionToggleIsEnabled;
 private bool AccordionToggleIsExpanded;";
@@ -263,4 +264,12 @@ private bool AccordionToggleIsExpanded;";
         </BitCarouselItem>
     </BitCarousel>
 </BitAccordion>";
+
+    private readonly string example6RazorCode = @"
+<BitAccordion Dir=""BitDir.Rtl"" 
+              Title=""تنظیمات"" 
+              Description=""من یک آکاردئون هستم!"">
+    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+</BitAccordion>
+";
 }
