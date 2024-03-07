@@ -65,13 +65,13 @@
             </div>
             <br /><br />
             <div class="example-content">
-               <div>Standard</div>
-               <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" Vertical />
+                <div>Standard</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" Vertical />
             </div>
             <br /><br />
             <div class="example-content">
-               <div>Text</div>
-               <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" Vertical />
+                <div>Text</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" Vertical />
             </div>
         </div>
     </ExamplePreview>
@@ -177,5 +177,15 @@
             <div>Item's style & class:</div>
             <BitButtonGroup Items="styleClassItems" />
         </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Primary" Items="rtlItems" />
+        <br /><br />
+        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Standard" Items="rtlItems" />
+        <br /><br />
+        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Text" Items="rtlItems" />
     </ExamplePreview>
 </ComponentExampleBox>
