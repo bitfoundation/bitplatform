@@ -6,37 +6,40 @@ public partial class TelegramBotService
 {
     [AutoInject] private TelegramBotApiClient telegramBotApiClient = default!;
 
-    public async Task SendContactUsMessage(string email, string message, CancellationToken cancellationToken)
+    public async Task SendContactUsMessage(string? email, string? message, CancellationToken cancellationToken)
     {
-        var messsageBuilder = new StringBuilder();
+        var messageBuilder = new StringBuilder();
+
         if (string.IsNullOrEmpty(email))
         {
-            messsageBuilder.AppendLine($"📥 *Email:* `-`");
+            messageBuilder.AppendLine($"📥 *Email:* `-`");
         }
         else
         {
-            messsageBuilder.AppendLine($"📥 *Email:* `{email.Trim()}`");
+            messageBuilder.AppendLine($"📥 *Email:* `{email.Trim()}`");
         }
 
-        messsageBuilder.AppendLine($"📜 *Message*: {message.Trim()}");
+        messageBuilder.AppendLine($"📜 *Message*: {message?.Trim()}");
 
-        await telegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
+        await telegramBotApiClient.SendMessageAsync(messageBuilder.ToString(), cancellationToken);
     }
 
     public async Task SendBuyPackageMessage(string packageTitle, string email, string message, CancellationToken cancellationToken)
     {
-        var messsageBuilder = new StringBuilder();
-        messsageBuilder.AppendLine($"📥 *Email:* `{email.Trim()}`");
-        messsageBuilder.AppendLine($"💻 *Support pacakge:* `{packageTitle.Trim()}`");
+        var messageBuilder = new StringBuilder();
+
+        messageBuilder.AppendLine($"📥 *Email:* `{email.Trim()}`");
+        messageBuilder.AppendLine($"💻 *Support package:* `{packageTitle.Trim()}`");
+
         if (string.IsNullOrEmpty(message))
         {
-            messsageBuilder.AppendLine($"📜 *Message:* `-`");
+            messageBuilder.AppendLine($"📜 *Message:* `-`");
         }
         else
         {
-            messsageBuilder.AppendLine($"📜 *Message*: {message.Trim()}");
+            messageBuilder.AppendLine($"📜 *Message*: {message.Trim()}");
         }
 
-        await telegramBotApiClient.SendMessageAsync(messsageBuilder.ToString(), cancellationToken);
+        await telegramBotApiClient.SendMessageAsync(messageBuilder.ToString(), cancellationToken);
     }
 }
