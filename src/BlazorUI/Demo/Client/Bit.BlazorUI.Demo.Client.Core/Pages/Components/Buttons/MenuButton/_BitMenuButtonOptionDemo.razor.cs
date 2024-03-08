@@ -324,4 +324,26 @@ private string? exampleSelectedOption;";
     private readonly string example11CsharpCode = @"
 private BitMenuButtonOption? changedSelectedOption;
 private BitMenuButtonOption twoWaySelectedOption = default!;";
+
+    private readonly string example12RazorCode = @"
+<BitMenuButton Text=""گزینه ها""
+               Dir=""BitDir.Rtl""
+               TItem=""BitMenuButtonOption""
+               IconName=""@BitIconName.Edit"">
+    <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""گزینه ج"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton Split
+               Text=""گزینه ها""
+               Dir=""BitDir.Rtl""
+               TItem=""BitMenuButtonOption""
+               IconName=""@BitIconName.Add""
+               ButtonStyle=""BitButtonStyle.Standard""
+               ChevronDownIcon=""@BitIconName.DoubleChevronDown"">
+    <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""گزینه ج"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>";
 }
