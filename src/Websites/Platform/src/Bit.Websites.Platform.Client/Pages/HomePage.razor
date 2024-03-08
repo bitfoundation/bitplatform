@@ -11,32 +11,33 @@
     <section class="page-section hero-section">
         <div class="page-section-content">
             <div class="hero-section-content">
-                <BitTypography Variant="BitTypographyVariant.H5" Gutter Class="hero-top-title">
-                    Let's make apps with
-                </BitTypography>
                 <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="hero-title">
                     bit platform
                 </BitTypography>
-                <BitTypography Variant="BitTypographyVariant.H3" Gutter Class="hero-subtitle-1">
-                    <span style="color:darkorange">Code</span>
-                    &nbsp;&nbsp;
-                    <span style="color:blueviolet">Build</span>
-                    &nbsp;&nbsp;
-                    <span style="color:darkgreen">Deploy</span>
-                </BitTypography>
-                <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle-2">
-                    across multiple platforms
+                <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle">
+                    Build all of your apps
+                    <br />
+                    using what you already know and love
                 </BitTypography>
             </div>
         </div>
     </section>
 
-    <section class="page-section what-section">
+    <section class="page-section text-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>What is bit platform?</BitTypography>
+            <div class="section-title-container">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>What is bit platform?</BitTypography>
+                <div class="section-title-line"></div>
+            </div>
             <br />
-            <BitTypography Variant="BitTypographyVariant.H4">
-                A set of tools for <b>.NET</b> developers to easily <b>code, build & deploy</b> their projects across <b>multiple platforms</b>.
+            <BitTypography Variant="BitTypographyVariant.H2" Class="text-title">
+                code, build & deploy
+                <br />
+                your projects
+            </BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H5" Class="text-subtitle">
+                A set of tools for .NET developers across multiple platforms
             </BitTypography>
         </div>
     </section>
@@ -44,13 +45,22 @@
     <img src="/images/home/hero-image-dark.svg" class="hero-image dark-theme" />
     <img src="/images/home/hero-image-light.svg" class="hero-image light-theme" />
 
-    <section class="page-section why-section">
+    <section class="page-section text-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H6" Gutter>Why bit platform?</BitTypography>
+            <div class="section-title-container">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Why bit platform?</BitTypography>
+                <div class="section-title-line"></div>
+            </div>
             <br />
-            <BitTypography Variant="BitTypographyVariant.H5">
-                bit platform is the <b>best partner</b> for teams creating apps with <b>.NET</b> and <b>Blazor</b> utilizing best experts.
-                <br /><br />
+            <BitTypography Variant="BitTypographyVariant.H2" Class="text-title">
+                best partner for teams
+                <br />
+                creating apps with
+                <br />
+                <span class="highlight-1">.NET and Blazor</span>
+            </BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H5" Class="text-subtitle">
                 Instead of using miscellaneous packages, with bit platform, you have a set of comprehensive tools to cover any requirement.
             </BitTypography>
         </div>
@@ -58,9 +68,15 @@
 
     <section class="page-section products-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Products</BitTypography>
-            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-                bit platform provides a variety of tools helping developers and teams to make better apps.
+            <div class="section-title-container">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Our products</BitTypography>
+                <div class="section-title-line"></div>
+            </div>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H2" Class="text-title">
+                variety of <span class="highlight-2">tools</span> to
+                <br />
+                make better apps
             </BitTypography>
 
             <br /><br />
@@ -108,8 +124,8 @@
                 bit Bswup is a set of tools that assists developers in making the most out of the Service Worker when building apps with Blazor.
             </BitTypography>
             <div>
-                <img src="/images/bswup/bswup4-1.webp" style="margin-bottom:0.5rem" />
-                <img src="/images/bswup/bswup4-2.webp" />
+                <img src="/images/bswup/bswup4-1.webp" style="max-width:100%;margin-bottom:0.5rem" />
+                <img src="/images/bswup/bswup4-2.webp" style="max-width:100%;" />
             </div>
             <br />
             <a class="template-link" href="@Urls.Bswup">
@@ -139,12 +155,10 @@
             <div>
                 <pre class="code-box">
 &lt;BitDropdown @@bind-Values="comboValues"
-             Combo Chips Dynamic
              Label="Multi select combo box"
              Placeholder="Select options"
              Items="comboBoxItems"
-             IsMultiSelect="true"
-             IsResponsive="true"
+             Combo Chips Dynamic
              OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></pre>
             </div>
             <a class="template-link" href="@Urls.Components" target="_blank">
@@ -178,8 +192,18 @@
 
     <section class="page-section customer-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Our customers</BitTypography>
-            <BitCarousel Class="customer-feedback-carousel" ShowNextPrev="false" AutoPlay="true" AutoPlayInterval="5000" InfiniteScrolling="true">
+            <div class="section-title-container">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Our customers</BitTypography>
+                <div class="section-title-line"></div>
+            </div>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H2" Class="text-title">
+                people <span class="highlight-2">love</span> what
+                <br />
+                they can make
+            </BitTypography>
+
+            <BitCarousel Class="customer-feedback-carousel" ShowNextPrev="false" AutoPlay="true" AutoPlayInterval="10000" InfiniteScrolling="true">
                 <BitCarouselItem>
                     <div class="customer-feedback-card">
                         <a href="https://twitter.com/mehrandvd/status/1553142453091401729" target="_blank"><div class="twitter-icon"></div></a>
