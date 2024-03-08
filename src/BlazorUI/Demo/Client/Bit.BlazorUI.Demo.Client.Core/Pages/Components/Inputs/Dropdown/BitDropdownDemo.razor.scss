@@ -3,7 +3,8 @@
 @import '../../../../Styles/abstracts/_media-queries.scss';
 
 ::deep {
-    .example-content {
+    .example-content,
+    .example-content-cb {
         display: flex;
         gap: rem2(20px);
         flex-flow: row wrap;
@@ -18,6 +19,10 @@
         & > div {
             width: 100%;
         }
+    }
+
+    .example-content-cb {
+        gap: rem2(4px);
     }
 
     .custom-class {

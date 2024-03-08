@@ -545,19 +545,46 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
 };";
 
     private readonly string example7RazorCode = @"
-<BitDropdown @bind-Value=""comboBoxValue""
-             Combo Chips Dynamic 
+<BitDropdown @bind-Value=""comboBoxValueSample1""
+             Combo
              Label=""Single select combo box""
+             Placeholder=""Select an option""
+             Items=""comboBoxCustoms""
+             NameSelectors=""comboBoxNameSelectors"" />
+<strong>Value: @comboBoxValueSample1</strong>
+
+<BitDropdown @bind-Value=""comboBoxValueSample2""
+             Combo Chips
+             Label=""Single select combo box & chips""
+             Placeholder=""Select an option""
+             Items=""comboBoxCustoms""
+             NameSelectors=""comboBoxNameSelectors"" />
+<strong>Value: @comboBoxValueSample2</strong>
+
+<BitDropdown @bind-Value=""comboBoxValueSample3""
+             Combo Dynamic
+             Label=""Single select combo box & dynamic""
              Placeholder=""Select an option""
              Items=""comboBoxCustoms""
              NameSelectors=""comboBoxNameSelectors""
              DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
-<BitLabel>Value: @comboBoxValue</BitLabel>
+<strong>Value: @comboBoxValueSample3</strong>
+
+<BitDropdown @bind-Value=""comboBoxValueSample4""
+             Combo Chips Dynamic
+             Label=""Single select combo box, chips & dynamic""
+             Placeholder=""Select an option""
+             Items=""comboBoxCustoms""
+             IsResponsive=""true""
+             NameSelectors=""comboBoxNameSelectors""
+             DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
+             OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
+<strong>Value: @comboBoxValueSample4</strong>
 
 <BitDropdown @bind-Values=""comboBoxValues""
-             Combo Chips Dynamic 
-             Label=""Multi select combo box""
+             Combo Chips Dynamic
+             Label=""Multi select combo box, chips & dynamic""
              Placeholder=""Select options""
              Items=""comboBoxCustoms""
              IsMultiSelect=""true""
@@ -565,9 +592,12 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""comboBoxNameSelectors""
              DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
-<BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
+<strong>Values: @string.Join(',', comboBoxValues)</strong>";
     private readonly string example7CsharpCode = @"
-private string comboBoxValue = default!;
+private string comboBoxValueSample1 = default!;
+private string comboBoxValueSample2 = default!;
+private string comboBoxValueSample3 = default!;
+private string comboBoxValueSample4 = default!;
 private ICollection<string> comboBoxValues = [];
 
 private void HandleOnDynamicAdd(BitDropdownCustom item)

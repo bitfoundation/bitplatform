@@ -690,19 +690,19 @@ public partial class BitDropdownDemo
                {
                    Name = "TextSetter",
                    Type = "Action<string, TItem>?",
-                   Description = "The callback that is called for setting text on a Text property in a custom item when a new item is on added Dynamic ComboBox mode.",
+                   Description = "The setter function for updating Text property of custom item in Dynamic ComboBox mode upon new item addition.",
                },
                new()
                {
                    Name = "ValueSetter",
                    Type = "Action<TItem, TItem>?",
-                   Description = "The callback that is called for setting value on a Value property in a custom item when a new item is on added Dynamic ComboBox mode.",
+                   Description = "The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.",
                },
                new()
                {
                    Name = "IsSelectedSetter",
                    Type = "Action<bool, TValue>",
-                   Description = "The callback that is called for setting isSelected on a IsSelected property in a custom item when a new item is on added Dynamic ComboBox mode.",
+                   Description = "The setter function for updating IsSelected property of custom item in Dynamic ComboBox mode upon new item addition.",
                },
             },
         },
