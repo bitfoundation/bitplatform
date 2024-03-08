@@ -10,7 +10,8 @@
      id="@_Id"
      role="group"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
     @for (int i = 0; i < _items.Count; i++)
     {
         var item = _items[i];

@@ -200,4 +200,23 @@ private string? clickedOption;";
     <BitButtonGroupOption Text=""Styled"" IconName=""@BitIconName.Brush"" Style=""color:darkred"" />
     <BitButtonGroupOption Text=""Classed"" IconName=""@BitIconName.FormatPainter"" Class=""custom-item"" />
 </BitButtonGroup>";
+
+    private readonly string example9RazorCode = @"
+<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""اضافه کردن"" IconName=""@BitIconName.Add"" />
+    <BitButtonGroupOption Text=""ویرایش"" IconName=""@BitIconName.Edit"" />
+    <BitButtonGroupOption Text=""حذف"" IconName=""@BitIconName.Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""اضافه کردن"" IconName=""@BitIconName.Add"" />
+    <BitButtonGroupOption Text=""ویرایش"" IconName=""@BitIconName.Edit"" />
+    <BitButtonGroupOption Text=""حذف"" IconName=""@BitIconName.Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""اضافه کردن"" IconName=""@BitIconName.Add"" />
+    <BitButtonGroupOption Text=""ویرایش"" IconName=""@BitIconName.Edit"" />
+    <BitButtonGroupOption Text=""حذف"" IconName=""@BitIconName.Delete"" />
+</BitButtonGroup>";
 }

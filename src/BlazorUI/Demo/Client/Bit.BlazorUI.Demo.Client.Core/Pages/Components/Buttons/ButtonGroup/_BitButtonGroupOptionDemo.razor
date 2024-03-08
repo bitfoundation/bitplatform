@@ -96,39 +96,39 @@
             <div class="example-content">
                 <div>Primary (default)</div>
                 <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Vertical TItem="BitButtonGroupOption">
-                     <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
-                 </BitButtonGroup>
-             </div>
-             <br /><br />
-             <div class="example-content">
-                 <div>Standard</div>
-                 <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Vertical TItem="BitButtonGroupOption">
-                     <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
-                 </BitButtonGroup>
-             </div>
-             <br /><br />
-             <div class="example-content">
-                 <div>Text</div>
-                 <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Vertical TItem="BitButtonGroupOption">
-                     <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
-                 </BitButtonGroup>
-             </div>
-         </div>
-     </ExamplePreview>
- </ComponentExampleBox>
+                    <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                </BitButtonGroup>
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <div>Standard</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Vertical TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                </BitButtonGroup>
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <div>Text</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Vertical TItem="BitButtonGroupOption">
+                    <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+                </BitButtonGroup>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
 
- <ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-     <ExamplePreview>
-         <div>Managing button click events.</div>
-         <br /><br />
-         <div class="example-content">
-             <div>Component's ItemClick event:</div>
-             <BitButtonGroup OnItemClick="item => clickedOption = item.Text" TItem="BitButtonGroupOption">
-                 <BitButtonGroupOption Text="Add" />
-                 <BitButtonGroupOption Text="Edit" />
-                 <BitButtonGroupOption Text="Delete" />
-             </BitButtonGroup>
-             <div>Clicked item: <b>@clickedOption</b></div>
+<ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Managing button click events.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Component's ItemClick event:</div>
+            <BitButtonGroup OnItemClick="item => clickedOption = item.Text" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+            <div>Clicked item: <b>@clickedOption</b></div>
         </div>
         <br /><br />
         <div class="example-content">
@@ -280,5 +280,27 @@
                 <BitButtonGroupOption Text="Classed" IconName="@BitIconName.FormatPainter" Class="custom-item" />
             </BitButtonGroup>
         </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+    <ExamplePreview>
+        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Primary" TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="اضافه کردن" IconName="@BitIconName.Add" />
+            <BitButtonGroupOption Text="ویرایش" IconName="@BitIconName.Edit" />
+            <BitButtonGroupOption Text="حذف" IconName="@BitIconName.Delete" />
+        </BitButtonGroup>
+        <br /><br />
+        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Standard" TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="اضافه کردن" IconName="@BitIconName.Add" />
+            <BitButtonGroupOption Text="ویرایش" IconName="@BitIconName.Edit" />
+            <BitButtonGroupOption Text="حذف" IconName="@BitIconName.Delete" />
+        </BitButtonGroup>
+        <br /><br />
+        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Text" TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="اضافه کردن" IconName="@BitIconName.Add" />
+            <BitButtonGroupOption Text="ویرایش" IconName="@BitIconName.Edit" />
+            <BitButtonGroupOption Text="حذف" IconName="@BitIconName.Delete" />
+        </BitButtonGroup>
     </ExamplePreview>
 </ComponentExampleBox>
