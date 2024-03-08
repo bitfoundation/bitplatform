@@ -20,8 +20,6 @@ public partial class Butil14NavigatorPage
 
     private string? userAgent;
 
-    private string? isWebDriver;
-
     private string? canShare;
 
     private string? textValue;
