@@ -181,9 +181,9 @@ public partial class BitCarousel : IDisposable
         _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : string.Empty;
     }
 
-    private async Task GoRight() => await (Dir == BitDir.Rtl ? Next() : Prev());
-
     private async Task GoLeft() => await (Dir == BitDir.Rtl ? Prev() : Next());
+
+    private async Task GoRight() => await (Dir == BitDir.Rtl ? Next() : Prev());
 
     private async Task Prev()
     {
