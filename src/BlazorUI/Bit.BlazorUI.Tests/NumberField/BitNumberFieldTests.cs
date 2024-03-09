@@ -422,8 +422,7 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        input.Change(inputValue);
-        input.Blur();
+        input.Input(inputValue);
 
         Assert.AreEqual(onChangeEventValue, inputValue);
     }
@@ -631,7 +630,7 @@ public class BitNumberFieldTests : BunitTestContext
         {
             Value = userInput
         };
-        input.Change(changeArgs);
+        input.Input(changeArgs);
         var keyboardArgs = new KeyboardEventArgs
         {
             Key = "Enter"
@@ -674,8 +673,7 @@ public class BitNumberFieldTests : BunitTestContext
         {
             Value = userInput
         };
-        input.Change(changeArgs);
-        input.Blur();
+        input.Input(changeArgs);
         var inputValue = component.Instance.Value;
         double? expectedResult = 0;
         var isNumber = double.TryParse(userInput, out var numericValue);
@@ -714,8 +712,7 @@ public class BitNumberFieldTests : BunitTestContext
         {
             Value = userInput
         };
-        input.Change(changeArgs);
-        input.Blur();
+        input.Input(changeArgs);
         var inputValue = component.Instance.Value;
         var precision = CalculatePrecision(step);
         var expectedResult = Normalize(int.Parse(userInput), precision);
@@ -843,14 +840,13 @@ public class BitNumberFieldTests : BunitTestContext
         var input = component.Find("input");
         if (isValid)
         {
-            input.Change(2);
+            input.Input(2);
         }
         else
         {
-            input.Change(8);
+            input.Input(8);
         }
 
-        input.Blur();
         form.Submit();
 
         Assert.AreEqual(1, component.Instance.ValidCount);
@@ -890,14 +886,12 @@ public class BitNumberFieldTests : BunitTestContext
 
         if (isInvalid)
         {
-            input.Change(10);
-            input.Blur();
+            input.Input(10);
             Assert.IsFalse(input.HasAttribute("aria-invalid"));
         }
         else
         {
-            input.Change(4);
-            input.Blur();
+            input.Input(4);
             Assert.IsTrue(input.HasAttribute("aria-invalid"));
         }
     }
@@ -929,14 +923,12 @@ public class BitNumberFieldTests : BunitTestContext
 
         if (isInvalid)
         {
-            input.Change(10);
+            input.Input(10);
         }
         else
         {
-            input.Change(3);
+            input.Input(3);
         }
-
-        input.Blur();
 
         Assert.AreEqual(!isInvalid, numberField.ClassList.Contains("bit-inv"));
     }

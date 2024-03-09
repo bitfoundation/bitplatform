@@ -571,4 +571,15 @@ private bool IsDraggable = false;
 private bool IsOpen8 = false;
 private bool IsOpen9 = false;
 ";
+
+    private readonly string example8RazorCode = @"
+<BitButton Dir=""BitDir.Rtl"" OnClick=""@(() => IsOpen10 = true)"">باز کردن پنجره پیام</BitButton>
+<BitDialog @bind-IsOpen=""IsOpen10"" 
+           Dir=""BitDir.Rtl""
+           Title=""بدون موضوع""
+           OkText=""تایید""
+           CancelText=""انصراف""
+           Message=""آیا می خواهید این پیام را بدون موضوع ارسال کنید؟"" />";
+    private readonly string example8CsharpCode = @"
+private bool IsOpen10 = false;";
 }

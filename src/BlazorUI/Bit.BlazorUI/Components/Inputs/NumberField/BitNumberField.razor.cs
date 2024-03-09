@@ -15,11 +15,10 @@ public partial class BitNumberField<TValue>
     private bool required;
     private bool leftLabel;
 
-    private double _internalStep;
+    private double _internalStep = 1;
     private double? _internalMin;
     private double? _internalMax;
     private int _precision;
-    private string? _intermediateValue;
     private readonly string _labelId;
     private readonly string _inputId;
     private Timer? _timer;
@@ -31,6 +30,25 @@ public partial class BitNumberField<TValue>
     private readonly bool _isDecimals;
     private readonly double _minGenericValue;
     private readonly double _maxGenericValue;
+
+    private string? _intermediateValue
+    {
+        get => CurrentValueAsString;
+        set
+        {
+            if (IsEnabled is false) return;
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+            var cleanValue = GetCleanValue(value);
+            var isNumber = double.TryParse(cleanValue, out var numericValue);
+
+            if (isNumber is false) return;
+            if (numericValue == GetDoubleValueOrDefault(CurrentValue)) return;
+
+            SetValue(numericValue);
+            _ = OnChange.InvokeAsync(CurrentValue);
+        }
+    }
 
     public BitNumberField()
     {
@@ -131,7 +149,7 @@ public partial class BitNumberField<TValue>
         set
         {
             if (leftLabel == value) return;
-            
+
             leftLabel = value;
             ClassBuilder.Reset();
         }
@@ -345,8 +363,8 @@ public partial class BitNumberField<TValue>
 
     private async Task ApplyValueChange(bool isIncrement)
     {
-        double result = 0;
-        bool isValid = false;
+        bool isValid;
+        double result;
 
         if (isIncrement)
         {
@@ -396,14 +414,6 @@ public partial class BitNumberField<TValue>
     {
         if (_timer is null) return;
         _timer.Dispose();
-    }
-
-    private void HandleOnChange(ChangeEventArgs e)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-        _intermediateValue = GetCleanValue(e.Value?.ToString());
     }
 
     private async Task HandleOnPointerDownAction(bool isIncrement, MouseEventArgs e)
@@ -474,8 +484,6 @@ public partial class BitNumberField<TValue>
     {
         if (IsEnabled is false) return;
         await OnBlur.InvokeAsync(e);
-
-        await CheckIntermediateValueAndSetValue();
     }
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
