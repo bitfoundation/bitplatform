@@ -6,7 +6,8 @@
     <div @ref="RootElement" @attributes="HtmlAttributes"
          id="@_Id"
          style="@StyleBuilder.Value"
-         class="@ClassBuilder.Value">
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
 
         <div role=@(_isAlertRole ? "alertdialog": "dialog")
              aria-modal="@((IsModeless is false).ToString())"

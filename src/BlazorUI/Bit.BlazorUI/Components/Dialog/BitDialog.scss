@@ -57,11 +57,12 @@
     align-items: center;
     overflow-wrap: anywhere;
     background-color: $color-background-primary;
-    padding: spacing(2) spacing(2) spacing(2.5) spacing(3);
+    padding: spacing(2) spacing(3) spacing(2.5);
 }
 
 .bit-dlg-ttl {
     margin: 0;
+    width: 100%;
     font-weight: 600;
     line-height: normal;
     font-size: spacing(2.5);
