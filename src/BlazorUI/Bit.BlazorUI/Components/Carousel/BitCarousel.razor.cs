@@ -121,7 +121,7 @@ public partial class BitCarousel : IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
 
         await base.OnAfterRenderAsync(firstRender);
 
@@ -176,9 +176,9 @@ public partial class BitCarousel : IDisposable
 
     private void SetNavigationButtonsVisibility()
     {
-        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display:none" : string.Empty;
+        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display:none" : "";
 
-        _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : string.Empty;
+        _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : "";
     }
 
     private async Task GoLeft() => await (Dir == BitDir.Rtl ? Prev() : Next());
@@ -233,7 +233,7 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < others.Length; i++)
         {
             var o = others[i];
-            o.InternalTransitionStyle = string.Empty;
+            o.InternalTransitionStyle = "";
             var x = sign * 100 * (offset + (sign * i));
             x = Dir == BitDir.Rtl ? -x : x;
             o.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
@@ -316,7 +316,7 @@ public partial class BitCarousel : IDisposable
         if (Math.Abs(delta) <= 20) return;
 
         _isPointerDown = false;
-        await _js.SetStyle(_carousel, "cursor", string.Empty);
+        await _js.SetStyle(_carousel, "cursor", "");
 
         if (delta < 0)
         {
@@ -337,7 +337,7 @@ public partial class BitCarousel : IDisposable
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         _isPointerDown = false;
-        await _js.SetStyle(_carousel, "cursor", string.Empty);
+        await _js.SetStyle(_carousel, "cursor", "");
         StateHasChanged();
     }
 
