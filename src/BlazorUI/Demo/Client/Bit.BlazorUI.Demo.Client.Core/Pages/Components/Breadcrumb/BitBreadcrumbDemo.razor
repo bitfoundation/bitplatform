@@ -147,6 +147,14 @@
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
+
+                <ComponentExampleBox Title="RTL" RazorCode="@example7BreadcrumbItemRazorCode" CsharpCode="@example7BreadcrumbItemCsharpCode" Id="example7">
+                    <ExamplePreview>
+                        <div class="example-box">
+                            <BitBreadcrumb Dir="BitDir.Rtl" Items="RtlBreadcrumbItems" />
+                        </div>
+                    </ExamplePreview>
+                </ComponentExampleBox>
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Custom">
@@ -380,6 +388,20 @@
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
+
+                <ComponentExampleBox Title="RTL" RazorCode="@example7CustomItemRazorCode" CsharpCode="@example7CustomItemCsharpCode" Id="example7">
+                    <ExamplePreview>
+                        <div class="example-box">
+                            <BitBreadcrumb Dir="BitDir.Rtl"
+                                           Items="RtlCustomBreadcrumbItems"
+                                           TextField="@nameof(PageInfoModel.Name)"
+                                           HrefField="@nameof(PageInfoModel.Address)"
+                                           ClassField="@nameof(PageInfoModel.HtmlClass)"
+                                           StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                           IsSelectedField="@nameof(PageInfoModel.IsCurrent)" />
+                        </div>
+                    </ExamplePreview>
+                </ComponentExampleBox>
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Option">
@@ -591,6 +613,19 @@
                                     <BitNumberField @bind-Value="OverflowIndex" Step="@NumberFieldStep" Label="OverflowIndex" ShowButtons="true" />
                                 </div>
                             </div>
+                        </div>
+                    </ExamplePreview>
+                </ComponentExampleBox>
+
+                <ComponentExampleBox Title="RTL" RazorCode="@example7BreadcrumbOptionRazorCode" Id="example7">
+                    <ExamplePreview>
+                        <div class="example-box">
+                            <BitBreadcrumb Dir="BitDir.Rtl" TItem="BitBreadcrumbOption">
+                                <BitBreadcrumbOption Text="پوشه ۱" />
+                                <BitBreadcrumbOption Text="پوشه ۲" />
+                                <BitBreadcrumbOption Text="پوشه ۳" />
+                                <BitBreadcrumbOption Text="پوشه ۴" IsSelected="true" />
+                            </BitBreadcrumb>
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
