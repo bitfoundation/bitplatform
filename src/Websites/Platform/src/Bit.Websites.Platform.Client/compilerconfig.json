@@ -48,20 +48,20 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/ComponentsPage.razor.css",
-        "inputFile": "Pages/ComponentsPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/ContactUsPage.razor.css",
         "inputFile": "Pages/ContactUsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/HomePage.razor.css",
-        "inputFile": "Pages/HomePage.razor.scss",
+        "outputFile": "Pages/Home/HomePage.razor.css",
+        "inputFile": "Pages/Home/HomePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/Products.razor.css",
+        "inputFile": "Pages/Home/Products.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
