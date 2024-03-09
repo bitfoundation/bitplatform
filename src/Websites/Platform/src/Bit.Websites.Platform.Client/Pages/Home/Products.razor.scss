@@ -32,21 +32,22 @@
 
     ::deep {
         .header-icon {
-            margin-top: 1rem;
             font-size: 1.25rem;
+            margin-right: 1rem;
+            margin-top: 1.25rem;
 
             @include lt-lg {
                 font-size: 1rem;
-                margin-top: 0.5rem;
+                margin-top: 1rem;
             }
 
             @include lt-md {
                 font-size: 0.75rem;
-                margin-top: 0.1rem;
+                margin-top: 0.75rem;
             }
 
             @include lt-sm {
-                margin-top: 0;
+                margin-top: 0.5rem;
             }
         }
 
