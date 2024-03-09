@@ -29,7 +29,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "DividerIconName",
             Type = "string?",
-            DefaultValue = "ChevronRight or ChevronLeft",
+            DefaultValue = "null",
             Description = "The divider icon name."
         },
         new()
