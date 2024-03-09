@@ -59,10 +59,10 @@ jobs:
       run:  sed -i 's/http:\/\/localhost:4030/https:\/\/static-todo.bitplatform.dev/g' TodoSample/src/TodoSample.Server/Program.Middlewares.cs
 
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
 
     - name: Publish
-      run: dotnet publish TodoSample/src/TodoSample.Server/TodoSample.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+      run: dotnet publish TodoSample/src/TodoSample.Server/TodoSample.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v3
@@ -162,18 +162,18 @@ jobs:
         WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
 
     - name: Publish
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           ren .\bin\publish-arm64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-arm64.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           ren .\bin\publish-x86\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x86.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           ren .\bin\publish-x64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x64.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           del .\bin\publish\TodoSample.Client.Windows.exe
           echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
@@ -257,10 +257,10 @@ jobs:
           encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
 
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
   
     - name: Build aab
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -352,10 +352,10 @@ jobs:
           encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
 
     - name: Generate CSS/JS files
-      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
   
     - name: Build ipa
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
