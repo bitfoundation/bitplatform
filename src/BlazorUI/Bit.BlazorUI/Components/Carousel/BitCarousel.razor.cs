@@ -121,7 +121,7 @@ public partial class BitCarousel : IDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _directionStyle = Dir == BitDir.Rtl ? "direction: rtl;" : string.Empty;
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
 
         await base.OnAfterRenderAsync(firstRender);
 
@@ -157,8 +157,8 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < itemsCount; i++)
         {
             var item = AllItems[i];
-            item.InternalStyle = FormattableString.Invariant($"width: {(rect.Width / VisibleItemsCount)}px; display: block;");
-            item.InternalTransformStyle = FormattableString.Invariant($"transform: translateX({sign * 100 * i}%);");
+            item.InternalStyle = FormattableString.Invariant($"width:{(rect.Width / VisibleItemsCount)}px;display:block");
+            item.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({sign * 100 * i}%)");
         }
 
         _pagesCount = (int)Math.Ceiling((decimal)itemsCount / VisibleItemsCount);
@@ -176,9 +176,9 @@ public partial class BitCarousel : IDisposable
 
     private void SetNavigationButtonsVisibility()
     {
-        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display: none;" : string.Empty;
+        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display:none" : string.Empty;
 
-        _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display: none;" : string.Empty;
+        _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : string.Empty;
     }
 
     private async Task GoRight() => await (Dir == BitDir.Rtl ? Next() : Prev());
@@ -236,7 +236,7 @@ public partial class BitCarousel : IDisposable
             o.InternalTransitionStyle = string.Empty;
             var x = sign * 100 * (offset + (sign * i));
             x = Dir == BitDir.Rtl ? -x : x;
-            o.InternalTransformStyle = FormattableString.Invariant($"transform: translateX({x}%);");
+            o.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
         }
 
         StateHasChanged();
@@ -248,19 +248,19 @@ public partial class BitCarousel : IDisposable
         for (int i = 0; i < currents.Length; i++)
         {
             var c = currents[i];
-            c.InternalTransitionStyle = FormattableString.Invariant($"transition: all {AnimationDuration}s;");
+            c.InternalTransitionStyle = FormattableString.Invariant($"transition:all {AnimationDuration}s");
             var x = -sign * 100 * (scrollCount + (-sign * i));
             x = Dir == BitDir.Rtl ? -x : x;
-            c.InternalTransformStyle = FormattableString.Invariant($"transform: translateX({x}%);");
+            c.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
         }
 
         for (int i = 0; i < others.Length; i++)
         {
             var o = others[i];
-            o.InternalTransitionStyle = FormattableString.Invariant($"transition: all {AnimationDuration}s;");
+            o.InternalTransitionStyle = FormattableString.Invariant($"transition:all {AnimationDuration}s");
             var x = 100 * (offset + i);
             x = Dir == BitDir.Rtl ? -x : x;
-            o.InternalTransformStyle = FormattableString.Invariant($"transform: translateX({x}%);");
+            o.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
         }
 
         _currentIndices = newIndices;
