@@ -1,6 +1,6 @@
 ﻿using Bit.Butil;
 
-namespace Bit.Websites.Platform.Client.Pages;
+namespace Bit.Websites.Platform.Client.Pages.Home;
 
 public partial class HomePage
 {

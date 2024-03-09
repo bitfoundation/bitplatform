@@ -13,6 +13,7 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel">
 
     <div class="bit-brc-iwp" id="@_wrapperId">
@@ -56,7 +57,7 @@
 
                 @if (index != _displayItems.Count - 1)
                 {
-                    <i class="bit-brc-sep bit-icon bit-icon--@DividerIconName" />
+                    <i class="bit-brc-sep bit-icon bit-icon--@(DividerIconName ?? _internalDividerIconName)" />
                 }
             }
         </ul>

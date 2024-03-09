@@ -58,7 +58,7 @@ public partial class Header : IDisposable
         else return currentUrl switch
         {
             Urls.HomePage => "Home",
-            Urls.Components => "Products & Services",
+            Urls.BlazorUI => "Products & Services",
             Urls.CloudHostingSolutions => "Products & Services",
             Urls.Support => "Products & Services",
             Urls.Academy => "Products & Services",
@@ -74,7 +74,7 @@ public partial class Header : IDisposable
     private bool IsProductsServicesActive()
     {
         return (currentUrl.Contains("templates") ||
-           currentUrl == Urls.Components ||
+           currentUrl == Urls.BlazorUI ||
            currentUrl == Urls.CloudHostingSolutions ||
            currentUrl == Urls.Support ||
            currentUrl == Urls.Academy);

@@ -322,6 +322,25 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
+<ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitMenuButton Text="گزینه ها"
+                           Dir="BitDir.Rtl"
+                           Items="rtlItemsIcon"
+                           IconName="@BitIconName.Edit" />
+
+            <BitMenuButton Split
+                           Text="گزینه ها"
+                           Dir="BitDir.Rtl"
+                           Items="rtlItemsIcon"
+                           IconName="@BitIconName.Add"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           ChevronDownIcon="@BitIconName.DoubleChevronDown" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
 @code {
     private List<BitMenuButtonItem> itemTemplateItems2 = new()
     {
