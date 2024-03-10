@@ -81,6 +81,26 @@
         }
     }
 
+    &.bit-rtl {
+        .bit-drp-sb {
+            padding: spacing(0.125) spacing(1) spacing(0.125) 0;
+        }
+
+        .bit-drp-tcn {
+            padding-left: 0;
+            padding-right: spacing(1);
+        }
+
+        .bit-drp-cls {
+            margin-left: unset;
+            margin-right: auto;
+        }
+
+        .bit-drp-rsp {
+            animation-name: bit-fade-show, bit-drp-trans-x-reverse;
+        }
+    }
+
     @keyframes bit-drp-trans-x {
         0% {
             pointer-events: none;
@@ -665,8 +685,8 @@
     display: flex;
     cursor: pointer;
     overflow: hidden;
-    text-align: left;
     font-weight: 400;
+    text-align: start;
     user-select: none;
     position: relative;
     white-space: nowrap;
@@ -775,27 +795,5 @@
     .bit-drp-rlc {
         display: flex;
         justify-content: space-between;
-    }
-}
-
-.bit-drp-rtl {
-    direction: rtl;
-
-    .bit-drp-sb {
-        padding: spacing(0.125) spacing(1) spacing(0.125) 0;
-    }
-
-    .bit-drp-tcn {
-        padding-left: 0;
-        padding-right: spacing(1);
-    }
-
-    .bit-drp-cls {
-        margin-left: unset;
-        margin-right: auto;
-    }
-
-    .bit-drp-rsp {
-        animation-name: bit-fade-show, bit-drp-trans-x-reverse;
     }
 }

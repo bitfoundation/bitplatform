@@ -494,14 +494,14 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""لطفا انتخاب کنید""
-             IsRtl=""true"" />
+             Dir=""BitDir.Rtl"" />
 
 <BitDropdown Label=""چند انتخابی""
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""انتخاب چند گزینه ای""
              IsMultiSelect=""true""
-             IsRtl=""true"" />";
+             Dir=""BitDir.Rtl"" />";
     private readonly string example9CsharpCode = @"
 private List<BitDropdownItem<string>> GetRtlItems() => new()
 {

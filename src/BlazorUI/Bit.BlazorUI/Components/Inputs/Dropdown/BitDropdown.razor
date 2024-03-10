@@ -11,6 +11,7 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
      aria-owns="@(IsOpen ? _calloutId : null)">
 
     @if (LabelTemplate is not null)
