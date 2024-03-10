@@ -461,21 +461,6 @@ public partial class BitNumberField<TValue>
                 }
                 break;
 
-            case "Enter":
-                if (_intermediateValue == CurrentValueAsString) break;
-
-                var isNumber = double.TryParse(_intermediateValue, out var numericValue);
-                if (isNumber)
-                {
-                    SetValue(numericValue);
-                    await OnChange.InvokeAsync(CurrentValue);
-                }
-                else
-                {
-                    SetDisplayValue();
-                }
-                break;
-
             default:
                 break;
         }
@@ -557,13 +542,6 @@ public partial class BitNumberField<TValue>
         {
             CurrentValue = GetGenericValue(value);
         }
-
-        SetDisplayValue();
-    }
-
-    private void SetDisplayValue()
-    {
-        _intermediateValue = CurrentValueAsString;
     }
 
     private static string? GetCleanValue(string? value)
@@ -589,15 +567,10 @@ public partial class BitNumberField<TValue>
         if (_intermediateValue == CurrentValueAsString) return;
 
         var isNumber = double.TryParse(_intermediateValue, out var numericValue);
-        if (isNumber)
-        {
-            SetValue(numericValue);
-            await OnChange.InvokeAsync(CurrentValue);
-        }
-        else
-        {
-            SetDisplayValue();
-        }
+        if (isNumber is false) return;
+
+        SetValue(numericValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private double GetMaxValue()
