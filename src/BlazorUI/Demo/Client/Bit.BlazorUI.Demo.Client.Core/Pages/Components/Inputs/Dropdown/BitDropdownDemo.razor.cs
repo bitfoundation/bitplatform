@@ -139,13 +139,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "IsRtl",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the RTL direction for the component.",
-        },
-        new()
-        {
             Name = "Items",
             Type = "ICollection<TItem>?",
             DefaultValue = "null",

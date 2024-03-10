@@ -646,7 +646,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
     private readonly string example9RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
              Placeholder=""لطفا انتخاب کنید""
-             IsRtl=""true""
+             Dir=""BitDir.Rtl""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in rtlItems)
     {
@@ -657,7 +657,7 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
 <BitDropdown Label=""چند انتخابی""
              Placeholder=""انتخاب چند گزینه ای""
              IsMultiSelect=""true""
-             IsRtl=""true""
+             Dir=""BitDir.Rtl""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in rtlItems)
     {

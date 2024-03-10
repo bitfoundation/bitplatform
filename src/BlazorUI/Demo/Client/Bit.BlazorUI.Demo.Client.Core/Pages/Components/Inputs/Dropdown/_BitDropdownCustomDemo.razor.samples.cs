@@ -722,14 +722,14 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""لطفا انتخاب کنید""
-             IsRtl=""true"" />
+             Dir=""BitDir.Rtl"" />
 
 <BitDropdown Label=""چند انتخابی""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""انتخاب چند گزینه ای""
              IsMultiSelect=""true""
-             IsRtl=""true"" />";
+             Dir=""BitDir.Rtl"" />";
     private readonly string example9CsharpCode = @"
 public class BitDropdownCustom
 {
