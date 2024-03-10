@@ -42,18 +42,18 @@
 .contact-container {
     width: 100%;
     display: flex;
+    margin: 2rem 0;
     flex-flow: column;
     align-items: center;
     justify-content: center;
-    margin: 2rem 0;
 }
 
 ::deep .form {
-    gap: 2rem;
+    gap: 1.5rem;
     width: 100%;
+    padding: 2rem;
     display: flex;
     flex-flow: column;
-    padding: rem2(20px);
     max-width: rem2(600px);
     box-sizing: border-box;
     border-radius: rem2(4px);
