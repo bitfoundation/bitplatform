@@ -69,13 +69,6 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "IsRtl",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Change direction to RTL."
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",

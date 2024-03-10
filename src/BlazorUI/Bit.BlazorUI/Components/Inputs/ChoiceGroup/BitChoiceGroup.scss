@@ -79,9 +79,7 @@
         }
     }
 
-    &.bit-chg-rtl {
-        direction: rtl;
-
+    &.bit-rtl {
         .bit-chg-icn {
             margin-right: 0;
             margin-left: spacing(1);

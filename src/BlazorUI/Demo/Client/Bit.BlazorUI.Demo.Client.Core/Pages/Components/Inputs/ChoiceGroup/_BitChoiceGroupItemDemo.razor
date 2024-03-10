@@ -151,8 +151,8 @@
 <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
         <div style="direction:rtl" class="example-content">
-            <BitChoiceGroup Label="ساده" Items="rtlItems" DefaultValue="@("A")" IsRtl="true" />
-            <BitChoiceGroup Label="غیرفعال" Items="rtlItems" IsEnabled="false" DefaultValue="@("A")" IsRtl="true" />
+            <BitChoiceGroup Label="ساده" Items="rtlItems" DefaultValue="@("A")" Dir="BitDir.Rtl" />
+            <BitChoiceGroup Label="غیرفعال" Items="rtlItems" IsEnabled="false" DefaultValue="@("A")" Dir="BitDir.Rtl" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
