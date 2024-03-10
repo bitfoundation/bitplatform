@@ -4,7 +4,8 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
 
     <label title="@Title"
            for="@_inputId"
