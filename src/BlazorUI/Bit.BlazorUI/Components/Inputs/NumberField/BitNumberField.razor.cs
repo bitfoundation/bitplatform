@@ -329,6 +329,16 @@ public partial class BitNumberField<TValue>
         StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
+    protected override Task OnInitializedAsync()
+    {
+        if ((ValueHasBeenSet is false || CurrentValue is null) && DefaultValue is not null)
+        {
+            SetValue(GetDoubleValueOrDefault(DefaultValue).GetValueOrDefault());
+        }
+
+        return base.OnInitializedAsync();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         if (_internalMin.HasValue is false)
@@ -348,15 +358,6 @@ public partial class BitNumberField<TValue>
         }
 
         _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
-
-        if (ValueHasBeenSet is false)
-        {
-            SetValue(GetDoubleValueOrDefault(DefaultValue).GetValueOrDefault());
-        }
-        else
-        {
-            SetDisplayValue();
-        }
 
         await base.OnParametersSetAsync();
     }
@@ -460,21 +461,6 @@ public partial class BitNumberField<TValue>
                 }
                 break;
 
-            case "Enter":
-                if (_intermediateValue == CurrentValueAsString) break;
-
-                var isNumber = double.TryParse(_intermediateValue, out var numericValue);
-                if (isNumber)
-                {
-                    SetValue(numericValue);
-                    await OnChange.InvokeAsync(CurrentValue);
-                }
-                else
-                {
-                    SetDisplayValue();
-                }
-                break;
-
             default:
                 break;
         }
@@ -556,13 +542,6 @@ public partial class BitNumberField<TValue>
         {
             CurrentValue = GetGenericValue(value);
         }
-
-        SetDisplayValue();
-    }
-
-    private void SetDisplayValue()
-    {
-        _intermediateValue = CurrentValueAsString;
     }
 
     private static string? GetCleanValue(string? value)
@@ -588,15 +567,10 @@ public partial class BitNumberField<TValue>
         if (_intermediateValue == CurrentValueAsString) return;
 
         var isNumber = double.TryParse(_intermediateValue, out var numericValue);
-        if (isNumber)
-        {
-            SetValue(numericValue);
-            await OnChange.InvokeAsync(CurrentValue);
-        }
-        else
-        {
-            SetDisplayValue();
-        }
+        if (isNumber is false) return;
+
+        SetValue(numericValue);
+        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private double GetMaxValue()
