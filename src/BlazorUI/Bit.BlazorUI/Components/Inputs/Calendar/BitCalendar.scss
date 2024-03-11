@@ -31,6 +31,18 @@
             background-color: $color-background-disabled;
         }
     }
+
+    &.bit-rtl {
+        .bit-cal-cnt,
+        .bit-cal-twp {
+            flex-direction: row-reverse;
+        }
+
+        .bit-cal-wnm {
+            border-right: none;
+            border-left: $shape-border-width $shape-border-style $color-border-secondary;
+        }
+    }
 }
 
 .bit-cal-cnt {
@@ -204,14 +216,15 @@
     flex-grow: 1;
     cursor: text;
     overflow: hidden;
-    text-align: left;
     font-weight: 600;
+    text-align: start;
     position: relative;
     white-space: nowrap;
     align-items: center;
     outline: transparent;
     display: inline-block;
     text-overflow: ellipsis;
+    padding: 0 spacing(1.25);
     font-size: spacing(1.75);
     line-height: spacing(3.5);
     animation-fill-mode: both;
@@ -220,7 +233,6 @@
     background-color: transparent;
     color: $color-foreground-primary;
     border-radius: $shape-border-radius;
-    padding: 0 spacing(0.5) 0 spacing(1.25);
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -494,25 +506,4 @@
     padding: spacing(1.5);
     box-sizing: content-box;
     flex-flow: column nowrap;
-}
-
-.bit-cal-rtl {
-    .bit-cal-cnt {
-        direction: rtl;
-    }
-
-    .bit-cal-wnm {
-        border-right: none;
-        border-left: $shape-border-width $shape-border-style $color-border-secondary;
-    }
-
-    .bit-cal-pkt,
-    .bit-cal-ptb {
-        text-align: right;
-        padding: 0 spacing(1.25) 0 spacing(0.5);
-    }
-
-    .bit-cal-twp {
-        flex-direction: row-reverse;
-    }
 }
