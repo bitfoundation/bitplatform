@@ -33,8 +33,8 @@
     ::deep {
         .header-icon {
             font-size: 1.25rem;
+            margin-top: 0.8rem;
             margin-right: 1rem;
-            margin-top: 1.25rem;
 
             @include lt-lg {
                 font-size: 1rem;
@@ -43,25 +43,26 @@
 
             @include lt-md {
                 font-size: 0.75rem;
-                margin-top: 0.75rem;
+                margin-top: 0.6rem;
             }
 
             @include lt-sm {
-                margin-top: 0.5rem;
+                font-size: 0.6rem;
+                margin-top: 0.35rem;
             }
         }
 
         .header-title {
             @include lt-lg {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
 
             @include lt-md {
-                font-size: 1.75rem;
+                font-size: 1.25rem;
             }
 
             @include lt-sm {
-                font-size: 1.5rem;
+                font-size: 1rem;
             }
         }
 
@@ -75,7 +76,7 @@
             }
 
             @include lt-sm {
-                font-size: 1rem;
+                font-size: 0.75rem;
             }
         }
     }
@@ -88,19 +89,27 @@
 
 .template-terminal {
     display: flex;
+    padding: 2rem;
     color: #f0f0f0;
     gap: rem2(12px);
     flex-wrap: wrap;
-    padding: rem2(50px);
     align-items: center;
     margin: rem2(25px) 0;
     border-radius: rem2(4px);
     background-color: #0a153d;
 
+    @include lt-md {
+        padding: 1.5rem;
+    }
+
     span {
         white-space: nowrap;
         font-size: rem2(18px);
         font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+        @include lt-md {
+            font-size: rem2(14px);
+        }
     }
 
     .animation-container {

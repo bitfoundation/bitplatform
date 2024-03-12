@@ -255,6 +255,24 @@
         margin: 0;
     }
 
+    ::deep {
+        .tech-title {
+            @include lt-md {
+                font-size: 2.5rem;
+            }
+        }
+
+        .tech-subtitle {
+            @include lt-md {
+                font-size: 1.25rem;
+            }
+
+            @include lt-sm {
+                font-size: 1rem;
+            }
+        }
+    }
+
     .tech-list {
         width: 100%;
         display: flex;

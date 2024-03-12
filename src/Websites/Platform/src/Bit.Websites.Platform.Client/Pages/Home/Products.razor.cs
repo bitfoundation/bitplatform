@@ -2,9 +2,9 @@
 
 public partial class Products
 {
-    private bool _boilerplateExpanded = true;
-    private bool _butilExpanded = false;
-    private bool _bswupExpanded = false;
-    private bool _besqlExpanded = false;
-    private bool _blazoruiExpanded = false;
+    private bool _boilerplateExpanded;
+    private bool _butilExpanded;
+    private bool _bswupExpanded;
+    private bool _besqlExpanded;
+    private bool _blazoruiExpanded;
 }
