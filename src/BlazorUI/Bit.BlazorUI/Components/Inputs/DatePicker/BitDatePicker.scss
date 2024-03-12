@@ -70,6 +70,7 @@
 .bit-dtp-icn {
     margin: 0;
     display: flex;
+    gap: spacing(1);
     cursor: pointer;
     box-shadow: none;
     height: spacing(4);
@@ -84,9 +85,8 @@
 }
 
 .bit-dtp-ico {
+    padding: 0;
     cursor: pointer;
-    padding-right: 0;
-    padding-left: spacing(1);
     color: $color-foreground-secondary;
 }
 
