@@ -1170,4 +1170,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                     IsResponsive=""true""
                     ShowWeekNumbers=""true""
                     Placeholder=""Select a date range"" />";
+
+    private readonly string example9RazorCode = @"
+<BitDateRangePicker Dir=""BitDir.Rtl"" />";
 }
