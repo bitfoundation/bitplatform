@@ -317,7 +317,7 @@ public partial class BitCalendar
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
+        ClassBuilder.Register(() => (Dir is null && Culture.TextInfo.IsRightToLeft) ? "bit-rtl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
