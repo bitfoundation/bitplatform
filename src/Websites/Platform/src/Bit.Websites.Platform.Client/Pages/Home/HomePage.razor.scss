@@ -97,10 +97,20 @@
     align-items: center;
 }
 
+::deep .section-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    color: $bit-color-foreground-secondary;
+}
+
 .section-title-line {
     height: 2px;
     flex-grow: 1;
     background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
+
+    &.reversed {
+        background-image: linear-gradient(351deg, #8c85ff 20%, transparent 100%);
+    }
 }
 
 .hero-section {
@@ -203,7 +213,7 @@
         }
 
         @include lt-md {
-            font-size: 2.2rem;
+            font-size: 2.1rem;
             margin-bottom: 0.5rem;
         }
 
@@ -215,17 +225,22 @@
 
     .text-subtitle {
         font-size: 2.25rem;
+        color: $bit-color-foreground-secondary;
 
         @include lt-xl {
             font-size: 2rem;
         }
 
         @include lt-lg {
-            font-size: 1.75rem;
+            font-size: 1.25rem;
         }
 
         @include lt-md {
-            font-size: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @include lt-sm {
+            font-size: 0.75rem;
         }
     }
 }
@@ -245,14 +260,30 @@
 }
 
 .tech-section {
-    margin: 5rem 0;
+    margin: 2rem 0;
     padding: 5rem 0;
     text-align: center;
-    box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-secondary;
 
     @include lt-md {
         margin: 0;
+    }
+
+    ::deep {
+        .tech-title {
+            @include lt-md {
+                font-size: 2.5rem;
+            }
+        }
+
+        .tech-subtitle {
+            @include lt-md {
+                font-size: 1.25rem;
+            }
+
+            @include lt-sm {
+                font-size: 1rem;
+            }
+        }
     }
 
     .tech-list {
