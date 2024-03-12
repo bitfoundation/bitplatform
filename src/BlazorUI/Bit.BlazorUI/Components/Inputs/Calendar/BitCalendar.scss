@@ -35,10 +35,6 @@
     &.bit-rtl {
         direction: rtl;
 
-        .bit-cal-tic {
-            direction: ltr;
-        }
-
         .bit-cal-wnm {
             border-right: none;
             border-left: $shape-border-width $shape-border-style $color-border-secondary;
@@ -413,15 +409,16 @@
 
 .bit-cal-tic {
     margin: 0;
-    padding: spacing(2);
+    flex: 0.85;
     display: flex;
     outline: none;
-    box-shadow: none;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: center;
-    flex: 0.85;
+    direction: ltr;
     gap: spacing(1);
+    box-shadow: none;
+    padding: spacing(2);
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
 }
 
 .bit-cal-tpr {
