@@ -33,9 +33,10 @@
     }
 
     &.bit-rtl {
-        .bit-cal-cnt,
-        .bit-cal-twp {
-            flex-direction: row-reverse;
+        direction: rtl;
+
+        .bit-cal-tic {
+            direction: ltr;
         }
 
         .bit-cal-wnm {
