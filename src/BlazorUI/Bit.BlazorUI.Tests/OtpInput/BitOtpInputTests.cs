@@ -46,30 +46,49 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitOtpInputDirection.LeftToRight),
-        DataRow(BitOtpInputDirection.RightToLeft),
-        DataRow(BitOtpInputDirection.TopToBottom),
-        DataRow(BitOtpInputDirection.BottomToTop)
+        DataRow(true),
+        DataRow(false)
     ]
-    public void BitOtpInputDirectionTest(BitOtpInputDirection direction)
+    public void BitOtpInputReversedTest(bool reversed)
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
-            parameters.Add(p => p.Direction, direction);
+            parameters.Add(p => p.Reversed, reversed);
         });
-
-        string directionClass = direction switch
-        {
-            BitOtpInputDirection.LeftToRight => "bit-otp-ltr",
-            BitOtpInputDirection.RightToLeft => "bit-otp-rtl",
-            BitOtpInputDirection.TopToBottom => "bit-otp-ttb",
-            BitOtpInputDirection.BottomToTop => "bit-otp-btt",
-            _ => null
-        };
 
         var bitOtpInput = com.Find(".bit-otp");
 
-        Assert.IsTrue(bitOtpInput.ClassList.Contains(directionClass));
+        if (reversed)
+        {
+            Assert.IsTrue(bitOtpInput.ClassList.Contains("bit-otp-rvs"));
+        }
+        else
+        {
+            Assert.IsFalse(bitOtpInput.ClassList.Contains("bit-otp-rvs"));
+        }
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitOtpInputVerticalTest(bool vertical)
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Vertical, vertical);
+        });
+
+        var bitOtpInput = com.Find(".bit-otp");
+
+        if (vertical)
+        {
+            Assert.IsTrue(bitOtpInput.ClassList.Contains("bit-otp-vrt"));
+        }
+        else
+        {
+            Assert.IsFalse(bitOtpInput.ClassList.Contains("bit-otp-vrt"));
+        }
     }
 
     [DataTestMethod,
