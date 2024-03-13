@@ -21,12 +21,12 @@ public partial class BitNumberField<TValue>
     private int _precision;
     private readonly string _labelId;
     private readonly string _inputId;
-    private Timer? _timer;
     private ElementReference _inputRef;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
     private readonly Type _typeOfValue;
     private bool _hasFocus;
+    private bool _isPointerDown;
     private readonly bool _isDecimals;
     private readonly double _minGenericValue;
     private readonly double _maxGenericValue;
@@ -387,8 +387,11 @@ public partial class BitNumberField<TValue>
         StateHasChanged();
     }
 
-    private async Task HandleOnPointerDown(bool isIncrement, MouseEventArgs e)
+    private async Task HandleOnPointerDown(bool isIncrement)
     {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
         //Change focus from input to number field
         if (isIncrement)
         {
@@ -399,28 +402,19 @@ public partial class BitNumberField<TValue>
             await _buttonDecrement.FocusAsync();
         }
 
+        _isPointerDown = true;
 
-        await HandleOnPointerDownAction(isIncrement, e);
-        _timer = new Timer(async (_) =>
-        {
-            await InvokeAsync(async () =>
-            {
-                await HandleOnPointerDownAction(isIncrement, e);
-                StateHasChanged();
-            });
-        }, null, INITIAL_STEP_DELAY, STEP_DELAY);
+        await ChangeValue(isIncrement, INITIAL_STEP_DELAY);
     }
 
     private void HandleOnPointerUpOrOut()
     {
-        if (_timer is null) return;
-        _timer.Dispose();
+        _isPointerDown = false;
     }
 
-    private async Task HandleOnPointerDownAction(bool isIncrement, MouseEventArgs e)
+    private async Task ChangeValue(bool isIncrement, int stepDelay)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (_isPointerDown is false) return;
 
         await ApplyValueChange(isIncrement);
         if (isIncrement && OnIncrement.HasDelegate)
@@ -432,6 +426,12 @@ public partial class BitNumberField<TValue>
         {
             await OnDecrement.InvokeAsync(CurrentValue);
         }
+
+        StateHasChanged();
+
+        await Task.Delay(stepDelay);
+
+        await ChangeValue(isIncrement, STEP_DELAY);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
@@ -798,15 +798,5 @@ public partial class BitNumberField<TValue>
 
         var normalValue = Normalize(GetDoubleValueOrDefault(value)!.Value);
         return string.Format(NumberFormat, normalValue);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _timer?.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 }
