@@ -6,7 +6,9 @@
     display: flex;
     box-shadow: none;
     font-weight: 400;
+    gap: spacing(1.25);
     position: relative;
+    flex-direction: row;
     box-sizing: border-box;
     font-size: spacing(1.75);
     font-family: $typography-font-family;
@@ -36,12 +38,12 @@
     box-sizing: border-box;
     justify-content: center;
     font-size: spacing(1.75);
-    -moz-appearance: textfield; // Firefox
+    -moz-appearance: textfield;
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary;
 
-    &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
+    &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
         -webkit-appearance: none
     }
@@ -52,51 +54,14 @@
     }
 }
 
-.bit-otp-ltr {
-    flex-direction: row;
-
-    .bit-otp-inp {
-        margin-right: spacing(1.25);
-
-        &:last-child {
-            margin-right: unset;
-        }
-    }
-}
-
-.bit-otp-rtl {
-    justify-content: flex-end;
-    flex-direction: row-reverse;
-
-    .bit-otp-inp {
-        margin-left: spacing(1.25);
-
-        &:last-child {
-            margin-left: unset;
-        }
-    }
-}
-
-.bit-otp-ttb {
+.bit-otp-vrt {
     flex-direction: column;
-
-    .bit-otp-inp {
-        margin-bottom: spacing(1.25);
-
-        &:last-child {
-            margin-bottom: unset;
-        }
-    }
 }
 
-.bit-otp-btt {
+.bit-otp-rvs {
+    flex-direction: row-reverse;
+}
+
+.bit-otp-vrt.bit-otp-rvs {
     flex-direction: column-reverse;
-
-    .bit-otp-inp {
-        margin-top: spacing(1.25);
-
-        &:last-child {
-            margin-top: unset;
-        }
-    }
 }

@@ -25,11 +25,6 @@ public partial class BitOtpInput : IDisposable
     [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The render direction of the inputs.
-    /// </summary>
-    [Parameter] public BitOtpInputDirection Direction { get; set; } = BitOtpInputDirection.LeftToRight;
-
-    /// <summary>
     /// Type of the inputs.
     /// </summary>
     [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
@@ -70,9 +65,19 @@ public partial class BitOtpInput : IDisposable
     [Parameter] public EventCallback<(ClipboardEventArgs Event, int Index)> OnPaste { get; set; }
 
     /// <summary>
+    /// Defines whether to render inputs in the opposite direction.
+    /// </summary>
+    [Parameter] public bool Reversed { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.
     /// </summary>
     [Parameter] public BitOtpInputClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Defines whether to render inputs vertically.
+    /// </summary>
+    [Parameter] public bool Vertical { get; set; }
 
 
 
@@ -137,14 +142,9 @@ public partial class BitOtpInput : IDisposable
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Direction switch
-        {
-            BitOtpInputDirection.LeftToRight => $"{RootElementClass}-ltr",
-            BitOtpInputDirection.RightToLeft => $"{RootElementClass}-rtl",
-            BitOtpInputDirection.TopToBottom => $"{RootElementClass}-ttb",
-            BitOtpInputDirection.BottomToTop => $"{RootElementClass}-btt",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => Reversed ? $"{RootElementClass}-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => Vertical ? $"{RootElementClass}-vrt" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -273,46 +273,46 @@ public partial class BitOtpInput : IDisposable
             await Task.Delay(1);
             await _inputRefs[previousIndex].FocusAsync();
         }
-        else if (code is "ArrowLeft")
+        else if (code is "ArrowLeft" && Vertical is false)
         {
-            if (Direction is BitOtpInputDirection.LeftToRight && previousIndex >= 0)
+            if (Reversed is false && previousIndex >= 0)
             {
                 await _inputRefs[previousIndex].FocusAsync();
             }
-            else if (Direction is BitOtpInputDirection.RightToLeft && nextIndex < Length)
+            else if (Reversed && nextIndex < Length)
             {
                 await _inputRefs[nextIndex].FocusAsync();
             }
         }
-        else if (code is "ArrowRight")
+        else if (code is "ArrowRight" && Vertical is false)
         {
-            if (Direction is BitOtpInputDirection.LeftToRight && nextIndex < Length)
+            if (Reversed is false && nextIndex < Length)
             {
                 await _inputRefs[nextIndex].FocusAsync();
             }
-            else if (Direction is BitOtpInputDirection.RightToLeft && previousIndex >= 0)
+            else if (Reversed && previousIndex >= 0)
             {
                 await _inputRefs[previousIndex].FocusAsync();
             }
         }
-        else if (code is "ArrowUp")
+        else if (code is "ArrowUp" && Vertical)
         {
-            if (Direction is BitOtpInputDirection.TopToBottom && previousIndex >= 0)
+            if (Reversed is false && previousIndex >= 0)
             {
                 await _inputRefs[previousIndex].FocusAsync();
             }
-            else if (Direction is BitOtpInputDirection.BottomToTop && nextIndex < Length)
+            else if (Reversed && nextIndex < Length)
             {
                 await _inputRefs[nextIndex].FocusAsync();
             }
         }
-        else if (code is "ArrowDown")
+        else if (code is "ArrowDown" && Vertical)
         {
-            if (Direction is BitOtpInputDirection.TopToBottom && nextIndex < Length)
+            if (Reversed is false && nextIndex < Length)
             {
                 await _inputRefs[nextIndex].FocusAsync();
             }
-            else if (Direction is BitOtpInputDirection.BottomToTop && previousIndex >= 0)
+            else if (Reversed && previousIndex >= 0)
             {
                 await _inputRefs[previousIndex].FocusAsync();
             }
