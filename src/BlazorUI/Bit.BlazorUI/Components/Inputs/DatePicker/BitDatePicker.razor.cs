@@ -486,7 +486,7 @@ public partial class BitDatePicker
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
+        ClassBuilder.Register(() => (Dir is null && Culture.TextInfo.IsRightToLeft) ? "bit-rtl" : string.Empty);
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
 
