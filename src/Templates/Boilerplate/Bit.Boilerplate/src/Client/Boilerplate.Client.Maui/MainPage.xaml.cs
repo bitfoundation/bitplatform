@@ -147,20 +147,24 @@ public partial class MainPage
         {
             await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
 
-            if (await AppStoreInfo.Current.IsUsingLatestVersionAsync() is false)
+            try
             {
-                if (await storageService.GetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested") is not "true")
+                if (await AppStoreInfo.Current.IsUsingLatestVersionAsync() is false)
                 {
-                    await storageService.SetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested", "true");
-
-                    // It's an opportune moment to request an update. (:
-                    // https://github.com/oscoreio/Maui.AppStoreInfo
-                    if (await DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
+                    if (await storageService.GetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested") is not "true")
                     {
-                        await AppStoreInfo.Current.OpenApplicationInStoreAsync();
+                        await storageService.SetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested", "true");
+
+                        // It's an opportune moment to request an update. (:
+                        // https://github.com/oscoreio/Maui.AppStoreInfo
+                        if (await DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
+                        {
+                            await AppStoreInfo.Current.OpenApplicationInStoreAsync();
+                        }
                     }
                 }
             }
+            catch (FileNotFoundException) { }
         }
     }
 }
