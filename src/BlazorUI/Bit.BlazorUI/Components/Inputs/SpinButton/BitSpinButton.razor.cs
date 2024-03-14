@@ -216,8 +216,8 @@ public partial class BitSpinButton
         ClassBuilder.Register(() => LabelPosition switch
         {
             BitSpinButtonLabelPosition.Bottom => $"{RootElementClass}-lbt",
-            BitSpinButtonLabelPosition.Left => $"{RootElementClass}-llf",
-            BitSpinButtonLabelPosition.Right => $"{RootElementClass}-lrt",
+            BitSpinButtonLabelPosition.Start => $"{RootElementClass}-lst",
+            BitSpinButtonLabelPosition.End => $"{RootElementClass}-led",
             _ => $"{RootElementClass}-ltp"
         });
     }
