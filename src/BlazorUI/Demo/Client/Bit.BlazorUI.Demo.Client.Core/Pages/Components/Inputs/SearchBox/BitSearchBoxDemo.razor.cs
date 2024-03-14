@@ -163,8 +163,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "SearchButtonIconName",
-            Type = "string",
-            DefaultValue = "ChromeBackMirrored",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Custom icon name for the search button.",
         },
         new()
@@ -501,4 +501,9 @@ private async Task<ICollection<string>> LoadItems(string? search, int count)
         return new List<string>();
     }
 }";
+
+    private readonly string example10RazorCode = @"
+<BitSearchBox Dir=""BitDir.Rtl"" Placeholder=""جستجو"" />
+<BitSearchBox Dir=""BitDir.Rtl"" IsUnderlined Placeholder=""جستجو"" />
+<BitSearchBox Dir=""BitDir.Rtl"" ShowSearchButton Placeholder=""جستجو"" />";
 }

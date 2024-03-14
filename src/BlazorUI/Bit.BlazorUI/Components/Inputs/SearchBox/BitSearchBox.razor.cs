@@ -15,11 +15,13 @@ public partial class BitSearchBox
     private string _inputId = string.Empty;
     private string _calloutId = string.Empty;
     private string _scrollContainerId = string.Empty;
+    private string _searchButtonIconName = string.Empty;
+
+    private int _selectedIndex = -1;
+    private List<string> _searchItems = [];
     private ElementReference _inputRef = default!;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
-    private List<string> _searchItems = [];
-    private int _selectedIndex = -1;
 
     private bool _inputHasFocus
     {
@@ -188,7 +190,7 @@ public partial class BitSearchBox
     /// <summary>
     /// Custom icon name for the search button.
     /// </summary>
-    [Parameter] public string SearchButtonIconName { get; set; } = "ChromeBackMirrored";
+    [Parameter] public string? SearchButtonIconName { get; set; }
 
     /// <summary>
     /// Whether to show the search button.
@@ -259,6 +261,13 @@ public partial class BitSearchBox
         _dotnetObj = DotNetObjectReference.Create(this);
 
         return base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _searchButtonIconName = Dir is BitDir.Rtl ? "ChromeBack" : "ChromeBackMirrored";
+
+        base.OnParametersSet();
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
