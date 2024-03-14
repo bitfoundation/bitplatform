@@ -182,14 +182,14 @@ public partial class BitTimePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Defines step intervals for hour selection.",
+            Description = "Determines increment/decrement steps for time-picker's hour.",
         },
         new()
         {
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Defines step intervals for minute selection.",
+            Description = "Determines increment/decrement steps for time-picker's minute.",
         },
     };
 
@@ -479,13 +479,13 @@ private FormValidationTimePickerModel formValidationTimePickerModel = new();";
 
     private readonly string example14RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
-               Label=""2-hour increments""
+               Label=""HourStep = 2""
                HourStep=""2""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />
 
 <BitTimePicker Style=""max-width: 175px""
-               Label=""15-minute increments""
+               Label=""MinuteStep = 15""
                MinuteStep=""15""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";

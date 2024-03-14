@@ -260,12 +260,12 @@ public partial class BitTimePicker
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
     /// <summary>
-    /// Defines step intervals for hour selection.
+    /// Determines increment/decrement steps for time-picker's hour.
     /// </summary>
     [Parameter] public int HourStep { get; set; } = 1;
 
     /// <summary>
-    /// Defines step intervals for minute selection.
+    /// Determines increment/decrement steps for time-picker's minute.
     /// </summary>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
