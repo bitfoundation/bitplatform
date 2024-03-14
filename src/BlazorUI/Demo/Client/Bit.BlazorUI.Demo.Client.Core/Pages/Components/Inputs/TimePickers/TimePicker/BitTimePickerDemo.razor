@@ -129,58 +129,75 @@
                            AriaLabel="Select a time"
                            Placeholder="Select a time..." />
             <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>
-            </ExamplePreview>
-        </ComponentExampleBox>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-        <ComponentExampleBox Title="BitTimePicker with custom left-handed icon" RazorCode="@example10RazorCode" Id="example10">
-            <ExamplePreview>
-                <BitTimePicker Style="max-width: 175px"
-                               AriaLabel="Select a time"
-                               IconLocation="BitIconLocation.Left"
-                               Placeholder="Select a time...">
-                    <IconTemplate>
-                        <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
-                    </IconTemplate>
-                </BitTimePicker>
-            </ExamplePreview>
-        </ComponentExampleBox>
+    <ComponentExampleBox Title="BitTimePicker with custom left-handed icon" RazorCode="@example10RazorCode" Id="example10">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           IconLocation="BitIconLocation.Left"
+                           Placeholder="Select a time...">
+                <IconTemplate>
+                    <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
+                </IconTemplate>
+            </BitTimePicker>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-        <ComponentExampleBox Title="BitTimePicker with custom icon name" RazorCode="@example11RazorCode" Id="example11">
-            <ExamplePreview>
-                <BitTimePicker Style="max-width: 175px"
-                               AriaLabel="Select a time"
-                               IconName="@BitIconName.Airplane"
-                               Placeholder="Select a time..." />
-            </ExamplePreview>
-        </ComponentExampleBox>
+    <ComponentExampleBox Title="BitTimePicker with custom icon name" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           IconName="@BitIconName.Airplane"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Custom Invalid Error Message" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-            <ExamplePreview>
-                <div class="example-desc">The custom invalid error message will show when an invalid time is entered.</div>
+    <ComponentExampleBox Title="Custom Invalid Error Message" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <ExamplePreview>
+            <div class="example-desc">The custom invalid error message will show when an invalid time is entered.</div>
 
-                <EditForm Model="formValidationTimePickerModel">
-                    <DataAnnotationsValidator />
-                    <div>
-                        <BitTimePicker @bind-Value="formValidationTimePickerModel.Time"
-                                       Style="max-width: 175px"
-                                       AllowTextInput="true"
-                                       InvalidErrorMessage="Invalid Time!!!" />
-                        <ValidationMessage For="@(() => formValidationTimePickerModel.Time)" />
-                    </div>
-                    <br />
-                    <div class="validation-summary">
-                        <ValidationSummary />
-                    </div>
-                </EditForm>
-            </ExamplePreview>
-        </ComponentExampleBox>
+            <EditForm Model="formValidationTimePickerModel">
+                <DataAnnotationsValidator />
+                <div>
+                    <BitTimePicker @bind-Value="formValidationTimePickerModel.Time"
+                                   Style="max-width: 175px"
+                                   AllowTextInput="true"
+                                   InvalidErrorMessage="Invalid Time!!!" />
+                    <ValidationMessage For="@(() => formValidationTimePickerModel.Time)" />
+                </div>
+                <br />
+                <div class="validation-summary">
+                    <ValidationSummary />
+                </div>
+            </EditForm>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Responsive BitTimePicker" RazorCode="@example13RazorCode" Id="example13">
-            <ExamplePreview>
-                <BitTimePicker Style="max-width: 175px"
-                               IsResponsive="true"
-                               AriaLabel="Select a time"
-                               Placeholder="Select a time..." />
-            </ExamplePreview>
-        </ComponentExampleBox>
-    </ComponentDemo>
+    <ComponentExampleBox Title="Responsive BitTimePicker" RazorCode="@example13RazorCode" Id="example13">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           IsResponsive="true"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Defines step intervals BitTimePicker" RazorCode="@example14RazorCode" Id="example14">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           Label="2-hour increments"
+                           HourStep="2"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+
+            <br />
+            <BitTimePicker Style="max-width: 175px"
+                           Label="15-minute increments"
+                           MinuteStep="15"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

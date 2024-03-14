@@ -259,6 +259,16 @@ public partial class BitTimePicker
     /// </summary>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
+    /// <summary>
+    /// Defines step intervals for hour selection.
+    /// </summary>
+    [Parameter] public int HourStep { get; set; } = 1;
+
+    /// <summary>
+    /// Defines step intervals for minute selection.
+    /// </summary>
+    [Parameter] public int MinuteStep { get; set; } = 1;
+
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -429,25 +439,24 @@ public partial class BitTimePicker
     {
         if (isNext)
         {
-            if (_hour < 23)
-            {
-                _hour++;
-            }
-            else
-            {
-                _hour = 0;
-            }
+            _hour += HourStep;
         }
         else
         {
-            if (_hour > 0)
-            {
-                _hour--;
-            }
-            else
-            {
-                _hour = 23;
-            }
+            _hour -= HourStep;
+        }
+
+        if (_hour.HasValue is false)
+        {
+            _hour = 0;
+        }
+        else if (_hour > 23)
+        {
+            _hour -= 24;
+        }
+        else if (_hour < 0)
+        {
+            _hour += 24;
         }
 
         await UpdateCurrentValue();
@@ -457,25 +466,24 @@ public partial class BitTimePicker
     {
         if (isNext)
         {
-            if (_minute < 59)
-            {
-                _minute++;
-            }
-            else
-            {
-                _minute = 0;
-            }
+            _minute += MinuteStep;
         }
         else
         {
-            if (_minute > 0)
-            {
-                _minute--;
-            }
-            else
-            {
-                _minute = 59;
-            }
+            _minute -= MinuteStep;
+        }
+
+        if (_minute.HasValue is false)
+        {
+            _minute = 0;
+        }
+        else if (_minute > 59)
+        {
+            _minute -= 60;
+        }
+        else if (_minute < 0)
+        {
+            _minute += 60;
         }
 
         await UpdateCurrentValue();
