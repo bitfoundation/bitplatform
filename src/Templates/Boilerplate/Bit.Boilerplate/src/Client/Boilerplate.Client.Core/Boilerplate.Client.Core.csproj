@@ -26,9 +26,9 @@
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0-pre-02" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.8.0-pre-02" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.3" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

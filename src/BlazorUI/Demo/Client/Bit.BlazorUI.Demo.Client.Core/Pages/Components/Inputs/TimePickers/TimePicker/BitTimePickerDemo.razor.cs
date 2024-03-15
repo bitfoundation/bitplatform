@@ -173,10 +173,24 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "ValueChanged",
+            Name = "HourStep",
             Type = "EventCallback<TimeSpan?>",
             Description = "Callback for when the on time value changed.",
-        }
+        },
+        new()
+        {
+            Name = "HourStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for time-picker's hour.",
+        },
+        new()
+        {
+            Name = "MinuteStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for time-picker's minute.",
+        },
     };
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
@@ -460,6 +474,19 @@ private FormValidationTimePickerModel formValidationTimePickerModel = new();";
     private readonly string example13RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
                IsResponsive=""true""
+               AriaLabel=""Select a time""
+               Placeholder=""Select a time..."" />";
+
+    private readonly string example14RazorCode = @"
+<BitTimePicker Style=""max-width: 175px""
+               Label=""HourStep = 2""
+               HourStep=""2""
+               AriaLabel=""Select a time""
+               Placeholder=""Select a time..."" />
+
+<BitTimePicker Style=""max-width: 175px""
+               Label=""MinuteStep = 15""
+               MinuteStep=""15""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 }
