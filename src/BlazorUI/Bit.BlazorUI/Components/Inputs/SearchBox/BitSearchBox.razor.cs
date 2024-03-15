@@ -15,7 +15,6 @@ public partial class BitSearchBox
     private string _inputId = string.Empty;
     private string _calloutId = string.Empty;
     private string _scrollContainerId = string.Empty;
-
     private ElementReference _inputRef = default!;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
