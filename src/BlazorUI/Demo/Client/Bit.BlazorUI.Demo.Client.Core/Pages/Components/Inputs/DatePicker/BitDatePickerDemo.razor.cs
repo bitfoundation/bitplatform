@@ -1141,4 +1141,7 @@ private BitDatePickerValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example11RazorCode = @"
+<BitDatePicker Dir=""BitDir.Rtl"" />";
 }
