@@ -60,80 +60,78 @@
          class="bit-tpc-cal@(IsResponsive ? " bit-tpc-rsp" : string.Empty)"
          aria-labelledby="@_labelId">
         <div class="bit-tpc-cac" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
-            <div class="bit-tpc-grp" role="group">
-                <div class="bit-tpc-tim">
-                    <div class="bit-tpc-tpr">
-                        <button @onpointerup="HandleOnPointerUpOrOut"
-                                @onpointerout="HandleOnPointerUpOrOut"
-                                @onpointerdown="() => HandleOnPointerDown(true, true)"
-                                type="button"
-                                class="bit-tpc-tbt">
-                            <i class="bit-icon bit-icon--ChevronUpSmall" aria-hidden="true" />
-                        </button>
-                        <input @ref="_inputHourRef"
-                               @bind="@_hourView"
-                               @bind:event="oninput"
-                               @onfocus="HandleOnHourFocus"
-                               min="0"
-                               max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
-                               type="number"
-                               inputmode="numeric"
-                               class="bit-tpc-tin"
-                               autocomplete="@BitAutoCompleteValue.NewPassword" />
-                        <button @onpointerup="HandleOnPointerUpOrOut"
-                                @onpointerout="HandleOnPointerUpOrOut"
-                                @onpointerdown="() => HandleOnPointerDown(false, true)"
-                                type="button"
-                                class="bit-tpc-tbt">
-                            <i class="bit-icon bit-icon--ChevronDownSmall" aria-hidden="true" />
-                        </button>
-                    </div>
-                    <div class="bit-tpc-tpr bit-tpc-tdv">:</div>
-                    <div class="bit-tpc-tpr">
-                        <button @onpointerup="HandleOnPointerUpOrOut"
-                                @onpointerout="HandleOnPointerUpOrOut"
-                                @onpointerdown="() => HandleOnPointerDown(true, false)"
-                                type="button"
-                                class="bit-tpc-tbt">
-                            <i class="bit-icon bit-icon--ChevronUpSmall" aria-hidden="true" />
-                        </button>
-                        <input @ref="_inputMinuteRef"
-                               @bind="@_minuteView"
-                               @bind:event="oninput"
-                               @onfocus="HandleOnMinuteFocus"
-                               min="0"
-                               max="59"
-                               type="number"
-                               inputmode="numeric"
-                               class="bit-tpc-tin"
-                               autocomplete="@BitAutoCompleteValue.NewPassword" />
-                        <button @onpointerup="HandleOnPointerUpOrOut"
-                                @onpointerout="HandleOnPointerUpOrOut"
-                                @onpointerdown="() => HandleOnPointerDown(false, false)"
-                                type="button"
-                                class="bit-tpc-tbt">
-                            <i class="bit-icon bit-icon--ChevronDownSmall" aria-hidden="true" />
-                        </button>
-                    </div>
+            <div class="bit-tpc-tim">
+                <div class="bit-tpc-tpr">
+                    <button @onpointerup="HandleOnPointerUpOrOut"
+                            @onpointerout="HandleOnPointerUpOrOut"
+                            @onpointerdown="() => HandleOnPointerDown(true, true)"
+                            type="button"
+                            class="bit-tpc-tbt">
+                        <i class="bit-icon bit-icon--ChevronUpSmall" aria-hidden="true" />
+                    </button>
+                    <input @ref="_inputHourRef"
+                           @bind="@_hourView"
+                           @bind:event="oninput"
+                           @onfocus="HandleOnHourFocus"
+                           min="0"
+                           max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
+                           type="number"
+                           inputmode="numeric"
+                           class="bit-tpc-tin"
+                           autocomplete="@BitAutoCompleteValue.NewPassword" />
+                    <button @onpointerup="HandleOnPointerUpOrOut"
+                            @onpointerout="HandleOnPointerUpOrOut"
+                            @onpointerdown="() => HandleOnPointerDown(false, true)"
+                            type="button"
+                            class="bit-tpc-tbt">
+                        <i class="bit-icon bit-icon--ChevronDownSmall" aria-hidden="true" />
+                    </button>
                 </div>
-
-                @if (TimeFormat == BitTimeFormat.TwelveHours)
-                {
-                    <div class="bit-tpc-tpr bit-tpc-am-pm">
-                        <button @onclick="HandleOnAmClick"
-                                type="button"
-                                class="bit-tpc-tbt bit-tpc-bam @(IsAm() is true ? "bit-tpc-bns" : string.Empty)">
-                            @Culture.DateTimeFormat.AMDesignator
-                        </button>
-
-                        <button @onclick="HandleOnPmClick"
-                                type="button"
-                                class="bit-tpc-tbt bit-tpc-bpm @(IsAm() is false ? "bit-tpc-bns" : string.Empty)">
-                            @Culture.DateTimeFormat.PMDesignator
-                        </button>
-                    </div>
-                }
+                <div class="bit-tpc-tpr bit-tpc-tdv">:</div>
+                <div class="bit-tpc-tpr">
+                    <button @onpointerup="HandleOnPointerUpOrOut"
+                            @onpointerout="HandleOnPointerUpOrOut"
+                            @onpointerdown="() => HandleOnPointerDown(true, false)"
+                            type="button"
+                            class="bit-tpc-tbt">
+                        <i class="bit-icon bit-icon--ChevronUpSmall" aria-hidden="true" />
+                    </button>
+                    <input @ref="_inputMinuteRef"
+                           @bind="@_minuteView"
+                           @bind:event="oninput"
+                           @onfocus="HandleOnMinuteFocus"
+                           min="0"
+                           max="59"
+                           type="number"
+                           inputmode="numeric"
+                           class="bit-tpc-tin"
+                           autocomplete="@BitAutoCompleteValue.NewPassword" />
+                    <button @onpointerup="HandleOnPointerUpOrOut"
+                            @onpointerout="HandleOnPointerUpOrOut"
+                            @onpointerdown="() => HandleOnPointerDown(false, false)"
+                            type="button"
+                            class="bit-tpc-tbt">
+                        <i class="bit-icon bit-icon--ChevronDownSmall" aria-hidden="true" />
+                    </button>
+                </div>
             </div>
+
+            @if (TimeFormat == BitTimeFormat.TwelveHours)
+            {
+                <div class="bit-tpc-tpr bit-tpc-am-pm">
+                    <button @onclick="HandleOnAmClick"
+                            type="button"
+                            class="bit-tpc-tbt bit-tpc-bam @(IsAm() is true ? "bit-tpc-bns" : string.Empty)">
+                        @Culture.DateTimeFormat.AMDesignator
+                    </button>
+
+                    <button @onclick="HandleOnPmClick"
+                            type="button"
+                            class="bit-tpc-tbt bit-tpc-bpm @(IsAm() is false ? "bit-tpc-bns" : string.Empty)">
+                        @Culture.DateTimeFormat.PMDesignator
+                    </button>
+                </div>
+            }
             <button @onclick="CloseCallout"
                     type="button"
                     class="bit-tpc-tbt bit-tpc-cbn"
