@@ -640,4 +640,14 @@ private ValidationTextFieldModel validationTextFieldModel = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example13RazorCode = @"
+<BitTextField Dir=""BitDir.Rtl""
+              Placeholder=""پست الکترونیکی""
+              IconName=""@BitIconName.EditMail"" />
+
+<BitTextField IsUnderlined 
+              Dir=""BitDir.Rtl""
+              Label=""تقویم"" 
+              IconName=""@BitIconName.Calendar"" />";
 }
