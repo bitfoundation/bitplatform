@@ -137,4 +137,7 @@ private void HandleOnClick()
 
 <BitLink Style=""scroll-margin: 70px"" Id=""end-article"" Href=""#start-article"">Go To Start of this Article</BitLink>
 ";
+
+    private readonly string example8RazorCode = @"
+<BitLink Dir=""BitDir.Rtl"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند</BitLink>";
 }
