@@ -134,8 +134,8 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "LabelPosition",
-            Type = "BitSpinButtonLabelPosition",
-            DefaultValue = "BitSpinButtonLabelPosition.Top",
+            Type = "BitLabelPosition",
+            DefaultValue = "BitLabelPosition.Top",
             Description = "The position of the label in regards to the spin button.",
             LinkType = LinkType.Link,
             Href = "#labelPosition-enum",
@@ -362,7 +362,7 @@ public partial class BitSpinButtonDemo
         new()
         {
             Id = "labelPosition-enum",
-            Name = "BitSpinButtonLabelPosition",
+            Name = "BitLabelPosition",
             Description = "",
             Items = new()
             {
@@ -496,9 +496,9 @@ public partial class BitSpinButtonDemo
 
     private readonly string example4RazorCode = @"
 <BitSpinButton Label=""Top (default)"" />
-<BitSpinButton Label=""Start"" LabelPosition=""BitSpinButtonLabelPosition.Start"" />
-<BitSpinButton Label=""End"" LabelPosition=""BitSpinButtonLabelPosition.End"" />
-<BitSpinButton Label=""Bottom"" LabelPosition=""BitSpinButtonLabelPosition.Bottom"" />
+<BitSpinButton Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
+<BitSpinButton Label=""End"" LabelPosition=""BitLabelPosition.End"" />
+<BitSpinButton Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
 
 <BitSpinButton>
     <LabelTemplate>
