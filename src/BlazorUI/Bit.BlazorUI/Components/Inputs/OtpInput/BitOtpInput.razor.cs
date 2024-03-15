@@ -151,7 +151,7 @@ public partial class BitOtpInput : IDisposable
     {
         StyleBuilder.Register(() => Styles?.Root);
     }
-    
+
     protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = value;
@@ -265,57 +265,37 @@ public partial class BitOtpInput : IDisposable
 
     private async Task NavigateInput(string code, string key, int index)
     {
+        int startIndex = 0;
+        int targetIndex = -1;
+        int lastIndex = Length - 1;
         int nextIndex = index + 1;
         int previousIndex = index - 1;
 
         if ((code is "Backspace" || key is "Backspace") && previousIndex >= 0)
         {
-            await Task.Delay(1);
-            await _inputRefs[previousIndex].FocusAsync();
+            targetIndex = previousIndex;
         }
         else if (code is "ArrowLeft" && Vertical is false)
         {
-            if (Reversed is false && previousIndex >= 0)
-            {
-                await _inputRefs[previousIndex].FocusAsync();
-            }
-            else if (Reversed && nextIndex < Length)
-            {
-                await _inputRefs[nextIndex].FocusAsync();
-            }
+            targetIndex = Reversed ? Math.Min(nextIndex, lastIndex) : Math.Max(previousIndex, startIndex);
         }
         else if (code is "ArrowRight" && Vertical is false)
         {
-            if (Reversed is false && nextIndex < Length)
-            {
-                await _inputRefs[nextIndex].FocusAsync();
-            }
-            else if (Reversed && previousIndex >= 0)
-            {
-                await _inputRefs[previousIndex].FocusAsync();
-            }
+            targetIndex = Reversed ? Math.Max(previousIndex, startIndex) : Math.Min(nextIndex, lastIndex);
         }
         else if (code is "ArrowUp" && Vertical)
         {
-            if (Reversed is false && previousIndex >= 0)
-            {
-                await _inputRefs[previousIndex].FocusAsync();
-            }
-            else if (Reversed && nextIndex < Length)
-            {
-                await _inputRefs[nextIndex].FocusAsync();
-            }
+            targetIndex = Reversed ? Math.Min(nextIndex, lastIndex) : Math.Max(previousIndex, startIndex);
         }
         else if (code is "ArrowDown" && Vertical)
         {
-            if (Reversed is false && nextIndex < Length)
-            {
-                await _inputRefs[nextIndex].FocusAsync();
-            }
-            else if (Reversed && previousIndex >= 0)
-            {
-                await _inputRefs[previousIndex].FocusAsync();
-            }
+            targetIndex = Reversed ? Math.Max(previousIndex, startIndex) : Math.Min(nextIndex, lastIndex);
+        }
+
+        if (targetIndex is not -1)
+        {
+            await Task.Delay(1);
+            await _inputRefs[targetIndex].FocusAsync();
         }
     }
 
