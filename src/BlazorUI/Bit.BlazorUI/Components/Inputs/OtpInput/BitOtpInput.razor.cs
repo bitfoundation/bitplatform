@@ -265,32 +265,24 @@ public partial class BitOtpInput : IDisposable
 
     private async Task NavigateInput(string code, string key, int index)
     {
-        int startIndex = 0;
-        int targetIndex = -1;
-        int lastIndex = Length - 1;
-        int nextIndex = index + 1;
-        int previousIndex = index - 1;
+        int nextIndex = Math.Min(index + 1, Length - 1);
+        int previousIndex = Math.Max(index - 1, 0);
 
-        if ((code is "Backspace" || key is "Backspace") && previousIndex >= 0)
+        if (code is "Backspace" || key is "Backspace")
         {
-            targetIndex = previousIndex;
+            await Task.Delay(1);
+            await _inputRefs[previousIndex].FocusAsync();
+            return;
         }
-        else if (code is "ArrowLeft" && Vertical is false)
+
+        var targetIndex = code switch
         {
-            targetIndex = Reversed ? Math.Min(nextIndex, lastIndex) : Math.Max(previousIndex, startIndex);
-        }
-        else if (code is "ArrowRight" && Vertical is false)
-        {
-            targetIndex = Reversed ? Math.Max(previousIndex, startIndex) : Math.Min(nextIndex, lastIndex);
-        }
-        else if (code is "ArrowUp" && Vertical)
-        {
-            targetIndex = Reversed ? Math.Min(nextIndex, lastIndex) : Math.Max(previousIndex, startIndex);
-        }
-        else if (code is "ArrowDown" && Vertical)
-        {
-            targetIndex = Reversed ? Math.Max(previousIndex, startIndex) : Math.Min(nextIndex, lastIndex);
-        }
+            "ArrowLeft" => Vertical ? index : (Reversed ? nextIndex : previousIndex),
+            "ArrowRight" => Vertical ? index : (Reversed ? previousIndex : nextIndex),
+            "ArrowUp" => Vertical ? (Reversed ? nextIndex : previousIndex) : index,
+            "ArrowDown" => Vertical ? (Reversed ? previousIndex : nextIndex) : index,
+            _ => -1 // For Tab key
+        };
 
         if (targetIndex is not -1)
         {
