@@ -7,6 +7,7 @@
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()"
          role=@(_isAlertRole ? "alertdialog": "dialog")
          aria-modal="@((IsModeless is false).ToString())"
          aria-labelledby="@TitleAriaId"
