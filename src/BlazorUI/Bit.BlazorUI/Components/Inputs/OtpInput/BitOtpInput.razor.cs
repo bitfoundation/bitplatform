@@ -286,7 +286,6 @@ public partial class BitOtpInput : IDisposable
 
         if (targetIndex is not -1)
         {
-            await Task.Delay(1);
             await _inputRefs[targetIndex].FocusAsync();
         }
     }
