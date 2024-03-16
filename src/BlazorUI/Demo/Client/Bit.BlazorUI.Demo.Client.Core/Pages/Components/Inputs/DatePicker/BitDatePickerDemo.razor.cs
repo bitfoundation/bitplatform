@@ -376,14 +376,14 @@ public partial class BitDatePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for time-picker's hour.",
+            Description = "Determines increment/decrement steps for date-picker's hour.",
         },
         new()
         {
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for time-picker's minute.",
+            Description = "Determines increment/decrement steps for date-picker's minute.",
         }
     };
 

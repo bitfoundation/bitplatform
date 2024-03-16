@@ -474,12 +474,12 @@ public partial class BitDatePicker
     [Parameter] public bool ShowClearButton { get; set; }
 
     /// <summary>
-    /// Determines increment/decrement steps for time-picker's hour.
+    /// Determines increment/decrement steps for date-picker's hour.
     /// </summary>
     [Parameter] public int HourStep { get; set; } = 1;
 
     /// <summary>
-    /// Determines increment/decrement steps for time-picker's minute.
+    /// Determines increment/decrement steps for date-picker's minute.
     /// </summary>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
