@@ -84,8 +84,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0-pre-02" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0-pre-02" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0-pre-03" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0-pre-03" PrivateAssets="all" />
         <Content Remove="Properties\launchSettings.json" />
     </ItemGroup>
 
