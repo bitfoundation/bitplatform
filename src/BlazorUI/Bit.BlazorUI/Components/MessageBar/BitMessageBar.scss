@@ -18,15 +18,16 @@
     width: 100%;
     display: flex;
     line-height: normal;
+    padding: 0 spacing(0.5);
 }
 
 .bit-msb-ict {
     display: flex;
     flex-shrink: 0;
+    margin: spacing(1);
     font-size: spacing(2);
     min-width: spacing(2);
     min-height: spacing(2);
-    margin: spacing(1) 0 spacing(1) spacing(1.5);
 }
 
 .bit-msb-txt {
