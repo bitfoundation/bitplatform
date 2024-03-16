@@ -20,7 +20,7 @@ interface DelegateHandler extends IMethodHandler {
     ignoredIndices: number[];
 }
 
-class BitChart {
+class BitChartJsInterop {
     private static _initPromise?: Promise<unknown>;
     private _bitCharts = new Map<string, Chart>();
 
@@ -31,8 +31,8 @@ class BitChart {
     }
 
     public async initChartJs(scripts: string[]) {
-        if (BitChart._initPromise) {
-            await BitChart._initPromise;
+        if (BitChartJsInterop._initPromise) {
+            await BitChartJsInterop._initPromise;
         }
 
         const allScripts = Array.from(document.scripts).map(s => s.src);
@@ -48,7 +48,7 @@ class BitChart {
                 reject(e);
             }
         });
-        BitChart._initPromise = promise;
+        BitChartJsInterop._initPromise = promise;
         return promise;
 
         async function addScript(url: string) {
@@ -398,4 +398,4 @@ class BitChart {
     }
 }
 
-(window as any)["BitChartJsInterop"] = new BitChart();
+(window as any)["BitChart"] = new BitChartJsInterop();
