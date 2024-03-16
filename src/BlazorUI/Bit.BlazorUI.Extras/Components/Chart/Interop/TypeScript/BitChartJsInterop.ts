@@ -24,6 +24,12 @@ class BitChart {
     private static _initPromise?: Promise<unknown>;
     private _bitCharts = new Map<string, Chart>();
 
+    public getChartJs(canvasId: string) {
+        if (!this._bitCharts.has(canvasId)) return null;
+
+        return this._bitCharts.get(canvasId)!;
+    }
+
     public async initChartJs(scripts: string[]) {
         if (BitChart._initPromise) {
             await BitChart._initPromise;
@@ -391,4 +397,5 @@ class BitChart {
         return JSON.stringify(object, replacer);
     }
 }
+
 (window as any)["BitChartJsInterop"] = new BitChart();
