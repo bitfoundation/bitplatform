@@ -507,6 +507,5 @@ private async Task<ICollection<string>> LoadItems(string? search, int count)
 <BitSearchBox IsUnderlined Dir=""BitDir.Rtl"" Placeholder=""جستجو"" />
 <BitSearchBox ShowSearchButton
               Dir=""BitDir.Rtl""
-              Placeholder=""جستجو""
-              SearchButtonIconName=""@BitIconName.ChromeBack""/>";
+              Placeholder=""جستجو"" />";
 }

@@ -100,6 +100,10 @@
     &.bit-rtl {
         .bit-srb-sbn {
             border-radius: $shape-border-radius 0 0 $shape-border-radius;
+
+            i {
+                transform: rotateY(180deg);
+            }
         }
 
         &.bit-srb-ssb .bit-srb-cnt {
