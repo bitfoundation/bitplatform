@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using Boilerplate.Client.Core;
 using Maui.Android.InAppUpdates;
 using Maui.AppStores;
 using Maui.InAppReviews;
