@@ -1158,4 +1158,13 @@ private void HandleInvalidSubmit() { }";
 
     private readonly string example11RazorCode = @"
 <BitDatePicker Dir=""BitDir.Rtl"" />";
+
+    private readonly string example12RazorCode = @"
+<BitDatePicker ShowTimePicker=""true""
+               Label=""HourStep = 2""
+               HourStep=""2"" />
+
+<BitDatePicker ShowTimePicker=""true""
+               Label=""MinuteStep = 15""
+               MinuteStep=""15"" />";
 }
