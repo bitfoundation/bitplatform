@@ -143,28 +143,30 @@ public partial class MainPage
 
     private async Task CheckForUpdates()
     {
-        if (OperatingSystem.IsAndroid() is false) // We're using in app updates for android thanks to Oscore.Maui.Android.InAppUpdates
+        if (OperatingSystem.IsAndroid()) // We're using in app updates for android thanks to Oscore.Maui.Android.InAppUpdates
         {
-            await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
+            return;
+        }
 
-            try
+        await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
+
+        try
+        {
+            if (await AppStoreInfo.Current.IsUsingLatestVersionAsync() is false)
             {
-                if (await AppStoreInfo.Current.IsUsingLatestVersionAsync() is false)
+                if (await storageService.GetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested") is not "true")
                 {
-                    if (await storageService.GetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested") is not "true")
-                    {
-                        await storageService.SetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested", "true");
+                    await storageService.SetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested", "true");
 
-                        // It's an opportune moment to request an update. (:
-                        // https://github.com/oscoreio/Maui.AppStoreInfo
-                        if (await DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
-                        {
-                            await AppStoreInfo.Current.OpenApplicationInStoreAsync();
-                        }
+                    // It's an opportune moment to request an update. (:
+                    // https://github.com/oscoreio/Maui.AppStoreInfo
+                    if (await DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
+                    {
+                        await AppStoreInfo.Current.OpenApplicationInStoreAsync();
                     }
                 }
             }
-            catch (FileNotFoundException) { }
         }
+        catch (FileNotFoundException) { }
     }
 }
