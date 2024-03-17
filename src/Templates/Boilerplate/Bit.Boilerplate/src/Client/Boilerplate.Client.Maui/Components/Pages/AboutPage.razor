@@ -1,17 +1,33 @@
 @page "/about"
 @inherits AppComponentBase
 
-For Razor pages that are exclusively dependent on native Maui features for Android, iOS, Windows, and macOS functionality,
-<br />
-consider using Client/Maui project instead of placing them in Client/Core project.
-<br />
-This approach allows direct access to native features without the need for dependency injection (DI) or publish-subscribe messaging patterns.
+<div class="page-container">
+    <section class="page-section about-section">
+        <h1 class="about-section-title">@Localizer[nameof(AppStrings.AboutTitle)]</h1>
 
-<BitStack class="container"
-          Horizontal
-          VerticalAlign="BitStackAlignment.Center"
-          HorizontalAlign="BitStackAlignment.SpaceAround">
-    <BitLabel>@appName</BitLabel>
-    <BitLabel>@appVersion</BitLabel>
-    <BitLabel>@processId</BitLabel>
-</BitStack>
+        <div class="about-section-desc">
+            For Razor pages that are exclusively dependent on native Maui features for Android, iOS, Windows, and macOS functionality,
+            <br />
+            consider using Client/Maui project instead of placing them in Client/Core project.
+            <br />
+            This approach allows direct access to native features without the need for dependency injection (DI) or publish-subscribe messaging patterns.
+        </div>
+
+        <BitStack class="values"
+                  VerticalAlign="BitStackAlignment.Center"
+                  HorizontalAlign="BitStackAlignment.SpaceAround">
+            <BitStack Horizontal Gap=".5rem">
+                <BitLabel>App Name:</BitLabel>
+                <BitLabel>@appName</BitLabel>
+            </BitStack>
+            <BitStack Horizontal Gap=".5rem">
+                <BitLabel>App Version:</BitLabel>
+                <BitLabel>@appVersion</BitLabel>
+            </BitStack>
+            <BitStack Horizontal Gap=".5rem">
+                <BitLabel>Process Id:</BitLabel>
+                <BitLabel>@processId</BitLabel>
+            </BitStack>
+        </BitStack>
+    </section>
+</div>

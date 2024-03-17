@@ -90,7 +90,7 @@ public partial class NavMenu
             navItems.Add(new()
             {
                 Text = Localizer[nameof(AppStrings.AboutTitle)],
-                IconName = BitIconName.Help,
+                IconName = BitIconName.HelpMirrored,
                 Url = "/about",
             });
         }
