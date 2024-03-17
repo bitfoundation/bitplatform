@@ -172,4 +172,20 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <ExamplePreview>
+            <div>
+                <BitBasicList Dir="BitDir.Rtl" Items="FewPeopleRtl" Style="border: 1px #a19f9d solid; border-radius: 4px;">
+                    <RowTemplate Context="person">
+                        <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                            <p>شناسه: <strong>@person.Id</strong></p>
+                            <p>نام کامل: <strong>@person.FirstName @person.LastName</strong></p>
+                            <p>شغل: <strong>@person.Job</strong></p>
+                        </div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 </ComponentDemo>
