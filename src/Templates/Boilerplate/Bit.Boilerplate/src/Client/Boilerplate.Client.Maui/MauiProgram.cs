@@ -1,6 +1,8 @@
 ﻿//-:cnd:noEmit
 using Boilerplate.Client.Core;
+using Maui.Android.InAppUpdates;
 using Maui.AppStores;
+using Maui.InAppReviews;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Boilerplate.Client.Maui;
@@ -15,6 +17,8 @@ public static partial class MauiProgram
 
         builder
             .UseMauiApp<App>()
+            .UseAndroidInAppUpdates()
+            .UseInAppReviews()
             .UseAppStoreInfo()
             .Configuration.AddClientConfigurations();
 
