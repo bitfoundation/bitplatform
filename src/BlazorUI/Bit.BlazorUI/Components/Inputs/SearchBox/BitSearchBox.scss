@@ -102,7 +102,7 @@
             border-radius: $shape-border-radius 0 0 $shape-border-radius;
 
             i {
-                transform: rotateY(180deg);
+                transform: scale(-1);
             }
         }
 
