@@ -10,7 +10,8 @@
             <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="ScrollIntoView" @onclick:preventDefault
                id="@_Id"
                style="@StyleBuilder.Value"
-               class="@ClassBuilder.Value">
+               class="@ClassBuilder.Value"
+               dir="@Dir?.ToString().ToLower()">
                 @ChildContent
             </a>
         }
@@ -20,6 +21,7 @@
                id="@_Id"
                style="@StyleBuilder.Value"
                class="@ClassBuilder.Value"
+               dir="@Dir?.ToString().ToLower()"
                href="@Href"
                target="@Target">
                 @ChildContent
@@ -31,7 +33,8 @@
         <a @ref="RootElement" @attributes="HtmlAttributes"
            id="@_Id"
            style="@StyleBuilder.Value"
-           class="@ClassBuilder.Value">
+           class="@ClassBuilder.Value"
+           dir="@Dir?.ToString().ToLower()">
             @ChildContent
         </a>
     }
@@ -42,6 +45,7 @@ else
             id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
+            dir="@Dir?.ToString().ToLower()"
             type="button"
             disabled="@(IsEnabled is false)"
             aria-disabled="@(IsEnabled is false)">

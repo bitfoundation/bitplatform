@@ -24,15 +24,6 @@ public partial class BitOtpInputDemo
         },
         new()
         {
-            Name = "Direction",
-            Type = "BitOtpInputDirection",
-            DefaultValue = "BitOtpInputDirection.LeftToRight",
-            Description = "The render direction of the inputs.",
-            LinkType = LinkType.Link,
-            Href = "#direction-enum",
-        },
-        new()
-        {
             Name = "InputType",
             Type = "BitOtpInputType",
             DefaultValue = "BitOtpInputType.Text",
@@ -85,13 +76,27 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Defines whether to render inputs in the opposite direction.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitOtpInputClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitOtpInput.",
             LinkType = LinkType.Link,
             Href = "#otpinput-class-styles",
-        }
+        },
+        new()
+        {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Defines whether to render inputs vertically.",
+        },
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
@@ -123,38 +128,6 @@ public partial class BitOtpInputDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
-        new()
-        {
-            Id = "direction-enum",
-            Name = "BitOtpInputDirection",
-            Items = new()
-            {
-                new()
-                {
-                    Name = "LeftToRight",
-                    Description = "The OtpInput showed in the left to right direction.",
-                    Value = "0"
-                },
-                new()
-                {
-                    Name = "RightToLeft",
-                    Description = "The OtpInput showed in the right to left direction.",
-                    Value = "1"
-                },
-                new()
-                {
-                    Name = "TopToBottom",
-                    Description = "The OtpInput showed in the top to bottom direction.",
-                    Value = "2"
-                },
-                new()
-                {
-                    Name = "BottomToTop",
-                    Description = "The OtpInput showed in the bottom to top direction.",
-                    Value = "3"
-                }
-            }
-        },
         new()
         {
             Id = "inputType-enum",
@@ -227,10 +200,10 @@ public partial class BitOtpInputDemo
 <BitOtpInput InputType=""BitOtpInputType.Password"" />";
 
     private readonly string example3RazorCode = @"
-<BitOtpInput Direction=""BitOtpInputDirection.LeftToRight"" />
-<BitOtpInput Direction=""BitOtpInputDirection.RightToLeft"" />
-<BitOtpInput Direction=""BitOtpInputDirection.TopToBottom"" />
-<BitOtpInput Direction=""BitOtpInputDirection.BottomToTop"" />";
+<BitOtpInput />
+<BitOtpInput Reversed />
+<BitOtpInput Vertical />
+<BitOtpInput Vertical Reversed />";
 
     private readonly string example4RazorCode = @"
 <style>

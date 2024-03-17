@@ -141,17 +141,17 @@ public class BitSpinButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitSpinButtonLabelPosition.Left),
-        DataRow(BitSpinButtonLabelPosition.Top)
+        DataRow(BitLabelPosition.Start),
+        DataRow(BitLabelPosition.Top)
     ]
-    public void BitSpinButtonShouldHaveLabelPositionClassName(BitSpinButtonLabelPosition labelPosition)
+    public void BitSpinButtonShouldHaveLabelPositionClassName(BitLabelPosition labelPosition)
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.LabelPosition, labelPosition);
         });
 
-        var labelPositionClass = labelPosition == BitSpinButtonLabelPosition.Left ? "lf" : "tp";
+        var labelPositionClass = labelPosition == BitLabelPosition.Start ? "st" : "tp";
 
         var spinButton = component.Find(".bit-spb");
         Assert.IsTrue(spinButton.ClassList.Contains($"bit-spb-l{labelPositionClass}"));

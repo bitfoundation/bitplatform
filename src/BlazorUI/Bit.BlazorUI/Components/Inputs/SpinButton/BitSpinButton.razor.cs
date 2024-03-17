@@ -9,7 +9,7 @@ public partial class BitSpinButton
     private const int INITIAL_STEP_DELAY = 400;
     private const int STEP_DELAY = 75;
 
-    private BitSpinButtonLabelPosition labelPosition = BitSpinButtonLabelPosition.Top;
+    private BitLabelPosition labelPosition = BitLabelPosition.Top;
 
     private double _min;
     private double _max;
@@ -113,7 +113,7 @@ public partial class BitSpinButton
     /// The position of the label in regards to the spin button.
     /// </summary>
     [Parameter]
-    public BitSpinButtonLabelPosition LabelPosition
+    public BitLabelPosition LabelPosition
     {
         get => labelPosition;
         set
@@ -215,9 +215,9 @@ public partial class BitSpinButton
 
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitSpinButtonLabelPosition.Bottom => $"{RootElementClass}-lbt",
-            BitSpinButtonLabelPosition.Left => $"{RootElementClass}-llf",
-            BitSpinButtonLabelPosition.Right => $"{RootElementClass}-lrt",
+            BitLabelPosition.Bottom => $"{RootElementClass}-lbt",
+            BitLabelPosition.Start => $"{RootElementClass}-lst",
+            BitLabelPosition.End => $"{RootElementClass}-led",
             _ => $"{RootElementClass}-ltp"
         });
     }
