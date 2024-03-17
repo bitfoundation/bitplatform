@@ -144,9 +144,7 @@ public partial class MainPage
     private async Task CheckForUpdates()
     {
         if (OperatingSystem.IsAndroid()) // We're using in app updates for android thanks to Oscore.Maui.Android.InAppUpdates
-        {
             return;
-        }
 
         await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
 
