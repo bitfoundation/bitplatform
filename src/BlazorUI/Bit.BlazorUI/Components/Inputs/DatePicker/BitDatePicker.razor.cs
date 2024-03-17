@@ -473,6 +473,16 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
 
+    /// <summary>
+    /// Determines increment/decrement steps for date-picker's hour.
+    /// </summary>
+    [Parameter] public int HourStep { get; set; } = 1;
+
+    /// <summary>
+    /// Determines increment/decrement steps for date-picker's minute.
+    /// </summary>
+    [Parameter] public int MinuteStep { get; set; } = 1;
+
 
     public Task OpenCallout()
     {
@@ -1303,25 +1313,20 @@ public partial class BitDatePicker
     {
         if (isNext)
         {
-            if (_hour < 23)
-            {
-                _hour++;
-            }
-            else
-            {
-                _hour = 0;
-            }
+            _hour += HourStep;
         }
         else
         {
-            if (_hour > 0)
-            {
-                _hour--;
-            }
-            else
-            {
-                _hour = 23;
-            }
+            _hour -= HourStep;
+        }
+
+        if (_hour > 23)
+        {
+            _hour -= 24;
+        }
+        else if (_hour < 0)
+        {
+            _hour += 24;
         }
 
         await UpdateCurrentValue();
@@ -1331,25 +1336,20 @@ public partial class BitDatePicker
     {
         if (isNext)
         {
-            if (_minute < 59)
-            {
-                _minute++;
-            }
-            else
-            {
-                _minute = 0;
-            }
+            _minute += MinuteStep;
         }
         else
         {
-            if (_minute > 0)
-            {
-                _minute--;
-            }
-            else
-            {
-                _minute = 59;
-            }
+            _minute -= MinuteStep;
+        }
+
+        if (_minute > 59)
+        {
+            _minute -= 60;
+        }
+        else if (_minute < 0)
+        {
+            _minute += 60;
         }
 
         await UpdateCurrentValue();
