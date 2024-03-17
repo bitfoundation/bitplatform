@@ -1,0 +1,17 @@
+@page "/about"
+@inherits AppComponentBase
+
+For Razor pages that are exclusively dependent on Windows sdk functionality,
+<br />
+consider using Client/Windows project instead of placing them in Client/Core project.
+<br />
+This approach allows direct access to native features without the need for dependency injection (DI) or publish-subscribe messaging patterns.
+
+<BitStack class="container"
+          Horizontal
+          VerticalAlign="BitStackAlignment.Center"
+          HorizontalAlign="BitStackAlignment.SpaceAround">
+    <BitLabel>@appName</BitLabel>
+    <BitLabel>@appVersion</BitLabel>
+    <BitLabel>@processId</BitLabel>
+</BitStack>

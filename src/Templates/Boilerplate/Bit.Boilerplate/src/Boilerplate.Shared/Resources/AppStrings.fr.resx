@@ -570,4 +570,7 @@
     <data name="UpdateToNewVersion" xml:space="preserve">
     <value>Souhaitez-vous mettre à jour vers la nouvelle version?</value>
   </data>
+    <data name="AboutTitle" xml:space="preserve">
+    <value>À propos</value>
+  </data>
 </root>

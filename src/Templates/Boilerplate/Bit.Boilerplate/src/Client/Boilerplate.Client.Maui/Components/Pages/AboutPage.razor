@@ -1,0 +1,17 @@
+@page "/about"
+@inherits AppComponentBase
+
+For Razor pages that are exclusively dependent on native Maui features for Android, iOS, Windows, and macOS functionality,
+<br />
+consider using Client/Maui project instead of placing them in Client/Core project.
+<br />
+This approach allows direct access to native features without the need for dependency injection (DI) or publish-subscribe messaging patterns.
+
+<BitStack class="container"
+          Horizontal
+          VerticalAlign="BitStackAlignment.Center"
+          HorizontalAlign="BitStackAlignment.SpaceAround">
+    <BitLabel>@appName</BitLabel>
+    <BitLabel>@appVersion</BitLabel>
+    <BitLabel>@processId</BitLabel>
+</BitStack>
