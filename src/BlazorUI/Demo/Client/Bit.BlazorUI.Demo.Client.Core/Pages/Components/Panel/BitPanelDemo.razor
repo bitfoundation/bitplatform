@@ -218,6 +218,26 @@
                 </BitPanel>
             </ExamplePreview>
         </ComponentExampleBox>
+
+        <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <ExamplePreview>
+                <BitButton Dir="BitDir.Rtl" OnClick=@(() => IsRtlPanelOpen = true)>
+                    باز کردن پنل
+                </BitButton>
+
+                <BitPanel @bind-IsOpen="IsRtlPanelOpen" 
+                          Dir="BitDir.Rtl"
+                          HeaderText="سرصفحه ی ساده"
+                          Classes="@panelClassStyles">
+                    <p>
+                        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                    </p>
+                </BitPanel>
+            </ExamplePreview>
+        </ComponentExampleBox>
     </ComponentDemo>
 </div>
 
@@ -241,6 +261,8 @@
     private bool IsClassedPanelOpen = false;
     private bool IsPanelStylesOpen = false;
     private bool IsPanelClassesOpen = false;
+
+    private bool IsRtlPanelOpen = false;
 
     private BitPanel bitPanelRef = default!;
 

@@ -101,17 +101,16 @@
     align-items: center;
     font-size: spacing(2.5);
     overflow-wrap: anywhere;
-    padding-left: spacing(3);
-    padding-top: spacing(2.25);
     color: $color-foreground-primary;
+    padding: spacing(2.25) spacing(3) 0;
     background-color: $color-background-primary;
 }
 
 .bit-pnl-ttl {
+    width: 100%;
     hyphens: auto;
     word-break: break-word;
     overflow-wrap: break-word;
-    padding-right: spacing(3);
 }
 
 .bit-pnl-cls {
@@ -130,7 +129,6 @@
     padding: 0 spacing(0.5);
     justify-content: center;
     font-size: spacing(1.75);
-    margin-right: spacing(1.75);
     border-radius: spacing(0.25);
     background-color: transparent;
     color: $color-foreground-primary;
