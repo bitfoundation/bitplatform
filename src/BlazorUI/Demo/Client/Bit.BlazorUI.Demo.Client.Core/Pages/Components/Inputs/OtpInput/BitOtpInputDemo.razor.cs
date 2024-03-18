@@ -294,4 +294,10 @@ private ValidationOtpInputModel validationOtpInputModel = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example8RazorCode = @"
+<BitOtpInput Dir=""BitDir.Rtl"" />
+<BitOtpInput Reversed Dir=""BitDir.Rtl"" />
+<BitOtpInput Vertical Dir=""BitDir.Rtl"" />
+<BitOtpInput Vertical Reversed Dir=""BitDir.Rtl"" />";
 }

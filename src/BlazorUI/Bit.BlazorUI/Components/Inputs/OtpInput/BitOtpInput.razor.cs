@@ -277,8 +277,8 @@ public partial class BitOtpInput : IDisposable
 
         var targetIndex = code switch
         {
-            "ArrowLeft" => Vertical ? index : (Reversed ? nextIndex : previousIndex),
-            "ArrowRight" => Vertical ? index : (Reversed ? previousIndex : nextIndex),
+            "ArrowLeft" => Vertical ? index : ((Dir is BitDir.Rtl ^ Reversed) ? nextIndex : previousIndex),
+            "ArrowRight" => Vertical ? index : ((Dir is BitDir.Rtl ^ Reversed) ? previousIndex : nextIndex),
             "ArrowUp" => Vertical ? (Reversed ? nextIndex : previousIndex) : index,
             "ArrowDown" => Vertical ? (Reversed ? previousIndex : nextIndex) : index,
             _ => -1 // For Tab key
