@@ -239,11 +239,7 @@
         }
 
         @include lt-md {
-            font-size: 0.9rem;
-        }
-
-        @include lt-sm {
-            font-size: 0.75rem;
+            font-size: 1rem;
         }
     }
 }
