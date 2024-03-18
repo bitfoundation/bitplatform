@@ -63,12 +63,14 @@
 
 .highlight-1 {
     background-clip: text;
+    -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
 }
 
 .highlight-2 {
     background-clip: text;
+    -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: linear-gradient(241deg, #982ff7 20%, #524add 56%, #6668eb 84%);
 }
@@ -109,7 +111,7 @@
     background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
 
     &.reversed {
-        background-image: linear-gradient(351deg, #8c85ff 20%, transparent 100%);
+        background-image: linear-gradient(9deg, transparent 20%, #8c85ff 100%);
     }
 }
 
@@ -147,6 +149,7 @@
                 font-size: 9rem;
                 font-weight: 600;
                 background-clip: text;
+                -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-image: linear-gradient(200deg, #e1494f 30%, #1878fd 85%);
             }
