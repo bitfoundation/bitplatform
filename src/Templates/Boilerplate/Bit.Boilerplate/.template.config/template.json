@@ -180,7 +180,6 @@
                     "copyOnly": [
                         "global.json",
                         "**.Web/Pages/Home.razor",
-                        "**/*.scss",
                         "**/*.svg",
                         "**/*.png"
                     ],

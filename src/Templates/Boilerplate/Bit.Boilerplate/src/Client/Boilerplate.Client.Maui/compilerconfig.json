@@ -1,0 +1,8 @@
+﻿[
+    {
+        "outputFile": "Components/Pages/AboutPage.razor.css",
+        "inputFile": "Components/Pages/AboutPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    }
+]

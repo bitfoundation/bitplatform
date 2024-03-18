@@ -23,14 +23,14 @@ public partial class NavMenu
     {
         navItems =
         [
-            new BitNavItem
+            new()
             {
                 Text = Localizer[nameof(AppStrings.Home)],
                 IconName = BitIconName.Home,
                 Url = "/",
             },
             //#if (sample == "Admin")
-            new BitNavItem
+            new()
             {
                 Text = Localizer[nameof(AppStrings.ProductCategory)],
                 IconName = BitIconName.Product,
@@ -52,34 +52,48 @@ public partial class NavMenu
                 ]
             },
             //#elif (sample == "Todo")
-            new BitNavItem
+            new()
             {
                 Text = Localizer[nameof(AppStrings.TodoTitle)],
                 IconName = BitIconName.ToDoLogoOutline,
                 Url = "/todo",
             },
             //#endif
-            new BitNavItem
+            new()
             {
                 Text = Localizer[nameof(AppStrings.EditProfileTitle)],
                 IconName = BitIconName.EditContact,
                 Url = "/edit-profile",
             },
             //#if (offlineDb == true)
-            new BitNavItem
+            new()
             {
                 Text = Localizer[nameof(AppStrings.OfflineEditProfileTitle)],
                 IconName = BitIconName.EditContact,
                 Url = "/offline-edit-profile",
             },
             //#endif
-            new BitNavItem
+            new()
             {
                 Text = Localizer[nameof(AppStrings.TermsTitle)],
                 IconName = BitIconName.EntityExtraction,
                 Url = "/terms",
             }
         ];
+
+        if (AppRenderMode.IsBlazorHybrid)
+        {
+            // Presently, the About page is absent from the Client/Core project, rendering it inaccessible on the web platform.
+            // In order to exhibit a sample page that grants direct access to native functionalities without dependence on dependency injection (DI) or publish-subscribe patterns,
+            // about page is integrated within Blazor hybrid projects like Client/Maui.
+
+            navItems.Add(new()
+            {
+                Text = Localizer[nameof(AppStrings.AboutTitle)],
+                IconName = BitIconName.HelpMirrored,
+                Url = "/about",
+            });
+        }
 
         unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
         {
