@@ -96,6 +96,20 @@
             }
         }
     }
+
+    &.bit-rtl {
+        .bit-srb-sbn {
+            border-radius: $shape-border-radius 0 0 $shape-border-radius;
+
+            i {
+                transform: scale(-1);
+            }
+        }
+
+        &.bit-srb-ssb .bit-srb-cnt {
+            border-radius: 0 $shape-border-radius $shape-border-radius 0;
+        }
+    }
 }
 
 .bit-srb-cnt {
@@ -129,7 +143,7 @@
 
 .bit-srb-hic {
     .bit-srb-cnt {
-        padding-left: spacing(1);
+        padding: 0 spacing(1);
     }
 }
 
