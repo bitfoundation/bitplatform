@@ -166,17 +166,10 @@
     > span {
         height: 100%;
         display: flex;
+        gap: spacing(0.5);
         flex-wrap: nowrap;
         align-items: center;
         justify-content: flex-start;
-
-        > * {
-            margin-left: spacing(0.5);
-
-            &:first-child {
-                margin-left: 0;
-            }
-        }
     }
 
     &.bit-dis {
