@@ -34,8 +34,8 @@
     animation-name: css-0;
     animation-fill-mode: both;
     animation-duration: 0.367s;
-    margin-right: spacing(1.25);
     perspective: spacing(0.125);
+    margin-inline-end: spacing(1.25);
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -53,7 +53,6 @@
     animation-fill-mode: both;
     animation-duration: 0.367s;
     perspective: spacing(0.125);
-    margin-right: spacing(1.25);
     background-color: $color-primary-main;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
@@ -91,35 +90,15 @@
 }
 
 .bit-prs-det {
-    width: 100%;
-    min-width: 0;
     display: flex;
-    text-align: left;
+    text-align: start;
     flex-direction: column;
     justify-content: space-around;
 }
 
-.bit-prs-ptx {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: $color-foreground-primary;
-}
-
-.bit-prs-stx {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: $color-foreground-primary;
-}
-
-.bit-prs-ttx {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: $color-foreground-primary;
-}
-
+.bit-prs-ptx,
+.bit-prs-stx,
+.bit-prs-ttx,
 .bit-prs-otx {
     overflow: hidden;
     white-space: nowrap;
@@ -395,7 +374,7 @@
     }
 
     .bit-prs-det {
-        padding: 0 spacing(3) 0 spacing(2);
+        padding: 0 spacing(2);
     }
 
     .bit-prs-ptx {
@@ -444,7 +423,7 @@
     }
 
     .bit-prs-det {
-        padding: 0 spacing(3) 0 spacing(2);
+        padding: 0 spacing(2);
     }
 
     .bit-prs-ptx {
@@ -495,7 +474,7 @@
     }
 
     .bit-prs-det {
-        padding: 0 spacing(3) 0 spacing(2);
+        padding: 0 spacing(2);
     }
 
     .bit-prs-ptx {
@@ -548,7 +527,7 @@
     }
 
     .bit-prs-det {
-        padding: 0 spacing(3) 0 spacing(2);
+        padding: 0 spacing(2);
     }
 
     .bit-prs-ptx {
