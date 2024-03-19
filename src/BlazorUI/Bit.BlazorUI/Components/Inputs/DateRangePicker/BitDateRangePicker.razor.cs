@@ -534,6 +534,16 @@ public partial class BitDateRangePicker
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
 
+    /// <summary>
+    /// Determines increment/decrement steps for DateRangePicker's hour.
+    /// </summary>
+    [Parameter] public int HourStep { get; set; } = 1;
+
+    /// <summary>
+    /// Determines increment/decrement steps for DateRangePicker's minute.
+    /// </summary>
+    [Parameter] public int MinuteStep { get; set; } = 1;
+
 
     public Task OpenCallout()
     {
@@ -1653,12 +1663,23 @@ public partial class BitDateRangePicker
     {
         if (isNext)
         {
-            return hour < 23 ? hour + 1 : 0;
+            hour += HourStep;
         }
         else
         {
-            return hour > 0 ? hour - 1 : 23;
+            hour -= HourStep;
         }
+
+        if (hour > 23)
+        {
+            hour -= 24;
+        }
+        else if (hour < 0)
+        {
+            hour += 24;
+        }
+
+        return hour;
     }
 
     private void ChangeMinute(bool isNext, bool isStartTime)
@@ -1679,12 +1700,23 @@ public partial class BitDateRangePicker
     {
         if (isNext)
         {
-            return minute < 59 ? minute + 1 : 0;
+            minute += MinuteStep;
         }
         else
         {
-            return minute > 0 ? minute - 1 : 59;
+            minute -= MinuteStep;
         }
+
+        if (minute > 59)
+        {
+            minute -= 60;
+        }
+        else if (minute < 0)
+        {
+            minute += 60;
+        }
+
+        return minute;
     }
 
     private async Task CloseCallout()
