@@ -106,6 +106,7 @@ public partial class BitTypography : BitComponentBase
         builder.AddAttribute(seq++, "id", _Id);
         builder.AddAttribute(seq++, "style", StyleBuilder.Value);
         builder.AddAttribute(seq++, "class", ClassBuilder.Value);
+        builder.AddAttribute(seq++, "dir", Dir?.ToString().ToLower());
         builder.AddElementReferenceCapture(seq++, v => RootElement = v);
 
         builder.AddContent(seq++, ChildContent);
