@@ -1,7 +1,7 @@
 name: Blazor UI Demo CD
 
 env:
-  API_SERVER_ADDRESS: 'https://components.bitplatform.dev/api/'
+  API_SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'bit-components'
 
 on:
