@@ -3,7 +3,8 @@
 
 <div @ref="RootElement" @attributes="@HtmlAttributes"
      class="@ClassBuilder.Value"
-     style="@StyleBuilder.Value">
+     style="@StyleBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
     @if (IsDataLoaded)
     {
         <div style="@Styles?.Content" class="bit-smr-cnt @Classes?.Content">
