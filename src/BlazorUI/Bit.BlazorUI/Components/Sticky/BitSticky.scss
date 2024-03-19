@@ -3,6 +3,18 @@
 .bit-stk {
     z-index: 1;
     position: sticky;
+
+    &.bit-rtl {
+        &.bit-stk-srt {
+            right: 0;
+            left: unset;
+        }
+
+        &.bit-stk-end {
+            left: 0;
+            right: unset;
+        }
+    }
 }
 
 .bit-stk-top {
@@ -18,15 +30,15 @@
     bottom: 0;
 }
 
-.bit-stk-lft {
+.bit-stk-srt {
     left: 0;
 }
 
-.bit-stk-rgt {
+.bit-stk-end {
     right: 0;
 }
 
-.bit-stk-lar {
+.bit-stk-sae {
     left: 0;
     right: 0;
 }

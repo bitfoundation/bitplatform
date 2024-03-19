@@ -5,7 +5,7 @@ public enum BitStickyPosition
     Top,
     Bottom,
     TopAndBottom,
-    Left,
-    Right,
-    LeftAndRight,
+    Start,
+    End,
+    StartAndEnd,
 }
