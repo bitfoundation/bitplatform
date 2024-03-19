@@ -57,9 +57,9 @@ public partial class BitSticky
             BitStickyPosition.Top => $"{RootElementClass}-top",
             BitStickyPosition.Bottom => $"{RootElementClass}-btm",
             BitStickyPosition.TopAndBottom => $"{RootElementClass}-tab",
-            BitStickyPosition.Left => $"{RootElementClass}-lft",
-            BitStickyPosition.Right => $"{RootElementClass}-rgt",
-            BitStickyPosition.LeftAndRight => $"{RootElementClass}-lar",
+            BitStickyPosition.Start => $"{RootElementClass}-srt",
+            BitStickyPosition.End => $"{RootElementClass}-end",
+            BitStickyPosition.StartAndEnd => $"{RootElementClass}-sae",
             _ => (Top is null && Bottom is null && Left is null && Right is null)
                     ? $"{RootElementClass}-top"
                     : string.Empty
