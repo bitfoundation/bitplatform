@@ -14,6 +14,12 @@
         pointer-events: none;
         color: $color-foreground-disabled;
     }
+
+    &.bit-rtl {
+        i {
+            transform: scale(-1);
+        }
+    }
 }
 
 .bit-pgn-elp {
