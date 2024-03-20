@@ -173,7 +173,7 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "HourStep",
+            Name = "ValueChanged",
             Type = "EventCallback<TimeSpan?>",
             Description = "Callback for when the on time value changed.",
         },
