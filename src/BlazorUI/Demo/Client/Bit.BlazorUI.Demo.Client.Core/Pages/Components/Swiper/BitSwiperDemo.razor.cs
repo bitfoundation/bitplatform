@@ -31,38 +31,6 @@ public partial class BitSwiperDemo
             Type = "double",
             DefaultValue = "0.5",
             Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
-        },
-        new()
-        {
-            Name = "Direction",
-            Type = "BitDirection",
-            DefaultValue = "BitDirection.LeftToRight",
-            Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
-        }
-    };
-
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
-        new()
-        {
-            Id = "direction-enum",
-            Name = "BitDirection",
-            Description = "Describes the render direction",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "LeftToRight",
-                    Description="Renders content from left to right.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "RightToLeft",
-                    Description="Renders content from right to left.",
-                    Value="1",
-                }
-            }
         }
     };
 
@@ -241,7 +209,7 @@ public partial class BitSwiperDemo
     }
 </style>
 
-<BitSwiper>
+<BitSwiper Dir=""BitDir.Rtl"">
     <BitSwiperItem Class=""item"">
         <div class=""number"">یک</div>
         <img class=""image"" src=""img1.jpg"">
