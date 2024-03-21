@@ -104,7 +104,26 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Advanced" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="RTL" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <br /><br />
+            <div class="tooltips-container">
+                <BitTooltip Dir="BitDir.Rtl">
+                    <Template>
+                        <ul style="padding: 0.5rem; margin: 0;">
+                            <li>۱. یک</li>
+                            <li>۲. دو</li>
+                        </ul>
+                    </Template>
+                    <Anchor>
+                        <BitButton ButtonStyle="BitButtonStyle.Standard">نشانگر ماوس را روی من بیاورید</BitButton>
+                    </Anchor>
+                </BitTooltip>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div>Here are some examples of advanced usage of tooltip.</div>
             <br />

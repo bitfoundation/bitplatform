@@ -9,7 +9,8 @@
      @onpointerenter="@HandlePointerEnter"
      @onpointerleave="@HandlePointerLeave"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
 
     @(Anchor ?? ChildContent)
 
