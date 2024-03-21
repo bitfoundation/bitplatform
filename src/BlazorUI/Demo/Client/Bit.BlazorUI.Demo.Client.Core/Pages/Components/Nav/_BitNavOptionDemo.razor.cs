@@ -359,4 +359,34 @@ private BitNavOption ToggledOption;";
 
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
+
+    private readonly string example7NavOptionRazorCode = @"
+<BitNav Dir=""BitDir.Rtl"" TItem=""BitNavOption"">
+    <BitNavOption Text=""bit platform""
+                    ExpandAriaLabel=""bit platform Expanded""
+                    CollapseAriaLabel=""bit platform Collapsed"">
+        <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
+        <BitNavOption Text=""Products & Services"">
+            <BitNavOption Text=""Project Templates"">
+                <BitNavOption IconName=""@BitIconName.ToDoLogoOutline"" Text=""Todo sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption IconName=""@BitIconName.LocalAdmin"" Text=""AdminPanel sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+            </BitNavOption>
+            <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" IsEnabled=""false"" />
+            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
+        </BitNavOption>
+        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+    </BitNavOption>
+    <BitNavOption Text=""Community""
+                    ExpandAriaLabel=""Community Expanded""
+                    CollapseAriaLabel=""Community Collapsed"">
+        <BitNavOption Text=""Linkedin"" IconName=""@BitIconName.LinkedInLogo"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""Twitter"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""Github repo"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
+    </BitNavOption>
+
+    <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
+</BitNav>";
 }
