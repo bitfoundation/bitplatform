@@ -71,11 +71,6 @@ public partial class BitSwiper : IDisposable
     /// </summary>
     [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
-    /// <summary>
-    /// Sets the direction of the scrolling (the default value is LeftToRight).
-    /// </summary>
-    [Parameter] public BitDirection Direction { get; set; } = BitDirection.LeftToRight;
-
 
 
     public async Task GoPrev() => await Go(false);
@@ -101,7 +96,7 @@ public partial class BitSwiper : IDisposable
 
     protected override async Task OnParametersSetAsync()
     {
-        _directionStyle = Direction == BitDirection.RightToLeft ? "direction:rtl" : "";
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
 
         await base.OnParametersSetAsync();
     }
@@ -172,8 +167,8 @@ public partial class BitSwiper : IDisposable
 
     private void SetNavigationButtonsVisibility(double translateX)
     {
-        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Direction == BitDirection.LeftToRight ? -_swiperEffectiveWidth : 0)) ? "display:none" : "";
-        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Direction == BitDirection.LeftToRight ? 0 : _swiperEffectiveWidth)) ? "display:none" : "";
+        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_swiperEffectiveWidth)) ? "display:none" : "";
+        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _swiperEffectiveWidth : 0)) ? "display:none" : "";
 
         StateHasChanged();
     }
@@ -234,15 +229,15 @@ public partial class BitSwiper : IDisposable
     {
         if (_rootWidth > _swiperWidth || IsEnabled is false) return;
 
-        if (Direction == BitDirection.LeftToRight)
-        {
-            if (x > 0) x = 0;
-            if (x < -_swiperEffectiveWidth) x = -_swiperEffectiveWidth;
-        }
-        else
+        if (Dir == BitDir.Rtl)
         {
             if (x < 0) x = 0;
             if (x > _swiperEffectiveWidth) x = _swiperEffectiveWidth;
+        }
+        else
+        {
+            if (x > 0) x = 0;
+            if (x < -_swiperEffectiveWidth) x = -_swiperEffectiveWidth;
         }
 
         await _js.SetStyle(_swiper, "transform", FormattableString.Invariant($"translateX({x}px)"));
