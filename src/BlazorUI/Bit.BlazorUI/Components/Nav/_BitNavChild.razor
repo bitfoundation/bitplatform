@@ -67,7 +67,7 @@
                             </div>
                             <div title="@description"
                                  class="bit-nav-des @Nav.Classes?.Description"
-                                 style="@(Nav.ReversedChevron ? "padding-left: 0" : ""); @Nav.Styles?.Description">
+                                 style="@(Nav.ReversedChevron ? "padding-inline-start:0" : ""); @Nav.Styles?.Description">
                                 @description
                             </div>
                         </div>
@@ -100,7 +100,7 @@
         {
             <div name="@text"
                  class="bit-nav-ict @GetItemContainerClasses()"
-                 style="@(Nav.Dir == BitDir.Rtl ? "padding-right" : "padding-left"):@(childItems.Any() ? (Depth * 16 + (Nav.ReversedChevron ? 4 : 0)) : (Depth * 16 + (Nav.ReversedChevron ? 4 : 27)))px; @GetItemContainerStyles()">
+                 style="padding-inline-start:@(childItems.Any() ? (Depth * 16 + (Nav.ReversedChevron ? 4 : 0)) : (Depth * 16 + (Nav.ReversedChevron ? 4 : 27)))px; @GetItemContainerStyles()">
 
                 <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                     @if (childItems.Any())
@@ -199,7 +199,7 @@
                            title="@description"
                            disabled="@(isEnabled is false)"
                            href="@(isEnabled ? url : null)"
-                           style="@(Nav.Dir == BitDir.Rtl ? "padding-right" : "padding-left"):@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
+                           style="padding-inline-start:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
                            class="bit-nav-des @Nav.Classes?.Description"
                            rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
                             @description
@@ -212,7 +212,7 @@
                                 tabindex="-1"
                                 title="@description"
                                 disabled="@(isEnabled is false)"
-                                style="@(Nav.Dir == BitDir.Rtl ? "padding-right" : "padding-left"):@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
+                                style="padding-inline-start:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
                                 class="bit-nav-des @Nav.Classes?.Description">
                             @description
                         </button>

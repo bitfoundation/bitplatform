@@ -85,8 +85,8 @@
     padding: spacing(0.5) 0;
     background: transparent;
     text-overflow: ellipsis;
-    padding-left: spacing(2.75);
     color: $color-foreground-disabled;
+    padding-inline-start: spacing(2.75);
 }
 
 .bit-nav-ict {
