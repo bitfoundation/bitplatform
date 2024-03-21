@@ -43,34 +43,46 @@ public partial class MainPage
     {
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
         {
+            var webView = handler.PlatformView;
 #if WINDOWS
             if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
             {
-                handler.PlatformView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
+                webView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
             }
+
+            Loaded += async delegate
+            {
+                if (BuildConfiguration.IsRelease())
+                {
+                    await webView.EnsureCoreWebView2Async();
+                    var settings = webView.CoreWebView2.Settings;
+                    settings.IsZoomControlEnabled = false;
+                    settings.AreBrowserAcceleratorKeysEnabled = false;
+                }
+            };
 #elif IOS || MACCATALYST
-            handler.PlatformView.Configuration.AllowsInlineMediaPlayback = true;
+            webView.Configuration.AllowsInlineMediaPlayback = true;
 
-            handler.PlatformView.ScrollView.Bounces = false;
+            webView.BackgroundColor = UIKit.UIColor.Clear;
+            webView.ScrollView.Bounces = false;
+            webView.Opaque = false;
 
-            handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
-            handler.PlatformView.Opaque = false;
             if (BuildConfiguration.IsDebug())
             {
                 if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
                     || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
                 {
-                    handler.PlatformView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
+                    webView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
                 }
             }
 #elif ANDROID
-            handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+            webView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 
-            handler.PlatformView.OverScrollMode = Android.Views.OverScrollMode.Never;
+            webView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
-            handler.PlatformView.HapticFeedbackEnabled = false;
+            webView.HapticFeedbackEnabled = false;
 
-            Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
+            Android.Webkit.WebSettings settings = webView.Settings;
 
             settings.AllowFileAccessFromFileURLs =
                 settings.AllowUniversalAccessFromFileURLs =
@@ -85,31 +97,9 @@ public partial class MainPage
                 settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
             }
 
-            settings.BlockNetworkLoads =
-                settings.BlockNetworkImage = false;
+            settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
 #endif
         });
-
-        Loaded += async delegate
-        {
-            try
-            {
-#if WINDOWS
-                if (BuildConfiguration.IsRelease())
-                {
-                    var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler!.PlatformView!;
-                    await webView2.EnsureCoreWebView2Async();
-                    var settings = webView2.CoreWebView2.Settings;
-                    settings.IsZoomControlEnabled = false;
-                    settings.AreBrowserAcceleratorKeysEnabled = false;
-                }
-#endif
-            }
-            catch (Exception exp)
-            {
-                exceptionHandler.Handle(exp);
-            }
-        };
     }
 
     private void SetupStatusBar()
