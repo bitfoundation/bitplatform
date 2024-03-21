@@ -67,6 +67,13 @@ public partial class _BitTimelineCustomDemo
         }
     };
 
+    private List<TimelineActionItem> basicRtlCustoms = new()
+    {
+        new() { FirstText = "گزینه ۱" },
+        new() { FirstText = "گزینه ۲", SecondText = "گزینه ۲ ثانویه" },
+        new() { FirstText = "گزینه ۳" }
+    };
+
 
 
     private readonly string example1RazorCode = @"
@@ -526,5 +533,30 @@ private List<TimelineActionItem> iconCustoms = new()
     new() { FirstText = ""Custom 1"", Icon = BitIconName.Add },
     new() { FirstText = ""Custom 2"", Icon = BitIconName.Edit },
     new() { FirstText = ""Custom 3"", Icon = BitIconName.Delete }
+};";
+
+    private readonly string example9RazorCode = @"
+<BitTimeline Dir=""BitDir.Rtl""
+             Items=""basicRtlCustoms""
+             NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
+                                      SecondaryText = { Selector = i => i.SecondText } })"" />
+
+<BitTimeline Horizontal
+             Dir=""BitDir.Rtl""
+             Items=""basicRtlCustoms""
+             NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
+                                      SecondaryText = { Selector = i => i.SecondText } })"" />";
+    private readonly string example9CsharpCode = @"
+public class TimelineActionItem
+{
+    public string? FirstText { get; set; }
+    public string? SecondText { get; set; }
+}
+
+private List<TimelineActionItem> basicRtlCustoms = new()
+{
+    new() { FirstText = ""گزینه ۱"" },
+    new() { FirstText = ""گزینه ۲"", SecondText = ""گزینه ۲ ثانویه"" },
+    new() { FirstText = ""گزینه ۳"" }
 };";
 }

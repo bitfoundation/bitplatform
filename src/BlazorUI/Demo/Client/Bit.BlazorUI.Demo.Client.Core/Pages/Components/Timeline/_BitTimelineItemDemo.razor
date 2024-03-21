@@ -209,6 +209,22 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <div>Vertical (default)</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Dir="BitDir.Rtl" Items="basicRtlItems" />
+        </div>
+        <br /><br />
+        <div>Horizontal</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Dir="BitDir.Rtl" Items="basicRtlItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
 
 @code {
     private List<BitTimelineItem> templateItems = new()

@@ -67,6 +67,13 @@ public partial class _BitTimelineItemDemo
         }
     };
 
+    private List<BitTimelineItem> basicRtlItems = new()
+    {
+        new() { PrimaryText = "گزینه ۱" },
+        new() { PrimaryText = "گزینه ۲", SecondaryText = "گزینه ۲ ثانویه" },
+        new() { PrimaryText = "گزینه ۳" }
+    };
+
 
 
     private readonly string example1RazorCode = @"
@@ -306,5 +313,16 @@ private List<BitTimelineItem> iconItems = new()
     new() { PrimaryText = ""Item 1"", IconName = BitIconName.Add },
     new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit },
     new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete }
+};";
+
+    private readonly string example9RazorCode = @"
+<BitTimeline Dir=""BitDir.Rtl"" Items=""basicRtlItems"" />
+<BitTimeline Horizontal Dir=""BitDir.Rtl"" Items=""basicRtlItems"" />";
+    private readonly string example9CsharpCode = @"
+private List<BitTimelineItem> basicRtlItems = new()
+{
+    new() { PrimaryText = ""گزینه ۱"" },
+    new() { PrimaryText = ""گزینه ۲"", SecondaryText = ""گزینه ۲ ثانویه"" },
+    new() { PrimaryText = ""گزینه ۳"" }
 };";
 }

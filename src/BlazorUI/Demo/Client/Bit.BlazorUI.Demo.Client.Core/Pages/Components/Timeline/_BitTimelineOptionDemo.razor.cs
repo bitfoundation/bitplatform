@@ -388,4 +388,17 @@ public partial class _BitTimelineOptionDemo
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>";
+
+    private readonly string example9RazorCode = @"
+<BitTimeline Dir=""BitDir.Rtl"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""گزینه ۱"" />
+    <BitTimelineOption PrimaryText=""گزینه ۲"" SecondaryText=""گزینه ۲ ثانویه"" />
+    <BitTimelineOption PrimaryText=""گزینه ۳"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Dir=""BitDir.Rtl"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""گزینه ۱"" />
+    <BitTimelineOption PrimaryText=""گزینه ۲"" SecondaryText=""گزینه ۲ ثانویه"" />
+    <BitTimelineOption PrimaryText=""گزینه ۳"" />
+</BitTimeline>";
 }
