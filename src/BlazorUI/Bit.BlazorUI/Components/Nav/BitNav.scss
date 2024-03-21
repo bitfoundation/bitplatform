@@ -22,13 +22,6 @@
             color: $color-foreground-disabled;
         }
     }
-
-    &.bit-rtl {
-        .bit-nav-sel {
-            border-left: 0;
-            border-right: spacing(0.375) $shape-border-style $color-primary-main;
-        }
-    }
 }
 
 .bit-nav-gcb,
@@ -154,7 +147,7 @@
 
 .bit-nav-sel {
     background-color: $color-background-secondary;
-    border-left: spacing(0.375) $shape-border-style $color-primary-main;
+    border-inline-start: spacing(0.375) $shape-border-style $color-primary-main;
 
     @media(hover:hover) {
         &:hover {
