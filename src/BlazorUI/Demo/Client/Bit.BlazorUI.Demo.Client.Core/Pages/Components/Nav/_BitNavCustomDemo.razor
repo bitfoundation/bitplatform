@@ -155,10 +155,14 @@
 
 <ComponentExampleBox Title="RTL" RazorCode="@example7CustomItemRazorCode" CsharpCode="@example7CustomItemCsharpCode" Id="example7">
     <ExamplePreview>
-        <BitNav Dir="BitDir.Rtl"
-                Items="CustomBitPlatformNavMenu"
-                NameSelectors="@(new() { IconName =  { Name = nameof(BitPlatformMenu.Icon) },
+        <div dir="rtl">
+            <div class="example-box">
+                <BitNav Dir="BitDir.Rtl"
+                        Items="CustomRtlBitPlatformNavMenu"
+                        NameSelectors="@(new() { IconName =  { Name = nameof(BitPlatformMenu.Icon) },
                                                        ChildItems =  { Name = nameof(BitPlatformMenu.Links) },
                                                        Description =  { Name = nameof(BitPlatformMenu.Comment) } })" />
+            </div>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
