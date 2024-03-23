@@ -16,18 +16,6 @@
             border-color: $color-border-disabled;
         }
     }
-
-    &.bit-rtl {
-        &:not(.bit-btg-vrt) {
-            .bit-btg-ift {
-                border-right-width: 0;
-            }
-
-            .bit-btg-ilt {
-                border-right-width: $shape-border-width;
-            }
-        }
-    }
 }
 
 .bit-btg-pri {
@@ -66,13 +54,13 @@
     padding: spacing(0.7) spacing(2);
     font-family: $typography-font-family;
     font-weight: $typography-font-weight;
-    border-top-width: 0;
-    border-left-width: 0;
-    border-bottom-width: 0;
+    border-block-end-width: 0;
+    border-block-start-width: 0;
+    border-inline-start-width: 0;
 }
 
 .bit-btg-ilt {
-    border-right-width: 0;
+    border-inline-end-width: 0;
 }
 
 .bit-btg-ipr {
@@ -226,13 +214,13 @@
 
     .bit-btg-itm {
         border-width: $shape-border-width;
-        border-top-width: 0;
-        border-left-width: 0;
-        border-right-width: 0;
+        border-block-start-width: 0;
+        border-inline-start-width: 0;
+        border-inline-end-width: 0;
     }
 
     .bit-btg-ilt {
-        border-bottom-width: 0;
+        border-block-end-width: 0;
     }
 }
 
