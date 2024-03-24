@@ -119,8 +119,8 @@
                 <BitDateRangePicker @bind-Value="@selectedDateRange" />
             </div>
             <br />
-            <div>From: <b>@selectedDateRange.StartDate.ToString()</b></div>
-            <div>To: <b>@selectedDateRange.EndDate.ToString()</b></div>
+            <div>From: <b>@selectedDateRange?.StartDate.ToString()</b></div>
+            <div>To: <b>@selectedDateRange?.EndDate.ToString()</b></div>
         </ExamplePreview>
     </ComponentExampleBox>
 
