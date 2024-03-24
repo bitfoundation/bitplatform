@@ -975,7 +975,7 @@ public partial class BitDateRangePickerDemo
 
 
 
-    private BitDateRangePickerValue selectedDateRange = new()
+    private BitDateRangePickerValue? selectedDateRange = new()
     {
         StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
         EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset),
@@ -1120,10 +1120,10 @@ BitDateRangePicker ShowTimePicker=""true""
 
     private readonly string example5RazorCode = @"
 <BitDateRangePicker @bind-Value=""@selectedDateRange"" />
-<div>From: <b>@selectedDateRange.StartDate.ToString()</b></div>
-<div>To: <b>@selectedDateRange.EndDate.ToString()</b></div>";
+<div>From: <b>@selectedDateRange?.StartDate.ToString()</b></div>
+<div>To: <b>@selectedDateRange?.EndDate.ToString()</b></div>";
     private readonly string example5CsharpCode = @"
-private BitDateRangePickerValue selectedDateRange = new()
+private BitDateRangePickerValue? selectedDateRange = new()
 {
     StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
     EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
