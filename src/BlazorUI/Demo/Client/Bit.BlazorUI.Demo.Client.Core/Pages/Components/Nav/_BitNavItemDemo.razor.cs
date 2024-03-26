@@ -204,6 +204,52 @@ public partial class _BitNavItemDemo
         new() { Text = "Iconography", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
     };
 
+    private static readonly List<BitNavItem> RtlBitPlatformNavMenu = new()
+    {
+        new()
+        {
+            Text = "پلتفرمِ بیت",
+            Description = "توضیحاتِ پلتفرمِ بیت",
+            ChildItems = new()
+            {
+                new() { Text = "خانه", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
+                new()
+                {
+                    Text = "محصولات و خدمات",
+                    ChildItems = new()
+                    {
+                        new()
+                        {
+                            Text = "قالب های پروژه",
+                            ChildItems = new()
+                            {
+                                new() { Text = "نمونه ی Todo", IconName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "نمونه ی AdminPanel", IconName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                            }
+                        },
+                        new() { Text = "رابط کاربری Blazor", IconName = BitIconName.F12DevTools, Url = "https://blazorui.bitplatform.dev/" },
+                        new() { Text = "راه های هاست ابری", IconName = BitIconName.Cloud, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                        new() { Text = "آکادمی بیت", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+                    }
+                },
+                new() { Text = "قیمت", IconName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "درباره ما", IconName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
+                new() { Text = "ارتباط با ما", IconName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+            },
+        },
+        new()
+        {
+            Text = "انجمن ها",
+            ChildItems = new()
+            {
+                new() { Text = "لینکدین", IconName = BitIconName.LinkedInLogo , Url = "https://www.linkedin.com/company/bitplatformhq" },
+                new() { Text = "توییتر", IconName = BitIconName.Globe , Url = "https://twitter.com/bitplatformhq" },
+                new() { Text = "گیتهاب", IconName = BitIconName.GitGraph , Url = "https://github.com/bitfoundation/bitplatform" },
+            }
+        },
+        new() { Text = "شمایل نگاری", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
+    };
+
     private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
     private BitNavItem SelectedItemNav = FoodNavMenu[0].ChildItems[2];
     private string? SelectedItemText = FoodNavMenu[0].ChildItems[2].Text;
@@ -802,5 +848,54 @@ private static readonly List<BitNavItem> BitPlatformNavMenu = new()
         }
     },
     new() { Text = ""Iconography"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+};";
+
+    private readonly string example7NavItemRazorCode = @"
+<BitNav Dir=""BitDir.Rtl"" Items=""RtlBitPlatformNavMenu"" />";
+    private readonly string example7NavItemCsharpCode = @"
+private static readonly List<BitNavItem> RtlBitPlatformNavMenu = new()
+{
+    new()
+    {
+        Text = ""پلتفرمِ بیت"",
+        Description = ""توضیحاتِ پلتفرمِ بیت"",
+        ChildItems = new()
+        {
+            new() { Text = ""خانه"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new()
+            {
+                Text = ""محصولات و خدمات"",
+                ChildItems = new()
+                {
+                    new()
+                    {
+                        Text = ""قالب های پروژه"",
+                        ChildItems = new()
+                        {
+                            new() { Text = ""نمونه ی Todo"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""نمونه ی AdminPanel"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                        }
+                    },
+                    new() { Text = ""رابط کاربری Blazor"", IconName = BitIconName.F12DevTools, Url = ""https://blazorui.bitplatform.dev/"" },
+                    new() { Text = ""راه های هاست ابری"", IconName = BitIconName.Cloud, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                    new() { Text = ""آکادمی بیت"", IconName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
+                }
+            },
+            new() { Text = ""قیمت"", IconName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""درباره ما"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""ارتباط با ما"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
+        },
+    },
+    new()
+    {
+        Text = ""انجمن ها"",
+        ChildItems = new()
+        {
+            new() { Text = ""لینکدین"", IconName = BitIconName.LinkedInLogo , Url = ""https://www.linkedin.com/company/bitplatformhq"" },
+            new() { Text = ""توییتر"", IconName = BitIconName.Globe , Url = ""https://twitter.com/bitplatformhq"" },
+            new() { Text = ""گیتهاب"", IconName = BitIconName.GitGraph , Url = ""https://github.com/bitfoundation/bitplatform"" },
+        }
+    },
+    new() { Text = ""شمایل نگاری"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 };";
 }

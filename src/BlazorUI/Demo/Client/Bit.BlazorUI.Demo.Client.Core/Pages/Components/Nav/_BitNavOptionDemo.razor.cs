@@ -359,4 +359,30 @@ private BitNavOption ToggledOption;";
 
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
+
+    private readonly string example7NavOptionRazorCode = @"
+<BitNav Dir=""BitDir.Rtl"" TItem=""BitNavOption"">
+    <BitNavOption Text=""پلتفرمِ بیت"" Description=""توضیحاتِ پلتفرمِ بیت"">
+        <BitNavOption Text=""خانه"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
+        <BitNavOption Text=""محصولات و خدمات"">
+            <BitNavOption Text=""قالب های پروژه"">
+                <BitNavOption IconName=""@BitIconName.ToDoLogoOutline"" Text=""نمونه ی Todo"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption IconName=""@BitIconName.LocalAdmin"" Text=""نمونه ی AdminPanel"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+            </BitNavOption>
+            <BitNavOption Text=""رابط کاربری Blazor"" IconName=""@BitIconName.F12DevTools"" Url=""https://blazorui.bitplatform.dev/"" Target=""_blank"" />
+            <BitNavOption Text=""راه های هاست ابری"" IconName=""@BitIconName.Cloud"" IsEnabled=""false"" />
+            <BitNavOption Text=""آکادمی بیت"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
+        </BitNavOption>
+        <BitNavOption Text=""قیمت"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""درباره ما"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""ارتباط با ما"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+    </BitNavOption>
+    <BitNavOption Text=""انجمن ها"">
+        <BitNavOption Text=""لینکدین"" IconName=""@BitIconName.LinkedInLogo"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""توییتر"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""گیتهاب"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
+    </BitNavOption>
+
+    <BitNavOption Text=""شمایل نگاری"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
+</BitNav>";
 }
