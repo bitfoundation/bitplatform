@@ -588,32 +588,35 @@ public partial class BitDateRangePicker
 
     protected override void OnParametersSet()
     {
-        CurrentValue ??= new();
-
-        var startDateTime = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
-
-        if (MinDate.HasValue && MinDate > startDateTime)
+        if (CurrentValue is not null)
         {
-            startDateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now);
+            var startDateTime = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
+            if (MinDate.HasValue && MinDate > startDateTime)
+            {
+                startDateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now);
+            }
+
+            if (MaxDate.HasValue && MaxDate < startDateTime)
+            {
+                startDateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now);
+            }
+
+            if (CurrentValue.EndDate.HasValue && CurrentValue.EndDate < startDateTime)
+            {
+                CurrentValue.EndDate = null;
+            }
         }
 
-        if (MaxDate.HasValue && MaxDate < startDateTime)
-        {
-            startDateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now);
-        }
+        var startDateHasValue = CurrentValue?.StartDate.HasValue ?? false;
+        var endDateHasValue = CurrentValue?.EndDate.HasValue ?? false;
 
-        if (CurrentValue.EndDate.HasValue && CurrentValue.EndDate < startDateTime)
-        {
-            CurrentValue.EndDate = null;
-        }
+        _startTimeHour = startDateHasValue ? CurrentValue!.StartDate!.Value.Hour : 23;
+        _startTimeMinute = startDateHasValue ? CurrentValue!.StartDate!.Value.Minute : 0;
 
-        _startTimeHour = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Hour : 23;
-        _startTimeMinute = CurrentValue.StartDate.HasValue ? CurrentValue.StartDate.Value.Minute : 0;
+        _endTimeHour = endDateHasValue ? CurrentValue!.EndDate!.Value.Hour : (MaxRange.HasValue && MaxRange.Value.TotalHours < 24 ? (int)MaxRange.Value.TotalHours : 23);
+        _endTimeMinute = endDateHasValue ? CurrentValue!.EndDate!.Value.Minute : (MaxRange.HasValue && MaxRange.Value.Days < 1 && MaxRange.Value.Minutes < 60 ? MaxRange.Value.Minutes : 59);
 
-        _endTimeHour = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Hour : (MaxRange.HasValue && MaxRange.Value.TotalHours < 24 ? (int)MaxRange.Value.TotalHours : 23);
-        _endTimeMinute = CurrentValue.EndDate.HasValue ? CurrentValue.EndDate.Value.Minute : (MaxRange.HasValue && MaxRange.Value.Days < 1 && MaxRange.Value.Minutes < 60 ? (int)MaxRange.Value.Minutes : 59);
-
-        GenerateCalendarData(startDateTime.DateTime);
+        GenerateCalendarData(startDateHasValue ? CurrentValue!.StartDate!.Value.DateTime : DateTimeOffset.Now.DateTime);
 
         base.OnParametersSet();
     }
@@ -737,7 +740,7 @@ public partial class BitDateRangePicker
     {
         if (IsEnabled is false) return;
 
-        CurrentValue = new();
+        CurrentValue = null;
 
         _startTimeHour = 0;
         _startTimeMinute = 0;
@@ -758,8 +761,9 @@ public partial class BitDateRangePicker
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
-        if (CurrentValue is null) return;
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
+
+        CurrentValue ??= new();
 
         if (CurrentValue.StartDate.HasValue && CurrentValue.EndDate.HasValue)
         {
@@ -1350,7 +1354,7 @@ public partial class BitDateRangePicker
     private void CheckCurrentCalendarMatchesCurrentValue()
     {
         if (CurrentValue is null) return;
-        if (CurrentValue.StartDate is null) return;
+        if (CurrentValue.StartDate.HasValue is false) return;
 
         var currentValue = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
         var currentValueYear = Culture.Calendar.GetYear(currentValue.DateTime);
