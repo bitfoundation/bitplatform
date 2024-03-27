@@ -134,16 +134,19 @@ public partial class ComponentDemo
                 {
                     Name= "Ltr",
                     Value="0",
+                    Description="Ltr (left to right) is to be used for languages that are written from the left to the right (like English).",
                 },
                 new()
                 {
                     Name= "Rtl",
                     Value="1",
+                    Description="Rtl (right to left) is to be used for languages that are written from the right to the left (like Arabic).",
                 },
                 new()
                 {
                     Name= "Auto",
                     Value="2",
+                    Description="Auto lets the user agent decide. It uses a basic algorithm as it parses the characters inside the element until it finds a character with a strong directionality, then applies that directionality to the whole element.",
                 }
             }
         }
