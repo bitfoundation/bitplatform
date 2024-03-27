@@ -442,4 +442,12 @@ Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" /> ]";
 private double oneWayBinding = 1;
 private double twoWayBinding = 1;
 private object? onChangeValue;";
+
+    private readonly string example8RazorCode = @"
+<BitSlider Label=""RTL slider"" Dir=""BitDir.Rtl"" />
+
+<BitSlider IsRanged Label=""RTL ranged slider"" 
+           Dir=""BitDir.Rtl""
+           DefaultLowerValue=""2""
+           DefaultUpperValue=""5"" />";
 }

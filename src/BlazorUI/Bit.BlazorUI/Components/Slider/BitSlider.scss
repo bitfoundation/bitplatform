@@ -175,6 +175,30 @@ $BgHover: $color-primary-light;
             background-color: $color-background-disabled;
         }
     }
+
+    &.bit-rtl {
+        input::-webkit-slider-runnable-track {
+            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
+        }
+
+        input:hover::-webkit-slider-runnable-track,
+        input:active::-webkit-slider-runnable-track {
+            background: linear-gradient(to left, $BgTrackHover var(--sx), $BgHover var(--sx));
+        }
+
+        input::-moz-range-track {
+            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
+        }
+
+        input:hover::-moz-range-track,
+        input:active::-moz-range-track {
+            background: linear-gradient(to left, $BgTrackHover var(--sx), $BgHover var(--sx));
+        }
+
+        input::-ms-track {
+            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
+        }
+    }
 }
 
 .bit-sld-hrz {
@@ -210,14 +234,14 @@ $BgHover: $color-primary-light;
     .bit-sld-cnt {
         height: 100%;
         display: block;
-        margin-left: 0;
+        margin-inline-start: 0;
         width: spacing(6.25);
     }
 
     .bit-sld-ztk {
         width: spacing(1.75);
         height: spacing(0.125);
-        margin-left: spacing(2.25);
+        margin-inline-start: spacing(2.25);
     }
 }
 
@@ -267,12 +291,12 @@ $BgHover: $color-primary-light;
 
     .bit-sld-box::before {
         width: calc((var(--h) - var(--l))/var(--dif)*100%);
-        margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+        margin-inline-start: calc((var(--l) - var(--min))/var(--dif)*100%);
     }
 
     .bit-sld-box::after {
         width: calc((var(--l) - var(--h))/var(--dif)*100%);
-        margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+        margin-inline-start: calc((var(--h) - var(--min))/var(--dif)*100%);
     }
 
     .bit-sld-ztk {
@@ -336,12 +360,12 @@ $BgHover: $color-primary-light;
 
     .bit-sld-box::before {
         width: calc((var(--h) - var(--l))/var(--dif)*100%);
-        margin-left: calc((var(--l) - var(--min))/var(--dif)*100%);
+        margin-inline-start: calc((var(--l) - var(--min))/var(--dif)*100%);
     }
 
     .bit-sld-box::after {
         width: calc((var(--l) - var(--h))/var(--dif)*100%);
-        margin-left: calc((var(--h) - var(--min))/var(--dif)*100%);
+        margin-inline-start: calc((var(--h) - var(--min))/var(--dif)*100%);
     }
 
     .bit-sld-cnt {
@@ -355,7 +379,7 @@ $BgHover: $color-primary-light;
         height: spacing(0.125);
         transform: rotate(270deg);
         margin-top: spacing(0.125);
-        margin-left: spacing(2.25);
+        margin-inline-start: spacing(2.25);
     }
 }
 
