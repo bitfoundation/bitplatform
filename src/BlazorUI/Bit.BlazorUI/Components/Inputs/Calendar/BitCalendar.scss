@@ -31,15 +31,6 @@
             background-color: $color-background-disabled;
         }
     }
-
-    &.bit-rtl {
-        direction: rtl;
-
-        .bit-cal-wnm {
-            border-right: none;
-            border-left: $shape-border-width $shape-border-style $color-border-secondary;
-        }
-    }
 }
 
 .bit-cal-cnt {
@@ -191,7 +182,7 @@
     padding: spacing(0.375) 0 0 0;
     color: $color-foreground-secondary;
     background-color: $color-background-secondary;
-    border-right: $shape-border-width $shape-border-style $color-border-secondary;
+    border-inline-end: $shape-border-width $shape-border-style $color-border-secondary;
 }
 
 .bit-cal-pkh {
@@ -330,7 +321,7 @@
 
 .bit-cal-dvd {
     top: 0;
-    border-right: $shape-border-width $shape-border-style $color-border-secondary;
+    border-inline-end: $shape-border-width $shape-border-style $color-border-secondary;
 }
 
 .bit-cal-mwp {
