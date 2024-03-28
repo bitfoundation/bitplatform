@@ -40,15 +40,6 @@
             border-color: $color-state-error;
         }
     }
-
-    &.bit-rtl {
-        direction: rtl;
-
-        .bit-dtp-wnm {
-            border-right: none;
-            border-left: $shape-border-width $shape-border-style $color-border-secondary;
-        }
-    }
 }
 
 .bit-dtp-lbl {
@@ -415,7 +406,7 @@
     padding: spacing(0.375) 0 0 0;
     color: $color-foreground-secondary;
     background-color: $color-background-secondary;
-    border-right: $shape-border-width $shape-border-style $color-border-secondary;
+    border-inline-end: $shape-border-width $shape-border-style $color-border-secondary;
 }
 
 .bit-dtp-pkh {
