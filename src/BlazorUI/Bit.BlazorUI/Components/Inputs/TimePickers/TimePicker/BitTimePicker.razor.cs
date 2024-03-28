@@ -269,6 +269,16 @@ public partial class BitTimePicker
     /// </summary>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitTimePicker component.
+    /// </summary>
+    [Parameter] public BitTimePickerClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitTimePicker component.
+    /// </summary>
+    [Parameter] public BitTimePickerClassStyles? Styles { get; set; }
+
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -286,6 +296,8 @@ public partial class BitTimePicker
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
@@ -293,6 +305,11 @@ public partial class BitTimePicker
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
