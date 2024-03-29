@@ -12,7 +12,19 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
     [AutoInject] protected Bit.Butil.Console Console = default!;
     [AutoInject] protected ILogger<ExceptionHandlerBase> Logger = default!;
 
-    public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
+    public void Handle(Exception exp, IDictionary<string, object?>? parameters = null)
+    {
+        if (exp is TaskCanceledException)
+        {
+            return;
+        }
+
+        parameters ??= new Dictionary<string, object?>();
+
+        LogError(exp, parameters);
+    }
+
+    protected virtual void LogError(Exception exception, IDictionary<string, object?>? parameters = null)
     {
         parameters ??= new Dictionary<string, object?>();
 
