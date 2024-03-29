@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Client.Maui.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui;
 
@@ -29,6 +30,18 @@ public static partial class MauiProgram
             };
             return httpClient;
         });
+
+        if (BuildConfiguration.IsDebug())
+        {
+            builder.Logging.AddDebug();
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            builder.Logging.AddEventLog();
+        }
+
+        builder.Logging.AddEventSourceLogger();
 
         services.TryAddTransient<MainPage>();
         services.TryAddTransient<IStorageService, MauiStorageService>();
