@@ -31,15 +31,17 @@ public static partial class MauiProgram
             return httpClient;
         });
 
-        services.AddLogging(logginBuildr =>
+        if (BuildConfiguration.IsDebug())
         {
-            logginBuildr.AddDebug();
-            if (OperatingSystem.IsWindows())
-            {
-                logginBuildr.AddEventLog();
-            }
-            logginBuildr.AddEventSourceLogger();
-        });
+            builder.Logging.AddDebug();
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            builder.Logging.AddEventLog();
+        }
+
+        builder.Logging.AddEventSourceLogger();
 
         services.TryAddTransient<MainPage>();
         services.TryAddTransient<IStorageService, MauiStorageService>();

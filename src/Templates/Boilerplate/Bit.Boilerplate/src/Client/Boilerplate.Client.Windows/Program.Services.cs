@@ -40,7 +40,10 @@ public static partial class Program
         {
             loggingBuilder.AddEventLog();
             loggingBuilder.AddEventSourceLogger();
-            loggingBuilder.AddDebug();
+            if (BuildConfiguration.IsDebug())
+            {
+                loggingBuilder.AddDebug();
+            }
         });
 
         services.AddClientCoreProjectServices();
