@@ -11,96 +11,19 @@ public partial class MainPage
         this.deviceCoordinator = deviceCoordinator;
 
         InitializeComponent();
-
-        SetupBlazorWebView();
-        SetupStatusBar();
     }
 
-    private void SetupBlazorWebView()
+    protected async override void OnAppearing()
     {
-        BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", (handler, view) =>
+        try
         {
-#if WINDOWS
-            if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
-            {
-                handler.PlatformView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
-            }
-#elif IOS || MACCATALYST
-            handler.PlatformView.Configuration.AllowsInlineMediaPlayback = true;
+            base.OnAppearing();
 
-            handler.PlatformView.ScrollView.Bounces = false;
-
-            handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
-            handler.PlatformView.Opaque = false;
-            if (BuildConfiguration.IsDebug())
-            {
-                if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
-                    || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
-                {
-                    handler.PlatformView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
-                }
-            }
-#elif ANDROID
-            handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
-
-            handler.PlatformView.OverScrollMode = Android.Views.OverScrollMode.Never;
-
-            handler.PlatformView.HapticFeedbackEnabled = false;
-
-            Android.Webkit.WebSettings settings = handler.PlatformView.Settings;
-
-            settings.AllowFileAccessFromFileURLs =
-                settings.AllowUniversalAccessFromFileURLs =
-                settings.AllowContentAccess =
-                settings.AllowFileAccess =
-                settings.DatabaseEnabled =
-                settings.JavaScriptCanOpenWindowsAutomatically =
-                settings.DomStorageEnabled = true;
-
-            if (BuildConfiguration.IsDebug())
-            {
-                settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
-            }
-
-            settings.BlockNetworkLoads =
-                settings.BlockNetworkImage = false;
-#endif
-        });
-
-        Loaded += async delegate
+            await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
+        }
+        catch (Exception exp)
         {
-            try
-            {
-#if WINDOWS
-                if (BuildConfiguration.IsRelease())
-                {
-                    var webView2 = (Microsoft.UI.Xaml.Controls.WebView2)blazorWebView.Handler!.PlatformView!;
-                    await webView2.EnsureCoreWebView2Async();
-                    var settings = webView2.CoreWebView2.Settings;
-                    settings.IsZoomControlEnabled = false;
-                    settings.AreBrowserAcceleratorKeysEnabled = false;
-                }
-#endif
-            }
-            catch (Exception exp)
-            {
-                exceptionHandler.Handle(exp);
-            }
-        };
-    }
-
-    private void SetupStatusBar()
-    {
-        Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), async (handler, view) =>
-        {
-            try
-            {
-                await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
-            }
-            catch (Exception exp)
-            {
-                exceptionHandler.Handle(exp);
-            }
-        });
+            exceptionHandler.Handle(exp);
+        }
     }
 }
