@@ -118,7 +118,7 @@
 
     <Target Name="BeforeBuildTasks" BeforeTargets="BeforeBuild">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
-        <Exec Condition="!Exists('node_modules/.bin/sass')" Command="npm install sass@1.72.0 --no-save" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition="!Exists('node_modules/.bin/sass')" Command="npm install sass@1.72.0 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
