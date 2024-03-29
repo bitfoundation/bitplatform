@@ -26,8 +26,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
     protected virtual void LogError(Exception exception, IDictionary<string, object?>? parameters = null)
     {
-        parameters ??= new Dictionary<string, object?>();
-
         var isDebug = BuildConfiguration.IsDebug();
 
         string exceptionMessage = (exception as KnownException)?.Message ??
