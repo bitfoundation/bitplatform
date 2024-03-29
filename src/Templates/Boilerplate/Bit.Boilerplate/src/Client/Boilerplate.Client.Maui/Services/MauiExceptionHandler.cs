@@ -7,8 +7,8 @@ namespace Boilerplate.Client.Maui.Services;
 /// </summary>
 public partial class MauiExceptionHandler : ExceptionHandlerBase
 {
-    protected override void LogError(Exception exception, IDictionary<string, object?> parameters)
+    protected override void Handle(Exception exception, Dictionary<string, object> parameters)
     {
-        base.LogError(exception, parameters);
+        base.Handle(exception, parameters);
     }
 }

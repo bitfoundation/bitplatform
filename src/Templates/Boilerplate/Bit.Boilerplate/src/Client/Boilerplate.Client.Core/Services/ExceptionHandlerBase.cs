@@ -21,10 +21,10 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         parameters ??= new Dictionary<string, object?>();
 
-        LogError(exp, parameters);
+        Handle(exp, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
     }
 
-    protected virtual void LogError(Exception exception, IDictionary<string, object?> parameters)
+    protected virtual void Handle(Exception exception, Dictionary<string, object> parameters)
     {
         var isDebug = BuildConfiguration.IsDebug();
 
