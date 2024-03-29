@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+﻿using Microsoft.AspNetCore.Components.WebView.Wpf;
 
 namespace Boilerplate.Client.Windows;
 
@@ -20,7 +20,12 @@ public partial class MainWindow
         BlazorWebView.Loaded += async delegate
         {
             await BlazorWebView.WebView.EnsureCoreWebView2Async();
-
+            var settings = BlazorWebView.WebView.CoreWebView2.Settings;
+            if (BuildConfiguration.IsRelease())
+            {
+                settings.IsZoomControlEnabled = false;
+                settings.AreBrowserAcceleratorKeysEnabled = false;
+            }
             BlazorWebView.WebView.NavigationCompleted += async delegate
             {
                 await BlazorWebView.WebView.ExecuteScriptAsync("Blazor.start()");
