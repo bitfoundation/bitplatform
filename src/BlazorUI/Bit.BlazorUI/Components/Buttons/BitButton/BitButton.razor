@@ -57,12 +57,12 @@ else
         }
         else
         {
+            @(Content ?? ChildContent)
+
             @if (IconName.HasValue())
             {
                 <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
             }
-
-            @(Content ?? ChildContent)
         }
     </button>
 }
