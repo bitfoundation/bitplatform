@@ -3,42 +3,30 @@
 .bit-stk {
     z-index: 1;
     position: sticky;
-
-    &.bit-rtl {
-        &.bit-stk-srt {
-            right: 0;
-            left: unset;
-        }
-
-        &.bit-stk-end {
-            left: 0;
-            right: unset;
-        }
-    }
 }
 
 .bit-stk-top {
-    top: 0;
+    inset-block-start: 0;
 }
 
 .bit-stk-btm {
-    bottom: 0;
+    inset-block-end: 0;
 }
 
 .bit-stk-tab {
-    top: 0;
-    bottom: 0;
+    inset-block-end: 0;
+    inset-block-start: 0;
 }
 
 .bit-stk-srt {
-    left: 0;
+    inset-inline-start: 0;
 }
 
 .bit-stk-end {
-    right: 0;
+    inset-inline-end: 0;
 }
 
 .bit-stk-sae {
-    left: 0;
-    right: 0;
+    inset-inline-end: 0;
+    inset-inline-start: 0;
 }

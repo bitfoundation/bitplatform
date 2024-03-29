@@ -805,6 +805,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         }
 
         UpdateSelectedItemsFromValues();
+
+        await OnChange.InvokeAsync();
     }
 
     private async Task HandleOnAddItemComboClick()
