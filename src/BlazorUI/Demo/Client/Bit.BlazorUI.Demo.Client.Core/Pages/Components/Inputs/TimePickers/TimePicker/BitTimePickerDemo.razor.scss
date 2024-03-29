@@ -9,6 +9,13 @@
     margin-bottom: rem2(10px);
 }
 
+.example-content {
+    width: 12rem;
+    display: flex;
+    overflow-x: auto;
+    flex-flow: column wrap;
+}
+
 ::deep {
     .validation-message {
         color: $Red20;
@@ -17,6 +24,27 @@
 
     .validation-errors {
         margin: rem2(5px);
+    }
+
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+        background-color: #211e1b;
+    }
+
+    .custom-inc-h,
+    .custom-inc-m {
+        background-color: red;
+    }
+
+    .custom-dec-h,
+    .custom-dec-m {
+        background-color: blue;
     }
 }
 

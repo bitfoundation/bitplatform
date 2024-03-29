@@ -48,7 +48,7 @@ public class BitTimePickerClassStyles
     public string? CalloutContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the input container of the BitTimePicker.
+    /// Custom CSS classes/styles for the time input container of the BitTimePicker.
     /// </summary>
     public string? TimeInputContainer { get; set; }
 
@@ -119,17 +119,17 @@ public class BitTimePickerClassStyles
     public string? DecreaseMinuteIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the Am Pm container of the BitTimePicker.
+    /// Custom CSS classes/styles for the AM/PM container of the BitTimePicker.
     /// </summary>
     public string? AmPmContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the Am button of the BitTimePicker.
+    /// Custom CSS classes/styles for the AM button of the BitTimePicker.
     /// </summary>
     public string? AmButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the Pm button of the BitTimePicker.
+    /// Custom CSS classes/styles for the PM button of the BitTimePicker.
     /// </summary>
     public string? PmButton { get; set; }
 
