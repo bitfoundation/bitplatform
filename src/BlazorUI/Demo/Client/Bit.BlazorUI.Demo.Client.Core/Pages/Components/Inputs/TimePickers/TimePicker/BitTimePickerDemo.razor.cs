@@ -191,6 +191,24 @@ public partial class BitTimePickerDemo
             DefaultValue = "1",
             Description = "Determines increment/decrement steps for time-picker's minute.",
         },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitTimePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the TimePicker.",
+            Href = "#timepicker-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "Classes",
+            Type = "BitTimePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the TimePicker.",
+            Href = "#timepicker-class-styles",
+            LinkType = LinkType.Link
+        }
     };
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
@@ -293,6 +311,214 @@ public partial class BitTimePickerDemo
         }
     };
 
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "timepicker-class-styles",
+            Title = "BitTimePickerClassStyles",
+            Parameters = new()
+            {
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Label of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "InputWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input wrapper of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "InputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Overlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the overlay of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Callout",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "CalloutContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "TimeInputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time input container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "HourInputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hour input container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "IncreaseHourButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the increase hour button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "IncreaseHourIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the increase hour icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "HourInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hour input of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "DecreaseHourButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the decrease hour button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "DecreaseHourIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the decrease hour icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Divider",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the divider of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "MinuteInputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the minute input container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "IncreaseMinuteButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the increase minute button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "IncreaseMinuteIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the increase minute icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "MinuteInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the minute input of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "DecreaseMinuteButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the decrease minute button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "DecreaseMinuteIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the decrease minute icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "AmPmContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the AM/PM container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "AmButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the AM button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "PmButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the PM button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "CloseButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "CloseButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button icon of the BitTimePicker."
+                }
+            }
+        }
+    };
+
 
 
     private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);
@@ -343,6 +569,48 @@ public partial class BitTimePickerDemo
                Placeholder=""Select a time..."" />";
 
     private readonly string example5RazorCode = @"
+<style>
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+        background-color: #211e1b;
+    }
+
+    .custom-inc-h, .custom-inc-m {
+        background-color: red;
+    }
+
+    .custom-dec-h,
+    .custom-dec-m {
+        background-color: blue;
+    }
+</style>
+<BitTimePicker Style=""padding: 1rem; background: purple;"" />
+
+<BitTimePicker Class=""custom-class"" />
+
+<BitTimePicker Styles=""@(new() { Root = ""margin: 1rem; border: 1px solid gold;"",
+                                 Divider = ""color: green;"",
+                                 IncreaseHourButton = ""color: red;"",
+                                 IncreaseMinuteButton = ""color: red;"",
+                                 DecreaseHourButton = ""color: blue;"",
+                                 DecreaseMinuteButton = ""color: blue;"",
+                                 HourInput = ""color: purple;"",
+                                 MinuteInput = ""color: purple;"" })"" />
+
+<BitTimePicker Classes=""@(new() { Root = ""custom-root"",
+                                  IncreaseHourButton = ""custom-inc-h"",
+                                  IncreaseMinuteButton = ""custom-inc-m"",
+                                  DecreaseHourButton = ""custom-dec-h"",
+                                  DecreaseMinuteButton = ""custom-dec-m"" })"" />
+";
+
+    private readonly string example6RazorCode = @"
 <EditForm Model=""formValidationTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -370,7 +638,7 @@ public partial class BitTimePickerDemo
         @successMessage
     </BitMessageBar>
 }";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 public class FormValidationTimePickerModel
 {
     [Required]
@@ -393,19 +661,19 @@ private void HandleInvalidSubmit()
     successMessage = string.Empty;
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
                AllowTextInput=""true""
                Label=""Start time""
                AriaLabel=""Select a time"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time.""
                Placeholder=""Select a time...""
                ValueFormat=""hh-mm.ss"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitTimePicker @ref=""timePicker""
                Style=""max-width: 175px""
                AriaLabel=""Select a time""
@@ -414,7 +682,7 @@ private void HandleInvalidSubmit()
        Custom label <BitIconButton IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
    </LabelTemplate>
 </BitTimePicker>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private BitTimePicker timePicker;
 
 private async Task OpenCallout()
@@ -422,16 +690,16 @@ private async Task OpenCallout()
     await timePicker.OpenCallout();
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitTimePicker @bind-Value=""@selectedTime""
                Style=""max-width: 175px""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />
 <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time""
                IconLocation=""BitIconLocation.Left""
@@ -441,13 +709,13 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
    </IconTemplate>
 </BitTimePicker>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
                AriaLabel=""Select a time""
                IconName=""@BitIconName.Airplane""
                Placeholder=""Select a time..."" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <EditForm Model=""formValidationTimePickerModel"">
     <DataAnnotationsValidator />
     <div>
@@ -462,7 +730,7 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
         <ValidationSummary />
     </div>
 </EditForm>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class FormValidationTimePickerModel
 {
     [Required]
@@ -471,13 +739,13 @@ public class FormValidationTimePickerModel
 
 private FormValidationTimePickerModel formValidationTimePickerModel = new();";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
                IsResponsive=""true""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
                Label=""HourStep = 2""
                HourStep=""2""
