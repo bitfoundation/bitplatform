@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Client.Maui.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui;
 
@@ -28,6 +29,16 @@ public static partial class MauiProgram
                 BaseAddress = apiServerAddress
             };
             return httpClient;
+        });
+
+        services.AddLogging(logginBuildr =>
+        {
+            logginBuildr.AddDebug();
+            if (OperatingSystem.IsWindows())
+            {
+                logginBuildr.AddEventLog();
+            }
+            logginBuildr.AddEventSourceLogger();
         });
 
         services.TryAddTransient<MainPage>();

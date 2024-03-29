@@ -103,6 +103,9 @@
 		<PackageReference Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
         <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.4" />
         <PackageReference Include="Oscore.Maui.InAppReviews" Version="1.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing
