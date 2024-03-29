@@ -15,9 +15,7 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
     public void Handle(Exception exp, IDictionary<string, object?>? parameters = null)
     {
         if (exp is TaskCanceledException)
-        {
             return;
-        }
 
         parameters ??= new Dictionary<string, object?>();
 
