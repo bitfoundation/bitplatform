@@ -8,7 +8,7 @@
     z-index: 16;
     height: 100%;
     display: flex;
-    position: fixed;
+    position: sticky;
     min-height: 100%;
     max-height: 100vh;
     overflow: hidden auto;
@@ -16,10 +16,10 @@
     width: rem2($navMenuWidth);
     justify-content: flex-start;
     background-color: $bit-color-background-primary;
-    padding-top: calc(rem2(48px) + var(--bit-status-bar-height));
+    top: calc(rem2(48px) + var(--bit-status-bar-height));
 
     .bit-ios & {
-        padding-top: calc(rem2(48px) + env(safe-area-inset-top));
+        top: calc(rem2(48px) + env(safe-area-inset-top));
     }
 }
 
