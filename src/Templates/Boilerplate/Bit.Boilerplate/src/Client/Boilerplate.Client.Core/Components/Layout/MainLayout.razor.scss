@@ -7,9 +7,9 @@
     width: 100%;
     display: flex;
     min-height: 100vh;
-    flex-flow: column;
     position: relative;
-    background-color: $bit-color-background-secondary;
+    box-sizing: border-box;
+    justify-content: flex-start;
     padding-top: calc(rem2(48px) + var(--bit-status-bar-height));
 
     .bit-ios & {
@@ -17,17 +17,24 @@
     }
 }
 
-.main--authenticated {
+.site-content {
+    width: 100%;
     display: flex;
+    min-height: 100vh;
     flex-flow: column;
-    margin-left: rem2($navMenuWidth);
-    width: calc(100% - rem2($navMenuWidth));
+    position: relative;
+    background-color: $bit-color-background-secondary;
 
-    @include lt-lg {
-        width: 100%;
-        margin-left: 0;
+    &.authenticated {
+        width: calc(100% - rem2($navMenuWidth));
+
+        @include lt-lg {
+            width: 100%;
+        }
     }
 }
+
+
 
 .main-content {
     flex-grow: 1;

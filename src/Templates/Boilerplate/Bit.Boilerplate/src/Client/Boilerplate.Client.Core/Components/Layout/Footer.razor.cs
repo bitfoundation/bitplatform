@@ -4,10 +4,10 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class Footer
 {
     [AutoInject] private Cookie cookie = default!;
-    [AutoInject] private BitThemeManager bitThemeManager = default!;
-    [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
-    [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private IPubSubService pubSubService = default!;
+    [AutoInject] private BitThemeManager bitThemeManager = default!;
+    [AutoInject] private CultureInfoManager cultureInfoManager = default!;
+    [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
     private BitDropdownItem<string>[] cultures = default!;
 

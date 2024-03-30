@@ -11,7 +11,7 @@ public class CultureInfoManager
         ("English US", "en-US"),
         ("English UK", "en-GB"),
         ("Française", "fr-FR"),
-        // ("فارسی", "fa-IR"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
+        ("فارسی", "fa-IR"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
     ];
 
     public static CultureInfo CreateCultureInfo(string cultureInfoId)
