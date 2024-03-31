@@ -1,4 +1,5 @@
-﻿@import '../../Styles/abstracts/_functions.scss';
+﻿@import '../../Styles/abstracts/_vars.scss';
+@import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
@@ -8,6 +9,7 @@
     align-items: center;
     justify-content: center;
     flex-flow: column nowrap;
+    min-height: rem2($footerHeight);
 
     .bit-ios & {
         padding-bottom: env(safe-area-inset-bottom);
@@ -19,8 +21,8 @@
     gap: rem2(4px);
     display: flex;
     position: relative;
-    padding: rem2(4px) 0;
     align-items: center;
+    padding: rem2(4px) 0;
     min-height: rem2(54px);
     justify-content: center;
     flex-flow: column nowrap;
@@ -74,21 +76,21 @@
 
 ::deep {
     .culture-drp {
-        left: rem2(8px);
         width: rem2(104px);
         position: absolute;
+        inset-inline-start: rem2(8px);
     }
 }
 
 .toggle-theme-btn {
-    right: rem2(12px);
-    position: absolute;
     padding: 0;
     border: none;
     cursor: pointer;
     height: rem2(35px);
-    min-width: rem2(35px);
+    position: absolute;
     border-radius: 50%;
+    min-width: rem2(35px);
+    inset-inline-end: rem2(12px);
     color: $bit-color-primary-text;
     background-color: $bit-color-primary-main;
 
@@ -106,7 +108,7 @@
 
     &.dark-theme {
         .icon-container {
-            padding: 2px 0px 0 1px;
+            padding: 2px 0 0 1px;
         }
     }
 }

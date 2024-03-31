@@ -31,7 +31,11 @@
 }
 
 ::deep .back-btn {
-    margin-right: rem2(12px);
+    margin-inline-end: rem2(12px);
+
+    &[dir=rtl] {
+        transform: scale(-1);
+    }
 }
 
 .page-title {
@@ -61,7 +65,6 @@
 .color-container {
     gap: 1rem;
     display: flex;
-    align-items: center;
     flex-flow: column wrap;
     justify-content: flex-start;
 }
@@ -72,14 +75,14 @@
     cursor: pointer;
     width: rem2(32px);
     height: rem2(32px);
-    margin-right: rem2(12px);
     border-radius: rem2(2px);
+    margin-inline-end: rem2(12px);
 
     @include sm {
         width: rem2(28px);
         height: rem2(28px);
-        margin-right: rem2(8px);
         margin-bottom: rem2(8px);
+        margin-inline-end: rem2(8px);
     }
 }
 
@@ -94,12 +97,12 @@
     width: rem2(24px);
     height: rem2(24px);
     display: inline-block;
-    margin-right: rem2(8px);
     border-radius: rem2(2px);
 }
 
 .custom-color-container {
     display: flex;
+    gap: rem2(8px);
     align-items: center;
     justify-content: flex-start;
 }

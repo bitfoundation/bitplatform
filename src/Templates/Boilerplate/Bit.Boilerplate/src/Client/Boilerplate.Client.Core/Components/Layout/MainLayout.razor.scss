@@ -10,10 +10,10 @@
     position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
-    padding-top: calc(rem2(48px) + var(--bit-status-bar-height));
+    padding-top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
 
     .bit-ios & {
-        padding-top: calc(rem2(48px) + env(safe-area-inset-top));
+        padding-top: calc(rem2($headerHeight) + env(safe-area-inset-top));
     }
 }
 
@@ -94,7 +94,7 @@
 
     .form-input-error,
     .validation-message {
-        text-align: left;
+        text-align: start;
         font-size: rem2(12px);
         line-height: rem2(16px);
         color: $bit-color-state-error;
@@ -106,9 +106,9 @@
     }
 
     .form-message-bar {
-        top: 0;
-        left: 0;
         position: absolute;
+        inset-block-start: 0;
+        inset-inline-start: 0;
         border-radius: rem2(4px) rem2(4px) 0 0;
     }
 }
