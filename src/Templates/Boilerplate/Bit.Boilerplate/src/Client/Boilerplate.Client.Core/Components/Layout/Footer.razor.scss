@@ -10,6 +10,7 @@
     justify-content: center;
     flex-flow: column nowrap;
     min-height: rem2($footerHeight);
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding-bottom: env(safe-area-inset-bottom);

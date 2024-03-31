@@ -7,12 +7,23 @@
     z-index: 16;
     height: 100vh;
     display: flex;
+    position: sticky;
+    max-height: 100vh;
     overflow: hidden auto;
     flex-flow: column nowrap;
     justify-content: flex-start;
     min-width: rem2($navMenuWidth);
-    max-height: calc(100vh - rem2($headerHeight));
+    padding-bottom: rem2($headerHeight);
     background-color: $bit-color-background-primary;
+    top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
+
+    .bit-ios & {
+        top: calc(rem2($headerHeight) + env(safe-area-inset-top));
+    }
+
+    &::-webkit-scrollbar {
+        width: 0;
+    }
 }
 
 @include lt-lg {

@@ -6,7 +6,7 @@
     <div dir="@currentDir?.ToString()">
         <Header OnToggleMenu=ToggleMenuHandler />
 
-        <div class="main">
+        <main class="@BitCss.Class.Color.Background.Primary">
             @if (isUserAuthenticated)
             {
                 <NavMenu @bind-IsMenuOpen=isMenuOpen />
@@ -19,7 +19,7 @@
                     </AppErrorBoundary>
                 </div>
             </div>
-        </div>
+        </main>
 
         <Footer />
 
