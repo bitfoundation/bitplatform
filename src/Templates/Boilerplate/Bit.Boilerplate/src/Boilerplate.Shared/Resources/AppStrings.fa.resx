@@ -548,10 +548,10 @@
     <value>این دسته دارای محصول است، بنابراین نمی توانید ان را حذف کنید</value>
   </data>
   <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
-    <value>آیا مطمئن هستید که می خواهید دسته بندی {0} را حذف</value>
+    <value>آیا مطمئن هستید که می خواهید دسته بندی {0} را حذف کنید؟</value>
   </data>
   <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-    <value>آیا مطمئن هستید که می خواهید محصول {0} را حذف کنید</value>
+    <value>آیا مطمئن هستید که می خواهید محصول {0} را حذف کنید؟</value>
   </data>
   <data name="DeleteCategory" xml:space="preserve">
     <value>حذف دسته</value>
