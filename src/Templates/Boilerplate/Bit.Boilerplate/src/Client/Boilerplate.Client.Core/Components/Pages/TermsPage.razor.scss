@@ -4,6 +4,7 @@
 .page-container {
     width: 100%;
     display: flex;
+    direction: ltr;
     align-items: center;
     align-self: flex-start;
     flex-flow: column nowrap;

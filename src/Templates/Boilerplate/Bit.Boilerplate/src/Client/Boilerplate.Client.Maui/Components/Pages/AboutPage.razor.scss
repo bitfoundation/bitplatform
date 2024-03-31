@@ -9,6 +9,7 @@
 .page-container {
     width: 100%;
     display: flex;
+    direction: ltr;
     align-items: center;
     padding: 0 rem2(16px);
     flex-flow: column nowrap;
