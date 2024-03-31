@@ -199,7 +199,7 @@
     <value>پروفایل با موفقیت به روز شد.</value>
   </data>
   <data name="ConfirmNewPassword" xml:space="preserve">
-    <value>تایید پسورد جدید</value>
+    <value>تایید رمز عبور جدید</value>
   </data>
   <data name="Email" xml:space="preserve">
     <value>ایمیل</value>
@@ -208,7 +208,7 @@
     <value>رمز عبور</value>
   </data>
   <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
-    <value>پسورد شما با موفقیت تغییر کرد.</value>
+    <value>رمز عبور شما با موفقیت تغییر کرد.</value>
   </data>
   <data name="ResendConfirmationLinkMessage" xml:space="preserve">
     <value>لینک تایید دوباره به آدرس ایمیل شما ارسال شده است.</value>
@@ -250,7 +250,7 @@
     <value>برای ادامه باید وارد شوید.</value>
   </data>
   <data name="InvalidUsernameOrPassword" xml:space="preserve">
-    <value>نام کاربری یا پسورد نامعتبر است</value>
+    <value>نام کاربری یا رمز عبور نامعتبر است</value>
   </data>
   <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
@@ -341,7 +341,7 @@
     <value>به نظر می رسد لینک تایید نامعتبر است یا منقضی شده است.</value>
   </data>
   <data name="NewPassword" xml:space="preserve">
-    <value>پسورد جدید</value>
+    <value>رمز عبور جدید</value>
   </data>
   <data name="No" xml:space="preserve">
     <value>نه</value>
@@ -362,7 +362,7 @@
     <value>ارسال مجدد ایمیل</value>
   </data>
   <data name="ResetPasswordTitle" xml:space="preserve">
-    <value>ریست پسورد</value>
+    <value>ریست رمز عبور</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>ذخیره</value>
@@ -398,7 +398,7 @@
     <value>تاریخ تولد خود را انتخاب کنید</value>
   </data>
   <data name="ResetPassword" xml:space="preserve">
-    <value>ریست پسورد</value>
+    <value>ریست رمز عبور</value>
   </data>
   <data name="Action" xml:space="preserve">
     <value>اقدام</value>

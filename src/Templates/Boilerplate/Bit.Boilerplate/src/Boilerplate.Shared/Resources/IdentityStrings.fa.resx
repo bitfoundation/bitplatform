@@ -145,16 +145,16 @@
     <value>نام کاربری '{0}' نامعتبر است، فقط می تواند حاوی حروف یا ارقام باشد.</value>
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
-    <value>یک کاربر با این لاگین در حال حاضر وجود دارد.</value>
+    <value>در حال حاضر یک کاربر با این لاگین وجود دارد.</value>
   </data>
   <data name="PasswordMismatch" xml:space="preserve">
-    <value>پسورد نادرست.</value>
+    <value>رمز عبور نادرست.</value>
   </data>
   <data name="PasswordRequiresDigit" xml:space="preserve">
-    <value>پسورد ها باید حداقل یک رقم ('۰'-'۹') داشته باشند.</value>
+    <value>رمز عبور باید حداقل یک رقم ('۰'-'۹') داشته باشند.</value>
   </data>
   <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>پسوردها باید حداقل یک حروف کوچک ('a'-'z') داشته باشند.</value>
+    <value>رمز عبور باید حداقل یک حروف کوچک ('a'-'z') داشته باشند.</value>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
     <value>رمزهای عبور باید حداقل یک کاراکتر غیر عددی داشته باشند.</value>
