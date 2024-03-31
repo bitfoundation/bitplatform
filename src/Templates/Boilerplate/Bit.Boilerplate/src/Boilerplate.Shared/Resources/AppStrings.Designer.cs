@@ -142,7 +142,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to delete {0}.
+        ///   Looks up a localized string similar to Are you sure you want to delete {0}?.
         /// </summary>
         public static string AreYouSureWannaDelete {
             get {
@@ -787,6 +787,15 @@ namespace Boilerplate.Shared.Resources {
         public static string No {
             get {
                 return ResourceManager.GetString("No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is nothing here..
+        /// </summary>
+        public static string NotFoundText {
+            get {
+                return ResourceManager.GetString("NotFoundText", resourceCulture);
             }
         }
         
