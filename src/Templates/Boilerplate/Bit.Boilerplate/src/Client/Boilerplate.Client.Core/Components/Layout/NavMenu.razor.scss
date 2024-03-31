@@ -5,11 +5,13 @@
 
 .main-container {
     z-index: 16;
-    height: 100vh;
+    height: 100%;
     display: flex;
     position: sticky;
+    min-height: 100%;
     max-height: 100vh;
     overflow: hidden auto;
+    inset-inline-start: 0;
     flex-flow: column nowrap;
     justify-content: flex-start;
     min-width: rem2($navMenuWidth);
