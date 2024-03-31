@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConcurrencyFailure" xml:space="preserve">
-    <value>منبع تغییر داده شده بود است، شکست همزمانی</value>
+    <value>منبع تغییر داده شده بوده، شکست همزمانی</value>
   </data>
   <data name="DefaultError" xml:space="preserve">
     <value>یک خطای ناشناخته رخ داده است.</value>
@@ -148,7 +148,7 @@
     <value>یک کاربر با این لاگین در حال حاضر وجود دارد.</value>
   </data>
   <data name="PasswordMismatch" xml:space="preserve">
-    <value>پسورد نآدرست.</value>
+    <value>پسورد نادرست.</value>
   </data>
   <data name="PasswordRequiresDigit" xml:space="preserve">
     <value>پسورد ها باید حداقل یک رقم ('۰'-'۹') داشته باشند.</value>
