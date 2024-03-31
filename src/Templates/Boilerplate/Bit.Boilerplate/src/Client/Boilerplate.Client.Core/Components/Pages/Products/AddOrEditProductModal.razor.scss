@@ -18,10 +18,10 @@
     }
 
     @include sm {
-        left: 0;
-        bottom: 0;
         width: 100%;
         position: fixed;
+        inset-block-end: 0;
+        inset-inline-start: 0;
         border-radius: rem2(8px) rem2(8px) 0 0;
     }
 }

@@ -15,9 +15,9 @@
 }
 
 .modal-close-btn-container {
-    top: 0;
-    right: 0;
     position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 0;
 }
 
 .modal-title {
