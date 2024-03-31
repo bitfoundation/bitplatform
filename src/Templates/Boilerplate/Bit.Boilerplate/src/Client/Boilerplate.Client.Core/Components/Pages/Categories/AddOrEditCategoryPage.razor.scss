@@ -59,6 +59,7 @@
 
 .form-input-container {
     width: 100%;
+    min-width: rem2(270px);
     margin-bottom: rem2(24px);
 }
 
@@ -69,6 +70,12 @@
     justify-content: flex-start;
 }
 
+.color-btn-container {
+    gap: 0.75rem;
+    display: flex;
+    flex-flow: row wrap;
+}
+
 .color-btn {
     border: none;
     outline: none;
@@ -76,14 +83,6 @@
     width: rem2(32px);
     height: rem2(32px);
     border-radius: rem2(2px);
-    margin-inline-end: rem2(12px);
-
-    @include sm {
-        width: rem2(28px);
-        height: rem2(28px);
-        margin-bottom: rem2(8px);
-        margin-inline-end: rem2(8px);
-    }
 }
 
 .color-btn--active {
@@ -94,15 +93,15 @@
 }
 
 .color-square {
-    width: rem2(24px);
-    height: rem2(24px);
+    width: rem2(32px);
+    height: rem2(32px);
     display: inline-block;
     border-radius: rem2(2px);
 }
 
 .custom-color-container {
+    gap: 0.75rem;
     display: flex;
-    gap: rem2(8px);
     align-items: center;
     justify-content: flex-start;
 }
