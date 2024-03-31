@@ -9,7 +9,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     private bool IsOpenHasBeenSet;
     private bool ValuesHasBeenSet;
 
-    private bool isRtl;
     private bool isOpen;
     private bool isRequired;
     private bool chips;
