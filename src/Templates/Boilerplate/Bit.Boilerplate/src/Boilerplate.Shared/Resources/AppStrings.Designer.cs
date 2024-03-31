@@ -791,6 +791,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There is nothing here..
+        /// </summary>
+        public static string NotFoundText {
+            get {
+                return ResourceManager.GetString("NotFoundText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No todos yet.
         /// </summary>
         public static string NoTodos {
