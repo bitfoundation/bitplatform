@@ -1,19 +1,16 @@
 @import "../../../Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss";
 
-.values {
-    background: #71afe5;
-    height: 15rem;
-    width: 100%;
-}
-
 .page-container {
     width: 100%;
     display: flex;
-    direction: ltr;
     align-items: center;
     padding: 0 rem2(16px);
     flex-flow: column nowrap;
     justify-content: flex-start;
+}
+
+::deep * {
+    direction: ltr;
 }
 
 .page-section {

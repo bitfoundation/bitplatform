@@ -49,11 +49,11 @@
                                Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
                                Accept="image/*"
                                AutoUploadEnabled="true"
+                               MaxSize="1024 * 1024 * 10"
+                               ChunkedUploadEnabled="false"
                                UploadUrl="@profileImageUploadUrl"
                                OnUploadComplete="WrapHandled(RefreshProfileData)"
-                               OnUploadFailed="() => profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]"
-                               MaxSize="1024 * 1024 * 10"
-                               ChunkedUploadEnabled="false" />
+                               OnUploadFailed="() => profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]" />
                 <div class="form-input-error">@profileImageError</div>
             </div>
 
@@ -68,10 +68,11 @@
                 </div>
 
                 <div class="form-input-container">
-                    <BitDatePicker @bind-Value="userToEdit.BirthDate"
-                                   Label="@Localizer[nameof(AppStrings.BirthDate)]"
+                    <BitDatePicker IsResponsive @bind-Value="userToEdit.BirthDate"
                                    Class="edit-profile-dtp"
-                                   Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" GoToToday="@Localizer[nameof(AppStrings.GoToToday)]" />
+                                   Label="@Localizer[nameof(AppStrings.BirthDate)]"
+                                   GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"
+                                   Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
                     <ValidationMessage For="@(() => userToEdit.BirthDate)" />
                 </div>
 
