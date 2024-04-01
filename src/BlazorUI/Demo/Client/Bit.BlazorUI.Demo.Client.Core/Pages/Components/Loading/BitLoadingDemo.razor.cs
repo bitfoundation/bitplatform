@@ -28,8 +28,8 @@ public partial class BitLoadingDemo
         new()
         {
             Name = "Color",
-            Type = "string",
-            DefaultValue = "#FFFFFF",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The Color of the loading component compatible with colors in CSS."
         },
         new()

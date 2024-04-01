@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using Boilerplate.Client.Windows.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Windows;
 
@@ -17,7 +18,7 @@ public static partial class Program
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
         services.TryAddTransient(sp =>
         {
-            var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
+            var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress
@@ -34,6 +35,16 @@ public static partial class Program
         services.TryAddTransient<IStorageService, WindowsStorageService>();
         services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
+
+        services.AddLogging(loggingBuilder =>
+        {
+            loggingBuilder.AddEventLog();
+            loggingBuilder.AddEventSourceLogger();
+            if (BuildConfiguration.IsDebug())
+            {
+                loggingBuilder.AddDebug();
+            }
+        });
 
         services.AddClientCoreProjectServices();
     }

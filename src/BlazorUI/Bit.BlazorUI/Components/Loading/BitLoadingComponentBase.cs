@@ -12,7 +12,7 @@ public class BitLoadingComponentBase : ComponentBase
     /// <summary>
     /// The Color of the loading component compatible with colors in CSS.
     /// </summary>
-    [Parameter] public string Color { get; set; } = "#FFFFFF";
+    [Parameter] public string? Color { get; set; }
 
     /// <summary>
     /// Custom CSS class for the root element of the component.

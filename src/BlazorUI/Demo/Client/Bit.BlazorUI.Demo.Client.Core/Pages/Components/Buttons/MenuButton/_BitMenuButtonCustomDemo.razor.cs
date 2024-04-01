@@ -152,6 +152,28 @@ public partial class _BitMenuButtonCustomDemo
         }
     };
 
+    private List<MenuActionItem> rtlCustoms = new()
+    {
+        new()
+        {
+            Name = "گزینه الف",
+            Id = "A",
+            Icon = BitIconName.Emoji
+        },
+        new()
+        {
+            Name = "گزینه ب",
+            Id = "B",
+            Icon = BitIconName.Emoji
+        },
+        new()
+        {
+            Name = "گزینه ج",
+            Id = "C",
+            Icon = BitIconName.Emoji2
+        }
+    };
+
     protected override void OnInitialized()
     {
         twoWaySelectedCustom = basicCustoms[2];
@@ -797,4 +819,54 @@ protected override void OnInitialized()
 {
     twoWaySelectedCustom = basicCustoms[2];
 }";
+
+    private readonly string example12RazorCode = @"
+<BitMenuButton Text=""گزینه ها""
+               Dir=""BitDir.Rtl""
+               Items=""rtlCustoms""
+               IconName=""@BitIconName.Edit""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })"" />
+
+<BitMenuButton Split
+               Text=""گرینه ها""
+               Dir=""BitDir.Rtl""
+               Items=""rtlCustoms""
+               IconName=""@BitIconName.Add""
+               ButtonStyle=""BitButtonStyle.Standard""
+               ChevronDownIcon=""@BitIconName.DoubleChevronDown""
+               NameSelectors=""@(new() { Text = { Selector = item => item.Name },
+                                        Key = { Selector = item => item.Id },
+                                        IconName = { Selector = item => item.Icon } })"" />";
+    private readonly string example12CsharpCode = @"
+public class MenuActionItem
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private List<MenuActionItem> rtlCustoms = new()
+{
+    new()
+    {
+        Name = ""گزینه الف"",
+        Id = ""A"",
+        Icon = BitIconName.Emoji
+    },
+    new()
+    {
+        Name = ""گزینه ب"",
+        Id = ""B"",
+        Icon = BitIconName.Emoji
+    },
+    new()
+    {
+        Name = ""گزینه ج"",
+        Id = ""C"",
+        Icon = BitIconName.Emoji2
+    }
+};";
 }

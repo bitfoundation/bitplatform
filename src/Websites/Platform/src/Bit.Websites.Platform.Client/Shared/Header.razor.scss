@@ -233,15 +233,14 @@
 .header-menu-popup {
     display: none;
     z-index: 1302;
-    top: rem2(36px);
+    top: rem2(44px);
     cursor: default;
     position: absolute;
     flex-flow: row nowrap;
     border-radius: rem2(4px);
     padding: rem2(8px) rem2(16px);
-    box-shadow: $bit-box-shadow-callout;
-    border-color: $bit-color-border-secondary;
-    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-secondary;
 
     @include sm {
         padding: 0;
@@ -311,7 +310,8 @@
     .menu-item--disabled {
         cursor: default;
 
-        .item-title {
+        .item-title,
+        .item-desc {
             color: $bit-color-foreground-disabled;
         }
 

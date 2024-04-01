@@ -27,14 +27,14 @@
         return files;
     }
 
-    public static upload(id: string, from: number, to: number, index: number, headers: Record<string, string> = {}): void {
+    public static upload(id: string, from: number, to: number, index: number, uploadUrl: string, headers: Record<string, string> = {}): void {
         const uploaders = this.fileUploaders.filter(u => u.id === id);
 
         if (index === -1) {
-            uploaders.forEach(u => u.upload(from, to, headers));
+            uploaders.forEach(u => u.upload(from, to, uploadUrl, headers));
         } else {
             const uploader = uploaders.filter(u => u.index === index)[0];
-            uploader.upload(from, to, headers);
+            uploader.upload(from, to, uploadUrl, headers);
         }
     }
 
@@ -103,7 +103,7 @@ class BitFileUploader {
     id: string;
     dotnetReference: DotNetObject;
     inputElement: HTMLInputElement;
-    uploadEndpointUrl: string;
+    uploadUrl: string;
     headers: Record<string, string>;
     index: number;
 
@@ -113,7 +113,7 @@ class BitFileUploader {
         this.id = id;
         this.dotnetReference = dotnetReference;
         this.inputElement = inputElement;
-        this.uploadEndpointUrl = uploadEndpointUrl;
+        this.uploadUrl = uploadEndpointUrl;
         this.headers = headers;
         this.index = index;
 
@@ -133,7 +133,7 @@ class BitFileUploader {
         };
     }
 
-    upload(from: number, to: number, headers: Record<string, string>): void {
+    upload(from: number, to: number, uploadUrl: string, headers: Record<string, string>): void {
         const files = this.inputElement.files;
         if (files === null) return;
 
@@ -142,7 +142,7 @@ class BitFileUploader {
         const chunk = file.slice(from, to);
         data.append('file', chunk, file.name);
 
-        this.xhr.open('POST', this.uploadEndpointUrl, true);
+        this.xhr.open('POST', uploadUrl ? uploadUrl : this.uploadUrl, true);
 
         Object.keys(this.headers).forEach(h => {
             this.xhr.setRequestHeader(h, this.headers[h]);

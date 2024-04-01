@@ -135,7 +135,6 @@ public partial class BitActionButtonDemo
         }
     };
 
-
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
         new()
@@ -301,5 +300,8 @@ private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
 }";
+
+    private readonly string example8RazorCode = @"
+<BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">ساخت حساب</BitActionButton>";
 
 }

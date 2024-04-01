@@ -84,7 +84,10 @@ public partial class _BitDropdownOptionDemo
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
-    private string comboBoxValue = default!;
+    private string comboBoxValueSample1 = default!;
+    private string comboBoxValueSample2 = default!;
+    private string comboBoxValueSample3 = default!;
+    private string comboBoxValueSample4 = default!;
     private ICollection<string> comboBoxValues = [];
 
 

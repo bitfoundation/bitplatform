@@ -264,45 +264,108 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Virtualization" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="ComboBox" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
-        <div style="font-size:1.125rem;font-weight:bold">Items:</div>
-        <br />
-        <div class="example-content">
-            <BitDropdown Label="Single select"
-                         Items="virtualizeItems1"
-                         DefaultValue="@string.Empty"
-                         Placeholder="Select an item"
-                         Virtualize="true" />
-
-            <BitDropdown Label="Multi select"
-                         Items="virtualizeItems2"
-                         DefaultValue="@string.Empty"
-                         IsMultiSelect="true"
-                         Placeholder="Select items"
-                         Virtualize="true" />
+        <div class="example-desc">When the <strong>Combo</strong> parameter is true, you can type in BitDropdown input and search between items.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample1"
+                         Combo
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
+                         Items="comboBoxItems" />
+            <strong>Value: @comboBoxValueSample1</strong>
         </div>
-        <br /><br /><br /><br /><br />
-        <div style="font-size:1.125rem;font-weight:bold">ItemsProvider:</div>
         <br />
-        <div class="example-content">
-            <BitDropdown Label="Single select"
-                         Virtualize="true"
-                         ItemsProvider="LoadItems"
-                         Placeholder="Select an item"
-                         TItem="BitDropdownItem<string>" TValue="string" />
-
-            <BitDropdown Label="Multi select"
-                         Virtualize="true"
+        <br />
+        <div class="example-desc">When the <strong>Chips</strong> parameter is true, shows the selected items like chips in the ComboBox.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample2"
+                         Combo Chips
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
+                         Items="comboBoxItems" />
+            <strong>Value: @comboBoxValueSample2</strong>
+        </div>
+        <br />
+        <br />
+        <div class="example-desc">When the <strong>Dynamic</strong> parameter is true, you can add a new item in the ComboBox.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample3"
+                         Combo Dynamic
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
+                         Items="comboBoxItems"
+                         DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
+                         OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
+            <strong>Value: @comboBoxValueSample3</strong>
+        </div>
+        <br />
+        <br />
+        <div class="example-desc">When the <strong>Combo</strong>, <strong>Chips</strong> and <strong>Dynamic</strong> parameters are true, you can add a new item in the ComboBox (pressing the enter key or touching the add button on the mobile).</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample4"
+                         Combo Chips Dynamic
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
+                         Items="comboBoxItems"
+                         IsResponsive="true"
+                         DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
+                         OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
+            <strong>Value: @comboBoxValueSample4</strong>
+            <br />
+            <BitDropdown @bind-Values="comboBoxValues"
+                         Combo Chips Dynamic
+                         Label="Multi select combo box"
+                         Placeholder="Select options"
+                         Items="comboBoxItems"
                          IsMultiSelect="true"
-                         ItemsProvider="LoadItems"
-                         Placeholder="Select items"
-                         TItem="BitDropdownItem<string>" TValue="string" />
+                         IsResponsive="true"
+                         DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
+                         OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
+            <strong>Values: @string.Join(',', comboBoxValues)</strong>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitDropdown Label="Prefix"
+                         Prefix="Fruits:"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+
+            <BitDropdown Label="Suffix"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+
+
+            <BitDropdown Label="Prefix and Suffix"
+                         Prefix="Fruits:"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string" />
+
+            <BitDropdown Label="Disabled"
+                         Prefix="Fruits:"
+                         Suffix="kg"
+                         Items="GetBasicItems()"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownItem<string>"
+                         TValue="string"
+                         IsEnabled="false" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
         <div style="display:flex;justify-content:end">
             <div class="example-content">
@@ -310,20 +373,20 @@
                              Items="GetRtlItems()"
                              DefaultValue="@string.Empty"
                              Placeholder="لطفا انتخاب کنید"
-                             IsRtl="true" />
+                             Dir="BitDir.Rtl" />
 
                 <BitDropdown Label="چند انتخابی"
                              Items="GetRtlItems()"
                              DefaultValue="@string.Empty"
                              Placeholder="انتخاب چند گزینه ای"
                              IsMultiSelect="true"
-                             IsRtl="true" />
+                             Dir="BitDir.Rtl" />
             </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Drop direction" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="Drop direction" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Auto"
@@ -341,7 +404,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Clear button" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<ComponentExampleBox Title="Clear button" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div class="example-content">
             <div>
@@ -366,7 +429,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<ComponentExampleBox Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <ExamplePreview>
         <div class="example-content">
             @if (string.IsNullOrEmpty(successMessage))
@@ -404,67 +467,40 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ComboBox" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<ComponentExampleBox Title="Virtualization" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <ExamplePreview>
+        <div style="font-size:1.125rem;font-weight:bold">Items:</div>
+        <br />
         <div class="example-content">
-            <div>
-                <BitDropdown @bind-Value="comboBoxValue"
-                             Combo Chips Dynamic 
-                             Label="Single select combo box"
-                             Items="comboBoxItems"
-                             Placeholder="Select an option"
-                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
-                <BitLabel>Value: @comboBoxValue</BitLabel>
-            </div>
-            <br>
-            <div>
-                <BitDropdown @bind-Values="comboBoxValues"
-                             Combo Chips Dynamic 
-                             Label="Multi select combo box"
-                             Items="comboBoxItems"
-                             Placeholder="Select options"
-                             IsMultiSelect="true"
-                             OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
-                <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
-            </div>
+            <BitDropdown Label="Single select"
+                         Items="virtualizeItems1"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Select an item"
+                         Virtualize="true" />
+
+            <BitDropdown Label="Multi select"
+                         Items="virtualizeItems2"
+                         DefaultValue="@string.Empty"
+                         IsMultiSelect="true"
+                         Placeholder="Select items"
+                         Virtualize="true" />
         </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-    <ExamplePreview>
+        <br /><br /><br /><br /><br />
+        <div style="font-size:1.125rem;font-weight:bold">ItemsProvider:</div>
+        <br />
         <div class="example-content">
-            <BitDropdown Label="Prefix"
-                         Prefix="Fruits:"
-                         Items="GetBasicItems()"
+            <BitDropdown Label="Single select"
+                         Virtualize="true"
+                         ItemsProvider="LoadItems"
                          Placeholder="Select an item"
-                         TItem="BitDropdownItem<string>"
-                         TValue="string" />
+                         TItem="BitDropdownItem<string>" TValue="string" />
 
-            <BitDropdown Label="Suffix"
-                         Suffix="kg"
-                         Items="GetBasicItems()"
-                         Placeholder="Select an item"
-                         TItem="BitDropdownItem<string>"
-                         TValue="string" />
-            
-
-            <BitDropdown Label="Prefix and Suffix"
-                         Prefix="Fruits:"
-                         Suffix="kg"
-                         Items="GetBasicItems()"
-                         Placeholder="Select an item"
-                         TItem="BitDropdownItem<string>"
-                         TValue="string" />
-            
-            <BitDropdown Label="Disabled"
-                         Prefix="Fruits:"
-                         Suffix="kg"
-                         Items="GetBasicItems()"
-                         Placeholder="Select an item"
-                         TItem="BitDropdownItem<string>"
-                         TValue="string"
-                         IsEnabled="false" />
+            <BitDropdown Label="Multi select"
+                         Virtualize="true"
+                         IsMultiSelect="true"
+                         ItemsProvider="LoadItems"
+                         Placeholder="Select items"
+                         TItem="BitDropdownItem<string>" TValue="string" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

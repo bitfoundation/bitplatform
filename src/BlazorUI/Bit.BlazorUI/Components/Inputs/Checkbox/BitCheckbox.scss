@@ -58,6 +58,7 @@
 
         &.bit-chb-ckd {
             .bit-chb-box {
+                background-color: transparent;
                 border-color: $color-border-disabled;
 
                 .bit-icon {
@@ -78,7 +79,6 @@
     box-sizing: border-box;
     min-width: spacing(2.5);
     justify-content: center;
-    margin-right: spacing(1);
     transition-duration: 200ms;
     border-style: $shape-border-style;
     border-width: $shape-border-width;
@@ -107,6 +107,7 @@
     width: 100%;
     height: 100%;
     display: flex;
+    gap: spacing(1);
     cursor: pointer;
     font-weight: 400;
     user-select: none;

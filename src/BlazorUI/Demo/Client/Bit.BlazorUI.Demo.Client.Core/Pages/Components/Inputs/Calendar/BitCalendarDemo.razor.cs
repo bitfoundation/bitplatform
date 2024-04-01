@@ -880,4 +880,7 @@ private BitCalendarValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example10RazorCode = @"
+<BitCalendar Dir=""BitDir.Rtl"" />";
 }

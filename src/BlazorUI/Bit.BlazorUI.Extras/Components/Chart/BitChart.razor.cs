@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Represents a Chart.js chart.
 /// </summary>
-public partial class BitChart
+public partial class BitChart : IAsyncDisposable
 {
     [Inject] private IJSRuntime _js { get; set; }
 
@@ -73,7 +73,7 @@ public partial class BitChart
         }
         else
         {
-            await _js.UpdateChart(Config);
+            await _js.SetupChart(Config);
         }
     }
 
@@ -86,5 +86,19 @@ public partial class BitChart
     public Task Update()
     {
         return _js.UpdateChart(Config).AsTask();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing is false) return;
+
+        await _js.RemoveChart(Config?.CanvasId);
     }
 }

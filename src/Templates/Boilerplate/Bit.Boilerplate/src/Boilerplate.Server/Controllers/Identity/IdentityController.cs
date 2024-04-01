@@ -94,7 +94,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var controller = RouteData.Values["controller"]!.ToString();
 
-        var confirmationLink = new Uri(HttpContext.Request.GetBaseUrl(), $"email-confirmation?email={HttpUtility.UrlEncode(user.Email)}&token={HttpUtility.UrlEncode(token)}");
+        var confirmationLink = new Uri(HttpContext.Request.GetBaseUrl(), $"email-confirmation?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}");
 
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
@@ -206,7 +206,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
-        var resetPasswordLink = new Uri(HttpContext.Request.GetBaseUrl(), $"reset-password?email={HttpUtility.UrlEncode(user.Email)}&token={HttpUtility.UrlEncode(token)}");
+        var resetPasswordLink = new Uri(HttpContext.Request.GetBaseUrl(), $"reset-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}");
 
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {

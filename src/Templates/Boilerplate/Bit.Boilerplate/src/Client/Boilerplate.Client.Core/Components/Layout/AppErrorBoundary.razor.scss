@@ -14,7 +14,7 @@
 }
 
 .header {
-    text-align: right;
+    text-align: end;
 }
 
 .title {
@@ -23,8 +23,8 @@
 
 .exception {
     overflow: auto;
-    text-align: left;
     white-space: pre;
+    text-align: start;
     margin: rem2(24px);
 }
 

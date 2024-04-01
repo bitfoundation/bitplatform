@@ -68,11 +68,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     }
 
     /// <summary>
-    /// Change direction to RTL.
-    /// </summary>
-    [Parameter] public bool IsRtl { get; set; }
-
-    /// <summary>
     /// The label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -146,8 +141,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
-
-        ClassBuilder.Register(() => IsRtl ? $"{RootElementClass}-rtl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

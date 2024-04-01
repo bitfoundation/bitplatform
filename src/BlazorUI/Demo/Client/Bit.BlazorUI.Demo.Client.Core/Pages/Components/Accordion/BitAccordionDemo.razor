@@ -6,7 +6,8 @@
 
 <ComponentDemo ComponentName="Accordion"
                ComponentDescription="The Accordion component allows the user to show and hide sections of related content on a page."
-               ComponentParameters="componentParameters">
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
@@ -87,7 +88,7 @@
                 <BitAccordion Title="Accordion 1"
                               Description="I am an accordion"
                               IsEnabled="@AccordionToggleIsEnabled"
-                @bind-IsExpanded="AccordionToggleIsExpanded">
+                              @bind-IsExpanded="AccordionToggleIsExpanded">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
                 </BitAccordion>
             </div>
@@ -96,7 +97,7 @@
 
     <ComponentExampleBox Title="Customization" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
-            <div class="example-desc">This Accordion header is Customized.</div>
+            <div class="example-desc">This Accordion header is customized.</div>
             <div class="example-box">
                 <BitAccordion>
                     <HeaderTemplate Context="isExpanded">
@@ -112,7 +113,7 @@
                 </BitAccordion>
             </div>
 
-            <div class="example-desc">This Accordion content is Customized by the BitCarousel.</div>
+            <div class="example-desc">This Accordion content is customized by the BitCarousel.</div>
             <div class="example-box">
                 <BitAccordion Title="Nature" Description="I am an accordion">
                     <BitCarousel AnimationDuration="1">
@@ -129,6 +130,18 @@
                             <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                         </BitCarouselItem>
                     </BitCarousel>
+                </BitAccordion>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitAccordion Dir="BitDir.Rtl" 
+                              Title="تنظیمات" 
+                              Description="من یک آکاردئون هستم!">
+                    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
                 </BitAccordion>
             </div>
         </ExamplePreview>

@@ -59,7 +59,7 @@
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
-
+        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <ItemGroup>
@@ -84,14 +84,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0" PrivateAssets="all" />
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
         <Content Remove="Properties\launchSettings.json" />
     </ItemGroup>
 
@@ -100,12 +96,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.7" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.7" />
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.7" />
-        <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.4" />
-        <PackageReference Include="Plugin.StoreReview" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.14" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.14" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.14" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.14" />
+		<PackageReference Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
+        <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.7" />
+        <PackageReference Include="Oscore.Maui.InAppReviews" Version="1.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing
@@ -121,5 +121,8 @@
 
     <Target Name="BeforeBuildTasks" BeforeTargets="BeforeBuild">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
+        <Exec Condition="!Exists('node_modules/.bin/sass')" Command="npm install sass@1.72.0 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
+
 </Project>

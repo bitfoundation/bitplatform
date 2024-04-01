@@ -999,25 +999,25 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(true),
-        DataRow(false)
+        DataRow(BitDir.Rtl),
+        DataRow(BitDir.Ltr)
     ]
-    public void BitDropdownIsRtlTest(bool isRtl)
+    public void BitDropdownDirTest(BitDir dir)
     {
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsRtl, isRtl);
+            parameters.Add(p => p.Dir, dir);
         });
 
         var bitDrp = component.Find(".bit-drp");
 
-        if (isRtl)
+        if (dir is BitDir.Rtl)
         {
-            Assert.IsTrue(bitDrp.ClassList.Contains("bit-drp-rtl"));
+            Assert.IsTrue(bitDrp.ClassList.Contains("bit-rtl"));
         }
         else
         {
-            Assert.IsFalse(bitDrp.ClassList.Contains("bit-drp-rtl"));
+            Assert.IsFalse(bitDrp.ClassList.Contains("bit-rtl"));
         }
     }
 

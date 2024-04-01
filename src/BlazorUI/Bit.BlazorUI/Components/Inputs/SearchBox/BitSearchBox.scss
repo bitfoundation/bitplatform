@@ -96,6 +96,12 @@
             }
         }
     }
+
+    &.bit-rtl {
+        .bit-srb-sbn i {
+            transform: scale(-1);
+        }
+    }
 }
 
 .bit-srb-cnt {
@@ -129,13 +135,14 @@
 
 .bit-srb-hic {
     .bit-srb-cnt {
-        padding-left: spacing(1);
+        padding: 0 spacing(1);
     }
 }
 
 .bit-srb-ssb {
     .bit-srb-cnt {
-        border-radius: $shape-border-radius 0 0 $shape-border-radius;
+        border-end-end-radius: 0;
+        border-start-end-radius: 0;
     }
 }
 
@@ -240,9 +247,10 @@
     padding: 0 spacing(0.5);
     font-size: spacing(2);
     font-family: $typography-font-family;
-    border: $shape-border-width $shape-border-style $color-primary-main;
-    border-radius: 0 $shape-border-radius $shape-border-radius 0;
     background-color: $color-primary-main;
+    border-end-end-radius: $shape-border-radius;
+    border-start-end-radius: $shape-border-radius;
+    border: $shape-border-width $shape-border-style $color-primary-main;
 
     @media (hover: hover) {
         &:hover {

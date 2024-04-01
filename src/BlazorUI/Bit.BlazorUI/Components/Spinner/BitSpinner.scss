@@ -2,6 +2,7 @@
 
 .bit-spn {
     display: flex;
+    gap: spacing(1);
     justify-content: center;
 
     @keyframes bit-spn-animation {
@@ -73,35 +74,19 @@
 .bit-spn-top {
     align-items: center;
     flex-direction: column-reverse;
-
-    .bit-spn-lbl {
-        margin: 0 0 spacing(1);
-    }
 }
 
-.bit-spn-lft {
+.bit-spn-srt {
     align-items: center;
     flex-direction: row-reverse;
-
-    .bit-spn-lbl {
-        margin: 0 spacing(1) 0 0;
-    }
 }
 
-.bit-spn-rgt {
+.bit-spn-end {
     align-items: center;
     flex-direction: row;
-
-    .bit-spn-lbl {
-        margin: 0 0 0 spacing(1);
-    }
 }
 
 .bit-spn-btm {
     align-items: center;
     flex-direction: column;
-
-    .bit-spn-lbl {
-        margin: spacing(1) 0 0;
-    }
 }

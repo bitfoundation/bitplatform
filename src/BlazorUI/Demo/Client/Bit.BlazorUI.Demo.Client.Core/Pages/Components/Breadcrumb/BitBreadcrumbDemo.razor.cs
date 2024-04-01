@@ -28,8 +28,8 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "DividerIconName",
-            Type = "string",
-            DefaultValue = "ChevronRight",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The divider icon name."
         },
         new()
@@ -257,7 +257,7 @@ public partial class BitBreadcrumbDemo
 
     private uint OverflowIndex = 2;
     private uint MaxDisplayedItems = 3;
-    private uint NumericTextFieldStep = 1;
+    private uint NumberFieldStep = 1;
     private int ItemsCount = 4;
     private int SelectedOptionNumber = 6;
     private int CustomizedSelectedOptionNumber = 4;
@@ -312,6 +312,14 @@ public partial class BitBreadcrumbDemo
         new() { Text = "Folder 4", IsSelected = true }
     };
 
+    private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems = new()
+    {
+        new() { Text = "پوشه ۱", },
+        new() { Text = "پوشه ۲", },
+        new() { Text = "پوشه ۳", },
+        new() { Text = "پوشه ۴", IsSelected = true }
+    };
+
 
     private readonly List<PageInfoModel> CustomBreadcrumbItems = new()
     {
@@ -361,6 +369,14 @@ public partial class BitBreadcrumbDemo
         new() { Name = "Folder 2" },
         new() { Name = "Folder 3" },
         new() { Name = "Folder 4", IsCurrent = true }
+    };
+
+    private readonly List<PageInfoModel> RtlCustomBreadcrumbItems = new()
+    {
+        new() { Name = "پوشه ۱", },
+        new() { Name = "پوشه ۲", },
+        new() { Name = "پوشه ۳", },
+        new() { Name = "پوشه ۴", IsCurrent = true }
     };
 
     private void HandleOnItemClick(BitBreadcrumbItem item)
@@ -935,8 +951,8 @@ public partial class BitBreadcrumbDemo
         <BitButton OnClick=""RemoveBreadcrumbItem"">Remove Item</BitButton>
     </div>
     <div>
-        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
-        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""MaxDisplayedItems"" Step=""@NumberFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""OverflowIndex"" Step=""@NumberFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
     </div>
 </div>
 ";
@@ -958,8 +974,8 @@ public partial class BitBreadcrumbDemo
         <BitButton OnClick=""RemoveCustomItem"">Remove Item</BitButton>
     </div>
     <div>
-        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
-        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""MaxDisplayedItems"" Step=""@NumberFieldStep"" Label=""MaxDisplayedItems"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""OverflowIndex"" Step=""@NumberFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
     </div>
 </div>
 ";
@@ -979,10 +995,31 @@ public partial class BitBreadcrumbDemo
         <BitButton OnClick=""() => ItemsCount--"">Remove Option</BitButton>
     </div>
     <div>
-        <BitNumericTextField @bind-Value=""MaxDisplayedItems"" Step=""@NumericTextFieldStep"" Label=""MaxDisplayedOption"" ShowArrows=""true"" />
-        <BitNumericTextField @bind-Value=""OverflowIndex"" Step=""@NumericTextFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""MaxDisplayedItems"" Step=""@NumberFieldStep"" Label=""MaxDisplayedOption"" ShowArrows=""true"" />
+        <BitNumberField @bind-Value=""OverflowIndex"" Step=""@NumberFieldStep"" Label=""OverflowIndex"" ShowArrows=""true"" />
     </div>
 </div>
+";
+
+    private readonly string example7BreadcrumbItemRazorCode = @"
+<BitBreadcrumb Dir=""BitDir.Rtl"" Items=""RtlBreadcrumbItems"" />
+";
+    private readonly string example7CustomItemRazorCode = @"
+<BitBreadcrumb Dir=""BitDir.Rtl""
+               Items=""RtlCustomBreadcrumbItems""
+               TextField=""@nameof(PageInfoModel.Name)""
+               HrefField=""@nameof(PageInfoModel.Address)""
+               ClassField=""@nameof(PageInfoModel.HtmlClass)""
+               StyleField=""@nameof(PageInfoModel.HtmlStyle)""
+               IsSelectedField=""@nameof(PageInfoModel.IsCurrent)"" />
+";
+    private readonly string example7BreadcrumbOptionRazorCode = @"
+<BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"">
+    <BitBreadcrumbOption Text=""پوشه ۱"" />
+    <BitBreadcrumbOption Text=""پوشه ۲"" />
+    <BitBreadcrumbOption Text=""پوشه ۳"" />
+    <BitBreadcrumbOption Text=""پوشه ۴"" IsSelected=""true"" />
+</BitBreadcrumb>
 ";
 
     private readonly string example1BreadcrumbItemCsharpCode = @"
@@ -1226,7 +1263,7 @@ private int SelectedOptionNumber = 6;
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-private uint NumericTextFieldStep = 1;
+private uint NumberFieldStep = 1;
 
 private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; } = new()
 {
@@ -1271,7 +1308,7 @@ private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-private uint NumericTextFieldStep = 1;
+private uint NumberFieldStep = 1;
 
 public class PageInfoModel
 {
@@ -1331,9 +1368,39 @@ private void RemoveCustomItem()
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-private uint NumericTextFieldStep = 1;
+private uint NumberFieldStep = 1;
 private int CustomizedSelectedOptionNumber = 4;
-
-
 ";
+
+    private readonly string example7BreadcrumbItemCsharpCode = @"
+private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems = new()
+{
+    new() { Text = ""پوشه ۱"", },
+    new() { Text = ""پوشه ۲"", },
+    new() { Text = ""پوشه ۳"", },
+    new() { Text = ""پوشه ۴"", IsSelected = true }
+};";
+    private readonly string example7CustomItemCsharpCode = @"
+public class PageInfoModel
+{
+    public string Name { get; set; }
+
+    public string Address { get; set; }
+
+    public string HtmlClass { get; set; }
+
+    public string HtmlStyle { get; set; }
+
+    public bool IsCurrent { get; set; }
+
+    public bool IsEnabled { get; set; } = true;
+}
+
+private readonly List<PageInfoModel> RtlCustomBreadcrumbItems = new()
+{
+    new() { Name = ""پوشه ۱"", },
+    new() { Name = ""پوشه ۲"", },
+    new() { Name = ""پوشه ۳"", },
+    new() { Name = ""پوشه ۴"", IsCurrent = true }
+};";
 }

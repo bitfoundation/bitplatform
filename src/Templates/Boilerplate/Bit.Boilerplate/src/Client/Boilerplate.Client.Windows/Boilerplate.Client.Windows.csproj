@@ -7,6 +7,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
         <UseWindowsForms>true</UseWindowsForms>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
         <StartupObject>Boilerplate.Client.Windows.Program</StartupObject>
         <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
@@ -16,28 +17,33 @@
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
-
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.7" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2277.86" />
-        <PackageReference Include="Velopack" Version="0.0.332" />
+        <Watch Remove="*.scss" />
+        
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2365.46" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.14" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2420.47" />
+        <PackageReference Include="Velopack" Version="0.0.359" />
 
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
     </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" BeforeTargets="BeforeBuild">
+        <Exec Condition="!Exists('node_modules/.bin/sass')" Command="npm install sass@1.72.0 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
 
 </Project>

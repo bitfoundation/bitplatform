@@ -186,32 +186,23 @@
 }
 
 .bit-tpc-cac {
-    height: 100%;
-    outline: none;
-    position: relative;
-    overflow: hidden auto;
-    border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
-}
-
-.bit-tpc-grp {
     margin: 0;
-    padding: spacing(2);
     height: 100%;
     display: flex;
     outline: none;
     box-shadow: none;
-    box-sizing: border-box;
-    animation-duration: 167ms;
-    animation-fill-mode: both;
-    animation-name: bit-fade-in, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    position: relative;
     align-items: center;
+    overflow: hidden auto;
     align-content: center;
     justify-content: center;
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+    padding: spacing(2);
+    box-sizing: border-box;
 }
 
-.bit-tpc-tim {
+.bit-tpc-tic {
     display: flex;
     flex-direction: row;
     justify-content: space-between;

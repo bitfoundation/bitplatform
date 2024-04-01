@@ -10,8 +10,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 internal static class BitChartJsInterop
 {
-    private const string BitChartJsInteropName = "BitChartJsInterop";
-
     internal static JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
     {
         NullValueHandling = NullValueHandling.Ignore,
@@ -19,15 +17,17 @@ internal static class BitChartJsInterop
         {
             NamingStrategy = new CamelCaseNamingStrategy(true, false)
         },
-        Converters =
-        {
-            new IsoDateTimeConverter()
-        }
+        Converters = { new IsoDateTimeConverter() }
     };
 
-    public static async Task InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
+    public static async ValueTask InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
     {
-        await jsRuntime.InvokeVoidAsync($"{BitChartJsInteropName}.initChartJs", scripts);
+        await jsRuntime.InvokeVoidAsync($"BitChart.initChartJs", scripts);
+    }
+
+    public static async ValueTask RemoveChart(this IJSRuntime jsRuntime, string canvasId)
+    {
+        await jsRuntime.InvokeVoidAsync($"BitChart.removeChart", canvasId);
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ internal static class BitChartJsInterop
     {
         dynamic dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
-        return jsRuntime.InvokeAsync<bool>($"{BitChartJsInteropName}.setupChart", param);
+        return jsRuntime.InvokeAsync<bool>($"BitChart.setupChart", param);
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ internal static class BitChartJsInterop
     {
         dynamic dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
-        return jsRuntime.InvokeAsync<bool>($"{BitChartJsInteropName}.updateChart", param);
+        return jsRuntime.InvokeAsync<bool>($"BitChart.updateChart", param);
     }
 
     /// <summary>

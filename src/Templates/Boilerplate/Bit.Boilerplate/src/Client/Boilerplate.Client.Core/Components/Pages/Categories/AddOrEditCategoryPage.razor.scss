@@ -31,7 +31,11 @@
 }
 
 ::deep .back-btn {
-    margin-right: rem2(12px);
+    margin-inline-end: rem2(12px);
+
+    &[dir=rtl] {
+        transform: scale(-1);
+    }
 }
 
 .page-title {
@@ -55,15 +59,21 @@
 
 .form-input-container {
     width: 100%;
+    min-width: rem2(270px);
     margin-bottom: rem2(24px);
 }
 
 .color-container {
     gap: 1rem;
     display: flex;
-    align-items: center;
     flex-flow: column wrap;
     justify-content: flex-start;
+}
+
+.color-btn-container {
+    gap: 0.75rem;
+    display: flex;
+    flex-flow: row wrap;
 }
 
 .color-btn {
@@ -72,15 +82,7 @@
     cursor: pointer;
     width: rem2(32px);
     height: rem2(32px);
-    margin-right: rem2(12px);
     border-radius: rem2(2px);
-
-    @include sm {
-        width: rem2(28px);
-        height: rem2(28px);
-        margin-right: rem2(8px);
-        margin-bottom: rem2(8px);
-    }
 }
 
 .color-btn--active {
@@ -91,14 +93,14 @@
 }
 
 .color-square {
-    width: rem2(24px);
-    height: rem2(24px);
+    width: rem2(32px);
+    height: rem2(32px);
     display: inline-block;
-    margin-right: rem2(8px);
     border-radius: rem2(2px);
 }
 
 .custom-color-container {
+    gap: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: flex-start;

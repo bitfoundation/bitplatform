@@ -139,13 +139,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "IsRtl",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the RTL direction for the component.",
-        },
-        new()
-        {
             Name = "Items",
             Type = "ICollection<TItem>?",
             DefaultValue = "null",
@@ -685,6 +678,24 @@ public partial class BitDropdownDemo
                    Description = "The Value field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "TextSetter",
+                   Type = "Action<string, TItem>?",
+                   Description = "The setter function for updating Text property of custom item in Dynamic ComboBox mode upon new item addition.",
+               },
+               new()
+               {
+                   Name = "ValueSetter",
+                   Type = "Action<TItem, TItem>?",
+                   Description = "The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.",
+               },
+               new()
+               {
+                   Name = "IsSelectedSetter",
+                   Type = "Action<bool, TValue>",
+                   Description = "The setter function for updating IsSelected property of custom item in Dynamic ComboBox mode upon new item addition.",
                },
             },
         },

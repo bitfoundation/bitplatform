@@ -12,7 +12,7 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/History">https://developer.mozilla.org/en-US/docs/Web/API/History</see>
 /// </summary>
-public class History(IJSRuntime js) : IDisposable
+public class History(IJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action<object>> _handlers = new();
 
@@ -113,7 +113,7 @@ public class History(IJSRuntime js) : IDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event</see>
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HistoryListenersManager))]
-    public async Task<Guid> AddPopState(Action<object> handler)
+    public async ValueTask<Guid> AddPopState(Action<object> handler)
     {
         var listenerId = HistoryListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
@@ -129,11 +129,11 @@ public class History(IJSRuntime js) : IDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event</see>
     /// </summary>
-    public Guid[] RemovePopState(Action<object> handler)
+    public async ValueTask<Guid[]> RemovePopState(Action<object> handler)
     {
         var ids = HistoryListenersManager.RemoveListener(handler);
 
-        RemovePopState(ids);
+        await RemovePopState(ids);
 
         return ids;
     }
@@ -144,36 +144,57 @@ public class History(IJSRuntime js) : IDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event</see>
     /// </summary>
-    public void RemovePopState(Guid id)
+    public async ValueTask RemovePopState(Guid id)
     {
         HistoryListenersManager.RemoveListeners([id]);
 
-        RemovePopState([id]);
+        await RemovePopState([id]);
     }
 
-    private void RemovePopState(Guid[] ids)
+    private async ValueTask RemovePopState(Guid[] ids)
     {
+        if (ids.Length == 0) return;
+
         foreach (var id in ids)
         {
             _handlers.TryRemove(id, out _);
         }
 
-        _ = js.InvokeVoidAsync("BitButil.history.removePopState", ids);
+        await RemoveFromJs(ids);
     }
 
-    public async Task RemoveAllPopStates()
+    public async ValueTask RemoveAllPopStates()
     {
+        if (_handlers.Count == 0) return;
+
         var ids = _handlers.Select(h => h.Key).ToArray();
 
         _handlers.Clear();
 
         HistoryListenersManager.RemoveListeners(ids);
 
-        _ = js.InvokeVoidAsync("BitButil.history.removePopState", ids);
+        await RemoveFromJs(ids);
     }
 
-    public void Dispose()
+    private async ValueTask RemoveFromJs(Guid[] ids)
     {
-        _ = RemoveAllPopStates();
+        if (OperatingSystem.IsBrowser() is false) return;
+
+        await js.InvokeVoidAsync("BitButil.history.removePopState", ids);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            await RemoveAllPopStates();
+        }
     }
 }

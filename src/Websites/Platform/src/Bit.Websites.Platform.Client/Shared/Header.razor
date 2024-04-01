@@ -14,24 +14,24 @@
                     <div class="col">
                         <div class="col-header">Products</div>
 
-                        <a class="menu-item" href="@Urls.Components" target="_blank">
+                        <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates">
                             <div class="menu-item-content">
-                                <div class="item-title">BlazorUI</div>
-                                <div class="item-desc">Native Blazor UI components</div>
+                                <div class="item-title">Boilerplate</div>
+                                <div class="item-desc">Feature-rich .NET project template</div>
                             </div>
                         </a>
 
-                        <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates">
+                        <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil">
                             <div class="menu-item-content">
-                                <div class="item-title">Project templates</div>
-                                <div class="item-desc">Feature-rich .NET project templates</div>
+                                <div class="item-title">Butil</div>
+                                <div class="item-desc">Blazor utils for browser APIs</div>
                             </div>
                         </a>
 
                         <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup">
                             <div class="menu-item-content">
-                                <div class="item-title">Bswup (Blazor PWA)</div>
-                                <div class="item-desc">Blazor Service Worker Update Progress</div>
+                                <div class="item-title">Bswup</div>
+                                <div class="item-desc">Blazor PWA on steroids</div>
                             </div>
                         </a>
 
@@ -42,10 +42,10 @@
                             </div>
                         </a>
 
-                        <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil">
+                        <a class="menu-item" href="@Urls.BlazorUI" target="_blank">
                             <div class="menu-item-content">
-                                <div class="item-title">Butil</div>
-                                <div class="item-desc">Blazor Utilities for JavaScript</div>
+                                <div class="item-title">BlazorUI</div>
+                                <div class="item-desc">Native Blazor UI components</div>
                             </div>
                         </a>
                     </div>
@@ -105,24 +105,24 @@
                 <div class="col">
                     <div class="col-header">Products</div>
 
-                    <a class="menu-item" href="@Urls.Components" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
+                    <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <div class="menu-item-content">
-                            <div class="item-title">BlazorUI</div>
-                            <div class="item-desc">Native Blazor UI components</div>
+                            <div class="item-title">Boilerplate</div>
+                            <div class="item-desc">Feature-rich project template</div>
                         </div>
                     </a>
 
-                    <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                    <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <div class="menu-item-content">
-                            <div class="item-title">Project templates</div>
-                            <div class="item-desc">Feature-rich project templates</div>
+                            <div class="item-title">Butil</div>
+                            <div class="item-desc">Blazor utils for browser APIs</div>
                         </div>
                     </a>
 
                     <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <div class="menu-item-content">
-                            <div class="item-title">Bswup (Blazor PWA)</div>
-                            <div class="item-desc">Blazor Service Worker Update Progress</div>
+                            <div class="item-title">Bswup</div>
+                            <div class="item-desc">Blazor PWA on steroids</div>
                         </div>
                     </a>
 
@@ -133,10 +133,10 @@
                         </div>
                     </a>
 
-                    <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                    <a class="menu-item" href="@Urls.BlazorUI" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
                         <div class="menu-item-content">
-                            <div class="item-title">Butil</div>
-                            <div class="item-desc">Blazor Utilities for JavaScript</div>
+                            <div class="item-title">BlazorUI</div>
+                            <div class="item-desc">Native Blazor UI components</div>
                         </div>
                     </a>
                 </div>

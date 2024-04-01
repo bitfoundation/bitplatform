@@ -11,6 +11,7 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
      aria-owns="@(IsOpen ? _calloutId : null)">
 
     @if (LabelTemplate is not null)
@@ -60,33 +61,7 @@
               aria-atomic="true"
               aria-invalid="false">
 
-           @{
-                var text = GetText();
-            }
-
-            @if (Chips is false && text.HasValue())
-            {
-                @if (TextTemplate is not null)
-                {
-                    @TextTemplate(this)
-                }
-                else
-                {
-                    @text
-                }
-            }
-            else if (Combo is false)
-            {
-                @if (PlaceholderTemplate is not null)
-                {
-                    @PlaceholderTemplate(this)
-                }
-                else
-                {
-                    @Placeholder
-                }
-            }
-            else if (Chips)
+            @if (Chips)
             {
                 @foreach (var item in _selectedItems)
                 {
@@ -96,6 +71,17 @@
                     </span>
                 }
             }
+            else if (_selectedItems.Count > 0)
+            {
+                @if (TextTemplate is not null)
+                {
+                    @TextTemplate(this)
+                }
+                else
+                {
+                    @GetText()
+                }
+            }
 
             @if (Combo)
             {
@@ -103,12 +89,23 @@
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
-                       role="searchbox"
+                       role="combobox"
                        value="@_searchText"
                        aria-label="@AriaLabel"
-                       placeholder="@Placeholder"
+                       placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
                        disabled="@(IsEnabled is false)" />
+            }
+            else if (_selectedItems.Count == 0)
+            {
+                @if (PlaceholderTemplate is not null)
+                {
+                    @PlaceholderTemplate(this)
+                }
+                else
+                {
+                    @Placeholder
+                }
             }
         </span>
 
@@ -236,6 +233,30 @@
                         </button>
                     </div>
                 }
+            </div>
+        }
+
+        @if (Combo && _isResponsiveMode)
+        {
+            <div style="@Styles?.ResponsiveComboInputContainer"
+                 class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
+                <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnChange"
+                       style="@Styles?.ComboBoxInput"
+                       class="bit-drp-icb @Classes?.ComboBoxInput"
+                       type="text"
+                       role="combobox"
+                       value="@_searchText"
+                       aria-label="@AriaLabel"
+                       placeholder="@Placeholder"
+                       autocomplete="@BitAutoCompleteValue.NewPassword"
+                       disabled="@(IsEnabled is false)" />
+
+                <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
+                        type="button"
+                        style="@Styles?.ResponsiveComboAddButton"
+                        class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
+                    <i class="bit-icon bit-icon--Add" />
+                </button>
             </div>
         }
 

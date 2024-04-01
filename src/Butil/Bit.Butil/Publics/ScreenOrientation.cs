@@ -91,13 +91,14 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         return listenerId;
     }
+
     /// <summary>
     /// The change event of the ScreenOrientation interface fires when the orientation of the 
     /// screen has changed, for example when a user rotates their mobile phone.
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event</see>
     /// </summary>
-    public async Task<Guid[]> RemoveChange(Action<OrientationState> handler)
+    public async ValueTask<Guid[]> RemoveChange(Action<OrientationState> handler)
     {
         var ids = ScreenOrientationListenersManager.RemoveListener(handler);
 
@@ -105,6 +106,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         return ids;
     }
+
     /// <summary>
     /// The change event of the ScreenOrientation interface fires when the orientation of the 
     /// screen has changed, for example when a user rotates their mobile phone.
@@ -117,28 +119,51 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
 
         await RemoveChange([id]);
     }
+
     private async ValueTask RemoveChange(Guid[] ids)
     {
+        if (ids.Length == 0) return;
+
         foreach (var id in ids)
         {
             _handlers.TryRemove(id, out _);
         }
 
-        await js.InvokeVoidAsync("BitButil.screenOrientation.removeChange", ids);
+        await RemoveFromJs(ids);
     }
+
     public async ValueTask RemoveAllChanges()
     {
+        if (_handlers.Count == 0) return;
+
         var ids = _handlers.Select(h => h.Key).ToArray();
 
         _handlers.Clear();
 
         ScreenOrientationListenersManager.RemoveListeners(ids);
 
+        await RemoveFromJs(ids);
+    }
+
+    private async ValueTask RemoveFromJs(Guid[] ids)
+    {
+        if (OperatingSystem.IsBrowser() is false) return;
+
         await js.InvokeVoidAsync("BitButil.screenOrientation.removeChange", ids);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await RemoveAllChanges();
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            await RemoveAllChanges();
+        }
     }
 }

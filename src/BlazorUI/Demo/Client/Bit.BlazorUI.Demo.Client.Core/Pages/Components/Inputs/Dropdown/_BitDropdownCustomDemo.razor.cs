@@ -34,7 +34,6 @@ public partial class _BitDropdownCustomDemo
         Text = { Selector = c => c.Text },
         Title = { Selector = c => c.Title },
         Value = { Selector = c => c.Value },
-        DynamicValueGenerator = (BitDropdownCustom item) => item.Text ?? "",
         ValueSetter = (BitDropdownCustom item, string value) => item.Value = value,
         TextSetter = (string text, BitDropdownCustom item) => item.Text = text
     };
@@ -128,7 +127,10 @@ public partial class _BitDropdownCustomDemo
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
-    private string comboBoxValue = default!;
+    private string comboBoxValueSample1 = default!;
+    private string comboBoxValueSample2 = default!;
+    private string comboBoxValueSample3 = default!;
+    private string comboBoxValueSample4 = default!;
     private ICollection<string> comboBoxValues = [];
 
     protected override void OnInitialized()

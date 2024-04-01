@@ -10,7 +10,8 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
     <button @onclick="() => HandleOnClick(Sticky ? SelectedItem : null)"
             type="button"
             tabindex="@(IsEnabled ? 0 : -1)"

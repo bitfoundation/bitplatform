@@ -134,8 +134,8 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "LabelPosition",
-            Type = "BitSpinButtonLabelPosition",
-            DefaultValue = "BitSpinButtonLabelPosition.Top",
+            Type = "BitLabelPosition",
+            DefaultValue = "BitLabelPosition.Top",
             Description = "The position of the label in regards to the spin button.",
             LinkType = LinkType.Link,
             Href = "#labelPosition-enum",
@@ -362,7 +362,7 @@ public partial class BitSpinButtonDemo
         new()
         {
             Id = "labelPosition-enum",
-            Name = "BitSpinButtonLabelPosition",
+            Name = "BitLabelPosition",
             Description = "",
             Items = new()
             {
@@ -374,14 +374,14 @@ public partial class BitSpinButtonDemo
                 },
                 new()
                 {
-                    Name= "Left",
-                    Description="The label shows on the left side of the spin button.",
+                    Name= "Start",
+                    Description="The label shows on the start of the spin button.",
                     Value="1",
                 },
                 new()
                 {
-                    Name= "Right",
-                    Description="The label shows on the right side of the spin button.",
+                    Name= "End",
+                    Description="The label shows on the end of the spin button.",
                     Value="2",
                 },
                 new()
@@ -496,9 +496,9 @@ public partial class BitSpinButtonDemo
 
     private readonly string example4RazorCode = @"
 <BitSpinButton Label=""Top (default)"" />
-<BitSpinButton Label=""Left Label"" LabelPosition=""BitSpinButtonLabelPosition.Left"" />
-<BitSpinButton Label=""Right Label"" LabelPosition=""BitSpinButtonLabelPosition.Right"" />
-<BitSpinButton Label=""Bottom Label"" LabelPosition=""BitSpinButtonLabelPosition.Bottom"" />
+<BitSpinButton Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
+<BitSpinButton Label=""End"" LabelPosition=""BitLabelPosition.End"" />
+<BitSpinButton Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
 
 <BitSpinButton>
     <LabelTemplate>

@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Server.Models.Identity;
 using ImageMagick;
-using MimeTypes;
+using Microsoft.AspNetCore.StaticFiles;
 using SystemFile = System.IO.File;
 
 namespace Boilerplate.Server.Controllers;
@@ -12,6 +12,8 @@ public partial class AttachmentController : AppControllerBase
     [AutoInject] private UserManager<User> userManager = default!;
 
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
+
+    [AutoInject] private IContentTypeProvider contentTypeProvider = default!;
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -134,7 +136,12 @@ public partial class AttachmentController : AppControllerBase
         if (SystemFile.Exists(filePath) is false)
             return new EmptyResult();
 
+        if (contentTypeProvider.TryGetContentType(filePath, out var contentType) is false)
+        {
+            throw new InvalidOperationException();
+        }
+
         return PhysicalFile(Path.Combine(webHostEnvironment.ContentRootPath, filePath),
-            MimeTypeMap.GetMimeType(Path.GetExtension(filePath)), enableRangeProcessing: true);
+            contentType, enableRangeProcessing: true);
     }
 }

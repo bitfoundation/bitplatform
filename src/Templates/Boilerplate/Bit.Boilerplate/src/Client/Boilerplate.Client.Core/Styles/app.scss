@@ -32,7 +32,19 @@ p {
         user-select: none;
     }
 
-    &.bit-windows * {
+    &.bit-windows *, a {
         -webkit-user-drag: none;
+    }
+}
+
+div[dir=rtl] {
+    .bitdatagrid-paginator {
+        .go-next, .go-last {
+            transform: scaleX(1);
+        }
+
+        .go-previous, .go-first {
+            transform: scaleX(-1);
+        }
     }
 }

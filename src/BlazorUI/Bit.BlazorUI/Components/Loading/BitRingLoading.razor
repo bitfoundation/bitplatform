@@ -10,16 +10,16 @@
     }
 
         .bit-ldn-Ring div {
-            box-sizing: border-box;
             display: block;
             position: absolute;
+            border-radius: 50%;
+            box-sizing: border-box;
+            margin: @(Convert(8))px;
             width: @(Convert(64))px;
             height: @(Convert(64))px;
-            margin: @(Convert(8))px;
-            border: @(Convert(8))px solid @Color;
-            border-radius: 50%;
             animation: bit-ldn-Ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            border-color: @Color transparent transparent transparent;
+            border: @(Convert(8))px solid @(Color ?? "var(--bit-clr-fg-primary)");
+            border-color: @(Color ?? "var(--bit-clr-fg-primary)") transparent transparent transparent;
         }
 
             .bit-ldn-Ring div:nth-child(1) {

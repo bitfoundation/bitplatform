@@ -317,7 +317,7 @@ public partial class BitCalendar
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Culture.TextInfo.IsRightToLeft ? $"{RootElementClass}-rtl" : string.Empty);
+        ClassBuilder.Register(() => (Dir is null && Culture.TextInfo.IsRightToLeft) ? "bit-rtl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -817,21 +817,6 @@ public partial class BitCalendar
     {
         return (MaxDate.HasValue && year > Culture.Calendar.GetYear(MaxDate.Value.DateTime))
             || (MinDate.HasValue && year < Culture.Calendar.GetYear(MinDate.Value.DateTime));
-    }
-
-    private void CheckCurrentCalendarMatchesCurrentValue()
-    {
-        var currentValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
-        var currentValueYear = Culture.Calendar.GetYear(currentValue.DateTime);
-        var currentValueMonth = Culture.Calendar.GetMonth(currentValue.DateTime);
-        var currentValueDay = Culture.Calendar.GetDayOfMonth(currentValue.DateTime);
-
-        if (currentValueYear != _currentYear || currentValueMonth != _currentMonth || currentValueDay != _currentDay)
-        {
-            _currentYear = currentValueYear;
-            _currentMonth = currentValueMonth;
-            GenerateMonthData(_currentYear, _currentMonth);
-        }
     }
 
     private (string style, string klass) GetDayButtonCss(int day, int week, int todayYear, int todayMonth, int todayDay)

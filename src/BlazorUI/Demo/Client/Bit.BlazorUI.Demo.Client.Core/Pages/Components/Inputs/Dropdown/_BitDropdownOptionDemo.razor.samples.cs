@@ -487,189 +487,50 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
 };";
 
     private readonly string example7RazorCode = @"
-<BitDropdown Label=""تک انتخابی""
-             Placeholder=""لطفا انتخاب کنید""
-             IsRtl=""true""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
-    @foreach (var item in rtlItems)
-    {
-        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
-    }
-</BitDropdown>
-
-<BitDropdown Label=""چند انتخابی""
-             Placeholder=""انتخاب چند گزینه ای""
-             IsMultiSelect=""true""
-             IsRtl=""true""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
-    @foreach (var item in rtlItems)
-    {
-        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
-    }
-</BitDropdown>";
-    private readonly string example7CsharpCode = @"
-private readonly List<BitDropdownItem<string>> rtlItems = new()
-{
-    new() { ItemType = BitDropdownItemType.Header, Text = ""میوه ها"" },
-    new() { Text = ""سیب"", Value = ""f-app"" },
-    new() { Text = ""موز"", Value = ""f-ban"" },
-    new() { Text = ""پرتقال"", Value = ""f-ora"", IsEnabled = false },
-    new() { Text = ""انگور"", Value = ""f-gra"" },
-    new() { ItemType = BitDropdownItemType.Divider },
-    new() { ItemType = BitDropdownItemType.Header, Text = ""سیزیجات"" },
-    new() { Text = ""کلم بروكلی"", Value = ""v-bro"" },
-    new() { Text = ""هویج"", Value = ""v-car"" },
-    new() { Text = ""کاهو"", Value = ""v-let"" }
-};";
-
-    private readonly string example8RazorCode = @"
-<BitDropdown Label=""Auto""
-             Placeholder=""Select an item""
-             DropDirection=""BitDropDirection.Auto""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
-    @foreach (var item in dropDirectionItems)
-    {
-        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" />
-    }
-</BitDropdown>
-
-<BitDropdown Label=""TopAndBottom""
-             Placeholder=""Select an item""
-             DropDirection=""BitDropDirection.TopAndBottom""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
-    @foreach (var item in dropDirectionItems)
-    {
-        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" />
-    }
-</BitDropdown>";
-    private readonly string example8CsharpCode = @"
-private ICollection<BitDropdownItem<string>> dropDirectionItems = default!;
-
-protected override void OnInitialized()
-{
-    dropDirectionItems = Enumerable.Range(1, 15)
-                                   .Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $""Category {c}"" })
-                                   .ToArray();
-}";
-
-    private readonly string example9RazorCode = @"
-<BitDropdown @bind-Value=""clearValue""
-             Label=""Single select dropdown""
+<BitDropdown @bind-Value=""comboBoxValueSample1""
+             Combo
+             Label=""Single select combo box""
              Placeholder=""Select an option""
-             ShowClearButton=""true""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
-    @foreach (var item in basicItems)
+    @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Value: @clearValue</BitLabel>
+<strong>Value: @comboBoxValueSample1</strong>
 
-
-<BitDropdown @bind-Values=""clearValues""
-             Label=""Multi select dropdown""
-             Placeholder=""Select options""
-             IsMultiSelect=""true""
-             ShowClearButton=""true""
+<BitDropdown @bind-Value=""comboBoxValueSample2""
+             Combo Chips
+             Label=""Single select combo box""
+             Placeholder=""Select an option""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
-    @foreach (var item in basicItems)
+    @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Values: @string.Join(',', clearValues)</BitLabel>";
-    private readonly string example9CsharpCode = @"
-private string? clearValue = ""f-app"";
-private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
+<strong>Value: @comboBoxValueSample2</strong>
 
-private readonly List<BitDropdownItem<string>> basicItems = new()
-{
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
-    new() { Text = ""Apple"", Value = ""f-app"" },
-    new() { Text = ""Banana"", Value = ""f-ban"" },
-    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
-    new() { Text = ""Grape"", Value = ""f-gra"" },
-    new() { ItemType = BitDropdownItemType.Divider },
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
-    new() { Text = ""Broccoli"", Value = ""v-bro"" },
-    new() { Text = ""Carrot"", Value = ""v-car"" },
-    new() { Text = ""Lettuce"", Value = ""v-let"" }
-};";
-
-    private readonly string example10RazorCode = @"
-@using System.ComponentModel.DataAnnotations;
-
-<style>
-    .validation-message {
-        color: #A4262C;
-        font-size: 0.75rem;
+<BitDropdown @bind-Value=""comboBoxValueSample3""
+             Combo Dynamic
+             Label=""Single select combo box""
+             Placeholder=""Select an option""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
+             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in comboBoxItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
-</style>
+</BitDropdown>
+<strong>Value: @comboBoxValueSample3</strong>
 
-<EditForm style=""width: 100%"" Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-    <DataAnnotationsValidator />
-
-    <BitDropdown @bind-Value=""validationModel.Category""
-                 Label=""Select 1 item""
-                 Placeholder=""Select and item""
-                 TItem=""BitDropdownOption<string>"" TValue=""string"">
-        @foreach (var item in basicItems)
-        {
-            <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
-        }
-    </BitDropdown>
-    <ValidationMessage For=""@(() => validationModel.Category)"" />
-
-    <BitDropdown @bind-Values=""validationModel.Products""
-                 Label=""Select min 1 and max 2 items""
-                 Placeholder=""Select items""
-                 IsMultiSelect=""true""
-                 TItem=""BitDropdownOption<string>"" TValue=""string"">
-        @foreach (var item in basicItems)
-        {
-            <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
-        }
-    </BitDropdown>
-    <ValidationMessage For=""@(() => validationModel.Products)"" />
-
-    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example10CsharpCode = @"
-public class FormValidationDropdownModel
-{
-    [MaxLength(2, ErrorMessage = ""The property {0} have more than {1} elements"")]
-    [MinLength(1, ErrorMessage = ""The property {0} doesn't have at least {1} elements"")]
-    public ICollection<string?> Products { get; set; } = new List<string?>();
-
-    [Required]
-    public string Category { get; set; }
-}
-
-private FormValidationDropdownModel validationModel = new();
-
-private async Task HandleValidSubmit() { }
-
-private void HandleInvalidSubmit() { }
-
-private readonly List<BitDropdownItem<string>> basicItems = new()
-{
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
-    new() { Text = ""Apple"", Value = ""f-app"" },
-    new() { Text = ""Banana"", Value = ""f-ban"" },
-    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
-    new() { Text = ""Grape"", Value = ""f-gra"" },
-    new() { ItemType = BitDropdownItemType.Divider },
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
-    new() { Text = ""Broccoli"", Value = ""v-bro"" },
-    new() { Text = ""Carrot"", Value = ""v-car"" },
-    new() { Text = ""Lettuce"", Value = ""v-let"" }
-};";
-
-    private readonly string example11RazorCode = @"
-<BitDropdown @bind-Value=""comboBoxValue""
+<BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
              Label=""Single select combo box""
              Placeholder=""Select an option""
+             IsResponsive=""true""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
@@ -677,23 +538,28 @@ private readonly List<BitDropdownItem<string>> basicItems = new()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Value: @comboBoxValue</BitLabel>
+<strong>Value: @comboBoxValueSample4</strong>
 
 <BitDropdown @bind-Values=""comboBoxValues""
-             Combo Chips Dynamic
-             Label=""Multi select combo box""
-             Placeholder=""Select options""
-             IsMultiSelect=""true""
-             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
+                Combo Chips Dynamic
+                Label=""Multi select combo box""
+                Placeholder=""Select options""
+                IsMultiSelect=""true""
+                IsResponsive=""true""
+                DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
+                OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
+                TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>";
-    private readonly string example11CsharpCode = @"
-private string comboBoxValue = default!;
+<strong>Values: @string.Join(',', comboBoxValues)</strong>";
+    private readonly string example7CsharpCode = @"
+private string comboBoxValueSample1 = default!;
+private string comboBoxValueSample2 = default!;
+private string comboBoxValueSample3 = default!;
+private string comboBoxValueSample4 = default!;
 private ICollection<string> comboBoxValues = [];
 
 private void HandleOnDynamicAdd(BitDropdownOption<string> item)
@@ -715,7 +581,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitDropdown Label=""Prefix""
              Prefix=""Fruits:""
              Placeholder=""Select an item""
@@ -762,7 +628,186 @@ private readonly List<BitDropdownItem<string>> comboBoxItems = new()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>";
+    private readonly string example8CsharpCode = @"
+private readonly List<BitDropdownItem<string>> basicItems = new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
+
+    private readonly string example9RazorCode = @"
+<BitDropdown Label=""تک انتخابی""
+             Placeholder=""لطفا انتخاب کنید""
+             Dir=""BitDir.Rtl""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in rtlItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+
+<BitDropdown Label=""چند انتخابی""
+             Placeholder=""انتخاب چند گزینه ای""
+             IsMultiSelect=""true""
+             Dir=""BitDir.Rtl""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in rtlItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>";
+    private readonly string example9CsharpCode = @"
+private readonly List<BitDropdownItem<string>> rtlItems = new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""میوه ها"" },
+    new() { Text = ""سیب"", Value = ""f-app"" },
+    new() { Text = ""موز"", Value = ""f-ban"" },
+    new() { Text = ""پرتقال"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""انگور"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""سیزیجات"" },
+    new() { Text = ""کلم بروكلی"", Value = ""v-bro"" },
+    new() { Text = ""هویج"", Value = ""v-car"" },
+    new() { Text = ""کاهو"", Value = ""v-let"" }
+};";
+
+    private readonly string example10RazorCode = @"
+<BitDropdown Label=""Auto""
+             Placeholder=""Select an item""
+             DropDirection=""BitDropDirection.Auto""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in dropDirectionItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" />
+    }
+</BitDropdown>
+
+<BitDropdown Label=""TopAndBottom""
+             Placeholder=""Select an item""
+             DropDirection=""BitDropDirection.TopAndBottom""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in dropDirectionItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" />
+    }
+</BitDropdown>";
+    private readonly string example10CsharpCode = @"
+private ICollection<BitDropdownItem<string>> dropDirectionItems = default!;
+
+protected override void OnInitialized()
+{
+    dropDirectionItems = Enumerable.Range(1, 15)
+                                   .Select(c => new BitDropdownItem<string> { Value = c.ToString(), Text = $""Category {c}"" })
+                                   .ToArray();
+}";
+
+    private readonly string example11RazorCode = @"
+<BitDropdown @bind-Value=""clearValue""
+             Label=""Single select dropdown""
+             Placeholder=""Select an option""
+             ShowClearButton=""true""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<BitLabel>Value: @clearValue</BitLabel>
+
+
+<BitDropdown @bind-Values=""clearValues""
+             Label=""Multi select dropdown""
+             Placeholder=""Select options""
+             IsMultiSelect=""true""
+             ShowClearButton=""true""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<BitLabel>Values: @string.Join(',', clearValues)</BitLabel>";
+    private readonly string example11CsharpCode = @"
+private string? clearValue = ""f-app"";
+private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
+
+private readonly List<BitDropdownItem<string>> basicItems = new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
+
+    private readonly string example12RazorCode = @"
+@using System.ComponentModel.DataAnnotations;
+
+<style>
+    .validation-message {
+        color: #A4262C;
+        font-size: 0.75rem;
+    }
+</style>
+
+<EditForm style=""width: 100%"" Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+
+    <BitDropdown @bind-Value=""validationModel.Category""
+                 Label=""Select 1 item""
+                 Placeholder=""Select and item""
+                 TItem=""BitDropdownOption<string>"" TValue=""string"">
+        @foreach (var item in basicItems)
+        {
+            <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+        }
+    </BitDropdown>
+    <ValidationMessage For=""@(() => validationModel.Category)"" />
+
+    <BitDropdown @bind-Values=""validationModel.Products""
+                 Label=""Select min 1 and max 2 items""
+                 Placeholder=""Select items""
+                 IsMultiSelect=""true""
+                 TItem=""BitDropdownOption<string>"" TValue=""string"">
+        @foreach (var item in basicItems)
+        {
+            <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+        }
+    </BitDropdown>
+    <ValidationMessage For=""@(() => validationModel.Products)"" />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
     private readonly string example12CsharpCode = @"
+public class FormValidationDropdownModel
+{
+    [MaxLength(2, ErrorMessage = ""The property {0} have more than {1} elements"")]
+    [MinLength(1, ErrorMessage = ""The property {0} doesn't have at least {1} elements"")]
+    public ICollection<string?> Products { get; set; } = new List<string?>();
+
+    [Required]
+    public string Category { get; set; }
+}
+
+private FormValidationDropdownModel validationModel = new();
+
+private async Task HandleValidSubmit() { }
+
+private void HandleInvalidSubmit() { }
+
 private readonly List<BitDropdownItem<string>> basicItems = new()
 {
     new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },

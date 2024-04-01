@@ -88,6 +88,14 @@ public partial class BitBasicListDemo
         Job = $"Programmer {i + 1}"
     }).ToList();
 
+    private List<Person> FewPeopleRtl = Enumerable.Range(0, 100).Select(i => new Person
+    {
+        Id = i + 1,
+        FirstName = $"شخص {i + 1}",
+        LastName = $"نام خانواگی شخص {i + 1}",
+        Job = $"برنامه نویس {i + 1}"
+    }).ToList();
+
     private BitBasicListItemsProvider<ProductDto> ProductsProvider = default!;
     private BitBasicListItemsProvider<CategoryOrProductDto> CategoriesAndProductsProvider = default!;
 
@@ -414,4 +422,32 @@ public class CategoryOrProductDto
 
 [JsonSerializable(typeof(PagedResult<CategoryOrProductDto>))]
 public partial class AppJsonContext : JsonSerializerContext { }";
+
+    private readonly string example7RazorCode = @"
+<BitBasicList Dir=""BitDir.Rtl"" Items=""FewPeopleRtl"" Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+    <RowTemplate Context=""person"">
+        <div style=""padding: 5px 20px; margin: 10px; background-color: #75737329;"">
+            <p>شناسه: <strong>@person.Id</strong></p>
+            <p>نام کامل: <strong>@person.FirstName @person.LastName</strong></p>
+            <p>شغل: <strong>@person.Job</strong></p>
+        </div>
+    </RowTemplate>
+</BitBasicList>";
+    private readonly string example7CsharpCode = @"
+private List<Person> FewPeopleRtl = Enumerable.Range(0, 100).Select(i => new Person
+{
+    Id = i + 1,
+    FirstName = $""شخص {i + 1}"",
+    LastName = $""نام خانواگی شخص {i + 1}"",
+    Job = $""برنامه نویس {i + 1}""
+}).ToList();
+
+
+public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Job { get; set; }
+}";
 }

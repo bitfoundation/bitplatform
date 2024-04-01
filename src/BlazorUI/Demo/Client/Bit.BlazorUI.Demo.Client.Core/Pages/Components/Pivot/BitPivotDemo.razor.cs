@@ -904,4 +904,32 @@ private bool PivotItemEnabled = true;";
         </div>
     </BitPivotItem>
 </BitPivot>";
+
+    private readonly string example14RazorCode = @"
+<BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
+    <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.Info"">
+        <br />
+        <p>
+            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+        </p>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""آخرین ها"" IconName=""@BitIconName.Info"" ItemCount=""8"">
+        <br />
+        <p>
+            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+        </p>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""شخصی"" IconName=""@BitIconName.Info"" ItemCount=""6"">
+        <br />
+        <p>
+            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+        </p>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""اخیرا"" IconName=""@BitIconName.Info"" ItemCount=""12"">
+        <br />
+        <p>
+            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+        </p>
+    </BitPivotItem>
+</BitPivot>";
 }

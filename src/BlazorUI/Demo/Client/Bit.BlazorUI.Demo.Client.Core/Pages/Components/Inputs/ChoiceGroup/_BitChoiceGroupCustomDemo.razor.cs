@@ -569,13 +569,13 @@ protected override void OnInitialized()
 
     private readonly string example9RazorCode = @"
 <BitChoiceGroup Label=""ساده""
-                IsRtl=""true""
+                Dir=""BitDir.Rtl""
                 DefaultValue=""@(""A"")""
                 Items=""rtlCustoms""
                 NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />
 
 <BitChoiceGroup Label=""غیرفعال""
-                IsRtl=""true""
+                Dir=""BitDir.Rtl""
                 IsEnabled=""false""
                 DefaultValue=""@(""A"")""
                 Items=""rtlCustoms""

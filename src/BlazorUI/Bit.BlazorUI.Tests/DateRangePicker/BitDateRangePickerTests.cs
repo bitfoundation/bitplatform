@@ -112,12 +112,12 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, true);
         });
 
-        Assert.IsNull(component.Instance.Value.StartDate);
-        Assert.IsNull(component.Instance.Value.EndDate);
+        Assert.IsNull(component.Instance.Value);
 
         var today = component.Find(".bit-dtrp-dtd");
         today.Click();
 
+        Assert.IsNotNull(component.Instance.Value);
         Assert.IsNotNull(component.Instance.Value.StartDate);
         Assert.IsNull(component.Instance.Value.EndDate);
         Assert.AreEqual(component.Instance.Value.StartDate.Value.Date, DateTimeOffset.Now.Date);

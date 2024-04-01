@@ -68,6 +68,7 @@
 
 .bit-clp-cnt {
     display: flex;
+    gap: spacing(1);
 }
 
 .bit-clp-sct {
@@ -123,6 +124,5 @@
 .bit-clp-pre {
     width: spacing(6);
     height: spacing(6);
-    margin-left: spacing(1);
     border: $shape-border-width $shape-border-style $color-border-primary;
 }

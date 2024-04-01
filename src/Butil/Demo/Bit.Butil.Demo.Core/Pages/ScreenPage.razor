@@ -1,4 +1,5 @@
 ﻿@page "/screen"
+@implements IAsyncDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.Screen screen
 
@@ -112,8 +113,8 @@
         await console.Log("screen.pixelDepth =", isExtended);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        screen.Dispose();
+        await screen.DisposeAsync();
     }
 }

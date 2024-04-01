@@ -350,6 +350,19 @@ public partial class BitTooltipDemo
 </BitTooltip>";
 
     private readonly string example5RazorCode = @"
+<BitTooltip Dir=""BitDir.Rtl"">
+    <Template>
+        <ul style=""padding: 0.5rem; margin: 0;"">
+            <li>۱. یک</li>
+            <li>۲. دو</li>
+        </ul>
+    </Template>
+    <Anchor>
+        <BitButton ButtonStyle=""BitButtonStyle.Standard"">نشانگر ماوس را روی من بیاورید</BitButton>
+    </Anchor>
+</BitTooltip>";
+
+    private readonly string example6RazorCode = @"
 <BitTooltip @bind-IsShown=""isShown""
             Text=""Text""
             HideArrow=""hideArrow""
@@ -366,7 +379,7 @@ public partial class BitTooltipDemo
 <BitToggle @bind-Value=""hideArrow"" DefaultText=""Toggle tooltip arrow"" />
 <BitToggle @bind-Value=""showOnClick"" DefaultText=""Show tooltip on click"" />
 <BitToggle @bind-Value=""showOnHover"" DefaultText=""Show tooltip on hover"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool isShown = true;
 private bool showOnClick = true;
 private bool showOnHover;

@@ -76,17 +76,17 @@ public partial class BitStickyDemo
                 },
                 new()
                 {
-                    Name = "Left",
+                    Name = "Start",
                     Value = "3",
                 },
                 new()
                 {
-                    Name = "Right",
+                    Name = "End",
                     Value = "4",
                 },
                 new()
                 {
-                    Name = "LeftAndRight",
+                    Name = "StartAndEnd",
                     Value = "5",
                 }
             }
@@ -296,7 +296,7 @@ public partial class BitStickyDemo
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
     </p>
-    <BitSticky Class=""sticky"" Position=""@BitStickyPosition.Left"">Stick to Left</BitSticky>
+    <BitSticky Class=""sticky"" Position=""@BitStickyPosition.Start"">Stick to Start</BitSticky>
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
     </p>
@@ -307,7 +307,7 @@ public partial class BitStickyDemo
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
     </p>
-    <BitSticky Class=""sticky"" Position=""@BitStickyPosition.Right"">Stick to Right</BitSticky>
+    <BitSticky Class=""sticky"" Position=""@BitStickyPosition.End"">Stick to End</BitSticky>
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
     </p>
@@ -318,7 +318,7 @@ public partial class BitStickyDemo
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
     </p>
-    <BitSticky Class=""sticky"" Position=""@BitStickyPosition.LeftAndRight"">Stick to Left and Right</BitSticky>
+    <BitSticky Class=""sticky"" Position=""@BitStickyPosition.StartAndEnd"">Stick to Start and End</BitSticky>
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada.
     </p>

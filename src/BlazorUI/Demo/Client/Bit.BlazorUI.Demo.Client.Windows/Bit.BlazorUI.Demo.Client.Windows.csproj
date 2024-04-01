@@ -7,6 +7,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
         <UseWindowsForms>true</UseWindowsForms>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <RootNamespace>Bit.BlazorUI.Demo.Client.Windows</RootNamespace>
         <StartupObject>Bit.BlazorUI.Demo.Client.Windows.Program</StartupObject>
         <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
@@ -16,17 +17,17 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.7.6">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.7.6">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.7" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2277.86" />
-        <PackageReference Include="Velopack" Version="0.0.332" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.14" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2420.47" />
+        <PackageReference Include="Velopack" Version="0.0.359" />
         
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -40,8 +40,7 @@ public static class Urls
     public const string AdminPanelAppleStore = "https://apps.apple.com/us/app/bit-adminpanel/id6450611349";
     public const string AdminPanelFigma = "https://www.figma.com/community/file/1161030350747233731";
 
-    public const string Components = "https://components.bitplatform.dev/";
-    public const string ComponentsDocs = "https://components.bitplatform.dev/";
+    public const string BlazorUI = "https://blazorui.bitplatform.dev/";
 
     public const string CloudHostingSolutions = "/cloud-hosting-solutions";
     public const string Support = "/support";

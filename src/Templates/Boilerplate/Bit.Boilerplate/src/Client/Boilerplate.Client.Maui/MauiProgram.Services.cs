@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Client.Maui.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui;
 
@@ -22,13 +23,25 @@ public static partial class MauiProgram
 
         services.TryAddTransient(sp =>
         {
-            var handler = sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler");
+            var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = apiServerAddress
             };
             return httpClient;
         });
+
+        if (BuildConfiguration.IsDebug())
+        {
+            builder.Logging.AddDebug();
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            builder.Logging.AddEventLog();
+        }
+
+        builder.Logging.AddEventSourceLogger();
 
         services.TryAddTransient<MainPage>();
         services.TryAddTransient<IStorageService, MauiStorageService>();

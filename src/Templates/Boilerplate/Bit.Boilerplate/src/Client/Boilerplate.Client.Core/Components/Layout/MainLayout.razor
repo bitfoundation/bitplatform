@@ -2,20 +2,27 @@
 
 <div class="status-bar">Boilerplate</div>
 
-<Header OnToggleMenu=ToggleMenuHandler />
+<CascadingValue Value="currentDir">
+    <div dir="@currentDir?.ToString()">
+        <Header OnToggleMenu=ToggleMenuHandler />
 
-@if (isUserAuthenticated)
-{
-    <NavMenu @bind-IsMenuOpen=isMenuOpen />
-}
+        <main class="@BitCss.Class.Color.Background.Primary">
+            @if (isUserAuthenticated)
+            {
+                <NavMenu @bind-IsMenuOpen=isMenuOpen />
+            }
 
-<div class="main @(isUserAuthenticated ? "main--authenticated" : null)">
-    <div class="main-content">
-        <AppErrorBoundary>
-            @Body
-        </AppErrorBoundary>
+            <div class="site-content@(isUserAuthenticated ? " authenticated" : "")">
+                <div class="main-content">
+                    <AppErrorBoundary>
+                        @Body
+                    </AppErrorBoundary>
+                </div>
+            </div>
+        </main>
+
+        <Footer />
+
+        <MessageBox />
     </div>
-    <Footer />
-</div>
-
-<MessageBox />
+</CascadingValue>

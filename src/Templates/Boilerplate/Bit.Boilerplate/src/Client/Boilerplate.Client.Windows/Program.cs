@@ -29,7 +29,7 @@ public partial class Program
                     await updateManager.DownloadUpdatesAsync(updateInfo);
                     if (windowsUpdateSettings.AutoReload)
                     {
-                        updateManager.ApplyUpdatesAndRestart();
+                        updateManager.ApplyUpdatesAndRestart(updateInfo, args);
                     }
                 }
             }

@@ -501,4 +501,11 @@ private async Task<ICollection<string>> LoadItems(string? search, int count)
         return new List<string>();
     }
 }";
+
+    private readonly string example10RazorCode = @"
+<BitSearchBox Dir=""BitDir.Rtl"" Placeholder=""جستجو"" />
+<BitSearchBox IsUnderlined Dir=""BitDir.Rtl"" Placeholder=""جستجو"" />
+<BitSearchBox ShowSearchButton
+              Dir=""BitDir.Rtl""
+              Placeholder=""جستجو"" />";
 }

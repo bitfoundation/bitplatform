@@ -138,6 +138,7 @@ public partial class BitStackDemo
 
     private bool isReversed;
     private bool isHorizontal;
+    private BitDir direction;
     private BitStackAlignment verticalAlign;
     private BitStackAlignment horizontalAlign;
     private double stackHeight = 15;
@@ -226,6 +227,15 @@ private double gap = 1;
     <BitToggle @bind-Value=""isReversed"" DefaultText=""Reversed"" />
 </BitStack>
 
+<BitChoiceGroup Label=""Direction""
+                @bind-Value=""direction""
+                LayoutFlow=""@BitLayoutFlow.Horizontal""
+                TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
+    <BitChoiceGroupOption Text=""LTR"" Value=""BitDir.Ltr"" />
+    <BitChoiceGroupOption Text=""RTL"" Value=""BitDir.Rtl"" />
+    <BitChoiceGroupOption Text=""Auto"" Value=""BitDir.Auto"" />
+</BitChoiceGroup>
+
 <BitChoiceGroup Label=""Horizontal Align""
                 @bind-Value=""horizontalAlign""
                 LayoutFlow=""@BitLayoutFlow.Horizontal""
@@ -255,6 +265,7 @@ private double gap = 1;
 </BitChoiceGroup>
 
 <BitStack Style=""background:#71afe5;height:15rem""
+          Dir=""direction""
           Reversed=""isReversed""
           Horizontal=""isHorizontal""
           VerticalAlign=""verticalAlign""
@@ -266,6 +277,7 @@ private double gap = 1;
     private readonly string example4CsharpCode = @"
 private bool isReversed;
 private bool isHorizontal;
+private BitDir direction;
 private BitStackAlignment verticalAlign;
 private BitStackAlignment horizontalAlign;
 ";

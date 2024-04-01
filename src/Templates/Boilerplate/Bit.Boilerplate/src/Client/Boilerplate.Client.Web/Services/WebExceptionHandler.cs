@@ -2,13 +2,8 @@
 
 public partial class WebExceptionHandler : ExceptionHandlerBase
 {
-    public override void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
+    protected override void Handle(Exception exception, Dictionary<string, object> parameters)
     {
-        if (exception is TaskCanceledException)
-        {
-            return;
-        }
-
         base.Handle(exception, parameters);
     }
 }

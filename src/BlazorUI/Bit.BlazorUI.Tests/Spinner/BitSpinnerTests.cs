@@ -37,8 +37,8 @@ public class BitSpinnerTests : BunitTestContext
     [DataTestMethod,
         DataRow(BitLabelPosition.Top),
         DataRow(BitLabelPosition.Bottom),
-        DataRow(BitLabelPosition.Right),
-        DataRow(BitLabelPosition.Left)
+        DataRow(BitLabelPosition.End),
+        DataRow(BitLabelPosition.Start)
     ]
     public void BitSpinnerShouldRespectPosition(BitLabelPosition position)
     {
@@ -50,8 +50,8 @@ public class BitSpinnerTests : BunitTestContext
         var positionClass = position switch
         {
             BitLabelPosition.Top => "bit-spn-top",
-            BitLabelPosition.Right => "bit-spn-rgt",
-            BitLabelPosition.Left => "bit-spn-lft",
+            BitLabelPosition.End => "bit-spn-end",
+            BitLabelPosition.Start => "bit-spn-srt",
             BitLabelPosition.Bottom => "bit-spn-btm",
             _ => throw new NotSupportedException()
         };

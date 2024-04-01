@@ -26,4 +26,4 @@ jobs:
     displayName: 'Build'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build Boilerplate.sln -c Release -p:EnableWindowsTargeting=true'
+      script: 'dotnet build Boilerplate.sln -c Release'

@@ -370,6 +370,20 @@ public partial class BitDatePickerDemo
             Type = "string",
             DefaultValue = "{0} - {1}, change month",
             Description = "The title of the year range picker's toggle (tooltip)."
+        },
+        new()
+        {
+            Name = "HourStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for date-picker's hour.",
+        },
+        new()
+        {
+            Name = "MinuteStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for date-picker's minute.",
         }
     };
 
@@ -1141,4 +1155,16 @@ private BitDatePickerValidationModel validationModel = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example11RazorCode = @"
+<BitDatePicker Dir=""BitDir.Rtl"" />";
+
+    private readonly string example12RazorCode = @"
+<BitDatePicker ShowTimePicker=""true""
+               Label=""HourStep = 2""
+               HourStep=""2"" />
+
+<BitDatePicker ShowTimePicker=""true""
+               Label=""MinuteStep = 15""
+               MinuteStep=""15"" />";
 }

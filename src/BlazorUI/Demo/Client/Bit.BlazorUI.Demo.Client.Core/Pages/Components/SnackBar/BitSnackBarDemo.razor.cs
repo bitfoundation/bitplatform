@@ -232,6 +232,7 @@ public partial class BitSnackBarDemo
 
     private readonly string example1RazorCode = @"
 <BitSnackBar @ref=""basicSnackBarRef""
+             Dir=""direction""
              Position=""@basicSnackBarPosition""
              AutoDismiss=""@basicSnackBarAutoDismiss""
              AutoDismissTime=""TimeSpan.FromSeconds(basicSnackBarDismissSeconds)"" />
@@ -253,15 +254,22 @@ public partial class BitSnackBarDemo
     <BitChoiceGroupOption Text=""BottomRight"" Value=""BitSnackBarPosition.BottomRight"" />
 </BitChoiceGroup>
 
+<BitChoiceGroup @bind-Value=""direction"" Label=""Direction"" TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
+    <BitChoiceGroupOption Text=""LTR"" Value=""BitDir.Ltr"" />
+    <BitChoiceGroupOption Text=""RTL"" Value=""BitDir.Rtl"" />
+    <BitChoiceGroupOption Text=""Auto"" Value=""BitDir.Auto"" />
+</BitChoiceGroup>
+
 <BitTextField @bind-Value=""basicSnackBarTitle"" Label=""Title"" DefaultValue=""Title"" />
 <BitTextField @bind-Value=""basicSnackBarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" DefaultValue=""This is a body!"" />
 
 <BitToggle @bind-Value=""basicSnackBarAutoDismiss"" Label=""Auto Dismiss"" />
-<BitNumericTextField @bind-Value=""basicSnackBarDismissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
+<BitNumberField @bind-Value=""basicSnackBarDismissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
 
 <BitButton Style=""margin-top: 20px;"" OnClick=""OpenBasicSnackBar"">Show</BitButton>";
     private readonly string example1CsharpCode = @"
 private BitSnackBar basicSnackBarRef = new();
+private BitDir direction;
 private BitSnackBarType basicSnackBarType = BitSnackBarType.Info;
 private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
 private string basicSnackBarTitle = string.Empty;

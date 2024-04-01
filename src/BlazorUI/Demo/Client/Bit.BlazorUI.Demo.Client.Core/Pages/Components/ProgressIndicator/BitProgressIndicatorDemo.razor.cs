@@ -156,7 +156,7 @@ public partial class BitProgressIndicatorDemo
                       PercentComplete=""@CompletedPercent""
                       BarHeight=""50"" />
 
-<BitProgressIndicator OnClick=""StartProgress"">Start Progress</BitProgressIndicator>";
+<BitButton OnClick=""StartProgress"">Start Progress</BitButton>";
     private readonly string example1CsharpCode = @"
 private int CompletedPercent;
 private string Description = ""Push button to start!"";

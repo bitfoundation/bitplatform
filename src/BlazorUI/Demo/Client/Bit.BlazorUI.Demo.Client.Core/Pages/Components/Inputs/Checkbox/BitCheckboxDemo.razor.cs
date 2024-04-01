@@ -411,4 +411,7 @@ public class BitCheckboxValidationModel
 private async Task HandleValidSubmit() { }
 
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example11RazorCode = @"
+<BitCheckbox Dir=""BitDir.Rtl"" Label=""کادر بررسی"" />";
 }

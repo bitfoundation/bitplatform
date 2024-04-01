@@ -140,10 +140,18 @@
                                     <BitButton OnClick="RemoveBreadcrumbItem">Remove Item</BitButton>
                                 </div>
                                 <div>
-                                    <BitNumericTextField @bind-Value="MaxDisplayedItems" Step="@NumericTextFieldStep" Label="MaxDisplayedItems" ShowButtons="true" />
-                                    <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" ShowButtons="true" />
+                                    <BitNumberField @bind-Value="MaxDisplayedItems" Step="@NumberFieldStep" Label="MaxDisplayedItems" ShowButtons="true" />
+                                    <BitNumberField @bind-Value="OverflowIndex" Step="@NumberFieldStep" Label="OverflowIndex" ShowButtons="true" />
                                 </div>
                             </div>
+                        </div>
+                    </ExamplePreview>
+                </ComponentExampleBox>
+
+                <ComponentExampleBox Title="RTL" RazorCode="@example7BreadcrumbItemRazorCode" CsharpCode="@example7BreadcrumbItemCsharpCode" Id="example7">
+                    <ExamplePreview>
+                        <div class="example-box">
+                            <BitBreadcrumb Dir="BitDir.Rtl" Items="RtlBreadcrumbItems" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
@@ -373,10 +381,24 @@
                                     <BitButton OnClick="RemoveCustomItem">Remove Item</BitButton>
                                 </div>
                                 <div>
-                                    <BitNumericTextField @bind-Value="MaxDisplayedItems" Step="@NumericTextFieldStep" Label="MaxDisplayedItems" ShowButtons="true" />
-                                    <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" ShowButtons="true" />
+                                    <BitNumberField @bind-Value="MaxDisplayedItems" Step="@NumberFieldStep" Label="MaxDisplayedItems" ShowButtons="true" />
+                                    <BitNumberField @bind-Value="OverflowIndex" Step="@NumberFieldStep" Label="OverflowIndex" ShowButtons="true" />
                                 </div>
                             </div>
+                        </div>
+                    </ExamplePreview>
+                </ComponentExampleBox>
+
+                <ComponentExampleBox Title="RTL" RazorCode="@example7CustomItemRazorCode" CsharpCode="@example7CustomItemCsharpCode" Id="example7">
+                    <ExamplePreview>
+                        <div class="example-box">
+                            <BitBreadcrumb Dir="BitDir.Rtl"
+                                           Items="RtlCustomBreadcrumbItems"
+                                           TextField="@nameof(PageInfoModel.Name)"
+                                           HrefField="@nameof(PageInfoModel.Address)"
+                                           ClassField="@nameof(PageInfoModel.HtmlClass)"
+                                           StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                           IsSelectedField="@nameof(PageInfoModel.IsCurrent)" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
@@ -587,10 +609,23 @@
                                     <BitButton OnClick="() => ItemsCount--">Remove Option</BitButton>
                                 </div>
                                 <div>
-                                    <BitNumericTextField @bind-Value="MaxDisplayedItems" Step="@NumericTextFieldStep" Label="MaxDisplayedOption" ShowButtons="true" />
-                                    <BitNumericTextField @bind-Value="OverflowIndex" Step="@NumericTextFieldStep" Label="OverflowIndex" ShowButtons="true" />
+                                    <BitNumberField @bind-Value="MaxDisplayedItems" Step="@NumberFieldStep" Label="MaxDisplayedOption" ShowButtons="true" />
+                                    <BitNumberField @bind-Value="OverflowIndex" Step="@NumberFieldStep" Label="OverflowIndex" ShowButtons="true" />
                                 </div>
                             </div>
+                        </div>
+                    </ExamplePreview>
+                </ComponentExampleBox>
+
+                <ComponentExampleBox Title="RTL" RazorCode="@example7BreadcrumbOptionRazorCode" Id="example7">
+                    <ExamplePreview>
+                        <div class="example-box">
+                            <BitBreadcrumb Dir="BitDir.Rtl" TItem="BitBreadcrumbOption">
+                                <BitBreadcrumbOption Text="پوشه ۱" />
+                                <BitBreadcrumbOption Text="پوشه ۲" />
+                                <BitBreadcrumbOption Text="پوشه ۳" />
+                                <BitBreadcrumbOption Text="پوشه ۴" IsSelected="true" />
+                            </BitBreadcrumb>
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>

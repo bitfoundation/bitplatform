@@ -69,6 +69,8 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Navigator", Url = "/butil/navigator" },
         new BitNavItem { Text = "Location", Url = "/butil/location" },
         new BitNavItem { Text = "Screen", Url = "/butil/screen" },
+        new BitNavItem { Text = "VisualViewport", Url = "/butil/visualViewport" },
+        new BitNavItem { Text = "ScreenOrientation", Url = "/butil/screenOrientation" },
     ];
 
 

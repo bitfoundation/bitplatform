@@ -6,7 +6,7 @@
 footer {
     width: 100%;
     display: flex;
-    padding-top: 5rem;
+    overflow: hidden;
     align-items: center;
     box-sizing: border-box;
     flex-flow: column nowrap;
@@ -69,6 +69,7 @@ footer {
 
 .footer-links-container {
     gap: 20px;
+    height: 100%;
     display: grid;
     grid-auto-columns: 1fr;
     grid-template-columns: 1fr 1fr 1fr;

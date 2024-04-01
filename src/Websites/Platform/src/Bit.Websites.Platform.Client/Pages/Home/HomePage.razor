@@ -1,0 +1,192 @@
+﻿@page "/"
+@inherits AppComponentBase
+
+<PageOutlet Url=""
+            Title="Home"
+            Description="home page of the bit platform" />
+
+<div class="page-container">
+    <img src="/images/home/hero-gradient-dark.svg" class="hero-gradient dark-theme" />
+    <img src="/images/home/hero-gradient-light.svg" class="hero-gradient light-theme" />
+
+    <section class="page-section hero-section">
+        <div class="page-section-content">
+            <div class="hero-section-content">
+                <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="hero-title">
+                    bit platform
+                </BitTypography>
+                <BitTypography Variant="BitTypographyVariant.H4" Gutter Class="hero-subtitle">
+                    Build all of your apps
+                    <br />
+                    using what you already know and love
+                </BitTypography>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section text-section">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter Class="section-title">
+                    What is <span style="text-transform:lowercase">bit platform?</span>
+                </BitTypography>
+                <div class="section-title-line"></div>
+            </div>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H2" Class="text-title">
+                code, build & deploy
+                <br />
+                your apps easily
+            </BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H5" Class="text-subtitle">
+                A set of tools for .NET developers across multiple platforms
+            </BitTypography>
+        </div>
+    </section>
+
+    <img src="/images/home/hero-image-dark.svg" class="hero-image dark-theme" />
+    <img src="/images/home/hero-image-light.svg" class="hero-image light-theme" />
+
+    <section class="page-section text-section">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter Class="section-title">
+                    Why <span style="text-transform:lowercase">bit platform?</span>
+                </BitTypography>
+                <div class="section-title-line"></div>
+            </div>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H2" Class="text-title">
+                best partner for teams
+                <br />
+                creating apps with
+                <br />
+                <span class="highlight-1">.NET and Blazor</span>
+            </BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H5" Class="text-subtitle">
+                Instead of using miscellaneous packages, you'll have
+                <br />
+                a set of comprehensive tools to cover any requirement.
+            </BitTypography>
+        </div>
+    </section>
+
+    <section class="page-section products-section" id="@OUR_PRODUCTS_SECTION_ID" @ref="ourProductsRef">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter Class="section-title">Our products</BitTypography>
+                <div class="section-title-line"></div>
+            </div>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H2" Class="text-title">
+                variety of <span class="highlight-2">tools</span> to
+                <br />
+                make better apps
+            </BitTypography>
+            <br />
+            <Products />
+        </div>
+    </section>
+
+    <section class="page-section tech-section">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <div class="section-title-line reversed"></div>
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter Class="section-title">Tech we use</BitTypography>
+                <div class="section-title-line"></div>
+            </div>
+            <br /><br /><br />
+            <div class="tech-list">
+                @* <a target="_blank" title=".NET" class="tech-item dotnet-item" href="https://dotnet.microsoft.com/en-us/"></a> *@
+                <a target="_blank" title="C#" class="tech-item csharp-item" href="https://dotnet.microsoft.com/en-us/languages/csharp"></a>
+                <a target="_blank" title="Blazor" class="tech-item blazor-item" href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor"></a>
+                <a target="_blank" title="Visual Studio" class="tech-item vs-item" href="https://visualstudio.microsoft.com/"></a>
+                <a target="_blank" title="git" class="tech-item git-item" href="https://git-scm.com/"></a>
+                <a target="_blank" title="GitHub" class="tech-item github-item" href="https://github.com">
+                    <svg height="70" width="70" viewBox="0 0 16 16">
+                        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+                    </svg>
+                </a>
+                <a target="_blank" title="Sass" class="tech-item sass-item" href="https://sass-lang.com/"></a>
+            </div>
+            <br /><br />
+            <BitTypography Variant="BitTypographyVariant.H4" Class="tech-subtitle">
+                We've developed all of our websites
+                <br />
+                with our own toolchain!
+            </BitTypography>
+        </div>
+    </section>
+
+    <section class="page-section customer-section">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter Class="section-title">What customers say</BitTypography>
+                <div class="section-title-line"></div>
+            </div>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H2" Class="text-title">
+                people <span class="highlight-2">love</span> what
+                <br />
+                they can make
+            </BitTypography>
+
+            <BitCarousel Class="customer-feedback-carousel" ShowNextPrev="false" AutoPlay="true" AutoPlayInterval="10000" InfiniteScrolling="true">
+                <BitCarouselItem>
+                    <div class="customer-feedback-card">
+                        <a href="https://twitter.com/mehrandvd/status/1553142453091401729" target="_blank"><div class="twitter-icon"></div></a>
+                        <div class="customer-feedback-txt">
+                            I'm more than happy for the decision we made to use <span class="highlighted-txt">#BitPlatform</span> in our #dotnet products at
+                            @@MelkRadar and #BeyondTeam and all other teams I'm consulting. It's so promising,
+                            robust and reliable for scale...
+                        </div>
+                        <div class="author-container">
+                            <img class="customer-image" src="images/home/twitter/1.webp" />
+                            <div class="customer-feedback-name">uɒɹɥəɯ</div>
+                        </div>
+                    </div>
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="customer-feedback-card">
+                        <a href="https://twitter.com/sameerrdubey/status/1761762309586690499" target="_blank"><div class="twitter-icon"></div></a>
+                        <div class="customer-feedback-txt">
+                            Great platform to make cutting-edge cross platform apps with c#, you become full-stack developer already with <span class="highlighted-txt">@@bitplatformhq</span>
+                        </div>
+                        <div class="author-container">
+                            <img class="customer-image" src="images/home/twitter/5.webp" />
+                            <div class="customer-feedback-name">Sameer Dubey</div>
+                        </div>
+                    </div>
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="customer-feedback-card">
+                        <a href="https://twitter.com/hootanht/status/1553199172957995008" target="_blank"><div class="twitter-icon"></div></a>
+                        <div class="customer-feedback-txt">
+                            We're excited too. <span class="highlighted-txt">#BitPlatform</span> helps us to achieve more flexibility and
+                            opportunities in our projects than we think.😍🌹🙏
+                        </div>
+                        <div class="author-container">
+                            <img class="customer-image" src="images/home/twitter/4.webp" />
+                            <div class="customer-feedback-name">Hootan HT</div>
+                        </div>
+                    </div>
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="customer-feedback-card">
+                        <a href="https://twitter.com/HamedHajiloo96/status/1541649567644614656" target="_blank"><div class="twitter-icon"></div></a>
+                        <div class="customer-feedback-txt">
+                            We want to launch a website that works entirely with .NET <br />
+                            Thanks to <span class="highlighted-txt">#BitPlatform</span> we can have a well-performance public website with #Blazor
+                        </div>
+                        <div class="author-container">
+                            <img class="customer-image" src="images/home/twitter/2.webp" />
+                            <div class="customer-feedback-name">Hamed Hajiloo</div>
+                        </div>
+                    </div>
+                </BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </section>
+</div>

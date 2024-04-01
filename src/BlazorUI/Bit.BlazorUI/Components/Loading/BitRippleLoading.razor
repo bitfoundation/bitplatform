@@ -10,11 +10,11 @@
     }
 
         .bit-ldn-Ripple div {
-            position: absolute;
-            border: @(Convert(4))px solid @Color;
             opacity: 1;
+            position: absolute;
             border-radius: 50%;
             animation: bit-ldn-Ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+            border: @(Convert(4))px solid @(Color ?? "var(--bit-clr-fg-primary)");
         }
 
             .bit-ldn-Ripple div:nth-child(2) {

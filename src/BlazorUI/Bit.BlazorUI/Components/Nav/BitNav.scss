@@ -85,8 +85,8 @@
     padding: spacing(0.5) 0;
     background: transparent;
     text-overflow: ellipsis;
-    padding-left: spacing(2.75);
     color: $color-foreground-disabled;
+    padding-inline-start: spacing(2.75);
 }
 
 .bit-nav-ict {
@@ -120,6 +120,7 @@
     overflow: hidden;
     font-weight: 400;
     user-select: none;
+    gap: spacing(0.5);
     align-items: center;
     white-space: nowrap;
     flex-flow: row nowrap;
@@ -142,12 +143,11 @@
 
 .bit-nav-iic {
     color: $color-primary-main;
-    margin-right: spacing(0.5);
 }
 
 .bit-nav-sel {
     background-color: $color-background-secondary;
-    border-left: spacing(0.375) $shape-border-style $color-primary-main;
+    border-inline-start: spacing(0.375) $shape-border-style $color-primary-main;
 
     @media(hover:hover) {
         &:hover {

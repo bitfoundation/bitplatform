@@ -1,4 +1,5 @@
 ﻿@page "/screenOrientation"
+@implements IAsyncDisposable
 @inject Bit.Butil.Console console
 @inject Bit.Butil.ScreenOrientation screenOrientation
 
@@ -24,12 +25,67 @@
 <hr />
 <br />
 
-<button @onclick="GetAngle">Get screen angle</button>
+<button @onclick="GetOrientationType">GetOrientationType</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="GetAngle">GetAngle</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<select @bind="selectedOrientationLockType">
+    @foreach (var option in Enum.GetValues(typeof(OrientationLockType)))
+    {
+        <option value="@option">@option.ToString()</option>
+    }
+</select>
+<br />
+<br />
+<button @onclick="SetOrientationLockType">SetOrientationLockType</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="UnlockOrientation">UnlockOrientation</button>
+
+<br />
+<br />
 
 @code {
+    private OrientationLockType selectedOrientationLockType;
+
+    private async Task GetOrientationType()
+    {
+        var type = await screenOrientation.GetOrientationType();
+        await console.Log("OrientationType:", type);
+    }
+
     private async Task GetAngle()
     {
         var angle = await screenOrientation.GetAngle();
-        await console.Log("Screen Angle:", angle);
+        await console.Log("Angle:", angle);
+    }
+
+    private async Task SetOrientationLockType()
+    {
+        await screenOrientation.Lock(selectedOrientationLockType);
+    }
+
+    private async Task UnlockOrientation()
+    {
+        await screenOrientation.Unlock();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await screenOrientation.DisposeAsync();
     }
 }

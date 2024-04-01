@@ -19,11 +19,11 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IStorageService, BrowserStorageService>();
 
-        services.TryAddKeyedTransient<HttpMessageHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
+        services.TryAddKeyedTransient<DelegatingHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
-        services.TryAddTransient<HttpClientHandler>();
+        services.TryAddScoped<HttpClientHandler>();
 
         services.AddScoped<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddScoped(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());

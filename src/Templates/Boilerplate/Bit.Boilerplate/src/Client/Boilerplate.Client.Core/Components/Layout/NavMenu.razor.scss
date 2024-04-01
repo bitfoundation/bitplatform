@@ -4,30 +4,36 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .main-container {
-    left: 0;
     z-index: 16;
     height: 100%;
     display: flex;
-    position: fixed;
+    position: sticky;
     min-height: 100%;
     max-height: 100vh;
     overflow: hidden auto;
     flex-flow: column nowrap;
-    width: rem2($navMenuWidth);
     justify-content: flex-start;
+    min-width: rem2($navMenuWidth);
+    padding-bottom: rem2($headerHeight);
     background-color: $bit-color-background-primary;
-    padding-top: calc(rem2(48px) + var(--bit-status-bar-height));
+    top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
 
     .bit-ios & {
-        padding-top: calc(rem2(48px) + env(safe-area-inset-top));
+        top: calc(rem2($headerHeight) + env(safe-area-inset-top));
+    }
+
+    &::-webkit-scrollbar {
+        width: 0;
     }
 }
 
-.main-container--closed {
-    display: none;
-
-    @include gt-md {
-        display: flex;
+@include lt-lg {
+    .main-container {
+        position: fixed;
+    } 
+    
+    .main-container--closed {
+        display: none;
     }
 }
 
@@ -42,17 +48,16 @@
 }
 
 .menu-overlay {
-    left: 0;
     width: 100%;
     z-index: 15;
-    display: none;
-    top: rem2(48px);
     position: fixed;
-    height: calc(100vh - #{rem2(48px)});
+    inset-inline-start: 0;
+    top: rem2($headerHeight);
     background-color: rgba(0, 0, 0, 0.5);
+    height: calc(100vh - #{rem2($headerHeight)});
 
-    @include lt-lg {
-        display: block;
+    @include gt-md {
+        display: none;
     }
 }
 

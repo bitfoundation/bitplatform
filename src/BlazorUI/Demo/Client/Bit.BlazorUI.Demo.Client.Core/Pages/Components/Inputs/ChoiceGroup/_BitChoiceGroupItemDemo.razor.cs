@@ -430,8 +430,8 @@ protected override void OnInitialized()
 }";
 
     private readonly string example9RazorCode = @"
-<BitChoiceGroup Label=""ساده"" Items=""rtlItems"" DefaultValue=""@(""A"")"" IsRtl=""true"" />
-<BitChoiceGroup Label=""غیرفعال"" Items=""rtlItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" IsRtl=""true"" />";
+<BitChoiceGroup Label=""ساده"" Items=""rtlItems"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />
+<BitChoiceGroup Label=""غیرفعال"" Items=""rtlItems"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"" />";
     private readonly string example9CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
 {

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.StaticFiles;
 //#endif
 
 namespace Boilerplate.Server;
@@ -68,12 +69,15 @@ public static partial class Program
                 };
             });
 
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddDbContextPool<AppDbContext>(options =>
         {
+            options.EnableSensitiveDataLogging(env.IsDevelopment())
+                .EnableDetailedErrors(env.IsDevelopment());
+
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-                dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                
             });
             //#endif
             //#if (IsInsideProjectTemplate == true)
@@ -82,7 +86,7 @@ public static partial class Program
             //#if (database == "Sqlite")
             options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
             {
-                dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                
             });
             //#endif
         });
@@ -100,6 +104,7 @@ public static partial class Program
         AddHealthChecks(builder);
 
         services.TryAddTransient<HtmlRenderer>();
+        services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
 
@@ -152,7 +157,7 @@ public static partial class Program
                 apiServerAddress = new Uri(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl(), apiServerAddress);
             }
 
-            return new HttpClient(sp.GetRequiredKeyedService<HttpMessageHandler>("DefaultMessageHandler"))
+            return new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler"))
             {
                 BaseAddress = apiServerAddress
             };

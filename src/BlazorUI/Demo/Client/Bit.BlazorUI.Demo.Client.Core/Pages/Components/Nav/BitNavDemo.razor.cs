@@ -669,6 +669,13 @@ public partial class BitNavDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the toggle button of the BitNav."
                },
+               new()
+               {
+                   Name = "Separator",
+                   Type = "String?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the separator of the BitNav."
+               },
             }
         }
     };

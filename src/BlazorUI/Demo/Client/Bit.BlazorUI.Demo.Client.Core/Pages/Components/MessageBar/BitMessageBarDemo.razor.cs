@@ -220,4 +220,29 @@ public partial class BitMessageBarDemo
 private bool IsInfoMessageBarHidden = false;
 private bool IsWarningMessageBarHidden = false;
 private bool IsErrorMessageBarHidden = false;";
+
+    private readonly string example3RazorCode = @"
+<BitMessageBar Dir=""BitDir.Rtl"" MessageBarType=""@BitMessageBarType.Info"">
+    اطلاعات (پیش فرض) نوار پیام. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar Dir=""BitDir.Rtl"" MessageBarType=""@BitMessageBarType.Success"">
+    نوار پیام موفق. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar Dir=""BitDir.Rtl"" MessageBarType=""@BitMessageBarType.Warning"">
+    نوار پیام هشدار. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar Dir=""BitDir.Rtl"" MessageBarType=""@BitMessageBarType.SevereWarning"">
+    نوار پیام هشدار شدید. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar Dir=""BitDir.Rtl"" MessageBarType=""@BitMessageBarType.Error"">
+    نوار پیام خطا. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
+</BitMessageBar>
+
+<BitMessageBar Dir=""BitDir.Rtl"" MessageBarType=""@BitMessageBarType.Blocked"">
+    نوار پیام مسدود. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
+</BitMessageBar>";
 }

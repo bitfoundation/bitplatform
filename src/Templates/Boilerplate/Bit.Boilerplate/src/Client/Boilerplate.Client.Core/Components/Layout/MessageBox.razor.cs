@@ -1,33 +1,18 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class MessageBox : IDisposable
+public partial class MessageBox
 {
     private bool isOpen;
-    private string? title;
     private string? body;
+    private string? title;
+    private Action? unsubscribe;
+    private bool disposed = false;
 
     private TaskCompletionSource<object?>? tcs;
 
-    private async Task OnCloseClick()
-    {
-        isOpen = false;
-        tcs?.SetResult(null);
-        tcs = null;
-    }
-
-    private async Task OnOkClick()
-    {
-        isOpen = false;
-        tcs?.SetResult(null);
-        tcs = null;
-    }
-
-    Action? dispose;
-    bool disposed = false;
-
     protected override Task OnInitAsync()
     {
-        dispose = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
+        unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
         {
             (var message, string title, TaskCompletionSource<object?> tcs) = ((string message, string title, TaskCompletionSource<object?> tcs))args!;
             await (this.tcs?.Task ?? Task.CompletedTask);
@@ -50,19 +35,29 @@ public partial class MessageBox : IDisposable
         });
     }
 
-    public override void Dispose()
+    private async Task OnCloseClick()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        isOpen = false;
+        tcs?.SetResult(null);
+        tcs = null;
     }
 
-    protected virtual void Dispose(bool disposing)
+    private async Task OnOkClick()
     {
+        isOpen = false;
+        tcs?.SetResult(null);
+        tcs = null;
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        await base.DisposeAsync(true);
+
         if (disposed || disposing is false) return;
 
         tcs?.TrySetResult(null);
         tcs = null;
-        dispose?.Invoke();
+        unsubscribe?.Invoke();
 
         disposed = true;
     }

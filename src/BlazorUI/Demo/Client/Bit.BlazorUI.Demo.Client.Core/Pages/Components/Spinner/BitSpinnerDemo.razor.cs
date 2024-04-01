@@ -25,7 +25,7 @@ public partial class BitSpinnerDemo
             Name = "LabelPosition",
             Type = "BitLabelPosition",
             LinkType = LinkType.Link,
-            Href = "#spinnerLabelPosition-enum",
+            Href = "#spinner-labelPosition-enum",
             DefaultValue = "BitLabelPosition.Top",
             Description = "The position of the label in regards to the spinner animation.",
         },
@@ -71,7 +71,7 @@ public partial class BitSpinnerDemo
         },
         new()
         {
-            Id = "spinnerLabelPosition-enum",
+            Id = "spinner-labelPosition-enum",
             Name = "BitLabelPosition",
             Description = "",
             Items = new()
@@ -84,8 +84,8 @@ public partial class BitSpinnerDemo
                 },
                 new()
                 {
-                    Name= "Right",
-                    Description="The label shows on the right side of the spinner.",
+                    Name= "End",
+                    Description="The label shows on the end of the spinner.",
                     Value="1",
                 },
                 new()
@@ -96,8 +96,8 @@ public partial class BitSpinnerDemo
                 },
                 new()
                 {
-                    Name= "Left",
-                    Description="The label shows on the left side of the spinner.",
+                    Name= "Start",
+                    Description="The label shows on the start of the spinner.",
                     Value="3",
                 },
             }
@@ -148,6 +148,9 @@ public partial class BitSpinnerDemo
     private readonly string example2RazorCode = @"
 <BitSpinner LabelPosition=""BitLabelPosition.Top"" Label=""I am definitely loading..."" />
 <BitSpinner LabelPosition=""BitLabelPosition.Bottom"" Label=""Seriously, still loading..."" />
-<BitSpinner LabelPosition=""BitLabelPosition.Left"" Label=""Wait, wait..."" />
-<BitSpinner LabelPosition=""BitLabelPosition.Right"" Label=""Nope, still loading..."" />";
+<BitSpinner LabelPosition=""BitLabelPosition.Start"" Label=""Wait, wait..."" />
+<BitSpinner LabelPosition=""BitLabelPosition.End"" Label=""Nope, still loading..."" />
+
+<BitSpinner Dir=""BitDir.Rtl"" LabelPosition=""BitLabelPosition.Start"" Label=""در حال بار گذاری..."" />
+<BitSpinner Dir=""BitDir.Rtl"" LabelPosition=""BitLabelPosition.End"" Label=""در حال بار گذاری..."" />";
 }

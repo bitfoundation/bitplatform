@@ -45,6 +45,13 @@ public partial class _BitButtonGroupCustomDemo
         }
     };
 
+    private List<ButtonGroupActionItem> rtlCustoms = new()
+    {
+        new() { Name = "اضافه کردن", Icon = BitIconName.Add },
+        new() { Name = "ویرایش", Icon = BitIconName.Edit },
+        new() { Name = "حذف", Icon = BitIconName.Delete }
+    };
+
     protected override void OnInitialized()
     {
         eventsCustoms[0].Clicked = _ => { clickCounter++; StateHasChanged(); };
@@ -319,5 +326,37 @@ private List<ButtonGroupActionItem> styleClassCustoms = new()
         Class = ""custom-item"",
         Icon = BitIconName.FormatPainter,
     }
+};";
+
+    private readonly string example9RazorCode = @"
+<BitButtonGroup Dir=""BitDir.Rtl""
+                Items=""rtlCustoms""
+                ButtonStyle=""BitButtonStyle.Primary""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         IconName = { Selector = i => i.Icon } })"" />
+
+<BitButtonGroup Dir=""BitDir.Rtl""
+                Items=""rtlCustoms""
+                ButtonStyle=""BitButtonStyle.Standard""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         IconName = { Selector = i => i.Icon } })"" />
+
+<BitButtonGroup Dir=""BitDir.Rtl""
+                Items=""rtlCustoms""
+                ButtonStyle=""BitButtonStyle.Text""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         IconName = { Selector = i => i.Icon } })"" />";
+    private readonly string example9CsharpCode = @"
+public class ButtonGroupActionItem
+{
+    public string? Name { get; set; }
+    public string? Icon { get; set; }
+}
+
+private List<ButtonGroupActionItem> rtlCustoms = new()
+{
+    new() { Name = ""اضافه کردن"", Icon = BitIconName.Add },
+    new() { Name = ""ویرایش"", Icon = BitIconName.Edit },
+    new() { Name = ""حذف"", Icon = BitIconName.Delete }
 };";
 }

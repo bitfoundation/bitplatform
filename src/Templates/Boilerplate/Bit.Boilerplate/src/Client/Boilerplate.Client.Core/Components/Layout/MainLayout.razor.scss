@@ -3,36 +3,43 @@
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
-.main {
+main {
+    width: 100%;
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    padding-top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
+
+    .bit-ios & {
+        padding-top: calc(rem2($headerHeight) + env(safe-area-inset-top));
+    }
+}
+
+.site-content {
     width: 100%;
     display: flex;
     min-height: 100vh;
     flex-flow: column;
     position: relative;
     background-color: $bit-color-background-secondary;
-    padding-top: calc(rem2(48px) + var(--bit-status-bar-height));
 
-    .bit-ios & {
-        padding-top: calc(rem2(48px) + env(safe-area-inset-top));
+    &.authenticated {
+        width: calc(100% - rem2($navMenuWidth));
+
+        @include lt-lg {
+            width: 100%;
+        }
     }
 }
 
-.main--authenticated {
-    display: flex;
-    flex-flow: column;
-    margin-left: rem2($navMenuWidth);
-    width: calc(100% - rem2($navMenuWidth));
 
-    @include lt-lg {
-        width: 100%;
-        margin-left: 0;
-    }
-}
 
 .main-content {
     flex-grow: 1;
     display: flex;
-    padding: 1rem;
+    padding: 2rem;
     flex-flow: column;
     align-items: center;
     justify-content: center;
@@ -87,7 +94,7 @@
 
     .form-input-error,
     .validation-message {
-        text-align: left;
+        text-align: start;
         font-size: rem2(12px);
         line-height: rem2(16px);
         color: $bit-color-state-error;
@@ -99,9 +106,9 @@
     }
 
     .form-message-bar {
-        top: 0;
-        left: 0;
         position: absolute;
+        inset-block-start: 0;
+        inset-inline-start: 0;
         border-radius: rem2(4px) rem2(4px) 0 0;
     }
 }

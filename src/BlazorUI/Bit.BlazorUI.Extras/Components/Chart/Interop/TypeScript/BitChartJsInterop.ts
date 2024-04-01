@@ -20,17 +20,25 @@ interface DelegateHandler extends IMethodHandler {
     ignoredIndices: number[];
 }
 
-class BitChart {
-    public static initPromise?: Promise<unknown>;
-    BlazorCharts = new Map<string, Chart>();
+class BitChartJsInterop {
+    private static _initPromise?: Promise<unknown>;
+    private _bitCharts = new Map<string, Chart>();
+
+    public getChartJs(canvasId: string) {
+        if (!this._bitCharts.has(canvasId)) return null;
+
+        return this._bitCharts.get(canvasId)!;
+    }
 
     public async initChartJs(scripts: string[]) {
-        if (BitChart.initPromise) {
-            await BitChart.initPromise;
+        if (BitChartJsInterop._initPromise) {
+            await BitChartJsInterop._initPromise;
         }
 
         const allScripts = Array.from(document.scripts).map(s => s.src);
         const notAppenedScripts = scripts.filter(s => !allScripts.find(as => as.endsWith(s)));
+
+        if (notAppenedScripts.length == 0) return Promise.resolve();
 
         const promise = new Promise(async (resolve: any, reject: any) => {
             try {
@@ -40,7 +48,7 @@ class BitChart {
                 reject(e);
             }
         });
-        BitChart.initPromise = promise;
+        BitChartJsInterop._initPromise = promise;
         return promise;
 
         async function addScript(url: string) {
@@ -54,24 +62,33 @@ class BitChart {
         }
     }
 
+    public removeChart(canvasId: string) {
+        if (!this._bitCharts.has(canvasId)) return;
+
+        var chart = this._bitCharts.get(canvasId)!;
+        chart.destroy();
+        chart.config = {};
+        this._bitCharts.delete(canvasId);
+    }
+
     public setupChart(config: BitChartConfiguration): boolean {
-        if (!this.BlazorCharts.has(config.canvasId)) {
+        if (this._bitCharts.has(config.canvasId)) {
+            return this.updateChart(config);
+        } else {
             this.wireUpCallbacks(config);
 
-            let chart = new Chart(config.canvasId, config)
-            this.BlazorCharts.set(config.canvasId, chart);
+            let chart = new Chart(config.canvasId, config);
+            this._bitCharts.set(config.canvasId, chart);
 
             return true;
-        } else {
-            return this.updateChart(config);
         }
     }
 
     public updateChart(config: BitChartConfiguration): boolean {
-        if (!this.BlazorCharts.has(config.canvasId))
+        if (!this._bitCharts.has(config.canvasId))
             throw `Could not find a chart with the given id. ${config.canvasId}`;
 
-        let myChart = this.BlazorCharts.get(config.canvasId);
+        let myChart = this._bitCharts.get(config.canvasId);
 
         if (!myChart) return false;
 
@@ -180,8 +197,7 @@ class BitChart {
             return defaults?.onClick || Chart.defaults.global.onClick;
         };
 
-        if (!config.options)
-            return;
+        if (!config.options) return;
 
         config.options.onClick = this.getMethodHandler(<IMethodHandler>config.options.onClick, getDefaultFunc(config.type));
     }
@@ -381,4 +397,5 @@ class BitChart {
         return JSON.stringify(object, replacer);
     }
 }
-(window as any)["BitChartJsInterop"] = new BitChart();
+
+(window as any)["BitChart"] = new BitChartJsInterop();

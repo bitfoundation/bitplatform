@@ -127,7 +127,7 @@
     <value>Le champ {0} n'est pas une adresse e-mail valide.</value>
   </data>
     <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-    <value>MaxLengthAttribute doit avoir une valeur de longueur supérieure à zéro.</value>
+    <value>MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length.</value>
   </data>
     <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur minimale de « {1} ».</value>
@@ -136,7 +136,7 @@
     <value>Le champ {0} doit être compris entre {1} et {2}.</value>
   </data>
     <data name="DuplicateEmail" xml:space="preserve">
-    <value>L'e-mail « {0} » est déjà pris.</value>
+    <value>L'e-mail '{0}' est déjà pris.</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
@@ -310,7 +310,7 @@
     <value>L'élément à faire est introuvable</value>
   </data>
     <data name="AreYouSureWannaDelete" xml:space="preserve">
-    <value>Etes-vous sûr de vouloir supprimer {0}</value>
+    <value>Etes-vous sûr de vouloir supprimer {0}?</value>
   </data>
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>Supprimer l'élément à faire</value>
@@ -569,5 +569,11 @@
   </data>
     <data name="UpdateToNewVersion" xml:space="preserve">
     <value>Souhaitez-vous mettre à jour vers la nouvelle version?</value>
+  </data>
+    <data name="AboutTitle" xml:space="preserve">
+    <value>À propos</value>
+  </data>
+    <data name="NotFoundText" xml:space="preserve">
+    <value>Il n'y a rien ici.</value>
   </data>
 </root>

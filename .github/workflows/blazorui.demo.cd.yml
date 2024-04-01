@@ -1,7 +1,7 @@
 name: Blazor UI Demo CD
 
 env:
-  API_SERVER_ADDRESS: 'https://components.bitplatform.dev/api/'
+  API_SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'bit-components'
 
 on:
@@ -46,10 +46,10 @@ jobs:
       run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Services/AppRenderMode.cs
 
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release
+      run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
 
     - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:PwaEnabled=true -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v3
@@ -114,18 +114,18 @@ jobs:
         WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj -c Release
+      run: dotnet build src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
 
     - name: Publish
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
-          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64
+          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           ren .\bin\publish-arm64\Bit.BlazorUI.Demo.Client.Windows.exe Bit.BlazorUI.Demo.Client.Windows-arm64.exe
-          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86
+          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           ren .\bin\publish-x86\Bit.BlazorUI.Demo.Client.Windows.exe Bit.BlazorUI.Demo.Client.Windows-x86.exe
-          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
+          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           ren .\bin\publish-x64\Bit.BlazorUI.Demo.Client.Windows.exe Bit.BlazorUI.Demo.Client.Windows-x64.exe
-          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish
+          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\bin\publish -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           del .\bin\publish\Bit.BlazorUI.Demo.Client.Windows.exe
           echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
@@ -179,10 +179,10 @@ jobs:
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -c Release
+      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
   
     - name: Build aab
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-android
+      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -f net8.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
@@ -244,10 +244,10 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -c Release
+      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
   
     - name: Build ipa
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -f net8.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2

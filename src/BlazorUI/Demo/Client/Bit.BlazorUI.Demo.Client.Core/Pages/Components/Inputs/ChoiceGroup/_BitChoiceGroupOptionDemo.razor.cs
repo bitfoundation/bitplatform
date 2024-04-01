@@ -343,14 +343,14 @@ private string itemTemplateValue2 = ""Day"";
 private string itemLabelTemplateValue = ""Day"";";
 
     private readonly string example9RazorCode = @"
-<BitChoiceGroup Label=""ساده"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" IsRtl=""true"">
+<BitChoiceGroup Label=""ساده"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""گزینه پ"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""گزینه ت"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""غیرفعال"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" IsEnabled=""false"" DefaultValue=""@(""A"")"" IsRtl=""true"">
+<BitChoiceGroup Label=""غیرفعال"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" IsEnabled=""false"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""گزینه پ"" Value=""@(""C"")"" />

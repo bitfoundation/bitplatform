@@ -390,182 +390,95 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="ComboBox" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
-        <div style="display:flex;justify-content:end">
-            <div class="example-content">
-                <BitDropdown Label="تک انتخابی"
-                             Placeholder="لطفا انتخاب کنید"
-                             IsRtl="true"
-                             TItem="BitDropdownOption<string>" TValue="string">
-                    @foreach (var item in rtlItems)
-                    {
-                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-                    }
-                </BitDropdown>
-
-                <BitDropdown Label="چند انتخابی"
-                             Placeholder="انتخاب چند گزینه ای"
-                             IsMultiSelect="true"
-                             IsRtl="true"
-                             TItem="BitDropdownOption<string>" TValue="string">
-                    @foreach (var item in rtlItems)
-                    {
-                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-                    }
-                </BitDropdown>
-            </div>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Drop direction" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-    <ExamplePreview>
-        <div class="example-content">
-            <BitDropdown Label="Auto"
-                         Placeholder="Select an item"
-                         DropDirection="BitDropDirection.Auto"
+        <div class="example-desc">When the <strong>Combo</strong> parameter is true, you can type in BitDropdown input and search between items.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample1"
+                         Combo
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
                          TItem="BitDropdownOption<string>" TValue="string">
-                @foreach (var item in dropDirectionItems)
+                @foreach (var item in comboBoxItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
                 }
             </BitDropdown>
-
-            <BitDropdown Label="TopAndBottom"
-                         Placeholder="Select an item"
-                         DropDirection="BitDropDirection.TopAndBottom"
+            <strong>Value: @comboBoxValueSample1</strong>
+        </div>
+        <br />
+        <br />
+        <div class="example-desc">When the <strong>Chips</strong> parameter is true, shows the selected items like chips in the ComboBox.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample2"
+                         Combo Chips
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
                          TItem="BitDropdownOption<string>" TValue="string">
-                @foreach (var item in dropDirectionItems)
+                @foreach (var item in comboBoxItems)
                 {
-                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" />
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
                 }
             </BitDropdown>
+            <strong>Value: @comboBoxValueSample2</strong>
+        </div>
+        <br />
+        <br />
+        <div class="example-desc">When the <strong>Dynamic</strong> parameter is true, you can add a new item in the ComboBox.</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample3"
+                         Combo Dynamic
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
+                         DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
+                         OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in comboBoxItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+            <strong>Value: @comboBoxValueSample3</strong>
+        </div>
+        <br />
+        <br />
+        <div class="example-desc">When the <strong>Combo</strong>, <strong>Chips</strong> and <strong>Dynamic</strong> parameters are true, you can add a new item in the ComboBox (pressing the enter key or touching the add button on the mobile).</div>
+        <div class="example-content-cb">
+            <BitDropdown @bind-Value="comboBoxValueSample4"
+                         Combo Chips Dynamic
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
+                         IsResponsive="true"
+                         DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
+                         OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in comboBoxItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+            <strong>Value: @comboBoxValueSample4</strong>
+            <br />
+            <BitDropdown @bind-Values="comboBoxValues"
+                         Combo Chips Dynamic
+                         Label="Multi select combo box"
+                         Placeholder="Select options"
+                         IsMultiSelect="true"
+                         IsResponsive="true"
+                         DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
+                         OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in comboBoxItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+            <strong>Values: @string.Join(',', comboBoxValues)</strong>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Clear button" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-    <ExamplePreview>
-        <div class="example-content">
-            <div>
-                <BitDropdown @bind-Value="clearValue"
-                             Label="Single select dropdown"
-                             Placeholder="Select an option"
-                             ShowClearButton="true"
-                             TItem="BitDropdownOption<string>" TValue="string">
-                    @foreach (var item in basicItems)
-                    {
-                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-                    }
-                </BitDropdown>
-                <BitLabel>Value: @clearValue</BitLabel>
-            </div>
-            <br>
-            <div>
-                <BitDropdown @bind-Values="clearValues"
-                             Label="Multi select dropdown"
-                             Placeholder="Select options"
-                             IsMultiSelect="true"
-                             ShowClearButton="true"
-                             TItem="BitDropdownOption<string>" TValue="string">
-                    @foreach (var item in basicItems)
-                    {
-                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-                    }
-                </BitDropdown>
-                <BitLabel>Values: @string.Join(',', clearValues)</BitLabel>
-            </div>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-    <ExamplePreview>
-        <div class="example-content">
-            @if (string.IsNullOrEmpty(successMessage))
-            {
-                <EditForm style="width: 100%" Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
-
-                    <BitDropdown @bind-Value="validationModel.Category"
-                                 Label="Select 1 item"
-                                 Placeholder="Select and item"
-                                 TItem="BitDropdownOption<string>" TValue="string">
-                        @foreach (var item in basicItems)
-                        {
-                            <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-                        }
-                    </BitDropdown>
-
-                    <ValidationMessage For="@(() => validationModel.Category)" />
-
-                    <br />
-
-                    <BitDropdown @bind-Values="validationModel.Products"
-                                 Label="Select min 1 and max 2 items"
-                                 Placeholder="Select items"
-                                 IsMultiSelect="true"
-                                 TItem="BitDropdownOption<string>" TValue="string">
-                        @foreach (var item in basicItems)
-                        {
-                            <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-                        }
-                    </BitDropdown>
-
-                    <ValidationMessage For="@(() => validationModel.Products)" />
-
-                    <br />
-
-                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                </EditForm>
-            }
-            else
-            {
-                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@successMessage</BitMessageBar>
-            }
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="ComboBox" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-    <ExamplePreview>
-        <div class="example-content">
-            <div>
-                <BitDropdown @bind-Value="comboBoxValue"
-                             Combo Chips Dynamic
-                             Label="Single select combo box"
-                             Placeholder="Select an option"
-                             OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
-                             TItem="BitDropdownOption<string>" TValue="string">
-                    @foreach (var item in comboBoxItems)
-                    {
-                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-                    }
-                </BitDropdown>
-                <BitLabel>Value: @comboBoxValue</BitLabel>
-            </div>
-            <br>
-            <div>
-                <BitDropdown @bind-Values="comboBoxValues"
-                             Combo Chips Dynamic
-                             Label="Multi select combo box"
-                             Placeholder="Select options"
-                             IsMultiSelect="true"
-                             OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
-                             TItem="BitDropdownOption<string>" TValue="string">
-                    @foreach (var item in comboBoxItems)
-                    {
-                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
-                    }
-                </BitDropdown>
-                <BitLabel>Values: @string.Join(',', comboBoxValues)</BitLabel>
-            </div>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div class="example-content">
             <BitDropdown Label="Prefix"
@@ -614,6 +527,144 @@
                     <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
                 }
             </BitDropdown>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <div style="display:flex;justify-content:end">
+            <div class="example-content">
+                <BitDropdown Label="تک انتخابی"
+                             Placeholder="لطفا انتخاب کنید"
+                             Dir="BitDir.Rtl"
+                             TItem="BitDropdownOption<string>" TValue="string">
+                    @foreach (var item in rtlItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+
+                <BitDropdown Label="چند انتخابی"
+                             Placeholder="انتخاب چند گزینه ای"
+                             IsMultiSelect="true"
+                             Dir="BitDir.Rtl"
+                             TItem="BitDropdownOption<string>" TValue="string">
+                    @foreach (var item in rtlItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Drop direction" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitDropdown Label="Auto"
+                         Placeholder="Select an item"
+                         DropDirection="BitDropDirection.Auto"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in dropDirectionItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" />
+                }
+            </BitDropdown>
+
+            <BitDropdown Label="TopAndBottom"
+                         Placeholder="Select an item"
+                         DropDirection="BitDropDirection.TopAndBottom"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in dropDirectionItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" />
+                }
+            </BitDropdown>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Clear button" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitDropdown @bind-Value="clearValue"
+                             Label="Single select dropdown"
+                             Placeholder="Select an option"
+                             ShowClearButton="true"
+                             TItem="BitDropdownOption<string>" TValue="string">
+                    @foreach (var item in basicItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Value: @clearValue</BitLabel>
+            </div>
+            <br>
+            <div>
+                <BitDropdown @bind-Values="clearValues"
+                             Label="Multi select dropdown"
+                             Placeholder="Select options"
+                             IsMultiSelect="true"
+                             ShowClearButton="true"
+                             TItem="BitDropdownOption<string>" TValue="string">
+                    @foreach (var item in basicItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                    }
+                </BitDropdown>
+                <BitLabel>Values: @string.Join(',', clearValues)</BitLabel>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <ExamplePreview>
+        <div class="example-content">
+            @if (string.IsNullOrEmpty(successMessage))
+            {
+                <EditForm style="width: 100%" Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <BitDropdown @bind-Value="validationModel.Category"
+                                 Label="Select 1 item"
+                                 Placeholder="Select and item"
+                                 TItem="BitDropdownOption<string>" TValue="string">
+                        @foreach (var item in basicItems)
+                        {
+                            <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                        }
+                    </BitDropdown>
+
+                    <ValidationMessage For="@(() => validationModel.Category)" />
+
+                    <br />
+
+                    <BitDropdown @bind-Values="validationModel.Products"
+                                 Label="Select min 1 and max 2 items"
+                                 Placeholder="Select items"
+                                 IsMultiSelect="true"
+                                 TItem="BitDropdownOption<string>" TValue="string">
+                        @foreach (var item in basicItems)
+                        {
+                            <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                        }
+                    </BitDropdown>
+
+                    <ValidationMessage For="@(() => validationModel.Products)" />
+
+                    <br />
+
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@successMessage</BitMessageBar>
+            }
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

@@ -28,4 +28,4 @@ jobs:
         node-version: 18
       
     - name: Build
-      run: dotnet build Boilerplate.sln -c Release -p:EnableWindowsTargeting=true
+      run: dotnet build Boilerplate.sln -c Release

@@ -227,7 +227,7 @@ public partial class BitFileUpload : IDisposable
     /// <summary>
     /// Starts Uploading the file(s).
     /// </summary>
-    public async Task Upload(BitFileInfo? fileInfo = null)
+    public async Task Upload(BitFileInfo? fileInfo = null, string? uploadUrl = null)
     {
         if (Files is null) return;
 
@@ -242,12 +242,12 @@ public partial class BitFileUpload : IDisposable
         {
             foreach (var file in Files)
             {
-                await UploadOneFile(file);
+                await UploadOneFile(file, uploadUrl);
             }
         }
         else
         {
-            await UploadOneFile(fileInfo);
+            await UploadOneFile(fileInfo, uploadUrl);
         }
     }
 
@@ -363,8 +363,6 @@ public partial class BitFileUpload : IDisposable
 
     private async Task HandleOnChange()
     {
-        if (UploadUrl is null) return;
-
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
         Files = await _js.ResetFileUpload(UniqueId, _dotnetObj, _inputRef, url, UploadRequestHttpHeaders);
@@ -379,7 +377,7 @@ public partial class BitFileUpload : IDisposable
         }
     }
 
-    private async Task UploadOneFile(BitFileInfo fileInfo)
+    private async Task UploadOneFile(BitFileInfo fileInfo, string? uploadUrl = null)
     {
         if (Files is null || fileInfo.Status == BitFileUploadStatus.NotAllowed) return;
 
@@ -437,7 +435,7 @@ public partial class BitFileUpload : IDisposable
             await OnUploading.InvokeAsync(fileInfo);
         }
 
-        await _js.UploadFile(UniqueId, from, to, fileInfo.Index, fileInfo.HttpHeaders);
+        await _js.UploadFile(UniqueId, from, to, fileInfo.Index, uploadUrl, fileInfo.HttpHeaders);
     }
 
     private async Task PauseUploadOneFile(int index)
@@ -588,20 +586,22 @@ public partial class BitFileUpload : IDisposable
         return AddQueryString(uri, new Dictionary<string, string> { { name, value } });
     }
 
-    private static string AddQueryString(string uri, IReadOnlyDictionary<string, string> queryStrings)
+    private static string AddQueryString(string? url, IReadOnlyDictionary<string, string> queryStrings)
     {
+        if (url.HasNoValue()) return string.Empty;
+
         // this method is copied from:
         // https://github.com/aspnet/HttpAbstractions/blob/master/src/Microsoft.AspNetCore.WebUtilities/QueryHelpers.cs
 
-        int anchorIndex = uri.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
-        string uriToBeAppended = uri;
+        int anchorIndex = url.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
+        string uriToBeAppended = url;
         string? anchorText = null;
 
         // If there is an anchor, then the query string must be inserted before its first occurrence.
         if (anchorIndex != -1)
         {
-            anchorText = uri[anchorIndex..];
-            uriToBeAppended = uri[..anchorIndex];
+            anchorText = url[anchorIndex..];
+            uriToBeAppended = url[..anchorIndex];
         }
 
         var queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCultureIgnoreCase);

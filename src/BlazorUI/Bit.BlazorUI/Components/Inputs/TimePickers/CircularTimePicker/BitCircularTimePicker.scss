@@ -242,6 +242,7 @@
 .bit-ctp-clk {
     margin: spacing(2);
     position: relative;
+    touch-action: none;
     border-radius: 50%;
     width: spacing(32.5);
     height: spacing(32.5);

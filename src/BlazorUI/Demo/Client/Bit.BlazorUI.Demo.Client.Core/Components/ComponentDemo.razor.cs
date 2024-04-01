@@ -10,7 +10,7 @@ public partial class ComponentDemo
     [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = new();
     [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = new();
     [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = new();
-    
+
 
 
     private readonly List<ComponentParameter> _componentBaseParameters = new()
@@ -28,6 +28,15 @@ public partial class ComponentDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Custom CSS class for the root element of the component.",
+        },
+        new()
+        {
+            Name = "Dir",
+            Type = "BitDir?",
+            DefaultValue = "null",
+            Description = "Determines the component direction.",
+            LinkType = LinkType.Link,
+            Href = "#component-dir",
         },
         new()
         {
@@ -113,13 +122,40 @@ public partial class ComponentDemo
                     Description="The component is hidden (display:none).",
                 }
             }
+        },
+        new()
+        {
+            Id = "component-dir",
+            Name = "BitDir",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Ltr",
+                    Value="0",
+                    Description="Ltr (left to right) is to be used for languages that are written from the left to the right (like English).",
+                },
+                new()
+                {
+                    Name= "Rtl",
+                    Value="1",
+                    Description="Rtl (right to left) is to be used for languages that are written from the right to the left (like Arabic).",
+                },
+                new()
+                {
+                    Name= "Auto",
+                    Value="2",
+                    Description="Auto lets the user agent decide. It uses a basic algorithm as it parses the characters inside the element until it finds a character with a strong directionality, then applies that directionality to the whole element.",
+                }
+            }
         }
     };
 
 
 
-    private readonly List<string> _inputComponents = new() { 
-        "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumericTextField", "OtpInput", "Rating",
+    private readonly List<string> _inputComponents = new() {
+        "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
         "SearchBox", "SpinButton", "TextField", "TimePicker", "Toggle"
     };
     private readonly List<ComponentParameter> _inputBaseParameters = new()

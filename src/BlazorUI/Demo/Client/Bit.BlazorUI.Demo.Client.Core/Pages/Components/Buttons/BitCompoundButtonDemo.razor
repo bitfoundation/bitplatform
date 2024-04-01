@@ -265,6 +265,26 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
+    <ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <ExamplePreview>
+            <div class="buttons-container">
+                <BitCompoundButton Dir="BitDir.Rtl" 
+                                   IconName="@BitIconName.Emoji" 
+                                   SecondaryText="محل قرار گیری نماد در ابتدا">
+                    پیش فرض (ابتدا)
+                </BitCompoundButton>
+
+                <BitCompoundButton Dir="BitDir.Rtl"
+                                   IconName="@BitIconName.Emoji2"
+                                   ButtonStyle="BitButtonStyle.Standard"
+                                   IconPosition="BitButtonIconPosition.End"
+                                   SecondaryText="محل قرار گیری نماد در انتها">
+                    انتها
+                </BitCompoundButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
 </ComponentDemo>
 
 @code {

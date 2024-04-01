@@ -27,6 +27,8 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     private bool _isCalloutOpen;
     private bool _disposed;
 
+    private string _internalDividerIconName = default!;
+
     private string _wrapperId = default!;
     private string _calloutId = default!;
     private string _overlayId = default!;
@@ -56,7 +58,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     /// <summary>
     /// Render a custom divider in place of the default chevron >
     /// </summary>
-    [Parameter] public string DividerIconName { get; set; } = "ChevronRight";
+    [Parameter] public string? DividerIconName { get; set; }
 
     /// <summary>
     /// URL to navigate to when this BreadList item is clicked.
@@ -200,6 +202,8 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
     protected override async Task OnParametersSetAsync()
     {
+        _internalDividerIconName = Dir == BitDir.Rtl ? "ChevronLeft" : "ChevronRight";
+
         if (ChildContent is null && Items.Any())
         {
             bool shouldCallSetItemsToShow = false;

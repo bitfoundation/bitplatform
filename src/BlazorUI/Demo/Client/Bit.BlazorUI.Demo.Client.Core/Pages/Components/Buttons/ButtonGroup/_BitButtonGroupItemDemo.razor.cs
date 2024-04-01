@@ -23,11 +23,11 @@ public partial class _BitButtonGroupItemDemo
     };
 
     private List<BitButtonGroupItem> eventsItems = new()
-{
-    new() { Text = "Increase", IconName = BitIconName.Add },
-    new() { Text = "Reset", IconName = BitIconName.Reset },
-    new() { Text = "Decrease", IconName = BitIconName.Remove }
-};
+    {
+        new() { Text = "Increase", IconName = BitIconName.Add },
+        new() { Text = "Reset", IconName = BitIconName.Reset },
+        new() { Text = "Decrease", IconName = BitIconName.Remove }
+    };
 
     private List<BitButtonGroupItem> styleClassItems = new()
     {
@@ -43,6 +43,13 @@ public partial class _BitButtonGroupItemDemo
             Class = "custom-item",
             IconName = BitIconName.FormatPainter,
         }
+    };
+
+    private List<BitButtonGroupItem> rtlItems = new()
+    {
+        new() { Text = "اضافه کردن", IconName = BitIconName.Add },
+        new() { Text = "ویرایش", IconName = BitIconName.Edit },
+        new() { Text = "حذف", IconName = BitIconName.Delete }
     };
 
     protected override void OnInitialized()
@@ -213,5 +220,17 @@ private List<BitButtonGroupItem> styleClassItems = new()
         Class = ""custom-item"",
         IconName = BitIconName.FormatPainter,
     }
+};";
+
+    private readonly string example9RazorCode = @"
+<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Primary"" Items=""rtlItems"" />
+<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Standard"" Items=""rtlItems"" />
+<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Text"" Items=""rtlItems"" />";
+    private readonly string example9CsharpCode = @"
+private List<BitButtonGroupItem> rtlItems = new()
+{
+    new() { Text = ""اضافه کردن"", IconName = BitIconName.Add },
+    new() { Text = ""ویرایش"", IconName = BitIconName.Edit },
+    new() { Text = ""حذف"", IconName = BitIconName.Delete }
 };";
 }

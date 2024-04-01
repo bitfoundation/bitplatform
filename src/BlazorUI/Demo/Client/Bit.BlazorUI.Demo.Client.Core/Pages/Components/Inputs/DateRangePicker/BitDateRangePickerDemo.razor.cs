@@ -408,6 +408,20 @@ public partial class BitDateRangePickerDemo
             DefaultValue = "{0} - {1}, change month",
             Description = "The title of the year range picker's toggle (tooltip).",
         },
+        new()
+        {
+            Name = "HourStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for DateRangePicker's hour.",
+        },
+        new()
+        {
+            Name = "MinuteStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for DateRangePicker's minute.",
+        }
     };
 
     private readonly List<ComponentSubClass> componentSubClasses = new()
@@ -961,7 +975,7 @@ public partial class BitDateRangePickerDemo
 
 
 
-    private BitDateRangePickerValue selectedDateRange = new()
+    private BitDateRangePickerValue? selectedDateRange = new()
     {
         StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
         EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset),
@@ -1106,10 +1120,10 @@ BitDateRangePicker ShowTimePicker=""true""
 
     private readonly string example5RazorCode = @"
 <BitDateRangePicker @bind-Value=""@selectedDateRange"" />
-<div>From: <b>@selectedDateRange.StartDate.ToString()</b></div>
-<div>To: <b>@selectedDateRange.EndDate.ToString()</b></div>";
+<div>From: <b>@selectedDateRange?.StartDate.ToString()</b></div>
+<div>To: <b>@selectedDateRange?.EndDate.ToString()</b></div>";
     private readonly string example5CsharpCode = @"
-private BitDateRangePickerValue selectedDateRange = new()
+private BitDateRangePickerValue? selectedDateRange = new()
 {
     StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
     EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
@@ -1170,4 +1184,16 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                     IsResponsive=""true""
                     ShowWeekNumbers=""true""
                     Placeholder=""Select a date range"" />";
+
+    private readonly string example9RazorCode = @"
+<BitDateRangePicker Dir=""BitDir.Rtl"" />";
+
+    private readonly string example10RazorCode = @"
+<BitDateRangePicker ShowTimePicker=""true""
+                    Label=""HourStep = 2""
+                    HourStep=""2"" />
+
+<BitDateRangePicker ShowTimePicker=""true""
+                    Label=""MinuteStep = 15""
+                    MinuteStep=""15"" />";
 }

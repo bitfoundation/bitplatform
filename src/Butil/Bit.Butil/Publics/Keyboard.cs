@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class Keyboard(IJSRuntime js) : IDisposable
+public class Keyboard(IJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 
@@ -32,45 +32,66 @@ public class Keyboard(IJSRuntime js) : IDisposable
         return listenerId;
     }
 
-    public Guid[] Remove(Action handler)
+    public async ValueTask<Guid[]> Remove(Action handler)
     {
         var ids = KeyboardListenersManager.RemoveListener(handler);
 
-        Remove(ids);
+        await Remove(ids);
 
         return ids;
     }
 
-    public void Remove(Guid id)
+    public async ValueTask Remove(Guid id)
     {
         KeyboardListenersManager.RemoveListeners([id]);
 
-        Remove([id]);
+        await Remove([id]);
     }
 
-    private void Remove(Guid[] ids)
+    private async ValueTask Remove(Guid[] ids)
     {
+        if (ids.Length == 0) return;
+
         foreach (var id in ids)
         {
             _handlers.TryRemove(id, out _);
         }
 
-        _ = js.InvokeVoidAsync("BitButil.keyboard.remove", ids);
+        await RemoveFromJs(ids);
     }
 
-    public async Task RemoveAll()
+    public async ValueTask RemoveAll()
     {
+        if (_handlers.Count == 0) return;
+
         var ids = _handlers.Select(h => h.Key).ToArray();
 
         _handlers.Clear();
 
         KeyboardListenersManager.RemoveListeners(ids);
 
+        await RemoveFromJs(ids);
+    }
+
+    private async ValueTask RemoveFromJs(Guid[] ids)
+    {
+        if (OperatingSystem.IsBrowser() is false) return;
+
         await js.InvokeVoidAsync("BitButil.keyboard.remove", ids);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _ = RemoveAll();
+        await DisposeAsync(true);
+
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (disposing)
+        {
+            await RemoveAll();
+        }
     }
 }

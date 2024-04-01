@@ -61,6 +61,7 @@
 .bit-dtp-icn {
     margin: 0;
     display: flex;
+    gap: spacing(1);
     cursor: pointer;
     box-shadow: none;
     height: spacing(4);
@@ -75,9 +76,8 @@
 }
 
 .bit-dtp-ico {
+    padding: 0;
     cursor: pointer;
-    padding-right: 0;
-    padding-left: spacing(1);
     color: $color-foreground-secondary;
 }
 
@@ -406,7 +406,7 @@
     padding: spacing(0.375) 0 0 0;
     color: $color-foreground-secondary;
     background-color: $color-background-secondary;
-    border-right: $shape-border-width $shape-border-style $color-border-secondary;
+    border-inline-end: $shape-border-width $shape-border-style $color-border-secondary;
 }
 
 .bit-dtp-pkh {
@@ -428,14 +428,15 @@
     flex-grow: 1;
     cursor: text;
     overflow: hidden;
-    text-align: left;
     font-weight: 600;
+    text-align: start;
     position: relative;
     white-space: nowrap;
     align-items: center;
     outline: transparent;
     display: inline-block;
     text-overflow: ellipsis;
+    padding: 0 spacing(1.25);
     font-size: spacing(1.75);
     line-height: spacing(3.5);
     animation-fill-mode: both;
@@ -444,7 +445,6 @@
     background-color: transparent;
     color: $color-foreground-primary;
     border-radius: $shape-border-radius;
-    padding: 0 spacing(0.5) 0 spacing(1.25);
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -642,15 +642,16 @@
 
 .bit-dtp-tic {
     margin: 0;
-    padding: spacing(2);
+    flex: 0.85;
     display: flex;
     outline: none;
-    box-shadow: none;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: center;
-    flex: 0.85;
+    direction: ltr;
     gap: spacing(1);
+    box-shadow: none;
+    padding: spacing(2);
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
 }
 
 .bit-dtp-tpr {
@@ -770,26 +771,5 @@
 .bit-dtp-nbd {
     .bit-dtp-icn {
         border: none;
-    }
-}
-
-.bit-dtp-rtl {
-    .bit-dtp-grp {
-        direction: rtl;
-    }
-
-    .bit-dtp-wnm {
-        border-right: none;
-        border-left: $shape-border-width $shape-border-style $color-border-secondary;
-    }
-
-    .bit-dtp-pkt,
-    .bit-dtp-ptb {
-        text-align: right;
-        padding: 0 spacing(1.25) 0 spacing(0.5);
-    }
-
-    .bit-dtp-twp {
-        flex-direction: row-reverse;
     }
 }

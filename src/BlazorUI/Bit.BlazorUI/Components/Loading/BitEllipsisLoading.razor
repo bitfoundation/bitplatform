@@ -11,11 +11,11 @@
 
         .bit-ldn-Ellipsis div {
             position: absolute;
+            border-radius: 50%;
             top: @(Convert(33))px;
             width: @(Convert(13))px;
             height: @(Convert(13))px;
-            border-radius: 50%;
-            background: @Color;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
             animation-timing-function: cubic-bezier(0, 1, 1, 0);
         }
 

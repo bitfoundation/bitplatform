@@ -520,4 +520,10 @@ private int ImageClickCount = 0;";
             OptionalText=""Available at 4:00pm""
             Size=@BitPersonaSize.Size120
             ImageUrl=""invalid-src"" />";
+
+    private readonly string example5RazorCode = @"
+<BitPersona Dir=""BitDir.Rtl""
+            Text=""صالح یوسف نژاد""
+            SecondaryText=""مهندس نرم افزار""
+            Size=""@BitPersonaSize.Size56"" />";
 }

@@ -111,14 +111,6 @@
     }
 }
 
-.bit-btn-srt {
-    flex-direction: row;
-}
-
-.bit-btn-end {
-    flex-direction: row-reverse;
-}
-
 .bit-btn-spn {
     border-radius: 50%;
     width: var(--bit-btn-spn-size);
@@ -236,10 +228,10 @@
     flex-direction: column;
 }
 
-.bit-btn-rgt {
+.bit-btn-srt {
     flex-direction: row;
 }
 
-.bit-btn-lft {
+.bit-btn-end {
     flex-direction: row-reverse;
 }

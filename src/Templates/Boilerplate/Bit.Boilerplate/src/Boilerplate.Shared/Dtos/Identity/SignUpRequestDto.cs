@@ -18,7 +18,6 @@ public class SignUpRequestDto
     public string? Password { get; set; }
 
     /// <example>true</example>
-    [NotMapped]
     [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
     [Display(Name = nameof(AppStrings.TermsAccepted))]
     public bool TermsAccepted { get; set; }

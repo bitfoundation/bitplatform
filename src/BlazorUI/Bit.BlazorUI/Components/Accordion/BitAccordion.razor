@@ -5,13 +5,14 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel">
-
     <button @onclick="HandleOnClick"
             role="button"
-            class="bit-acd-hdr"
-            aria-expanded="@IsExpanded"
             type="button"
+            style="@Styles?.Header"
+            class="bit-acd-hdr @Classes?.Header"
+            aria-expanded="@IsExpanded"
             tabindex="@(IsEnabled ? 0 : -1)">
         @if (HeaderTemplate is not null)
         {
@@ -19,19 +20,21 @@
         }
         else
         {
-            <div class="bit-acd-wrp">
-                <div class="bit-acd-ttl">@Title</div>
-                <div class="bit-acd-des">@Description</div>
+            <div style="@Styles?.HeaderContent" class="bit-acd-wrp @Classes?.HeaderContent">
+                <div style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
+                    @Title
+                </div>
+                <div style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
+                    @Description
+                </div>
             </div>
-            <i class="bit-icon bit-icon--ChevronDown bit-acd-hic@(IsExpanded ? " bit-acd-hex" : "")" />
+            <i style="@Styles?.ChevronDownIcon" class="@Classes?.ChevronDownIcon bit-icon bit-icon--ChevronDown bit-acd-hic" />
         }
     </button>
-
-    <div>
-        <div role="region"
-             tabindex="@(IsEnabled ? 0 : -1)"
-             class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco")">
-            @ChildContent
-        </div>
+    <div role="region"
+         style="@Styles?.Content"
+         class="@Classes?.Content bit-acd-con"
+         tabindex="@(IsEnabled ? 0 : -1)">
+        @ChildContent
     </div>
 </div>

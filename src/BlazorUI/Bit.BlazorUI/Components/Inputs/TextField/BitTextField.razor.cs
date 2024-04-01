@@ -11,7 +11,6 @@ public partial class BitTextField
     private bool isUnderlined;
     private bool isResizable = true;
     private BitTextFieldType type = BitTextFieldType.Text;
-    private string focusClass = string.Empty;
 
     private ElementReference _inputRef = default!;
     private string _inputId = string.Empty;

@@ -69,41 +69,9 @@ public partial class BitCarouselDemo
         },
         new()
         {
-            Name = "Direction",
-            Type = "BitDirection",
-            DefaultValue = "BitDirection.LeftToRight",
-            Description = "Sets the direction of the scrolling (the default value is LeftToRight)."
-        },
-        new()
-        {
             Name = "OnChange",
             Type = "EventCallback<int>",
             Description = "The event that will be called on carousel page navigation."
-        }
-    };
-
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
-        new()
-        {
-            Id = "direction-enum",
-            Name = "BitDirection",
-            Description = "Describes the render direction",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "LeftToRight",
-                    Description="Renders content from left to right.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "RightToLeft",
-                    Description="Renders content from right to left.",
-                    Value="1",
-                }
-            }
         }
     };
 
@@ -322,7 +290,7 @@ public partial class BitCarouselDemo
     </div>
     <div class=""goto-container"">
         <BitButton Class=""goto-button"" OnClick=""GoTo"">GoTo</BitButton>
-        <BitNumericTextField @bind-Value=""index""></BitNumericTextField>
+        <BitNumberField @bind-Value=""index"" />
     </div>
 </div>";
     private readonly string example4CsCode = @"
@@ -454,7 +422,7 @@ private void GoTo()
 </style>
 
 <div>
-    <BitCarousel Style=""height: 100px"" Direction=""BitDirection.RightToLeft"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling=""true"">
+    <BitCarousel Style=""height: 100px"" Dir=""BitDir.Rtl"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling=""true"">
         <BitCarouselItem Class=""item""><div>یک</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>دو</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>سه</div></BitCarouselItem>

@@ -55,7 +55,7 @@
         <div class="form-input-container">
             <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
             <div class="color-container">
-                <div>
+                <div class="color-btn-container">
                     @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
                     {
                         <button @onclick="() => SetCategoryColor(color)"

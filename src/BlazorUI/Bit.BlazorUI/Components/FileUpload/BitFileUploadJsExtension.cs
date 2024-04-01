@@ -21,10 +21,10 @@ internal static class BitFileUploadJsExtension
         return await jsRuntime.InvokeAsync<BitFileInfo[]>("BitFileUpload.reset", id.ToString(), dotnetObjectReference, element, uploadAddress, uploadRequestHttpHeaders);
     }
 
-    internal static async Task UploadFile(this IJSRuntime jsRuntime, Guid id, long from, long to, int index = -1, IReadOnlyDictionary<string, string>? httpHeaders = null)
+    internal static async Task UploadFile(this IJSRuntime jsRuntime, Guid id, long from, long to, int index, string? uploadUrl, IReadOnlyDictionary<string, string>? httpHeaders)
     {
-        await (httpHeaders is null ? jsRuntime.InvokeVoidAsync("BitFileUpload.upload", id.ToString(), from, to, index)
-                                   : jsRuntime.InvokeVoidAsync("BitFileUpload.upload", id.ToString(), from, to, index, httpHeaders));
+        await (httpHeaders is null ? jsRuntime.InvokeVoidAsync("BitFileUpload.upload", id.ToString(), from, to, index, uploadUrl)
+                                   : jsRuntime.InvokeVoidAsync("BitFileUpload.upload", id.ToString(), from, to, index, uploadUrl, httpHeaders));
     }
 
     internal static async Task PauseFile(this IJSRuntime jsRuntime, Guid id, int index = -1)

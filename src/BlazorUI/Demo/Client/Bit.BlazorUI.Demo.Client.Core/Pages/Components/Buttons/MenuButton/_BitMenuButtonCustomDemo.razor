@@ -430,6 +430,31 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
+<ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitMenuButton Text="گزینه ها"
+                           Dir="BitDir.Rtl"
+                           Items="rtlCustoms"
+                           IconName="@BitIconName.Edit"
+                           NameSelectors="@(new() { Text = { Selector = item => item.Name },
+                                                    Key = { Selector = item => item.Id },
+                                                    IconName = { Selector = item => item.Icon } })" />
+
+            <BitMenuButton Split
+                           Text="گرینه ها"
+                           Dir="BitDir.Rtl"
+                           Items="rtlCustoms"
+                           IconName="@BitIconName.Add"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           ChevronDownIcon="@BitIconName.DoubleChevronDown"
+                           NameSelectors="@(new() { Text = { Selector = item => item.Name },
+                                                    Key = { Selector = item => item.Id },
+                                                    IconName = { Selector = item => item.Icon } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
 @code {
     private List<MenuActionItem> itemTemplateCustoms2 = new()
     {

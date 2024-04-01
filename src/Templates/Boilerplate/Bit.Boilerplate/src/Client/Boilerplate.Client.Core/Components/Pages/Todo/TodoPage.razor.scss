@@ -65,9 +65,9 @@
 
 .sort-drp-container {
     @media all and (max-width: #{rem2(430px)}) {
-        top: rem2(25px);
-        right: rem2(14px);
         position: absolute;
+        inset-inline-end: rem2(14px);
+        inset-block-start: rem2(25px);
     }
 }
 
@@ -133,9 +133,9 @@
 .todo-item-date {
     white-space: nowrap;
     font-size: rem2(11px);
-    margin-top: rem2(4px);
-    margin-left: rem2(28px);
     line-height: rem2(20px);
+    margin-block-start: rem2(4px);
+    margin-inline-start: rem2(28px);
     color: $bit-color-foreground-secondary;
 }
 
