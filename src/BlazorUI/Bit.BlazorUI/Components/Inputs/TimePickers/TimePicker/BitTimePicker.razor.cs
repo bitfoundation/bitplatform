@@ -126,6 +126,11 @@ public partial class BitTimePicker
     [Parameter] public BitTimePickerClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The title of the close button (tooltip).
+    /// </summary>
+    [Parameter] public string CloseButtonTitle { get; set; } = "Close time picker";
+
+    /// <summary>
     /// CultureInfo for the TimePicker
     /// </summary>
     [Parameter]
