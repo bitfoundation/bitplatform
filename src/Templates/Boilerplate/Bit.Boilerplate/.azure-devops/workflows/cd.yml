@@ -252,11 +252,11 @@ jobs:
       folderPath: './'
       targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
   
-  - task: Bash@3
-    displayName: 'Generate CSS/JS files'
-    inputs:
-      targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore'
+  - script: |
+      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore
+    failOnStderr: true
+    displayName: Generate CSS/JS files
 
   - task: Bash@3
     displayName: 'Build aab'
