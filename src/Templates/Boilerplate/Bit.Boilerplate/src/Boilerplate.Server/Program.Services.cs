@@ -136,9 +136,9 @@ public static partial class Program
             }
         }
 
-        AddBlazor(builder);
-
         //#endif
+
+        AddBlazor(builder);
     }
 
     private static void AddBlazor(WebApplicationBuilder builder)
