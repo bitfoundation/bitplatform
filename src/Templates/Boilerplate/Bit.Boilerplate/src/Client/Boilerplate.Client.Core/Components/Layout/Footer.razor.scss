@@ -17,8 +17,8 @@
 }
 
 .footer-content {
-    text-align: center;
     flex-grow: 1;
+    text-align: center;
     font-size: rem2(12px);
     line-height: rem2(20px);
 
@@ -29,7 +29,6 @@
 
 .footer-social-lnk-grp {
     display: flex;
-    direction: ltr;
     align-items: center;
     flex-flow: row nowrap;
     justify-content: center;
