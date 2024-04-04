@@ -3,46 +3,36 @@
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
+.layout {
+    height: 100vh;
+    display: flex;
+    flex-flow: column;
+}
+
 main {
     width: 100%;
+    flex-grow: 1;
     display: flex;
-    min-height: 100vh;
+    overflow: auto;
     position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
-    padding-top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
-
-    .bit-ios & {
-        padding-top: calc(rem2($headerHeight) + env(safe-area-inset-top));
-    }
 }
-
-.site-content {
-    width: 100%;
-    display: flex;
-    min-height: 100vh;
-    flex-flow: column;
-    position: relative;
-    background-color: $bit-color-background-secondary;
-
-    &.authenticated {
-        width: calc(100% - rem2($navMenuWidth));
-
-        @include lt-lg {
-            width: 100%;
-        }
-    }
-}
-
-
 
 .main-content {
     flex-grow: 1;
     display: flex;
     padding: 2rem;
+    min-height: 100%;
     flex-flow: column;
+    height: fit-content;
     align-items: center;
     justify-content: center;
+    background-color: $bit-color-background-secondary;
+
+    @include lt-md {
+        padding: 1rem;
+    }
 }
 
 ::deep {
