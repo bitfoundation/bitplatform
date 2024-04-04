@@ -19,7 +19,6 @@ public partial class BitTimePicker
     private int? _hour;
     private int? _minute;
     private string? _labelId;
-    private bool _isPointerDown;
     private string? _textFieldId;
     private string _timePickerId = string.Empty;
     private string _calloutId = string.Empty;
@@ -518,24 +517,34 @@ public partial class BitTimePicker
     {
         if (IsEnabled is false) return;
 
-        _isPointerDown = true;
-
+        await ChangeTime(isNext, isHour);
         ResetCts();
 
+        var cts = _cancellationTokenSource;
         await Task.Run(async () =>
         {
             await InvokeAsync(async () =>
             {
-                await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
+                await Task.Delay(INITIAL_STEP_DELAY);
+                await ContinuousChangeTime(isNext, isHour, cts);
             });
-        }, _cancellationTokenSource.Token);
+        }, cts.Token);
     }
 
-    private async Task ChangeTime(bool isNext, bool isHour, int stepDelay)
+    private async Task ContinuousChangeTime(bool isNext, bool isHour, CancellationTokenSource cts)
     {
-        if (_isPointerDown is false) return;
-        if (_cancellationTokenSource.IsCancellationRequested) return;
+        if (cts.IsCancellationRequested) return;
 
+        await ChangeTime(isNext, isHour);
+
+        StateHasChanged();
+
+        await Task.Delay(STEP_DELAY);
+        await ContinuousChangeTime(isNext, isHour, cts);
+    }
+
+    private async Task ChangeTime(bool isNext, bool isHour)
+    {
         if (isHour)
         {
             await ChangeHour(isNext);
@@ -544,16 +553,10 @@ public partial class BitTimePicker
         {
             await ChangeMinute(isNext);
         }
-        StateHasChanged();
-
-        await Task.Delay(stepDelay, _cancellationTokenSource.Token);
-        await ChangeTime(isNext, isHour, STEP_DELAY);
     }
 
     private void HandleOnPointerUpOrOut()
     {
-        _isPointerDown = false;
-
         ResetCts();
     }
 
