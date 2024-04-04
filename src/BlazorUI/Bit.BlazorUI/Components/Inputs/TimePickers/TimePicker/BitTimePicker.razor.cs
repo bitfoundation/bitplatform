@@ -520,7 +520,7 @@ public partial class BitTimePicker
 
         _isPointerDown = true;
 
-        ResetThrottle();
+        ResetCts();
 
         await Task.Run(async () =>
         {
@@ -554,10 +554,10 @@ public partial class BitTimePicker
     {
         _isPointerDown = false;
 
-        ResetThrottle();
+        ResetCts();
     }
 
-    private void ResetThrottle()
+    private void ResetCts()
     {
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
