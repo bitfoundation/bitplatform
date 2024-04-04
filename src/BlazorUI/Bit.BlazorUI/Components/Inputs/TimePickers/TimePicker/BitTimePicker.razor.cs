@@ -520,16 +520,21 @@ public partial class BitTimePicker
 
         _isPointerDown = true;
 
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
-        _cancellationTokenSource = new();
+        ResetThrottle();
 
-        await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
+        await Task.Run(async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
+            });
+        }, _cancellationTokenSource.Token);
     }
 
     private async Task ChangeTime(bool isNext, bool isHour, int stepDelay)
     {
         if (_isPointerDown is false) return;
+        if (_cancellationTokenSource.IsCancellationRequested) return;
 
         if (isHour)
         {
@@ -541,23 +546,19 @@ public partial class BitTimePicker
         }
         StateHasChanged();
 
-        await Task.Run(async () =>
-        {
-            await Task.Delay(stepDelay, _cancellationTokenSource.Token);
-            await InvokeAsync(async () =>
-            {
-                if (_cancellationTokenSource.IsCancellationRequested) return;
-
-                await ChangeTime(isNext, isHour, STEP_DELAY);
-                StateHasChanged();
-            });
-        }, _cancellationTokenSource.Token);
+        await Task.Delay(stepDelay, _cancellationTokenSource.Token);
+        await ChangeTime(isNext, isHour, STEP_DELAY);
     }
 
     private void HandleOnPointerUpOrOut()
     {
         _isPointerDown = false;
 
+        ResetThrottle();
+    }
+
+    private void ResetThrottle()
+    {
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
         _cancellationTokenSource = new();
