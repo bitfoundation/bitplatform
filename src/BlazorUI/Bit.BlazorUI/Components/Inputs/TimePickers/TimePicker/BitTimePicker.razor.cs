@@ -611,6 +611,7 @@ public partial class BitTimePicker
         if (disposing)
         {
             _dotnetObj.Dispose();
+            _cancellationTokenSource.Dispose();
             OnValueChanged -= HandleOnValueChanged;
         }
 
