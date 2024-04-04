@@ -19,10 +19,10 @@ public partial class BitTimePicker
     private int? _hour;
     private int? _minute;
     private string? _labelId;
-    private bool _isPointerDown;
     private string? _textFieldId;
     private string _timePickerId = string.Empty;
     private string _calloutId = string.Empty;
+    private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
@@ -517,15 +517,34 @@ public partial class BitTimePicker
     {
         if (IsEnabled is false) return;
 
-        _isPointerDown = true;
+        await ChangeTime(isNext, isHour);
+        ResetCts();
 
-        await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
+        var cts = _cancellationTokenSource;
+        await Task.Run(async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await Task.Delay(INITIAL_STEP_DELAY);
+                await ContinuousChangeTime(isNext, isHour, cts);
+            });
+        }, cts.Token);
     }
 
-    private async Task ChangeTime(bool isNext, bool isHour, int stepDelay)
+    private async Task ContinuousChangeTime(bool isNext, bool isHour, CancellationTokenSource cts)
     {
-        if (_isPointerDown is false) return;
+        if (cts.IsCancellationRequested) return;
 
+        await ChangeTime(isNext, isHour);
+
+        StateHasChanged();
+
+        await Task.Delay(STEP_DELAY);
+        await ContinuousChangeTime(isNext, isHour, cts);
+    }
+
+    private async Task ChangeTime(bool isNext, bool isHour)
+    {
         if (isHour)
         {
             await ChangeHour(isNext);
@@ -534,16 +553,18 @@ public partial class BitTimePicker
         {
             await ChangeMinute(isNext);
         }
-        StateHasChanged();
-
-        await Task.Delay(stepDelay);
-
-        await ChangeTime(isNext, isHour, STEP_DELAY);
     }
 
     private void HandleOnPointerUpOrOut()
     {
-        _isPointerDown = false;
+        ResetCts();
+    }
+
+    private void ResetCts()
+    {
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = new();
     }
 
     private string GetValueFormat()
