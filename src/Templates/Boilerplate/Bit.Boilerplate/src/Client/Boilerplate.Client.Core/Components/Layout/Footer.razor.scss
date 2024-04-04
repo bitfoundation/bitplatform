@@ -6,11 +6,9 @@
 .footer {
     width: 100%;
     display: flex;
-    padding-top: 1rem;
+    padding: 0.5rem;
     align-items: center;
     justify-content: center;
-    flex-flow: column nowrap;
-    min-height: rem2($footerHeight);
     background-color: $bit-color-background-primary;
 
     .bit-ios & {
@@ -19,27 +17,8 @@
 }
 
 .footer-content {
-    width: 100%;
-    gap: rem2(4px);
-    display: flex;
-    position: relative;
-    align-items: center;
-    padding: rem2(4px) 0;
-    min-height: rem2(54px);
-    justify-content: center;
-    flex-flow: column nowrap;
-}
-
-.footer-contact {
-    font-size: rem2(14px);
-    line-height: rem2(20px);
-
-    @include sm {
-        font-size: rem2(12px);
-    }
-}
-
-.footer-copyright {
+    flex-grow: 1;
+    text-align: center;
     font-size: rem2(12px);
     line-height: rem2(20px);
 
@@ -79,9 +58,12 @@
 ::deep {
     .culture-drp {
         width: rem2(104px);
-        position: absolute;
-        inset-inline-start: rem2(8px);
     }
+}
+
+.theme-container {
+    text-align: end;
+    width: rem2(104px);
 }
 
 .toggle-theme-btn {
@@ -89,10 +71,8 @@
     border: none;
     cursor: pointer;
     height: rem2(35px);
-    position: absolute;
     border-radius: 50%;
     min-width: rem2(35px);
-    inset-inline-end: rem2(12px);
     color: $bit-color-primary-text;
     background-color: $bit-color-primary-main;
 

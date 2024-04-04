@@ -3,7 +3,7 @@
 <div class="status-bar">Boilerplate</div>
 
 <CascadingValue Value="currentDir">
-    <div dir="@currentDir?.ToString()">
+    <div dir="@currentDir?.ToString()" class="layout">
         <Header OnToggleMenu=ToggleMenuHandler />
 
         <main class="@BitCss.Class.Color.Background.Primary">
@@ -11,13 +11,10 @@
             {
                 <NavMenu @bind-IsMenuOpen=isMenuOpen />
             }
-
-            <div class="site-content@(isUserAuthenticated ? " authenticated" : "")">
-                <div class="main-content">
-                    <AppErrorBoundary>
-                        @Body
-                    </AppErrorBoundary>
-                </div>
+            <div class="main-content">
+                <AppErrorBoundary>
+                    @Body
+                </AppErrorBoundary>
             </div>
         </main>
 

@@ -25,12 +25,12 @@
     width: 100%;
     flex-grow: 1;
     display: flex;
+    padding-top: 1rem;
     position: relative;
     max-width: rem2(608px);
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
-    padding: rem2(24px) rem2(14px) rem2(64px);
 }
 
 .main-title {
