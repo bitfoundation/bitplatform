@@ -23,6 +23,7 @@ public partial class BitTimePicker
     private string? _textFieldId;
     private string _timePickerId = string.Empty;
     private string _calloutId = string.Empty;
+    private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
@@ -519,6 +520,10 @@ public partial class BitTimePicker
 
         _isPointerDown = true;
 
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = new();
+
         await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
     }
 
@@ -536,14 +541,26 @@ public partial class BitTimePicker
         }
         StateHasChanged();
 
-        await Task.Delay(stepDelay);
+        await Task.Run(async () =>
+        {
+            await Task.Delay(stepDelay, _cancellationTokenSource.Token);
+            await InvokeAsync(async () =>
+            {
+                if (_cancellationTokenSource.IsCancellationRequested) return;
 
-        await ChangeTime(isNext, isHour, STEP_DELAY);
+                await ChangeTime(isNext, isHour, STEP_DELAY);
+                StateHasChanged();
+            });
+        }, _cancellationTokenSource.Token);
     }
 
     private void HandleOnPointerUpOrOut()
     {
         _isPointerDown = false;
+
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = new();
     }
 
     private string GetValueFormat()
