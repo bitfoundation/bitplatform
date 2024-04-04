@@ -26,10 +26,10 @@ public partial class BitNumberField<TValue>
     private ElementReference _buttonDecrement;
     private readonly Type _typeOfValue;
     private bool _hasFocus;
-    private bool _isPointerDown;
     private readonly bool _isDecimals;
     private readonly double _minGenericValue;
     private readonly double _maxGenericValue;
+    private CancellationTokenSource _cancellationTokenSource = new();
 
     private string? _intermediateValue
     {
@@ -402,20 +402,34 @@ public partial class BitNumberField<TValue>
             await _buttonDecrement.FocusAsync();
         }
 
-        _isPointerDown = true;
+        await ChangeValue(isIncrement);
+        ResetCts();
 
-        await ChangeValue(isIncrement, INITIAL_STEP_DELAY);
+        var cts = _cancellationTokenSource;
+        await Task.Run(async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await Task.Delay(INITIAL_STEP_DELAY);
+                await ContinuousChangeValue(isIncrement, cts);
+            });
+        }, cts.Token);
     }
 
-    private void HandleOnPointerUpOrOut()
+    private async Task ContinuousChangeValue(bool isIncrement, CancellationTokenSource cts)
     {
-        _isPointerDown = false;
+        if (cts.IsCancellationRequested) return;
+
+        await ChangeValue(isIncrement);
+
+        StateHasChanged();
+
+        await Task.Delay(STEP_DELAY);
+        await ContinuousChangeValue(isIncrement, cts);
     }
 
-    private async Task ChangeValue(bool isIncrement, int stepDelay)
+    private async Task ChangeValue(bool isIncrement)
     {
-        if (_isPointerDown is false) return;
-
         await ApplyValueChange(isIncrement);
         if (isIncrement && OnIncrement.HasDelegate)
         {
@@ -426,12 +440,18 @@ public partial class BitNumberField<TValue>
         {
             await OnDecrement.InvokeAsync(CurrentValue);
         }
+    }
 
-        StateHasChanged();
+    private void HandleOnPointerUpOrOut()
+    {
+        ResetCts();
+    }
 
-        await Task.Delay(stepDelay);
-
-        await ChangeValue(isIncrement, STEP_DELAY);
+    private void ResetCts()
+    {
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = new();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
@@ -798,5 +818,15 @@ public partial class BitNumberField<TValue>
 
         var normalValue = Normalize(GetDoubleValueOrDefault(value)!.Value);
         return string.Format(NumberFormat, normalValue);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _cancellationTokenSource.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 }
