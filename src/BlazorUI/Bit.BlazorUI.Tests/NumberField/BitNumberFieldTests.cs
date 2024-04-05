@@ -347,10 +347,10 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(4),
-         DataRow(12)
+         DataRow(3),
+         DataRow(5)
     ]
-    public void BitNumberFieldOnDecrementTest(int countOfClicks)
+    public async Task BitNumberFieldOnDecrementTest(int countOfClicks)
     {
         int onDecrementEventCounter = 20;
         var component = RenderComponent<BitNumberField<int>>(parameters =>
@@ -363,6 +363,7 @@ public class BitNumberFieldTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             decreaseButton.PointerDown();
+            await Task.Delay(50);
             decreaseButton.PointerUp();
         }
 
