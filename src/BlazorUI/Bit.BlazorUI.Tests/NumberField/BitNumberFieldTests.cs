@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -325,7 +326,7 @@ public class BitNumberFieldTests : BunitTestContext
          DataRow(4),
          DataRow(12)
     ]
-    public void BitNumberFieldOnIncrementTest(int countOfClicks)
+    public async Task BitNumberFieldOnIncrementTest(int countOfClicks)
     {
         int onIncrementEventCounter = 0;
         var component = RenderComponent<BitNumberField<int>>(parameters =>
@@ -338,6 +339,7 @@ public class BitNumberFieldTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
+            await Task.Delay(100);
             increaseButton.PointerUp();
         }
 
