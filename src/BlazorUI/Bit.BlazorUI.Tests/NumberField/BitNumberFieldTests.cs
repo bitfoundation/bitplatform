@@ -339,7 +339,7 @@ public class BitNumberFieldTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
-            await Task.Delay(50);
+            await Task.Delay(1);
             increaseButton.PointerUp();
         }
 
@@ -363,7 +363,7 @@ public class BitNumberFieldTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             decreaseButton.PointerDown();
-            await Task.Delay(50);
+            await Task.Delay(1);
             decreaseButton.PointerUp();
         }
 
