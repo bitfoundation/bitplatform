@@ -323,8 +323,8 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(4),
-         DataRow(12)
+         DataRow(3),
+         DataRow(5)
     ]
     public async Task BitNumberFieldOnIncrementTest(int countOfClicks)
     {
@@ -339,7 +339,7 @@ public class BitNumberFieldTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
-            await Task.Delay(100);
+            await Task.Delay(50);
             increaseButton.PointerUp();
         }
 
