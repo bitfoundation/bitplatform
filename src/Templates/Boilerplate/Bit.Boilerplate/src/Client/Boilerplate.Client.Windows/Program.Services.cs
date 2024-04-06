@@ -50,7 +50,9 @@ public static partial class Program
             loggingBuilder.AddApplicationInsights();
         });
 
+        //#if (appInsights == true)
         services.AddApplicationInsightsTelemetryWorkerService((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
+        //#endif
 
         services.AddClientCoreProjectServices();
     }

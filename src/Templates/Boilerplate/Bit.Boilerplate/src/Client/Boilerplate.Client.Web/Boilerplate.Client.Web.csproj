@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -35,7 +35,7 @@
         <PackageReference Include="Bit.Bswup" Version="8.8.0" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.8.0" PrivateAssets="all" />
-        <PackageReference Include="BlazorApplicationInsights" Version="3.0.5" />
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.0.5" />
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
     </ItemGroup>
 

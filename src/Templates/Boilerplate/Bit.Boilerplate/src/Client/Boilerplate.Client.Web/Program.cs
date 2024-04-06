@@ -17,7 +17,9 @@ public static partial class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
 #endif
 
+        //#if (appInsights == true)
         builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
+        //#endif
 
         builder.ConfigureServices();
 

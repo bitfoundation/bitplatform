@@ -140,8 +140,10 @@ public static partial class Program
 
         AddBlazor(builder);
 
+        //#if (appInsights == true)
         builder.Logging.AddApplicationInsights();
         services.AddApplicationInsightsTelemetry((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
+        //#endif
     }
 
     private static void AddBlazor(WebApplicationBuilder builder)

@@ -46,8 +46,10 @@ public static partial class MauiProgram
 
         builder.Logging.AddEventSourceLogger();
 
+        //#if (appInsights == true)
         builder.Logging.AddApplicationInsights();
         services.AddApplicationInsightsTelemetryWorkerService((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
+        //#endif
 
         services.TryAddTransient<MainPage>();
         services.TryAddTransient<IStorageService, MauiStorageService>();
