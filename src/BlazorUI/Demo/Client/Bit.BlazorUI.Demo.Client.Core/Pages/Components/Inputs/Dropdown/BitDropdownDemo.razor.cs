@@ -2,8 +2,8 @@
 
 public partial class BitDropdownDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AutoFocusSearchBox",
@@ -390,9 +390,9 @@ public partial class BitDropdownDemo
             DefaultValue = "null",
             Description = "The template for items that have not yet been rendered in virtualization mode.",
         }
-    };
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    ];
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "dropdown-item",
@@ -916,9 +916,9 @@ public partial class BitDropdownDemo
                },
             },
         }
-    };
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    ];
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "item-type-enum",
@@ -945,5 +945,32 @@ public partial class BitDropdownDemo
                 }
             }
         },
-    };
+    ];
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "SelectedItems",
+            Type = "IReadOnlyList<TItem>",
+            Description = "A readonly list of the current selected items in multi-select mode.",
+        },
+        new()
+        {
+            Name = "SelectedItem",
+            Type = "TItem?",
+            Description = "The current selected item in single-select mode.",
+        },
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the input element in combo-box mode.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the input element in combo-box mode.",
+        }
+    ];
 }

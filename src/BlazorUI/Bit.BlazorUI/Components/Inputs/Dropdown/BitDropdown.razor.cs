@@ -359,9 +359,25 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     [Parameter] public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
 
 
+    /// <summary>
+    /// A readonly list of the current selected items in multi-select mode.
+    /// </summary>
+    public IReadOnlyList<TItem> SelectedItems => IsMultiSelect ? _selectedItems : [];
 
-    public IReadOnlyList<TItem> SelectedItems => IsMultiSelect ? _selectedItems : Array.Empty<TItem>();
+    /// <summary>
+    /// The current selected item in single-select mode.
+    /// </summary>
     public TItem? SelectedItem => IsMultiSelect ? default : _selectedItems.FirstOrDefault();
+
+    /// <summary>
+    /// The ElementReference to the input element in combo-box mode.
+    /// </summary>
+    public ElementReference? InputElement => Combo ? _comboBoxInputRef : null;
+
+    /// <summary>
+    /// Gives focus to the input element in combo-box mode.
+    /// </summary>
+    public ValueTask FocusAsync() => Combo ? _comboBoxInputRef.FocusAsync() : ValueTask.CompletedTask;
 
 
 
@@ -751,12 +767,15 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     private ICollection<TItem> GetSearchedItems()
     {
+        if (Items is null) return [];
+
         return _searchText.HasNoValue()
                 ? Items
                 : SearchFunction is not null
                     ? SearchFunction.Invoke(Items, _searchText!)
                     : Items.Where(i => GetItemType(i) == BitDropdownItemType.Normal
-                                          && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false)).ToArray();
+                                       && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false))
+                           .ToArray();
     }
 
     private string GetSearchBoxClasses()
