@@ -1,11 +1,8 @@
 ﻿//-:cnd:noEmit
 using Boilerplate.Client.Core;
-using Boilerplate.Client.Maui.Services;
 using Maui.Android.InAppUpdates;
 using Maui.AppStores;
 using Maui.InAppReviews;
-using Microsoft.ApplicationInsights;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Boilerplate.Client.Maui;
