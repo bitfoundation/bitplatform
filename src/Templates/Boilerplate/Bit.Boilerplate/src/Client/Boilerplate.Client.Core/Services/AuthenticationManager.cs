@@ -22,9 +22,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
         await StoreToken(result!, signInModel.RememberMe);
 
-        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        var state = await GetAuthenticationStateAsync();
 
-        authLogger.LogInformation("User {UserName} signed in", signInModel.UserName);
+        NotifyAuthenticationStateChanged(Task.FromResult(state));
+
+        authLogger.LogInformation("User {UserName} {UserId} signed in.", signInModel.UserName, state.User.GetUserId().ToString());
     }
 
     public async Task SignOut()
