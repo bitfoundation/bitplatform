@@ -15,6 +15,8 @@ public static partial class Program
 
         configuration.AddClientConfigurations();
 
+        builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
+
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
         if (apiServerAddress!.IsAbsoluteUri is false)
