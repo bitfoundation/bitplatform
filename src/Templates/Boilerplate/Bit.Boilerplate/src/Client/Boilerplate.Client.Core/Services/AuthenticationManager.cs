@@ -26,7 +26,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
         NotifyAuthenticationStateChanged(Task.FromResult(state));
 
-        authLogger.LogInformation("User {UserName} {UserId} signed in.", signInModel.UserName, state.User.GetUserId().ToString());
+        authLogger.LogInformation("User {UserName} {UserId} signed in.", state.User.GetUserName(), state.User.GetUserId().ToString());
     }
 
     public async Task SignOut()

@@ -1,5 +1,4 @@
 ﻿using Boilerplate.Client.Maui.Services;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui;

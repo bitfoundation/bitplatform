@@ -1,6 +1,5 @@
 ﻿using System.Net.Http;
 using Boilerplate.Client.Windows.Services;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Windows;

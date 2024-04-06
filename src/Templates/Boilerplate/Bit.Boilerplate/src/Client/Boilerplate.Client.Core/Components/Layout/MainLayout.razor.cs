@@ -1,5 +1,4 @@
-﻿using System.Security.Principal;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 

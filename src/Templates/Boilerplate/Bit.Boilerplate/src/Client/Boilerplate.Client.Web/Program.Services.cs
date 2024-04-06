@@ -1,4 +1,6 @@
-﻿using BlazorApplicationInsights;
+﻿//#if (appInsights == true)
+using BlazorApplicationInsights;
+//#endif
 using Boilerplate.Client.Web.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
