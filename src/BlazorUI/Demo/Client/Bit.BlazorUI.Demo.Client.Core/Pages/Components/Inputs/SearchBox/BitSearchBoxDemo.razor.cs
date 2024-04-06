@@ -4,8 +4,8 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.SearchBox;
 
 public partial class BitSearchBoxDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "Autocomplete",
@@ -174,10 +174,9 @@ public partial class BitSearchBoxDemo
             DefaultValue = "false",
             Description = "Whether to show the search button.",
         }
-    };
-
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    ];
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "searchbox-class-styles",
@@ -243,7 +242,22 @@ public partial class BitSearchBoxDemo
                 }
             }
         }
-    };
+    ];
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the input element of the BitSearchBox.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the input element of the BitSearchBox.",
+        }
+    ];
 
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private NavigationManager NavManager { get; set; } = default!;
