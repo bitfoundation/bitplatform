@@ -1,8 +1,4 @@
-﻿using Boilerplate.Client.Windows.Services;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.WebView.Wpf;
+﻿using Microsoft.AspNetCore.Components.WebView.Wpf;
 
 namespace Boilerplate.Client.Windows;
 
