@@ -15,7 +15,7 @@ public partial class MainLayout : IDisposable
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
-    [AutoInject] ILogger<IIdentity> logger = default!;
+    [AutoInject] ILogger<AuthenticationManager> authLogger = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -34,7 +34,7 @@ public partial class MainLayout : IDisposable
 
             isUserAuthenticated = authContext.isUserAuthenticated;
 
-            logger.LogInformation("Authentication State: {UserId}, {UserName}, {IsUserAuthenticated}", authContext.userId, authContext.userName, authContext.isUserAuthenticated);
+            authLogger.LogInformation("Authentication State: {UserId}, {UserName}, {IsUserAuthenticated}", authContext.userId, authContext.userName, authContext.isUserAuthenticated);
 
             unsubscribeCultureChange = pubSubService.Subscribe(PubSubMessages.CULTURE_CHANGED, async _ =>
             {
