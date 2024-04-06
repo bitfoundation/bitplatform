@@ -12,14 +12,14 @@ public partial class BitSearchBox
     private bool showSearchButton;
     private bool disableAnimation;
 
+    private int _selectedIndex = -1;
     private string _inputId = string.Empty;
+    private List<string> _searchItems = [];
     private string _calloutId = string.Empty;
-    private string _scrollContainerId = string.Empty;
     private ElementReference _inputRef = default!;
+    private string _scrollContainerId = string.Empty;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
-    private List<string> _searchItems = [];
-    private int _selectedIndex = -1;
 
     private bool _inputHasFocus
     {
@@ -213,9 +213,15 @@ public partial class BitSearchBox
 
 
 
-    public ElementReference InputReference => _inputRef;
+    /// <summary>
+    /// The ElementReference to the input element of the BitSearchBox.
+    /// </summary>
+    public ElementReference InputElement => _inputRef;
 
-    public ValueTask FocusInput() => _inputRef.FocusAsync();
+    /// <summary>
+    /// Gives focus to the input element of the BitSearchBox.
+    /// </summary>
+    public ValueTask FocusAsync() => _inputRef.FocusAsync();
 
 
 
