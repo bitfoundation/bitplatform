@@ -45,12 +45,13 @@ public static partial class Program
             {
                 loggingBuilder.AddDebug();
             }
-
+            //#if (appInsights == true)
             loggingBuilder.AddApplicationInsights();
+            //#endif
         });
 
         //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetryWorkerService((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
+        services.AddApplicationInsightsTelemetryWorkerService(configuration);
         //#endif
 
         services.AddClientCoreProjectServices();

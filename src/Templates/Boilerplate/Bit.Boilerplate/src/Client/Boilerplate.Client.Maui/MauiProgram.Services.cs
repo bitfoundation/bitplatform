@@ -47,7 +47,7 @@ public static partial class MauiProgram
 
         //#if (appInsights == true)
         builder.Logging.AddApplicationInsights();
-        services.AddApplicationInsightsTelemetryWorkerService((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
+        services.AddApplicationInsightsTelemetryWorkerService(configuration);
         //#endif
 
         services.TryAddTransient<MainPage>();

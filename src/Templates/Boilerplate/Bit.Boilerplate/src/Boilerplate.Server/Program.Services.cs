@@ -142,7 +142,7 @@ public static partial class Program
 
         //#if (appInsights == true)
         builder.Logging.AddApplicationInsights();
-        services.AddApplicationInsightsTelemetry((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
+        services.AddApplicationInsightsTelemetry(configuration);
         //#endif
     }
 
