@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using Boilerplate.Client.Windows.Services;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Windows;
@@ -44,7 +45,12 @@ public static partial class Program
             {
                 loggingBuilder.AddDebug();
             }
+
+            loggingBuilder.AddApplicationInsights();
         });
+
+        services.AddSingleton<ITelemetryInitializer, WindowsTelemetryInitializer>();
+        services.AddApplicationInsightsTelemetryWorkerService((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
 
         services.AddClientCoreProjectServices();
     }

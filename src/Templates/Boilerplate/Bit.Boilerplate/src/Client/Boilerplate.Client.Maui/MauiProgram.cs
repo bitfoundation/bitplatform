@@ -1,8 +1,11 @@
 ﻿//-:cnd:noEmit
 using Boilerplate.Client.Core;
+using Boilerplate.Client.Maui.Services;
 using Maui.Android.InAppUpdates;
 using Maui.AppStores;
 using Maui.InAppReviews;
+using Microsoft.ApplicationInsights;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Boilerplate.Client.Maui;
@@ -66,6 +69,8 @@ public static partial class MauiProgram
 
         var mauiApp = builder.Build();
 
+        _ = SetLoggerAuthenticationState(mauiApp);
+
         return mauiApp;
     }
 
@@ -96,20 +101,20 @@ public static partial class MauiProgram
             }
 
 #elif IOS || MACCATALYST
-                webView.Configuration.AllowsInlineMediaPlayback = true;
+            webView.Configuration.AllowsInlineMediaPlayback = true;
 
-                webView.BackgroundColor = UIKit.UIColor.Clear;
-                webView.ScrollView.Bounces = false;
-                webView.Opaque = false;
+            webView.BackgroundColor = UIKit.UIColor.Clear;
+            webView.ScrollView.Bounces = false;
+            webView.Opaque = false;
 
-                if (BuildConfiguration.IsDebug())
+            if (BuildConfiguration.IsDebug())
+            {
+                if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
+                    || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
                 {
-                    if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
-                        || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
-                    {
-                        webView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
-                    }
+                    webView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
                 }
+            }
 #elif ANDROID
                 webView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 
@@ -135,5 +140,36 @@ public static partial class MauiProgram
                 settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
 #endif
         });
+    }
+
+    private static async Task SetLoggerAuthenticationState(MauiApp mauiApp)
+    {
+        async Task SetLoggerAuthenticationStateImpl(AuthenticationState state)
+        {
+            try
+            {
+                var user = state.User;
+                if (user.IsAuthenticated())
+                {
+                    // Set firebase, app center and other logger's user id
+                    MauiTelemetryInitializer.AuthenticatedUserId = user.GetUserId().ToString();
+                }
+                else
+                {
+                    // Clear firebase, app center and other logger's user id
+                    MauiTelemetryInitializer.AuthenticatedUserId = null;
+                }
+            }
+            catch (Exception exp)
+            {
+                mauiApp.Services.GetRequiredService<IExceptionHandler>().Handle(exp);
+            }
+        }
+
+        var authManager = mauiApp.Services.GetRequiredService<AuthenticationManager>();
+
+        await SetLoggerAuthenticationStateImpl(await authManager.GetAuthenticationStateAsync());
+
+        authManager.AuthenticationStateChanged += async state => await SetLoggerAuthenticationStateImpl(await state);
     }
 }

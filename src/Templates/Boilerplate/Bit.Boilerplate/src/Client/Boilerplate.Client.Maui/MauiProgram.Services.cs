@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Client.Maui.Services;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui;
@@ -42,6 +43,10 @@ public static partial class MauiProgram
         }
 
         builder.Logging.AddEventSourceLogger();
+
+        builder.Logging.AddApplicationInsights();
+        services.AddSingleton<ITelemetryInitializer, MauiTelemetryInitializer>();
+        services.AddApplicationInsightsTelemetryWorkerService((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
 
         services.TryAddTransient<MainPage>();
         services.TryAddTransient<IStorageService, MauiStorageService>();
