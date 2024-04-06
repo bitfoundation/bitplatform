@@ -772,7 +772,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         return _searchText.HasNoValue()
                 ? Items
                 : SearchFunction is not null
-                    ? SearchFunction!.Invoke(Items, _searchText!)
+                    ? SearchFunction.Invoke(Items, _searchText!)
                     : Items.Where(i => GetItemType(i) == BitDropdownItemType.Normal
                                        && (GetText(i)?.Contains(_searchText!, StringComparison.OrdinalIgnoreCase) ?? false))
                            .ToArray();
