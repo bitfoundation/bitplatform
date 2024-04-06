@@ -106,6 +106,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
         <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
     </ItemGroup>

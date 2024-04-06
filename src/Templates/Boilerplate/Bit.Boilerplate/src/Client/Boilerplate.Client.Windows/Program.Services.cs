@@ -39,6 +39,7 @@ public static partial class Program
 
         services.AddLogging(loggingBuilder =>
         {
+            loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
             loggingBuilder.AddEventLog();
             loggingBuilder.AddEventSourceLogger();
             if (BuildConfiguration.IsDebug())
@@ -49,7 +50,6 @@ public static partial class Program
             loggingBuilder.AddApplicationInsights();
         });
 
-        services.AddSingleton<ITelemetryInitializer, WindowsTelemetryInitializer>();
         services.AddApplicationInsightsTelemetryWorkerService((options) => options.ConnectionString = configuration["ApplicationInsights:ConnectionString"]);
 
         services.AddClientCoreProjectServices();

@@ -35,38 +35,5 @@ public partial class MainWindow
                 await BlazorWebView.WebView.ExecuteScriptAsync("Blazor.start()");
             };
         };
-
-        _ = SetLoggerAuthenticationState();
-    }
-
-    private async Task SetLoggerAuthenticationState()
-    {
-        async Task SetLoggerAuthenticationStateImpl(AuthenticationState state)
-        {
-            try
-            {
-                var user = state.User;
-                if (user.IsAuthenticated())
-                {
-                    // Set firebase, app center and other logger's user id
-                    WindowsTelemetryInitializer.AuthenticatedUserId = user.GetUserId().ToString();
-                }
-                else
-                {
-                    // Clear firebase, app center and other logger's user id
-                    WindowsTelemetryInitializer.AuthenticatedUserId = null;
-                }
-            }
-            catch (Exception exp)
-            {
-                BlazorWebView.Services.GetRequiredService<IExceptionHandler>().Handle(exp);
-            }
-        }
-
-        var authManager = BlazorWebView.Services.GetRequiredService<AuthenticationManager>();
-
-        await SetLoggerAuthenticationStateImpl(await authManager.GetAuthenticationStateAsync());
-
-        authManager.AuthenticationStateChanged += async state => await SetLoggerAuthenticationStateImpl(await state);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using System.Security.Principal;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -8,13 +9,13 @@ public partial class MainLayout : IDisposable
     private bool isMenuOpen;
     private BitDir? currentDir;
     private bool isUserAuthenticated;
-    private ErrorBoundary errorBoundaryRef = default!;
     private Action unsubscribeCultureChange = default!;
 
     [AutoInject] private IPubSubService pubSubService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
+    [AutoInject] ILogger<IIdentity> logger = default!;
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -24,7 +25,16 @@ public partial class MainLayout : IDisposable
         {
             authManager.AuthenticationStateChanged += IsUserAuthenticated;
 
-            isUserAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
+            var authContext = await prerenderStateService.GetValue<(string? userId, string? userName, bool isUserAuthenticated)>(async () =>
+            {
+                var user = (await AuthenticationStateTask).User;
+
+                return user.IsAuthenticated() ? (user.GetUserId().ToString(), user.GetUserName(), user.IsAuthenticated()) : default;
+            });
+
+            isUserAuthenticated = authContext.isUserAuthenticated;
+
+            logger.LogInformation("Authentication State: {UserId}, {UserName}, {IsUserAuthenticated}", authContext.userId, authContext.userName, authContext.isUserAuthenticated);
 
             unsubscribeCultureChange = pubSubService.Subscribe(PubSubMessages.CULTURE_CHANGED, async _ =>
             {

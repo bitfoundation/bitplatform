@@ -69,8 +69,6 @@ public static partial class MauiProgram
 
         var mauiApp = builder.Build();
 
-        _ = SetLoggerAuthenticationState(mauiApp);
-
         return mauiApp;
     }
 
@@ -140,36 +138,5 @@ public static partial class MauiProgram
                 settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
 #endif
         });
-    }
-
-    private static async Task SetLoggerAuthenticationState(MauiApp mauiApp)
-    {
-        async Task SetLoggerAuthenticationStateImpl(AuthenticationState state)
-        {
-            try
-            {
-                var user = state.User;
-                if (user.IsAuthenticated())
-                {
-                    // Set firebase, app center and other logger's user id
-                    MauiTelemetryInitializer.AuthenticatedUserId = user.GetUserId().ToString();
-                }
-                else
-                {
-                    // Clear firebase, app center and other logger's user id
-                    MauiTelemetryInitializer.AuthenticatedUserId = null;
-                }
-            }
-            catch (Exception exp)
-            {
-                mauiApp.Services.GetRequiredService<IExceptionHandler>().Handle(exp);
-            }
-        }
-
-        var authManager = mauiApp.Services.GetRequiredService<AuthenticationManager>();
-
-        await SetLoggerAuthenticationStateImpl(await authManager.GetAuthenticationStateAsync());
-
-        authManager.AuthenticationStateChanged += async state => await SetLoggerAuthenticationStateImpl(await state);
     }
 }
