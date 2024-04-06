@@ -2,8 +2,8 @@
 
 public partial class BitSpinButtonDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AriaDescription",
@@ -251,10 +251,9 @@ public partial class BitSpinButtonDemo
             DefaultValue = "\"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.\"",
             Description = "The message format used for invalid values entered in the input.",
         },
-    };
-
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    ];
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "class-styles",
@@ -355,10 +354,9 @@ public partial class BitSpinButtonDemo
                 }
             }
         }
-    };
-
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    ];
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "labelPosition-enum",
@@ -419,7 +417,22 @@ public partial class BitSpinButtonDemo
                 }
             }
         },
-    };
+    ];
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the input element of the BitSpinButton.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the input element of the BitSpinButton.",
+        }
+    ];
 
 
 
