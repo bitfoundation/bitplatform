@@ -98,9 +98,13 @@
         }
         else
         {
+            var padding = childItems.Any()
+            ? (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : 0))
+            : (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : Nav.IndentPadding));
+
             <div name="@text"
                  class="bit-nav-ict @GetItemContainerClasses()"
-                 style="padding-inline-start:@(childItems.Any() ? (Depth * 16 + (Nav.ReversedChevron ? 4 : 0)) : (Depth * 16 + (Nav.ReversedChevron ? 4 : 27)))px; @GetItemContainerStyles()">
+                 style="padding-inline-start:@(padding)px; @GetItemContainerStyles()">
 
                 <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                     @if (childItems.Any())
