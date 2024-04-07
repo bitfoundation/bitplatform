@@ -77,7 +77,7 @@ public static partial class Program
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-                
+
             });
             //#endif
             //#if (IsInsideProjectTemplate == true)
@@ -86,7 +86,7 @@ public static partial class Program
             //#if (database == "Sqlite")
             options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
             {
-                
+
             });
             //#endif
         });
@@ -139,6 +139,11 @@ public static partial class Program
         //#endif
 
         AddBlazor(builder);
+
+        //#if (appInsights == true)
+        builder.Logging.AddApplicationInsights();
+        services.AddApplicationInsightsTelemetry(configuration);
+        //#endif
     }
 
     private static void AddBlazor(WebApplicationBuilder builder)
@@ -169,7 +174,7 @@ public static partial class Program
 
         services.AddMvc();
 
-       services.AddClientWebProjectServices();
+        services.AddClientWebProjectServices();
     }
 
     //#if (api == true)

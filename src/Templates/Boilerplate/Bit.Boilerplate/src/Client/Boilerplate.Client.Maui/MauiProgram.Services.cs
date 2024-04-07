@@ -31,6 +31,8 @@ public static partial class MauiProgram
             return httpClient;
         });
 
+        builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
+
         if (BuildConfiguration.IsDebug())
         {
             builder.Logging.AddDebug();
@@ -42,6 +44,13 @@ public static partial class MauiProgram
         }
 
         builder.Logging.AddEventSourceLogger();
+
+        //+:cnd:noEmit
+        //#if (appInsights == true)
+        builder.Logging.AddApplicationInsights();
+        services.AddApplicationInsightsTelemetryWorkerService(configuration);
+        //#endif
+        //-:cnd:noEmit
 
         services.TryAddTransient<MainPage>();
         services.TryAddTransient<IStorageService, MauiStorageService>();

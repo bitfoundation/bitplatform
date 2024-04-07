@@ -96,20 +96,20 @@ public static partial class MauiProgram
             }
 
 #elif IOS || MACCATALYST
-                webView.Configuration.AllowsInlineMediaPlayback = true;
+            webView.Configuration.AllowsInlineMediaPlayback = true;
 
-                webView.BackgroundColor = UIKit.UIColor.Clear;
-                webView.ScrollView.Bounces = false;
-                webView.Opaque = false;
+            webView.BackgroundColor = UIKit.UIColor.Clear;
+            webView.ScrollView.Bounces = false;
+            webView.Opaque = false;
 
-                if (BuildConfiguration.IsDebug())
+            if (BuildConfiguration.IsDebug())
+            {
+                if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
+                    || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
                 {
-                    if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
-                        || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
-                    {
-                        webView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
-                    }
+                    webView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
                 }
+            }
 #elif ANDROID
                 webView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 

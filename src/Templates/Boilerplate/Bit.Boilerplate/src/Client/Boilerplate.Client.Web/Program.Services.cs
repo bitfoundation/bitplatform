@@ -1,4 +1,8 @@
-﻿using Boilerplate.Client.Web.Services;
+﻿//+:cnd:noEmit
+//#if (appInsights == true)
+using BlazorApplicationInsights;
+//#endif
+using Boilerplate.Client.Web.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace Boilerplate.Client.Web;
@@ -14,6 +18,8 @@ public static partial class Program
 
         configuration.AddClientConfigurations();
 
+        builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
+
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
 
         if (apiServerAddress!.IsAbsoluteUri is false)
@@ -22,6 +28,13 @@ public static partial class Program
         }
 
         services.TryAddTransient(sp => new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler")) { BaseAddress = apiServerAddress });
+
+        //#if (appInsights == true)
+        services.AddBlazorApplicationInsights(x =>
+        {
+            x.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+        });
+        //#endif
 
         services.AddClientWebProjectServices();
     }

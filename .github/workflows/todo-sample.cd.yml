@@ -38,7 +38,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights
 
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -46,6 +46,7 @@ jobs:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
@@ -151,7 +152,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --windows
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --windows --appInsights
   
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -160,6 +161,7 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
@@ -211,7 +213,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1
@@ -226,6 +228,7 @@ jobs:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         
     - name: Set android universal link
       run:  sed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android/MainActivity.cs
@@ -297,7 +300,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights
       
     - name: Update appsettings.json api server address
       uses: microsoft/variable-substitution@v1 
@@ -305,6 +308,7 @@ jobs:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         
     - name: Set iOS universal link
       run:  brew install gnu-sed && gsed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist
