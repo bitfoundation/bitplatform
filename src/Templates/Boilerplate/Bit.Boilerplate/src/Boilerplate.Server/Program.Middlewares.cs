@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Http.Extensions;
 //#if (api == true)
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
-using Microsoft.Net.Http.Headers;
 //#endif
+using Microsoft.Net.Http.Headers;
 
 namespace Boilerplate.Server;
 
