@@ -307,6 +307,18 @@ public partial class BitNumberField<TValue>
 
 
 
+    /// <summary>
+    /// The ElementReference to the input element of the BitNumberField.
+    /// </summary>
+    public ElementReference InputElement => _inputRef;
+
+    /// <summary>
+    /// Gives focus to the input element of the BitNumberField.
+    /// </summary>
+    public ValueTask FocusAsync() => _inputRef.FocusAsync();
+
+
+
     protected override string RootElementClass => "bit-nfl";
 
     protected override void RegisterCssClasses()
@@ -361,6 +373,8 @@ public partial class BitNumberField<TValue>
 
         await base.OnParametersSetAsync();
     }
+
+
 
     private async Task ApplyValueChange(bool isIncrement)
     {
