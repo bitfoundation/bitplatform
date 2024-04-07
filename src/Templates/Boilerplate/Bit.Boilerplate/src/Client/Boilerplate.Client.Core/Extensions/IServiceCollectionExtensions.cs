@@ -24,10 +24,10 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
-        services.TryAddSessioned<HttpClientHandler>();
+        services.TryAddScoped<HttpClientHandler>();
 
-        services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
-        services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddScoped<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
+        services.TryAddScoped(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.TryAddTransient<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
@@ -81,39 +81,5 @@ public static class IServiceCollectionExtensions
         }
 
         return services;
-    }
-
-    /// <summary>
-    /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
-    /// </summary>
-    public static IServiceCollection TryAddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
-        where TService : class
-    {
-        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
-        {
-            services.TryAdd(ServiceDescriptor.Singleton(implementationFactory));
-        }
-        else
-        {
-            services.TryAdd(ServiceDescriptor.Scoped(implementationFactory));
-        }
-
-        return services;
-    }
-
-    /// <summary>
-    /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
-    /// </summary>
-    public static void TryAddSessioned<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services)
-        where TService : class
-    {
-        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
-        {
-            services.TryAddSingleton(typeof(TService), typeof(TService));
-        }
-        else
-        {
-            services.TryAddScoped(typeof(TService), typeof(TService));
-        }
     }
 }
