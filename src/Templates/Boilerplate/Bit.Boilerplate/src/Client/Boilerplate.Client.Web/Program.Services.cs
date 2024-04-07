@@ -1,4 +1,5 @@
-﻿//#if (appInsights == true)
+﻿//+:cnd:noEmit
+//#if (appInsights == true)
 using BlazorApplicationInsights;
 //#endif
 using Boilerplate.Client.Web.Services;

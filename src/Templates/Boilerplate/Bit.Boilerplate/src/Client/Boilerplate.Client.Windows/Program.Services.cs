@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿//+:cnd:noEmit
+using System.Net.Http;
 using Boilerplate.Client.Windows.Services;
 using Microsoft.Extensions.Logging;
 
