@@ -46,6 +46,21 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
+    /// The indentation value in px for each level of depth of child item.
+    /// </summary>
+    [Parameter] public int IndentValue { get; set; } = 16;
+
+    /// <summary>
+    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// </summary>
+    [Parameter] public int IndentPadding { get; set; } = 27;
+
+    /// <summary>
+    /// The indentation padding in px for items in reversed mode.
+    /// </summary>
+    [Parameter] public int IndentReversedPadding { get; set; } = 4;
+
+    /// <summary>
     /// A collection of item to display in the navigation bar.
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = [];
