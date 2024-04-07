@@ -14,8 +14,6 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IIdentityController identityController = default;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
-    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
-
     public async Task SignIn(SignInRequestDto signInModel, CancellationToken cancellationToken)
     {
         var result = await identityController.SignIn(signInModel, cancellationToken);
@@ -25,8 +23,6 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         var state = await GetAuthenticationStateAsync();
 
         NotifyAuthenticationStateChanged(Task.FromResult(state));
-
-        authLogger.LogInformation("User {UserName} {UserId} signed in.", state.User.GetUserName(), state.User.GetUserId().ToString());
     }
 
     public async Task SignOut()
