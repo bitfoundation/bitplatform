@@ -207,6 +207,18 @@ public partial class BitSpinButton
 
 
 
+    /// <summary>
+    /// The ElementReference to the input element of the BitSpinButton.
+    /// </summary>
+    public ElementReference? InputElement => ShowInput ? _inputRef : null;
+
+    /// <summary>
+    /// Gives focus to the input element of the BitSpinButton.
+    /// </summary>
+    public ValueTask FocusAsync() => ShowInput ? _inputRef.FocusAsync() : ValueTask.CompletedTask;
+
+
+
     protected override string RootElementClass => "bit-spb";
 
     protected override void RegisterCssClasses()
@@ -263,6 +275,7 @@ public partial class BitSpinButton
 
         await base.OnParametersSetAsync();
     }
+
 
 
     private async Task ApplyValueChange(BitSpinButtonAction action)

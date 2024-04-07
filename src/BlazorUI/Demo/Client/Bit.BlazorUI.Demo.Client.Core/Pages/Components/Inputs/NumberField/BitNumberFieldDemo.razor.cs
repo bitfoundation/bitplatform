@@ -2,8 +2,8 @@
 
 public partial class BitNumberFieldDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AriaDescription",
@@ -267,10 +267,9 @@ public partial class BitNumberFieldDemo
             DefaultValue="The {0} field is not valid.",
             Description = "The message format used for invalid values entered in the input.",
         }
-    };
-
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    ];
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "numberfield-class-styles",
@@ -377,7 +376,22 @@ public partial class BitNumberFieldDemo
                 }
             }
         }
-    };
+    ];
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the input element of the BitNumberField.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the input element of the BitNumberField.",
+        }
+    ];
 
 
     private double oneWayValue;
