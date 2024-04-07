@@ -4,8 +4,8 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.OtpInput;
 
 public partial class BitOtpInputDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AutoFocus",
@@ -97,10 +97,9 @@ public partial class BitOtpInputDemo
             DefaultValue = "false",
             Description = "Defines whether to render inputs vertically.",
         },
-    };
-
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    ];
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "otpinput-class-styles",
@@ -124,10 +123,9 @@ public partial class BitOtpInputDemo
                 }
             }
         }
-    };
-
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    ];
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "inputType-enum",
@@ -154,8 +152,22 @@ public partial class BitOtpInputDemo
                 }
             }
         }
-    };
-
+    ];
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "InputElements",
+            Type = "ElementReference[]",
+            Description = "The ElementReferences to the input elements of the BitOtpInput.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to a specific input element of the BitOtpInput.",
+        }
+    ];
 
 
     private string? oneWayValue;
