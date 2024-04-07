@@ -1,8 +1,8 @@
 ﻿//+:cnd:noEmit
 //#if (offlineDb == true)
-using System.Diagnostics.CodeAnalysis;
 using Boilerplate.Client.Core.Data;
 //#endif
+using System.Diagnostics.CodeAnalysis;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
