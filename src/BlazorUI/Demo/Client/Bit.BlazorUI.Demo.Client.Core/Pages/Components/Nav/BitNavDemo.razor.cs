@@ -2,8 +2,8 @@
 
 public partial class BitNavDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "ChildContent",
@@ -33,6 +33,34 @@ public partial class BitNavDemo
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "Used to customize how content inside the group header is rendered."
+        },
+        new()
+        {
+            Name = "HeaderTemplateRenderMode",
+            Type = "BitNavItemTemplateRenderMode",
+            DefaultValue = "BitNavItemTemplateRenderMode.Normal",
+            Description = "The render mode of the custom HeaderTemplate."
+        },
+        new()
+        {
+            Name = "IndentValue",
+            Type = "int",
+            DefaultValue = "16",
+            Description = "The indentation value in px for each level of depth of child item."
+        },
+        new()
+        {
+            Name = "IndentPadding",
+            Type = "int",
+            DefaultValue = "27",
+            Description = "The indentation padding in px for items without children (compensation space for chevron icon)."
+        },
+        new()
+        {
+            Name = "IndentReversedPadding",
+            Type = "int",
+            DefaultValue = "4",
+            Description = "The indentation padding in px for items in reversed mode."
         },
         new()
         {
@@ -116,7 +144,14 @@ public partial class BitNavDemo
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
-            Description = "Selected item to show in Nav."
+            Description = "Selected item to show in the BitNav."
+        },
+        new()
+        {
+            Name = "SingleExpand",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the single-expand mode in the BitNav."
         },
         new()
         {
@@ -127,10 +162,9 @@ public partial class BitNavDemo
             Href = "#nav-class-styles",
             LinkType = LinkType.Link
         }
-    };
-
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    ];
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "nav-item",
@@ -678,10 +712,9 @@ public partial class BitNavDemo
                },
             }
         }
-    };
-
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    ];
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "nav-mode-enum",
@@ -779,5 +812,5 @@ public partial class BitNavDemo
                 }
             ]
         },
-    };
+    ];
 }
