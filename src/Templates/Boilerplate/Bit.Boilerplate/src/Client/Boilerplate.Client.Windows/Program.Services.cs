@@ -47,11 +47,17 @@ public static partial class Program
                 loggingBuilder.AddDebug();
                 loggingBuilder.AddConsole();
             }
+            //#if (appInsights == true)
+            loggingBuilder.AddApplicationInsights(config =>
+            {
+                config.TelemetryInitializers.Add(new WindowsTelemetryInitializer());
+                config.ConnectionString = configuration["ApplicationInsights:ConnectionString"];
+            }, options =>
+            {
+                options.IncludeScopes = true;
+            });
+            //#endif
         });
-
-        //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetryWorkerService(configuration);
-        //#endif
 
         services.AddClientCoreProjectServices();
     }
