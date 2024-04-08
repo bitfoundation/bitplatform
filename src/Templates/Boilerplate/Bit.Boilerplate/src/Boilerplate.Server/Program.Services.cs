@@ -52,7 +52,6 @@ public static partial class Program
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
         //#if (appInsights == true)
-        builder.Logging.AddApplicationInsights();
         services.AddApplicationInsightsTelemetry(configuration);
         //#endif
 
