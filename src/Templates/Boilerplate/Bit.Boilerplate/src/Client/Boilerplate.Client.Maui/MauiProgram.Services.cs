@@ -48,7 +48,14 @@ public static partial class MauiProgram
 
         //+:cnd:noEmit
         //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetryWorkerService(configuration);
+        builder.Logging.AddApplicationInsights(config =>
+        {
+            config.TelemetryInitializers.Add(new MauiTelemetryInitializer());
+            config.ConnectionString = configuration["ApplicationInsights:ConnectionString"];
+        }, options =>
+        {
+            options.IncludeScopes = true;
+        });
         //#endif
         //-:cnd:noEmit
 
