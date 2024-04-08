@@ -116,7 +116,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public bool ReversedChevron { get; set; }
 
     /// <summary>
-    /// Selected item to show in Nav.
+    /// Selected item to show in the BitNav.
     /// </summary>
     [Parameter]
     public TItem? SelectedItem

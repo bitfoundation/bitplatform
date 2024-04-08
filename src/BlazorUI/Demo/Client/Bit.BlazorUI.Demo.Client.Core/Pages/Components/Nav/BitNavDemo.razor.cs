@@ -144,7 +144,14 @@ public partial class BitNavDemo
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
-            Description = "Selected item to show in Nav."
+            Description = "Selected item to show in the BitNav."
+        },
+        new()
+        {
+            Name = "SingleExpand",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the single-expand mode in the BitNav."
         },
         new()
         {
