@@ -25,6 +25,7 @@ public partial class BitNumberField<TValue>
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
     private readonly Type _typeOfValue;
+    private readonly bool _isNullableType;
     private bool _hasFocus;
     private readonly bool _isDecimals;
     private readonly double _minGenericValue;
@@ -40,12 +41,19 @@ public partial class BitNumberField<TValue>
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
             var cleanValue = GetCleanValue(value);
-            var isNumber = double.TryParse(cleanValue, out var numericValue);
+            if (_isNullableType && cleanValue.HasNoValue())
+            {
+                SetValue(null);
+            }
+            else
+            {
+                var isNumber = double.TryParse(cleanValue, out var numericValue);
 
-            if (isNumber is false) return;
-            if (numericValue == GetDoubleValueOrDefault(CurrentValue)) return;
+                if (isNumber is false) return;
+                if (numericValue == GetDoubleValueOrDefault(CurrentValue)) return;
+                SetValue(numericValue);
+            }
 
-            SetValue(numericValue);
             _ = OnChange.InvokeAsync(CurrentValue);
         }
     }
@@ -53,6 +61,7 @@ public partial class BitNumberField<TValue>
     public BitNumberField()
     {
         _typeOfValue = typeof(TValue);
+        _isNullableType = Nullable.GetUnderlyingType(_typeOfValue) is not null;
         _typeOfValue = Nullable.GetUnderlyingType(_typeOfValue) ?? _typeOfValue;
 
         _isDecimals = _typeOfValue == typeof(float) || _typeOfValue == typeof(double) || _typeOfValue == typeof(decimal);
@@ -560,9 +569,15 @@ public partial class BitNumberField<TValue>
         return 0;
     }
 
-    private void SetValue(double value)
+    private void SetValue(double? value)
     {
-        value = Normalize(value);
+        if (value is null)
+        {
+            CurrentValue = default;
+            return;
+        }
+
+        value = Normalize(value.Value);
 
         if (value > _internalMax)
         {
