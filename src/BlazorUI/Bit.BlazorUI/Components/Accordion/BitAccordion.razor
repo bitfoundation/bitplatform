@@ -28,13 +28,17 @@
                     @Description
                 </div>
             </div>
-            <i style="@Styles?.ChevronDownIcon" class="@Classes?.ChevronDownIcon bit-icon bit-icon--ChevronDown bit-acd-hic" />
+            <i style="@Styles?.ChevronDownIcon"
+               class="bit-icon bit-icon--ChevronDown bit-acd-hic@(IsExpanded ? " bit-acd-hex" : "") @Classes?.ChevronDownIcon" />
         }
     </button>
-    <div role="region"
-         style="@Styles?.Content"
-         class="@Classes?.Content bit-acd-con"
-         tabindex="@(IsEnabled ? 0 : -1)">
-        @ChildContent
+
+    <div>
+        <div role="region"
+             style="@Styles?.Content"
+             class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @Classes?.Content"
+             tabindex="@(IsEnabled ? 0 : -1)">
+            @ChildContent
+        </div>
     </div>
 </div>

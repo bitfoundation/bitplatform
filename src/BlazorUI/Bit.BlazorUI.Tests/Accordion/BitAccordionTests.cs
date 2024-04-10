@@ -60,11 +60,12 @@ public class BitAccordionTests : BunitTestContext
         var root = com.Find(".bit-acd");
         var header = com.Find(".bit-acd-hdr");
 
-        Assert.IsFalse(root.ClassName.Contains("bit-acd-exp"));
-
+        var icon = com.Find(".bit-acd-hdr > i");
+        var content = com.Find(".bit-acd-con");
         header.Click();
 
-        Assert.IsTrue(root.ClassName.Contains("bit-acd-exp"));
+        Assert.IsTrue(icon.ClassName.Contains("bit-acd-hex"));
+        Assert.IsTrue(content.ClassName.Contains("bit-acd-cex"));
     }
 
 
@@ -79,9 +80,11 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.DefaultIsExpanded, defaultIsExpanded);
         });
 
-        var root = com.Find(".bit-acd");
+        var header = com.Find(".bit-acd-hdr > i");
+        var content = com.Find(".bit-acd-con");
 
-        Assert.AreEqual(defaultIsExpanded, root.ClassName.Contains("bit-acd-exp"));
+        Assert.AreEqual(defaultIsExpanded, header.ClassName.Contains("bit-acd-hex"));
+        Assert.AreEqual(defaultIsExpanded, content.ClassName.Contains("bit-acd-cex"));
     }
 
     [DataTestMethod,
