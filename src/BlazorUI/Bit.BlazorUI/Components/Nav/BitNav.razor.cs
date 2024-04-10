@@ -149,6 +149,16 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
 
 
+    public void CollapseAll()
+    {
+        foreach (var item in _items)
+        {
+            CollapseItemAndChildren(item);
+        }
+    }
+
+
+
     internal BitNavAriaCurrent GetAriaCurrent(TItem item)
     {
         if (item is BitNavItem navItem)
@@ -670,6 +680,41 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         return GetKey(item) ?? Guid.NewGuid().ToString();
     }
 
+    internal async Task ToggleItem(TItem Item)
+    {
+        var isExpanded = GetItemExpanded(Item) is false;
+
+        if (SingleExpand)
+        {
+            if (isExpanded)
+            {
+                if (_currentItem is not null)
+                {
+                    ToggleItemAndParents(_items, _currentItem, false);
+                }
+            }
+
+            if (isExpanded)
+            {
+                ToggleItemAndParents(_items, Item, isExpanded);
+            }
+            else
+            {
+                SetItemExpanded(Item, isExpanded);
+            }
+
+            StateHasChanged();
+
+            _currentItem = Item;
+        }
+        else
+        {
+            SetItemExpanded(Item, isExpanded);
+        }
+
+        await OnItemToggle.InvokeAsync(Item);
+    }
+
     internal bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
     {
         foreach (var parent in items)
@@ -683,11 +728,6 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         }
 
         return false;
-    }
-
-    internal void Refresh()
-    {
-        StateHasChanged();
     }
 
 
@@ -782,6 +822,16 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         if (NameSelectors is null) return;
 
         item.SetValueToProperty(NameSelectors.IsExpanded.Name, value);
+    }
+
+    private void CollapseItemAndChildren(TItem item)
+    {
+        SetIsExpanded(item, false);
+
+        foreach (var child in GetChildItems(item))
+        {
+            CollapseItemAndChildren(child);
+        }
     }
 
 
