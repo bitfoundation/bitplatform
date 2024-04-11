@@ -83,7 +83,6 @@ public partial class BitCalendar
     private int _currentDay;
     private int _currentYear;
     private int _currentMonth;
-    private bool _isPointerDown;
     private bool _showYearPicker;
     private bool _showTimePicker;
     private bool _showMonthPicker;
@@ -94,6 +93,7 @@ public partial class BitCalendar
     private string _monthTitle = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
+    private CancellationTokenSource _cancellationTokenSource = new();
     private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -962,15 +962,34 @@ public partial class BitCalendar
     {
         if (IsEnabled is false) return;
 
-        _isPointerDown = true;
+        ChangeTime(isNext, isHour);
+        ResetCts();
 
-        await ChangeTime(isNext, isHour, INITIAL_STEP_DELAY);
+        var cts = _cancellationTokenSource;
+        await Task.Run(async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await Task.Delay(INITIAL_STEP_DELAY);
+                await ContinuousChangeTime(isNext, isHour, cts);
+            });
+        }, cts.Token);
     }
 
-    private async Task ChangeTime(bool isNext, bool isHour, int stepDelay)
+    private async Task ContinuousChangeTime(bool isNext, bool isHour, CancellationTokenSource cts)
     {
-        if (_isPointerDown is false) return;
+        if (cts.IsCancellationRequested) return;
 
+        ChangeTime(isNext, isHour);
+
+        StateHasChanged();
+
+        await Task.Delay(STEP_DELAY);
+        await ContinuousChangeTime(isNext, isHour, cts);
+    }
+
+    private void ChangeTime(bool isNext, bool isHour)
+    {
         if (isHour)
         {
             ChangeHour(isNext);
@@ -979,16 +998,18 @@ public partial class BitCalendar
         {
             ChangeMinute(isNext);
         }
-        StateHasChanged();
-
-        await Task.Delay(stepDelay);
-
-        await ChangeTime(isNext, isHour, STEP_DELAY);
     }
 
     private void HandleOnPointerUpOrOut()
     {
-        _isPointerDown = false;
+        ResetCts();
+    }
+
+    private void ResetCts()
+    {
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = new();
     }
 
     private void ChangeHour(bool isNext)
@@ -1081,5 +1102,15 @@ public partial class BitCalendar
                (_showTimePicker && ShowMonthPickerAsOverlay && ShowTimePickerAsOverlay is false) ||
                (_showTimePicker is false && (ShowMonthPickerAsOverlay is false && ShowTimePickerAsOverlay is false) is false);
 
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _cancellationTokenSource.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 }
