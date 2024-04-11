@@ -636,7 +636,7 @@ public class BitSpinButtonTests : BunitTestContext
         DataRow(5, 2, 4),
         DataRow(1, 15, 1)
     ]
-    public void BitSpinButtonTwoWayBoundWithCustomHandlerShouldWorkCorrectly(double value, int countOfIncrements, double step)
+    public async Task BitSpinButtonTwoWayBoundWithCustomHandlerShouldWorkCorrectly(double value, int countOfIncrements, double step)
     {
         _bitSpinButtonTwoWayBoundValue = value;
 
@@ -651,6 +651,7 @@ public class BitSpinButtonTests : BunitTestContext
         for (var i = 0; i < countOfIncrements; i++)
         {
             incrementButton.PointerDown();
+            await Task.Delay(1);
         }
 
         var expectedValue = value + (step * countOfIncrements);
