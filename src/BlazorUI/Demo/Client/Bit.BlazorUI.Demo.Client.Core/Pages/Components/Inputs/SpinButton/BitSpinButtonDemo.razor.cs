@@ -50,12 +50,6 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
-            Name = "ChangeHandler",
-            Type = "EventCallback<BitSpinButtonAction>",
-            Description = "?",
-        },
-        new()
-        {
             Name = "DecrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
