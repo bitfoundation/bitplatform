@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -264,7 +265,7 @@ public class BitSpinButtonTests : BunitTestContext
         DataRow(4),
         DataRow(12)
     ]
-    public void BitSpinButtonOnIncrementTest(int countOfClicks)
+    public async Task BitSpinButtonOnIncrementTest(int countOfClicks)
     {
         int onIncrementEventCounter = 0;
         var component = RenderComponent<BitSpinButton>(parameters =>
@@ -276,6 +277,7 @@ public class BitSpinButtonTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
+            await Task.Delay(1);
             increaseButton.PointerUp();
         }
 
@@ -286,7 +288,7 @@ public class BitSpinButtonTests : BunitTestContext
        DataRow(4),
        DataRow(12)
     ]
-    public void BitSpinButtonOnDecrementTest(int countOfClicks)
+    public async Task BitSpinButtonOnDecrementTest(int countOfClicks)
     {
         int onDecrementEventCounter = 20;
         var component = RenderComponent<BitSpinButton>(parameters =>
@@ -298,6 +300,7 @@ public class BitSpinButtonTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             decreaseButton.PointerDown();
+            await Task.Delay(1);
             decreaseButton.PointerUp();
         }
 
@@ -633,7 +636,7 @@ public class BitSpinButtonTests : BunitTestContext
         DataRow(5, 2, 4),
         DataRow(1, 15, 1)
     ]
-    public void BitSpinButtonTwoWayBoundWithCustomHandlerShouldWorkCorrectly(double value, int countOfIncrements, double step)
+    public async Task BitSpinButtonTwoWayBoundWithCustomHandlerShouldWorkCorrectly(double value, int countOfIncrements, double step)
     {
         _bitSpinButtonTwoWayBoundValue = value;
 
@@ -648,6 +651,7 @@ public class BitSpinButtonTests : BunitTestContext
         for (var i = 0; i < countOfIncrements; i++)
         {
             incrementButton.PointerDown();
+            await Task.Delay(1);
         }
 
         var expectedValue = value + (step * countOfIncrements);
