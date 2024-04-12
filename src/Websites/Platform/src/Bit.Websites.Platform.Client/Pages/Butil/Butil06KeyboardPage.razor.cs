@@ -9,7 +9,7 @@ public partial class Butil06KeyboardPage
 
     protected override async Task OnInitAsync()
     {
-        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusInput(), ButilModifiers.Ctrl);
+        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusAsync(), ButilModifiers.Ctrl);
     }
 
 
@@ -25,7 +25,7 @@ public partial class Butil06KeyboardPage
 
     protected override async Task OnInitAsync()
     {
-        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusInput(), ButilModifiers.Ctrl);
+        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusAsync(), ButilModifiers.Ctrl);
     }
 }";
 }
