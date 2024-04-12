@@ -51,6 +51,10 @@ public static partial class Program
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
+        //#if (appInsights == true)
+        services.AddApplicationInsightsTelemetry(configuration);
+        //#endif
+
         //#if (api == true)
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
@@ -139,11 +143,6 @@ public static partial class Program
         //#endif
 
         AddBlazor(builder);
-
-        //#if (appInsights == true)
-        builder.Logging.AddApplicationInsights();
-        services.AddApplicationInsightsTelemetry(configuration);
-        //#endif
     }
 
     private static void AddBlazor(WebApplicationBuilder builder)

@@ -279,6 +279,13 @@
                         "src/Boilerplate.Server/AppSettings.cs",
                         "src/Boilerplate.Server/IdentityCertificate.pfx"
                     ]
+                },
+                {
+                    "condition": "(appInsights != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Maui/Services/MauiTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Windows/Services/WindowsTelemetryInitializer.cs"
+                    ]
                 }
             ]
         }
