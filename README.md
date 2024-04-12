@@ -29,6 +29,10 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
 <br/>
 
+**Note**: This project is tested with [BrowserStack](https://www.browserstack.com/).
+
+<br/>
+
 # 🎁 OSS Showcases
 
 The following apps are our open-source projects powered by the bit platform showcasing the different capabilities of our toolchain:
