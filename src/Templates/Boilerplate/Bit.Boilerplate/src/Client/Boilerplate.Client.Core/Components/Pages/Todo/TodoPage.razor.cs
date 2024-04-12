@@ -24,7 +24,7 @@ public partial class TodoPage
 
     protected override async Task OnInitAsync()
     {
-        _ = keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusInput(), ButilModifiers.Ctrl);
+        _ = keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusAsync(), ButilModifiers.Ctrl);
 
         selectedFilter = nameof(AppStrings.All);
         selectedSort = nameof(AppStrings.Alphabetical);
