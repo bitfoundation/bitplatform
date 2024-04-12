@@ -17,9 +17,9 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@0
+  - task: NodeTool@1
     inputs:
-      versionSpec: '18.x'
+      versionSpec: '20.x'
     displayName: 'Install Node.js'
   
   - task: Bash@3
