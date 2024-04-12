@@ -17,11 +17,11 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.1-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.1-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

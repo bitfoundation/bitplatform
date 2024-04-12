@@ -32,9 +32,9 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.4" PrivateAssets="all" />
-        <PackageReference Include="Bit.Bswup" Version="8.8.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.Bswup" Version="8.8.1-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.1-pre-01" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.1-pre-01" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.0.5" />
         <!--/-:msbuild-conditional:noEmit -->
