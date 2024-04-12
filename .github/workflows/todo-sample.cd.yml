@@ -22,7 +22,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -41,12 +41,12 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights
 
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
+        input-files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ApplicationInsights_ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
@@ -136,7 +136,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -155,13 +155,13 @@ jobs:
         cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --windows --appInsights
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json'
+        input-files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        WindowsUpdateSettings_FilesUrl: https://windows-todo.bitplatform.dev
+        ApplicationInsights_ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
@@ -197,7 +197,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -223,12 +223,12 @@ jobs:
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
+        input-files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ApplicationInsights_ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         
     - name: Set android universal link
       run:  sed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android/MainActivity.cs
@@ -280,7 +280,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -303,12 +303,12 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights
       
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
+        input-files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ApplicationInsights_ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         
     - name: Set iOS universal link
       run:  brew install gnu-sed && gsed -i 's/bp.bitplatform.dev/todo.bitplatform.dev/g' TodoSample/src/Client/TodoSample.Client.Maui/Platforms/iOS/Entitlements.plist

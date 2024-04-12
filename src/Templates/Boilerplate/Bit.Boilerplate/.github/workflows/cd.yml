@@ -24,7 +24,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -39,9 +39,9 @@ jobs:
     #   run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
         
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        input-files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -91,12 +91,12 @@ jobs:
           name: migrations-bundle
 
       - name: Update appsettings.json
-        uses: microsoft/variable-substitution@v1 
+        uses: iamazeem/substitute-action@v1 
         with:
-          files: 'appsettings.json'
+          input-files: 'appsettings.json'
         env:
-          ConnectionStrings.SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
-          AppSettings.IdentitySettings.IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
+          ConnectionStrings_SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          AppSettings_IdentitySettings_IdentityCertificatePassword: ${{ secrets.API_IDENTITY_CERTIFICATE_PASSWORD }}
 
       - name: Delete IdentityCertificate.pfx
         run: |
@@ -132,7 +132,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -144,12 +144,12 @@ jobs:
         node-version: 20
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
+        input-files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-boilerplate.bitplatform.dev
+        WindowsUpdateSettings_FilesUrl: https://windows-boilerplate.bitplatform.dev
   
     - name: Generate CSS/JS files
       run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
@@ -186,7 +186,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -205,9 +205,9 @@ jobs:
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        input-files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -241,7 +241,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -257,9 +257,9 @@ jobs:
         node-version: 20
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        input-files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 

@@ -21,7 +21,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -29,9 +29,9 @@ jobs:
         global-json-file: src/global.json
        
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
+        input-files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -94,7 +94,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -106,12 +106,12 @@ jobs:
         node-version: 20
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\appsettings.json'
+        input-files: 'src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
+        WindowsUpdateSettings_FilesUrl: https://windows-components.bitplatform.dev
   
     - name: Generate CSS/JS files
       run: dotnet build src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
@@ -147,7 +147,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -166,9 +166,9 @@ jobs:
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
+        input-files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -197,7 +197,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -213,9 +213,9 @@ jobs:
         node-version: 20
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
+        input-files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 

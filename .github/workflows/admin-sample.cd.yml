@@ -23,7 +23,7 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -38,12 +38,12 @@ jobs:
        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
        
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
+        input-files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ApplicationInsights_ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - uses: actions/setup-node@v4
       with:
@@ -121,7 +121,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -140,13 +140,13 @@ jobs:
         cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --windows --appInsights
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json'
+        input-files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        WindowsUpdateSettings_FilesUrl: https://windows-adminpanel.bitplatform.dev
+        ApplicationInsights_ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
@@ -182,7 +182,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -208,12 +208,12 @@ jobs:
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
+        input-files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ApplicationInsights_ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         
     - name: Set android universal link
       run:  sed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android/MainActivity.cs
@@ -245,7 +245,7 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -268,12 +268,12 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: iamazeem/substitute-action@v1 
       with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
+        input-files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ApplicationInsights_ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         
     - name: Set iOS universal link
       run:  brew install gnu-sed && gsed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/iOS/Entitlements.plist
