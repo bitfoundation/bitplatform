@@ -22,16 +22,16 @@ jobs:
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - name: Create project from Boilerplate
       run: |
@@ -41,7 +41,7 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights
 
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
@@ -66,7 +66,7 @@ jobs:
       run: dotnet publish TodoSample/src/TodoSample.Server/TodoSample.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
     - name: Upload server artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: server-bundle
         path: ${{env.DOTNET_ROOT}}/server
@@ -83,7 +83,7 @@ jobs:
       run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true -o ${{env.DOTNET_ROOT}}/static
 
     - name: Upload static artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: static-bundle
         path: ${{env.DOTNET_ROOT}}/static
@@ -99,7 +99,7 @@ jobs:
     steps:
 
       - name: Retrieve server bundle
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: server-bundle
 
@@ -108,7 +108,7 @@ jobs:
             rm IdentityCertificate.pfx
 
       - name: Extract identity certificate from env
-        uses: timheuer/base64-to-file@v1
+        uses: timheuer/base64-to-file@v1.2
         with:
             fileDir: './'
             fileName: 'IdentityCertificate.pfx'
@@ -136,16 +136,16 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - name: Create project from Boilerplate
       run: |
@@ -155,7 +155,7 @@ jobs:
         cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --windows --appInsights
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json'
       env:
@@ -197,16 +197,16 @@ jobs:
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - name: Create project from Boilerplate
       run: |
@@ -216,14 +216,14 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights
   
     - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v1
+      uses: timheuer/base64-to-file@v1.2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
           fileName: 'TodoSample.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
@@ -243,7 +243,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Extract App Icon from env
-      uses: timheuer/base64-to-file@v1
+      uses: timheuer/base64-to-file@v1.2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
@@ -253,7 +253,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
     - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@v1
+      uses: timheuer/base64-to-file@v1.2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
           fileName: 'splash.svg'
@@ -275,25 +275,25 @@ jobs:
         
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macos-13
+    runs-on: macos-14
   
     steps:
      
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
      
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15'
+        xcode-version: '15.3'
 
     - name: Create project from Boilerplate
       run: |
@@ -303,7 +303,7 @@ jobs:
         cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights
       
     - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
       env:
@@ -317,14 +317,14 @@ jobs:
       run: cd src && dotnet workload install maui
   
     - name: Extract iOS code signing certificate from env
-      uses: timheuer/base64-to-file@v1
+      uses: timheuer/base64-to-file@v1.2
       with:
           fileDir: './'
           fileName: 'DistributionCert.p12'
           encodedString: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
 
     - name: Import Code-Signing Certificates
-      uses: Apple-Actions/import-codesign-certs@v1
+      uses: apple-actions/import-codesign-certs@v2
       with:
         p12-filepath: './DistributionCert.p12'
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
@@ -341,7 +341,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Extract App Icon from env
-      uses: timheuer/base64-to-file@v1
+      uses: timheuer/base64-to-file@v1.2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
@@ -351,7 +351,7 @@ jobs:
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
     - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@v1
+      uses: timheuer/base64-to-file@v1.2
       with:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
           fileName: 'splash.svg'

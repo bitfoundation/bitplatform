@@ -16,13 +16,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
       
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
@@ -44,13 +44,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/global.json
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental

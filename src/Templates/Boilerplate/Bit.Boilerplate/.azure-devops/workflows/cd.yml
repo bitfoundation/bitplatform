@@ -26,9 +26,9 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@0
+  - task: NodeTool@1
     inputs:
-      versionSpec: '18.x'
+      versionSpec: '20.x'
     displayName: 'Install Node.js'
 
   # - task: Bash@3
@@ -45,7 +45,7 @@ jobs:
       script: |
           'cd src && dotnet workload install wasm-tools wasm-experimental'
 
-  - task: FileTransform@1
+  - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
       fileType: 'json'
@@ -105,7 +105,7 @@ jobs:
       artifact: 'migrations-bundle'
       path: ./
 
-  - task: FileTransform@1
+  - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
       fileType: 'json'
@@ -158,12 +158,12 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@0
+  - task: NodeTool@1
     inputs:
-      versionSpec: '18.x'
+      versionSpec: '20.x'
     displayName: 'Install Node.js'
 
-  - task: FileTransform@1
+  - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
       fileType: 'json'
@@ -217,9 +217,9 @@ jobs:
       useGlobalJson: true
       workingDirectory: 'src'
 
-  - task: NodeTool@0
+  - task: NodeTool@1
     inputs:
-      versionSpec: '18.x'
+      versionSpec: '20.x'
     displayName: 'Install Node.js'
 
   - task: Bash@3
@@ -245,7 +245,7 @@ jobs:
     failOnStderr: true
     displayName: Copy keystore to app project folder
 
-  - task: FileTransform@1
+  - task: FileTransform@2
     displayName: Update appsettings.json
     inputs:
       fileType: 'json'
