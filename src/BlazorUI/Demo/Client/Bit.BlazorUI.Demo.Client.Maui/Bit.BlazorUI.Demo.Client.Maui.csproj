@@ -51,6 +51,10 @@
         <!-- dotnet remove package Mono.AotProfiler.Android -->
     </ItemGroup>
 
+    <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <BundleResource Include="Platforms\iOS\PrivacyInfo.xcprivacy" LogicalName="PrivacyInfo.xcprivacy" />
+    </ItemGroup>
+
     <ItemGroup>
 
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
