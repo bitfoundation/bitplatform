@@ -39,7 +39,7 @@ jobs:
     #   run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
         
     - name: Update appsettings.json api server address
-      uses:  devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
@@ -91,7 +91,7 @@ jobs:
           name: migrations-bundle
 
       - name: Update appsettings.json
-        uses:  devops-actions/variable-substitution@v1.2 
+        uses: devops-actions/variable-substitution@v1.2 
         with:
           files: 'appsettings.json'
         env:
@@ -144,7 +144,7 @@ jobs:
         node-version: 20
   
     - name: Update appsettings.json api server address
-      uses:  devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
       env:
@@ -205,7 +205,7 @@ jobs:
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
     - name: Update appsettings.json api server address
-      uses:  devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
@@ -257,7 +257,7 @@ jobs:
         node-version: 20
   
     - name: Update appsettings.json api server address
-      uses:  devops-actions/variable-substitution@v1.2 
+      uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
       env:
