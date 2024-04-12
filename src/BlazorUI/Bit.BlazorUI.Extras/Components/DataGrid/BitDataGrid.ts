@@ -86,7 +86,7 @@ class BitDataGrid {
                     document.body.removeEventListener('touchend', handleMouseUp);
                 }
 
-                if (evt instanceof TouchEvent) {
+                if (window.TouchEvent && evt instanceof TouchEvent) {
                     document.body.addEventListener('touchmove', handleMouseMove, { passive: true });
                     document.body.addEventListener('touchend', handleMouseUp, { passive: true });
                 } else {
