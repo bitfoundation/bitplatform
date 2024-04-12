@@ -1,4 +1,4 @@
-// bit version: 8.8.0
+// bit version: 8.8.1-pre-01
 
 self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];

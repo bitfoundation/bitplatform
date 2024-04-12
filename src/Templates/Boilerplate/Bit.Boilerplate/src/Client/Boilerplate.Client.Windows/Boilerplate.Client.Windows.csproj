@@ -19,8 +19,8 @@
         <Using Include="Boilerplate.Client.Core.Services" />
         <Watch Remove="*.scss" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.1-pre-01" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.1-pre-01" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
