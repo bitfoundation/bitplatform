@@ -36,6 +36,7 @@ public static partial class MauiProgram
         if (BuildConfiguration.IsDebug())
         {
             builder.Logging.AddDebug();
+            builder.Logging.AddConsole();
         }
 
         if (OperatingSystem.IsWindows())
@@ -47,8 +48,14 @@ public static partial class MauiProgram
 
         //+:cnd:noEmit
         //#if (appInsights == true)
-        builder.Logging.AddApplicationInsights();
-        services.AddApplicationInsightsTelemetryWorkerService(configuration);
+        builder.Logging.AddApplicationInsights(config =>
+        {
+            config.TelemetryInitializers.Add(new MauiTelemetryInitializer());
+            config.ConnectionString = configuration["ApplicationInsights:ConnectionString"];
+        }, options =>
+        {
+            options.IncludeScopes = true;
+        });
         //#endif
         //-:cnd:noEmit
 

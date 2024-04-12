@@ -33,6 +33,16 @@ public static partial class Program
         services.AddBlazorApplicationInsights(x =>
         {
             x.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+        },
+        async appInsights =>
+        {
+            await appInsights.AddTelemetryInitializer(new()
+            {
+                Tags = new Dictionary<string, object?>()
+                {
+                    { "ai.application.ver", typeof(Program).Assembly.GetName().Version!.ToString() }
+                }
+            });
         });
         //#endif
 
