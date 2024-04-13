@@ -129,44 +129,50 @@
             "datatype": "bool",
             "defaultValue": "true"
         },
-        "nameToLower":{
-          "type": "generated",
-          "generator": "casing",
-          "parameters": {
-            "source" : "name",
-            "toLower": true
-          }
+        "appInsights": {
+            "displayName": "Add Azure application insights to project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
+        },
+        "nameToLower": {
+            "type": "generated",
+            "generator": "casing",
+            "parameters": {
+                "source": "name",
+                "toLower": true
+            }
         },
         "nameToAppId": {
-          "type": "generated",
-          "generator": "regex",
-          "dataType": "string",
-          "parameters": {
-            "source": "nameToLower",
-            "steps": [
-              {
-                "regex": "[^a-z0-9_\\.]",
-                "replacement": ""
-              }
-            ]
-          }
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "nameToLower",
+                "steps": [
+                    {
+                        "regex": "[^a-z0-9_\\.]",
+                        "replacement": ""
+                    }
+                ]
+            }
         },
-        "defaultAppId":{
-          "type": "generated",
-          "generator": "join",
-          "parameters": {
-            "symbols": [
-              {
-                "type": "const",
-                "value": "com.companyname."
-              },
-              {
-                "type": "ref",
-                "value": "nameToAppId"
-              }
-            ]
-          },
-          "replaces": "com.bitplatform.template"
+        "defaultAppId": {
+            "type": "generated",
+            "generator": "join",
+            "parameters": {
+                "symbols": [
+                    {
+                        "type": "const",
+                        "value": "com.companyname."
+                    },
+                    {
+                        "type": "ref",
+                        "value": "nameToAppId"
+                    }
+                ]
+            },
+            "replaces": "com.bitplatform.template"
         }
     },
     "postActions": [],
@@ -272,6 +278,13 @@
                         "src/Boilerplate.Server/wwwroot/swagger/**",
                         "src/Boilerplate.Server/AppSettings.cs",
                         "src/Boilerplate.Server/IdentityCertificate.pfx"
+                    ]
+                },
+                {
+                    "condition": "(appInsights != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Maui/Services/MauiTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Windows/Services/WindowsTelemetryInitializer.cs"
                     ]
                 }
             ]

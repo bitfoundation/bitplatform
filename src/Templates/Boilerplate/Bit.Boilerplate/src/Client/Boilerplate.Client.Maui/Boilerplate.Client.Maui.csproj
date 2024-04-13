@@ -53,6 +53,10 @@
         <!-- dotnet remove package Mono.AotProfiler.Android -->
     </ItemGroup>
 
+    <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <BundleResource Include="Platforms\iOS\PrivacyInfo.xcprivacy" LogicalName="PrivacyInfo.xcprivacy" />
+    </ItemGroup>
+
     <ItemGroup>
 
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
@@ -84,8 +88,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.1" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.1" PrivateAssets="all" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
         <Content Remove="Properties\launchSettings.json" />
@@ -96,16 +100,20 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.14" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.14" />
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.14" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.14" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.20" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.20" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.20" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.20" />
 		<PackageReference Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
         <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.7" />
         <PackageReference Include="Oscore.Maui.InAppReviews" Version="1.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
+        <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
+        <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing

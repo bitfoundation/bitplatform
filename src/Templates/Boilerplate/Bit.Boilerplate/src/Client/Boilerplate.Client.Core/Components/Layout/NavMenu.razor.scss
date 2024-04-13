@@ -14,12 +14,11 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     min-width: rem2($navMenuWidth);
-    padding-bottom: rem2($headerHeight);
     background-color: $bit-color-background-primary;
-    top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
+    top: calc(var(--bit-status-bar-height));
 
     .bit-ios & {
-        top: calc(rem2($headerHeight) + env(safe-area-inset-top));
+        top: calc(env(safe-area-inset-top));
     }
 
     &::-webkit-scrollbar {
@@ -48,13 +47,13 @@
 }
 
 .menu-overlay {
+    top: 0;
     width: 100%;
     z-index: 15;
+    height: 100vh;
     position: fixed;
     inset-inline-start: 0;
-    top: rem2($headerHeight);
     background-color: rgba(0, 0, 0, 0.5);
-    height: calc(100vh - #{rem2($headerHeight)});
 
     @include gt-md {
         display: none;

@@ -20,6 +20,7 @@ public partial class BitDateRangePicker
     private bool hasBorder = true;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private BitIconLocation iconLocation = BitIconLocation.Right;
+    private CancellationTokenSource _cancellationTokenSource = new();
 
     private string focusClass = string.Empty;
     private string _focusClass
@@ -163,7 +164,6 @@ public partial class BitDateRangePicker
 
     private int _currentYear;
     private int _currentMonth;
-    private bool _isPointerDown;
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private int? _selectedEndDateWeek;
@@ -1620,15 +1620,34 @@ public partial class BitDateRangePicker
     {
         if (IsEnabled is false) return;
 
-        _isPointerDown = true;
+        await ChangeTime(isNext, isHour, isStartTime);
+        ResetCts();
 
-        await ChangeTime(isNext, isHour, isStartTime, INITIAL_STEP_DELAY);
+        var cts = _cancellationTokenSource;
+        await Task.Run(async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await Task.Delay(INITIAL_STEP_DELAY);
+                await ContinuousChangeTime(isNext, isHour, isStartTime, cts);
+            });
+        }, cts.Token);
     }
 
-    private async Task ChangeTime(bool isNext, bool isHour, bool isStartTime, int stepDelay)
+    private async Task ContinuousChangeTime(bool isNext, bool isHour, bool isStartTime, CancellationTokenSource cts)
     {
-        if (_isPointerDown is false) return;
+        if (cts.IsCancellationRequested) return;
 
+        await ChangeTime(isNext, isHour, isStartTime);
+
+        StateHasChanged();
+
+        await Task.Delay(STEP_DELAY);
+        await ContinuousChangeTime(isNext, isHour, isStartTime, cts);
+    }
+
+    private async Task ChangeTime(bool isNext, bool isHour, bool isStartTime)
+    {
         if (isHour)
         {
             ChangeHour(isNext, isStartTime);
@@ -1637,16 +1656,18 @@ public partial class BitDateRangePicker
         {
             ChangeMinute(isNext, isStartTime);
         }
-        StateHasChanged();
-
-        await Task.Delay(stepDelay);
-
-        await ChangeTime(isNext, isHour, isStartTime, STEP_DELAY);
     }
 
     private void HandleOnPointerUpOrOut()
     {
-        _isPointerDown = false;
+        ResetCts();
+    }
+
+    private void ResetCts()
+    {
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource = new();
     }
 
     private void ChangeHour(bool isNext, bool isStartTime)
@@ -1962,6 +1983,7 @@ public partial class BitDateRangePicker
         if (disposing)
         {
             _dotnetObj.Dispose();
+            _cancellationTokenSource.Dispose();
         }
 
         base.Dispose(disposing);

@@ -4,14 +4,14 @@ namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem> : IDisposable where TItem : class
 {
-    private bool SelectedItemHasBeenSet;
     private TItem? selectedItem;
-
-
+    private bool SelectedItemHasBeenSet;
 
     private bool _disposed;
+    private IEnumerable<TItem>? _oldItems;
+
+    internal TItem? _currentItem;
     internal List<TItem> _items = [];
-    private IEnumerable<TItem>? _oldItems = default!;
     internal Dictionary<TItem, bool> _itemExpandStates = [];
 
 
@@ -44,6 +44,21 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     /// The render mode of the custom HeaderTemplate.
     /// </summary>
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+
+    /// <summary>
+    /// The indentation value in px for each level of depth of child item.
+    /// </summary>
+    [Parameter] public int IndentValue { get; set; } = 16;
+
+    /// <summary>
+    /// The indentation padding in px for items without children (compensation space for chevron icon).
+    /// </summary>
+    [Parameter] public int IndentPadding { get; set; } = 27;
+
+    /// <summary>
+    /// The indentation padding in px for items in reversed mode.
+    /// </summary>
+    [Parameter] public int IndentReversedPadding { get; set; } = 4;
 
     /// <summary>
     /// A collection of item to display in the navigation bar.
@@ -101,7 +116,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public bool ReversedChevron { get; set; }
 
     /// <summary>
-    /// Selected item to show in Nav.
+    /// Selected item to show in the BitNav.
     /// </summary>
     [Parameter]
     public TItem? SelectedItem
@@ -116,16 +131,31 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
             if (value is not null)
             {
-                ExpandParents(_items);
+                ToggleItemAndParents(_items, value, true);
             }
         }
     }
     [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
     /// <summary>
+    /// Enables the single-expand mode in the BitNav.
+    /// </summary>
+    [Parameter] public bool SingleExpand { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitNav component.
     /// </summary>
     [Parameter] public BitNavClassStyles? Styles { get; set; }
+
+
+
+    public void CollapseAll()
+    {
+        foreach (var item in _items)
+        {
+            CollapseItemAndChildren(item);
+        }
+    }
 
 
 
@@ -611,6 +641,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         {
             _itemExpandStates.Add(item, value);
         }
+
     }
 
     internal bool GetItemExpanded(TItem item)
@@ -643,10 +674,60 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         _items.Remove((option as TItem)!);
         StateHasChanged();
     }
-    
+
     internal string GetItemKey(TItem item)
     {
         return GetKey(item) ?? Guid.NewGuid().ToString();
+    }
+
+    internal async Task ToggleItem(TItem Item)
+    {
+        var isExpanded = GetItemExpanded(Item) is false;
+
+        if (SingleExpand)
+        {
+            if (isExpanded)
+            {
+                if (_currentItem is not null)
+                {
+                    ToggleItemAndParents(_items, _currentItem, false);
+                }
+            }
+
+            if (isExpanded)
+            {
+                ToggleItemAndParents(_items, Item, isExpanded);
+            }
+            else
+            {
+                SetItemExpanded(Item, isExpanded);
+            }
+
+            StateHasChanged();
+
+            _currentItem = Item;
+        }
+        else
+        {
+            SetItemExpanded(Item, isExpanded);
+        }
+
+        await OnItemToggle.InvokeAsync(Item);
+    }
+
+    internal bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
+    {
+        foreach (var parent in items)
+        {
+            var childItems = GetChildItems(parent);
+            if (parent == item || (childItems.Any() && ToggleItemAndParents(childItems, item, isExpanded)))
+            {
+                SetItemExpanded(parent, isExpanded);
+                return true;
+            }
+        }
+
+        return false;
     }
 
 
@@ -726,20 +807,6 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         }
     }
 
-    private bool ExpandParents(IList<TItem> items)
-    {
-        foreach (var parent in items)
-        {
-            if (parent == SelectedItem || (GetChildItems(parent).Any() && ExpandParents(GetChildItems(parent))))
-            {
-                SetItemExpanded(parent, true);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private void SetIsExpanded(TItem item, bool value)
     {
         if (item is BitNavItem navItem)
@@ -755,6 +822,16 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
         if (NameSelectors is null) return;
 
         item.SetValueToProperty(NameSelectors.IsExpanded.Name, value);
+    }
+
+    private void CollapseItemAndChildren(TItem item)
+    {
+        SetIsExpanded(item, false);
+
+        foreach (var child in GetChildItems(item))
+        {
+            CollapseItemAndChildren(child);
+        }
     }
 
 

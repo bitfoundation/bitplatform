@@ -208,7 +208,14 @@ public partial class BitTimePickerDemo
             Description = "Custom CSS classes for different parts of the TimePicker.",
             Href = "#timepicker-class-styles",
             LinkType = LinkType.Link
-        }
+        },
+        new()
+        {
+            Name = "CloseButtonTitle",
+            Type = "string",
+            DefaultValue = "Close time picker",
+            Description = "The title of the close button (tooltip).",
+        },
     };
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()

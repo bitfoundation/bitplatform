@@ -43,7 +43,6 @@ public partial class BitAccordion
         {
             if (value == isExpanded) return;
             isExpanded = value;
-            ClassBuilder.Reset();
             _ = IsExpandedChanged.InvokeAsync(value);
         }
     }
@@ -76,8 +75,6 @@ public partial class BitAccordion
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => IsExpanded ? $"bit-acd-exp {Classes?.Expanded}" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿//+:cnd:noEmit
+using System.Net.Http;
 using Boilerplate.Client.Windows.Services;
 using Microsoft.Extensions.Logging;
 
@@ -38,12 +39,24 @@ public static partial class Program
 
         services.AddLogging(loggingBuilder =>
         {
+            loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
             loggingBuilder.AddEventLog();
             loggingBuilder.AddEventSourceLogger();
             if (BuildConfiguration.IsDebug())
             {
                 loggingBuilder.AddDebug();
+                loggingBuilder.AddConsole();
             }
+            //#if (appInsights == true)
+            loggingBuilder.AddApplicationInsights(config =>
+            {
+                config.TelemetryInitializers.Add(new WindowsTelemetryInitializer());
+                config.ConnectionString = configuration["ApplicationInsights:ConnectionString"];
+            }, options =>
+            {
+                options.IncludeScopes = true;
+            });
+            //#endif
         });
 
         services.AddClientCoreProjectServices();

@@ -32,6 +32,7 @@ dotnet new bit-bp</pre>
                 <li>--offlineDb defaults to false: '--offlineDb true' adds sqlite database support to the client mobile, web and desktop apps</li>
                 <li>--windows default to false: '--windows true' adds support for exe output for windows 7+</li>
                 <li>--api defaults to true: '--api true' adds support for aspnetcore identity, webapi, odata, ef core and fluent email.</li>
+                <li>--appInsights defaults to false: '--appInsights true' adds support for Azure application insights in all clients (Android, iOS, Windows, macOS, Web)</li>
             </ul>
         </div>
         Examples:
@@ -40,15 +41,15 @@ dotnet new bit-bp</pre>
         1- Create a cross-platform AdminPanel app for mobile, desktop and web with Azure DevOps pipelines and a SqlServer database:
         <pre class="code-box">
 dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin</pre>
-        
+
         2- Create a cross-platform Todo app for mobile, desktop and web with GitHub Actions and a SQLite database:
         <pre class="code-box">
 dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo</pre>
-        
+
         3- Create a mobile, desktop and web app without sample pages, integrating GitHub Actions and a SQL Server database:
         <pre class="code-box">
 dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None</pre>
-        
+
         4- Create an offline capable mobile, desktop and web app:
         <pre class="code-box">
 dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --offlineDb</pre>

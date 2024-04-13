@@ -51,6 +51,10 @@ public static partial class Program
             .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
+        //#if (appInsights == true)
+        services.AddApplicationInsightsTelemetry(configuration);
+        //#endif
+
         //#if (api == true)
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
@@ -77,7 +81,7 @@ public static partial class Program
             //#if (database == "SqlServer")
             options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
-                
+
             });
             //#endif
             //#if (IsInsideProjectTemplate == true)
@@ -86,7 +90,7 @@ public static partial class Program
             //#if (database == "Sqlite")
             options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
             {
-                
+
             });
             //#endif
         });
@@ -136,9 +140,9 @@ public static partial class Program
             }
         }
 
-        AddBlazor(builder);
-
         //#endif
+
+        AddBlazor(builder);
     }
 
     private static void AddBlazor(WebApplicationBuilder builder)
@@ -169,7 +173,7 @@ public static partial class Program
 
         services.AddMvc();
 
-       services.AddClientWebProjectServices();
+        services.AddClientWebProjectServices();
     }
 
     //#if (api == true)

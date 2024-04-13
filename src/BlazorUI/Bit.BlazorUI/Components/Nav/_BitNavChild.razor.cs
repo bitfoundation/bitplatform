@@ -50,9 +50,7 @@ public partial class _BitNavChild<TItem> where TItem : class
 
         if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Count is 0) return;
 
-        Nav.SetItemExpanded(Item, Nav.GetItemExpanded(Item) is false);
-
-        await Nav.OnItemToggle.InvokeAsync(Item);
+        await Nav.ToggleItem(Item);
     }
 
     private string GetItemContainerClasses()

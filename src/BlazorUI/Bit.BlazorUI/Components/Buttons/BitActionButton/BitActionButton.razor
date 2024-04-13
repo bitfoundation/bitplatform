@@ -16,7 +16,10 @@
        aria-hidden="@AriaHidden"
        aria-describedby="@AriaDescription">
         <span style="@Styles?.Container" class="bit-acb-ictn @Classes?.Container">
-            <i style="@Classes?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+            @if (IconName is not null)
+            {
+                <i style="@Classes?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+            }
             @if (ChildContent is not null)
             {
                 <span style="@Styles?.Content" class="bit-acb-con @Classes?.Content">
@@ -40,7 +43,10 @@ else
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
         <span style="@Styles?.Container" class="bit-acb-ictn @Classes?.Container">
-            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+            @if (IconName is not null)
+            {
+                <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+            }
             @if (ChildContent is not null)
             {
                 <span style="@Styles?.Content" class="bit-acb-con @Classes?.Content">

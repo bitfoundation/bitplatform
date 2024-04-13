@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -13,14 +14,15 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IIdentityController identityController = default;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
-
     public async Task SignIn(SignInRequestDto signInModel, CancellationToken cancellationToken)
     {
         var result = await identityController.SignIn(signInModel, cancellationToken);
 
         await StoreToken(result!, signInModel.RememberMe);
 
-        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        var state = await GetAuthenticationStateAsync();
+
+        NotifyAuthenticationStateChanged(Task.FromResult(state));
     }
 
     public async Task SignOut()

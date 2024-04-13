@@ -207,6 +207,85 @@ public partial class BitFileUploadDemo
             Description = "URL of the server endpoint receiving the files."
         }
     ];
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "nav-class-styles",
+            Title = "BitFileInfo",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "ContentType",
+                   Type = "String",
+                   DefaultValue = "string.Empty",
+                   Description = "The Content-Type of the selected file."
+               },
+               new()
+               {
+                   Name = "Name",
+                   Type = "String",
+                   DefaultValue = "string.Empty",
+                   Description = "The name of the selected file."
+               },
+               new()
+               {
+                   Name = "Size",
+                   Type = "long",
+                   Description = "The size of the selected file."
+               },
+               new()
+               {
+                   Name = "FileId",
+                   Type = "String",
+                   DefaultValue = "string.Empty",
+                   Description = "The file ID of the selected file, this is a GUID."
+               },
+               new()
+               {
+                   Name = "Index",
+                   Type = "int",
+                   Description = "The index of the selected file."
+               },
+               new()
+               {
+                   Name = "LastChunkUploadedSize",
+                   Type = "long",
+                   Description = "The size of the last uploaded chunk of the file."
+               },
+               new()
+               {
+                   Name = "TotalUploadedSize",
+                   Type = "long",
+                   Description = "The total uploaded size of the file."
+               },
+               new()
+               {
+                   Name = "Message",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The error message is issued during file validation before uploading the file or at the time of uploading."
+               },
+               new()
+               {
+                   Name = "Status",
+                   Type = "BitFileUploadStatus",
+                   DefaultValue = "Pending",
+                   Description = "The status of the file in the BitFileUpload.",
+                   LinkType = LinkType.Link,
+                   Href = "#uploadstatus-enum"
+               },
+               new()
+               {
+                   Name = "HttpHeaders",
+                   Type = "IReadOnlyDictionary<string, string>?",
+                   DefaultValue = "null",
+                   Description = "The HTTP header at upload file."
+               }
+            }
+        }
+    ];
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()

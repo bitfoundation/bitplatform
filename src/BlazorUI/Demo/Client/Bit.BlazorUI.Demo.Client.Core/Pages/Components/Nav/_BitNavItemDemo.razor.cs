@@ -2,8 +2,8 @@
 
 public partial class _BitNavItemDemo
 {
-    private static readonly List<BitNavItem> BitPlatformNavMenu = new()
-    {
+    private static readonly List<BitNavItem> BitPlatformNavMenu =
+    [
         new()
         {
             Text = "bit platform",
@@ -46,10 +46,10 @@ public partial class _BitNavItemDemo
             }
         },
         new() { Text = "Iconography", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
-    };
+    ];
 
-    private static readonly List<BitNavItem> CarNavMenu = new()
-    {
+    private static readonly List<BitNavItem> CarNavMenu =
+    [
         new()
         {
             Text = "Mercedes-Benz",
@@ -105,10 +105,10 @@ public partial class _BitNavItemDemo
                 new() { Text = "Model Y", Url = "https://www.tesla.com/modely", Target = "_blank" },
             }
         },
-    };
+    ];
 
-    private static readonly List<BitNavItem> FoodNavMenu = new()
-    {
+    private static readonly List<BitNavItem> FoodNavMenu =
+    [
         new()
         {
             Text = "Fast foods",
@@ -156,10 +156,10 @@ public partial class _BitNavItemDemo
         },
         new() { Text = "Ice Cream" },
         new() { Text = "Cookie" },
-    };
+    ];
 
-    private static readonly List<BitNavItem> CustomStyleNavMenu = new()
-    {
+    private static readonly List<BitNavItem> CustomStyleNavMenu =
+    [
         new()
         {
             Text = "bit platform",
@@ -202,10 +202,10 @@ public partial class _BitNavItemDemo
             }
         },
         new() { Text = "Iconography", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
-    };
+    ];
 
-    private static readonly List<BitNavItem> RtlBitPlatformNavMenu = new()
-    {
+    private static readonly List<BitNavItem> RtlBitPlatformNavMenu =
+    [
         new()
         {
             Text = "پلتفرمِ بیت",
@@ -248,7 +248,7 @@ public partial class _BitNavItemDemo
             }
         },
         new() { Text = "شمایل نگاری", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
-    };
+    ];
 
     private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
     private BitNavItem SelectedItemNav = FoodNavMenu[0].ChildItems[2];
@@ -258,8 +258,8 @@ public partial class _BitNavItemDemo
     private BitNavItem SelectedItem = default!;
     private BitNavItem ToggledItem = default!;
 
-    private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems = new()
-    {
+    private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
+    [
         new()
         {
             Text = "Beef Burger",
@@ -330,7 +330,7 @@ public partial class _BitNavItemDemo
             Text = "Cookie",
             Value = "Cookie",
         },
-    };
+    ];
 
 
 

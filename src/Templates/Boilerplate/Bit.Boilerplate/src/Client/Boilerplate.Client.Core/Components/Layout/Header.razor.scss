@@ -6,15 +6,13 @@
 .header {
     top: 0;
     width: 100%;
-    z-index: 100;
     display: flex;
-    position: fixed;
     align-items: center;
     flex-flow: row nowrap;
+    min-height: rem2(48px);
     padding-bottom: rem2(7px);
     padding-inline: rem2(16px);
     justify-content: space-between;
-    min-height: rem2($headerHeight);
     box-shadow: $bit-box-shadow-callout;
     background-color: $bit-color-background-primary;
     padding-top: calc(rem2(7px) + var(--bit-status-bar-height));

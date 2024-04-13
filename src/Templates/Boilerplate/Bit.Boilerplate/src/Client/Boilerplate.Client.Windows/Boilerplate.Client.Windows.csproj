@@ -19,16 +19,19 @@
         <Using Include="Boilerplate.Client.Core.Services" />
         <Watch Remove="*.scss" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.0" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.1" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.1" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2365.46" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.14" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2420.47" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.20" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2420.47" />
         <PackageReference Include="Velopack" Version="0.0.359" />
-
+        <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
+        <!--/-:msbuild-conditional:noEmit -->
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
