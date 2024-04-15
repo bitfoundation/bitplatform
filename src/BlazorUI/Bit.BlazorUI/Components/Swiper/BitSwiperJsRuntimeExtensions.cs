@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-internal static class BitSwiperJsRuntimeExtension
+internal static class BitSwiperJsRuntimeExtensions
 {
     internal static ValueTask<SwiperDimensions> BitSwiperGetDimensions(this IJSRuntime jsRuntime, ElementReference root, ElementReference swiper)
     {
