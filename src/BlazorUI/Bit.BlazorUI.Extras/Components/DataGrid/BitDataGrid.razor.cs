@@ -88,8 +88,8 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter] public BitDataGridPaginationState? Pagination { get; set; }
 
-    [Inject] private IServiceProvider Services { get; set; } = default!;
-    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
+    [Inject] private IServiceProvider _services { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     private ElementReference _tableReference;
     private Virtualize<(int, TGridItem)>? _virtualizeComponent;
@@ -167,7 +167,7 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
         if (dataSourceHasChanged)
         {
             _lastAssignedItemsOrProvider = _newItemsOrItemsProvider;
-            _asyncQueryExecutor = AsyncQueryExecutorSupplier.GetAsyncQueryExecutor(Services, Items);
+            _asyncQueryExecutor = AsyncQueryExecutorSupplier.GetAsyncQueryExecutor(_services, Items);
         }
 
         var mustRefreshData = dataSourceHasChanged
@@ -183,13 +183,13 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     {
         if (firstRender)
         {
-            _jsEventDisposable = await JsRuntime.InvokeAsync<IJSObjectReference>("BitDataGrid.init", _tableReference);
+            _jsEventDisposable = await _js.BitDataGridInit(_tableReference);
         }
 
         if (_checkColumnOptionsPosition && _displayOptionsForColumn is not null)
         {
             _checkColumnOptionsPosition = false;
-            _ = JsRuntime.InvokeVoidAsync("BitDataGrid.checkColumnOptionsPosition", _tableReference);
+            _ = _js.BitDataGridCheckColumnOptionsPosition(_tableReference);
         }
     }
 

@@ -497,7 +497,6 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 </style>
 
 <BitToggle Label=""Is Draggable?"" @bind-Value=""IsDraggable"" />
-
 <BitButton OnClick=""() => IsOpen5 = true"">Open Modal</BitButton>
 <BitModal @bind-IsOpen=""IsOpen5"" IsDraggable=""IsDraggable"">
     <div class=""modal-header"">

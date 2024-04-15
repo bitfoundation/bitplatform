@@ -293,8 +293,8 @@ declare namespace Chart {
         maintainAspectRatio?: boolean;
         events?: string[];
         legendCallback?(chart: Chart): string;
-        onHover?: IMethodHandler | ((this: Chart, event: MouseEvent, activeElements: Array<{}>) => any);
-        onClick?: IMethodHandler | ((event?: MouseEvent, activeElements?: Array<{}>) => any);
+        onHover?: BitBlazorUI.IMethodHandler | ((this: Chart, event: MouseEvent, activeElements: Array<{}>) => any);
+        onClick?: BitBlazorUI.IMethodHandler | ((event?: MouseEvent, activeElements?: Array<{}>) => any);
         onResize?(this: Chart, newSize: ChartSize): void;
         title?: ChartTitleOptions;
         legend?: ChartLegendOptions;
@@ -338,8 +338,8 @@ declare namespace Chart {
         display?: boolean;
         position?: PositionType;
         fullWidth?: boolean;
-        onClick?: IMethodHandler | ((event: MouseEvent, legendItem: ChartLegendLabelItem) => void);
-        onHover?: IMethodHandler | ((event: MouseEvent, legendItem: ChartLegendLabelItem) => void);
+        onClick?: BitBlazorUI.IMethodHandler | ((event: MouseEvent, legendItem: ChartLegendLabelItem) => void);
+        onHover?: BitBlazorUI.IMethodHandler | ((event: MouseEvent, legendItem: ChartLegendLabelItem) => void);
         onLeave?(event: MouseEvent, legendItem: ChartLegendLabelItem): void;
         labels?: ChartLegendLabelOptions;
         reverse?: boolean;
@@ -352,8 +352,8 @@ declare namespace Chart {
         fontColor?: ChartColor;
         fontFamily?: string;
         padding?: number;
-        generateLabels?: IMethodHandler | ((chart: Chart) => ChartLegendLabelItem[]);
-        filter?: IMethodHandler | ((legendItem: ChartLegendLabelItem, data: ChartData) => any);
+        generateLabels?: BitBlazorUI.IMethodHandler | ((chart: Chart) => ChartLegendLabelItem[]);
+        filter?: BitBlazorUI.IMethodHandler | ((legendItem: ChartLegendLabelItem, data: ChartData) => any);
         usePointStyle?: boolean;
     }
 
@@ -595,7 +595,7 @@ declare namespace Chart {
         /**
          * If the callback returns null or undefined the associated grid line will be hidden.
          */
-        callback?: IMethodHandler | ((value: number | string, index: number, values: number[] | string[]) => string | number | null | undefined);
+        callback?: BitBlazorUI.IMethodHandler | ((value: number | string, index: number, values: number[] | string[]) => string | number | null | undefined);
         display?: boolean;
         fontColor?: ChartColor;
         fontFamily?: string;

@@ -1,21 +1,19 @@
-﻿using Bit.BlazorUI;
-
-namespace Microsoft.JSInterop;
+﻿namespace Bit.BlazorUI;
 
 internal static class BitColorPickerJsRuntimeExtension
 {
-    internal static async Task<string> RegisterPointerUp(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, string methodName)
+    internal static async Task<string> BitColorPickerRegisterPointerUp(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, string methodName)
     {
-        return await js.InvokeAsync<string>("BitColorPicker.register", "pointerup", obj, methodName);
+        return await js.InvokeAsync<string>("BitBlazorUI.ColorPicker.registerEvent", "pointerup", obj, methodName);
     }
 
-    internal static async Task<string> RegisterPointerMove(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, string methodName)
+    internal static async Task<string> BitColorPickerRegisterPointerMove(this IJSRuntime js, DotNetObjectReference<BitColorPicker> obj, string methodName)
     {
-        return await js.InvokeAsync<string>("BitColorPicker.register", "pointermove", obj, methodName);
+        return await js.InvokeAsync<string>("BitBlazorUI.ColorPicker.registerEvent", "pointermove", obj, methodName);
     }
 
-    internal static async Task AbortProcedure(this IJSRuntime jSRuntime, string? abortControllerId)
+    internal static async Task BitColorPickerAbort(this IJSRuntime jSRuntime, string? abortControllerId)
     {
-        await jSRuntime.InvokeVoidAsync("BitColorPicker.abort", abortControllerId);
+        await jSRuntime.InvokeVoidAsync("BitBlazorUI.ColorPicker.abort", abortControllerId);
     }
 }

@@ -82,7 +82,7 @@ public partial class BitOverlay
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverlayScroll(ScrollerSelector, IsVisible);
+        _offsetTop = await _js.BitOverlayToggleScroll(ScrollerSelector, IsVisible);
 
         if (AbsolutePosition is false) return;
 

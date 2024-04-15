@@ -2,8 +2,8 @@
 
 internal static class BitOtpInputJsExtensions
 {
-    internal static async Task SetupOtpInput(this IJSRuntime jsRuntime, DotNetObjectReference<BitOtpInput> obj, ElementReference otp)
+    internal static async Task BitOtpInputSetup(this IJSRuntime jsRuntime, DotNetObjectReference<BitOtpInput> obj, ElementReference input)
     {
-        await jsRuntime.InvokeVoidAsync("BitOtpInput.setupOtpInput", obj, otp);
+        await jsRuntime.InvokeVoidAsync("BitBlazorUI.OtpInput.setup", obj, input);
     }
 }

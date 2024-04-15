@@ -356,9 +356,9 @@ public partial class BitFileUploadDemo
 
 
     private string onAllUploadsCompleteText = "No File";
-    private string ChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
-    private string NonChunkedUploadUrl => $"{Configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
-    private string RemoveUrl => $"{Configuration.GetApiServerAddress()}FileUpload/RemoveFile";
+    private string ChunkedUploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
+    private string NonChunkedUploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
+    private string RemoveUrl => $"{_configuration.GetApiServerAddress()}FileUpload/RemoveFile";
     private BitFileUpload bitFileUpload = default!;
     private BitFileUpload bitFileUploadWithBrowseFile = default!;
 
@@ -432,8 +432,8 @@ public partial class BitFileUploadDemo
         await bitFileUploadWithBrowseFile.Browse();
     }
 
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
-    [Inject] public IConfiguration Configuration { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private IConfiguration _configuration { get; set; } = default!;
 
 
     private readonly string example1RazorCode = @"

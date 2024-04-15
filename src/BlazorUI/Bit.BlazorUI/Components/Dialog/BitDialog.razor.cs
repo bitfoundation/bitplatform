@@ -237,16 +237,16 @@ public partial class BitDialog : IDisposable
         {
             if (IsDraggable)
             {
-                _ = _js.SetupDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
             }
             else
             {
-                _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
             }
         }
         else
         {
-            _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+            _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
         }
 
         _offsetTop = 0;
@@ -340,7 +340,7 @@ public partial class BitDialog : IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+        _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
 
         _tcs?.SetResult(Result = null);
         _tcs = null;

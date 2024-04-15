@@ -2,13 +2,13 @@
 
 internal static class BitModalJsExtensions
 {
-    internal static async Task SetupDragDrop(this IJSRuntime js, string id, string dragElementSelector)
+    internal static async Task BitModalSetupDragDrop(this IJSRuntime js, string id, string dragElementSelector)
     {
-        await js.InvokeVoidAsync("BitModal.setupDragDrop", id, dragElementSelector);
+        await js.InvokeVoidAsync("BitBlazorUI.Modal.setupDragDrop", id, dragElementSelector);
     }
 
-    internal static async Task RemoveDragDrop(this IJSRuntime js, string id, string dragElementSelector)
+    internal static async Task BitModalRemoveDragDrop(this IJSRuntime js, string id, string dragElementSelector)
     {
-        await js.InvokeVoidAsync("BitModal.removeDragDrop", id, dragElementSelector);
+        await js.InvokeVoidAsync("BitBlazorUI.Modal.removeDragDrop", id, dragElementSelector);
     }
 }
