@@ -88,14 +88,16 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter] public BitDataGridPaginationState? Pagination { get; set; }
 
-    [Inject] private IServiceProvider _services { get; set; } = default!;
-    [Inject] private IJSRuntime _js { get; set; } = default!;
 
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private IServiceProvider _services { get; set; } = default!;
+
+    private int _ariaBodyRowCount;
     private ElementReference _tableReference;
     private Virtualize<(int, TGridItem)>? _virtualizeComponent;
-    private int _ariaBodyRowCount;
     private ICollection<TGridItem> _currentNonVirtualizedViewItems = Array.Empty<TGridItem>();
-
+    
     // IQueryable only exposes synchronous query APIs. IAsyncQueryExecutor is an adapter that lets us invoke any
     // async query APIs that might be available. We have built-in support for using EF Core's async query APIs.
     private IAsyncQueryExecutor? _asyncQueryExecutor;
