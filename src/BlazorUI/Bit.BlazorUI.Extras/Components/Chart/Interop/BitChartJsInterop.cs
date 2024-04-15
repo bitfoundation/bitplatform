@@ -22,12 +22,12 @@ internal static class BitChartJsInterop
 
     public static ValueTask InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
     {
-        return jsRuntime.InvokeVoidAsync($"BitBlazorUI.BitChart.initChartJs", scripts);
+        return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitChart.initChartJs", scripts);
     }
 
     public static ValueTask RemoveChart(this IJSRuntime jsRuntime, string canvasId)
     {
-        return jsRuntime.InvokeVoidAsync($"BitBlazorUI.BitChart.removeChart", canvasId);
+        return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitChart.removeChart", canvasId);
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ internal static class BitChartJsInterop
     {
         dynamic dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
-        return jsRuntime.InvokeAsync<bool>($"BitBlazorUI.BitChart.setupChart", param);
+        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.setupChart", param);
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ internal static class BitChartJsInterop
     {
         dynamic dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
-        return jsRuntime.InvokeAsync<bool>($"BitBlazorUI.BitChart.updateChart", param);
+        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.updateChart", param);
     }
 
     /// <summary>
