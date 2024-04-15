@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-internal static class BitDataGridJsInterop
+internal static class BitDataGridJsRuntimeExtensions
 {
     public static async ValueTask<IJSObjectReference> BitDataGridInit(this IJSRuntime jsRuntime, ElementReference tableElement)
     {

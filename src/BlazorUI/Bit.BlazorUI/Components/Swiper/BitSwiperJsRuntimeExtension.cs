@@ -2,13 +2,13 @@
 
 internal static class BitSwiperJsRuntimeExtension
 {
-    internal static async Task<SwiperDimensions> BitSwiperGetDimensions(this IJSRuntime jSRuntime, ElementReference root, ElementReference swiper)
+    internal static ValueTask<SwiperDimensions> BitSwiperGetDimensions(this IJSRuntime jsRuntime, ElementReference root, ElementReference swiper)
     {
-        return await jSRuntime.InvokeAsync<SwiperDimensions>("BitBlazorUI.Swiper.getDimensions", root, swiper);
+        return jsRuntime.InvokeAsync<SwiperDimensions>("BitBlazorUI.Swiper.getDimensions", root, swiper);
     }
 
-    internal static async Task BitSwiperRegisterPointerLeave(this IJSRuntime jSRuntime, ElementReference root, DotNetObjectReference<BitSwiper> dotnetObj)
+    internal static ValueTask BitSwiperRegisterPointerLeave(this IJSRuntime jsRuntime, ElementReference root, DotNetObjectReference<BitSwiper> dotnetObj)
     {
-        await jSRuntime.InvokeVoidAsync("BitBlazorUI.Swiper.registerPointerLeave", root, dotnetObj);
+        return jsRuntime.InvokeVoidAsync("BitBlazorUI.Swiper.registerPointerLeave", root, dotnetObj);
     }
 }

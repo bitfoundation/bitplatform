@@ -20,14 +20,14 @@ internal static class BitChartJsInterop
         Converters = { new IsoDateTimeConverter() }
     };
 
-    public static async ValueTask InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
+    public static ValueTask InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
     {
-        await jsRuntime.InvokeVoidAsync($"BitBlazorUI.BitChart.initChartJs", scripts);
+        return jsRuntime.InvokeVoidAsync($"BitBlazorUI.BitChart.initChartJs", scripts);
     }
 
-    public static async ValueTask RemoveChart(this IJSRuntime jsRuntime, string canvasId)
+    public static ValueTask RemoveChart(this IJSRuntime jsRuntime, string canvasId)
     {
-        await jsRuntime.InvokeVoidAsync($"BitBlazorUI.BitChart.removeChart", canvasId);
+        return jsRuntime.InvokeVoidAsync($"BitBlazorUI.BitChart.removeChart", canvasId);
     }
 
     /// <summary>
