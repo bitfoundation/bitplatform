@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Overlay;
 
@@ -90,8 +90,8 @@ public class BitOverlayTests : BunitTestContext
         var element = com.Find(".bit-ovl");
         element.Click();
 
-        //AutoToggleScroll is false by default so it should invoke "BitOverlay.toggleScroll" once and then once again on closing component
-        Context.JSInterop.VerifyInvoke("BitOverlay.toggleScroll", 2);
+        //AutoToggleScroll is false by default so it should invoke "BitBlazorUI.Overlay.toggleScroll" once and then once again on closing component
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Overlay.toggleScroll", 2);
     }
 
 }
