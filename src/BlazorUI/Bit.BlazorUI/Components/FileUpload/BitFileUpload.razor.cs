@@ -336,7 +336,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (IsEnabled is false) return;
 
-        await _js.BrowseFile(_inputRef);
+        await _js.BitFileUploadBrowse(_inputRef);
     }
 
 
@@ -356,7 +356,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (firstRender is false) return;
 
-        _dropZoneRef = await _js.SetupFileUploadDropzone(RootElement, _inputRef);
+        _dropZoneRef = await _js.BitFileUploadSetupDragDrop(RootElement, _inputRef);
     }
 
 
@@ -365,7 +365,7 @@ public partial class BitFileUpload : IDisposable
     {
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        Files = await _js.ResetFileUpload(UniqueId, _dotnetObj, _inputRef, url, UploadRequestHttpHeaders);
+        Files = await _js.BitFileUploadReset(UniqueId, _dotnetObj, _inputRef, url, UploadRequestHttpHeaders);
 
         if (Files is null) return;
 
@@ -435,14 +435,14 @@ public partial class BitFileUpload : IDisposable
             await OnUploading.InvokeAsync(fileInfo);
         }
 
-        await _js.UploadFile(UniqueId, from, to, fileInfo.Index, uploadUrl, fileInfo.HttpHeaders);
+        await _js.BitFileUploadUpload(UniqueId, from, to, fileInfo.Index, uploadUrl, fileInfo.HttpHeaders);
     }
 
     private async Task PauseUploadOneFile(int index)
     {
         if (Files is null) return;
 
-        await _js.PauseFile(UniqueId, index);
+        await _js.BitFileUploadPause(UniqueId, index);
         var file = Files[index];
         await UpdateStatus(BitFileUploadStatus.Paused, file);
         file.PauseUploadRequested = false;
@@ -523,7 +523,7 @@ public partial class BitFileUpload : IDisposable
     {
         if (Files is null) return;
 
-        await _js.PauseFile(UniqueId, index);
+        await _js.BitFileUploadPause(UniqueId, index);
         var file = Files[index];
         await UpdateStatus(BitFileUploadStatus.Canceled, file);
         file.CancelUploadRequested = false;
@@ -702,7 +702,7 @@ public partial class BitFileUpload : IDisposable
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
-            await _js.DisposeFileUpload(UniqueId);
+            await _js.BitFileUploadDispose(UniqueId);
         }
 
         _disposed = true;

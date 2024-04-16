@@ -24,7 +24,7 @@ public partial class BitColorPicker : IDisposable
 
 
 
-    [Inject] public IJSRuntime _js { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -117,8 +117,8 @@ public partial class BitColorPicker : IDisposable
 
         if (firstRender is false) return;
 
-        _pointerUpAbortControllerId = await _js.RegisterPointerUp(_dotnetObj, "HandlePointerUp");
-        _pointerMoveAbortControllerId = await _js.RegisterPointerMove(_dotnetObj, "HandlePointerMove");
+        _pointerUpAbortControllerId = await _js.BitColorPickerRegisterPointerUp(_dotnetObj, "HandlePointerUp");
+        _pointerMoveAbortControllerId = await _js.BitColorPickerRegisterPointerMove(_dotnetObj, "HandlePointerMove");
 
         await SetSaturationPickerThumbPositionAsync();
     }
@@ -252,8 +252,8 @@ public partial class BitColorPicker : IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        _ = _js.AbortProcedure(_pointerUpAbortControllerId);
-        _ = _js.AbortProcedure(_pointerMoveAbortControllerId);
+        _ = _js.BitColorPickerAbort(_pointerUpAbortControllerId);
+        _ = _js.BitColorPickerAbort(_pointerMoveAbortControllerId);
 
         _disposed = true;
     }

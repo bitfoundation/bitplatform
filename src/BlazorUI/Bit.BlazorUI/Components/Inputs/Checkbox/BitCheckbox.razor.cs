@@ -12,7 +12,7 @@ public partial class BitCheckbox : IDisposable
     private string _inputId = string.Empty;
     private ElementReference _checkboxElement;
 
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
     /// Detailed description of the checkbox input for the benefit of screen readers
@@ -92,7 +92,7 @@ public partial class BitCheckbox : IDisposable
         {
             if (value == isIndeterminate) return;
             isIndeterminate = value;
-            _ = JSRuntime.SetProperty(_checkboxElement, "indeterminate", value);
+            _ = _js.SetProperty(_checkboxElement, "indeterminate", value);
             ClassBuilder.Reset();
             _ = IsIndeterminateChanged.InvokeAsync(value);
         }
@@ -175,7 +175,7 @@ public partial class BitCheckbox : IDisposable
     {
         if (firstRender)
         {
-            _ = JSRuntime.SetProperty(_checkboxElement, "indeterminate", IsIndeterminate);
+            _ = _js.SetProperty(_checkboxElement, "indeterminate", IsIndeterminate);
         }
 
         base.OnAfterRender(firstRender);

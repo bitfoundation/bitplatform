@@ -120,9 +120,9 @@ public partial class BitSwiper : IDisposable
             //}
 
             _dotnetObjRef = DotNetObjectReference.Create(this);
-            _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjRef, "OnRootResize");
+            _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
 
-            await _js.RegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
+            await _js.BitSwiperRegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
 
             SetNavigationButtonsVisibility(_translateX);
         }
@@ -247,7 +247,7 @@ public partial class BitSwiper : IDisposable
 
     private async Task GetDimensions()
     {
-        var dimensions = await _js.GetDimensions(RootElement, _swiper);
+        var dimensions = await _js.BitSwiperGetDimensions(RootElement, _swiper);
         _rootWidth = dimensions?.RootWidth ?? 0;
         _swiperWidth = dimensions?.SwiperWidth ?? 0;
         _swiperEffectiveWidth = dimensions?.EffectiveSwiperWidth ?? 0;
@@ -273,7 +273,7 @@ public partial class BitSwiper : IDisposable
 
         if (_dotnetObjRef is not null)
         {
-            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId, _dotnetObjRef);
+            _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
             //_dotnetObjRef.Dispose();
         }
 

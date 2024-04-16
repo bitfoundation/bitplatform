@@ -128,7 +128,7 @@ public partial class BitOtpInput : IDisposable
 
         foreach (var inputRef in _inputRefs)
         {
-            await _js.SetupOtpInput(_dotnetObj, inputRef);
+            await _js.BitOtpInputSetup(_dotnetObj, inputRef);
         }
     }
 

@@ -36,7 +36,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
 
 
-    [Inject] public IJSRuntime _js { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -232,7 +232,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropdownId, _calloutId, _overlayId, _isCalloutOpen);
+        await _js.BitBreadcrumbToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropdownId, _calloutId, _overlayId, _isCalloutOpen);
         _isCalloutOpen = !_isCalloutOpen;
     }
 

@@ -6,7 +6,7 @@ class BitTheme {
     private static currentTheme = 'light';
     private static onThemeChange: onThemeChangeType = () => { };
 
-    static init(options: any) {
+    public static init(options: any) {
         if (options.system) {
             this.currentTheme = this.isSystemDark() ? 'dark' : 'light';
         } else if (options.default) {
@@ -18,22 +18,22 @@ class BitTheme {
         this.set(this.currentTheme);
     }
 
-    static onChange(fn: onThemeChangeType) {
+    public static onChange(fn: onThemeChangeType) {
         this.onThemeChange = fn;
     }
 
-    static useSystem() {
+    public static useSystem() {
         this.currentTheme = this.isSystemDark() ? 'dark' : 'light';
         this.set(this.currentTheme);
     }
 
-    static get() {
+    public static get() {
         this.currentTheme = document.documentElement.getAttribute(this.THEME_ATTRIBUTE) || '';
 
         return this.currentTheme;
     }
 
-    static set(themeName: string) {
+    public static set(themeName: string) {
         this.currentTheme = themeName;
         const oldTheme = document.documentElement.getAttribute(this.THEME_ATTRIBUTE) || '';
 
@@ -42,7 +42,7 @@ class BitTheme {
         this.onThemeChange?.(themeName, oldTheme);
     }
 
-    static toggleDarkLight() {
+    public static toggleDarkLight() {
         this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
 
         this.set(this.currentTheme);
@@ -50,12 +50,12 @@ class BitTheme {
         return this.currentTheme;
     }
 
-    static applyBitTheme(theme: any, element?: HTMLElement) {
+    public static applyBitTheme(theme: any, element?: HTMLElement) {
         const el = element || document.body;
         Object.keys(theme).forEach(key => el.style.setProperty(key, theme[key]));
     }
 
-    static isSystemDark() {
+    public static isSystemDark() {
         return matchMedia('(prefers-color-scheme: dark)').matches;
     }
 }
