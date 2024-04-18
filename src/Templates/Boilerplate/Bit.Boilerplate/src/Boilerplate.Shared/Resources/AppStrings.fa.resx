@@ -577,10 +577,10 @@
   <data name="NotFoundText" xml:space="preserve">
     <value>چیزی پیدا نشد.</value>
   </data>
-  <data name="InvalidGoogleRecaptchaToken" xml:space="preserve">
-    <value>توکن گوگل ریکپچا نامعتبر است.</value>
+  <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <value>پاسخ گوگل ریکپچا نامعتبر است.</value>
   </data>
-  <data name="InvalidGoogleRecaptchaResult" xml:space="preserve">
+  <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
   </data>
 </root>

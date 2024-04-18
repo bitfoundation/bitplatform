@@ -26,15 +26,15 @@ public partial class SignInPage
     {
         if (isLoading) return;
 
-        var googleRecaptchaToken = await JSRuntime.GoogleRecaptchaGetResponse();
-        if (string.IsNullOrWhiteSpace(googleRecaptchaToken))
+        var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
+        if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
             signInMessageType = BitMessageBarType.Error;
-            signInMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResult)];
+            signInMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
             return;
         }
 
-        signInModel.GoogleRecaptchaToken = googleRecaptchaToken;
+        signInModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
 
         isLoading = true;
         signInMessage = null;

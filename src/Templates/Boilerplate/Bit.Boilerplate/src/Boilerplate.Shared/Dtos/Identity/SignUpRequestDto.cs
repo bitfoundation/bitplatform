@@ -22,5 +22,5 @@ public class SignUpRequestDto
     [Display(Name = nameof(AppStrings.TermsAccepted))]
     public bool TermsAccepted { get; set; }
 
-    public string? GoogleRecaptchaToken { get; set; }
+    public string? GoogleRecaptchaResponse { get; set; }
 }

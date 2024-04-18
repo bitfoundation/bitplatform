@@ -576,10 +576,10 @@
   <data name="NotFoundText" xml:space="preserve">
     <value>Il n'y a rien ici.</value>
   </data>
-  <data name="InvalidGoogleRecaptchaToken" xml:space="preserve">
-    <value>Jeton Google reCAPTCHA non valide.</value>
+  <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <value>Réponse Google reCAPTCHA non valide.</value>
   </data>
-  <data name="InvalidGoogleRecaptchaResult" xml:space="preserve">
+  <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>Vous devez réussir le défi Google reCAPTCHA.</value>
   </data>
 </root>

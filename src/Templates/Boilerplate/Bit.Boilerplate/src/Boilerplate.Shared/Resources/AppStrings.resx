@@ -585,10 +585,10 @@ Please confirm your email by clicking on the link.</value>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-    <data name="InvalidGoogleRecaptchaToken" xml:space="preserve">
-    <value>Invalid Google reCAPTCHA token.</value>
+    <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <value>Invalid Google reCAPTCHA response.</value>
   </data>
-    <data name="InvalidGoogleRecaptchaResult" xml:space="preserve">
+    <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>You need to pass the Google reCAPTCHA challenge.</value>
   </data>
     <!--#endif -->

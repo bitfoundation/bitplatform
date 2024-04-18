@@ -19,5 +19,5 @@ public class SignInRequestDto
     [Display(Name = nameof(AppStrings.RememberMe))]
     public bool RememberMe { get; set; } = true;
 
-    public string? GoogleRecaptchaToken { get; set; }
+    public string? GoogleRecaptchaResponse { get; set; }
 }

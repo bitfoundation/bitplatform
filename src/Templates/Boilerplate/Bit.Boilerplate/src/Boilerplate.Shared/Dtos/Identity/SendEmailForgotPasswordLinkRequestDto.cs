@@ -9,5 +9,5 @@ public class SendResetPasswordEmailRequestDto
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
-    public string? GoogleRecaptchaToken { get; set; }
+    public string? GoogleRecaptchaResponse { get; set; }
 }

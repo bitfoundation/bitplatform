@@ -712,18 +712,18 @@ namespace Boilerplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to You need to pass the Google reCAPTCHA challenge..
         /// </summary>
-        public static string InvalidGoogleRecaptchaResult {
+        public static string InvalidGoogleRecaptchaChallenge {
             get {
-                return ResourceManager.GetString("InvalidGoogleRecaptchaResult", resourceCulture);
+                return ResourceManager.GetString("InvalidGoogleRecaptchaChallenge", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Google reCAPTCHA token..
+        ///   Looks up a localized string similar to Invalid Google reCAPTCHA response..
         /// </summary>
-        public static string InvalidGoogleRecaptchaToken {
+        public static string InvalidGoogleRecaptchaResponse {
             get {
-                return ResourceManager.GetString("InvalidGoogleRecaptchaToken", resourceCulture);
+                return ResourceManager.GetString("InvalidGoogleRecaptchaResponse", resourceCulture);
             }
         }
         

@@ -17,15 +17,15 @@ public partial class SignUpPage
     {
         if (isLoading) return;
 
-        var googleRecaptchaToken = await JSRuntime.GoogleRecaptchaGetResponse();
-        if (string.IsNullOrWhiteSpace(googleRecaptchaToken))
+        var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
+        if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
             signUpMessageType = BitMessageBarType.Error;
-            signUpMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResult)];
+            signUpMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
             return;
         }
 
-        signUpModel.GoogleRecaptchaToken = googleRecaptchaToken;
+        signUpModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
 
         isLoading = true;
         signUpMessage = null;

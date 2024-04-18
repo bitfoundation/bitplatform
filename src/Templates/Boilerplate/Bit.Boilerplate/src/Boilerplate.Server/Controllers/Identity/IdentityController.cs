@@ -41,8 +41,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
-        if (await VerifyGoogleRecaptcha(signUpRequest.GoogleRecaptchaToken) is false)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
+        if (await VerifyGoogleRecaptcha(signUpRequest.GoogleRecaptchaResponse) is false)
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaResponse)));
 
         var existingUser = await userManager.FindByNameAsync(signUpRequest.Email!);
 
@@ -153,8 +153,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost, ProducesResponseType<TokenResponseDto>(statusCode: 200)]
     public async Task SignIn(SignInRequestDto signInRequest)
     {
-        if (await VerifyGoogleRecaptcha(signInRequest.GoogleRecaptchaToken) is false)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
+        if (await VerifyGoogleRecaptcha(signInRequest.GoogleRecaptchaResponse) is false)
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaResponse)));
 
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
@@ -202,8 +202,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest, CancellationToken cancellationToken)
     {
-        if (await VerifyGoogleRecaptcha(sendResetPasswordEmailRequest.GoogleRecaptchaToken) is false)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
+        if (await VerifyGoogleRecaptcha(sendResetPasswordEmailRequest.GoogleRecaptchaResponse) is false)
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaResponse)));
 
         var user = await userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email!)
                     ?? throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), sendResetPasswordEmailRequest.Email!));
@@ -262,13 +262,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
 
 
-    private async ValueTask<bool> VerifyGoogleRecaptcha(string? googleRecaptchaToken)
+    private async ValueTask<bool> VerifyGoogleRecaptcha(string? googleRecaptchaResponse)
     {
-        if (string.IsNullOrWhiteSpace(googleRecaptchaToken)) return false;
+        if (string.IsNullOrWhiteSpace(googleRecaptchaResponse)) return false;
 
         try
         {
-            var url = $"https://www.google.com/recaptcha/api/siteverify?secret={AppSettings.GoogleRecaptchaSecretKey}&response={googleRecaptchaToken}";
+            var url = $"https://www.google.com/recaptcha/api/siteverify?secret={AppSettings.GoogleRecaptchaSecretKey}&response={googleRecaptchaResponse}";
             var response = await httpClient.PostAsync(url, null);
 
             response.EnsureSuccessStatusCode();
