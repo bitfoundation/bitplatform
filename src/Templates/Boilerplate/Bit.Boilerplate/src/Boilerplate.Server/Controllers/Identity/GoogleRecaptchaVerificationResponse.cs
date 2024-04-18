@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Controllers.Identity;
 
-public class GoogleRecaptchaResponse
+public class GoogleRecaptchaVerificationResponse
 {
     public bool Success { get; set; }
     public string? Challenge_ts { get; set; }

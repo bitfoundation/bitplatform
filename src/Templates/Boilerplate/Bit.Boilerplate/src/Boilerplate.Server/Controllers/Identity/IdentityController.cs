@@ -274,7 +274,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             response.EnsureSuccessStatusCode();
 
             var jsonString = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<GoogleRecaptchaResponse>(jsonString);
+            var result = JsonConvert.DeserializeObject<GoogleRecaptchaVerificationResponse>(jsonString);
 
             return result?.Success ?? false;
         }
