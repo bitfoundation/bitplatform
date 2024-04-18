@@ -41,7 +41,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
-        if (await VerifyGoogleRecaptcha(signUpRequest.GoogleRecaptchaToken))
+        if (await VerifyGoogleRecaptcha(signUpRequest.GoogleRecaptchaToken) is false)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
 
         var existingUser = await userManager.FindByNameAsync(signUpRequest.Email!);
@@ -153,7 +153,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost, ProducesResponseType<TokenResponseDto>(statusCode: 200)]
     public async Task SignIn(SignInRequestDto signInRequest)
     {
-        if (await VerifyGoogleRecaptcha(signInRequest.GoogleRecaptchaToken))
+        if (await VerifyGoogleRecaptcha(signInRequest.GoogleRecaptchaToken) is false)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
 
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
@@ -202,7 +202,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest, CancellationToken cancellationToken)
     {
-        if (await VerifyGoogleRecaptcha(sendResetPasswordEmailRequest.GoogleRecaptchaToken))
+        if (await VerifyGoogleRecaptcha(sendResetPasswordEmailRequest.GoogleRecaptchaToken) is false)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
 
         var user = await userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email!)
@@ -266,15 +266,21 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         if (string.IsNullOrWhiteSpace(googleRecaptchaToken)) return false;
 
-        var obj = new { secret = AppSettings.GoogleRecaptchaSecretKey, response = googleRecaptchaToken };
-        var requestContent = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
-        var response = await httpClient.PostAsJsonAsync("https://www.google.com/recaptcha/api/siteverify", requestContent);
+        try
+        {
+            var url = $"https://www.google.com/recaptcha/api/siteverify?secret={AppSettings.GoogleRecaptchaSecretKey}&response={googleRecaptchaToken}";
+            var response = await httpClient.PostAsync(url, null);
 
-        response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode();
 
-        var jsonString = await response.Content.ReadAsStringAsync();
-        var result = JsonConvert.DeserializeObject<GoogleRecaptchaResponse>(jsonString);
+            var jsonString = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<GoogleRecaptchaResponse>(jsonString);
 
-        return result?.Success ?? false;
+            return result?.Success ?? false;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
