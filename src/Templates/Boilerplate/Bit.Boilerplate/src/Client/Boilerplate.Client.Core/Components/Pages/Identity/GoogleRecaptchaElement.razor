@@ -1,0 +1,3 @@
+@inject IConfiguration Configuration
+
+<div id="grecaptcha_element" data-sitekey="@(Configuration.GetValue<string>("GoogleRecaptchaSiteKey"))"></div>

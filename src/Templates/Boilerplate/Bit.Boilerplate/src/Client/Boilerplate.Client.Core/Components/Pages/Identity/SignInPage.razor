@@ -3,6 +3,8 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.SignInTitle)]</PageTitle>
 
+<GoogleRecaptchaScripts />
+
 <div class="page-container">
     <EditForm OnValidSubmit="WrapHandled(DoSignIn)" class="form" Model="signInModel">
         <AppDataAnnotationsValidator />
@@ -38,6 +40,10 @@
 
         <div class="form-input-container form-input-container--no-margin">
             <BitCheckbox Class="form-checkbox" @bind-Value="signInModel.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
+        </div>
+
+        <div class="form-input-container">
+            <GoogleRecaptchaElement />
         </div>
 
         <BitButton IsLoading="isLoading"

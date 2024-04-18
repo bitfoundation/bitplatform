@@ -9,6 +9,8 @@ public class AppSettings
     public HealthCheckSettings HealthCheckSettings { get; set; } = default!;
 
     public string UserProfileImagesDir { get; set; } = default!;
+
+    public string GoogleRecaptchaSecretKey { get; set; } = default!;
 }
 
 public class HealthCheckSettings

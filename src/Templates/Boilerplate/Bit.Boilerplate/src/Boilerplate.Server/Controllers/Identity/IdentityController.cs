@@ -1,15 +1,16 @@
 ﻿//-:cnd:noEmit
-using System.Web;
-using Boilerplate.Client.Core.Controllers.Identity;
-using Boilerplate.Server.Components;
-using Boilerplate.Server.Models.Emailing;
-using Boilerplate.Server.Models.Identity;
-using Boilerplate.Server.Resources;
-using Boilerplate.Shared.Dtos.Identity;
-using FluentEmail.Core;
-using Microsoft.AspNetCore.Authentication.BearerToken;
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Server.Resources;
+using Boilerplate.Server.Components;
+using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Server.Models.Emailing;
+using Boilerplate.Server.Models.Identity;
+using Newtonsoft.Json;
+using FluentEmail.Core;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
@@ -31,6 +32,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
+    [AutoInject] private HttpClient httpClient = default!;
+
     /// <summary>
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
     /// These comments will also be used in swagger docs and ui.
@@ -38,6 +41,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
+        if (await VerifyGoogleRecaptcha(signUpRequest.GoogleRecaptchaToken))
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
+
         var existingUser = await userManager.FindByNameAsync(signUpRequest.Email!);
 
         var userToAdd = signUpRequest.Map();
@@ -113,10 +119,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         });
 
         var result = await fluentEmail
-            .To(user.Email, user.DisplayName)
-            .Subject(emailLocalizer[EmailStrings.ConfirmationEmailSubject])
-            .Body(body, isHtml: true)
-            .SendAsync(cancellationToken);
+                           .To(user.Email, user.DisplayName)
+                           .Subject(emailLocalizer[EmailStrings.ConfirmationEmailSubject])
+                           .Body(body, isHtml: true)
+                           .SendAsync(cancellationToken);
 
         user.ConfirmationEmailRequestedOn = DateTimeOffset.Now;
 
@@ -147,6 +153,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost, ProducesResponseType<TokenResponseDto>(statusCode: 200)]
     public async Task SignIn(SignInRequestDto signInRequest)
     {
+        if (await VerifyGoogleRecaptcha(signInRequest.GoogleRecaptchaToken))
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
+
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
         var result = await signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
@@ -191,13 +200,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest
-          , CancellationToken cancellationToken)
+    public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email!);
+        if (await VerifyGoogleRecaptcha(sendResetPasswordEmailRequest.GoogleRecaptchaToken))
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaToken)));
 
-        if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), sendResetPasswordEmailRequest.Email!));
+        var user = await userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email!)
+                    ?? throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), sendResetPasswordEmailRequest.Email!));
 
         var resendDelay = (DateTimeOffset.Now - user.ResetPasswordEmailRequestedOn) - AppSettings.IdentitySettings.ResetPasswordEmailResendDelay;
 
@@ -226,10 +235,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         });
 
         var result = await fluentEmail
-            .To(user.Email, user.DisplayName)
-            .Subject(emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
-            .Body(body, isHtml: true)
-            .SendAsync(cancellationToken);
+                           .To(user.Email, user.DisplayName)
+                           .Subject(emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
+                           .Body(body, isHtml: true)
+                           .SendAsync(cancellationToken);
 
         user.ResetPasswordEmailRequestedOn = DateTimeOffset.Now;
 
@@ -242,14 +251,30 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(resetPasswordRequest.Email!);
-
-        if (user is null)
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), resetPasswordRequest.Email!));
+        var user = await userManager.FindByEmailAsync(resetPasswordRequest.Email!) 
+                    ?? throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), resetPasswordRequest.Email!));
 
         var result = await userManager.ResetPasswordAsync(user, resetPasswordRequest.Token!, resetPasswordRequest.Password!);
 
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+    }
+
+
+
+    private async ValueTask<bool> VerifyGoogleRecaptcha(string? googleRecaptchaToken)
+    {
+        if (string.IsNullOrWhiteSpace(googleRecaptchaToken)) return false;
+
+        var obj = new { secret = AppSettings.GoogleRecaptchaSecretKey, response = googleRecaptchaToken };
+        var requestContent = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
+        var response = await httpClient.PostAsJsonAsync("https://www.google.com/recaptcha/api/siteverify", requestContent);
+
+        response.EnsureSuccessStatusCode();
+
+        var jsonString = await response.Content.ReadAsStringAsync();
+        var result = JsonConvert.DeserializeObject<GoogleRecaptchaResponse>(jsonString);
+
+        return result?.Success ?? false;
     }
 }

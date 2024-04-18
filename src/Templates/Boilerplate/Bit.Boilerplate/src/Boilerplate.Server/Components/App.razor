@@ -40,6 +40,8 @@
         <LoadingComponent />
     }
 
+    <SectionOutlet SectionName="scripts" @rendermode=renderMode />
+
     <Routes @rendermode=renderMode />
 
     @if (HttpContext.Request.IsCrawlerClient() is false)

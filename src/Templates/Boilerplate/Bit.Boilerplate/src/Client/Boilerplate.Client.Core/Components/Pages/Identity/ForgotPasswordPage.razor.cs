@@ -16,6 +16,16 @@ public partial class ForgotPasswordPage
     {
         if (isLoading) return;
 
+        var googleRecaptchaToken = await JSRuntime.GoogleRecaptchaGetResponse();
+        if (string.IsNullOrWhiteSpace(googleRecaptchaToken))
+        {
+            forgotPasswordMessageType = BitMessageBarType.Error;
+            forgotPasswordMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResult)];
+            return;
+        }
+
+        forgotPasswordModel.GoogleRecaptchaToken = googleRecaptchaToken;
+
         isLoading = true;
         forgotPasswordMessage = null;
 

@@ -3,6 +3,8 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.SingUpTitle)]</PageTitle>
 
+<GoogleRecaptchaScripts />
+
 <div class="page-container">
     <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" class="form">
         <AppDataAnnotationsValidator />
@@ -79,6 +81,10 @@
                     </LabelTemplate>
                 </BitCheckbox>
                 <ValidationMessage For="@(() => signUpModel.TermsAccepted)" />
+            </div>
+
+            <div class="form-input-container">
+                <GoogleRecaptchaElement />
             </div>
 
             <BitButton IsLoading="isLoading"

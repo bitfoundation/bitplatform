@@ -277,14 +277,14 @@
     <value>Home</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
-      <value>User is locked out. Try again in {0}</value>
-    </data>
+    <value>User is locked out. Try again in {0}</value>
+  </data>
     <data name="UserNameNotFound" xml:space="preserve">
-      <value>User {0} does not exist.</value>
-    </data>
+    <value>User {0} does not exist.</value>
+  </data>
     <data name="DuplicateEmail" xml:space="preserve">
-      <value>Email '{0}' is already taken.</value>
-    </data>
+    <value>Email '{0}' is already taken.</value>
+  </data>
     <data name="Add" xml:space="preserve">
     <value>Add</value>
   </data>
@@ -544,32 +544,32 @@ Please confirm your email by clicking on the link.</value>
     <value>This chart shows the percentage of products in each category.</value>
   </data>
     <data name="Categories" xml:space="preserve">
-  <value>Categories</value>
-</data>
+    <value>Categories</value>
+  </data>
     <data name="ProductCategory" xml:space="preserve">
-  <value>Product category</value>
-</data>
+    <value>Product category</value>
+  </data>
     <data name="Products" xml:space="preserve">
-  <value>Products</value>
-</data>
+    <value>Products</value>
+  </data>
     <data name="ProductCouldNotBeFound" xml:space="preserve">
-  <value>Product entity could not be found</value>
-</data>
+    <value>Product entity could not be found</value>
+  </data>
     <data name="CategoryNotEmpty" xml:space="preserve">
-  <value>This category contain some products, so you can't delete it</value>
-</data>
+    <value>This category contain some products, so you can't delete it</value>
+  </data>
     <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
-  <value>Are you sure you want to delete category {0}</value>
-</data>
+    <value>Are you sure you want to delete category {0}</value>
+  </data>
     <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-  <value>Are you sure you want to delete product {0}</value>
-</data>
+    <value>Are you sure you want to delete product {0}</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
-  <value>Delete category</value>
-</data>
+    <value>Delete category</value>
+  </data>
     <data name="DeleteProduct" xml:space="preserve">
-  <value>Delete product</value>
-</data>
+    <value>Delete product</value>
+  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>Category entity could not be found</value>
   </data>
@@ -584,6 +584,12 @@ Please confirm your email by clicking on the link.</value>
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
+  </data>
+    <data name="InvalidGoogleRecaptchaToken" xml:space="preserve">
+    <value>Invalid Google reCAPTCHA token.</value>
+  </data>
+    <data name="InvalidGoogleRecaptchaResult" xml:space="preserve">
+    <value>You need to pass the Google reCAPTCHA challenge.</value>
   </data>
     <!--#endif -->
 </root>
