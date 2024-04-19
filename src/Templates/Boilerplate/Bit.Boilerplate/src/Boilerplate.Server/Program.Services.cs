@@ -143,6 +143,13 @@ public static partial class Program
         //#endif
 
         AddBlazor(builder);
+
+        services.TryAddTransient(sp => ServerJsonContext.Default.Options);
+
+        services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
+        });
     }
 
     private static void AddBlazor(WebApplicationBuilder builder)

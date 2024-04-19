@@ -583,4 +583,7 @@
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
   </data>
+  <data name="ResetRecaptcha" xml:space="preserve">
+    <value>بازنشانی ریکپجا</value>
+  </data>
 </root>
