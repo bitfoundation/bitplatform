@@ -11,4 +11,9 @@ public static class IJSRuntimeExtensions
     {
         return jsRuntime.InvokeAsync<string>("grecaptcha.getResponse");
     }
+
+    public static ValueTask<string> GoogleRecaptchaReset(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeAsync<string>("grecaptcha.reset");
+    }
 }

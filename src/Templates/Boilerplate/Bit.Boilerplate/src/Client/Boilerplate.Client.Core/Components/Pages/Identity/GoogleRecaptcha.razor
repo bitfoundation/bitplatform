@@ -7,7 +7,7 @@
 
 <div id="grecaptcha_element" data-sitekey="@(Configuration.GetValue<string>("GoogleRecaptchaSiteKey"))"></div>
 
-<BitIconButton OnClick="@(() => _ = JSRuntime.InvokeVoidAsync("grecaptcha.reset"))"
+<BitIconButton OnClick="@(() => _ = JSRuntime.GoogleRecaptchaReset())"
                ButtonType="BitButtonType.Button"
                IconName="@BitIconName.Reset"
                Title="@Localizer[nameof(AppStrings.ResetRecaptcha)]" />

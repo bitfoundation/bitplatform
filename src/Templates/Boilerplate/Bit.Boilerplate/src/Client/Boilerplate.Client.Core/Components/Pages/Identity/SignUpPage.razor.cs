@@ -74,6 +74,8 @@ public partial class SignUpPage
         finally
         {
             isLoading = false;
+
+            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }

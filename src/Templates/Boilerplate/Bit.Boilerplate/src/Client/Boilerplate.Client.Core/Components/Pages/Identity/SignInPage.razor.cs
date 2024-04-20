@@ -54,6 +54,8 @@ public partial class SignInPage
         finally
         {
             isLoading = false;
+
+            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }

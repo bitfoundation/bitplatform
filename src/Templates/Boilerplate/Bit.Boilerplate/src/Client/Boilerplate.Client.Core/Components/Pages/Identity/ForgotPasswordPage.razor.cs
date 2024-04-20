@@ -46,6 +46,8 @@ public partial class ForgotPasswordPage
         finally
         {
             isLoading = false;
+
+            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }
