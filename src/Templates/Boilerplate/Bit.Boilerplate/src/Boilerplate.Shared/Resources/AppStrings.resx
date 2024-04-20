@@ -591,8 +591,5 @@ Please confirm your email by clicking on the link.</value>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>You need to pass the Google reCAPTCHA challenge.</value>
   </data>
-    <data name="ResetRecaptcha" xml:space="preserve">
-    <value>Reset reCAPTCHA</value>
-  </data>
     <!--#endif -->
 </root>

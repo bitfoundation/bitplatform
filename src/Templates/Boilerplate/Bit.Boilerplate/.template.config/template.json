@@ -51,6 +51,12 @@
                 "format": "yyyy-MM-dd"
             }
         },
+        "api": {
+            "displayName": "Add API to Server project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true"
+        },
         "database": {
             "displayName": "Backend database",
             "type": "parameter",
@@ -122,12 +128,6 @@
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false"
-        },
-        "api": {
-            "displayName": "Add API to Server project?",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "true"
         },
         "appInsights": {
             "displayName": "Add Azure application insights to project?",
@@ -277,6 +277,9 @@
                         "src/Boilerplate.Server/Services/AppSecureJwtDataFormat.cs",
                         "src/Boilerplate.Server/wwwroot/swagger/**",
                         "src/Boilerplate.Server/AppSettings.cs",
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaVerificationResponse.cs",
+                        "src/Boilerplate.Server/Services/ServerJsonContext.cs",
                         "src/Boilerplate.Server/IdentityCertificate.pfx"
                     ]
                 },

@@ -51,11 +51,14 @@ public partial class SignInPage
 
             signInMessage = e.Message;
         }
+        catch
+        {
+            await JSRuntime.GoogleRecaptchaReset();
+            throw;
+        }
         finally
         {
             isLoading = false;
-
-            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }

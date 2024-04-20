@@ -17,6 +17,6 @@ public partial class GoogleRecaptchaHttpClient
 
         var result = await response.Content.ReadFromJsonAsync(ServerJsonContext.Default.GoogleRecaptchaVerificationResponse);
 
-        return result?.Success ?? false;
+        return result?.Success is true;
     }
 }

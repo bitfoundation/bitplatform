@@ -1079,15 +1079,6 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reset reCAPTCHA.
-        /// </summary>
-        public static string ResetRecaptcha {
-            get {
-                return ResourceManager.GetString("ResetRecaptcha", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Resource not found.
         /// </summary>
         public static string ResourceNotFoundException {

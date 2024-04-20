@@ -71,11 +71,14 @@ public partial class SignUpPage
             signUpMessage = e.Message;
             signUpMessageType = BitMessageBarType.Error;
         }
+        catch
+        {
+            await JSRuntime.GoogleRecaptchaReset();
+            throw;
+        }
         finally
         {
             isLoading = false;
-
-            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }

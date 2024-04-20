@@ -43,11 +43,14 @@ public partial class ForgotPasswordPage
 
             forgotPasswordMessage = e.Message;
         }
+        catch
+        {
+            await JSRuntime.GoogleRecaptchaReset();
+            throw;
+        }
         finally
         {
             isLoading = false;
-
-            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }
