@@ -2,8 +2,18 @@
 
 public static class IJSRuntimeExtensions
 {
-    public static async Task ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
+    public static ValueTask ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
     {
-        await jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
+        return jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
+    }
+
+    public static ValueTask<string> GoogleRecaptchaGetResponse(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeAsync<string>("grecaptcha.getResponse");
+    }
+
+    public static ValueTask<string> GoogleRecaptchaReset(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeAsync<string>("grecaptcha.reset");
     }
 }

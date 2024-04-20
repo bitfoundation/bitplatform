@@ -81,6 +81,10 @@
                 <ValidationMessage For="@(() => signUpModel.TermsAccepted)" />
             </div>
 
+            <div class="form-input-container">
+                <GoogleRecaptcha />
+            </div>
+
             <BitButton IsLoading="isLoading"
                        Class="form-submit-button"
                        ButtonStyle="BitButtonStyle.Primary"

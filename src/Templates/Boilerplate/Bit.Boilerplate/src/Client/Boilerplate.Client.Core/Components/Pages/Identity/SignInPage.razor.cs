@@ -26,6 +26,16 @@ public partial class SignInPage
     {
         if (isLoading) return;
 
+        var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
+        if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
+        {
+            signInMessageType = BitMessageBarType.Error;
+            signInMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+            return;
+        }
+
+        signInModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
+
         isLoading = true;
         signInMessage = null;
 
@@ -44,6 +54,8 @@ public partial class SignInPage
         finally
         {
             isLoading = false;
+
+            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }

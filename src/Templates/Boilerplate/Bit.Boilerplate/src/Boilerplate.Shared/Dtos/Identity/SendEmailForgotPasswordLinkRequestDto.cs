@@ -8,4 +8,6 @@ public class SendResetPasswordEmailRequestDto
     [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
+
+    public string? GoogleRecaptchaResponse { get; set; }
 }

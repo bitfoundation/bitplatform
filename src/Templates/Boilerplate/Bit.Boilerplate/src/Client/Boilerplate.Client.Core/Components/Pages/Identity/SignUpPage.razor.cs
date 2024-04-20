@@ -1,11 +1,11 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignUpPage
 {
-    [AutoInject] IIdentityController identityController = default!;
+    [AutoInject] private IIdentityController identityController = default!;
 
     private bool isLoading;
     private bool isSignedUp;
@@ -16,6 +16,16 @@ public partial class SignUpPage
     private async Task DoSignUp()
     {
         if (isLoading) return;
+
+        var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
+        if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
+        {
+            signUpMessageType = BitMessageBarType.Error;
+            signUpMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+            return;
+        }
+
+        signUpModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
 
         isLoading = true;
         signUpMessage = null;
@@ -64,6 +74,8 @@ public partial class SignUpPage
         finally
         {
             isLoading = false;
+
+            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }

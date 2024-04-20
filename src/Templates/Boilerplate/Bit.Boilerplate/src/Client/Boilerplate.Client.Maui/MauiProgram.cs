@@ -1,9 +1,14 @@
 ﻿//-:cnd:noEmit
-using Boilerplate.Client.Core;
-using Maui.Android.InAppUpdates;
+using Microsoft.Maui.LifecycleEvents;
 using Maui.AppStores;
 using Maui.InAppReviews;
-using Microsoft.Maui.LifecycleEvents;
+using Maui.Android.InAppUpdates;
+using Boilerplate.Client.Core;
+#if IOS || MACCATALYST
+using UIKit;
+using WebKit;
+using Foundation;
+#endif
 
 namespace Boilerplate.Client.Maui;
 
@@ -29,9 +34,9 @@ public static partial class MauiProgram
 #if iOS || Mac
             lifecycle.AddiOS(ios =>
             {
-                bool HandleAppLink(Foundation.NSUserActivity? userActivity)
+                bool HandleAppLink(NSUserActivity? userActivity)
                 {
-                    if (userActivity is not null && userActivity.ActivityType == Foundation.NSUserActivityType.BrowsingWeb && userActivity.WebPageUrl is not null)
+                    if (userActivity is not null && userActivity.ActivityType == NSUserActivityType.BrowsingWeb && userActivity.WebPageUrl is not null)
                     {
                         var url = $"{userActivity.WebPageUrl.Path}?{userActivity.WebPageUrl.Query}";
 
@@ -53,7 +58,7 @@ public static partial class MauiProgram
                 {
                     ios.SceneWillConnect((scene, sceneSession, sceneConnectionOptions)
                         => HandleAppLink(sceneConnectionOptions.UserActivities.ToArray()
-                            .FirstOrDefault(a => a.ActivityType == Foundation.NSUserActivityType.BrowsingWeb)));
+                            .FirstOrDefault(a => a.ActivityType == NSUserActivityType.BrowsingWeb)));
 
                     ios.SceneContinueUserActivity((scene, userActivity)
                         => HandleAppLink(userActivity));
@@ -96,9 +101,10 @@ public static partial class MauiProgram
             }
 
 #elif IOS || MACCATALYST
+            webView.NavigationDelegate = new CustomWKNavigationDelegate();
             webView.Configuration.AllowsInlineMediaPlayback = true;
 
-            webView.BackgroundColor = UIKit.UIColor.Clear;
+            webView.BackgroundColor = UIColor.Clear;
             webView.ScrollView.Bounces = false;
             webView.Opaque = false;
 
@@ -107,7 +113,7 @@ public static partial class MauiProgram
                 if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
                     || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
                 {
-                    webView.SetValueForKey(Foundation.NSObject.FromObject(true), new Foundation.NSString("inspectable"));
+                    webView.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
                 }
             }
 #elif ANDROID
@@ -136,4 +142,14 @@ public static partial class MauiProgram
 #endif
         });
     }
+
+#if IOS || MACCATALYST
+    public class CustomWKNavigationDelegate : WKNavigationDelegate
+    {
+        public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, WKWebpagePreferences preferences, Action<WKNavigationActionPolicy, WKWebpagePreferences> decisionHandler)
+        {
+            decisionHandler?.Invoke(WKNavigationActionPolicy.Allow, preferences);
+        }
+    }
+#endif
 }

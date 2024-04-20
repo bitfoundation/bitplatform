@@ -21,4 +21,6 @@ public class SignUpRequestDto
     [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
     [Display(Name = nameof(AppStrings.TermsAccepted))]
     public bool TermsAccepted { get; set; }
+
+    public string? GoogleRecaptchaResponse { get; set; }
 }

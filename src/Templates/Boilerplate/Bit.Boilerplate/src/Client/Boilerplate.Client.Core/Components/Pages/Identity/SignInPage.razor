@@ -40,6 +40,10 @@
             <BitCheckbox Class="form-checkbox" @bind-Value="signInModel.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
         </div>
 
+        <div class="form-input-container">
+            <GoogleRecaptcha />
+        </div>
+
         <BitButton IsLoading="isLoading"
                    Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"

@@ -710,6 +710,24 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You need to pass the Google reCAPTCHA challenge..
+        /// </summary>
+        public static string InvalidGoogleRecaptchaChallenge {
+            get {
+                return ResourceManager.GetString("InvalidGoogleRecaptchaChallenge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Google reCAPTCHA response..
+        /// </summary>
+        public static string InvalidGoogleRecaptchaResponse {
+            get {
+                return ResourceManager.GetString("InvalidGoogleRecaptchaResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid username or password.
         /// </summary>
         public static string InvalidUsernameOrPassword {
@@ -1057,6 +1075,15 @@ namespace Boilerplate.Shared.Resources {
         public static string ResetPasswordTitle {
             get {
                 return ResourceManager.GetString("ResetPasswordTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reset reCAPTCHA.
+        /// </summary>
+        public static string ResetRecaptcha {
+            get {
+                return ResourceManager.GetString("ResetRecaptcha", resourceCulture);
             }
         }
         
