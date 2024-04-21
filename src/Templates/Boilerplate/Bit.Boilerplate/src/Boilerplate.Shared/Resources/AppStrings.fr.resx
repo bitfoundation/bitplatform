@@ -582,7 +582,4 @@
   <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>Vous devez réussir le défi Google reCAPTCHA.</value>
   </data>
-  <data name="ResetRecaptcha" xml:space="preserve">
-    <value>Réinitialiser reCAPTCHA</value>
-  </data>
 </root>

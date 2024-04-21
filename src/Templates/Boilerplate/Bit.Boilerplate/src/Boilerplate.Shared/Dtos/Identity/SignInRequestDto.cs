@@ -1,4 +1,4 @@
-﻿
+﻿//+:cnd:noEmit
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
@@ -18,6 +18,4 @@ public class SignInRequestDto
     [JsonIgnore]
     [Display(Name = nameof(AppStrings.RememberMe))]
     public bool RememberMe { get; set; } = true;
-
-    public string? GoogleRecaptchaResponse { get; set; }
 }

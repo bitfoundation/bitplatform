@@ -1,4 +1,5 @@
-﻿namespace Microsoft.JSInterop;
+﻿//+:cnd:noEmit
+namespace Microsoft.JSInterop;
 
 public static class IJSRuntimeExtensions
 {
@@ -7,6 +8,7 @@ public static class IJSRuntimeExtensions
         return jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
     }
 
+    //#if (captcha == "reCaptcha")
     public static ValueTask<string> GoogleRecaptchaGetResponse(this IJSRuntime jsRuntime)
     {
         return jsRuntime.InvokeAsync<string>("grecaptcha.getResponse");
@@ -16,4 +18,5 @@ public static class IJSRuntimeExtensions
     {
         return jsRuntime.InvokeAsync<string>("grecaptcha.reset");
     }
+    //#endif
 }

@@ -26,12 +26,13 @@ dotnet new bit-bp</pre>
             <b>Note</b>: bit project templates accept the following parameters:
             <ul>
                 <li>--name (default is current folder name)</li>
+                <li>--api defaults to true: '--api true' adds support for aspnetcore identity, webapi, odata, ef core and fluent email.</li>
                 <li>--database default to <i>SqlServer</i> among following options: <i>SqlServer</i> <i>Sqlite</i>, <i>Other</i></li>
-                <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>Other</i></li>
+                <li>--captcha default to <i>reCaptcha</i> among following options: <i>reCaptcha</i> <i>None</i></li>
+                <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>None</i></li>
                 <li>--sample default to <i>None</i> among the following options: <i>Admin</i>, <i>Todo</i>, <i>None</i></li>
                 <li>--offlineDb defaults to false: '--offlineDb true' adds sqlite database support to the client mobile, web and desktop apps</li>
                 <li>--windows default to false: '--windows true' adds support for exe output for windows 7+</li>
-                <li>--api defaults to true: '--api true' adds support for aspnetcore identity, webapi, odata, ef core and fluent email.</li>
                 <li>--appInsights defaults to false: '--appInsights true' adds support for Azure application insights in all clients (Android, iOS, Windows, macOS, Web)</li>
             </ul>
         </div>

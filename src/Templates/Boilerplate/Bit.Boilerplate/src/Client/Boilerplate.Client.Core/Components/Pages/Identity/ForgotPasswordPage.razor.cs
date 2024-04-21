@@ -1,4 +1,5 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
+﻿//+:cnd:noEmit
+using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
@@ -15,16 +16,6 @@ public partial class ForgotPasswordPage
     private async Task DoSubmit()
     {
         if (isLoading) return;
-
-        var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
-        if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
-        {
-            forgotPasswordMessageType = BitMessageBarType.Error;
-            forgotPasswordMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
-            return;
-        }
-
-        forgotPasswordModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
 
         isLoading = true;
         forgotPasswordMessage = null;
@@ -46,8 +37,6 @@ public partial class ForgotPasswordPage
         finally
         {
             isLoading = false;
-
-            await JSRuntime.GoogleRecaptchaReset();
         }
     }
 }
