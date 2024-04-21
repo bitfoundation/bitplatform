@@ -281,7 +281,7 @@
     top: spacing(-2.375);
     height: spacing(3.5);
     left: spacing(-1.625);
-    background-color: inherit;
+    background-color: unset;
 
     &.bit-ctp-thm-min {
         left: spacing(-0.5);
@@ -292,12 +292,6 @@
         color: $color-primary-main;
         border: spacing(0.25) $shape-border-style;
     }
-}
-
-.bit-ctp-dil {
-    width: 100%;
-    height: 100%;
-    position: absolute;
 }
 
 .bit-ctp-num {
@@ -314,83 +308,18 @@
     bottom: calc(100% - spacing(4));
     color: $color-foreground-primary;
     left: calc((100% - spacing(4))/2);
-    background-color: transparent !important;
 
     &.bit-ctp-sel {
         color: $color-foreground-primary;
+        background-color: $color-primary-main;
+        z-index: 1;
     }
 }
 
-.bit-ctp-stk {
-    height: 50%;
-    bottom: 50%;
-    position: absolute;
-    width: spacing(0.375);
-    left: calc(50% - spacing(0.125));
-    transform-origin: center bottom 0;
-}
-
-.bit-ctp-hr:after,
-.bit-ctp-min:after {
-    left: 50%;
-    content: "";
-    top: spacing(2.5);
-    position: absolute;
+.bit-ctp-clf {
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    background-color: inherit;
-    transform: translate(-50%, -50%);
-}
-
-.bit-ctp-hr:after {
-    width: spacing(7.75);
-    height: spacing(7.75);
-}
-
-.bit-ctp-min:after {
-    height: spacing(5.5);
-    width: spacing(1.875);
-}
-
-.bit-ctp-inr {
-    bottom: 0;
-    height: 35%;
-    position: absolute;
-    width: spacing(0.375);
-    left: calc(50% - spacing(0.125));
-    transform-origin: center bottom 0;
-
-    &:after {
-        left: 50%;
-        top: -60%;
-        content: "";
-        width: spacing(6);
-        height: spacing(6);
-        position: absolute;
-        border-radius: 50%;
-        background-color: inherit;
-        transform: translate(-50%,-50%);
-    }
-}
-
-.bit-ctp-otr {
-    width: 0;
-    height: 35%;
-    bottom: 35%;
-    position: absolute;
-    left: calc(50% - spacing(0.125));
-    transform-origin: center bottom 0;
-
-    &:after {
-        content: "";
-        left: 50%;
-        top: spacing(-2.5);
-        height: spacing(6);
-        position: absolute;
-        border-radius: 50%;
-        width: spacing(7.75);
-        background-color: inherit;
-        transform: translate(-50%,-50%);
-    }
 }
 
 .bit-ctp-rsp {
