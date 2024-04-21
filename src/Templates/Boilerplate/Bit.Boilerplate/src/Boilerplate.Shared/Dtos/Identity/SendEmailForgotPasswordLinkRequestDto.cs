@@ -1,4 +1,4 @@
-﻿
+﻿//+:cnd:noEmit
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
@@ -9,5 +9,7 @@ public class SendResetPasswordEmailRequestDto
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
+    //#if (captcha == "reCaptcha")
     public string? GoogleRecaptchaResponse { get; set; }
+    //#endif
 }

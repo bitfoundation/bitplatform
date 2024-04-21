@@ -32,7 +32,7 @@ jobs:
     - name: Release build todo sample + sqlite database
       run: |
         dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
-        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline other
+        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline none
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
         cd TodoBPSqlite/src/TodoBPSqlite.Server/
         dotnet tool restore
@@ -42,9 +42,9 @@ jobs:
         dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
         dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Web/TodoBPSqlite.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true
 
-    - name: Release build empty sample + offline db + Win exe
+    - name: Release build empty sample + offline db + Win exe + No reCaptcha
       run: |
-        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --windows
+        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --windows --captcha none
         dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false
 
     - name: Release build empty sample without api

@@ -1,4 +1,5 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
+﻿//+:cnd:noEmit
+using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
@@ -16,6 +17,7 @@ public partial class ForgotPasswordPage
     {
         if (isLoading) return;
 
+        //#if (captcha == "reCaptcha")
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
@@ -25,6 +27,7 @@ public partial class ForgotPasswordPage
         }
 
         forgotPasswordModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
+        //#endif
 
         isLoading = true;
         forgotPasswordMessage = null;
@@ -45,7 +48,9 @@ public partial class ForgotPasswordPage
         }
         finally
         {
+            //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
+            //#endif
             isLoading = false;
         }
     }

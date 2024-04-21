@@ -34,6 +34,18 @@ public partial class ResetPasswordPage
     {
         if (isLoading) return;
 
+        //#if (captcha == "reCaptcha")
+        var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
+        if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
+        {
+            resetPasswordMessageType = BitMessageBarType.Error;
+            resetPasswordMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+            return;
+        }
+
+        resetPasswordModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
+        //#endif
+
         isLoading = true;
         resetPasswordMessage = null;
 
@@ -55,6 +67,9 @@ public partial class ResetPasswordPage
         }
         finally
         {
+            //#if (captcha == "reCaptcha")
+            await JSRuntime.GoogleRecaptchaReset();
+            //#endif
             isLoading = false;
         }
     }

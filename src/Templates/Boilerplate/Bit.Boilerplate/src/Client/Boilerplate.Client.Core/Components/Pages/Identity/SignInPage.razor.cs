@@ -1,4 +1,5 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
@@ -26,6 +27,7 @@ public partial class SignInPage
     {
         if (isLoading) return;
 
+        //#if (captcha == "reCaptcha")
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
@@ -35,6 +37,7 @@ public partial class SignInPage
         }
 
         signInModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
+        //#endif
 
         isLoading = true;
         signInMessage = null;
@@ -53,7 +56,9 @@ public partial class SignInPage
         }
         finally
         {
+            //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
+            //#endif
             isLoading = false;
         }
     }

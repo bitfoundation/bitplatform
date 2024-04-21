@@ -1,4 +1,5 @@
-﻿@page "/sign-in"
+﻿@*+:cnd:noEmit*@
+@page "/sign-in"
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.SignInTitle)]</PageTitle>
@@ -40,9 +41,11 @@
             <BitCheckbox Class="form-checkbox" @bind-Value="signInModel.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
         </div>
 
+        @*#if (captcha == "reCaptcha")*@
         <div class="form-input-container">
             <GoogleRecaptcha />
         </div>
+        @*#endif*@
 
         <BitButton IsLoading="isLoading"
                    Class="form-submit-button"

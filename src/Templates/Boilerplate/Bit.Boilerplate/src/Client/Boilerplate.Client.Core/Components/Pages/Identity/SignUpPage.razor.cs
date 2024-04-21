@@ -1,4 +1,5 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
@@ -17,6 +18,7 @@ public partial class SignUpPage
     {
         if (isLoading) return;
 
+        //#if (captcha == "reCaptcha")
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
@@ -26,6 +28,7 @@ public partial class SignUpPage
         }
 
         signUpModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
+        //#endif
 
         isLoading = true;
         signUpMessage = null;
@@ -48,6 +51,9 @@ public partial class SignUpPage
         }
         finally
         {
+            //#if (captcha == "reCaptcha")
+            await JSRuntime.GoogleRecaptchaReset();
+            //#endif
             isLoading = false;
         }
     }
@@ -61,7 +67,21 @@ public partial class SignUpPage
 
         try
         {
-            await identityController.SendConfirmationEmail(new() { Email = signUpModel.Email }, CurrentCancellationToken);
+            var sendConfirmationEmailRequest = new SendConfirmationEmailRequestDto { Email = signUpModel.Email };
+
+            //#if (captcha == "reCaptcha")
+            var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
+            if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
+            {
+                signUpMessageType = BitMessageBarType.Error;
+                signUpMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+                return;
+            }
+
+            sendConfirmationEmailRequest.GoogleRecaptchaResponse = googleRecaptchaResponse;
+            //#endif
+
+            await identityController.SendConfirmationEmail(sendConfirmationEmailRequest, CurrentCancellationToken);
 
             signUpMessageType = BitMessageBarType.Success;
             signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
@@ -73,7 +93,9 @@ public partial class SignUpPage
         }
         finally
         {
+            //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
+            //#endif
             isLoading = false;
         }
     }

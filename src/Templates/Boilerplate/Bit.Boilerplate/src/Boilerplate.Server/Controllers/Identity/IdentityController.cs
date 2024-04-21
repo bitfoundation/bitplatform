@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -28,11 +28,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     [AutoInject] private HtmlRenderer htmlRenderer = default!;
 
-    [AutoInject] private IStringLocalizer<IdentityStrings> identityLocalizer = default!;
-
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
+    //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
+    //#endif
 
     /// <summary>
     /// By leveraging summary tags in your controller's actions and DTO properties you can make your codes much easier to maintain.
@@ -41,8 +41,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
     {
-        if (await googleRecaptchaHttpClient.Verify(signUpRequest.GoogleRecaptchaResponse) is false)
+        //#if (captcha == "reCaptcha")
+        if (await googleRecaptchaHttpClient.Verify(signUpRequest.GoogleRecaptchaResponse, cancellationToken) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
+        //#endif
 
         var existingUser = await userManager.FindByNameAsync(signUpRequest.Email!);
 
@@ -78,6 +80,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SendConfirmationEmail(SendConfirmationEmailRequestDto sendConfirmationEmailRequest, CancellationToken cancellationToken)
     {
+        //#if (captcha == "reCaptcha")
+        if (await googleRecaptchaHttpClient.Verify(sendConfirmationEmailRequest.GoogleRecaptchaResponse, cancellationToken) is false)
+            throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
+        //#endif
+
         var user = await userManager.FindByEmailAsync(sendConfirmationEmailRequest.Email!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNameNotFound), sendConfirmationEmailRequest.Email!]);
         if (await userManager.IsEmailConfirmedAsync(user))
@@ -145,10 +152,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost, ProducesResponseType<TokenResponseDto>(statusCode: 200)]
-    public async Task SignIn(SignInRequestDto signInRequest)
+    public async Task SignIn(SignInRequestDto signInRequest, CancellationToken cancellationToken)
     {
-        if (await googleRecaptchaHttpClient.Verify(signInRequest.GoogleRecaptchaResponse) is false)
+        //#if (captcha == "reCaptcha")
+        if (await googleRecaptchaHttpClient.Verify(signInRequest.GoogleRecaptchaResponse, cancellationToken) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
+        //#endif
 
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
@@ -196,8 +205,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto sendResetPasswordEmailRequest, CancellationToken cancellationToken)
     {
-        if (await googleRecaptchaHttpClient.Verify(sendResetPasswordEmailRequest.GoogleRecaptchaResponse) is false)
+        //#if (captcha == "reCaptcha")
+        if (await googleRecaptchaHttpClient.Verify(sendResetPasswordEmailRequest.GoogleRecaptchaResponse, cancellationToken) is false)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaResponse)));
+        //#endif
 
         var user = await userManager.FindByEmailAsync(sendResetPasswordEmailRequest.Email!)
                     ?? throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), sendResetPasswordEmailRequest.Email!));
@@ -245,6 +256,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest, CancellationToken cancellationToken)
     {
+        //#if (captcha == "reCaptcha")
+        if (await googleRecaptchaHttpClient.Verify(resetPasswordRequest.GoogleRecaptchaResponse, cancellationToken) is false)
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.InvalidGoogleRecaptchaResponse)));
+        //#endif
+
         var user = await userManager.FindByEmailAsync(resetPasswordRequest.Email!)
                     ?? throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNameNotFound), resetPasswordRequest.Email!));
 

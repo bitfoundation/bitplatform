@@ -585,11 +585,13 @@ Please confirm your email by clicking on the link.</value>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
+    <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
     <value>Invalid Google reCAPTCHA response.</value>
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>You need to pass the Google reCAPTCHA challenge.</value>
   </data>
+    <!--#endif -->
     <!--#endif -->
 </root>

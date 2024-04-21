@@ -144,7 +144,7 @@ public static partial class Program
 
         AddBlazor(builder);
 
-        //#if (api == true)
+        //#if (api == true && captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
         {
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");

@@ -77,6 +77,22 @@
                 }
             ]
         },
+        "captcha": {
+            "displayName": "Captcha",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "reCaptcha",
+            "choices": [
+                {
+                    "choice": "reCaptcha",
+                    "description": "Google reCaptcha"
+                },
+                {
+                    "choice": "None",
+                    "description": "None"
+                }
+            ]
+        },
         "pipeline": {
             "displayName": "CI-CD pipeline",
             "type": "parameter",
@@ -92,8 +108,8 @@
                     "description": "Azure DevOps pipelines"
                 },
                 {
-                    "choice": "Other",
-                    "description": "Other"
+                    "choice": "None",
+                    "description": "None"
                 }
             ]
         },
@@ -277,10 +293,21 @@
                         "src/Boilerplate.Server/Services/AppSecureJwtDataFormat.cs",
                         "src/Boilerplate.Server/wwwroot/swagger/**",
                         "src/Boilerplate.Server/AppSettings.cs",
-                        "src/Boilerplate.Server/Services/GoogleRecaptchaHttpClient.cs",
-                        "src/Boilerplate.Server/Services/GoogleRecaptchaVerificationResponse.cs",
                         "src/Boilerplate.Server/Services/ServerJsonContext.cs",
                         "src/Boilerplate.Server/IdentityCertificate.pfx"
+                    ]
+                },
+                {
+                    "condition": "(api != true || captcha != reCaptcha)",
+                    "exclude": [
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaVerificationResponse.cs"
+                    ]
+                },
+                {
+                    "condition": "(captcha != reCaptcha)",
+                    "exclude": [
+                        "src/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
                     ]
                 },
                 {
