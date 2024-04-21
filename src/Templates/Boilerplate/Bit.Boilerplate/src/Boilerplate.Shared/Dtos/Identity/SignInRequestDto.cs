@@ -18,8 +18,4 @@ public class SignInRequestDto
     [JsonIgnore]
     [Display(Name = nameof(AppStrings.RememberMe))]
     public bool RememberMe { get; set; } = true;
-
-    //#if (captcha == "reCaptcha")
-    public string? GoogleRecaptchaResponse { get; set; }
-    //#endif
 }

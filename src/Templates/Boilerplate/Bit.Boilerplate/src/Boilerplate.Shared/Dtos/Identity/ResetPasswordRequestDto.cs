@@ -21,8 +21,4 @@ public class ResetPasswordRequestDto
     [Compare(nameof(Password), ErrorMessage = nameof(AppStrings.CompareAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.ConfirmNewPassword))]
     public string? ConfirmPassword { get; set; }
-
-    //#if (captcha == "reCaptcha")
-    public string? GoogleRecaptchaResponse { get; set; }
-    //#endif
 }

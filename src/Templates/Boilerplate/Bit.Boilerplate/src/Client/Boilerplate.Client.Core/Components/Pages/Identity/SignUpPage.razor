@@ -38,12 +38,6 @@
                 - @Localizer[nameof(AppStrings.Or)] -
             </div>
 
-            @*#if (captcha == "reCaptcha")*@
-            <div class="form-input-container">
-                <GoogleRecaptcha />
-            </div>
-            @*#endif*@
-
             <BitButton IsLoading="isLoading"
                        Class="form-submit-button"
                        ButtonStyle="BitButtonStyle.Primary"

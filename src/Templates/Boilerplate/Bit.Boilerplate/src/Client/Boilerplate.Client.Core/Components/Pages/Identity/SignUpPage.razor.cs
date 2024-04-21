@@ -69,18 +69,6 @@ public partial class SignUpPage
         {
             var sendConfirmationEmailRequest = new SendConfirmationEmailRequestDto { Email = signUpModel.Email };
 
-            //#if (captcha == "reCaptcha")
-            var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
-            if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
-            {
-                signUpMessageType = BitMessageBarType.Error;
-                signUpMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
-                return;
-            }
-
-            sendConfirmationEmailRequest.GoogleRecaptchaResponse = googleRecaptchaResponse;
-            //#endif
-
             await identityController.SendConfirmationEmail(sendConfirmationEmailRequest, CurrentCancellationToken);
 
             signUpMessageType = BitMessageBarType.Success;
@@ -93,9 +81,6 @@ public partial class SignUpPage
         }
         finally
         {
-            //#if (captcha == "reCaptcha")
-            await JSRuntime.GoogleRecaptchaReset();
-            //#endif
             isLoading = false;
         }
     }

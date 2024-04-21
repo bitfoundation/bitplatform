@@ -27,18 +27,6 @@ public partial class SignInPage
     {
         if (isLoading) return;
 
-        //#if (captcha == "reCaptcha")
-        var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
-        if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
-        {
-            signInMessageType = BitMessageBarType.Error;
-            signInMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
-            return;
-        }
-
-        signInModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
-        //#endif
-
         isLoading = true;
         signInMessage = null;
 
@@ -56,9 +44,6 @@ public partial class SignInPage
         }
         finally
         {
-            //#if (captcha == "reCaptcha")
-            await JSRuntime.GoogleRecaptchaReset();
-            //#endif
             isLoading = false;
         }
     }

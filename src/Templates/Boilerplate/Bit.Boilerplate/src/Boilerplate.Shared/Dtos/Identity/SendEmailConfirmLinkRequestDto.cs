@@ -8,8 +8,4 @@ public class SendConfirmationEmailRequestDto
     [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
-
-    //#if (captcha == "reCaptcha")
-    public string? GoogleRecaptchaResponse { get; set; }
-    //#endif
 }
