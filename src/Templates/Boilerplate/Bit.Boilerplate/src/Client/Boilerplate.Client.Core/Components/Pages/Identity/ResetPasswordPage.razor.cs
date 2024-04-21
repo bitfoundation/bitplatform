@@ -68,10 +68,7 @@ public partial class ResetPasswordPage
         finally
         {
             //#if (captcha == "reCaptcha")
-            if (passwordChanged is false)
-            {
-                await JSRuntime.GoogleRecaptchaReset();
-            }
+            await JSRuntime.GoogleRecaptchaReset();
             //#endif
             isLoading = false;
         }
