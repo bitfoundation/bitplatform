@@ -74,16 +74,16 @@
     padding: 0px spacing(0.5);
 }
 
-.bit-brc-omw {
+.bit-brc-cal {
     display: none;
     position: fixed;
     font-weight: 400;
     overflow: hidden auto;
     box-sizing: border-box;
+    z-index: $zindex-callout;
     font-size: spacing(1.75);
     animation-duration: 300ms;
     animation-fill-mode: both;
-    z-index: $zindex-callout;
     box-shadow: $box-shadow-callout;
     animation-name: opacity, trans-y;
     background-color: $color-background-primary;

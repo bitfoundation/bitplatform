@@ -16,17 +16,21 @@
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel">
 
-    <div class="bit-brc-iwp" id="@_wrapperId">
+    <div @onclick="CloseCallout" @onclick:stopPropagation
+         style="display:@(_isCalloutOpen ? "block" : "none")"
+         class="bit-brc-ovl"></div>
+
+    <div class="bit-brc-iwp">
         <ul>
             @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
             {
                 <li>
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
-                        <button id="@_overflowDropdownId"
+                        <button id="@_overflowAnchorId"
                                 type="button"
                                 class="bit-brc-obt"
-                                aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
+                                aria-label="@OverflowAriaLabel" @onclick="OpenCallout">
                             <span class="bit-brc-oic">
                                 <i class="bit-icon bit-icon--@OverflowIconName" />
                             </span>
@@ -63,12 +67,10 @@
         </ul>
     </div>
 
-    <div class="bit-brc-ovl" id="@_overlayId" @onclick="ToggleCallout"></div>
-
-    <div class="bit-brc-omw"
-         id="@_calloutId"
+    <div id="@_calloutId"
          tabindex="0"
-         role="listbox">
+         role="listbox"
+         class="bit-brc-cal">
         <ul>
             @foreach (var item in _overflowItems)
             {
