@@ -13,6 +13,8 @@
             const listenerOptions = { signal: bitController.controller.signal };
 
             document.addEventListener(event, e => {
+                e.preventDefault();
+                e.stopPropagation();
                 dotnetObj.invokeMethodAsync(methodName, CircularTimePicker.extractArgs(e as MouseEvent));
             }, listenerOptions);
 
