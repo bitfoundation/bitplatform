@@ -1005,7 +1005,14 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker=""true"" />
 <BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
 <BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />
-<BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />";
+<BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />
+<BitDateRangePicker Label=""StartingValue: December 2020, Start Time: 10:12, End Time: 16:59"" ShowTimePicker=""true"" StartingValue=""startingValue"" />";
+    private readonly string example1CsharpCode = @"
+private BitDateRangePickerValue? startingValue = new()
+{
+    StartDate = new DateTimeOffset(2020, 12, 4, 10, 12, 0, DateTimeOffset.Now.Offset),
+    EndDate = new DateTimeOffset(2020, 12, 4, 16, 59, 0, DateTimeOffset.Now.Offset),
+};";
 
     private readonly string example2RazorCode = @"
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
@@ -1207,15 +1214,4 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 <BitDateRangePicker ShowTimePicker=""true""
                     Label=""MinuteStep = 15""
                     MinuteStep=""15"" />";
-
-    private readonly string example11RazorCode = @"
-<BitDateRangePicker ShowTimePicker=""true""
-                    Label=""December 2020, Start Time: 10:12, End Time: 16:59""
-                    StartingValue=""startingValue"" />";
-    private readonly string example11CsharpCode = @"
-private BitDateRangePickerValue? startingValue = new()
-{
-    StartDate = new DateTimeOffset(2020, 12, 4, 10, 12, 0, DateTimeOffset.Now.Offset),
-    EndDate = new DateTimeOffset(2020, 12, 4, 16, 59, 0, DateTimeOffset.Now.Offset),
-};";
 }
