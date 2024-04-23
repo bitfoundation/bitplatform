@@ -177,7 +177,7 @@ public partial class BitDateRangePicker
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
     private DotNetObjectReference<BitDateRangePicker> _dotnetObj = default!;
-    private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
+    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
     private string _dateRangePickerId = string.Empty;
     private string _calloutId = string.Empty;
@@ -544,6 +544,11 @@ public partial class BitDateRangePicker
     /// </summary>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
+    /// <summary>
+    /// The StartingValue can specify the date and time of the pickers when they are first opened. Only provide this if the value is an uncontrolled component, otherwise, use the value property.
+    /// </summary>
+    [Parameter] public BitDateRangePickerValue? StartingValue { get; set; }
+
 
     public Task OpenCallout()
     {
@@ -609,14 +614,30 @@ public partial class BitDateRangePicker
 
         var startDateHasValue = CurrentValue?.StartDate.HasValue ?? false;
         var endDateHasValue = CurrentValue?.EndDate.HasValue ?? false;
+        var startingValueStartDateHasValue = StartingValue?.StartDate.HasValue ?? false;
+        var startingValueEndDateHasValue = StartingValue?.EndDate.HasValue ?? false;
 
-        _startTimeHour = startDateHasValue ? CurrentValue!.StartDate!.Value.Hour : 23;
-        _startTimeMinute = startDateHasValue ? CurrentValue!.StartDate!.Value.Minute : 0;
+        _startTimeHour = startDateHasValue ? CurrentValue!.StartDate!.Value.Hour : (startingValueStartDateHasValue ? StartingValue.StartDate.Value.Hour : 0);
+        _startTimeMinute = startDateHasValue ? CurrentValue!.StartDate!.Value.Minute : (startingValueStartDateHasValue ? StartingValue.StartDate.Value.Minute : 0);
 
-        _endTimeHour = endDateHasValue ? CurrentValue!.EndDate!.Value.Hour : (MaxRange.HasValue && MaxRange.Value.TotalHours < 24 ? (int)MaxRange.Value.TotalHours : 23);
-        _endTimeMinute = endDateHasValue ? CurrentValue!.EndDate!.Value.Minute : (MaxRange.HasValue && MaxRange.Value.Days < 1 && MaxRange.Value.Minutes < 60 ? MaxRange.Value.Minutes : 59);
+        _endTimeHour = endDateHasValue ? CurrentValue!.EndDate!.Value.Hour : (startingValueEndDateHasValue ? StartingValue.EndDate.Value.Hour : 23);
+        _endTimeMinute = endDateHasValue ? CurrentValue!.EndDate!.Value.Minute : (startingValueEndDateHasValue ? StartingValue.EndDate.Value.Minute : 59);
 
-        GenerateCalendarData(startDateHasValue ? CurrentValue!.StartDate!.Value.DateTime : DateTimeOffset.Now.DateTime);
+        if (endDateHasValue is false && MaxRange.HasValue && MaxRange.Value.TotalHours < 24)
+        {
+            if (_endTimeHour > MaxRange.Value.TotalHours)
+            {
+                _endTimeHour = (int)MaxRange.Value.TotalHours;
+            }
+
+            if (MaxRange.Value.Minutes < 60 && _endTimeMinute > MaxRange.Value.Minutes)
+            {
+                _endTimeMinute = MaxRange.Value.Minutes;
+            }
+        }
+
+        var calenderDate = startDateHasValue ? CurrentValue!.StartDate!.Value.DateTime : (startingValueStartDateHasValue ? StartingValue!.StartDate!.Value.DateTime : DateTimeOffset.Now.DateTime);
+        GenerateCalendarData(calenderDate);
 
         base.OnParametersSet();
     }
