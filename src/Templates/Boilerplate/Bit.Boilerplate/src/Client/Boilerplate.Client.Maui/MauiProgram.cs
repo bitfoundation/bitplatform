@@ -148,7 +148,14 @@ public static partial class MauiProgram
     {
         public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, WKWebpagePreferences preferences, Action<WKNavigationActionPolicy, WKWebpagePreferences> decisionHandler)
         {
+            // To open Google reCAPTCHA within the webview
             decisionHandler?.Invoke(WKNavigationActionPolicy.Allow, preferences);
+
+            if (navigationAction.NavigationType is WKNavigationType.LinkActivated)
+            {
+                // https://developer.apple.com/documentation/webkit/wknavigationtype/linkactivated#discussion
+                _ = Browser.OpenAsync(navigationAction.Request.Url!);
+            }
         }
     }
 #endif
