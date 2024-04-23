@@ -1207,4 +1207,15 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 <BitDateRangePicker ShowTimePicker=""true""
                     Label=""MinuteStep = 15""
                     MinuteStep=""15"" />";
+
+    private readonly string example11RazorCode = @"
+<BitDateRangePicker ShowTimePicker=""true""
+                    Label=""December 2020, Start Time: 10:12, End Time: 16:59""
+                    StartingValue=""startingValue"" />";
+    private readonly string example11CsharpCode = @"
+private BitDateRangePickerValue? startingValue = new()
+{
+    StartDate = new DateTimeOffset(2020, 12, 4, 10, 12, 0, DateTimeOffset.Now.Offset),
+    EndDate = new DateTimeOffset(2020, 12, 4, 16, 59, 0, DateTimeOffset.Now.Offset),
+};";
 }
