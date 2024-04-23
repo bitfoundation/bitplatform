@@ -148,7 +148,7 @@ public static partial class MauiProgram
     {
         public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, WKWebpagePreferences preferences, Action<WKNavigationActionPolicy, WKWebpagePreferences> decisionHandler)
         {
-            // To open Google reCAPTCHA within the webview
+            // To open Google reCAPTCHA and similar elements directly within the webview.
             decisionHandler?.Invoke(WKNavigationActionPolicy.Allow, preferences);
 
             if (navigationAction.NavigationType is WKNavigationType.LinkActivated)
