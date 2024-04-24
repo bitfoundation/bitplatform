@@ -16,6 +16,18 @@
             transform: translateX(0%);
         }
     }
+
+    @keyframes bit-pin-animation-rtl {
+        0% {
+            right: -100%;
+            transform: translateX(100%);
+        }
+
+        100% {
+            right: 100%;
+            transform: translateX(0%);
+        }
+    }
 }
 
 .bit-pin-lbl {
@@ -63,5 +75,11 @@
         transition: width 0.3s ease 0s;
         animation: 3s ease 0s infinite normal none running bit-pin-animation;
         background: linear-gradient(to right, $color-background-secondary 0%, $color-primary-main 50%, $color-background-secondary 100%);
+    }
+
+    &:dir(rtl) {
+        .bit-pin-bar {
+            animation: 3s ease 0s infinite normal none running bit-pin-animation-rtl;
+        }
     }
 }
