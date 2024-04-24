@@ -37,7 +37,7 @@
                      aria-valuemin="@(PercentComplete is not null ? 0 : null)"
                      aria-valuemax="@(PercentComplete is not null ? 100 : null)"
                      aria-valuenow="@(PercentComplete is not null ? Math.Floor(PercentComplete.Value) : null)"
-                     style="@($"{(PercentComplete is not null ? $"width: {percentComplete}%;" : string.Empty)} {(BarColor.HasValue() ? $"background-color: {BarColor};" : string.Empty)}") @Styles?.Bar">
+                     style="@GetProgressBarStyle() @Styles?.Bar">
                 </div>
             </div>
         }

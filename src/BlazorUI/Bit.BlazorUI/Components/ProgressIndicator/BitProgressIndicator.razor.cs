@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Text;
+
+namespace Bit.BlazorUI;
 
 public partial class BitProgressIndicator
 {
@@ -92,6 +94,29 @@ public partial class BitProgressIndicator
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-
     private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);
+
+    private string GetProgressBarStyle()
+    {
+        StringBuilder sb = new();
+
+        if (PercentComplete.HasValue)
+        {
+            sb.Append($"width: {percentComplete}%;");
+        }
+
+        if (BarColor.HasValue())
+        {
+            if (PercentComplete.HasValue)
+            {
+                sb.Append($"background-color: {BarColor};");
+            }
+            else
+            {
+                sb.Append($"background: linear-gradient(to right, var(--bit-clr-bg-secondary) 0%, {BarColor} 50%, var(--bit-clr-bg-secondary) 100%);");
+            }
+        }
+
+        return sb.ToString();
+    }
 }
