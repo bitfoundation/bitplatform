@@ -1,12 +1,13 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Text;
+
+namespace Bit.BlazorUI;
 
 public partial class BitProgressIndicator
 {
     private double? percentComplete;
-    private string? LabelId => Label.HasValue() || LabelTemplate is not null
-                                ? $"ProgressIndicator-{UniqueId}-Label" : null;
-    private string? DescriptionId => Description.HasValue() || DescriptionTemplate is not null
-                                        ? $"ProgressIndicator-{UniqueId}-Description" : null;
+
+    private string? _labelId;
+    private string? _descriptionId;
 
 
     /// <summary>
@@ -92,6 +93,38 @@ public partial class BitProgressIndicator
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override void OnInitialized()
+    {
+        _labelId = $"ProgressIndicator-{UniqueId}-label";
+        _descriptionId = $"ProgressIndicator-{UniqueId}-description";
+
+        base.OnInitialized();
+    }
+
 
     private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);
+
+    private string GetProgressBarStyle()
+    {
+        StringBuilder sb = new();
+
+        if (PercentComplete.HasValue)
+        {
+            sb.Append($"width: {percentComplete}%;");
+        }
+
+        if (BarColor.HasValue())
+        {
+            if (PercentComplete.HasValue)
+            {
+                sb.Append($"background-color: {BarColor};");
+            }
+            else
+            {
+                sb.Append($"background: linear-gradient(to right, var(--bit-clr-bg-secondary) 0%, {BarColor} 50%, var(--bit-clr-bg-secondary) 100%);");
+            }
+        }
+
+        return sb.ToString();
+    }
 }
