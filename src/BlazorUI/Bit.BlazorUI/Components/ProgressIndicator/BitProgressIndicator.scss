@@ -77,9 +77,9 @@
         background: linear-gradient(to right, $color-background-secondary 0%, $color-primary-main 50%, $color-background-secondary 100%);
     }
 
-    &:dir(rtl) {
+    &.bit-rtl {
         .bit-pin-bar {
-            animation: 3s ease 0s infinite normal none running bit-pin-animation-rtl;
+            animation-name: bit-pin-animation-rtl;
         }
     }
 }
