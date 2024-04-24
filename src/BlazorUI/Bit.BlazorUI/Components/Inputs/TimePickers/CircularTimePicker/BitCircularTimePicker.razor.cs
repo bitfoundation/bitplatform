@@ -332,6 +332,7 @@ public partial class BitCircularTimePicker
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
+        _currentView = BitCircularTimePickerDialMode.Hours;
         IsOpen = true;
         await ToggleCallout();
 
@@ -448,6 +449,7 @@ public partial class BitCircularTimePicker
 
     private async Task UpdateTime(MouseEventArgs e)
     {
+        if (IsOpen is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         var rect = await _js.GetBoundingClientRect(_clockRef);
@@ -460,7 +462,10 @@ public partial class BitCircularTimePicker
         var x = e.ClientX - rect.Left - centerX;
         var y = e.ClientY - rect.Top - centerY;
         var angle = Math.Atan2(y, x) - startAngle;
-        if (angle < 0) angle += 2 * Math.PI;
+        if (angle < 0)
+        {
+            angle += 2 * Math.PI;
+        }
         var sliceNumber = Math.Floor(angle / sliceAngle);
 
         if (_currentView == BitCircularTimePickerDialMode.Hours)

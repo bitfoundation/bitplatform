@@ -4,7 +4,7 @@ internal static class BitCircularTimePickerJsRuntimeExtensions
 {
     internal static ValueTask<string> BitCircularTimePickerRegisterPointerUp(this IJSRuntime js, DotNetObjectReference<BitCircularTimePicker> obj, string methodName)
     {
-        return js.InvokeAsync<string>("BitBlazorUI.ColorPicker.registerEvent", "pointerup", obj, methodName);
+        return js.InvokeAsync<string>("BitBlazorUI.CircularTimePicker.registerEvent", "pointerup", obj, methodName);
     }
 
     internal static ValueTask<string> BitCircularTimePickerRegisterPointerMove(this IJSRuntime js, DotNetObjectReference<BitCircularTimePicker> obj, string methodName)
