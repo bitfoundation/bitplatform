@@ -5,9 +5,10 @@ namespace Bit.BlazorUI;
 public partial class BitProgressIndicator
 {
     private double? percentComplete;
-
-    private string? _labelId;
-    private string? _descriptionId;
+    private string? LabelId => Label.HasValue() || LabelTemplate is not null
+                                ? $"ProgressIndicator-{UniqueId}-Label" : null;
+    private string? DescriptionId => Description.HasValue() || DescriptionTemplate is not null
+                                        ? $"ProgressIndicator-{UniqueId}-Description" : null;
 
 
     /// <summary>
@@ -92,15 +93,6 @@ public partial class BitProgressIndicator
     {
         StyleBuilder.Register(() => Styles?.Root);
     }
-
-    protected override void OnInitialized()
-    {
-        _labelId = $"ProgressIndicator-{UniqueId}-label";
-        _descriptionId = $"ProgressIndicator-{UniqueId}-description";
-
-        base.OnInitialized();
-    }
-
 
     private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);
 

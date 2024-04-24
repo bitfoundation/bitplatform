@@ -8,13 +8,13 @@
      dir="@Dir?.ToString().ToLower()">
     @if (LabelTemplate is not null)
     {
-        <div style="@Styles?.LabelContainer" class="bit-pin-lbl @Classes?.LabelContainer" id="@_labelId">
+        <div style="@Styles?.LabelContainer" class="bit-pin-lbl @Classes?.LabelContainer" id="@LabelId">
             @LabelTemplate
         </div>
     }
     else if (Label.HasValue())
     {
-        <div style="@Styles?.LabelContainer" class="bit-pin-lbl @Classes?.LabelContainer" id="@_labelId">
+        <div style="@Styles?.LabelContainer" class="bit-pin-lbl @Classes?.LabelContainer" id="@LabelId">
             @Label
         </div>
     }
@@ -31,9 +31,9 @@
                 <div style="@Styles?.Tracker" class="bit-pin-trc @Classes?.Tracker"></div>
                 <div class="bit-pin-bar @Classes?.Bar"
                      role="progressbar"
-                     aria-labelledby="@_labelId"
+                     aria-labelledby="@LabelId"
                      aria-valuetext="@AriaValueText"
-                     aria-describedby="@_descriptionId"
+                     aria-describedby="@DescriptionId"
                      aria-valuemin="@(PercentComplete is not null ? 0 : null)"
                      aria-valuemax="@(PercentComplete is not null ? 100 : null)"
                      aria-valuenow="@(PercentComplete is not null ? Math.Floor(PercentComplete.Value) : null)"
@@ -45,13 +45,13 @@
 
     @if (DescriptionTemplate is not null)
     {
-        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@_descriptionId">
+        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@DescriptionId">
             @DescriptionTemplate
         </div>
     }
     else if (Description.HasValue())
     {
-        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@_descriptionId">
+        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@DescriptionId">
             @Description
         </div>
     }
