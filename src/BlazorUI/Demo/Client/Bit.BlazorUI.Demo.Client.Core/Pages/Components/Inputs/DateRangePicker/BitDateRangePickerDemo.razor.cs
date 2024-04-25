@@ -982,13 +982,13 @@ public partial class BitDateRangePickerDemo
 
 
 
+    private CultureInfo culture = CultureInfo.CurrentUICulture;
+
     private BitDateRangePickerValue? selectedDateRange = new()
     {
         StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
         EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset),
     };
-
-    private CultureInfo culture = CultureInfo.CurrentUICulture;
 
     private BitDateRangePickerValue? startingValue = new()
     {
