@@ -321,6 +321,12 @@ public partial class BitCalendar
     [Parameter] public int MinuteStep { get; set; } = 1;
 
 
+    /// <summary>
+    /// Specifies the date and time of the calendar when it is showing without any selected value.
+    /// </summary>
+    [Parameter] public DateTimeOffset? StartingValue { get; set; }
+
+
     protected override string RootElementClass { get; } = "bit-cal";
 
     protected override void RegisterCssClasses()
@@ -345,20 +351,20 @@ public partial class BitCalendar
 
     protected override void OnParametersSet()
     {
-        var dateTime = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
+        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
 
         if (MinDate.HasValue && MinDate > dateTime)
         {
-            dateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now);
+            dateTime = MinDate.Value;
         }
 
         if (MaxDate.HasValue && MaxDate < dateTime)
         {
-            dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now);
+            dateTime = MaxDate.Value;
         }
 
-        _hour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
-        _minute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
+        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
+        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
 
         GenerateCalendarData(dateTime.DateTime);
 
