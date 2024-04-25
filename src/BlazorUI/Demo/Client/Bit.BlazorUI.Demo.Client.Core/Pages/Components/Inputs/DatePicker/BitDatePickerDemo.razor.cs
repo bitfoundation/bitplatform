@@ -323,7 +323,7 @@ public partial class BitDatePickerDemo
             Name = "StartingValue",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "The StartingValue can specify the date and time of the pickers when they are first opened. Only provide this if the value is an uncontrolled component, otherwise, use the value property.",
+            Description = "Specifies the date and time of the date-picker when they are opened without any selected value.",
         },
         new()
         {

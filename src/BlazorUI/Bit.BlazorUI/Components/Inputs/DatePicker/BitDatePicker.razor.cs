@@ -484,7 +484,7 @@ public partial class BitDatePicker
     [Parameter] public int MinuteStep { get; set; } = 1;
 
     /// <summary>
-    /// The StartingValue can specify the date and time of the pickers when they are first opened. Only provide this if the value is an uncontrolled component, otherwise, use the value property.
+    /// Specifies the date and time of the date-picker when they are opened without any selected value.
     /// </summary>
     [Parameter] public DateTimeOffset? StartingValue { get; set; }
 
