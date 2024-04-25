@@ -323,7 +323,7 @@ public partial class BitDatePickerDemo
             Name = "StartingValue",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "Specifies the date and time of the date-picker when they are opened without any selected value.",
+            Description = "Specifies the date and time of the date-picker when it is opened without any selected value.",
         },
         new()
         {

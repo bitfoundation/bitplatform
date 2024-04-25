@@ -484,7 +484,7 @@ public partial class BitDatePicker
     [Parameter] public int MinuteStep { get; set; } = 1;
 
     /// <summary>
-    /// Specifies the date and time of the date-picker when they are opened without any selected value.
+    /// Specifies the date and time of the date-picker when it is opened without any selected value.
     /// </summary>
     [Parameter] public DateTimeOffset? StartingValue { get; set; }
 
