@@ -483,6 +483,11 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
+    /// <summary>
+    /// The StartingValue can specify the date and time of the pickers when they are first opened. Only provide this if the value is an uncontrolled component, otherwise, use the value property.
+    /// </summary>
+    [Parameter] public DateTimeOffset? StartingValue { get; set; }
+
 
     public Task OpenCallout()
     {
@@ -526,7 +531,7 @@ public partial class BitDatePicker
 
     protected override void OnParametersSet()
     {
-        var dateTime = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
+        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
 
         if (MinDate.HasValue && MinDate > dateTime)
         {
@@ -538,8 +543,8 @@ public partial class BitDatePicker
             dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now);
         }
 
-        _hour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
-        _minute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
+        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
+        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
 
         GenerateCalendarData(dateTime.DateTime);
 
