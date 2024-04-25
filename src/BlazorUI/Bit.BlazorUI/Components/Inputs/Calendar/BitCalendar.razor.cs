@@ -320,7 +320,6 @@ public partial class BitCalendar
     /// </summary>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
-
     /// <summary>
     /// Specifies the date and time of the calendar when it is showing without any selected value.
     /// </summary>
