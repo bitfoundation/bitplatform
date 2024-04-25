@@ -535,12 +535,12 @@ public partial class BitDatePicker
 
         if (MinDate.HasValue && MinDate > dateTime)
         {
-            dateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now);
+            dateTime = MinDate.Value;
         }
 
         if (MaxDate.HasValue && MaxDate < dateTime)
         {
-            dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now);
+            dateTime = MaxDate.Value;
         }
 
         _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
