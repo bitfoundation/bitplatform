@@ -7,12 +7,12 @@
 
     @keyframes bit-pin-animation {
         0% {
-            left: -100%;
+            inset-inline-start: -100%;
             transform: translateX(100%);
         }
 
         100% {
-            left: 100%;
+            inset-inline-start: 100%;
             transform: translateX(0%);
         }
     }
