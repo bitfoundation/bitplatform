@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace Bit.BlazorUI;
 
@@ -217,6 +218,8 @@ public partial class BitCircularTimePicker
     [JSInvokable(nameof(HandlePointerUp))]
     public async Task HandlePointerUp(MouseEventArgs e)
     {
+        if (_isPointerDown is false) return;
+
         _isPointerDown = false;
 
         if (AutoClose && ((_currentView == BitCircularTimePickerDialMode.Minutes && _minute.HasValue) || (_currentView == BitCircularTimePickerDialMode.Hours && EditMode == BitCircularTimePickerEditMode.OnlyHours)))
@@ -342,9 +345,9 @@ public partial class BitCircularTimePicker
     private string GetTransformStyle(int index, double radius, double offsetX, double offsetY)
     {
         double angle = (6 - index) * 30 / 180d * Math.PI;
-        var x = (Math.Sin(angle) * radius + offsetX).ToString("F3", CultureInfo.InvariantCulture);
-        var y = ((Math.Cos(angle) + 1) * radius + offsetY).ToString("F3", CultureInfo.InvariantCulture);
-        return $"{x}px, {y}px";
+        var x = Math.Sin(angle) * radius + offsetX;
+        var y = (Math.Cos(angle) + 1) * radius + offsetY;
+        return $"{x:F3}px, {y:F3}px";
     }
 
     private string GetHoursMinutesClass(int value) =>
@@ -446,33 +449,34 @@ public partial class BitCircularTimePicker
                                 RootElementClass);
     }
 
-
     private async Task UpdateTime(MouseEventArgs e)
     {
         if (IsOpen is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         var rect = await _js.GetBoundingClientRect(_clockRef);
-        var slices = _currentView == BitCircularTimePickerDialMode.Hours ? 12 : 60;
-        var startAngle = Math.PI / -2;
-        var sliceAngle = (2 * Math.PI) / slices;
-        var centerX = rect.Width / 2;
-        var centerY = rect.Height / 2;
+        var radius = rect.Width / 2;
+        var centerX = radius;
+        var centerY = radius;
+        var sections = _currentView == BitCircularTimePickerDialMode.Hours ? 12 : 60;
+        var angleIncrement = Math.PI * 2 / sections;
+        var startAngleOffset = Math.PI / -2; // To start the first section at the top
 
-        var x = e.ClientX - rect.Left - centerX;
-        var y = e.ClientY - rect.Top - centerY;
-        var angle = Math.Atan2(y, x) - startAngle;
-        if (angle < 0)
+        var mouseX = e.ClientX - rect.Left;
+        var mouseY = e.ClientY - rect.Top;
+
+        var angle = Math.Atan2(mouseY - centerY, mouseX - centerX);
+        var section = Math.Round((angle - startAngleOffset) / angleIncrement);
+        if (section < 0)
         {
-            angle += 2 * Math.PI;
+            section += sections;
         }
-        var sliceNumber = Math.Floor(angle / sliceAngle);
 
         if (_currentView == BitCircularTimePickerDialMode.Hours)
         {
             if (TimeFormat == BitTimeFormat.TwelveHours)
             {
-                _hour = (int)sliceNumber + 1;
+                _hour = (int)section + 1;
 
                 if (IsAm() && _hour == 12)
                 {
@@ -485,16 +489,15 @@ public partial class BitCircularTimePicker
             }
             else
             {
-                _hour = (int)sliceNumber + 1;
+                _hour = (int)section;
 
-                var radius = rect.Width / 2;
                 var circleCenterX = rect.Left + rect.Width / 2;
                 var circleCenterY = rect.Top + rect.Height / 2;
                 var distanceX = e.ClientX - circleCenterX;
                 var distanceY = e.ClientY - circleCenterY;
                 var distance = Math.Sqrt(distanceX * distanceX + distanceY * distanceY);
                 var isWithInSmallCircle = distance < (radius - 40);
-                if (isWithInSmallCircle is false)
+                if ((isWithInSmallCircle && _hour == 0) || (isWithInSmallCircle is false && _hour > 0))
                 {
                     _hour += 12;
                 }
@@ -502,7 +505,7 @@ public partial class BitCircularTimePicker
         }
         else
         {
-            _minute = (int)sliceNumber + 1;
+            _minute = (int)section + 1;
 
             if (_minute.Value == 60)
             {
