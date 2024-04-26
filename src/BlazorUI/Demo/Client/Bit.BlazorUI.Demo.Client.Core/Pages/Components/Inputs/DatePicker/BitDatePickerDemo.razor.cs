@@ -320,6 +320,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "StartingValue",
+            Type = "DateTimeOffset?",
+            DefaultValue = "null",
+            Description = "Specifies the date and time of the date-picker when it is opened without any selected value.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitDatePickerClassStyles",
             DefaultValue = "null",
@@ -895,6 +902,7 @@ public partial class BitDatePickerDemo
 
 
     private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);
+    private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);
 
     private CultureInfo culture = CultureInfo.CurrentUICulture;
 
@@ -923,7 +931,11 @@ public partial class BitDatePickerDemo
 <BitDatePicker Label=""Week numbers"" ShowWeekNumbers=""true"" />
 <BitDatePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
 <BitDatePicker Label=""TimePicker"" ShowTimePicker=""true"" />
-<BitDatePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />";
+<BitDatePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />
+<BitDatePicker Label=""StartingValue: December 2020, Time: 20:45"" ShowTimePicker=""true"" StartingValue=""startingValue"" />";
+
+    private readonly string example1CsharpCode = @"
+private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);";
 
     private readonly string example2RazorCode = @"
 <BitDatePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
