@@ -30,6 +30,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
     private string _calloutId = default!;
     private string _overflowAnchorId = default!;
+    private string _scrollContainerId = default!;
 
 
 
@@ -191,6 +192,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     {
         _calloutId = $"BitBreadcrumb-{UniqueId}-callout";
         _overflowAnchorId = $"BitBreadcrumb-{UniqueId}-overflow-anchor";
+        _scrollContainerId = $"BitBreadcrumb-{UniqueId}-scroll-container";
 
         _internalClassField = ClassFieldSelector?.GetName() ?? ClassField;
         _internalHrefField = HrefFieldSelector?.GetName() ?? HrefField;
@@ -428,7 +430,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
                                 false,
-                                "",
+                                _scrollContainerId,
                                 0,
                                 "",
                                 "",
