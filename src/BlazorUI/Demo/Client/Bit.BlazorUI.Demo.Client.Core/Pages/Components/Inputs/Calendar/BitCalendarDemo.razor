@@ -10,7 +10,7 @@
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="example-content">
                 <div>Basic Calendar:</div>
@@ -24,6 +24,9 @@
                 <br /><br />
                 <div>Highlight months:</div>
                 <BitCalendar HighlightCurrentMonth="true" HighlightSelectedMonth="true" />
+                <br /><br />
+                <div>StartingValue: December 2020, Time: 20:45:</div>
+                <BitCalendar ShowTimePicker="true" StartingValue="startingValue" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
