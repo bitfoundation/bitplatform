@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 
 namespace Bit.BlazorUI;
 
@@ -23,12 +22,12 @@ public partial class BitCircularTimePicker
     private string? _labelId;
     private string? _inputId;
     private bool _isPointerDown;
+    private bool _showHourView = true;
     private string _calloutId = string.Empty;
     private string _circularTimePickerId = string.Empty;
     private string? _pointerUpAbortControllerId;
     private string? _pointerMoveAbortControllerId;
     private ElementReference _clockRef;
-    private BitCircularTimePickerDialMode _currentView = BitCircularTimePickerDialMode.Hours;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
     private string _focusClass
     {
@@ -222,14 +221,14 @@ public partial class BitCircularTimePicker
 
         _isPointerDown = false;
 
-        if (AutoClose && ((_currentView == BitCircularTimePickerDialMode.Minutes && _minute.HasValue) || (_currentView == BitCircularTimePickerDialMode.Hours && EditMode == BitCircularTimePickerEditMode.OnlyHours)))
+        if (AutoClose && ((_showHourView is false && _minute.HasValue) || (_showHourView && EditMode == BitCircularTimePickerEditMode.OnlyHours)))
         {
             await CloseCallout();
         }
 
-        if (_currentView == BitCircularTimePickerDialMode.Hours && EditMode == BitCircularTimePickerEditMode.Normal && _currentView != BitCircularTimePickerDialMode.Minutes && _hour.HasValue)
+        if (_showHourView && _hour.HasValue && EditMode == BitCircularTimePickerEditMode.Normal)
         {
-            _currentView = BitCircularTimePickerDialMode.Minutes;
+            _showHourView = false;
         }
 
         StateHasChanged();
@@ -335,7 +334,7 @@ public partial class BitCircularTimePicker
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        _currentView = BitCircularTimePickerDialMode.Hours;
+        _showHourView = true;
         IsOpen = true;
         await ToggleCallout();
 
@@ -351,18 +350,13 @@ public partial class BitCircularTimePicker
     }
 
     private string GetHoursMinutesClass(int value) =>
-        (_currentView == BitCircularTimePickerDialMode.Hours && GetHours() == value) || (_currentView == BitCircularTimePickerDialMode.Minutes && _minute.GetValueOrDefault() == value)
+        (_showHourView && GetHours() == value) || (_showHourView is false && _minute.GetValueOrDefault() == value)
             ? "bit-ctp-sel"
             : string.Empty;
 
-    private int GetClockHandHeightPercent() => (_currentView == BitCircularTimePickerDialMode.Hours && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
+    private int GetClockHandHeightPercent() => (_showHourView && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
 
-    private double GetPointerDegree() => _currentView switch
-    {
-        BitCircularTimePickerDialMode.Hours => (_hour.GetValueOrDefault() * 30) % 360,
-        BitCircularTimePickerDialMode.Minutes => (_minute.GetValueOrDefault() * 6) % 360,
-        _ => 0
-    };
+    private double GetPointerDegree() => _showHourView ? ((_hour.GetValueOrDefault()* 30) % 360) : ((_minute.GetValueOrDefault()* 6) % 360);
 
     private async Task HandleOnPointerDown(MouseEventArgs e)
     {
@@ -396,9 +390,9 @@ public partial class BitCircularTimePicker
 
     private int GetHours() => TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
 
-    private void HandleOnHourClick() => _currentView = BitCircularTimePickerDialMode.Hours;
+    private void HandleOnHourClick() => _showHourView = true;
 
-    private void HandleOnMinuteClick() => _currentView = BitCircularTimePickerDialMode.Minutes;
+    private void HandleOnMinuteClick() => _showHourView = false;
 
     private async Task HandleOnAmClick()
     {
@@ -458,7 +452,7 @@ public partial class BitCircularTimePicker
         var radius = rect.Width / 2;
         var centerX = radius;
         var centerY = radius;
-        var sections = _currentView == BitCircularTimePickerDialMode.Hours ? 12 : 60;
+        var sections = _showHourView ? 12 : 60;
         var angleIncrement = Math.PI * 2 / sections;
         var startAngleOffset = Math.PI / -2; // To start the first section at the top
 
@@ -472,7 +466,7 @@ public partial class BitCircularTimePicker
             section += sections;
         }
 
-        if (_currentView == BitCircularTimePickerDialMode.Hours)
+        if (_showHourView)
         {
             if (TimeFormat == BitTimeFormat.TwelveHours)
             {
