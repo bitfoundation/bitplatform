@@ -68,7 +68,7 @@
                                 @GetHourString()
                             </button>
                             <span class="bit-ctp-txt">:</span>
-                            <button type="button" class="bit-ctp-txt @(_showHourView is false ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnMinuteClick">
+                            <button type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : string.Empty)" @onclick="HandleOnMinuteClick">
                                 @GetMinuteString()
                             </button>
                         }
