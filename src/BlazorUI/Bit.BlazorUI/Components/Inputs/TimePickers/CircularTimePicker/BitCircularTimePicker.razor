@@ -64,11 +64,11 @@
                     <div class="bit-ctp-hm">
                         @if (EditMode == BitCircularTimePickerEditMode.Normal)
                         {
-                            <button type="button" class="bit-ctp-txt @(_showHourView ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnHourClick">
+                            <button type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina")" @onclick="HandleOnHourClick">
                                 @GetHourString()
                             </button>
                             <span class="bit-ctp-txt">:</span>
-                            <button type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : string.Empty)" @onclick="HandleOnMinuteClick">
+                            <button type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : "")" @onclick="HandleOnMinuteClick">
                                 @GetMinuteString()
                             </button>
                         }
