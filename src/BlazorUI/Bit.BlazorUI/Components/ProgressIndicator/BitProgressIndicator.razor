@@ -31,9 +31,9 @@
                 <div style="@Styles?.Tracker" class="bit-pin-trc @Classes?.Tracker"></div>
                 <div class="bit-pin-bar @Classes?.Bar"
                      role="progressbar"
-                     aria-labelledby="@_labelId"
+                     aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                      aria-valuetext="@AriaValueText"
-                     aria-describedby="@_descriptionId"
+                     aria-describedby="@(Description.HasValue() ? _descriptionId : null)"
                      aria-valuemin="@(PercentComplete.HasValue ? 0 : null)"
                      aria-valuemax="@(PercentComplete.HasValue ? 100 : null)"
                      aria-valuenow="@(PercentComplete.HasValue ? Math.Floor(PercentComplete.Value) : null)"
