@@ -1,7 +1,7 @@
 ﻿
 namespace Boilerplate.Shared.Dtos.Identity;
 
-public class TokenResponseDto
+public class SignInResponseDto
 {
     public string? TokenType { get; set; }
 
@@ -13,4 +13,6 @@ public class TokenResponseDto
     public long ExpiresIn { get; set; }
 
     public string? RefreshToken { get; set; }
+
+    public bool RequiresTwoFactor { get; set; }
 }

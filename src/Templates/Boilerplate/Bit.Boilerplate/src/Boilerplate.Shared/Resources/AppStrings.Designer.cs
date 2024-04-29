@@ -989,6 +989,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Profile.
+        /// </summary>
+        public static string ProfileTitle {
+            get {
+                return ResourceManager.GetString("ProfileTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Profile updated successfully..
         /// </summary>
         public static string ProfileUpdatedSuccessfullyMessage {
@@ -1250,6 +1259,69 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Your authenticator app has been verified..
+        /// </summary>
+        public static string TfaAuthenticatorAppVerifiedMessage {
+            get {
+                return ResourceManager.GetString("TfaAuthenticatorAppVerifiedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No 2fa token was provided by the request. A valid 2fa token is required to enable 2fa..
+        /// </summary>
+        public static string TfaEmptyCodeError {
+            get {
+                return ResourceManager.GetString("TfaEmptyCodeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter your authenticator code:.
+        /// </summary>
+        public static string TfaEnterCodeInSignInMessage {
+            get {
+                return ResourceManager.GetString("TfaEnterCodeInSignInMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Or enter your recovery code:.
+        /// </summary>
+        public static string TfaEnterRecoveryCodeInSignInMessage {
+            get {
+                return ResourceManager.GetString("TfaEnterRecoveryCodeInSignInMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa..
+        /// </summary>
+        public static string TfaInvalidCodeError {
+            get {
+                return ResourceManager.GetString("TfaInvalidCodeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your login is protected with an authenticator app..
+        /// </summary>
+        public static string TfaProtectedSignInSubtitle {
+            get {
+                return ResourceManager.GetString("TfaProtectedSignInSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resetting the 2fa shared key must disable 2fa until a 2fa token based on the new shared key is validated..
+        /// </summary>
+        public static string TfaResetSharedKeyError {
+            get {
+                return ResourceManager.GetString("TfaResetSharedKeyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Title.
         /// </summary>
         public static string Title {
@@ -1318,6 +1390,33 @@ namespace Boilerplate.Shared.Resources {
         public static string TotalProducts {
             get {
                 return ResourceManager.GetString("TotalProducts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 2FA.
+        /// </summary>
+        public static string TwoFactorAuthTitle {
+            get {
+                return ResourceManager.GetString("TwoFactorAuthTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authenticator code.
+        /// </summary>
+        public static string TwoFactorCode {
+            get {
+                return ResourceManager.GetString("TwoFactorCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recovery code.
+        /// </summary>
+        public static string TwoFactorRecoveryCode {
+            get {
+                return ResourceManager.GetString("TwoFactorRecoveryCode", resourceCulture);
             }
         }
         

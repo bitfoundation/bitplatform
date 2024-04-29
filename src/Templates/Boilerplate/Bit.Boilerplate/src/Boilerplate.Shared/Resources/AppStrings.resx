@@ -187,6 +187,9 @@
     <data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
+    <data name="ProfileTitle" xml:space="preserve">
+    <value>Profile</value>
+  </data>
     <data name="EditProfileTitle" xml:space="preserve">
     <value>Edit profile</value>
   </data>
@@ -450,6 +453,36 @@ Please confirm your email by clicking on the link.</value>
   </data>
     <data name="RememberMe" xml:space="preserve">
     <value>Remember me?</value>
+  </data>
+    <data name="TwoFactorCode" xml:space="preserve">
+    <value>Authenticator code</value>
+  </data>
+    <data name="TwoFactorRecoveryCode" xml:space="preserve">
+    <value>Recovery code</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
+  </data>
+    <data name="TfaResetSharedKeyError" xml:space="preserve">
+    <value>Resetting the 2fa shared key must disable 2fa until a 2fa token based on the new shared key is validated.</value>
+  </data>
+    <data name="TfaEmptyCodeError" xml:space="preserve">
+    <value>No 2fa token was provided by the request. A valid 2fa token is required to enable 2fa.</value>
+  </data>
+    <data name="TfaInvalidCodeError" xml:space="preserve">
+    <value>The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa.</value>
+  </data>
+    <data name="TfaProtectedSignInSubtitle" xml:space="preserve">
+    <value>Your login is protected with an authenticator app.</value>
+  </data>
+    <data name="TfaEnterCodeInSignInMessage" xml:space="preserve">
+    <value>Enter your authenticator code:</value>
+  </data>
+    <data name="TfaEnterRecoveryCodeInSignInMessage" xml:space="preserve">
+    <value>Or enter your recovery code:</value>
+  </data>
+    <data name="TfaAuthenticatorAppVerifiedMessage" xml:space="preserve">
+    <value>Your authenticator app has been verified.</value>
   </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>

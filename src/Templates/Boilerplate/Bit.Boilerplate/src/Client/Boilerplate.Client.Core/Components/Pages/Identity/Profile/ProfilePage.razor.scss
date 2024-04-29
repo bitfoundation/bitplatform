@@ -1,0 +1,37 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.page-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
+}
+
+.content-container {
+    width: 100%;
+    display: flex;
+    position: relative;
+    align-items: center;
+    max-width: rem2(608px);
+    border-radius: rem2(4px);
+    flex-flow: column nowrap;
+    padding: rem2(32px) rem2(16px);
+    background-color: $bit-color-background-primary;
+
+    &.profile-panel {
+        min-height: rem2(560px);
+        box-shadow: $bit-box-shadow-callout;
+    }
+
+    &.tfa-panel {
+        box-shadow: $bit-box-shadow-callout;
+    }
+
+    &.danger-panel {
+        border: 2px solid darkred;
+    }
+}

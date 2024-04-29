@@ -1,0 +1,159 @@
+@inherits AppComponentBase
+
+@if (string.IsNullOrEmpty(message) is false)
+{
+    <BitMessageBar Class="form-message-bar"
+                   MessageBarType="messageType"
+                   OnDismiss="() => message = null">
+        @message
+    </BitMessageBar>
+}
+
+<BitTypography Variant="BitTypographyVariant.H2">
+    @Localizer[nameof(AppStrings.TwoFactorAuthTitle)]
+</BitTypography>
+
+<br />
+
+@if (isTwoFactorAuthEnabled is false)
+{
+    <h3>Configure authenticator app</h3>
+    <br />
+    <div>
+        <p>To use an authenticator app go through the following steps:</p>
+        <ol>
+            <li>
+                <p>
+                    Download a two-factor authenticator app like Microsoft Authenticator for
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
+                    Google Authenticator for
+                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
+                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
+                </p>
+            </li>
+            <br />
+            <li>
+                <p>
+                    Scan the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):
+                    <div class="tfa-key">@sharedKey</div>
+                </p>
+                <div class="alert alert-info">
+                    Learn how to <a href="https://go.microsoft.com/fwlink/?Linkid=852423">enable QR code generation</a>.
+                </div>
+                <div></div>
+                <div data-url="@authenticatorUri"></div>
+            </li>
+            <br />
+            <li>
+                <p>
+                    Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
+                    with a unique code. Enter the code in the confirmation box below.
+                </p>
+                <br />
+                <div>
+                    <BitTextField @bind-Value="verificationCode"
+                                  Label="Verification Code:"
+                                  AutoComplete="@BitAutoCompleteValue.Off"
+                                  Placeholder="Please enter the code." />
+                    <br />
+                    <BitButton OnClick="WrapHandled(EnableTwoFactorAuth)">Verify</BitButton>
+                </div>
+            </li>
+        </ol>
+    </div>
+}
+else
+{
+    <BitPivot>
+        <BitPivotItem HeaderText="Recovery codes">
+            <div class="tab-item-container">
+                @if (recoveryCodesLeft == 0)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Error" IsMultiline Style="margin-bottom:1rem">
+                        <strong>You have no recovery codes left.</strong>
+                        <p>You must generate a new set of recovery codes before you can log in with a recovery code.</p>
+                    </BitMessageBar>
+                }
+                else if (recoveryCodesLeft == 1)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.SevereWarning" IsMultiline Style="margin-bottom:1rem">
+                        <strong>You have 1 recovery code left.</strong>
+                        <p>You can generate a new set of recovery codes.</p>
+                    </BitMessageBar>
+                }
+                else if (recoveryCodesLeft <= 3)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin-bottom:1rem">
+                        <strong>You have @recoveryCodesLeft recovery codes left.</strong>
+                        <p>You should generate a new set of recovery codes.</p>
+                    </BitMessageBar>
+                }
+
+                @if (recoveryCodes is null)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin-bottom:1rem">
+                        Generating new recovery codes does not change the keys used in authenticator apps.
+                        If you wish to change the key used in an authenticator app you should reset your
+                        authenticator keys in the next tab.
+                    </BitMessageBar>
+
+                    <BitButton OnClick="WrapHandled(GenerateRecoveryCode)">
+                        Generate Recovery Codes
+                    </BitButton>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin: 1rem 0">
+                        <strong>Put these codes in a safe place.</strong>
+                        <br />
+                        <p>If you lose your authenticator device and don't have the recovery codes you will lose access to your account.</p>
+                    </BitMessageBar>
+
+                    <BitMessageBar MessageBarType="BitMessageBarType.Info" IsMultiline>
+                        <strong>Recovery codes:</strong>
+                        @foreach (var recoveryCode in recoveryCodes)
+                        {
+                            <div class="recovery-code">@recoveryCode</div>
+                        }
+                    </BitMessageBar>
+                }
+            </div>
+        </BitPivotItem>
+
+        @if (isMachineRemembered)
+        {
+            <BitPivotItem HeaderText="Forget machine">
+                <BitButton OnClick="WrapHandled(ForgetMachine)">Forget this browser</BitButton>
+            </BitPivotItem>
+        }
+
+        <BitPivotItem HeaderText="Authenticator app">
+            <div class="tab-item-container">
+                <h3>Reset authenticator key</h3>
+                <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin:1rem 0">
+                    <strong>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</strong>
+                    <p>
+                        This process disables 2FA until you verify your authenticator app.
+                        If you do not complete your authenticator app configuration you may lose access to your account.
+                    </p>
+                </BitMessageBar>
+                <BitButton OnClick="WrapHandled(ResetAuthenticatorKey)">Reset authenticator key</BitButton>
+            </div>
+        </BitPivotItem>
+
+        <BitPivotItem HeaderText="Disable 2FA">
+            <div class="tab-item-container">
+                <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin:1rem 0">
+                    <strong>This action only disables 2FA.</strong>
+                    <p>
+                        Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key
+                        used in an authenticator app you should reset your authenticator keys in the previous tab.
+                    </p>
+                </BitMessageBar>
+
+                <BitButton OnClick="WrapHandled(DisableTwoFactorAuth)">Disable 2FA</BitButton>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+}

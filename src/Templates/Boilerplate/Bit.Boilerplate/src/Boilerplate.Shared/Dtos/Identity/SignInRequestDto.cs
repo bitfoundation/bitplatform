@@ -18,4 +18,10 @@ public class SignInRequestDto
     [JsonIgnore]
     [Display(Name = nameof(AppStrings.RememberMe))]
     public bool RememberMe { get; set; } = true;
+
+    [Display(Name = nameof(AppStrings.TwoFactorCode))]
+    public string? TwoFactorCode { get; set; }
+
+    [Display(Name = nameof(AppStrings.TwoFactorRecoveryCode))]
+    public string? TwoFactorRecoveryCode { get; set; }
 }

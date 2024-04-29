@@ -33,7 +33,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(List<CategoryDto>))]
 //#endif
 [JsonSerializable(typeof(SignInRequestDto))]
-[JsonSerializable(typeof(TokenResponseDto))]
+[JsonSerializable(typeof(SignInResponseDto))]
 [JsonSerializable(typeof(RefreshRequestDto))]
 [JsonSerializable(typeof(SignUpRequestDto))]
 [JsonSerializable(typeof(EditUserDto))]
@@ -42,6 +42,8 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(ConfirmEmailRequestDto))]
 [JsonSerializable(typeof(SendResetPasswordEmailRequestDto))]
 [JsonSerializable(typeof(ResetPasswordRequestDto))]
+[JsonSerializable(typeof(TwoFactorAuthRequestDto))]
+[JsonSerializable(typeof(TwoFactorAuthResponseDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

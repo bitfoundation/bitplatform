@@ -1,0 +1,104 @@
+@inherits AppComponentBase
+
+<div>
+    @if (string.IsNullOrEmpty(message) is false)
+    {
+        <BitMessageBar Class="form-message-bar"
+                       MessageBarType="messageType"
+                       OnDismiss="() => message = null">
+            @message
+        </BitMessageBar>
+    }
+
+    <BitTypography Variant="BitTypographyVariant.H2">
+        @Localizer[nameof(AppStrings.EditProfileTitle)]
+    </BitTypography>
+
+    <br />
+
+    @if (Loading)
+    {
+        <div class="loading-container">
+            <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>
+        </div>
+    }
+    else
+    {
+        var imageUrl = userDto.ProfileImageName is null ? null : $"{profileImageUrl}&file={userDto.ProfileImageName}";
+        <div class="form-input-container">
+            <BitPersona ImageUrl="@imageUrl"
+                        Size=@BitPersonaSize.Size72
+                        Text="@userDto.FullName"
+                        SecondaryText="@userDto.UserName"
+                        Presence="BitPersonaPresenceStatus.Online" />
+        </div>
+
+        <div class="form-input-container">
+            @if (userDto.ProfileImageName is not null)
+            {
+                <BitButton IsLoading="isRemoving"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           OnClick="RemoveProfileImage">
+                    @Localizer[nameof(AppStrings.Remove)]
+                </BitButton>
+            }
+
+            <BitLabel>@Localizer[nameof(AppStrings.ProfileImage)]</BitLabel>
+            <BitFileUpload @onfocus="() => profileImageError = null"
+                           Label="@Localizer[nameof(AppStrings.UploadNewProfileImage)]"
+                           Accept="image/*"
+                           AutoUploadEnabled="true"
+                           MaxSize="1024 * 1024 * 10"
+                           ChunkedUploadEnabled="false"
+                           UploadUrl="@profileImageUploadUrl"
+                           OnUploadComplete="WrapHandled(HandleOnUploadProfileImageComplete)"
+                           OnUploadFailed="() => profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]" />
+            <div class="form-input-error">@profileImageError</div>
+        </div>
+
+        <EditForm Model="editUserDto" OnValidSubmit="WrapHandled(SaveProfile)" class="edit-profile-form">
+            <AppDataAnnotationsValidator />
+
+            <div class="form-input-container">
+                <BitTextField @bind-Value="editUserDto.FullName"
+                              Label="@Localizer[nameof(AppStrings.FullName)]"
+                              Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
+                <ValidationMessage For="@(() => editUserDto.FullName)" />
+            </div>
+
+            <div class="form-input-container">
+                <BitDatePicker IsResponsive @bind-Value="editUserDto.BirthDate"
+                               Class="edit-profile-dtp"
+                               Label="@Localizer[nameof(AppStrings.BirthDate)]"
+                               GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"
+                               Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
+                <ValidationMessage For="@(() => editUserDto.BirthDate)" />
+            </div>
+
+            <div class="form-input-container">
+                <BitChoiceGroup @bind-Value="editUserDto.GenderAsString"
+                                TItem="BitChoiceGroupOption<string?>" TValue="string"
+                                LayoutFlow="BitLayoutFlow.Horizontal"
+                                Label="@Localizer[nameof(AppStrings.Gender)]">
+                    <BitChoiceGroupOption Value="@Gender.Male.ToString()"
+                                          Text="@Localizer[nameof(AppStrings.GenderMale)]"
+                                          AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]" />
+                    <BitChoiceGroupOption Value="@Gender.Female.ToString()"
+                                          Text="@Localizer[nameof(AppStrings.GenderFemale)]"
+                                          AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                    <BitChoiceGroupOption Value="@Gender.Other.ToString()"
+                                          Text="@Localizer[nameof(AppStrings.GenderOther)]"
+                                          AriaLabel="@Localizer[nameof(AppStrings.GenderOther)]" />
+                </BitChoiceGroup>
+            </div>
+
+            <BitButton IsLoading="isSaving"
+                       ButtonType="BitButtonType.Submit"
+                       ButtonStyle="BitButtonStyle.Primary"
+                       Title="@Localizer[nameof(AppStrings.Save)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.Save)]">
+                @Localizer[nameof(AppStrings.Save)]
+            </BitButton>
+        </EditForm>
+    }
+</div>

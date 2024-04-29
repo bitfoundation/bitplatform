@@ -21,8 +21,11 @@ public interface IIdentityController : IAppController
     Task ResetPassword(ResetPasswordRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task<TokenResponseDto> Refresh(RefreshRequestDto body, CancellationToken cancellationToken = default) => default!;
+    Task<SignInResponseDto> Refresh(RefreshRequestDto body, CancellationToken cancellationToken = default) => default!;
 
     [HttpPost]
-    Task<TokenResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default) => default!;
+    Task<SignInResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default) => default!;
+
+    [HttpPost("2fa")]
+    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto twoFactorAuthRequest, CancellationToken cancellationToken = default) => default!;
 }

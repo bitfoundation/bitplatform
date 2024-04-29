@@ -11,6 +11,7 @@ using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
+using System.Text.Encodings.Web;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
@@ -18,6 +19,8 @@ namespace Boilerplate.Server.Controllers.Identity;
 [ApiController, AllowAnonymous]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
+    private const string AUTHENTICATOR_URI_FORMAT = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+
     [AutoInject] private UserManager<User> userManager = default!;
 
     [AutoInject] private SignInManager<User> signInManager = default!;
@@ -29,6 +32,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private HtmlRenderer htmlRenderer = default!;
 
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
+
+    [AutoInject] private UrlEncoder urlEncoder = default!;
+
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -146,8 +152,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
     }
 
-    [HttpPost, ProducesResponseType<TokenResponseDto>(statusCode: 200)]
-    public async Task SignIn(SignInRequestDto signInRequest, CancellationToken cancellationToken)
+    [HttpPost]
+    public async Task<ActionResult<SignInResponseDto>> SignIn(SignInRequestDto signInRequest, CancellationToken cancellationToken)
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
@@ -159,24 +165,30 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")));
         }
 
-        /* if (result.RequiresTwoFactor)
+        if (result.RequiresTwoFactor)
         {
-            if (!string.IsNullOrEmpty(signInRequest.TwoFactorCode))
+            if (string.IsNullOrEmpty(signInRequest.TwoFactorCode) is false)
             {
-                result = await signInManager.TwoFactorAuthenticatorSignInAsync(signInRequest.TwoFactorCode, rememberClient: true);
+                result = await signInManager.TwoFactorAuthenticatorSignInAsync(signInRequest.TwoFactorCode, false, false);
             }
-            else if (!string.IsNullOrEmpty(signInRequest.TwoFactorRecoveryCode))
+            else if (string.IsNullOrEmpty(signInRequest.TwoFactorRecoveryCode) is false)
             {
                 result = await signInManager.TwoFactorRecoveryCodeSignInAsync(signInRequest.TwoFactorRecoveryCode);
             }
-        } */
+            else
+            {
+                return new SignInResponseDto { RequiresTwoFactor = true };
+            }
+        }
 
         if (result.Succeeded is false)
             throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUsernameOrPassword)]);
+
+        return new EmptyResult();
     }
 
     [HttpPost]
-    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto refreshRequest)
+    public async Task<ActionResult<SignInResponseDto>> Refresh(RefreshRequestDto refreshRequest)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
@@ -248,5 +260,97 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+    }
+
+    [HttpPost("2fa")]
+    public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto tfaRequest, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var user = await userManager.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken)
+            ?? throw new ResourceNotFoundException();
+
+        if (tfaRequest.Enable is true)
+        {
+            if (tfaRequest.ResetSharedKey)
+                throw new BadRequestException(Localizer[nameof(AppStrings.TfaResetSharedKeyError)]);
+            else if (string.IsNullOrEmpty(tfaRequest.TwoFactorCode))
+                throw new BadRequestException(Localizer[nameof(AppStrings.TfaEmptyCodeError)]);
+            else if (!await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, tfaRequest.TwoFactorCode))
+                throw new BadRequestException(Localizer[nameof(AppStrings.TfaInvalidCodeError)]);
+
+            await userManager.SetTwoFactorEnabledAsync(user, true);
+        }
+        else if (tfaRequest.Enable is false || tfaRequest.ResetSharedKey)
+        {
+            await userManager.SetTwoFactorEnabledAsync(user, false);
+        }
+
+        if (tfaRequest.ResetSharedKey)
+        {
+            await userManager.ResetAuthenticatorKeyAsync(user);
+        }
+
+        string[]? recoveryCodes = null;
+        if (tfaRequest.ResetRecoveryCodes || (tfaRequest.Enable == true && await userManager.CountRecoveryCodesAsync(user) == 0))
+        {
+            var recoveryCodesEnumerable = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            recoveryCodes = recoveryCodesEnumerable?.ToArray();
+        }
+
+        if (tfaRequest.ForgetMachine)
+        {
+            await signInManager.ForgetTwoFactorClientAsync();
+        }
+
+        var unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
+        if (string.IsNullOrEmpty(unformattedKey))
+        {
+            await userManager.ResetAuthenticatorKeyAsync(user);
+            unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
+
+            if (string.IsNullOrEmpty(unformattedKey))
+            {
+                throw new NotSupportedException("The user manager must produce an authenticator key after reset.");
+            }
+        }
+
+        var sharedKey = FormatKey(unformattedKey);
+        var authenticatorUri = GenerateQrCodeUri(user.Email!, unformattedKey);
+
+        return new TwoFactorAuthResponseDto
+        {
+            SharedKey = sharedKey,
+            AuthenticatorUri = authenticatorUri,
+            RecoveryCodes = recoveryCodes,
+            RecoveryCodesLeft = recoveryCodes?.Length ?? await userManager.CountRecoveryCodesAsync(user),
+            IsTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
+            IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
+        };
+    }
+
+    private static string FormatKey(string unformattedKey)
+    {
+        var result = new StringBuilder();
+        int currentPosition = 0;
+        while (currentPosition + 4 < unformattedKey.Length)
+        {
+            result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
+            currentPosition += 4;
+        }
+        if (currentPosition < unformattedKey.Length)
+        {
+            result.Append(unformattedKey.AsSpan(currentPosition));
+        }
+
+        return result.ToString().ToLowerInvariant();
+    }
+
+    private string GenerateQrCodeUri(string email, string unformattedKey)
+    {
+        return string.Format(CultureInfo.InvariantCulture,
+                             AUTHENTICATOR_URI_FORMAT,
+                             urlEncoder.Encode("Boilerplate.Identity.UI"),
+                             urlEncoder.Encode(email),
+                             unformattedKey);
     }
 }

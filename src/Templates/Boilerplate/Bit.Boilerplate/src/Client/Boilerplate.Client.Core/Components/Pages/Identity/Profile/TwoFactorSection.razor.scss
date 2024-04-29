@@ -1,0 +1,20 @@
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.tfa-key {
+    padding: 1rem;
+    margin: 1rem 0;
+    font-size: 1rem;
+    font-weight: bold;
+    border: 1px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-secondary;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+}
+
+.tab-item-container {
+    margin-top: 1rem;
+}
+
+.recovery-code {
+    margin-top: 0.5rem;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+}
