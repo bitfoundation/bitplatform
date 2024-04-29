@@ -5,16 +5,15 @@ namespace Bit.BlazorUI;
 public partial class BitProgressIndicator
 {
     private double? percentComplete;
-    private string? LabelId => Label.HasValue() || LabelTemplate is not null
-                                ? $"ProgressIndicator-{UniqueId}-Label" : null;
-    private string? DescriptionId => Description.HasValue() || DescriptionTemplate is not null
-                                        ? $"ProgressIndicator-{UniqueId}-Description" : null;
+
+    private string _labelId = string.Empty;
+    private string _descriptionId = string.Empty;
 
 
     /// <summary>
     /// Text alternative of the progress status, used by screen readers for reading the value of the progress.
     /// </summary>
-    [Parameter] public string AriaValueText { get; set; } = string.Empty;
+    [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
     /// Color of the BitProgressIndicator.
@@ -34,7 +33,7 @@ public partial class BitProgressIndicator
     /// <summary>
     /// Text describing or supplementing the operation.
     /// </summary>
-    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
 
     /// <summary>
     /// Custom template for describing or supplementing the operation.
@@ -49,7 +48,7 @@ public partial class BitProgressIndicator
     /// <summary>
     /// Label to display above the BitProgressIndicator.
     /// </summary>
-    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Label { get; set; }
 
     /// <summary>
     /// Custom label template to display above the BitProgressIndicator.
@@ -65,7 +64,7 @@ public partial class BitProgressIndicator
         get => percentComplete;
         set
         {
-            percentComplete = value is not null ? Normalize(value) : null;
+            percentComplete = value.HasValue ? Normalize(value) : null;
         }
     }
 
@@ -86,7 +85,7 @@ public partial class BitProgressIndicator
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => PercentComplete is not null ? string.Empty : $"{RootElementClass}-ind");
+        ClassBuilder.Register(() => PercentComplete.HasValue ? string.Empty : $"{RootElementClass}-ind");
     }
 
     protected override void RegisterCssStyles()
@@ -94,7 +93,15 @@ public partial class BitProgressIndicator
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);
+    protected override Task OnInitializedAsync()
+    {
+        _labelId = $"BitProgressIndicator-{UniqueId}-label";
+        _descriptionId = $"BitProgressIndicator-{UniqueId}-description";
+
+        return base.OnInitializedAsync();
+    }
+
+    private static double Normalize(double? value) => Math.Clamp(value.GetValueOrDefault(), 0, 100);
 
     private string GetProgressBarStyle()
     {

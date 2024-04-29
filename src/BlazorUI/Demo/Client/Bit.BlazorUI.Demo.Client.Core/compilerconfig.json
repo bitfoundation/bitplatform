@@ -372,6 +372,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/ProgressIndicator/BitProgressIndicatorDemo.razor.css",
+        "inputFile": "Pages/Components/ProgressIndicator/BitProgressIndicatorDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/ScrollablePane/BitScrollablePaneDemo.razor.css",
         "inputFile": "Pages/Components/ScrollablePane/BitScrollablePaneDemo.razor.scss",
         "minify": { "enabled": false },
