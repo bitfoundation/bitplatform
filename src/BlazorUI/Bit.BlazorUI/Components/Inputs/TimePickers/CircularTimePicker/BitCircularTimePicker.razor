@@ -64,11 +64,11 @@
                     <div class="bit-ctp-hm">
                         @if (EditMode == BitCircularTimePickerEditMode.Normal)
                         {
-                            <button type="button" class="bit-ctp-txt @(_currentView == BitCircularTimePickerDialMode.Hours ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnHourClick">
+                            <button type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina")" @onclick="HandleOnHourClick">
                                 @GetHourString()
                             </button>
                             <span class="bit-ctp-txt">:</span>
-                            <button type="button" class="bit-ctp-txt @(_currentView == BitCircularTimePickerDialMode.Minutes ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnMinuteClick">
+                            <button type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : "")" @onclick="HandleOnMinuteClick">
                                 @GetMinuteString()
                             </button>
                         }
@@ -89,7 +89,7 @@
                     <div @ref="_clockRef" class="bit-ctp-clf" @onpointerdown="HandleOnPointerDown">
                         <div class="bit-ctp-pin"></div>
                         
-                        @if (_currentView == BitCircularTimePickerDialMode.Hours)
+                        @if (_showHourView)
                         {
                             if (TimeFormat == BitTimeFormat.TwelveHours)
                             {
