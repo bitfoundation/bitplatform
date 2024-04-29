@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -11,7 +12,6 @@ using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
-using System.Text.Encodings.Web;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
