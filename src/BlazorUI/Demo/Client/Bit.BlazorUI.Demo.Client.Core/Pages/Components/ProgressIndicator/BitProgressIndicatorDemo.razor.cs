@@ -301,13 +301,11 @@ private async Task StartProgress()
 <BitButton OnClick=""StartProgressStyleClass"">Start Progress</BitButton>
 
 
-<BitProgressIndicator BarColor="" ""
-                      Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
+<BitProgressIndicator Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
                                       Tracker = ""background-color: green;"" })""
                       BarHeight=""20"" />
 
-<BitProgressIndicator BarColor="" ""
-                      Classes=""@(new() { Bar = ""custom-bar"",
+<BitProgressIndicator Classes=""@(new() { Bar = ""custom-bar"",
                                           Tracker = ""custom-tracker""})""
                       PercentComplete=""@completedPercentStylesClasses""
                       BarHeight=""20"" />

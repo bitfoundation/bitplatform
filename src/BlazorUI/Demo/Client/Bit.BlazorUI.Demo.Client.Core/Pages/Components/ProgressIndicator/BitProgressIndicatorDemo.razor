@@ -51,15 +51,13 @@ Bars moving backward reduce confidence in the service."
                 <br /><br /><br />
                 <div>Styles & Classes:</div>
                 <br />
-                <BitProgressIndicator BarColor=" "
-                                      Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);" ,
+                <BitProgressIndicator Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);" ,
                                                         Tracker = "background-color: green;" })"
                                       BarHeight="20" />
 
                 <br />
 
-                <BitProgressIndicator BarColor=" "
-                                      Classes="@(new() { Bar = "custom-bar",
+                <BitProgressIndicator Classes="@(new() { Bar = "custom-bar",
                                                          Tracker = "custom-tracker"})"
                                       PercentComplete="@completedPercentStylesClasses"
                                       BarHeight="20" />
