@@ -75,6 +75,8 @@ public partial class BitAccordion
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => IsExpanded ? Classes?.Expanded : string.Empty);
     }
 
     protected override void RegisterCssStyles()
