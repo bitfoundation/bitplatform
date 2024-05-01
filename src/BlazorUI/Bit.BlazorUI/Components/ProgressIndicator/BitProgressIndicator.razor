@@ -6,28 +6,23 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @if (LabelTemplate is not null || Label.HasValue() || (ShowPercent && Indeterminate is false))
+    @if (LabelTemplate is not null)
     {
-        <div style="@Styles?.LabelContainer" class="bit-pin-lbc @Classes?.LabelContainer">
-            @if (LabelTemplate is not null)
-            {
-                <div style="@Styles?.LabelWrapper" class="bit-pin-lbl @Classes?.LabelWrapper" id="@_labelId">
-                    @LabelTemplate
-                </div>
-            }
-            else if (Label.HasValue())
-            {
-                <div style="@Styles?.LabelWrapper" class="bit-pin-lbl @Classes?.LabelWrapper" id="@_labelId">
-                    @Label
-                </div>
-            }
+        <div id="@_labelId">
+            @LabelTemplate
+        </div>
+    }
+    else if (Label.HasValue())
+    {
+        <div style="@Styles?.Label" class="bit-pin-lbl @Classes?.Label" id="@_labelId">
+            @Label
+        </div>
+    }
 
-            @if (ShowPercent && Indeterminate is false)
-            {
-                <div style="@Styles?.PercentContainer" class="bit-pin-prc @Classes?.PercentContainer">
-                    @string.Format(PercentageFormat, Normalize(Percent) / 100)
-                </div>
-            }
+    @if (ShowPercentNumber && Indeterminate is false)
+    {
+        <div style="@Styles?.Percent" class="bit-pin-pct @Classes?.Percent">
+            @string.Format(PercentNumberFormat, Normalize(Percent))
         </div>
     }
 
@@ -37,7 +32,7 @@
     }
     else
     {
-        <div style="@($"height: {BarHeight}px;") @Styles?.IndicatorWrapper" class="bit-pin-wrp @Classes?.IndicatorWrapper">
+        <div style="@($"height: {BarHeight}px;") @Styles?.IndicatorContainer" class="bit-pin-icn @Classes?.IndicatorContainer">
             <div style="@Styles?.Tracker" class="bit-pin-trc @Classes?.Tracker"></div>
             <div class="bit-pin-bar @Classes?.Bar"
                  role="progressbar"
@@ -54,13 +49,13 @@
 
     @if (DescriptionTemplate is not null)
     {
-        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@_descriptionId">
+        <div id="@_descriptionId">
             @DescriptionTemplate
         </div>
     }
     else if (Description.HasValue())
     {
-        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@_descriptionId">
+        <div style="@Styles?.Description" class="bit-pin-des @Classes?.Description" id="@_descriptionId">
             @Description
         </div>
     }

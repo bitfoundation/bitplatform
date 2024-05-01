@@ -2,6 +2,7 @@
 
 .bit-pin {
     font-weight: 400;
+    position: relative;
     font-size: spacing(1.75);
     font-family: $typography-font-family;
 
@@ -18,24 +19,23 @@
     }
 }
 
-.bit-pin-lbc {
-    display: flex;
+.bit-pin-lbl {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     line-height: spacing(2.5);
     padding-bottom: spacing(1);
     color: $color-foreground-primary;
 }
 
-.bit-pin-lbl {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+.bit-pin-pct {
+    top: 0;
+    position: absolute;
+    inset-inline-end: 0;
+    color: $color-foreground-primary;
 }
 
-.bit-pin-prc {
-    margin-left: auto;
-}
-
-.bit-pin-wrp {
+.bit-pin-icn {
     position: relative;
     overflow: hidden;
 }

@@ -16,46 +16,52 @@ Avoid time units as they are rarely accurate enough to be trustworthy. Also, com
 Instead, change the operation description to reflect the change if necessary.
 Bars moving backward reduce confidence in the service."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitProgressIndicator" RazorCode="@example1RazorCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <BitProgressIndicator Label="Basic ProgressIndicator"
                                   Description="Example description"
                                   Percent="42" />
-            <br />
-
-            <BitProgressIndicator Label="Bar Height"
-                                  Percent="69"
-                                  BarHeight="10" />
-            <br />
-
-            <BitProgressIndicator Label="Show Percent"
-                                  Percent="85.69"
-                                  ShowPercent />
-
-            <br />
-
-            <BitProgressIndicator Label="Percent Format"
-                                  Percent="85.69"
-                                  PercentageFormat="{0:P2}"
-                                  ShowPercent />
-
-            <br />
-
-            <BitProgressIndicator Label="Indeterminate"
-                                  Indeterminate />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BarColor" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="BarHeight" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <BitProgressIndicator Percent="69" BarHeight="10" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ShowPercentNumber" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <BitProgressIndicator Label="Show Percent Number"
+                                  Percent="85.69"
+                                  ShowPercentNumber />
+
+            <br />
+
+            <BitProgressIndicator Label="Percent Number Format"
+                                  Percent="85.69"
+                                  PercentNumberFormat="{0:F2} %"
+                                  ShowPercentNumber />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Indeterminate" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <BitProgressIndicator Indeterminate />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BarColor" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <BitProgressIndicator BarColor="#c10606" Percent="69" />
+
             <br />
 
             <BitProgressIndicator BarColor="#ffba17" Indeterminate />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div>
                 <div>Component's Style & Class:</div>
@@ -85,7 +91,7 @@ Bars moving backward reduce confidence in the service."
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <BitProgressIndicator Dir="BitDir.Rtl"
                                   BarHeight="10"
@@ -98,7 +104,7 @@ Bars moving backward reduce confidence in the service."
                                   Dir="BitDir.Rtl"
                                   Percent="69"
                                   BarHeight="10"
-                                  ShowPercent />
+                                  ShowPercentNumber />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

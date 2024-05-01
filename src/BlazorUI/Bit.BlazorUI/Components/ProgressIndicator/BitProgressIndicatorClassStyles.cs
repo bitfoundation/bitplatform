@@ -8,24 +8,19 @@ public class BitProgressIndicatorClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the label container of the BitProgressIndicator.
+    /// Custom CSS classes/styles for the label of the BitProgressIndicator.
     /// </summary>
-    public string? LabelContainer { get; set; }
+    public string? Label { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the label wrapper of the BitProgressIndicator.
+    /// Custom CSS classes/styles for the percent of the BitProgressIndicator.
     /// </summary>
-    public string? LabelWrapper { get; set; }
+    public string? Percent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the percent container of the BitProgressIndicator.
+    /// Custom CSS classes/styles for the indicator container of the BitProgressIndicator.
     /// </summary>
-    public string? PercentContainer { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the indicator wrapper of the BitProgressIndicator.
-    /// </summary>
-    public string? IndicatorWrapper { get; set; }
+    public string? IndicatorContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the tracker of the BitProgressIndicator.
@@ -38,7 +33,7 @@ public class BitProgressIndicatorClassStyles
     public string? Bar { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the description container of the BitProgressIndicator.
+    /// Custom CSS classes/styles for the description of the BitProgressIndicator.
     /// </summary>
-    public string? DescriptionContainer { get; set; }
+    public string? Description { get; set; }
 }

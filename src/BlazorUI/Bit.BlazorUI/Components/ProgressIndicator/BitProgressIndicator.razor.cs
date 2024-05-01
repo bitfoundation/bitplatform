@@ -46,7 +46,7 @@ public partial class BitProgressIndicator
     /// <summary>
     /// Whether or not to percentage display.
     /// </summary>
-    [Parameter] public bool ShowPercent { get; set; }
+    [Parameter] public bool ShowPercentNumber { get; set; }
 
     /// <summary>
     /// Label to display above the BitProgressIndicator.
@@ -64,9 +64,9 @@ public partial class BitProgressIndicator
     [Parameter] public double Percent { get; set; }
 
     /// <summary>
-    /// The format of the percent in percentage display.
+    /// The format of the percent number in percentage display.
     /// </summary>
-    [Parameter] public string PercentageFormat { get; set; } = "{0:P0}";
+    [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
 
     /// <summary>
     /// A custom template for progress track.
@@ -85,7 +85,7 @@ public partial class BitProgressIndicator
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Indeterminate ? $"{RootElementClass}-ind" : null);
+        ClassBuilder.Register(() => Indeterminate ? "bit-pin-ind" : null);
     }
 
     protected override void RegisterCssStyles()
@@ -107,8 +107,9 @@ public partial class BitProgressIndicator
     {
         StringBuilder sb = new();
 
-        sb.Append($"--bit-clr-pin-bar-color:{(BarColor.HasValue() ? BarColor : "#2EA3FF")};")
-          .Append(Styles?.Bar);
+        sb.Append($"--bit-clr-pin-bar-color:{(BarColor.HasValue() ? BarColor : "var(--bit-clr-primary-main)")};");
+
+        sb.Append(Styles?.Bar);
 
         if (Indeterminate is false)
         {

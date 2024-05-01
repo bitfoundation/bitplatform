@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Linq;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.ProgressIndicator;
@@ -17,7 +18,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.BarHeight, barHeight);
         });
 
-        var piWrapper = component.Find(".bit-pin-wrp");
+        var piWrapper = component.Find(".bit-pin-icn");
         var piWrapperStyle = piWrapper.GetAttribute("style");
         var expectedValue = $"height: {barHeight}px";
         Assert.IsTrue(piWrapperStyle.Contains(expectedValue));
@@ -169,18 +170,18 @@ public class BitProgressIndicatorTests : BunitTestContext
     {
         var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.ShowPercent, showPercent);
+            parameters.Add(p => p.ShowPercentNumber, showPercent);
         });
 
 
         if (showPercent)
         {
-            var percentContainer = component.Find(".bit-pin-prc");
+            var percentContainer = component.Find(".bit-pin-pct");
             Assert.IsNotNull(percentContainer);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pin-prc"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-pin-pct"));
         }
     }
 
@@ -194,7 +195,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var labelChildNodes = component.Find(".bit-pin-lbl").ChildNodes;
+        var labelChildNodes = component.Find(".bit-pin").FirstChild.ChildNodes;
         labelChildNodes.MarkupMatches(labelTemplate);
     }
 
@@ -208,7 +209,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.DescriptionTemplate, descriptionTemplate);
         });
 
-        var descriptionChildNodes = component.Find(".bit-pin-des").ChildNodes;
+        var descriptionChildNodes = component.Find(".bit-pin").LastChild.ChildNodes;
         descriptionChildNodes.MarkupMatches(descriptionTemplate);
     }
 }
