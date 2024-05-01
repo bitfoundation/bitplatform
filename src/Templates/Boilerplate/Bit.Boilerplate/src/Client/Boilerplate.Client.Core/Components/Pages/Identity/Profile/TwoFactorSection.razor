@@ -17,47 +17,47 @@
 
 @if (isTwoFactorAuthEnabled is false)
 {
-    <h3>Configure authenticator app</h3>
+    <h3>@Localizer[nameof(AppStrings.TfaConfigureAutAppTitle)]</h3>
     <br />
     <div>
-        <p>To use an authenticator app go through the following steps:</p>
+        <p>@Localizer[nameof(AppStrings.TfaConfigureAutAppSubtitle)]</p>
         <ol>
             <li>
                 <p>
-                    Download a two-factor authenticator app like Microsoft Authenticator for
-                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
-                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
-                    Google Authenticator for
-                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
-                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
+                    @(new MarkupString(Localizer.GetString(nameof(AppStrings.TfaConfigureAutAppStep1),
+                        "<a href=\"https://go.microsoft.com/fwlink/?Linkid=825072\">Android</a>",
+                        "<a href=\"https://go.microsoft.com/fwlink/?Linkid=825073\">iOS</a>",
+                        "<a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en\">Android</a>",
+                        "<a href=\"https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8\">iOS</a>")))
                 </p>
             </li>
             <br />
             <li>
-                <p>
-                    Scan the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):
+                @Localizer[nameof(AppStrings.TfaConfigureAutAppStep2)]
+                <div class="tfa-key-container">
                     <div class="tfa-key">@sharedKey</div>
-                </p>
-                <div class="alert alert-info">
-                    Learn how to <a href="https://go.microsoft.com/fwlink/?Linkid=852423">enable QR code generation</a>.
+                    <BitIconButton OnClick="CopyToClipboard" IconName="@BitIconName.Copy" Title="Copy" />
                 </div>
-                <div></div>
-                <div data-url="@authenticatorUri"></div>
+                <div>
+                    <BitMessageBar MessageBarType="BitMessageBarType.Info">
+                        Learn how to <a href="https://go.microsoft.com/fwlink/?Linkid=852423">enable QR code generation</a>.
+                    </BitMessageBar>
+                </div>
             </li>
             <br />
             <li>
-                <p>
-                    Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
-                    with a unique code. Enter the code in the confirmation box below.
-                </p>
+                @Localizer[nameof(AppStrings.TfaConfigureAutAppStep3)]
+                <br />
                 <br />
                 <div>
                     <BitTextField @bind-Value="verificationCode"
-                                  Label="Verification Code:"
+                                  Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]"
                                   AutoComplete="@BitAutoCompleteValue.Off"
-                                  Placeholder="Please enter the code." />
+                                  Placeholder="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodePlaceholder)]" />
                     <br />
-                    <BitButton OnClick="WrapHandled(EnableTwoFactorAuth)">Verify</BitButton>
+                    <BitButton OnClick="WrapHandled(EnableTwoFactorAuth)">
+                        @Localizer[nameof(AppStrings.TfaConfigureAutAppVerifyButtonText)]
+                    </BitButton>
                 </div>
             </li>
         </ol>
@@ -66,52 +66,50 @@
 else
 {
     <BitPivot>
-        <BitPivotItem HeaderText="Recovery codes">
+        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaRecoveryCodesHeader)]">
             <div class="tab-item-container">
                 @if (recoveryCodesLeft == 0)
                 {
                     <BitMessageBar MessageBarType="BitMessageBarType.Error" IsMultiline Style="margin-bottom:1rem">
-                        <strong>You have no recovery codes left.</strong>
-                        <p>You must generate a new set of recovery codes before you can log in with a recovery code.</p>
+                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftTitle)]</strong>
+                        <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftSubtitle)]</p>
                     </BitMessageBar>
                 }
                 else if (recoveryCodesLeft == 1)
                 {
                     <BitMessageBar MessageBarType="BitMessageBarType.SevereWarning" IsMultiline Style="margin-bottom:1rem">
-                        <strong>You have 1 recovery code left.</strong>
-                        <p>You can generate a new set of recovery codes.</p>
+                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesOneLeftTitle)]</strong>
+                        <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesOneLeftSubtitle)]</p>
                     </BitMessageBar>
                 }
                 else if (recoveryCodesLeft <= 3)
                 {
                     <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin-bottom:1rem">
-                        <strong>You have @recoveryCodesLeft recovery codes left.</strong>
-                        <p>You should generate a new set of recovery codes.</p>
+                        <strong>@Localizer.GetString(nameof(AppStrings.TfaRecoveryCodesThreeLeftTitle), recoveryCodesLeft)</strong>
+                        <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesThreeLeftSubtitle)]</p>
                     </BitMessageBar>
                 }
 
                 @if (recoveryCodes is null)
                 {
                     <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin-bottom:1rem">
-                        Generating new recovery codes does not change the keys used in authenticator apps.
-                        If you wish to change the key used in an authenticator app you should reset your
-                        authenticator keys in the next tab.
+                        @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateWraning)]
                     </BitMessageBar>
 
                     <BitButton OnClick="WrapHandled(GenerateRecoveryCode)">
-                        Generate Recovery Codes
+                        @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateButtonText)]
                     </BitButton>
                 }
                 else
                 {
                     <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin: 1rem 0">
-                        <strong>Put these codes in a safe place.</strong>
+                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarningTitle)]</strong>
                         <br />
-                        <p>If you lose your authenticator device and don't have the recovery codes you will lose access to your account.</p>
+                        <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarning)]</p>
                     </BitMessageBar>
 
                     <BitMessageBar MessageBarType="BitMessageBarType.Info" IsMultiline>
-                        <strong>Recovery codes:</strong>
+                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesTitle)]</strong>
                         @foreach (var recoveryCode in recoveryCodes)
                         {
                             <div class="recovery-code">@recoveryCode</div>
@@ -121,38 +119,28 @@ else
             </div>
         </BitPivotItem>
 
-        @if (isMachineRemembered)
-        {
-            <BitPivotItem HeaderText="Forget machine">
-                <BitButton OnClick="WrapHandled(ForgetMachine)">Forget this browser</BitButton>
-            </BitPivotItem>
-        }
-
-        <BitPivotItem HeaderText="Authenticator app">
+        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaAuthAppHeader)]">
             <div class="tab-item-container">
-                <h3>Reset authenticator key</h3>
                 <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin:1rem 0">
-                    <strong>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</strong>
-                    <p>
-                        This process disables 2FA until you verify your authenticator app.
-                        If you do not complete your authenticator app configuration you may lose access to your account.
-                    </p>
+                    <strong>@Localizer[nameof(AppStrings.TfaAuthAppWarningTitle)]</strong>
+                    <p>@Localizer[nameof(AppStrings.TfaAuthAppWarning)]</p>
                 </BitMessageBar>
-                <BitButton OnClick="WrapHandled(ResetAuthenticatorKey)">Reset authenticator key</BitButton>
+                <BitButton OnClick="WrapHandled(ResetAuthenticatorKey)">
+                    @Localizer[nameof(AppStrings.TfaAuthAppResetKeyButtonText)]
+                </BitButton>
             </div>
         </BitPivotItem>
 
-        <BitPivotItem HeaderText="Disable 2FA">
+        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaDisable2faHeader)]">
             <div class="tab-item-container">
                 <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin:1rem 0">
-                    <strong>This action only disables 2FA.</strong>
-                    <p>
-                        Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key
-                        used in an authenticator app you should reset your authenticator keys in the previous tab.
-                    </p>
+                    <strong>@Localizer[nameof(AppStrings.TfaDisable2faWarningTitle)]</strong>
+                    <p>@Localizer[nameof(AppStrings.TfaDisable2faWarning)]</p>
                 </BitMessageBar>
 
-                <BitButton OnClick="WrapHandled(DisableTwoFactorAuth)">Disable 2FA</BitButton>
+                <BitButton OnClick="WrapHandled(DisableTwoFactorAuth)">
+                    @Localizer[nameof(AppStrings.TfaDisable2faButtonText)]
+                </BitButton>
             </div>
         </BitPivotItem>
     </BitPivot>

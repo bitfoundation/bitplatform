@@ -184,7 +184,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUsernameOrPassword)]);
 
-        return new EmptyResult();
+        return Empty;
     }
 
     [HttpPost]

@@ -484,6 +484,90 @@ Please confirm your email by clicking on the link.</value>
     <data name="TfaAuthenticatorAppVerifiedMessage" xml:space="preserve">
     <value>Your authenticator app has been verified.</value>
   </data>
+    <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <value>Configure authenticator app</value>
+  </data>
+    <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <value>To use an authenticator app go through the following steps:</value>
+  </data>
+    <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <value>Download a two-factor authenticator app like Microsoft Authenticator for {0} and {1} or Google Authenticator for {2} and {3}.</value>
+  </data>
+    <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <value>Scan the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):</value>
+  </data>
+    <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <value>Verification Code:</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <value>Please enter the code.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <value>Verify</value>
+  </data>
+    <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <value>Recovery codes</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <value>You have no recovery codes left.</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <value>You must generate a new set of recovery codes before you can log in with a recovery code.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <value>You have 1 recovery code left.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <value>You can generate a new set of recovery codes.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <value>You have {0} recovery codes left.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <value>You should generate a new set of recovery codes.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <value>Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should reset your authenticator keys in the next tab.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <value>Generate Recovery Codes</value>
+  </data>
+    <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <value>Put these codes in a safe place.</value>
+  </data>
+    <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <value>If you lose your authenticator device and don't have the recovery codes you will lose access to your account.</value>
+  </data>
+    <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <value>Recovery codes:</value>
+  </data>
+    <data name="TfaAuthAppHeader" xml:space="preserve">
+    <value>Authenticator app</value>
+  </data>
+    <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <value>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</value>
+  </data>
+    <data name="TfaAuthAppWarning" xml:space="preserve">
+    <value>This process disables 2FA until you verify your authenticator app. If you do not complete your authenticator app configuration you may lose access to your account.</value>
+  </data>
+    <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <value>Reset authenticator key</value>
+  </data>
+    <data name="TfaDisable2faHeader" xml:space="preserve">
+    <value>Disable 2FA</value>
+  </data>
+    <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <value>This action only disables 2FA.</value>
+  </data>
+    <data name="TfaDisable2faWarning" xml:space="preserve">
+    <value>Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should reset your authenticator keys in the previous tab.</value>
+  </data>
+    <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <value>Disable 2FA</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>

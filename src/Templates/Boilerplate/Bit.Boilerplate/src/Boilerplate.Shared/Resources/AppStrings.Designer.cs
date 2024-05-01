@@ -1259,11 +1259,155 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Authenticator app.
+        /// </summary>
+        public static string TfaAuthAppHeader {
+            get {
+                return ResourceManager.GetString("TfaAuthAppHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reset authenticator key.
+        /// </summary>
+        public static string TfaAuthAppResetKeyButtonText {
+            get {
+                return ResourceManager.GetString("TfaAuthAppResetKeyButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This process disables 2FA until you verify your authenticator app. If you do not complete your authenticator app configuration you may lose access to your account..
+        /// </summary>
+        public static string TfaAuthAppWarning {
+            get {
+                return ResourceManager.GetString("TfaAuthAppWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If you reset your authenticator key your authenticator app will not work until you reconfigure it..
+        /// </summary>
+        public static string TfaAuthAppWarningTitle {
+            get {
+                return ResourceManager.GetString("TfaAuthAppWarningTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Your authenticator app has been verified..
         /// </summary>
         public static string TfaAuthenticatorAppVerifiedMessage {
             get {
                 return ResourceManager.GetString("TfaAuthenticatorAppVerifiedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download a two-factor authenticator app like Microsoft Authenticator for {0} and {1} or Google Authenticator for {2} and {3}..
+        /// </summary>
+        public static string TfaConfigureAutAppStep1 {
+            get {
+                return ResourceManager.GetString("TfaConfigureAutAppStep1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scan the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):.
+        /// </summary>
+        public static string TfaConfigureAutAppStep2 {
+            get {
+                return ResourceManager.GetString("TfaConfigureAutAppStep2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below..
+        /// </summary>
+        public static string TfaConfigureAutAppStep3 {
+            get {
+                return ResourceManager.GetString("TfaConfigureAutAppStep3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To use an authenticator app go through the following steps:.
+        /// </summary>
+        public static string TfaConfigureAutAppSubtitle {
+            get {
+                return ResourceManager.GetString("TfaConfigureAutAppSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configure authenticator app.
+        /// </summary>
+        public static string TfaConfigureAutAppTitle {
+            get {
+                return ResourceManager.GetString("TfaConfigureAutAppTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verification Code:.
+        /// </summary>
+        public static string TfaConfigureAutAppVerificationCodeLabel {
+            get {
+                return ResourceManager.GetString("TfaConfigureAutAppVerificationCodeLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter the code..
+        /// </summary>
+        public static string TfaConfigureAutAppVerificationCodePlaceholder {
+            get {
+                return ResourceManager.GetString("TfaConfigureAutAppVerificationCodePlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verify.
+        /// </summary>
+        public static string TfaConfigureAutAppVerifyButtonText {
+            get {
+                return ResourceManager.GetString("TfaConfigureAutAppVerifyButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable 2FA.
+        /// </summary>
+        public static string TfaDisable2faButtonText {
+            get {
+                return ResourceManager.GetString("TfaDisable2faButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable 2FA.
+        /// </summary>
+        public static string TfaDisable2faHeader {
+            get {
+                return ResourceManager.GetString("TfaDisable2faHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should reset your authenticator keys in the previous tab..
+        /// </summary>
+        public static string TfaDisable2faWarning {
+            get {
+                return ResourceManager.GetString("TfaDisable2faWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This action only disables 2FA..
+        /// </summary>
+        public static string TfaDisable2faWarningTitle {
+            get {
+                return ResourceManager.GetString("TfaDisable2faWarningTitle", resourceCulture);
             }
         }
         
@@ -1309,6 +1453,114 @@ namespace Boilerplate.Shared.Resources {
         public static string TfaProtectedSignInSubtitle {
             get {
                 return ResourceManager.GetString("TfaProtectedSignInSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate Recovery Codes.
+        /// </summary>
+        public static string TfaRecoveryCodesGenerateButtonText {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesGenerateButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should reset your authenticator keys in the next tab..
+        /// </summary>
+        public static string TfaRecoveryCodesGenerateWraning {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesGenerateWraning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recovery codes.
+        /// </summary>
+        public static string TfaRecoveryCodesHeader {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can generate a new set of recovery codes..
+        /// </summary>
+        public static string TfaRecoveryCodesOneLeftSubtitle {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesOneLeftSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have 1 recovery code left..
+        /// </summary>
+        public static string TfaRecoveryCodesOneLeftTitle {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesOneLeftTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You should generate a new set of recovery codes..
+        /// </summary>
+        public static string TfaRecoveryCodesThreeLeftSubtitle {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesThreeLeftSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have {0} recovery codes left..
+        /// </summary>
+        public static string TfaRecoveryCodesThreeLeftTitle {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesThreeLeftTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recovery codes:.
+        /// </summary>
+        public static string TfaRecoveryCodesTitle {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If you lose your authenticator device and don&apos;t have the recovery codes you will lose access to your account..
+        /// </summary>
+        public static string TfaRecoveryCodesWarning {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Put these codes in a safe place..
+        /// </summary>
+        public static string TfaRecoveryCodesWarningTitle {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesWarningTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must generate a new set of recovery codes before you can log in with a recovery code..
+        /// </summary>
+        public static string TfaRecoveryCodesZeroLeftSubtitle {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesZeroLeftSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have no recovery codes left..
+        /// </summary>
+        public static string TfaRecoveryCodesZeroLeftTitle {
+            get {
+                return ResourceManager.GetString("TfaRecoveryCodesZeroLeftTitle", resourceCulture);
             }
         }
         

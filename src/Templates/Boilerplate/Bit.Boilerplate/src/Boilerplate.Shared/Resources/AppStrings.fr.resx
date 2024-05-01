@@ -588,6 +588,90 @@
     <data name="TfaAuthenticatorAppVerifiedMessage" xml:space="preserve">
     <value>Votre application d'authentification a été vérifiée.</value>
   </data>
+    <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <value>Configurer l'application d'authentification</value>
+  </data>
+    <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <value>Pour utiliser une application d'authentification, suivez les étapes suivantes:</value>
+  </data>
+    <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <value>Téléchargez une application d'authentification à deux facteurs comme Microsoft Authenticator pour {0} et {1} ou Google Authenticator pour {2} et {3}.</value>
+  </data>
+    <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <value>Scannez le code QR ou entrez la clé suivante dans votre application d'authentification à deux facteurs (les espaces et la casse n'ont pas d'importance):</value>
+  </data>
+    <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <value>Une fois que vous avez scanné le code QR ou saisi la clé ci-dessus, votre application d'authentification à deux facteurs vous fournira un code unique. Entrez le code dans la case de confirmation ci-dessous.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <value>Le code de vérification:</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <value>Veuillez entrer le code.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <value>Vérifier</value>
+  </data>
+    <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <value>Codes de récupération</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <value>Vous n'avez plus de codes de récupération.</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <value>Vous devez générer un nouvel ensemble de codes de récupération avant de pouvoir vous connecter avec un code de récupération.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <value>Il vous reste 1 code de récupération.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <value>Vous pouvez générer un nouvel ensemble de codes de récupération.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <value>Il vous reste {0} codes de récupération.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <value>Vous devez générer un nouvel ensemble de codes de récupération.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <value>La génération de nouveaux codes de récupération ne modifie pas les clés utilisées dans les applications d'authentification. Si vous souhaitez modifier la clé utilisée dans une application d'authentification, vous devez réinitialiser vos clés d'authentification dans l'onglet suivant.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <value>Générer des codes de récupération</value>
+  </data>
+    <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <value>Conservez ces codes dans un endroit sûr.</value>
+  </data>
+    <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <value>Si vous perdez votre appareil d'authentification et ne disposez pas des codes de récupération, vous perdrez l'accès à votre compte.</value>
+  </data>
+    <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <value>Codes de récupération:</value>
+  </data>
+    <data name="TfaAuthAppHeader" xml:space="preserve">
+    <value>Application d'authentification</value>
+  </data>
+    <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <value>Si vous réinitialisez votre clé d'authentification, votre application d'authentification ne fonctionnera pas tant que vous ne la reconfigurerez pas.</value>
+  </data>
+    <data name="TfaAuthAppWarning" xml:space="preserve">
+    <value>Ce processus désactive 2FA jusqu'à ce que vous vérifiiez votre application d'authentification. Si vous ne terminez pas la configuration de votre application d'authentification, vous risquez de perdre l'accès à votre compte.</value>
+  </data>
+    <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <value>Réinitialiser la clé d'authentification</value>
+  </data>
+    <data name="TfaDisable2faHeader" xml:space="preserve">
+    <value>Désactiver 2FA</value>
+  </data>
+    <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <value>Cette action désactive uniquement 2FA.</value>
+  </data>
+    <data name="TfaDisable2faWarning" xml:space="preserve">
+    <value>La désactivation de 2FA ne modifie pas les clés utilisées dans les applications d'authentification. Si vous souhaitez modifier la clé utilisée dans une application d'authentification, vous devez réinitialiser vos clés d'authentification dans l'onglet précédent.</value>
+  </data>
+    <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <value>Désactiver 2FA</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
   </data>

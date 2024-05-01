@@ -472,6 +472,90 @@
     <data name="TfaAuthenticatorAppVerifiedMessage" xml:space="preserve">
     <value>برنامه احراز هویت شما تأیید شد.</value>
   </data>
+    <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <value>پیکربندی برنامه احراز هویت</value>
+  </data>
+    <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <value>برای استفاده از برنامه احراز هویت مراحل زیر را طی کنید:</value>
+  </data>
+    <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <value>دانلود یک برنامه احراز هویت دو مرحله ای مانند Microsoft Authenticator برای {0} و {1} یا Google Authenticator برای {2} و {3}.</value>
+  </data>
+    <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <value>کد QR را اسکن کنید یا کلید زیر را در برنامه احراز هویت دو عاملی خود وارد کنید (فضاها و بدنه مهم نیستند):</value>
+  </data>
+    <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <value>هنگامی که کد QR را اسکن کردید یا کلید بالا را وارد کردید، برنامه احراز هویت دو عاملی شما یک کد منحصر به فرد را در اختیار شما قرار می دهد. کد را در کادر تایید زیر وارد کنید.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <value>کد تایید:</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <value>لطفا کد را وارد کنید.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <value>تأیید</value>
+  </data>
+    <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <value>کدهای بازیابی</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <value>هیچ کد بازیابی ندارید.</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <value>قبل از اینکه بتوانید با کد بازیابی وارد شوید، باید مجموعه جدیدی از کدهای بازیابی را ایجاد کنید.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <value>شما 1 کد بازیابی باقی مانده است.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <value>می توانید مجموعه جدیدی از کدهای بازیابی را ایجاد کنید.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <value>شما {0} کد بازیابی باقی مانده است.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <value>شما باید مجموعه جدیدی از کدهای بازیابی را ایجاد کنید.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <value>ایجاد کدهای بازیابی جدید، کلیدهای مورد استفاده در برنامه های احراز هویت را تغییر نمی دهد. اگر می خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید کلیدهای احراز هویت خود را در تب بعدی بازنشانی کنید.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <value>کدهای بازیابی را ایجاد کنید</value>
+  </data>
+    <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <value>این کدها را در مکانی امن قرار دهید.</value>
+  </data>
+    <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <value>اگر دستگاه احراز هویت خود را گم کنید و کدهای بازیابی را نداشته باشید، دسترسی به حساب خود را از دست خواهید داد.</value>
+  </data>
+    <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <value>کدهای بازیابی:</value>
+  </data>
+    <data name="TfaAuthAppHeader" xml:space="preserve">
+    <value>برنامه Authenticator</value>
+  </data>
+    <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <value>اگر کلید احراز هویت خود را بازنشانی کنید، برنامه احراز هویت شما تا زمانی که آن را دوباره پیکربندی نکنید، کار نخواهد کرد.</value>
+  </data>
+    <data name="TfaAuthAppWarning" xml:space="preserve">
+    <value>این فرآیند تا زمانی که برنامه احراز هویت خود را تأیید نکنید، 2FA را غیرفعال می کند. اگر پیکربندی برنامه authenticator خود را کامل نکنید، ممکن است دسترسی به حساب خود را از دست بدهید.</value>
+  </data>
+    <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <value>کلید احراز هویت را بازنشانی کنید</value>
+  </data>
+    <data name="TfaDisable2faHeader" xml:space="preserve">
+    <value>2FA را غیرفعال کنید</value>
+  </data>
+    <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <value>این عمل فقط 2FA را غیرفعال می کند.</value>
+  </data>
+    <data name="TfaDisable2faWarning" xml:space="preserve">
+    <value>غیرفعال کردن 2FA کلیدهای مورد استفاده در برنامه های احراز هویت را تغییر نمی دهد. اگر می خواهید کلید مورد استفاده در یک برنامه احراز هویت را تغییر دهید، باید کلیدهای احراز هویت خود را در برگه قبلی بازنشانی کنید.</value>
+  </data>
+    <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <value>2FA را غیرفعال کنید</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>
   </data>

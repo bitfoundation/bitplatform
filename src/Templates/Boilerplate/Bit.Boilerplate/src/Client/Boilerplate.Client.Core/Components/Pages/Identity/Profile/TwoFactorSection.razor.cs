@@ -1,6 +1,4 @@
-﻿using System.Text;
-using System.Text.Encodings.Web;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
@@ -10,6 +8,7 @@ public partial class TwoFactorSection
     private UserDto? user;
 
     [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private Clipboard clipboard = default!;
 
 
     private bool isLoading;
@@ -127,5 +126,10 @@ public partial class TwoFactorSection
         await identityController.TwoFactorAuth(request, CurrentCancellationToken);
 
         NavigationManager.Refresh(true);
+    }
+
+    private async Task CopyToClipboard()
+    {
+        await clipboard.WriteText(sharedKey!);
     }
 }
