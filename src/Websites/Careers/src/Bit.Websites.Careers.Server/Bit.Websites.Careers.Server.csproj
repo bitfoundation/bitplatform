@@ -22,7 +22,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
-        <PackageReference Include="Riok.Mapperly" Version="3.5.0" />
+        <PackageReference Include="Riok.Mapperly" Version="3.5.1" />
     </ItemGroup>
 
     <ItemGroup>
