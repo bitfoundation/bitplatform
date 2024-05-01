@@ -27,12 +27,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="8.8.1" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.1">
+        <PackageReference Include="Bit.Bswup" Version="8.8.2-pre-01" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.2-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
