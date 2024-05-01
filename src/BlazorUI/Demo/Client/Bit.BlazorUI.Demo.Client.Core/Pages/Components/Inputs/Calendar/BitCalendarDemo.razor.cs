@@ -210,6 +210,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "StartingValue",
+            Type = "DateTimeOffset?",
+            DefaultValue = "null",
+            Description = "Specifies the date and time of the calendar when it is showing without any selected value.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitCalendarClassStyles",
             DefaultValue = "null",
@@ -653,6 +660,7 @@ public partial class BitCalendarDemo
     private bool showMonthPickerAsOverlay;
 
     private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
+    private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);
 
     private string SuccessMessage = string.Empty;
     private BitCalendarValidationModel validationModel = new();
@@ -676,7 +684,10 @@ public partial class BitCalendarDemo
 <BitCalendar />
 <BitCalendar IsEnabled=""false"" />
 <BitCalendar ShowWeekNumbers=""true"" />
-<BitCalendar HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />";
+<BitCalendar HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
+<BitCalendar ShowTimePicker=""true"" StartingValue=""startingValue"" />";
+    private readonly string example1CsharpCode = @"
+private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);";
 
     private readonly string example2RazorCode = @"
 <BitCalendar MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />

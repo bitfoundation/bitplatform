@@ -17,16 +17,17 @@ public partial class BitCircularTimePicker
     private BitIconLocation iconLocation = BitIconLocation.Right;
     private string focusClass = string.Empty;
 
-    private bool _isPointerDown;
-    private int _initialHour;
-    private int _initialMinute;
     private int? _hour;
     private int? _minute;
     private string? _labelId;
     private string? _inputId;
+    private bool _isPointerDown;
+    private bool _showHourView = true;
     private string _calloutId = string.Empty;
     private string _circularTimePickerId = string.Empty;
-    private BitCircularTimePickerDialMode _currentView = BitCircularTimePickerDialMode.Hours;
+    private string? _pointerUpAbortControllerId;
+    private string? _pointerMoveAbortControllerId;
+    private ElementReference _clockRef;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
     private string _focusClass
     {
@@ -213,6 +214,34 @@ public partial class BitCircularTimePicker
         StateHasChanged();
     }
 
+    [JSInvokable(nameof(HandlePointerUp))]
+    public async Task HandlePointerUp(MouseEventArgs e)
+    {
+        if (_isPointerDown is false) return;
+
+        _isPointerDown = false;
+
+        if (AutoClose && ((_showHourView is false && _minute.HasValue) || (_showHourView && EditMode == BitCircularTimePickerEditMode.OnlyHours)))
+        {
+            await CloseCallout();
+        }
+
+        if (_showHourView && _hour.HasValue && EditMode == BitCircularTimePickerEditMode.Normal)
+        {
+            _showHourView = false;
+        }
+
+        StateHasChanged();
+    }
+
+    [JSInvokable(nameof(HandlePointerMove))]
+    public async Task HandlePointerMove(MouseEventArgs e)
+    {
+        if (_isPointerDown is false) return;
+
+        await UpdateTime(e);
+    }
+
     public Task OpenCallout() => HandleOnClick();
 
     protected override string RootElementClass => "bit-ctp";
@@ -238,14 +267,21 @@ public partial class BitCircularTimePicker
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
 
-        _initialHour = _hour.GetValueOrDefault();
-        _initialMinute = _minute.GetValueOrDefault();
-
         _dotnetObj = DotNetObjectReference.Create(this);
 
         OnValueChanged += HandleOnValueChanged;
 
         base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+
+        _pointerUpAbortControllerId = await _js.BitCircularTimePickerRegisterPointerUp(_dotnetObj, nameof(HandlePointerUp));
+        _pointerMoveAbortControllerId = await _js.BitCircularTimePickerRegisterPointerMove(_dotnetObj, nameof(HandlePointerMove));
     }
 
     private async Task HandleOnFocusIn()
@@ -298,6 +334,7 @@ public partial class BitCircularTimePicker
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
+        _showHourView = true;
         IsOpen = true;
         await ToggleCallout();
 
@@ -307,101 +344,25 @@ public partial class BitCircularTimePicker
     private string GetTransformStyle(int index, double radius, double offsetX, double offsetY)
     {
         double angle = (6 - index) * 30 / 180d * Math.PI;
-        var x = (Math.Sin(angle) * radius + offsetX).ToString("F3", CultureInfo.InvariantCulture);
-        var y = ((Math.Cos(angle) + 1) * radius + offsetY).ToString("F3", CultureInfo.InvariantCulture);
-        return $"{x}px, {y}px";
+        var x = Math.Sin(angle) * radius + offsetX;
+        var y = (Math.Cos(angle) + 1) * radius + offsetY;
+        return $"{x:F3}px, {y:F3}px";
     }
 
     private string GetHoursMinutesClass(int value) =>
-        (_currentView == BitCircularTimePickerDialMode.Hours && GetHours() == value) || (_currentView == BitCircularTimePickerDialMode.Minutes && _minute == value)
+        (_showHourView && GetHours() == value) || (_showHourView is false && _minute.GetValueOrDefault() == value)
             ? "bit-ctp-sel"
             : string.Empty;
 
-    private int GetClockHandHeightPercent() => (_currentView == BitCircularTimePickerDialMode.Hours && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
+    private int GetClockHandHeightPercent() => (_showHourView && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
 
-    private double GetPointerDegree() => _currentView switch
+    private double GetPointerDegree() => _showHourView ? ((_hour.GetValueOrDefault()* 30) % 360) : ((_minute.GetValueOrDefault()* 6) % 360);
+
+    private async Task HandleOnPointerDown(MouseEventArgs e)
     {
-        BitCircularTimePickerDialMode.Hours => (_hour.GetValueOrDefault() * 30) % 360,
-        BitCircularTimePickerDialMode.Minutes => (_minute.GetValueOrDefault() * 6) % 360,
-        _ => 0
-    };
+        _isPointerDown = true;
 
-    private async Task HandleOnHourClockHandClick(int hour)
-    {
-        _hour = hour;
-        if (TimeFormat == BitTimeFormat.TwelveHours)
-        {
-            if (IsAm() && _hour == 12)
-            {
-                _hour = 0;
-            }
-            else if (IsAm() is false && _hour < 12)
-            {
-                _hour += 12;
-            }
-        }
-        await UpdateCurrentValue();
-
-        if (EditMode == BitCircularTimePickerEditMode.Normal)
-        {
-            _currentView = BitCircularTimePickerDialMode.Minutes;
-        }
-        else if (EditMode == BitCircularTimePickerEditMode.OnlyHours)
-        {
-            if (AutoClose)
-            {
-                await CloseCallout();
-            }
-        }
-    }
-
-    private async Task HandleOnHourPointerOver(int hour)
-    {
-        if (_isPointerDown is false) return;
-
-        _hour = hour;
-        await UpdateCurrentValue();
-    }
-
-    private void HandleOnPointerDown(MouseEventArgs e) => _isPointerDown = true;
-
-    private async Task HandleOnPointerUp(MouseEventArgs e)
-    {
-        if ((_isPointerDown && _currentView == BitCircularTimePickerDialMode.Minutes && _minute.HasValue && _minute.Value != _initialMinute) ||
-            (_currentView == BitCircularTimePickerDialMode.Hours && _hour.HasValue && _hour.Value != _initialHour && EditMode == BitCircularTimePickerEditMode.OnlyHours))
-        {
-            _isPointerDown = false;
-            if (AutoClose)
-            {
-                await CloseCallout();
-            }
-        }
-
-        _isPointerDown = false;
-
-        if (_currentView == BitCircularTimePickerDialMode.Hours && _hour.HasValue && _hour.Value != _initialHour && EditMode == BitCircularTimePickerEditMode.Normal)
-        {
-            await Task.Run(() => _currentView = BitCircularTimePickerDialMode.Minutes);
-        }
-    }
-
-    private async Task HandleOnMinutePointerOver(int value)
-    {
-        if (_isPointerDown is false) return;
-
-        _minute = value;
-        await UpdateCurrentValue();
-    }
-
-    private async Task HandleOnMinuteClockHandClick(int value)
-    {
-        _minute = value;
-        await UpdateCurrentValue();
-
-        if (AutoClose)
-        {
-            await CloseCallout();
-        }
+        await UpdateTime(e);
     }
 
     private async Task UpdateCurrentValue()
@@ -429,9 +390,9 @@ public partial class BitCircularTimePicker
 
     private int GetHours() => TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
 
-    private void HandleOnHourClick() => _currentView = BitCircularTimePickerDialMode.Hours;
+    private void HandleOnHourClick() => _showHourView = true;
 
-    private void HandleOnMinuteClick() => _currentView = BitCircularTimePickerDialMode.Minutes;
+    private void HandleOnMinuteClick() => _showHourView = false;
 
     private async Task HandleOnAmClick()
     {
@@ -482,6 +443,74 @@ public partial class BitCircularTimePicker
                                 RootElementClass);
     }
 
+    private async Task UpdateTime(MouseEventArgs e)
+    {
+        if (IsOpen is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        var rect = await _js.GetBoundingClientRect(_clockRef);
+        var radius = rect.Width / 2;
+        var centerX = radius;
+        var centerY = radius;
+        var sections = _showHourView ? 12 : 60;
+        var angleIncrement = Math.PI * 2 / sections;
+        var startAngleOffset = Math.PI / -2; // To start the first section at the top
+
+        var mouseX = e.ClientX - rect.Left;
+        var mouseY = e.ClientY - rect.Top;
+
+        var angle = Math.Atan2(mouseY - centerY, mouseX - centerX);
+        var section = Math.Round((angle - startAngleOffset) / angleIncrement);
+        if (section < 0)
+        {
+            section += sections;
+        }
+
+        if (_showHourView)
+        {
+            if (TimeFormat == BitTimeFormat.TwelveHours)
+            {
+                _hour = (int)section + 1;
+
+                if (IsAm() && _hour == 12)
+                {
+                    _hour = 0;
+                }
+                else if (IsAm() is false && _hour < 12)
+                {
+                    _hour += 12;
+                }
+            }
+            else
+            {
+                _hour = (int)section;
+
+                var circleCenterX = rect.Left + rect.Width / 2;
+                var circleCenterY = rect.Top + rect.Height / 2;
+                var distanceX = e.ClientX - circleCenterX;
+                var distanceY = e.ClientY - circleCenterY;
+                var distance = Math.Sqrt(distanceX * distanceX + distanceY * distanceY);
+                var isWithInSmallCircle = distance < (radius - 40);
+                if ((isWithInSmallCircle && _hour == 0) || (isWithInSmallCircle is false && _hour > 0))
+                {
+                    _hour += 12;
+                }
+            }
+        }
+        else
+        {
+            _minute = (int)section + 1;
+
+            if (_minute.Value == 60)
+            {
+                _minute = 0;
+            }
+        }
+        await UpdateCurrentValue();
+
+        StateHasChanged();
+    }
+
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
@@ -522,6 +551,8 @@ public partial class BitCircularTimePicker
         {
             _dotnetObj.Dispose();
             OnValueChanged -= HandleOnValueChanged;
+            _ = _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId);
+            _ = _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
         }
 
         base.Dispose(disposing);

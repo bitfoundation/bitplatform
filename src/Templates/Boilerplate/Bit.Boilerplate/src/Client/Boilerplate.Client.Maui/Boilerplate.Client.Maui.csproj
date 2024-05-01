@@ -100,10 +100,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.20" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.20" />
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.20" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.20" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.21" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.21" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.21" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.21" />
 		<PackageReference Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
         <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.7" />
         <PackageReference Include="Oscore.Maui.InAppReviews" Version="1.0.0" />

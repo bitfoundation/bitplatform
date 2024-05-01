@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Controllers;
 
-[AttributeUsage(AttributeTargets.Interface)]
+[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method)]
 internal class RouteAttribute(string template) : Attribute
 {
     public string Template { get; } = template;

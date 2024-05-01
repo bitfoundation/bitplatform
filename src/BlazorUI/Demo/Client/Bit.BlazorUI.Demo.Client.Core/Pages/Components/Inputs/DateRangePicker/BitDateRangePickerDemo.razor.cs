@@ -353,7 +353,7 @@ public partial class BitDateRangePickerDemo
             Name = "StartingValue",
             Type = "BitDateRangePickerValue?",
             DefaultValue = "null",
-            Description = "The StartingValue can specify the date and time of the pickers when they are first opened. Only provide this if the value is an uncontrolled component, otherwise, use the value property.",
+            Description = "Specifies the date and time of the date and time picker when it is opened without any selected value.",
         },
         new()
         {
@@ -982,13 +982,13 @@ public partial class BitDateRangePickerDemo
 
 
 
+    private CultureInfo culture = CultureInfo.CurrentUICulture;
+
     private BitDateRangePickerValue? selectedDateRange = new()
     {
         StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
         EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset),
     };
-
-    private CultureInfo culture = CultureInfo.CurrentUICulture;
 
     private BitDateRangePickerValue? startingValue = new()
     {
