@@ -16,69 +16,89 @@ Avoid time units as they are rarely accurate enough to be trustworthy. Also, com
 Instead, change the operation description to reflect the change if necessary.
 Bars moving backward reduce confidence in the service."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="BitProgressIndicator" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="BitProgressIndicator" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <BitProgressIndicator Label="Example title"
-                                  Description="@description"
-                                  PercentComplete="@completedPercent"
-                                  BarHeight="50" />
-            <br />
-            <BitButton OnClick="StartProgress">Start Progress</BitButton>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Indeterminate" RazorCode="@example2RazorCode" Id="example2">
-        <ExamplePreview>
-            <BitProgressIndicator Label="Example title"
+            <BitProgressIndicator Label="Basic ProgressIndicator"
                                   Description="Example description"
-                                  BarHeight="20" />
+                                  Percent="42" />
+            <br />
+
+            <BitProgressIndicator Label="Bar Height"
+                                  Percent="69"
+                                  BarHeight="10" />
+            <br />
+
+            <BitProgressIndicator Label="Show Percent"
+                                  Percent="85.69"
+                                  ShowPercent />
+
+            <br />
+
+            <BitProgressIndicator Label="Percent Format"
+                                  Percent="85.69"
+                                  PercentageFormat="{0:P2}"
+                                  ShowPercent />
+
+            <br />
+
+            <BitProgressIndicator Label="Indeterminate"
+                                  Indeterminate />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ComponentExampleBox Title="BarColor" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <BitProgressIndicator BarColor="#c10606" Percent="69" />
+            <br />
+
+            <BitProgressIndicator BarColor="#ffba17" Indeterminate />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div>
                 <div>Component's Style & Class:</div>
                 <br />
-                <BitProgressIndicator Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" BarHeight="20" />
+                <BitProgressIndicator Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" BarHeight="10" Indeterminate />
 
                 <br />
 
                 <BitProgressIndicator Class="custom-class"
-                                      PercentComplete="@completedPercentStyleClass"
-                                      BarHeight="20" />
-                <BitButton OnClick="StartProgressStyleClass">Start Progress</BitButton>
+                                      Percent="69"
+                                      BarHeight="10" />
                 <br /><br /><br />
                 <div>Styles & Classes:</div>
                 <br />
                 <BitProgressIndicator Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);" ,
                                                         Tracker = "background-color: green;" })"
-                                      BarHeight="20" />
+                                      BarHeight="10"
+                                      Indeterminate />
 
                 <br />
 
                 <BitProgressIndicator Classes="@(new() { Bar = "custom-bar",
                                                          Tracker = "custom-tracker"})"
-                                      PercentComplete="@completedPercentStylesClasses"
-                                      BarHeight="20" />
-                <br />
-                <BitButton OnClick="StartProgressStylesClasses">Start Progress</BitButton>
+                                      Percent="69"
+                                      BarHeight="10" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="RTL" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <BitProgressIndicator Dir="BitDir.Rtl"
-                                  BarHeight="20" />
+                                  BarHeight="10"
+                                  Indeterminate />
 
             <br />
 
-            <BitProgressIndicator Dir="BitDir.Rtl"
-                                  PercentComplete="@completedPercentRtl"
-                                  BarHeight="20" />
-            <br />
-            <BitButton OnClick="StartProgressRtl">Start Progress</BitButton>
+            <BitProgressIndicator Label="لیبل تست"
+                                  Description="توضیحات تست"
+                                  Dir="BitDir.Rtl"
+                                  Percent="69"
+                                  BarHeight="10"
+                                  ShowPercent />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

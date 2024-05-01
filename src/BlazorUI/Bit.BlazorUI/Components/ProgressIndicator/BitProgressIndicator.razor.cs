@@ -4,8 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitProgressIndicator
 {
-    private double? percentComplete;
-
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
 
@@ -41,9 +39,14 @@ public partial class BitProgressIndicator
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// Whether or not to hide the progress state.
+    /// Whether or not to show indeterminate progress animation.
     /// </summary>
-    [Parameter] public bool IsProgressHidden { get; set; }
+    [Parameter] public bool Indeterminate { get; set; }
+
+    /// <summary>
+    /// Whether or not to percentage display.
+    /// </summary>
+    [Parameter] public bool ShowPercent { get; set; }
 
     /// <summary>
     /// Label to display above the BitProgressIndicator.
@@ -56,17 +59,14 @@ public partial class BitProgressIndicator
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead.
+    /// Percentage of the operation's completeness, numerically between 0 and 100.
     /// </summary>
-    [Parameter]
-    public double? PercentComplete
-    {
-        get => percentComplete;
-        set
-        {
-            percentComplete = value.HasValue ? Normalize(value) : null;
-        }
-    }
+    [Parameter] public double Percent { get; set; }
+
+    /// <summary>
+    /// The format of the percent in percentage display.
+    /// </summary>
+    [Parameter] public string PercentageFormat { get; set; } = "{0:P0}";
 
     /// <summary>
     /// A custom template for progress track.
@@ -85,7 +85,7 @@ public partial class BitProgressIndicator
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => PercentComplete.HasValue ? string.Empty : $"{RootElementClass}-ind");
+        ClassBuilder.Register(() => Indeterminate ? $"{RootElementClass}-ind" : null);
     }
 
     protected override void RegisterCssStyles()
@@ -107,21 +107,12 @@ public partial class BitProgressIndicator
     {
         StringBuilder sb = new();
 
-        if (PercentComplete.HasValue)
-        {
-            sb.Append($"width: {percentComplete}%;");
-        }
+        sb.Append($"--bit-clr-pin-bar-color:{(BarColor.HasValue() ? BarColor : "#2EA3FF")};")
+          .Append(Styles?.Bar);
 
-        if (BarColor.HasValue())
+        if (Indeterminate is false)
         {
-            if (PercentComplete.HasValue)
-            {
-                sb.Append($"background-color: {BarColor};");
-            }
-            else
-            {
-                sb.Append($"background: linear-gradient(to right, var(--bit-clr-bg-secondary) 0%, {BarColor} 50%, var(--bit-clr-bg-secondary) 100%);");
-            }
+            sb.Append($"width: {Normalize(Percent)}%;");
         }
 
         return sb.ToString();

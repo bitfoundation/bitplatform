@@ -13,6 +13,16 @@ public class BitProgressIndicatorClassStyles
     public string? LabelContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the label wrapper of the BitProgressIndicator.
+    /// </summary>
+    public string? LabelWrapper { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the percent container of the BitProgressIndicator.
+    /// </summary>
+    public string? PercentContainer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the indicator wrapper of the BitProgressIndicator.
     /// </summary>
     public string? IndicatorWrapper { get; set; }

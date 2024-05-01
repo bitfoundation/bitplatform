@@ -50,6 +50,13 @@ public partial class BitProgressIndicatorDemo
         },
         new()
         {
+            Name = "Indeterminate",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not to show indeterminate progress animation.",
+        },
+        new()
+        {
             Name = "IsProgressHidden",
             Type = "bool",
             DefaultValue = "false",
@@ -71,10 +78,17 @@ public partial class BitProgressIndicatorDemo
         },
         new()
         {
-            Name = "PercentComplete",
-            Type = "double?",
-            DefaultValue = "null",
-            Description = "Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead.",
+            Name = "Percent",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Percentage of the operation's completeness, numerically between 0 and 100.",
+        },
+        new()
+        {
+            Name = "PercentageFormat",
+            Type = "string",
+            DefaultValue = "{0:P0}",
+            Description = "The format of the percent in percentage display.",
         },
         new()
         {
@@ -82,6 +96,13 @@ public partial class BitProgressIndicatorDemo
             Type = "RenderFragment<BitProgressIndicator>?",
             DefaultValue = "null",
             Description = "A custom template for progress track.",
+        },
+        new()
+        {
+            Name = "ShowPercent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not to percentage display.",
         },
         new()
         {
@@ -118,6 +139,20 @@ public partial class BitProgressIndicatorDemo
                },
                new()
                {
+                   Name = "LabelWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the label wrapper of the BitProgressIndicator."
+               },
+               new()
+               {
+                   Name = "PercentContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the percent container of the BitProgressIndicator."
+               },
+               new()
+               {
                    Name = "IndicatorWrapper",
                    Type = "string?",
                    DefaultValue = "null",
@@ -148,132 +183,32 @@ public partial class BitProgressIndicatorDemo
         }
     ];
 
-    private int completedPercent;
-    private int completedPercentStyleClass;
-    private int completedPercentStylesClasses;
-    private int completedPercentRtl;
-    private string description = "Push button to start!";
-
-    private async Task StartProgress()
-    {
-        completedPercent = 0;
-
-        while (completedPercent <= 100)
-        {
-            if (completedPercent == 100)
-            {
-                description = "Completed !";
-                break;
-            }
-            else
-            {
-                completedPercent++;
-                description = $"{completedPercent}%";
-            }
-
-            StateHasChanged();
-            await Task.Delay(100);
-        }
-    }
-
-    private async Task StartProgressStyleClass()
-    {
-        completedPercentStyleClass = 0;
-
-        while (completedPercentStyleClass <= 100)
-        {
-            if (completedPercentStyleClass == 100)
-            {
-                break;
-            }
-            else
-            {
-                completedPercentStyleClass++;
-            }
-
-            StateHasChanged();
-            await Task.Delay(100);
-        }
-    }
-
-    private async Task StartProgressStylesClasses()
-    {
-        completedPercentStylesClasses = 0;
-
-        while (completedPercentStylesClasses <= 100)
-        {
-            if (completedPercentStylesClasses == 100)
-            {
-                break;
-            }
-            else
-            {
-                completedPercentStylesClasses++;
-            }
-
-            StateHasChanged();
-            await Task.Delay(100);
-        }
-    }
-
-    private async Task StartProgressRtl()
-    {
-        completedPercentRtl = 0;
-
-        while (completedPercentRtl <= 100)
-        {
-            if (completedPercentRtl == 100)
-            {
-                break;
-            }
-            else
-            {
-                completedPercentRtl++;
-            }
-
-            StateHasChanged();
-            await Task.Delay(100);
-        }
-    }
-
 
     private readonly string example1RazorCode = @"
-<BitProgressIndicator Label=""Example title""
-                                  Description=""@description""
-                                  PercentComplete=""@completedPercent""
-                                  BarHeight=""50"" />
+<BitProgressIndicator Label=""Basic ProgressIndicator""
+                      Description=""Example description""
+                      Percent=""42"" />
 
-<BitButton OnClick=""StartProgress"">Start Progress</BitButton>";
-    private readonly string example1CsharpCode = @"
-private int completedPercent;
-private string description = ""Push button to start!"";
+<BitProgressIndicator Label=""Bar Height""
+                      Percent=""69""
+                      BarHeight=""10"" />
 
-private async Task StartProgress()
-{
-    completedPercent = 0;
+<BitProgressIndicator Label=""Show Percent""
+                      Percent=""85.69""
+                      ShowPercent />
 
-    while (completedPercent <= 100)
-    {
-        if (completedPercent == 100)
-        {
-            description = ""Completed !"";
-            break;
-        }
-        else
-        {
-            completedPercent++;
-            description = $""{completedPercent}%"";
-        }
+<BitProgressIndicator Label=""Percent Format""
+                      Percent=""85.69""
+                      PercentageFormat=""{0:P2}""
+                      ShowPercent />
 
-        StateHasChanged();
-        await Task.Delay(100);
-    }
-}";
+<BitProgressIndicator Label=""Indeterminate""
+                      Indeterminate />";
 
     private readonly string example2RazorCode = @"
-<BitProgressIndicator Label=""Example title""
-                      Description=""Example description"" 
-                      BarHeight=""20"" />";
+<BitProgressIndicator BarColor=""#c10606"" Percent=""69"" />
+
+<BitProgressIndicator BarColor=""#ffba17"" Indeterminate />";
 
     private readonly string example3RazorCode = @"
 <style>
@@ -293,96 +228,32 @@ private async Task StartProgress()
     }
 </style>
 
-<BitProgressIndicator Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" BarHeight=""20"" />
+<BitProgressIndicator Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" BarHeight=""10"" Indeterminate />
 
 <BitProgressIndicator Class=""custom-class""
-                      PercentComplete=""@completedPercentStyleClass""
-                      BarHeight=""20"" />
-<BitButton OnClick=""StartProgressStyleClass"">Start Progress</BitButton>
+                      Percent=""69""
+                      BarHeight=""10"" />
 
 
 <BitProgressIndicator Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
-                                      Tracker = ""background-color: green;"" })""
-                      BarHeight=""20"" />
+                                         Tracker = ""background-color: green;"" })""
+                      BarHeight=""10""
+                      Indeterminate />
 
 <BitProgressIndicator Classes=""@(new() { Bar = ""custom-bar"",
                                           Tracker = ""custom-tracker""})""
-                      PercentComplete=""@completedPercentStylesClasses""
-                      BarHeight=""20"" />
-<BitButton OnClick=""StartProgressStylesClasses"">Start Progress</BitButton>";
-    private readonly string example3CsharpCode = @"
-private int completedPercentStyleClass;
-private int completedPercentStylesClasses;
-
-private async Task StartProgressStyleClass()
-{
-    completedPercentStyleClass = 0;
-
-    while (completedPercentStyleClass <= 100)
-    {
-        if (completedPercentStyleClass == 100)
-        {
-            break;
-        }
-        else
-        {
-            completedPercentStyleClass++;
-        }
-
-        StateHasChanged();
-        await Task.Delay(100);
-    }
-}
-
-private async Task StartProgressStylesClasses()
-{
-    completedPercentStylesClasses = 0;
-
-    while (completedPercentStylesClasses <= 100)
-    {
-        if (completedPercentStylesClasses == 100)
-        {
-            break;
-        }
-        else
-        {
-            completedPercentStylesClasses++;
-        }
-
-        StateHasChanged();
-        await Task.Delay(100);
-    }
-}";
+                      Percent=""69""
+                      BarHeight=""10"" />";
 
     private readonly string example4RazorCode = @"
 <BitProgressIndicator Dir=""BitDir.Rtl""
-                      BarHeight=""20"" />
+                      BarHeight=""10""
+                      Indeterminate />
 
-
-<BitProgressIndicator Dir=""BitDir.Rtl""
-                      PercentComplete=""@completedPercentRtl""
-                      BarHeight=""20"" />
-<BitButton OnClick=""StartProgressRtl"">Start Progress</BitButton>";
-    private readonly string example4CsharpCode = @"
-private int completedPercentRtl;
-
-private async Task StartProgressRtl()
-{
-    completedPercentRtl = 0;
-
-    while (completedPercentRtl <= 100)
-    {
-        if (completedPercentRtl == 100)
-        {
-            break;
-        }
-        else
-        {
-            completedPercentRtl++;
-        }
-
-        StateHasChanged();
-        await Task.Delay(100);
-    }
-}";
+<BitProgressIndicator Label=""لیبل تست""
+                      Description=""توضیحات تست""
+                      Dir=""BitDir.Rtl""
+                      Percent=""69""
+                      BarHeight=""10""
+                      ShowPercent />";
 }
