@@ -24,8 +24,9 @@ public interface IIdentityController : IAppController
     Task<SignInResponseDto> Refresh(RefreshRequestDto body, CancellationToken cancellationToken = default) => default!;
 
     [HttpPost]
-    Task<SignInResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default) => default!;
+    Task<TokenResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default) => default!;
 
-    [HttpPost("2fa")]
+    [HttpPost]
+    [Route("~/api/[controller]/2fa")]
     Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto twoFactorAuthRequest, CancellationToken cancellationToken = default) => default!;
 }

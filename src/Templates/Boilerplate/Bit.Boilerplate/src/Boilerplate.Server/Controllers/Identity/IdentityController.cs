@@ -188,7 +188,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task<ActionResult<SignInResponseDto>> Refresh(RefreshRequestDto refreshRequest)
+    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto refreshRequest)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
@@ -262,7 +262,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
-    [HttpPost("2fa")]
+    [Authorize, HttpPost]
+    [Microsoft.AspNetCore.Mvc.Route("~/api/[controller]/2fa")]
     public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto tfaRequest, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
