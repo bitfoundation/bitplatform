@@ -62,6 +62,7 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
 
         StringBuilder finalSource = new(@$"
 using System.Text.Json;
+using System.Net.Http.Json;
 using System.Web;
 
 namespace Microsoft.Extensions.DependencyInjection;
