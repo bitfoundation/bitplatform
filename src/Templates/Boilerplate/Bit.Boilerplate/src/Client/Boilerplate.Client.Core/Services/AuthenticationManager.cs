@@ -2,7 +2,6 @@
 using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -89,7 +88,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
-    private async Task StoreTokens(SignInResponseDto response, bool? rememberMe = null)
+    private async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
     {
         if (rememberMe is null)
         {
