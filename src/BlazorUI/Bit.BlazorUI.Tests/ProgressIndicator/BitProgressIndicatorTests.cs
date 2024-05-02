@@ -11,16 +11,16 @@ public class BitProgressIndicatorTests : BunitTestContext
         DataRow(3),
         DataRow(12)
     ]
-    public void BitProgressIndicatorBarHeightTest(int barHeight)
+    public void BitProgressIndicatorHeightTest(int height)
     {
         var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.BarHeight, barHeight);
+            parameters.Add(p => p.Height, height);
         });
 
         var piWrapper = component.Find(".bit-pin-icn");
         var piWrapperStyle = piWrapper.GetAttribute("style");
-        var expectedValue = $"height: {barHeight}px";
+        var expectedValue = $"height: {height}px";
         Assert.IsTrue(piWrapperStyle.Contains(expectedValue));
     }
 

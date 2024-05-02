@@ -22,14 +22,14 @@ public partial class BitProgressIndicatorDemo
         },
         new()
         {
-            Name = "BarColor",
+            Name = "Color",
             Type = "string?",
             DefaultValue = "null",
             Description = "Color of the BitProgressIndicator.",
         },
         new()
         {
-            Name = "BarHeight",
+            Name = "Height",
             Type = "int",
             DefaultValue = "2",
             Description = "Height of the BitProgressIndicator.",
@@ -176,7 +176,7 @@ public partial class BitProgressIndicatorDemo
                       Percent=""42"" />";
 
     private readonly string example2RazorCode = @"
-<BitProgressIndicator Percent=""69"" BarHeight=""10"" />";
+<BitProgressIndicator Percent=""69"" Height=""10"" />";
 
     private readonly string example3RazorCode = @"
 <BitProgressIndicator Label=""Show Percent Number""
@@ -192,9 +192,9 @@ public partial class BitProgressIndicatorDemo
 <BitProgressIndicator Indeterminate />";
 
     private readonly string example5RazorCode = @"
-<BitProgressIndicator BarColor=""#c10606"" Percent=""69"" />
+<BitProgressIndicator Color=""#c10606"" Percent=""69"" />
 
-<BitProgressIndicator BarColor=""#ffba17"" Indeterminate />";
+<BitProgressIndicator Color=""#ffba17"" Indeterminate />";
 
     private readonly string example6RazorCode = @"
 <style>
@@ -214,32 +214,32 @@ public partial class BitProgressIndicatorDemo
     }
 </style>
 
-<BitProgressIndicator Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" BarHeight=""10"" Indeterminate />
+<BitProgressIndicator Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" Indeterminate />
 
 <BitProgressIndicator Class=""custom-class""
                       Percent=""69""
-                      BarHeight=""10"" />
+                      Height=""10"" />
 
 
 <BitProgressIndicator Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
                                          Tracker = ""background-color: green;"" })""
-                      BarHeight=""10""
+                      Height=""10""
                       Indeterminate />
 
 <BitProgressIndicator Classes=""@(new() { Bar = ""custom-bar"",
                                           Tracker = ""custom-tracker""})""
                       Percent=""69""
-                      BarHeight=""10"" />";
+                      Height=""10"" />";
 
     private readonly string example7RazorCode = @"
 <BitProgressIndicator Dir=""BitDir.Rtl""
-                      BarHeight=""10""
+                      Height=""10""
                       Indeterminate />
 
 <BitProgressIndicator Label=""لیبل تست""
                       Description=""توضیحات تست""
                       Dir=""BitDir.Rtl""
                       Percent=""69""
-                      BarHeight=""10""
+                      Height=""10""
                       ShowPercent />";
 }

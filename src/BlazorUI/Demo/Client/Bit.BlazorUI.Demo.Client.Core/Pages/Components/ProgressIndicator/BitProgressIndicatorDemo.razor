@@ -24,9 +24,9 @@ Bars moving backward reduce confidence in the service."
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BarHeight" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Height" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
-            <BitProgressIndicator Percent="69" BarHeight="10" />
+            <BitProgressIndicator Percent="69" Height="10" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -51,13 +51,13 @@ Bars moving backward reduce confidence in the service."
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BarColor" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Color" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
-            <BitProgressIndicator BarColor="#c10606" Percent="69" />
+            <BitProgressIndicator Color="#c10606" Percent="69" />
 
             <br />
 
-            <BitProgressIndicator BarColor="#ffba17" Indeterminate />
+            <BitProgressIndicator Color="#ffba17" Indeterminate />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -66,19 +66,19 @@ Bars moving backward reduce confidence in the service."
             <div>
                 <div>Component's Style & Class:</div>
                 <br />
-                <BitProgressIndicator Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" BarHeight="10" Indeterminate />
+                <BitProgressIndicator Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Height="10" Indeterminate />
 
                 <br />
 
                 <BitProgressIndicator Class="custom-class"
                                       Percent="69"
-                                      BarHeight="10" />
+                                      Height="10" />
                 <br /><br /><br />
                 <div>Styles & Classes:</div>
                 <br />
                 <BitProgressIndicator Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);" ,
                                                         Tracker = "background-color: green;" })"
-                                      BarHeight="10"
+                                      Height="10"
                                       Indeterminate />
 
                 <br />
@@ -86,7 +86,7 @@ Bars moving backward reduce confidence in the service."
                 <BitProgressIndicator Classes="@(new() { Bar = "custom-bar",
                                                          Tracker = "custom-tracker"})"
                                       Percent="69"
-                                      BarHeight="10" />
+                                      Height="10" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -94,7 +94,7 @@ Bars moving backward reduce confidence in the service."
     <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <BitProgressIndicator Dir="BitDir.Rtl"
-                                  BarHeight="10"
+                                  Height="10"
                                   Indeterminate />
 
             <br />
@@ -103,7 +103,7 @@ Bars moving backward reduce confidence in the service."
                                   Description="توضیحات تست"
                                   Dir="BitDir.Rtl"
                                   Percent="69"
-                                  BarHeight="10"
+                                  Height="10"
                                   ShowPercentNumber />
         </ExamplePreview>
     </ComponentExampleBox>

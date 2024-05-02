@@ -16,12 +16,12 @@ public partial class BitProgressIndicator
     /// <summary>
     /// Color of the BitProgressIndicator.
     /// </summary>
-    [Parameter] public string? BarColor { get; set; }
+    [Parameter] public string? Color { get; set; }
 
     /// <summary>
     /// Height of the BitProgressIndicator.
     /// </summary>
-    [Parameter] public int BarHeight { get; set; } = 2;
+    [Parameter] public int Height { get; set; } = 2;
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitProgressIndicator.
@@ -107,7 +107,7 @@ public partial class BitProgressIndicator
     {
         StringBuilder sb = new();
 
-        sb.Append($"--bit-clr-pin-bar-color:{(BarColor.HasValue() ? BarColor : "var(--bit-clr-primary-main)")};");
+        sb.Append($"--bit-pin-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-primary-main)")};");
 
         sb.Append(Styles?.Bar);
 

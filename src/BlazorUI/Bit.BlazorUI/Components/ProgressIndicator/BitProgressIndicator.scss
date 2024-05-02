@@ -52,7 +52,7 @@
     height: inherit;
     position: absolute;
     transition: width 0.15s linear 0s;
-    background-color: var(--bit-clr-pin-bar-color);
+    background-color: var(--bit-pin-bar-color);
 }
 
 .bit-pin-des {
@@ -69,7 +69,7 @@
         position: absolute;
         transition: width 0.3s ease 0s;
         animation: 3s ease 0s infinite normal none running bit-pin-animation;
-        background: linear-gradient(to right, $color-background-secondary 0%, var(--bit-clr-pin-bar-color) 50%, $color-background-secondary 100%);
+        background: linear-gradient(to right, $color-background-secondary 0%, var(--bit-pin-bar-color) 50%, $color-background-secondary 100%);
     }
 }
 
