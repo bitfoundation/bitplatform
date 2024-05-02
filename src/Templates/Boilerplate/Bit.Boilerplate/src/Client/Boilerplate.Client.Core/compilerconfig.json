@@ -85,8 +85,20 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/EditProfilePage.razor.css",
-        "inputFile": "Components/Pages/Identity/EditProfilePage.razor.scss",
+        "outputFile": "Components/Pages/Identity/Profile/ProfilePage.razor.css",
+        "inputFile": "Components/Pages/Identity/Profile/ProfilePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/Profile/UserDataSection.razor.css",
+        "inputFile": "Components/Pages/Identity/Profile/UserDataSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/Profile/TwoFactorSection.razor.css",
+        "inputFile": "Components/Pages/Identity/Profile/TwoFactorSection.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

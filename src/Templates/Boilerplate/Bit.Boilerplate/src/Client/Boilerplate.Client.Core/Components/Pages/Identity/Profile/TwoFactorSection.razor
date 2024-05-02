@@ -1,0 +1,142 @@
+@inherits AppComponentBase
+
+@if (string.IsNullOrEmpty(message) is false)
+{
+    <BitMessageBar Class="form-message-bar"
+                   MessageBarType="messageType"
+                   OnDismiss="() => message = null">
+        @message
+    </BitMessageBar>
+}
+
+<BitTypography Variant="BitTypographyVariant.H2">
+    @Localizer[nameof(AppStrings.TwoFactorAuthTitle)]
+</BitTypography>
+
+<br />
+
+@if (isTwoFactorAuthEnabled is false)
+{
+    <h3>@Localizer[nameof(AppStrings.TfaConfigureAutAppTitle)]</h3>
+    <br />
+    <div>
+        <p>@Localizer[nameof(AppStrings.TfaConfigureAutAppSubtitle)]</p>
+        <ol>
+            <li>
+                <p>
+                    @(new MarkupString(Localizer.GetString(nameof(AppStrings.TfaConfigureAutAppStep1),
+                        "<a href=\"https://go.microsoft.com/fwlink/?Linkid=825072\">Android</a>",
+                        "<a href=\"https://go.microsoft.com/fwlink/?Linkid=825073\">iOS</a>",
+                        "<a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en\">Android</a>",
+                        "<a href=\"https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8\">iOS</a>")))
+                </p>
+            </li>
+            <br />
+            <li>
+                @Localizer[nameof(AppStrings.TfaConfigureAutAppStep2)]
+                <div class="tfa-key-container">
+                    <div class="tfa-key">@sharedKey</div>
+                    <BitIconButton OnClick="CopyToClipboard" IconName="@BitIconName.Copy" Title="Copy" />
+                </div>
+            </li>
+            <br />
+            <li>
+                @Localizer[nameof(AppStrings.TfaConfigureAutAppStep3)]
+                <br />
+                <br />
+                <div>
+                    <BitTextField @bind-Value="verificationCode"
+                                  Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]"
+                                  AutoComplete="@BitAutoCompleteValue.Off"
+                                  Placeholder="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodePlaceholder)]" />
+                    <br />
+                    <BitButton OnClick="WrapHandled(EnableTwoFactorAuth)">
+                        @Localizer[nameof(AppStrings.TfaConfigureAutAppVerifyButtonText)]
+                    </BitButton>
+                </div>
+            </li>
+        </ol>
+    </div>
+}
+else
+{
+    <BitPivot>
+        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaRecoveryCodesHeader)]">
+            <div class="tab-item-container">
+                @if (recoveryCodesLeft == 0)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Error" IsMultiline Style="margin-bottom:1rem">
+                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftTitle)]</strong>
+                        <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftSubtitle)]</p>
+                    </BitMessageBar>
+                }
+                else if (recoveryCodesLeft == 1)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.SevereWarning" IsMultiline Style="margin-bottom:1rem">
+                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesOneLeftTitle)]</strong>
+                        <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesOneLeftSubtitle)]</p>
+                    </BitMessageBar>
+                }
+                else if (recoveryCodesLeft <= 3)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin-bottom:1rem">
+                        <strong>@Localizer.GetString(nameof(AppStrings.TfaRecoveryCodesThreeLeftTitle), recoveryCodesLeft)</strong>
+                        <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesThreeLeftSubtitle)]</p>
+                    </BitMessageBar>
+                }
+
+                @if (recoveryCodes is null)
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin-bottom:1rem">
+                        @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateWraning)]
+                    </BitMessageBar>
+
+                    <BitButton OnClick="WrapHandled(GenerateRecoveryCode)">
+                        @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateButtonText)]
+                    </BitButton>
+                }
+                else
+                {
+                    <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin: 1rem 0">
+                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarningTitle)]</strong>
+                        <br />
+                        <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarning)]</p>
+                    </BitMessageBar>
+
+                    <BitMessageBar MessageBarType="BitMessageBarType.Info" IsMultiline>
+                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesTitle)]</strong>
+                        @foreach (var recoveryCode in recoveryCodes)
+                        {
+                            <div class="recovery-code">@recoveryCode</div>
+                        }
+                    </BitMessageBar>
+                }
+            </div>
+        </BitPivotItem>
+
+        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaAuthAppHeader)]">
+            <div class="tab-item-container">
+                <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin:1rem 0">
+                    <strong>@Localizer[nameof(AppStrings.TfaAuthAppWarningTitle)]</strong>
+                    <p>@Localizer[nameof(AppStrings.TfaAuthAppWarning)]</p>
+                </BitMessageBar>
+                <BitButton OnClick="WrapHandled(ResetAuthenticatorKey)">
+                    @Localizer[nameof(AppStrings.TfaAuthAppResetKeyButtonText)]
+                </BitButton>
+            </div>
+        </BitPivotItem>
+
+        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaDisable2faHeader)]">
+            <div class="tab-item-container">
+                <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin:1rem 0">
+                    <strong>@Localizer[nameof(AppStrings.TfaDisable2faWarningTitle)]</strong>
+                    <p>@Localizer[nameof(AppStrings.TfaDisable2faWarning)]</p>
+                </BitMessageBar>
+
+                <BitButton OnClick="WrapHandled(DisableTwoFactorAuth)">
+                    @Localizer[nameof(AppStrings.TfaDisable2faButtonText)]
+                </BitButton>
+            </div>
+        </BitPivotItem>
+    </BitPivot>
+}

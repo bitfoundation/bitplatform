@@ -8,38 +8,63 @@
     <EditForm OnValidSubmit="WrapHandled(DoSignIn)" class="form" Model="signInModel">
         <AppDataAnnotationsValidator />
 
-        @if (string.IsNullOrEmpty(signInMessage) is false)
+        @if (string.IsNullOrEmpty(message) is false)
         {
             <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@signInMessageType"
-                           OnDismiss="() => signInMessage = null">
-                @signInMessage
+                           MessageBarType="@messageType"
+                           OnDismiss="() => message = null">
+                @message
             </BitMessageBar>
         }
 
         <h1 class="form-title">@Localizer[nameof(AppStrings.SignInTitle)]</h1>
 
-        <div class="form-input-container">
-            <BitTextField @bind-Value="signInModel.UserName"
-                          Label="@Localizer[nameof(AppStrings.Email)]"
-                          Placeholder="@Localizer[nameof(AppStrings.Email)]"
-                          Type="BitTextFieldType.Email" />
-            <ValidationMessage For="@(() => signInModel.UserName)" />
-        </div>
+        @if (requiresTwoFactor is false)
+        {
+            <div class="form-input-container">
+                <BitTextField @bind-Value="signInModel.UserName"
+                              Label="@Localizer[nameof(AppStrings.Email)]"
+                              Placeholder="@Localizer[nameof(AppStrings.Email)]"
+                              Type="BitTextFieldType.Email" />
+                <ValidationMessage For="@(() => signInModel.UserName)" />
+            </div>
 
-        <div class="form-input-container">
-            <BitTextField @bind-Value="signInModel.Password"
-                          Label="@Localizer[nameof(AppStrings.Password)]"
-                          Type="BitTextFieldType.Password"
-                          AutoComplete="current-password"
-                          CanRevealPassword="true"
-                          Placeholder="@Localizer[nameof(AppStrings.Password)]" />
-            <ValidationMessage For="@(() => signInModel.Password)" />
-        </div>
+            <div class="form-input-container">
+                <BitTextField @bind-Value="signInModel.Password"
+                              Label="@Localizer[nameof(AppStrings.Password)]"
+                              Type="BitTextFieldType.Password"
+                              AutoComplete="current-password"
+                              CanRevealPassword="true"
+                              Placeholder="@Localizer[nameof(AppStrings.Password)]" />
+                <ValidationMessage For="@(() => signInModel.Password)" />
+            </div>
 
-        <div class="form-input-container form-input-container--no-margin">
-            <BitCheckbox Class="form-checkbox" @bind-Value="signInModel.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
-        </div>
+            <div class="form-input-container form-input-container--no-margin">
+                <BitCheckbox Class="form-checkbox" @bind-Value="signInModel.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
+            </div>
+        }
+        else
+        {
+            <h3 class="form-title">@Localizer[nameof(AppStrings.TwoFactorAuthTitle)]</h3>
+
+            <div>@Localizer[nameof(AppStrings.TfaProtectedSignInSubtitle)]</div>
+
+            <br />
+
+            <div class="form-input-container">
+                <div>@Localizer[nameof(AppStrings.TfaEnterCodeInSignInMessage)]</div>
+                <BitTextField @bind-Value="signInModel.TwoFactorCode"
+                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
+            </div>
+
+            <br />
+
+            <div class="form-input-container">
+                <div>@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]</div>
+                <BitTextField @bind-Value="signInModel.TwoFactorRecoveryCode"
+                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
+            </div>
+        }
 
         <BitButton IsLoading="isLoading"
                    Class="form-submit-button"

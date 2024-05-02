@@ -1,0 +1,40 @@
+﻿@page "/profile"
+@inherits AppComponentBase
+
+<PageTitle>@Localizer[nameof(AppStrings.ProfileTitle)]</PageTitle>
+
+<div class="page-container">
+    <div class="content-container profile-panel">
+        <UserDataSection User="user" Loading="isLoading" />
+    </div>
+
+    <br />
+
+    <div class="content-container tfa-panel">
+        <TwoFactorSection User="user" />
+    </div>
+
+    <br />
+
+    <div class="content-container danger-panel">
+        <BitTypography Variant="BitTypographyVariant.H5" Style="color: #dc0000;border-bottom: 1px solid #dc0000">
+            @Localizer[nameof(AppStrings.DeleteAccount)]
+        </BitTypography>
+        <br />
+        <br />
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            @Localizer[nameof(AppStrings.DeleteAccountPrompt)]
+        </BitTypography>
+        <br />
+        <br />
+        <BitButton ButtonStyle="BitButtonStyle.Standard"
+                   Style=" color: #dc0000; border-color: #dc0000"
+                   Title="@Localizer[nameof(AppStrings.DeleteAccount)]"
+                   AriaLabel="@Localizer[nameof(AppStrings.DeleteAccount)]"
+                   OnClick="() => isDeleteAccountConfirmModalOpen = true">
+            @Localizer[nameof(AppStrings.DeleteAccount)]
+        </BitButton>
+    </div>
+</div>
+
+<DeleteAccountConfirmModal @bind-IsOpen="isDeleteAccountConfirmModalOpen" />

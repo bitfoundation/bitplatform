@@ -6,12 +6,14 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 public partial class SignInPage
 {
     private bool isLoading;
-    private string? signInMessage;
-    private BitMessageBarType signInMessageType;
+    private bool requiresTwoFactor;
     private SignInRequestDto signInModel = new();
 
-    [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
+    private string? message;
+    private BitMessageBarType messageType;
+
     [SupplyParameterFromQuery(Name = "email"), Parameter] public string? Email { get; set; }
+    [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
 
     protected override async Task OnParamsSetAsync()
     {
@@ -28,19 +30,25 @@ public partial class SignInPage
         if (isLoading) return;
 
         isLoading = true;
-        signInMessage = null;
+        message = null;
 
         try
         {
-            await AuthenticationManager.SignIn(signInModel, CurrentCancellationToken);
+            if (requiresTwoFactor &&
+                string.IsNullOrWhiteSpace(signInModel.TwoFactorCode) &&
+                string.IsNullOrWhiteSpace(signInModel.TwoFactorRecoveryCode)) return;
 
-            NavigationManager.NavigateTo(RedirectUrl ?? "/");
+            requiresTwoFactor = await AuthenticationManager.SignIn(signInModel, CurrentCancellationToken);
+
+            if (requiresTwoFactor is false)
+            {
+                NavigationManager.NavigateTo(RedirectUrl ?? "/");
+            }
         }
         catch (KnownException e)
         {
-            signInMessageType = BitMessageBarType.Error;
-
-            signInMessage = e.Message;
+            message = e.Message;
+            messageType = BitMessageBarType.Error;
         }
         finally
         {

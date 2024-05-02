@@ -2,7 +2,6 @@
 using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -14,15 +13,20 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IIdentityController identityController = default;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
-    public async Task SignIn(SignInRequestDto signInModel, CancellationToken cancellationToken)
-    {
-        var result = await identityController.SignIn(signInModel, cancellationToken);
 
-        await StoreToken(result!, signInModel.RememberMe);
+    public async Task<bool> SignIn(SignInRequestDto request, CancellationToken cancellationToken)
+    {
+        var response = await identityController.SignIn(request, cancellationToken);
+
+        if (response.RequiresTwoFactor) return true;
+
+        await StoreTokens(response, request.RememberMe);
 
         var state = await GetAuthenticationStateAsync();
 
         NotifyAuthenticationStateChanged(Task.FromResult(state));
+
+        return false;
     }
 
     public async Task SignOut()
@@ -63,7 +67,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 try
                 {
                     var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token });
-                    await StoreToken(refreshTokenResponse!);
+                    await StoreTokens(refreshTokenResponse!);
                     access_token = refreshTokenResponse!.AccessToken;
                 }
                 catch (ResourceValidationException exp) // refresh_token in invalid or expired
@@ -84,21 +88,23 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
-    private async Task StoreToken(TokenResponseDto tokenResponseDto, bool? rememberMe = null)
+    private async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
     {
         if (rememberMe is null)
         {
             rememberMe = await storageService.IsPersistent("refresh_token");
         }
-        await storageService.SetItem("access_token", tokenResponseDto!.AccessToken, rememberMe is true);
-        await storageService.SetItem("refresh_token", tokenResponseDto!.RefreshToken, rememberMe is true);
+
+        await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
+        await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
+
         if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
         {
             await cookie.Set(new()
             {
                 Name = "access_token",
-                Value = tokenResponseDto.AccessToken,
-                MaxAge = tokenResponseDto.ExpiresIn,
+                Value = response.AccessToken,
+                MaxAge = response.ExpiresIn,
                 SameSite = SameSite.Strict,
                 Secure = BuildConfiguration.IsRelease()
             });

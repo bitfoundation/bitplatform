@@ -61,9 +61,9 @@ public partial class NavMenu
             //#endif
             new()
             {
-                Text = Localizer[nameof(AppStrings.EditProfileTitle)],
+                Text = Localizer[nameof(AppStrings.ProfileTitle)],
                 IconName = BitIconName.EditContact,
-                Url = "/edit-profile",
+                Url = "/profile",
             },
             //#if (offlineDb == true)
             new()
@@ -95,7 +95,7 @@ public partial class NavMenu
             });
         }
 
-        unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
+        unsubscribe = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
         {
             if (payload is null) return;
 
@@ -126,10 +126,10 @@ public partial class NavMenu
         await CloseMenu();
     }
 
-    private async Task GoToEditProfile()
+    private async Task GoToProfile()
     {
         await CloseMenu();
-        navManager.NavigateTo("edit-profile");
+        navManager.NavigateTo("profile");
     }
 
     private async Task HandleNavItemClick(BitNavItem item)
