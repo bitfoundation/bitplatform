@@ -13,9 +13,9 @@ public class BitProgressIndicatorClassStyles
     public string? Label { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the percent of the BitProgressIndicator.
+    /// Custom CSS classes/styles for the percent number of the BitProgressIndicator.
     /// </summary>
-    public string? Percent { get; set; }
+    public string? PercentNumber { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the bar container of the BitProgressIndicator.

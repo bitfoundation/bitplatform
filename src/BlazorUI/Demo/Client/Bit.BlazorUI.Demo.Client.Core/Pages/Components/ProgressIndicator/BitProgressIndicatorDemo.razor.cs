@@ -71,7 +71,7 @@ public partial class BitProgressIndicatorDemo
         },
         new()
         {
-            Name = "PercentNumber",
+            Name = "Percent",
             Type = "double",
             DefaultValue = "0",
             Description = "Percentage of the operation's completeness, numerically between 0 and 100.",
@@ -125,10 +125,10 @@ public partial class BitProgressIndicatorDemo
                },
                new()
                {
-                   Name = "Percent",
+                   Name = "PercentNumber",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the percent of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the percent number of the BitProgressIndicator."
                },
                new()
                {
@@ -166,18 +166,18 @@ public partial class BitProgressIndicatorDemo
     private readonly string example1RazorCode = @"
 <BitProgressIndicator Label=""Basic ProgressIndicator""
                       Description=""Example description""
-                      PercentNumber=""42"" />";
+                      Percent=""42"" />";
 
     private readonly string example2RazorCode = @"
-<BitProgressIndicator PercentNumber=""69"" Height=""10"" />";
+<BitProgressIndicator Percent=""69"" Height=""10"" />";
 
     private readonly string example3RazorCode = @"
 <BitProgressIndicator Label=""Show Percent Number""
-                      PercentNumber=""85.69""
+                      Percent=""85.69""
                       ShowPercentNumber />
 
 <BitProgressIndicator Label=""Percent Number Format""
-                      PercentNumber=""85.69""
+                      Percent=""85.69""
                       PercentNumberFormat=""{0:F2} %""
                       ShowPercentNumber />";
 
@@ -185,7 +185,7 @@ public partial class BitProgressIndicatorDemo
 <BitProgressIndicator Indeterminate />";
 
     private readonly string example5RazorCode = @"
-<BitProgressIndicator Color=""#c10606"" PercentNumber=""69"" />
+<BitProgressIndicator Color=""#c10606"" Percent=""69"" />
 
 <BitProgressIndicator Color=""#ffba17"" Indeterminate />";
 
@@ -210,7 +210,7 @@ public partial class BitProgressIndicatorDemo
 <BitProgressIndicator Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" Indeterminate />
 
 <BitProgressIndicator Class=""custom-class""
-                      PercentNumber=""69""
+                      Percent=""69""
                       Height=""10"" />
 
 
@@ -221,7 +221,7 @@ public partial class BitProgressIndicatorDemo
 
 <BitProgressIndicator Classes=""@(new() { Bar = ""custom-bar"",
                                           Track = ""custom-track""})""
-                      PercentNumber=""69""
+                      Percent=""69""
                       Height=""10"" />";
 
     private readonly string example7RazorCode = @"
@@ -232,7 +232,7 @@ public partial class BitProgressIndicatorDemo
 <BitProgressIndicator Label=""لیبل تست""
                       Description=""توضیحات تست""
                       Dir=""BitDir.Rtl""
-                      PercentNumber=""69""
+                      Percent=""69""
                       Height=""10""
                       ShowPercent />";
 }
