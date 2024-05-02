@@ -4,27 +4,24 @@ namespace Bit.BlazorUI;
 
 public partial class BitProgressIndicator
 {
-    private double? percentComplete;
-    private string? LabelId => Label.HasValue() || LabelTemplate is not null
-                                ? $"ProgressIndicator-{UniqueId}-Label" : null;
-    private string? DescriptionId => Description.HasValue() || DescriptionTemplate is not null
-                                        ? $"ProgressIndicator-{UniqueId}-Description" : null;
+    private string _labelId = string.Empty;
+    private string _descriptionId = string.Empty;
 
 
     /// <summary>
     /// Text alternative of the progress status, used by screen readers for reading the value of the progress.
     /// </summary>
-    [Parameter] public string AriaValueText { get; set; } = string.Empty;
+    [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
     /// Color of the BitProgressIndicator.
     /// </summary>
-    [Parameter] public string? BarColor { get; set; }
+    [Parameter] public string? Color { get; set; }
 
     /// <summary>
     /// Height of the BitProgressIndicator.
     /// </summary>
-    [Parameter] public int BarHeight { get; set; } = 2;
+    [Parameter] public int Height { get; set; } = 2;
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitProgressIndicator.
@@ -34,7 +31,7 @@ public partial class BitProgressIndicator
     /// <summary>
     /// Text describing or supplementing the operation.
     /// </summary>
-    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
 
     /// <summary>
     /// Custom template for describing or supplementing the operation.
@@ -42,14 +39,19 @@ public partial class BitProgressIndicator
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// Whether or not to hide the progress state.
+    /// Whether or not to show indeterminate progress animation.
     /// </summary>
-    [Parameter] public bool IsProgressHidden { get; set; }
+    [Parameter] public bool Indeterminate { get; set; }
+
+    /// <summary>
+    /// Whether or not to percentage display.
+    /// </summary>
+    [Parameter] public bool ShowPercentNumber { get; set; }
 
     /// <summary>
     /// Label to display above the BitProgressIndicator.
     /// </summary>
-    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Label { get; set; }
 
     /// <summary>
     /// Custom label template to display above the BitProgressIndicator.
@@ -57,22 +59,14 @@ public partial class BitProgressIndicator
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead.
+    /// Percentage of the operation's completeness, numerically between 0 and 100.
     /// </summary>
-    [Parameter]
-    public double? PercentComplete
-    {
-        get => percentComplete;
-        set
-        {
-            percentComplete = value is not null ? Normalize(value) : null;
-        }
-    }
+    [Parameter] public double Percent { get; set; }
 
     /// <summary>
-    /// A custom template for progress track.
+    /// The format of the percent number in percentage display.
     /// </summary>
-    [Parameter] public RenderFragment<BitProgressIndicator>? ProgressTemplate { get; set; }
+    [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitProgressIndicator.
@@ -85,8 +79,6 @@ public partial class BitProgressIndicator
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => PercentComplete is not null ? string.Empty : $"{RootElementClass}-ind");
     }
 
     protected override void RegisterCssStyles()
@@ -94,27 +86,27 @@ public partial class BitProgressIndicator
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    private static double Normalize(double? value) => Math.Clamp(value ?? 0, 0, 100);
+    protected override Task OnInitializedAsync()
+    {
+        _labelId = $"BitProgressIndicator-{UniqueId}-label";
+        _descriptionId = $"BitProgressIndicator-{UniqueId}-description";
+
+        return base.OnInitializedAsync();
+    }
+
+    private static double Normalize(double? value) => Math.Clamp(value.GetValueOrDefault(), 0, 100);
 
     private string GetProgressBarStyle()
     {
         StringBuilder sb = new();
 
-        if (PercentComplete.HasValue)
-        {
-            sb.Append($"width: {percentComplete}%;");
-        }
+        sb.Append($"--bit-pin-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-primary-main)")};");
 
-        if (BarColor.HasValue())
+        sb.Append(Styles?.Bar);
+
+        if (Indeterminate is false)
         {
-            if (PercentComplete.HasValue)
-            {
-                sb.Append($"background-color: {BarColor};");
-            }
-            else
-            {
-                sb.Append($"background: linear-gradient(to right, var(--bit-clr-bg-secondary) 0%, {BarColor} 50%, var(--bit-clr-bg-secondary) 100%);");
-            }
+            sb.Append($"width: {Normalize(Percent)}%;");
         }
 
         return sb.ToString();

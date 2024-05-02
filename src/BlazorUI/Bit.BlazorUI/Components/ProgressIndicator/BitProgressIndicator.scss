@@ -2,6 +2,7 @@
 
 .bit-pin {
     font-weight: 400;
+    position: relative;
     font-size: spacing(1.75);
     font-family: $typography-font-family;
 
@@ -22,15 +23,21 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    padding-top: spacing(0.5);
     line-height: spacing(2.5);
+    padding-bottom: spacing(1);
     color: $color-foreground-primary;
 }
 
-.bit-pin-wrp {
+.bit-pin-pct {
+    top: 0;
+    position: absolute;
+    inset-inline-end: 0;
+    color: $color-foreground-primary;
+}
+
+.bit-pin-bcn {
     position: relative;
     overflow: hidden;
-    padding: spacing(1) 0;
 }
 
 .bit-pin-trc {
@@ -45,7 +52,7 @@
     height: inherit;
     position: absolute;
     transition: width 0.15s linear 0s;
-    background-color: $color-primary-main;
+    background-color: var(--bit-pin-bar-color);
 }
 
 .bit-pin-des {
@@ -56,12 +63,10 @@
 
 
 .bit-pin-ind {
-    .bit-pin-bar {
-        width: 0;
-        min-width: 33%;
-        position: absolute;
-        transition: width 0.3s ease 0s;
-        animation: 3s ease 0s infinite normal none running bit-pin-animation;
-        background: linear-gradient(to right, $color-background-secondary 0%, $color-primary-main 50%, $color-background-secondary 100%);
-    }
+    width: 0;
+    min-width: 33%;
+    position: absolute;
+    transition: width 0.3s ease 0s;
+    animation: 3s ease 0s infinite normal none running bit-pin-animation;
+    background: linear-gradient(to right, $color-background-secondary 0%, var(--bit-pin-bar-color) 50%, $color-background-secondary 100%);
 }

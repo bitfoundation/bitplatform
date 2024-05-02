@@ -8,50 +8,47 @@
      dir="@Dir?.ToString().ToLower()">
     @if (LabelTemplate is not null)
     {
-        <div style="@Styles?.LabelContainer" class="bit-pin-lbl @Classes?.LabelContainer" id="@LabelId">
+        <div id="@_labelId">
             @LabelTemplate
         </div>
     }
     else if (Label.HasValue())
     {
-        <div style="@Styles?.LabelContainer" class="bit-pin-lbl @Classes?.LabelContainer" id="@LabelId">
+        <div style="@Styles?.Label" class="bit-pin-lbl @Classes?.Label" id="@_labelId">
             @Label
         </div>
     }
 
-    @if (IsProgressHidden is false)
+    @if (ShowPercentNumber && Indeterminate is false)
     {
-        @if (ProgressTemplate is not null)
-        {
-            @ProgressTemplate(this)
-        }
-        else
-        {
-            <div style="@($"height: {BarHeight}px;") @Styles?.IndicatorWrapper" class="bit-pin-wrp @Classes?.IndicatorWrapper">
-                <div style="@Styles?.Tracker" class="bit-pin-trc @Classes?.Tracker"></div>
-                <div class="bit-pin-bar @Classes?.Bar"
-                     role="progressbar"
-                     aria-labelledby="@LabelId"
-                     aria-valuetext="@AriaValueText"
-                     aria-describedby="@DescriptionId"
-                     aria-valuemin="@(PercentComplete is not null ? 0 : null)"
-                     aria-valuemax="@(PercentComplete is not null ? 100 : null)"
-                     aria-valuenow="@(PercentComplete is not null ? Math.Floor(PercentComplete.Value) : null)"
-                     style="@GetProgressBarStyle() @Styles?.Bar">
-                </div>
-            </div>
-        }
+        <div style="@Styles?.PercentNumber" class="bit-pin-pct @Classes?.PercentNumber">
+            @string.Format(PercentNumberFormat, Normalize(Percent))
+        </div>
     }
+
+    <div style="@($"height: {Height}px;") @Styles?.BarContainer" class="bit-pin-bcn @Classes?.BarContainer">
+        <div style="@Styles?.Track" class="bit-pin-trc @Classes?.Track"></div>
+        <div class="bit-pin-bar @(Indeterminate ? "bit-pin-ind" : null) @Classes?.Bar"
+             role="progressbar"
+             aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+             aria-valuetext="@AriaValueText"
+             aria-describedby="@(Description.HasValue() ? _descriptionId : null)"
+             aria-valuemin="@(Indeterminate ? null : 0)"
+             aria-valuemax="@(Indeterminate ? null : 100)"
+             aria-valuenow="@(Indeterminate ? null : Normalize(Percent))"
+             style="@GetProgressBarStyle()">
+        </div>
+    </div>
 
     @if (DescriptionTemplate is not null)
     {
-        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@DescriptionId">
+        <div id="@_descriptionId">
             @DescriptionTemplate
         </div>
     }
     else if (Description.HasValue())
     {
-        <div style="@Styles?.DescriptionContainer" class="bit-pin-des @Classes?.DescriptionContainer" id="@DescriptionId">
+        <div style="@Styles?.Description" class="bit-pin-des @Classes?.Description" id="@_descriptionId">
             @Description
         </div>
     }

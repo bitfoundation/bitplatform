@@ -2,13 +2,13 @@
 
 public partial class BitProgressIndicatorDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AriaValueText",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Text alternative of the progress status, used by screen readers for reading the value of the progress.",
         },
         new()
@@ -22,14 +22,14 @@ public partial class BitProgressIndicatorDemo
         },
         new()
         {
-            Name = "BarColor",
+            Name = "Color",
             Type = "string?",
             DefaultValue = "null",
             Description = "Color of the BitProgressIndicator.",
         },
         new()
         {
-            Name = "BarHeight",
+            Name = "Height",
             Type = "int",
             DefaultValue = "2",
             Description = "Height of the BitProgressIndicator.",
@@ -37,8 +37,8 @@ public partial class BitProgressIndicatorDemo
         new()
         {
             Name = "Description",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Text describing or supplementing the operation.",
         },
         new()
@@ -50,16 +50,16 @@ public partial class BitProgressIndicatorDemo
         },
         new()
         {
-            Name = "IsProgressHidden",
+            Name = "Indeterminate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not to hide the progress state.",
+            Description = "Whether or not to show indeterminate progress animation.",
         },
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Label to display above the BitProgressIndicator.",
         },
         new()
@@ -71,17 +71,24 @@ public partial class BitProgressIndicatorDemo
         },
         new()
         {
-            Name = "PercentComplete",
-            Type = "double?",
-            DefaultValue = "null",
-            Description = "Percentage of the operation's completeness, numerically between 0 and 100. If this is not set, the indeterminate progress animation will be shown instead.",
+            Name = "Percent",
+            Type = "double",
+            DefaultValue = "0",
+            Description = "Percentage of the operation's completeness, numerically between 0 and 100.",
         },
         new()
         {
-            Name = "ProgressTemplate",
-            Type = "RenderFragment<BitProgressIndicator>?",
-            DefaultValue = "null",
-            Description = "A custom template for progress track.",
+            Name = "PercentNumberFormat",
+            Type = "string",
+            DefaultValue = "{0:F0}",
+            Description = "The format of the percent in percentage display.",
+        },
+        new()
+        {
+            Name = "ShowPercentNumber",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not to percentage display.",
         },
         new()
         {
@@ -92,16 +99,16 @@ public partial class BitProgressIndicatorDemo
             DefaultValue = "null",
             Description = "Custom CSS Styles for different parts of the BitProgressIndicator.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "progressIndicator-class-styles",
             Title = "BitProgressIndicatorClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -111,24 +118,31 @@ public partial class BitProgressIndicatorDemo
                },
                new()
                {
-                   Name = "LabelContainer",
+                   Name = "Label",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the label container of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the label of the BitProgressIndicator."
                },
                new()
                {
-                   Name = "IndicatorWrapper",
+                   Name = "PercentNumber",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the indicator wrapper of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the percent number of the BitProgressIndicator."
                },
                new()
                {
-                   Name = "Tracker",
+                   Name = "BarContainer",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the tracker of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the bar container of the BitProgressIndicator."
+               },
+               new()
+               {
+                   Name = "Track",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the track of the BitProgressIndicator."
                },
                new()
                {
@@ -139,51 +153,86 @@ public partial class BitProgressIndicatorDemo
                },
                new()
                {
-                   Name = "DescriptionContainer",
+                   Name = "Description",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the description container of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the description of the BitProgressIndicator."
                }
-            }
+            ]
         }
-    };
-
+    ];
 
 
     private readonly string example1RazorCode = @"
-<BitProgressIndicator Label=""Example title""
-                      Description=""@Description""
-                      PercentComplete=""@CompletedPercent""
-                      BarHeight=""50"" />
-
-<BitButton OnClick=""StartProgress"">Start Progress</BitButton>";
-    private readonly string example1CsharpCode = @"
-private int CompletedPercent;
-private string Description = ""Push button to start!"";
-
-private async Task StartProgress()
-{
-    CompletedPercent = 0;
-    while (CompletedPercent <= 100)
-    {
-        if (CompletedPercent == 100)
-        {
-                Description = $""Completed !"";
-                break;
-        }
-        else
-        {
-                CompletedPercent++;
-                Description = $""{CompletedPercent}%"";
-        }
-
-        StateHasChanged();
-        await Task.Delay(100);
-    }
-}";
+<BitProgressIndicator Label=""Basic ProgressIndicator""
+                      Description=""Example description""
+                      Percent=""42"" />";
 
     private readonly string example2RazorCode = @"
-<BitProgressIndicator Label=""Example title""
-                      Description=""Example description"" 
-                      BarHeight=""20"" />";
+<BitProgressIndicator Percent=""69"" Height=""10"" />";
+
+    private readonly string example3RazorCode = @"
+<BitProgressIndicator Label=""Show Percent Number""
+                      Percent=""85.69""
+                      ShowPercentNumber />
+
+<BitProgressIndicator Label=""Percent Number Format""
+                      Percent=""85.69""
+                      PercentNumberFormat=""{0:F2} %""
+                      ShowPercentNumber />";
+
+    private readonly string example4RazorCode = @"
+<BitProgressIndicator Indeterminate />";
+
+    private readonly string example5RazorCode = @"
+<BitProgressIndicator Color=""#c10606"" Percent=""69"" />
+
+<BitProgressIndicator Color=""#ffba17"" Indeterminate />";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .custom-class {
+        background-color: darkred;
+        border-radius: 0.5rem;
+        padding: 0.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .custom-track {
+        background-color: #ff6a00;
+    }
+
+    .custom-bar {
+        background-color: #ff2700;
+    }
+</style>
+
+<BitProgressIndicator Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" Indeterminate />
+
+<BitProgressIndicator Class=""custom-class""
+                      Percent=""69""
+                      Height=""10"" />
+
+
+<BitProgressIndicator Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
+                                         Track = ""background-color: green;"" })""
+                      Height=""10""
+                      Indeterminate />
+
+<BitProgressIndicator Classes=""@(new() { Bar = ""custom-bar"",
+                                          Track = ""custom-track""})""
+                      Percent=""69""
+                      Height=""10"" />";
+
+    private readonly string example7RazorCode = @"
+<BitProgressIndicator Dir=""BitDir.Rtl""
+                      Height=""10""
+                      Indeterminate />
+
+<BitProgressIndicator Label=""لیبل تست""
+                      Description=""توضیحات تست""
+                      Dir=""BitDir.Rtl""
+                      Percent=""69""
+                      Height=""10""
+                      ShowPercent />";
 }

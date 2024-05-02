@@ -1,0 +1,19 @@
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
+
+::deep {
+    .custom-class {
+        background-color: darkred;
+        border-radius: 0.5rem;
+        padding: 0.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .custom-track {
+        background-color: #ff6a00;
+    }
+
+    .custom-bar {
+        background-color: #ff2700;
+    }
+}
