@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.ProgressIndicator;
