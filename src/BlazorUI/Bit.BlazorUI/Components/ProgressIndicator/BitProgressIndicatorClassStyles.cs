@@ -23,9 +23,9 @@ public class BitProgressIndicatorClassStyles
     public string? IndicatorContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the tracker of the BitProgressIndicator.
+    /// Custom CSS classes/styles for the track of the BitProgressIndicator.
     /// </summary>
-    public string? Tracker { get; set; }
+    public string? Track { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the bar of the BitProgressIndicator.

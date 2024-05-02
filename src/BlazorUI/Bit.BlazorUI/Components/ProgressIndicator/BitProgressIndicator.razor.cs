@@ -69,11 +69,6 @@ public partial class BitProgressIndicator
     [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
 
     /// <summary>
-    /// A custom template for progress track.
-    /// </summary>
-    [Parameter] public RenderFragment<BitProgressIndicator>? ProgressTemplate { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the BitProgressIndicator.
     /// </summary>
     [Parameter] public BitProgressIndicatorClassStyles? Styles { get; set; }
@@ -84,8 +79,6 @@ public partial class BitProgressIndicator
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => Indeterminate ? "bit-pin-ind" : null);
     }
 
     protected override void RegisterCssStyles()

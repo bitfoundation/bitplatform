@@ -86,7 +86,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.Indeterminate, indeterminate);
         });
 
-        var pin = component.Find(".bit-pin");
+        var pin = component.Find(".bit-pin-bar");
         Assert.AreEqual(indeterminate, pin.ClassList.Contains("bit-pin-ind"));
     }
 

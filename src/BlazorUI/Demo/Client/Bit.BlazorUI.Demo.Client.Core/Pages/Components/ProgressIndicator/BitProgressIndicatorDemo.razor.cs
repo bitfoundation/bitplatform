@@ -85,13 +85,6 @@ public partial class BitProgressIndicatorDemo
         },
         new()
         {
-            Name = "ProgressTemplate",
-            Type = "RenderFragment<BitProgressIndicator>?",
-            DefaultValue = "null",
-            Description = "A custom template for progress track.",
-        },
-        new()
-        {
             Name = "ShowPercentNumber",
             Type = "bool",
             DefaultValue = "false",
@@ -146,10 +139,10 @@ public partial class BitProgressIndicatorDemo
                },
                new()
                {
-                   Name = "Tracker",
+                   Name = "Track",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the tracker of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the track of the BitProgressIndicator."
                },
                new()
                {
@@ -205,7 +198,7 @@ public partial class BitProgressIndicatorDemo
         margin-bottom: 1rem;
     }
 
-    .custom-tracker {
+    .custom-track {
         background-color: #ff6a00;
     }
 
@@ -222,12 +215,12 @@ public partial class BitProgressIndicatorDemo
 
 
 <BitProgressIndicator Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
-                                         Tracker = ""background-color: green;"" })""
+                                         Track = ""background-color: green;"" })""
                       Height=""10""
                       Indeterminate />
 
 <BitProgressIndicator Classes=""@(new() { Bar = ""custom-bar"",
-                                          Tracker = ""custom-tracker""})""
+                                          Track = ""custom-track""})""
                       Percent=""69""
                       Height=""10"" />";
 

@@ -63,19 +63,10 @@
 
 
 .bit-pin-ind {
-    .bit-pin-bar {
-        width: 0;
-        min-width: 33%;
-        position: absolute;
-        transition: width 0.3s ease 0s;
-        animation: 3s ease 0s infinite normal none running bit-pin-animation;
-        background: linear-gradient(to right, $color-background-secondary 0%, var(--bit-pin-bar-color) 50%, $color-background-secondary 100%);
-    }
-}
-
-.bit-rtl {
-    .bit-pin-prc {
-        margin-left: unset;
-        margin-right: auto;
-    }
+    width: 0;
+    min-width: 33%;
+    position: absolute;
+    transition: width 0.3s ease 0s;
+    animation: 3s ease 0s infinite normal none running bit-pin-animation;
+    background: linear-gradient(to right, $color-background-secondary 0%, var(--bit-pin-bar-color) 50%, $color-background-secondary 100%);
 }

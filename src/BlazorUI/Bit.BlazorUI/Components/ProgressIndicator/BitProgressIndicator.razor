@@ -26,26 +26,19 @@
         </div>
     }
 
-    @if (ProgressTemplate is not null)
-    {
-        @ProgressTemplate(this)
-    }
-    else
-    {
-        <div style="@($"height: {Height}px;") @Styles?.IndicatorContainer" class="bit-pin-icn @Classes?.IndicatorContainer">
-            <div style="@Styles?.Tracker" class="bit-pin-trc @Classes?.Tracker"></div>
-            <div class="bit-pin-bar @Classes?.Bar"
-                 role="progressbar"
-                 aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                 aria-valuetext="@AriaValueText"
-                 aria-describedby="@(Description.HasValue() ? _descriptionId : null)"
-                 aria-valuemin="@(Indeterminate ? null : 0)"
-                 aria-valuemax="@(Indeterminate ? null : 100)"
-                 aria-valuenow="@(Indeterminate ? null : Normalize(Percent))"
-                 style="@GetProgressBarStyle()">
-            </div>
+    <div style="@($"height: {Height}px;") @Styles?.IndicatorContainer" class="bit-pin-icn @Classes?.IndicatorContainer">
+        <div style="@Styles?.Track" class="bit-pin-trc @Classes?.Track"></div>
+        <div class="bit-pin-bar @(Indeterminate ? "bit-pin-ind" : null) @Classes?.Bar"
+             role="progressbar"
+             aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+             aria-valuetext="@AriaValueText"
+             aria-describedby="@(Description.HasValue() ? _descriptionId : null)"
+             aria-valuemin="@(Indeterminate ? null : 0)"
+             aria-valuemax="@(Indeterminate ? null : 100)"
+             aria-valuenow="@(Indeterminate ? null : Normalize(Percent))"
+             style="@GetProgressBarStyle()">
         </div>
-    }
+    </div>
 
     @if (DescriptionTemplate is not null)
     {
