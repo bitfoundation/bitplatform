@@ -22,11 +22,11 @@
     @if (ShowPercentNumber && Indeterminate is false)
     {
         <div style="@Styles?.Percent" class="bit-pin-pct @Classes?.Percent">
-            @string.Format(PercentNumberFormat, Normalize(Percent))
+            @string.Format(PercentNumberFormat, Normalize(PercentNumber))
         </div>
     }
 
-    <div style="@($"height: {Height}px;") @Styles?.IndicatorContainer" class="bit-pin-icn @Classes?.IndicatorContainer">
+    <div style="@($"height: {Height}px;") @Styles?.BarContainer" class="bit-pin-bcn @Classes?.BarContainer">
         <div style="@Styles?.Track" class="bit-pin-trc @Classes?.Track"></div>
         <div class="bit-pin-bar @(Indeterminate ? "bit-pin-ind" : null) @Classes?.Bar"
              role="progressbar"
@@ -35,7 +35,7 @@
              aria-describedby="@(Description.HasValue() ? _descriptionId : null)"
              aria-valuemin="@(Indeterminate ? null : 0)"
              aria-valuemax="@(Indeterminate ? null : 100)"
-             aria-valuenow="@(Indeterminate ? null : Normalize(Percent))"
+             aria-valuenow="@(Indeterminate ? null : Normalize(PercentNumber))"
              style="@GetProgressBarStyle()">
         </div>
     </div>

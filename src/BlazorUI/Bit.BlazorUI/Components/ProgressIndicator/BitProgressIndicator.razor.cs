@@ -61,7 +61,7 @@ public partial class BitProgressIndicator
     /// <summary>
     /// Percentage of the operation's completeness, numerically between 0 and 100.
     /// </summary>
-    [Parameter] public double Percent { get; set; }
+    [Parameter] public double PercentNumber { get; set; }
 
     /// <summary>
     /// The format of the percent number in percentage display.
@@ -106,7 +106,7 @@ public partial class BitProgressIndicator
 
         if (Indeterminate is false)
         {
-            sb.Append($"width: {Normalize(Percent)}%;");
+            sb.Append($"width: {Normalize(PercentNumber)}%;");
         }
 
         return sb.ToString();

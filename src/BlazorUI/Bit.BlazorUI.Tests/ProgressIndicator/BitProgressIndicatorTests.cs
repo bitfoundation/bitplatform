@@ -17,7 +17,7 @@ public class BitProgressIndicatorTests : BunitTestContext
             parameters.Add(p => p.Height, height);
         });
 
-        var piWrapper = component.Find(".bit-pin-icn");
+        var piWrapper = component.Find(".bit-pin-bcn");
         var piWrapperStyle = piWrapper.GetAttribute("style");
         var expectedValue = $"height: {height}px";
         Assert.IsTrue(piWrapperStyle.Contains(expectedValue));
@@ -27,16 +27,16 @@ public class BitProgressIndicatorTests : BunitTestContext
         DataRow(52),
         DataRow(43)
     ]
-    public void BitProgressIndicatorBarWidthShouldBeEqualPercentValue(double percent)
+    public void BitProgressIndicatorBarWidthShouldBeEqualPercentNumber(double percentNumber)
     {
         var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.Percent, percent);
+            parameters.Add(p => p.PercentNumber, percentNumber);
         });
 
         var piBar = component.Find(".bit-pin-bar");
         var piBarStyle = piBar.GetAttribute("style");
-        var expectedValue = $"width: {percent}%";
+        var expectedValue = $"width: {percentNumber}%";
         Assert.IsTrue(piBarStyle.Contains(expectedValue));
     }
 
@@ -44,11 +44,11 @@ public class BitProgressIndicatorTests : BunitTestContext
         DataRow(520),
         DataRow(430)
     ]
-    public void BitProgressIndicatorBarWidthCanNotBeBiggerThan100(double percent)
+    public void BitProgressIndicatorBarWidthCanNotBeBiggerThan100(double percentNumber)
     {
         var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.Percent, percent);
+            parameters.Add(p => p.PercentNumber, percentNumber);
         });
 
         var piBar = component.Find(".bit-pin-bar");
@@ -61,11 +61,11 @@ public class BitProgressIndicatorTests : BunitTestContext
         DataRow(-5),
         DataRow(-265)
     ]
-    public void BitProgressIndicatorBarWidthCanNotBeSmallerThan0(double percent)
+    public void BitProgressIndicatorBarWidthCanNotBeSmallerThan0(double percentNumber)
     {
         var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.Percent, percent);
+            parameters.Add(p => p.PercentNumber, percentNumber);
         });
 
         var piBar = component.Find(".bit-pin-bar");
@@ -165,15 +165,15 @@ public class BitProgressIndicatorTests : BunitTestContext
     [DataTestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitProgressIndicatorShowPercentTest(bool showPercent)
+    public void BitProgressIndicatorShowPercentNumberTest(bool showPercentNumber)
     {
         var component = RenderComponent<BitProgressIndicator>(parameters =>
         {
-            parameters.Add(p => p.ShowPercentNumber, showPercent);
+            parameters.Add(p => p.ShowPercentNumber, showPercentNumber);
         });
 
 
-        if (showPercent)
+        if (showPercentNumber)
         {
             var percentContainer = component.Find(".bit-pin-pct");
             Assert.IsNotNull(percentContainer);
