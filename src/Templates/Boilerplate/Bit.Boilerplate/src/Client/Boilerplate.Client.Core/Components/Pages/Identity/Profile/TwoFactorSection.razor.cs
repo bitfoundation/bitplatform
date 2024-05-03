@@ -38,7 +38,9 @@ public partial class TwoFactorSection
         var twoFactorCode = verificationCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
         var request = new TwoFactorAuthRequestDto { Enable = true, TwoFactorCode = twoFactorCode };
-        await SendTwoFactorAuthRequest(request);
+        var response = await SendTwoFactorAuthRequest(request);
+
+        recoveryCodes = response?.RecoveryCodes;
     }
 
     private async Task DisableTwoFactorAuth()
@@ -50,7 +52,9 @@ public partial class TwoFactorSection
     private async Task GenerateRecoveryCode()
     {
         var request = new TwoFactorAuthRequestDto { ResetRecoveryCodes = true };
-        await SendTwoFactorAuthRequest(request);
+        var response = await SendTwoFactorAuthRequest(request);
+
+        recoveryCodes = response?.RecoveryCodes;
     }
 
     private async Task ResetAuthenticatorKey()
@@ -65,7 +69,7 @@ public partial class TwoFactorSection
     //    await SendTwoFactorAuthRequest(request);
     //}
 
-    private async Task SendTwoFactorAuthRequest(TwoFactorAuthRequestDto request)
+    private async Task<TwoFactorAuthResponseDto?> SendTwoFactorAuthRequest(TwoFactorAuthRequestDto request)
     {
         isLoading = true;
 
@@ -78,11 +82,15 @@ public partial class TwoFactorSection
             authenticatorUri = response.AuthenticatorUri;
             recoveryCodesLeft = response.RecoveryCodesLeft;
             isTwoFactorAuthEnabled = response.IsTwoFactorEnabled;
+
+            return response;
         }
         catch (KnownException e)
         {
             message = e.Message;
             messageType = BitMessageBarType.Error;
+
+            return null;
         }
         finally
         {
