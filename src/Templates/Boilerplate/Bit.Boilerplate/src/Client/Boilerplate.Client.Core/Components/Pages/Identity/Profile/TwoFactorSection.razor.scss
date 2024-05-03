@@ -1,5 +1,11 @@
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
+.qr-code-container {
+    display: flex;
+    margin: 1rem 0;
+    justify-content: center;
+}
+
 .tfa-key-container {
     display: flex;
     padding: 1rem;

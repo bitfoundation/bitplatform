@@ -12,5 +12,7 @@ public class TwoFactorAuthResponseDto
 
     public required bool IsTwoFactorEnabled { get; init; }
 
-    public required bool IsMachineRemembered { get; init; }
+    //public required bool IsMachineRemembered { get; init; }
+
+    public string? QrCode { get; set; }
 }

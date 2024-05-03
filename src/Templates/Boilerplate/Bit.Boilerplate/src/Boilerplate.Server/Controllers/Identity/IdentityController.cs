@@ -4,6 +4,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using QRCoder;
 using FluentEmail.Core;
 using Boilerplate.Server.Services;
 using Boilerplate.Server.Resources;
@@ -19,8 +20,6 @@ namespace Boilerplate.Server.Controllers.Identity;
 [ApiController, AllowAnonymous]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
-    private const string AUTHENTICATOR_URI_FORMAT = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
-
     [AutoInject] private UserManager<User> userManager = default!;
 
     [AutoInject] private SignInManager<User> signInManager = default!;
@@ -298,10 +297,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             recoveryCodes = recoveryCodesEnumerable?.ToArray();
         }
 
-        if (tfaRequest.ForgetMachine)
-        {
-            await signInManager.ForgetTwoFactorClientAsync();
-        }
+        //if (tfaRequest.ForgetMachine)
+        //{
+        //    await signInManager.ForgetTwoFactorClientAsync();
+        //}
 
         var unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
         if (string.IsNullOrEmpty(unformattedKey))
@@ -318,14 +317,26 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var sharedKey = FormatKey(unformattedKey);
         var authenticatorUri = GenerateQrCodeUri(user.Email!, unformattedKey);
 
+        var qrCodeBase64 = "";
+        var isTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user);
+        if (isTwoFactorEnabled is false)
+        {
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrCodeData = qrGenerator.CreateQrCode(authenticatorUri, QRCodeGenerator.ECCLevel.Q);
+
+            var qrCode = new Base64QRCode(qrCodeData);
+            qrCodeBase64 = qrCode.GetGraphic(20);
+        }
+
         return new TwoFactorAuthResponseDto
         {
             SharedKey = sharedKey,
             AuthenticatorUri = authenticatorUri,
             RecoveryCodes = recoveryCodes,
             RecoveryCodesLeft = recoveryCodes?.Length ?? await userManager.CountRecoveryCodesAsync(user),
-            IsTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
-            IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
+            IsTwoFactorEnabled = isTwoFactorEnabled,
+            //IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
+            QrCode = qrCodeBase64
         };
     }
 
@@ -346,11 +357,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         return result.ToString().ToLowerInvariant();
     }
 
+    private const string AUTHENTICATOR_URI_FORMAT = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
     private string GenerateQrCodeUri(string email, string unformattedKey)
     {
         return string.Format(CultureInfo.InvariantCulture,
                              AUTHENTICATOR_URI_FORMAT,
-                             urlEncoder.Encode("Boilerplate.Identity.UI"),
+                             urlEncoder.Encode("bit platform Boilerplate"),
                              urlEncoder.Encode(email),
                              unformattedKey);
     }

@@ -10,5 +10,5 @@ public class TwoFactorAuthRequestDto
 
     public bool ResetRecoveryCodes { get; init; }
 
-    public bool ForgetMachine { get; init; }
+    //public bool ForgetMachine { get; init; }
 }
