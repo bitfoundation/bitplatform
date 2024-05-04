@@ -2,8 +2,8 @@
 
 public partial class BitMessageBarDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "Actions",
@@ -81,11 +81,18 @@ public partial class BitMessageBarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines if the message bar text is truncated. If true, a button will render to toggle between a single line view and multiline view. This parameter is for single line message bars with no buttons only in a limited space scenario.",
+        },
+        new()
+        {
+            Name = "HideIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents rendering the icon of the message bar.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "messageBarType-enum",
@@ -131,7 +138,7 @@ public partial class BitMessageBarDemo
                 },
             }
         }
-    };
+    ];
 
 
 

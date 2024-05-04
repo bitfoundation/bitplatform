@@ -17,7 +17,7 @@ public partial class BitMessageBar
     private BitMessageBarType _messageBarType = BitMessageBarType.Info;
 
     /// <summary>
-    /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped
+    /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped.
     /// </summary>
     [Parameter] public bool IsMultiline { get; set; } = true;
 
@@ -79,6 +79,11 @@ public partial class BitMessageBar
     /// Whether the message bar has a dismiss button and its callback. If null, dismiss button won't show
     /// </summary>
     [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>
+    /// Prevents rendering the icon of the message bar.
+    /// </summary>
+    [Parameter] public bool HideIcon { get; set; }
 
 
     public string LabelId => $"MessageBar-Label-{UniqueId}";
