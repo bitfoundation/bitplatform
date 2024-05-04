@@ -17,7 +17,7 @@ public partial class BitMessageBar
     private BitMessageBarType _messageBarType = BitMessageBarType.Info;
 
     /// <summary>
-    /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped.
+    /// Determines if the message bar is multi lined. If false, and the text overflows over buttons or to another line, it is clipped
     /// </summary>
     [Parameter] public bool IsMultiline { get; set; } = true;
 
