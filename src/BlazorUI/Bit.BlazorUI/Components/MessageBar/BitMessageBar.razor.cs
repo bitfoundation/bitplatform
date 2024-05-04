@@ -80,6 +80,11 @@ public partial class BitMessageBar
     /// </summary>
     [Parameter] public EventCallback OnDismiss { get; set; }
 
+    /// <summary>
+    /// Prevents rendering the icon of the message bar.
+    /// </summary>
+    [Parameter] public bool HideIcon { get; set; }
+
 
     public string LabelId => $"MessageBar-Label-{UniqueId}";
 

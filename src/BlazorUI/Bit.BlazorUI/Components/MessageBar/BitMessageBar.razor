@@ -13,9 +13,12 @@
     {
         <div class="bit-msb-mul">
             <div class="bit-msb-con">
-                <div class="bit-msb-ict" aria-hidden="true">
-                    <i class="bit-icon bit-icon--@_messageBarIconName" />
-                </div>
+                @if (HideIcon is false)
+                {
+                    <div class="bit-msb-ict" aria-hidden="true">
+                        <i class="bit-icon bit-icon--@_messageBarIconName" />
+                    </div>
+                }
 
                 <div class="bit-msb-txt"
                      id="@LabelId"
@@ -51,9 +54,12 @@
     {
         <div class="bit-msb-sin">
             <div class="bit-msb-con">
-                <div class="bit-msb-ict" aria-hidden="true">
-                    <i class="bit-icon bit-icon--@_messageBarIconName" />
-                </div>
+                @if (HideIcon is false)
+                {
+                    <div class="bit-msb-ict" aria-hidden="true">
+                        <i class="bit-icon bit-icon--@_messageBarIconName" />
+                    </div>
+                }
                 <div id="@LabelId"
                      aria-live="@GetAnnouncementPriority()"
                      role="@(Role is not null ? Role : GetTextRole())"
