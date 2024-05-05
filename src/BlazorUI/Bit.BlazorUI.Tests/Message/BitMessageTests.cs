@@ -37,7 +37,7 @@ public class BitMessageTests : BunitTestContext
 
         var icon = component.Find(".bit-msg-ict > i");
 
-        Dictionary<BitSeverity, string> IconMap = new()
+        Dictionary<BitSeverity, string> iconMap = new()
         {
             [BitSeverity.Info] = "Info",
             [BitSeverity.Warning] = "Info",
@@ -46,7 +46,7 @@ public class BitMessageTests : BunitTestContext
             [BitSeverity.Success] = "Completed"
         };
 
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{IconMap[type]}"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconMap[type]}"));
     }
 
     [DataTestMethod,
