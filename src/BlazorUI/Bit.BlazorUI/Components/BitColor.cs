@@ -25,5 +25,5 @@ public enum BitColor
     /// <summary>
     /// Error styled component.
     /// </summary>
-    Error,
+    Error
 }

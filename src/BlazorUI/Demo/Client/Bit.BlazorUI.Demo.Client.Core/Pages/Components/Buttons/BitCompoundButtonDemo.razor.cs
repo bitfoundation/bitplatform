@@ -378,30 +378,21 @@ public partial class BitCompoundButtonDemo
 private int clickCounter;";
 
     private readonly string example7RazorCode = @"
-@if (formIsValidSubmit is false)
-{
-    <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
-        <DataAnnotationsValidator />
+<EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
+    <DataAnnotationsValidator />
 
-        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
-        <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
-        <br />
-        <BitTextField Label=""Non Required"" @bind-Value=""validationButtonModel.NonRequiredText"" />
-        <ValidationMessage For=""() => validationButtonModel.NonRequiredText"" />
-        <br />
-        <div class=""buttons-container"">
-            <BitCompoundButton ButtonType=BitButtonType.Submit Text=""Submit"" SecondaryText=""This is a Submit button"" />
-            <BitCompoundButton ButtonType=BitButtonType.Reset Text=""Reset"" SecondaryText=""This is a Reset button"" />
-            <BitCompoundButton ButtonType=BitButtonType.Button Text=""Button"" SecondaryText=""This is just a button"" />
-        </div>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        The form submitted successfully.
-    </BitMessageBar>
-}";
+    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
+    <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
+    <br />
+    <BitTextField Label=""Non Required"" @bind-Value=""validationButtonModel.NonRequiredText"" />
+    <ValidationMessage For=""() => validationButtonModel.NonRequiredText"" />
+    <br />
+    <div class=""buttons-container"">
+        <BitCompoundButton ButtonType=BitButtonType.Submit Text=""Submit"" SecondaryText=""This is a Submit button"" />
+        <BitCompoundButton ButtonType=BitButtonType.Reset Text=""Reset"" SecondaryText=""This is a Reset button"" />
+        <BitCompoundButton ButtonType=BitButtonType.Button Text=""Button"" SecondaryText=""This is just a button"" />
+    </div>
+</EditForm>";
     private readonly string example7CsharpCode = @"
 public class ButtonValidationModel
 {
@@ -411,25 +402,15 @@ public class ButtonValidationModel
     public string? NonRequiredText { get; set; }
 }
 
-private bool formIsValidSubmit;
 private ButtonValidationModel buttonValidationModel = new();
 
 private async Task HandleValidSubmit()
 {
-    formIsValidSubmit = true;
-
     await Task.Delay(2000);
 
     buttonValidationModel = new();
 
-    formIsValidSubmit = false;
-
     StateHasChanged();
-}
-
-private void HandleInvalidSubmit()
-{
-    formIsValidSubmit = false;
 }";
 
     private readonly string example8RazorCode = @"
