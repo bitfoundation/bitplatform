@@ -14,19 +14,14 @@ public partial class BitProgressIndicator
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// Color of the BitProgressIndicator.
-    /// </summary>
-    [Parameter] public string? Color { get; set; }
-
-    /// <summary>
-    /// Height of the BitProgressIndicator.
-    /// </summary>
-    [Parameter] public int Height { get; set; } = 2;
-
-    /// <summary>
     /// Custom CSS classes for different parts of the BitProgressIndicator.
     /// </summary>
     [Parameter] public BitProgressIndicatorClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Color of the BitProgressIndicator.
+    /// </summary>
+    [Parameter] public string? Color { get; set; }
 
     /// <summary>
     /// Text describing or supplementing the operation.
@@ -39,14 +34,14 @@ public partial class BitProgressIndicator
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
+    /// Height of the BitProgressIndicator.
+    /// </summary>
+    [Parameter] public int Height { get; set; } = 2;
+
+    /// <summary>
     /// Whether or not to show indeterminate progress animation.
     /// </summary>
     [Parameter] public bool Indeterminate { get; set; }
-
-    /// <summary>
-    /// Whether or not to percentage display.
-    /// </summary>
-    [Parameter] public bool ShowPercentNumber { get; set; }
 
     /// <summary>
     /// Label to display above the BitProgressIndicator.
@@ -67,6 +62,11 @@ public partial class BitProgressIndicator
     /// The format of the percent number in percentage display.
     /// </summary>
     [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
+
+    /// <summary>
+    /// Whether or not to percentage display.
+    /// </summary>
+    [Parameter] public bool ShowPercentNumber { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitProgressIndicator.
