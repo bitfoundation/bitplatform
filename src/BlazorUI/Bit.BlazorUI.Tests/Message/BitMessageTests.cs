@@ -21,21 +21,21 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.Severity, type);
         });
 
-        var bitMessage = component.Find(".bit-msb");
+        var bitMessage = component.Find(".bit-msg");
 
         var typeClass = type switch
         {
-            BitSeverity.Info => "bit-msb-info",
-            BitSeverity.Success => "bit-msb-success",
-            BitSeverity.Warning => "bit-msb-warning",
-            BitSeverity.SevereWarning => "bit-msb-severe-warning",
-            BitSeverity.Error => "bit-msb-error",
-            _ => "bit-msb-info"
+            BitSeverity.Info => "bit-msg-info",
+            BitSeverity.Success => "bit-msg-success",
+            BitSeverity.Warning => "bit-msg-warning",
+            BitSeverity.SevereWarning => "bit-msg-severe-warning",
+            BitSeverity.Error => "bit-msg-error",
+            _ => "bit-msg-info"
         };
 
         Assert.IsTrue(bitMessage.ClassList.Contains(typeClass));
 
-        var icon = component.Find(".bit-msb-ict > i");
+        var icon = component.Find(".bit-msg-ict > i");
 
         Dictionary<BitSeverity, string> IconMap = new()
         {
@@ -60,44 +60,8 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.IconName, iconName);
         });
 
-        var icon = component.Find(".bit-msb-ict > i");
+        var icon = component.Find(".bit-msg-ict > i");
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
-    }
-
-    [DataTestMethod,
-        DataRow(true, true),
-        DataRow(true, false),
-        DataRow(false, true),
-        DataRow(false, false)
-    ]
-    public void BitMessageShouldRespectMultiline(bool isMultiline, bool truncated)
-    {
-        var component = RenderComponent<BitMessage>(parameters =>
-        {
-            parameters.Add(p => p.Multiline, isMultiline);
-            parameters.Add(p => p.Truncate, truncated);
-        });
-
-        var bitMessage = component.Find(".bit-msb > div");
-
-        var messageBarMultilineType = isMultiline ? "bit-msb-mul" : "bit-msb-sin";
-        Assert.IsTrue(bitMessage.ClassList.Contains(messageBarMultilineType));
-
-        if (isMultiline is false && truncated)
-        {
-            var truncateButton = component.Find(".bit-msb-trn > button");
-            var icon = component.Find(".bit-msb-trn button span i");
-
-            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronDown"));
-
-            truncateButton.Click();
-
-            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronUp"));
-
-            truncateButton.Click();
-
-            Assert.IsTrue(icon.ClassList.Contains("bit-icon--DoubleChevronDown"));
-        }
     }
 
     [DataTestMethod]
@@ -109,7 +73,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => currentCount++);
         });
 
-        var dismissButton = component.Find(".bit-msb-dim > button");
+        var dismissButton = component.Find(".bit-msg-dim > button");
 
         dismissButton.Click();
 
@@ -128,7 +92,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => { });
         });
 
-        var icon = component.Find(".bit-msb-dim button span i");
+        var icon = component.Find(".bit-msg-dim button span i");
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
@@ -143,7 +107,7 @@ public class BitMessageTests : BunitTestContext
             parameter.Add(p => p.Actions, actions);
         });
 
-        var actionsTemplate = component.Find(".bit-msb-act").ChildNodes;
+        var actionsTemplate = component.Find(".bit-msg-act").ChildNodes;
         actionsTemplate.MarkupMatches(actions);
     }
 
@@ -168,7 +132,7 @@ public class BitMessageTests : BunitTestContext
             parameter.Add(p => p.Severity, type);
         });
 
-        var textEl = component.Find(".bit-msb-txt");
+        var textEl = component.Find(".bit-msg-ccn");
         var expectedRole = role is not null ? role : GetRole(type);
 
         Assert.AreEqual(expectedRole, textEl.GetAttribute("role"));
