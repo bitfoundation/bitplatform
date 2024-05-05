@@ -1,5 +1,16 @@
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
+::deep .tfa-message-bar {
+    inset-block-end: 0;
+    inset-block-start: unset;
+}
+
+.qr-code-container {
+    display: flex;
+    margin: 1rem 0;
+    justify-content: center;
+}
+
 .tfa-key-container {
     display: flex;
     padding: 1rem;

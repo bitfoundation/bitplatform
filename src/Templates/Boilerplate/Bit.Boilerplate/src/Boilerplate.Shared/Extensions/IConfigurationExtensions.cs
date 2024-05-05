@@ -6,6 +6,8 @@ public static class IConfigurationExtensions
     {
         var apiServerAddress = configuration.GetValue("ApiServerAddress", defaultValue: "/")!;
 
-        return Uri.TryCreate(apiServerAddress, UriKind.RelativeOrAbsolute, out _) ? apiServerAddress : throw new InvalidOperationException($"Api server address {apiServerAddress} is invalid");
+        return Uri.TryCreate(apiServerAddress, UriKind.RelativeOrAbsolute, out _)
+            ? apiServerAddress.TrimEnd('/')
+            : throw new InvalidOperationException($"Api server address {apiServerAddress} is invalid");
     }
 }
