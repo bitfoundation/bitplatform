@@ -1,0 +1,55 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <div class="bit-msg-con">
+        @if (HideIcon is false)
+        {
+            <div class="bit-msg-ict" aria-hidden="true">
+                <i class="bit-msg-ico bit-icon bit-icon--@GetIconName()" />
+            </div>
+        }
+
+        <div role="@GetTextRole()" class="bit-msg-ccn@(_isExpanded ? " bit-msg-exp": "")">
+            <div class="bit-msg-cnt">
+                <div class="bit-msg-cnc@(Multiline ? " bit-msg-mcn" : "")">@(Content ?? ChildContent)</div>
+            </div>
+        </div>
+
+        @if (Actions is not null && Multiline is false)
+        {
+            <div class="bit-msg-act">@Actions</div>
+        }
+
+        @if (Truncate && Multiline is false)
+        {
+            <div class="bit-msg-trn">
+                <button @onclick="ToggleExpand" type="button">
+                    <span>
+                        <i class="bit-icon bit-icon--@(_isExpanded ? CollapseIconName : ExpandIconName)" aria-hidden="true" />
+                    </span>
+                </button>
+            </div>
+        }
+
+        @if (OnDismiss.HasDelegate)
+        {
+            <div class="bit-msg-dim">
+                <button @onclick="OnDismiss" type="button">
+                    <span>
+                        <i class="bit-icon bit-icon--@DismissIconName" aria-hidden="true" />
+                    </span>
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Actions is not null && Multiline)
+    {
+        <div class="bit-msg-act bit-msg-mac">@Actions</div>
+    }
+</div>

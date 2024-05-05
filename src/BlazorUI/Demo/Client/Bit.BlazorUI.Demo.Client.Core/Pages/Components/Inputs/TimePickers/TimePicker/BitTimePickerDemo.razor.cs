@@ -618,7 +618,7 @@ public partial class BitTimePickerDemo
 ";
 
     private readonly string example6RazorCode = @"
-<EditForm Model=""formValidationTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+<EditForm Model=""formValidationTimePickerModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
 
     <div class=""validation-summary"">
@@ -637,14 +637,7 @@ public partial class BitTimePickerDemo
     <BitButton ButtonType=""BitButtonType.Submit"">
         Submit
     </BitButton>
-</EditForm>
-
-@if (string.IsNullOrEmpty(successMessage) is false)
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @successMessage
-    </BitMessageBar>
-}";
+</EditForm>";
     private readonly string example6CsharpCode = @"
 public class FormValidationTimePickerModel
 {
@@ -653,19 +646,14 @@ public class FormValidationTimePickerModel
 }
 
 private FormValidationCircularTimePickerModel formValidationTimePickerModel = new();
-private string successMessage = string.Empty;
 
 private async Task HandleValidSubmit()
 {
-    successMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);
-    successMessage = string.Empty;
-    StateHasChanged();
-}
 
-private void HandleInvalidSubmit()
-{
-    successMessage = string.Empty;
+    formValidationTimePickerModel = new();
+
+    StateHasChanged();
 }";
 
     private readonly string example7RazorCode = @"

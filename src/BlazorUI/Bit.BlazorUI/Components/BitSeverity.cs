@@ -1,29 +1,29 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitColor
+public enum BitSeverity
 {
     /// <summary>
-    /// Info styled component.
+    /// Info styled severity.
     /// </summary>
     Info,
 
     /// <summary>
-    /// Success styled component.
+    /// Success styled severity.
     /// </summary>
     Success,
 
     /// <summary>
-    /// Warning styled component.
+    /// Warning styled severity.
     /// </summary>
     Warning,
 
     /// <summary>
-    /// Severe Warning styled component.
+    /// SevereWarning styled severity.
     /// </summary>
     SevereWarning,
 
     /// <summary>
-    /// Error styled component.
+    /// Error styled severity.
     /// </summary>
-    Error,
+    Error
 }

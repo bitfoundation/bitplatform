@@ -245,32 +245,23 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
 </BitActionButton>";
 
     private readonly string example7RazorCode = @"
-@if (formIsValidSubmit is false)
-{
-    <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-        <DataAnnotationsValidator />
+<EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
+    <DataAnnotationsValidator />
 
-        <ValidationSummary />
+    <ValidationSummary />
 
-        <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
-        <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
+    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
+    <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
 
-        <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonRequiredText"" />
-        <ValidationMessage For=""() => validationButtonModel.NonRequiredText"" />
+    <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonRequiredText"" />
+    <ValidationMessage For=""() => validationButtonModel.NonRequiredText"" />
 
-        <div>
-            <BitActionButton IconName=""@BitIconName.SendMirrored"" ButtonType=""BitButtonType.Submit"">Submit</BitActionButton>
-            <BitActionButton IconName=""@BitIconName.Reset""  ButtonType=""BitButtonType.Reset"">Reset</BitActionButton>
-            <BitActionButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"">Button</BitActionButton>
-        </div>
-    </EditForm>
-}
-else
-{
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        The form submitted successfully.
-    </BitMessageBar>
-}";
+    <div>
+        <BitActionButton IconName=""@BitIconName.SendMirrored"" ButtonType=""BitButtonType.Submit"">Submit</BitActionButton>
+        <BitActionButton IconName=""@BitIconName.Reset""  ButtonType=""BitButtonType.Reset"">Reset</BitActionButton>
+        <BitActionButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"">Button</BitActionButton>
+    </div>
+</EditForm>";
     private readonly string example7CsharpCode = @"
 public class ButtonValidationModel
 {
@@ -280,25 +271,15 @@ public class ButtonValidationModel
     public string? NonRequiredText { get; set; }
 }
 
-private bool formIsValidSubmit;
 private ButtonValidationModel validationButtonModel = new();
 
 private async Task HandleValidSubmit()
 {
-    formIsValidSubmit = true;
-
     await Task.Delay(2000);
 
     validationButtonModel = new();
 
-    formIsValidSubmit = false;
-
     StateHasChanged();
-}
-
-private void HandleInvalidSubmit()
-{
-    formIsValidSubmit = false;
 }";
 
     private readonly string example8RazorCode = @"

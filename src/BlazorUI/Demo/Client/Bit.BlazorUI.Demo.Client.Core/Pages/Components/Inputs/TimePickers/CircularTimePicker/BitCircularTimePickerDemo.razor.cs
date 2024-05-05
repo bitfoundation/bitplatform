@@ -345,7 +345,7 @@ public partial class BitCircularTimePickerDemo
                Placeholder=""Select a time..."" />";
 
     private readonly string example5RazorCode = @"
-<EditForm Model=""formValidationCircularTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+<EditForm Model=""formValidationCircularTimePickerModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
 
     <div class=""validation-summary"">
@@ -364,13 +364,7 @@ public partial class BitCircularTimePickerDemo
     <BitButton ButtonType=""BitButtonType.Submit"">
         Submit
     </BitButton>
-</EditForm>
-
-@if (string.IsNullOrEmpty(successMessage) is false) {
-    <BitMessageBar MessageBarType=""BitMessageBarType.Success"" IsMultiline=""false"">
-        @successMessage
-    </BitMessageBar>
-}";
+</EditForm>";
     private readonly string example5CsharpCode = @"
 public class FormValidationCircularTimePickerModel
 {
@@ -379,19 +373,14 @@ public class FormValidationCircularTimePickerModel
 }
 
 private FormValidationCircularTimePickerModel formValidationCircularTimePickerModel = new();
-private string successMessage = string.Empty;
 
 private async Task HandleValidSubmit()
 {
-    successMessage = ""Form Submitted Successfully!"";
     await Task.Delay(3000);
-    successMessage = string.Empty;
-    StateHasChanged();
-}
 
-private void HandleInvalidSubmit()
-{
-    successMessage = string.Empty;
+    formValidationCircularTimePickerModel = new();
+
+    StateHasChanged();
 }";
 
     private readonly string example6RazorCode = @"

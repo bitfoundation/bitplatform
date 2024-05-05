@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.MessageBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Message;
 
-public partial class BitMessageBarDemo
+public partial class BitMessageDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -139,6 +139,12 @@ public partial class BitMessageBarDemo
             }
         }
     ];
+
+
+
+    private bool isDismissed;
+    private bool isWarningDismissed;
+    private bool isErrorDismissed;
 
 
 

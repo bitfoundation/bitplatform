@@ -1,36 +1,34 @@
 ﻿@import "../../Styles/functions.scss";
 
-.bit-msb {
+.bit-msg {
     width: 100%;
     display: flex;
-    font-weight: 400;
-    min-height: spacing(4);
-    font-size: spacing(1.5);
+    flex-flow: column;
     font-family: $typography-font-family;
+    background-color: var(--bit-msg-clr-bg);
+    /*---------------------------------*/
+    --bit-msg-clr: #{$color-state-info};
+    --bit-msg-clr-bg: #{$color-state-info-bg};
 }
 
-.bit-msb-mul,
-.bit-msb-sin {
-    width: 100%;
+.bit-msg-ico {
+    color: var(--bit-msg-clr);
 }
 
-.bit-msb-con {
+.bit-msg-con {
     width: 100%;
     display: flex;
     line-height: normal;
     padding: 0 spacing(0.5);
 }
 
-.bit-msb-ict {
+.bit-msg-ict {
     display: flex;
-    flex-shrink: 0;
     margin: spacing(1);
     font-size: spacing(2);
-    min-width: spacing(2);
-    min-height: spacing(2);
 }
 
-.bit-msb-txt {
+.bit-msg-ccn {
     flex: 1;
     overflow: hidden;
     white-space: nowrap;
@@ -38,33 +36,61 @@
     color: $color-foreground-primary;
 }
 
-.bit-msb-opn {
+.bit-msg-exp {
     white-space: normal;
 }
 
-.bit-msb-itx {
+.bit-msg-cnt {
     min-width: 0;
-    flex-grow: 1;
     display: flex;
     font-weight: 400;
     margin: spacing(1);
     flex-direction: column;
     font-size: spacing(1.5);
     line-height: spacing(2);
-
-    span {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
 }
 
-.bit-msb-act {
+.bit-msg-cnc {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-msg-mcn {
+    white-space: normal;
+}
+
+.bit-msg-act {
     display: flex;
+    height: fit-content;
     justify-content: flex-end;
 }
 
-.bit-msb-trn,
-.bit-msb-dim {
+.bit-msg-mac {
+    margin: 0 spacing(1.5) spacing(1) spacing(1);
+}
+
+.bit-msg-success {
+    --bit-msg-clr: #{$color-state-success};
+    --bit-msg-clr-bg: #{$color-state-success-bg};
+}
+
+.bit-msg-warning {
+    --bit-msg-clr: #{$color-state-warning};
+    --bit-msg-clr-bg: #{$color-state-warning-bg};
+}
+
+.bit-msg-severe-warning {
+    --bit-msg-clr: #{$color-state-severe-warning};
+    --bit-msg-clr-bg: #{$color-state-severe-warning-bg};
+}
+
+.bit-msg-error {
+    --bit-msg-clr: #{$color-state-error};
+    --bit-msg-clr-bg: #{$color-state-error-bg};
+}
+
+.bit-msg-trn,
+.bit-msg-dim {
     button {
         border: none;
         flex-shrink: 0;
@@ -98,61 +124,5 @@
             font-size: spacing(1.25);
             line-height: spacing(1.25);
         }
-    }
-}
-
-.bit-msb-mul {
-    .bit-msb-act {
-        display: flex;
-        align-items: center;
-        flex-direction: row-reverse;
-        margin: 0 spacing(1.5) spacing(1) spacing(1);
-    }
-
-    .bit-msb-txt {
-        span {
-            white-space: normal;
-        }
-    }
-}
-
-.bit-msb-info {
-    background-color: $color-state-info-bg;
-
-    .bit-msb-ict .bit-icon {
-        color: $color-state-info;
-    }
-}
-
-.bit-msb-success {
-    background-color: $color-state-success-bg;
-
-    .bit-msb-ict .bit-icon {
-        color: $color-state-success;
-    }
-}
-
-.bit-msb-warning {
-    background-color: $color-state-warning-bg;
-
-    .bit-msb-ict .bit-icon {
-        color: $color-state-warning;
-    }
-}
-
-.bit-msb-severe-warning {
-    background-color: $color-state-severe-warning-bg;
-
-    .bit-msb-ict .bit-icon {
-        color: $color-state-severe-warning;
-    }
-}
-
-.bit-msb-error,
-.bit-msb-blocked {
-    background-color: $color-state-error-bg;
-
-    .bit-msb-ict .bit-icon {
-        color: $color-state-error;
     }
 }
