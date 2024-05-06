@@ -282,8 +282,8 @@
     display: flex;
     box-shadow: none;
     padding: spacing(1.5);
+    min-width: spacing(26);
     box-sizing: content-box;
-    min-width: spacing(24.5);
     flex-flow: column nowrap;
 }
 
@@ -558,8 +558,8 @@
     display: flex;
     overflow: hidden;
     box-shadow: none;
-    width: spacing(26);
     padding: spacing(1.5);
+    min-width: spacing(26);
     box-sizing: content-box;
     flex-flow: column nowrap;
 }
@@ -590,10 +590,11 @@
 }
 
 .bit-dtp-pkb {
+    padding: 0;
     border: none;
     cursor: pointer;
     overflow: hidden;
-    width: spacing(7);
+    width: spacing(6);
     position: relative;
     white-space: nowrap;
     outline: transparent;
@@ -601,7 +602,6 @@
     font-size: spacing(1.5);
     line-height: spacing(5);
     text-overflow: ellipsis;
-    padding: 0 spacing(1.25);
     background-color: transparent;
     color: $color-foreground-primary;
     border-radius: $shape-border-radius;
