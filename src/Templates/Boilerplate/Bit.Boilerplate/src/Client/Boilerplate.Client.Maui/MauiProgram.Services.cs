@@ -36,8 +36,9 @@ public static partial class MauiProgram
         if (BuildConfiguration.IsDebug())
         {
             builder.Logging.AddDebug();
-            builder.Logging.AddConsole();
         }
+
+        builder.Logging.AddConsole();
 
         if (OperatingSystem.IsWindows())
         {
