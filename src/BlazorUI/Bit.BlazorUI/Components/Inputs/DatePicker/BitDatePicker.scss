@@ -282,8 +282,8 @@
     display: flex;
     box-shadow: none;
     padding: spacing(1.5);
-    box-sizing: content-box;
     min-width: spacing(26);
+    box-sizing: content-box;
     flex-flow: column nowrap;
 }
 
@@ -558,8 +558,8 @@
     display: flex;
     overflow: hidden;
     box-shadow: none;
-    min-width: spacing(26);
     padding: spacing(1.5);
+    min-width: spacing(26);
     box-sizing: content-box;
     flex-flow: column nowrap;
 }
