@@ -4,19 +4,23 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 {
+    private const string KEY_FIELD = nameof(BitBreadcrumbItem.Key);
     private const string CLASS_FIELD = nameof(BitBreadcrumbItem.Class);
     private const string HREF_FIELD = nameof(BitBreadcrumbItem.Href);
     private const string IS_SELECTED_FIELD = nameof(BitBreadcrumbItem.IsSelected);
     private const string IS_ENABLED_FIELD = nameof(BitBreadcrumbItem.IsEnabled);
     private const string TEXT_FIELD = nameof(BitBreadcrumbItem.Text);
     private const string STYLE_FIELD = nameof(BitBreadcrumbItem.Style);
+    private const string ONCLICK_FIELD = nameof(BitBreadcrumbItem.OnClick);
 
+    private string _internalKeyField = KEY_FIELD;
     private string _internalClassField = CLASS_FIELD;
     private string _internalHrefField = HREF_FIELD;
     private string _internalIsSelectedField = IS_SELECTED_FIELD;
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
     private string _internalTextField = TEXT_FIELD;
     private string _internalStyleField = STYLE_FIELD;
+    private string _internalOnClickField = ONCLICK_FIELD;
 
     private bool _disposed;
     private bool _isCalloutOpen;
@@ -240,6 +244,17 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         if (GetIsEnabled(item) is false) return;
 
         await OnItemClick.InvokeAsync(item);
+
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            breadcrumbItem.OnClick?.Invoke(breadcrumbItem);
+        }
+        else if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            await bitBreadcrumbOption.OnClick.InvokeAsync(bitBreadcrumbOption);
+        }
+
+        item.GetValueFromProperty<Action<TItem>?>(_internalOnClickField)?.Invoke(item);
     }
 
     private void SetItemsToShow()
@@ -298,6 +313,21 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         }
 
         return string.Join(" ", classes);
+    }
+
+    private string? GetKey(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.Key;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.Key;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalKeyField);
     }
 
     private string GetStyles(TItem item)

@@ -24,7 +24,7 @@
         <ul>
             @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
             {
-                <li>
+                <li @key="GetKey(item)">
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
                         <button id="@_overflowAnchorId"
@@ -74,7 +74,7 @@
         <ul id="@_scrollContainerId" class="bit-brc-scn">
             @foreach (var item in _overflowItems)
             {
-                <li>
+                <li @key="GetKey(item)">
                     @if (GetItemHref(item).HasValue())
                     {
                         <a href="@GetItemHref(item)"

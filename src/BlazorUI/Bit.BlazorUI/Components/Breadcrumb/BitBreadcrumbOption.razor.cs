@@ -7,21 +7,30 @@ public partial class BitBreadcrumbOption : IDisposable
     [CascadingParameter] protected BitBreadcrumb<BitBreadcrumbOption> Parent { get; set; } = default!;
 
     /// <summary>
-    /// URL to navigate to when this BitBreadOption is clicked.
-    /// If provided, the BitBreadOption will be rendered as a link.
+    /// A unique value to use as a key of the breadcrumb option.
+    /// </summary>
+    [Parameter] public string? Key { get; set; }
+
+    /// <summary>
+    /// Text to display in the breadcrumb option.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// URL to navigate to when the breadcrumb option is clicked.
+    /// If provided, the breadcrumb option will be rendered as a link.
     /// </summary>
     [Parameter] public string? Href { get; set; }
 
     /// <summary>
-    /// Set the Selected option.
+    /// Display the breadcrumb option as the selected option.
     /// </summary>
-    [Parameter]
-    public bool IsSelected { get; set; }
+    [Parameter] public bool IsSelected { get; set; }
 
     /// <summary>
-    /// Text to display in the BitBreadOption option.
+    /// Click event handler of the breadcrumb option.
     /// </summary>
-    [Parameter] public string? Text { get; set; }
+    [Parameter] public EventCallback<BitBreadcrumbOption> OnClick { get; set; }
 
     protected override string RootElementClass => "bit-bro";
 
