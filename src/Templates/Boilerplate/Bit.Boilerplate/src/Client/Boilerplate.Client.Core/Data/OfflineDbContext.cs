@@ -33,7 +33,11 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbCo
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Boilerplate-ClientDb.db");
+        var dirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Boilerplate-Data");
+
+        Directory.CreateDirectory(dirPath);
+
+        var dbPath = Path.Combine(dirPath, "ClientDb.db");
 
         optionsBuilder
             // .UseModel(OfflineDbContextModel.Instance)

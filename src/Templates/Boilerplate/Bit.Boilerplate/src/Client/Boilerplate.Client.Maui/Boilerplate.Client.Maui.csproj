@@ -33,14 +33,19 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
+        <!--/+:msbuild-conditional:noEmit -->
         <AndroidStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</AndroidStripILAfterAOT>
+        <!--/-:msbuild-conditional:noEmit -->
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <EnableSGenConc>True</EnableSGenConc>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
-        <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
-        <EnableSGenConc>True</EnableSGenConc>
         <!--/+:msbuild-conditional:noEmit -->
-        <MtouchInterpreter Condition=" '$(sample)' == 'Admin' or '$(sample)' == ''">all</MtouchInterpreter>
+        <UseInterpreter Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == '' or '$(sample)' == 'Admin' or '$(sample)' == ''">True</UseInterpreter>
+        <PublishAot Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == '' or '$(sample)' == 'Admin' or '$(sample)' == ''">false</PublishAot>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
