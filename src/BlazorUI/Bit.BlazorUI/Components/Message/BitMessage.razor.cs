@@ -19,6 +19,11 @@ public partial class BitMessage
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitMessage.
+    /// </summary>
+    [Parameter] public BitMessageClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Custom Fabric icon name for the collapse icon in Truncate mode. If unset, default will be the Fabric DoubleChevronUp icon.
     /// </summary>
     [Parameter] public string CollapseIconName { get; set; } = "DoubleChevronUp";
@@ -81,6 +86,11 @@ public partial class BitMessage
     }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitMessage.
+    /// </summary>
+    [Parameter] public BitMessageClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Determines if the message text is truncated.
     /// If true, a button will render to toggle between a single line view and multiline view.
     /// This parameter is for single line messages with no buttons only in a limited space scenario.
@@ -91,8 +101,15 @@ public partial class BitMessage
 
     protected override string RootElementClass => "bit-msg";
 
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IsEnabled is false ? string.Empty
                                     : Severity switch
                                     {

@@ -5,30 +5,30 @@
 <PageOutlet Url="components/message"
             Title="Message"
             Description="message component of the bit BlazorUI components" />
-
 <ComponentDemo ComponentName="Message"
                ComponentDescription="A banner (Message) displays errors, warnings, or important information about an open app or file. For example, if a file failed to upload an error message bar should appear."
                ComponentParameters="componentParameters"
-               ComponentSubEnums="componentSubEnums">
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <BitMessage Severity="@BitSeverity.Info">
+            <BitMessage Severity="BitSeverity.Info">
                 Info (default) Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Severity="@BitSeverity.Success">
+            <BitMessage Severity="BitSeverity.Success">
                 Success Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Severity="@BitSeverity.Warning">
+            <BitMessage Severity="BitSeverity.Warning">
                 Warning Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Severity="@BitSeverity.SevereWarning">
+            <BitMessage Severity="BitSeverity.SevereWarning">
                 SevereWarning Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Severity="@BitSeverity.Error">
+            <BitMessage Severity="BitSeverity.Error">
                 Error Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
         </ExamplePreview>
@@ -72,8 +72,9 @@
         <ExamplePreview>
             <BitMessage>
                 <Actions>
-                    <BitButton ButtonStyle="BitButtonStyle.Standard">Yes</BitButton>
-                    <BitButton ButtonStyle="BitButtonStyle.Standard">No</BitButton>
+                    <BitIconButton IconName="@BitIconName.TriangleSolidUp12" />
+                    &nbsp;
+                    <BitIconButton IconName="@BitIconName.TriangleSolidDown12" />
                 </Actions>
                 <Content>
                     Message with single line and action buttons.Message with single line and action buttons.
@@ -84,40 +85,91 @@
 
     <ComponentExampleBox Title="HideIcon" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
-            <BitMessage Severity="@BitSeverity.Info" HideIcon>
+            <BitMessage Severity="BitSeverity.Info" HideIcon>
                 HideIcon parameter removes the icon.
             </BitMessage>
             <br />
-            <BitMessage Severity="@BitSeverity.Success" HideIcon>
+            <BitMessage Severity="BitSeverity.Success" HideIcon>
                 Success Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Severity="@BitSeverity.Warning" HideIcon>
+            <BitMessage Severity="BitSeverity.Warning" HideIcon>
                 Warning Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Severity="@BitSeverity.SevereWarning" HideIcon>
+            <BitMessage Severity="BitSeverity.SevereWarning" HideIcon>
                 SevereWarning Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Severity="@BitSeverity.Error" HideIcon>
+            <BitMessage Severity="BitSeverity.Error" HideIcon>
                 Error Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Advanced" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div>
+                <div>Component's Style & Class:</div>
+                <br />
+                <BitMessage Severity="BitSeverity.Info" Multiline OnDismiss="() => {}"
+                            Style="padding:8px;color:red;">
+                    <b>Styled Message.</b>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                </BitMessage>
+                <br />
+                <BitMessage Severity="BitSeverity.Success" Truncate Class="custom-class">
+                    <b>Classed Message.</b>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                </BitMessage>
+                <br />
+                <br />
+                <br />
+                <div><b>Styles</b> & <b>Classes</b>:</div>
+                <br />
+                <BitMessage Severity="BitSeverity.Warning" OnDismiss="() => {}" Multiline
+                            Styles="@(new() { Root="padding:1rem",
+                                              IconContainer="line-height:1.25",
+                                              Content="color:pink",
+                                              ContentContainer="margin:0 10px",
+                                              DismissIcon="font-size:1rem",
+                                              Actions="justify-content:center;gap:1rem" })">
+                    <Content>
+                        <b>Styles.</b>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                    </Content>
+                    <Actions>
+                        <BitButton ButtonStyle="BitButtonStyle.Text">Ok</BitButton>
+                        <BitButton ButtonStyle="BitButtonStyle.Text">Cancel</BitButton>
+                    </Actions>
+                </BitMessage>
+                <br />
+                <BitMessage Severity="BitSeverity.SevereWarning" OnDismiss="() => {}" Truncate
+                            Classes="@(new() { Icon="custom-icon",
+                                               Content="custom-content",
+                                               ExpanderIcon="custom-expander-icon",
+                                               DismissIcon="custom-dismiss-icon" })">
+                    <b>Classes.</b>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                </BitMessage>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Advanced" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             @if (isWarningDismissed is false)
             {
-                <BitMessage Truncate OnDismiss="() => isWarningDismissed = true" Severity="@BitSeverity.Warning">
+                <BitMessage Truncate OnDismiss="() => isWarningDismissed = true" Severity="BitSeverity.Warning">
                     <Content>
                         Truncate with OnDismiss and Actions.
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
                     </Content>
                     <Actions>
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Yes</BitButton>
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">No</BitButton>
+                        <div style="display:flex;align-items:center;gap:4px;min-height:32px">
+                            <button>Yes</button>
+                            <button>No</button>
+                        </div>
                     </Actions>
                 </BitMessage>
             }
@@ -129,13 +181,14 @@
             <br />
             @if (isErrorDismissed is false)
             {
-                <BitMessage Multiline OnDismiss="() => isErrorDismissed = true" Severity="@BitSeverity.Error">
+                <BitMessage Multiline OnDismiss="() => isErrorDismissed = true" Severity="BitSeverity.Error">
                     <Content>
                         Multiline with OnDismiss and Actions.
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
                     </Content>
                     <Actions>
                         <BitButton ButtonStyle="BitButtonStyle.Standard">Yes</BitButton>
+                        &nbsp;
                         <BitButton ButtonStyle="BitButtonStyle.Standard">No</BitButton>
                     </Actions>
                 </BitMessage>
@@ -147,7 +200,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icons" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="Icons" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <BitMessage Severity="BitSeverity.Success" IconName="@BitIconName.CheckMark">
                 Message with a custom icon.
@@ -167,27 +220,27 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+    <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
-            <BitMessage Dir="BitDir.Rtl" Severity="@BitSeverity.Info">
+            <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Info">
                 اطلاعات (پیش فرض) نوار پیام. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Dir="BitDir.Rtl" Severity="@BitSeverity.Success" Truncate OnDismiss="() => {}">
+            <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Success" Truncate OnDismiss="() => {}">
                 نوار پیام موفق. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
             </BitMessage>
             <br />
-            <BitMessage Dir="BitDir.Rtl" Severity="@BitSeverity.Warning" Multiline OnDismiss="() => {}">
+            <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Warning" Multiline OnDismiss="() => {}">
                 نوار پیام هشدار. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
             </BitMessage>
             <br />
-            <BitMessage Dir="BitDir.Rtl" Severity="@BitSeverity.SevereWarning">
+            <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.SevereWarning">
                 نوار پیام هشدار شدید. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
             </BitMessage>
             <br />
-            <BitMessage Dir="BitDir.Rtl" Severity="@BitSeverity.Error">
+            <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Error">
                 نوار پیام خطا. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
             </BitMessage>
         </ExamplePreview>

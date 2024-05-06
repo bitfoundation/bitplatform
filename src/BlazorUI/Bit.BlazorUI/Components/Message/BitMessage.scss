@@ -3,7 +3,12 @@
 .bit-msg {
     width: 100%;
     display: flex;
+    font-weight: 400;
     flex-flow: column;
+    box-sizing: border-box;
+    font-size: spacing(1.5);
+    justify-content: center;
+    color: $color-foreground-primary;
     font-family: $typography-font-family;
     background-color: var(--bit-msg-clr-bg);
     /*---------------------------------*/
@@ -11,13 +16,10 @@
     --bit-msg-clr-bg: #{$color-state-info-bg};
 }
 
-.bit-msg-ico {
-    color: var(--bit-msg-clr);
-}
-
 .bit-msg-con {
     width: 100%;
     display: flex;
+    align-items: start;
     line-height: normal;
     padding: 0 spacing(0.5);
 }
@@ -25,32 +27,35 @@
 .bit-msg-ict {
     display: flex;
     margin: spacing(1);
+}
+
+.bit-msg-ico {
     font-size: spacing(2);
-}
-
-.bit-msg-ccn {
-    flex: 1;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: $color-foreground-primary;
-}
-
-.bit-msg-exp {
-    white-space: normal;
-}
-
-.bit-msg-cnt {
-    min-width: 0;
-    display: flex;
-    font-weight: 400;
-    margin: spacing(1);
-    flex-direction: column;
-    font-size: spacing(1.5);
-    line-height: spacing(2);
+    color: var(--bit-msg-clr);
 }
 
 .bit-msg-cnc {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-msg-cnx {
+    white-space: normal;
+}
+
+.bit-msg-cnw {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    margin: spacing(1);
+    flex-direction: column;
+}
+
+.bit-msg-cnt {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -61,7 +66,7 @@
 
 .bit-msg-act {
     display: flex;
-    height: fit-content;
+    max-height: spacing(4);
     justify-content: flex-end;
 }
 
@@ -89,40 +94,15 @@
     --bit-msg-clr-bg: #{$color-state-error-bg};
 }
 
-.bit-msg-trn,
-.bit-msg-dim {
-    button {
-        border: none;
-        flex-shrink: 0;
-        cursor: pointer;
-        font-weight: 400;
-        width: spacing(4);
-        user-select: none;
-        height: spacing(4);
-        position: relative;
-        text-align: center;
-        outline: transparent;
-        display: inline-block;
-        text-decoration: none;
-        box-sizing: border-box;
-        font-size: spacing(1.75);
-        border-radius: spacing(0.25);
-        background-color: transparent;
-        padding: spacing(1) spacing(1.5);
+.bit-msg-exb,
+.bit-msg-dmb {
+    cursor: pointer;
+    min-width: spacing(4);
+    min-height: spacing(4);
+    background-color: transparent;
+}
 
-        span {
-            height: 100%;
-            display: flex;
-            flex-wrap: nowrap;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .bit-icon {
-            height: spacing(1.25);
-            vertical-align: middle;
-            font-size: spacing(1.25);
-            line-height: spacing(1.25);
-        }
-    }
+.bit-msg-exi,
+.bit-msg-dmi {
+    font-size: spacing(1.25);
 }
