@@ -45,8 +45,8 @@ public static partial class Program
             if (BuildConfiguration.IsDebug())
             {
                 loggingBuilder.AddDebug();
-                loggingBuilder.AddConsole();
             }
+            loggingBuilder.AddConsole();
             //#if (appInsights == true)
             loggingBuilder.AddApplicationInsights(config =>
             {
