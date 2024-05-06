@@ -73,7 +73,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => currentCount++);
         });
 
-        var dismissButton = component.Find(".bit-msg-dim > button");
+        var dismissButton = component.Find(".bit-msg-dmb");
 
         dismissButton.Click();
 
@@ -92,7 +92,7 @@ public class BitMessageTests : BunitTestContext
             parameters.Add(p => p.OnDismiss, () => { });
         });
 
-        var icon = component.Find(".bit-msg-dim button span i");
+        var icon = component.Find(".bit-msg-dmi");
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
     }
@@ -132,7 +132,7 @@ public class BitMessageTests : BunitTestContext
             parameter.Add(p => p.Severity, type);
         });
 
-        var textEl = component.Find(".bit-msg-ccn");
+        var textEl = component.Find(".bit-msg-cnc");
         var expectedRole = role is not null ? role : GetRole(type);
 
         Assert.AreEqual(expectedRole, textEl.GetAttribute("role"));
