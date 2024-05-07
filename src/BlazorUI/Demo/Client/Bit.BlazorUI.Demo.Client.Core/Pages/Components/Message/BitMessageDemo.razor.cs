@@ -121,7 +121,7 @@ public partial class BitMessageDemo
             DefaultValue = "BitVariant.Fill",
             Description = "The variant of the message. defaults to Fill.",
             LinkType = LinkType.Link,
-            Href = "#Variant-enum",
+            Href = "#variant-enum",
         },
     ];
 
@@ -176,7 +176,7 @@ public partial class BitMessageDemo
                 new()
                 {
                     Name = "Fill",
-                    Description = "Filled styled variant.",
+                    Description = "Fill styled variant.",
                     Value = "0",
                 },
                 new()
@@ -332,13 +332,13 @@ public partial class BitMessageDemo
 
     private readonly string example4RazorCode = @"
 <BitMessage Multiline Severity=""BitSeverity.Success"">
-    Multiline parameter makes the content to be rendered in multiple lines.
+    <b>Multiline</b> parameter makes the content to be rendered in multiple lines.
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
 </BitMessage>";
 
     private readonly string example5RazorCode = @"
 <BitMessage Truncate Severity=""BitSeverity.Warning"">
-    Truncate parameter cut the overflowed content at the end of the single line Message.
+    <b>Truncate</b> parameter cut the overflowed content at the end of the single line Message.
     Truncation is not available if you use multiline and should be used sparingly.
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
 </BitMessage>";
@@ -358,7 +358,7 @@ private bool isDismissed;";
         <BitIconButton IconName=""@BitIconName.TriangleSolidDown12"" />
     </Actions>
     <Content>
-        Message with single line and action buttons.Message with single line and action buttons.
+        Message with single line and action buttons.
     </Content>
 </BitMessage>";
 
@@ -452,7 +452,7 @@ private bool isDismissed;";
     private readonly string example10RazorCode = @"
 <BitMessage Truncate OnDismiss=""() => isWarningDismissed = true"" Severity=""BitSeverity.Warning"">
     <Content>
-        Truncate with OnDismiss and Actions.
+        <b>Truncate</b> with <b>OnDismiss</b> and <b>Actions</b>.
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
     </Content>
     <Actions>
@@ -465,7 +465,7 @@ private bool isDismissed;";
 
 <BitMessage Multiline OnDismiss=""() => isErrorDismissed = true"" Severity=""BitSeverity.Error"">
     <Content>
-        Multiline with OnDismiss and Actions.
+        <b>Multiline</b> with <b>OnDismiss</b> and <b>Actions</b>.
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
     </Content>
     <Actions>

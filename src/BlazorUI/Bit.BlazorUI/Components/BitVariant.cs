@@ -6,7 +6,7 @@
 public enum BitVariant
 {
     /// <summary>
-    /// Filled styled variant.
+    /// Fill styled variant.
     /// </summary>
     Fill,
 
