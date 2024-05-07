@@ -58,6 +58,8 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
+        <UseInterpreter Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == '' or '$(sample)' == 'Admin' or '$(sample)' == ''">True</UseInterpreter>
+        <PublishAot Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == '' or '$(sample)' == 'Admin' or '$(sample)' == ''">false</PublishAot>
     </PropertyGroup>
 
 
