@@ -298,7 +298,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
         justify-content: flex-start;
     }
 
-    .-drp.custom-drp-lbl {
+    .custom-drp.custom-drp-lbl {
         color: dodgerblue;
     }
 
