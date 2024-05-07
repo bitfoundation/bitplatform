@@ -177,12 +177,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             else if (string.IsNullOrEmpty(signInRequest.TwoFactorToken) is false)
             {
                 result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, signInRequest.TwoFactorToken, false, false);
-                if (result.Succeeded)
-                {
-                    // since this token is not a one-time use code and it has a rather long expiration time,
-                    // we can generate a new token to revoke the used one:
-                    await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
-                }
             }
             else
             {
