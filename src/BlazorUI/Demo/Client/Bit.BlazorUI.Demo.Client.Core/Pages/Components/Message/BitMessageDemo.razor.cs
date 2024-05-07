@@ -497,7 +497,7 @@ private bool isErrorDismissed;";
 
     private readonly string example12RazorCode = @"
 <BitMessage Dir=""BitDir.Rtl"" Severity=""BitSeverity.Info"">
-    اطلاعات (پیش فرض) پیام. <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
+    پیام خبری (پیش فرض). <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
 </BitMessage>
 
 <BitMessage Dir=""BitDir.Rtl"" Severity=""BitSeverity.Success"" Truncate OnDismiss=""() => {}"">
