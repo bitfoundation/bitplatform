@@ -8,12 +8,8 @@
     box-sizing: border-box;
     font-size: spacing(1.5);
     justify-content: center;
-    color: $color-foreground-primary;
+    border-radius: $shape-border-radius;
     font-family: $typography-font-family;
-    background-color: var(--bit-msg-clr-bg);
-    /*---------------------------------*/
-    --bit-msg-clr: #{$color-state-info};
-    --bit-msg-clr-bg: #{$color-state-info-bg};
 }
 
 .bit-msg-con {
@@ -74,6 +70,24 @@
     margin: 0 spacing(1.5) spacing(1) spacing(1);
 }
 
+.bit-msg-exb,
+.bit-msg-dmb {
+    cursor: pointer;
+    min-width: spacing(4);
+    min-height: spacing(4);
+    background-color: transparent;
+}
+
+.bit-msg-exi,
+.bit-msg-dmi {
+    font-size: spacing(1.25);
+}
+
+.bit-msg-info {
+    --bit-msg-clr: #{$color-state-info};
+    --bit-msg-clr-bg: #{$color-state-info-bg};
+}
+
 .bit-msg-success {
     --bit-msg-clr: #{$color-state-success};
     --bit-msg-clr-bg: #{$color-state-success-bg};
@@ -94,15 +108,22 @@
     --bit-msg-clr-bg: #{$color-state-error-bg};
 }
 
-.bit-msg-exb,
-.bit-msg-dmb {
-    cursor: pointer;
-    min-width: spacing(4);
-    min-height: spacing(4);
-    background-color: transparent;
+.bit-msg-fill {
+    color: $color-foreground-primary;
+    border-color: transparent;
+    background-color: var(--bit-msg-clr-bg);
 }
 
-.bit-msg-exi,
-.bit-msg-dmi {
-    font-size: spacing(1.25);
+.bit-msg-outline {
+    color: var(--bit-msg-clr);
+    border-color: var(--bit-msg-clr);
+    background-color: transparent;
+    border-width: $shape-border-width;
+    border-style: $shape-border-style;
+}
+
+.bit-msg-text {
+    color: var(--bit-msg-clr);
+    border-color: transparent;
+    background-color: transparent;
 }

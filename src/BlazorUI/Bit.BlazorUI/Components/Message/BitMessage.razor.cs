@@ -2,6 +2,7 @@
 
 public partial class BitMessage
 {
+    private BitVariant variant = BitVariant.Fill;
     private BitSeverity severity = BitSeverity.Info;
 
 
@@ -97,6 +98,23 @@ public partial class BitMessage
     /// </summary>
     [Parameter] public bool Truncate { get; set; }
 
+    /// <summary>
+    /// The variant of the message. defaults to Fill.
+    /// </summary>
+    [Parameter]
+    public BitVariant Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
 
 
     protected override string RootElementClass => "bit-msg";
@@ -119,6 +137,15 @@ public partial class BitMessage
                                         BitSeverity.SevereWarning => "bit-msg-severe-warning",
                                         BitSeverity.Error => "bit-msg-error",
                                         _ => "bit-msg-info"
+                                    });
+
+        ClassBuilder.Register(() => IsEnabled is false ? string.Empty
+                                    : Variant switch
+                                    {
+                                        BitVariant.Fill => "bit-msg-fill",
+                                        BitVariant.Outline => "bit-msg-outline",
+                                        BitVariant.Text => "bit-msg-text",
+                                        _ => "bit-msg-fill"
                                     });
     }
 

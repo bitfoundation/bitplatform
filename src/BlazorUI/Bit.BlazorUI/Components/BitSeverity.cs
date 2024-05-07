@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Determines the severity of the content that controls the rendered style of the corresponding element(s).
+/// Determines the severity of the content that controls the colors of the rendered element(s).
 /// </summary>
 public enum BitSeverity
 {
