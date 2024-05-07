@@ -568,6 +568,9 @@
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>توکن 2FA تولید و به ایمیل شما ارسال شد.</value>
   </data>
+    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>
   </data>

@@ -262,7 +262,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task SendTfaTokenEmail(SignInRequestDto signInRequest, CancellationToken cancellationToken)
+    public async Task SendTwoFactorTokenEmail(SignInRequestDto signInRequest, CancellationToken cancellationToken)
     {
         var signInResult = await signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
         var user = await userManager.FindByNameAsync(signInRequest.UserName!) ?? throw new ResourceNotFoundException();
@@ -272,8 +272,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (signInResult.RequiresTwoFactor is false)
         {
-            throw new ResourceNotFoundException();
+            throw new BadRequestException();
         }
+
+        var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenEmailRequestedOn) - AppSettings.IdentitySettings.TwoFactorTokenEmailResendDelay;
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.WaitForTfaTokenEmailResendDelay), resendDelay.Value.ToString("mm\\:ss")));
 
         var token = await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
 

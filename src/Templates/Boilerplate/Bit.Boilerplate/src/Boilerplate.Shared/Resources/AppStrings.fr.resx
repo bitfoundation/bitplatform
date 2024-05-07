@@ -684,6 +684,9 @@
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>Le jeton 2FA a été généré et envoyé à votre email.</value>
   </data>
+    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <value>Vous avez déjà demandé l'e-mail du token 2FA. Réessayez en {0}.</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
   </data>

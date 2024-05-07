@@ -1808,6 +1808,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You have already requested the 2FA token email. Try again in {0}..
+        /// </summary>
+        public static string WaitForTfaTokenEmailResendDelay {
+            get {
+                return ResourceManager.GetString("WaitForTfaTokenEmailResendDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Yes.
         /// </summary>
         public static string Yes {

@@ -580,6 +580,9 @@ Please confirm your email by clicking on the link.</value>
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>The 2FA token has been generated and sent to your email.</value>
   </data>
+    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <value>You have already requested the 2FA token email. Try again in {0}.</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>

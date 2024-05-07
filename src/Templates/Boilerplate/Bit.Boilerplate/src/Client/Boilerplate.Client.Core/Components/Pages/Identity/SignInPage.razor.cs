@@ -1,10 +1,14 @@
 ﻿//+:cnd:noEmit
+using System.Threading;
+using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignInPage
 {
+    [AutoInject] private IIdentityController identityController = default!;
+
     private bool isSigningIn;
     private bool requiresTwoFactor;
     private bool isGeneratingToken;
@@ -67,7 +71,7 @@ public partial class SignInPage
 
         try
         {
-            await AuthenticationManager.SendTfaTokenEmail(signInModel, CurrentCancellationToken);
+            await identityController.SendTwoFactorTokenEmail(signInModel, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.TfaTokenEmailSent)];
             messageType = BitMessageBarType.Success;
