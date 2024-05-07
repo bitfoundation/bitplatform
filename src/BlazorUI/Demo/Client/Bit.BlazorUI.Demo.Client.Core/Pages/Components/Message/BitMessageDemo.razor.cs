@@ -370,6 +370,23 @@ private bool isDismissed;";
 <BitMessage Severity=""BitSeverity.Error"" HideIcon>Error Message.</BitMessage>";
 
     private readonly string example9RazorCode = @"
+<BitMessage Severity=""BitSeverity.Success"" IconName=""@BitIconName.CheckMark"">
+    Message with a custom icon.
+</BitMessage>
+
+<BitMessage Severity=""BitSeverity.Warning"" OnDismiss=""() => {}"" DismissIconName=""@BitIconName.Blocked2Solid"">
+    Message with a custom dismiss icon.
+</BitMessage>
+
+<BitMessage Truncate Severity=""BitSeverity.Warning""
+            ExpandIconName=""@BitIconName.ChevronDownEnd""
+            CollapseIconName=""@BitIconName.ChevronUpEnd"">
+    Message with custom expand and collapse icon.
+    Truncation is not available if you use multiline and should be used sparingly.
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+</BitMessage>";
+
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -435,7 +452,7 @@ private bool isDismissed;";
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
 </BitMessage>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMessage Truncate OnDismiss=""() => isWarningDismissed = true"" Severity=""BitSeverity.Warning"">
     <Content>
         <b>Truncate</b> with <b>OnDismiss</b> and <b>Actions</b>.
@@ -460,26 +477,9 @@ private bool isDismissed;";
         <BitButton ButtonStyle=""BitButtonStyle.Standard"">No</BitButton>
     </Actions>
 </BitMessage>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool isWarningDismissed;
 private bool isErrorDismissed;";
-
-    private readonly string example11RazorCode = @"
-<BitMessage Severity=""BitSeverity.Success"" IconName=""@BitIconName.CheckMark"">
-    Message with a custom icon.
-</BitMessage>
-
-<BitMessage Severity=""BitSeverity.Warning"" OnDismiss=""() => {}"" DismissIconName=""@BitIconName.Blocked2Solid"">
-    Message with a custom dismiss icon.
-</BitMessage>
-
-<BitMessage Truncate Severity=""BitSeverity.Warning""
-            ExpandIconName=""@BitIconName.ChevronDownEnd""
-            CollapseIconName=""@BitIconName.ChevronUpEnd"">
-    Message with custom expand and collapse icon.
-    Truncation is not available if you use multiline and should be used sparingly.
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-</BitMessage>";
 
     private readonly string example12RazorCode = @"
 <BitMessage Dir=""BitDir.Rtl"" Severity=""BitSeverity.Info"">
