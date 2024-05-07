@@ -151,4 +151,16 @@
   <data name="WelcomeToApp" xml:space="preserve">
     <value>به Boilerplate خوش آمدید!</value>
   </data>
+    <data name="TfaTokenEmailSubject" xml:space="preserve">
+    <value>Boilerplate - توکن 2FA</value>
+  </data>
+    <data name="TfaTokenHello" xml:space="preserve">
+    <value>سلام {0} عزیز</value>
+  </data>
+    <data name="TfaTokenMessage" xml:space="preserve">
+    <value>توکن 2FA جدید شما برای ورود:</value>
+  </data>
+    <data name="TfaTokenNote" xml:space="preserve">
+    <value>این کد را کپی و در صفحه ورود استفاده کنید.</value>
+  </data>
 </root>

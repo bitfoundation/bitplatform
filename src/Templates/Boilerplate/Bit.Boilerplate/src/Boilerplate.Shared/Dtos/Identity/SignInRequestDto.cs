@@ -24,4 +24,7 @@ public class SignInRequestDto
 
     [Display(Name = nameof(AppStrings.TwoFactorRecoveryCode))]
     public string? TwoFactorRecoveryCode { get; set; }
+
+    [Display(Name = nameof(AppStrings.TwoFactorToken))]
+    public string? TwoFactorToken { get; set; }
 }

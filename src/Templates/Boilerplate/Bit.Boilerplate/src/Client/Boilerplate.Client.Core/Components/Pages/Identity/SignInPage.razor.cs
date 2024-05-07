@@ -1,12 +1,17 @@
 ﻿//+:cnd:noEmit
+using System.Threading;
+using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignInPage
 {
-    private bool isLoading;
+    [AutoInject] private IIdentityController identityController = default!;
+
+    private bool isSigningIn;
     private bool requiresTwoFactor;
+    private bool isGeneratingToken;
     private SignInRequestDto signInModel = new();
 
     private string? message;
@@ -27,16 +32,17 @@ public partial class SignInPage
 
     private async Task DoSignIn()
     {
-        if (isLoading) return;
+        if (isSigningIn) return;
 
-        isLoading = true;
+        isSigningIn = true;
         message = null;
 
         try
         {
             if (requiresTwoFactor &&
                 string.IsNullOrWhiteSpace(signInModel.TwoFactorCode) &&
-                string.IsNullOrWhiteSpace(signInModel.TwoFactorRecoveryCode)) return;
+                string.IsNullOrWhiteSpace(signInModel.TwoFactorRecoveryCode) &&
+                string.IsNullOrWhiteSpace(signInModel.TwoFactorToken)) return;
 
             requiresTwoFactor = await AuthenticationManager.SignIn(signInModel, CurrentCancellationToken);
 
@@ -52,7 +58,32 @@ public partial class SignInPage
         }
         finally
         {
-            isLoading = false;
+            isSigningIn = false;
+        }
+    }
+
+    private async Task SendTwoFactorToken()
+    {
+        if (isGeneratingToken) return;
+
+        isGeneratingToken = true;
+        message = null;
+
+        try
+        {
+            await identityController.SendTwoFactorToken(signInModel, CurrentCancellationToken);
+
+            message = Localizer[nameof(AppStrings.TfaTokenEmailSent)];
+            messageType = BitMessageBarType.Success;
+        }
+        catch (KnownException e)
+        {
+            message = e.Message;
+            messageType = BitMessageBarType.Error;
+        }
+        finally
+        {
+            isGeneratingToken = false;
         }
     }
 }

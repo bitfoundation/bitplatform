@@ -556,6 +556,21 @@
     <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>2FA را غیرفعال کنید</value>
   </data>
+    <data name="TwoFactorToken" xml:space="preserve">
+    <value>توکن 2FA</value>
+  </data>
+    <data name="TfaTokenSignInTitle" xml:space="preserve">
+    <value>به برنامه authenticator دسترسی ندارید?</value>
+  </data>
+    <data name="TfaTokenGenerateButtonText" xml:space="preserve">
+    <value>تولید و ایمیل توکن 2FA</value>
+  </data>
+    <data name="TfaTokenEmailSent" xml:space="preserve">
+    <value>توکن 2FA تولید و به ایمیل شما ارسال شد.</value>
+  </data>
+    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>
   </data>

@@ -19,4 +19,6 @@ public class User : IdentityUser<int>
     public DateTimeOffset? ResetPasswordEmailRequestedOn { get; set; }
 
     public string? DisplayName => FullName ?? NormalizedUserName;
+
+    public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
 }

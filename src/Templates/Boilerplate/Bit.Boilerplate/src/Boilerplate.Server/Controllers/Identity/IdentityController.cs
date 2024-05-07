@@ -157,11 +157,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
         var result = await signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+        var user = await userManager.FindByNameAsync(signInRequest.UserName!) ?? throw new ResourceNotFoundException();
 
         if (result.IsLockedOut)
         {
-            var user = await userManager.FindByNameAsync(signInRequest.UserName!);
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")));
         }
 
         if (result.RequiresTwoFactor)
@@ -173,6 +173,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             else if (string.IsNullOrEmpty(signInRequest.TwoFactorRecoveryCode) is false)
             {
                 result = await signInManager.TwoFactorRecoveryCodeSignInAsync(signInRequest.TwoFactorRecoveryCode);
+            }
+            else if (string.IsNullOrEmpty(signInRequest.TwoFactorToken) is false)
+            {
+                result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, signInRequest.TwoFactorToken, false, false);
             }
             else
             {
@@ -218,28 +222,23 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var resetPasswordLink = new Uri(HttpContext.Request.GetBaseUrl(), $"reset-password?email={Uri.EscapeDataString(user.Email!)}&token={Uri.EscapeDataString(token)}");
 
+        var templateParameters = new Dictionary<string, object?>()
+        {
+            [nameof(ResetPasswordTemplate.Model)] = new ResetPasswordModel { DisplayName = user.DisplayName, ResetPasswordLink = resetPasswordLink },
+            [nameof(HttpContext)] = HttpContext
+        };
+
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
-            var renderedComponent = await htmlRenderer.RenderComponentAsync<ResetPasswordTemplate>(ParameterView.FromDictionary(new Dictionary<string, object?>()
-            {
-                { nameof(ResetPasswordTemplate.Model),
-                    new ResetPasswordModel
-                    {
-                        DisplayName = user.DisplayName,
-                        ResetPasswordLink = resetPasswordLink
-                    }
-                },
-                { nameof(HttpContext) , HttpContext }
-            }));
+            var renderedComponent = await htmlRenderer.RenderComponentAsync<ResetPasswordTemplate>(ParameterView.FromDictionary(templateParameters));
 
             return renderedComponent.ToHtmlString();
         });
 
-        var result = await fluentEmail
-                           .To(user.Email, user.DisplayName)
-                           .Subject(emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
-                           .Body(body, isHtml: true)
-                           .SendAsync(cancellationToken);
+        var result = await fluentEmail.To(user.Email, user.DisplayName)
+                                      .Subject(emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
+                                      .Body(body, isHtml: true)
+                                      .SendAsync(cancellationToken);
 
         user.ResetPasswordEmailRequestedOn = DateTimeOffset.Now;
 
@@ -259,6 +258,54 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+    }
+
+    [HttpPost]
+    public async Task SendTwoFactorToken(SignInRequestDto signInRequest, CancellationToken cancellationToken)
+    {
+        var signInResult = await signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+        var user = await userManager.FindByNameAsync(signInRequest.UserName!) ?? throw new ResourceNotFoundException();
+
+        if (signInResult.IsLockedOut)
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")));
+
+        if (signInResult.RequiresTwoFactor is false)
+        {
+            throw new BadRequestException();
+        }
+
+        var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.IdentitySettings.TwoFactorTokenEmailResendDelay;
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.WaitForTfaTokenEmailResendDelay), resendDelay.Value.ToString("mm\\:ss")));
+
+        var token = await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
+
+
+        var templateParameters = new Dictionary<string, object?>()
+        {
+            [nameof(TwoFactorTokenTemplate.Model)] = new TwoFactorTokenModel { DisplayName = user.DisplayName ?? "User", Token = token },
+            [nameof(HttpContext)] = HttpContext
+        };
+
+        var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var renderedComponent = await htmlRenderer.RenderComponentAsync<TwoFactorTokenTemplate>(ParameterView.FromDictionary(templateParameters));
+
+            return renderedComponent.ToHtmlString();
+        });
+
+        var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
+                                           .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
+                                           .Body(body, isHtml: true)
+                                           .SendAsync(cancellationToken);
+
+        user.TwoFactorTokenRequestedOn = DateTimeOffset.Now;
+
+        await userManager.UpdateAsync(user);
+
+        if (emailResult.Successful is false)
+            throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
     }
 
     [Authorize, HttpPost]
