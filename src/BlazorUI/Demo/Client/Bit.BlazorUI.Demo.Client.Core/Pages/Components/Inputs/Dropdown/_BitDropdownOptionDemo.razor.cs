@@ -2,8 +2,8 @@
 
 public partial class _BitDropdownOptionDemo
 {
-    private readonly List<BitDropdownItem<string>> basicItems = new()
-    {
+    private readonly List<BitDropdownItem<string>> basicItems =
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
@@ -14,21 +14,21 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Broccoli", Value = "v-bro" },
         new() { Text = "Carrot", Value = "v-car" },
         new() { Text = "Lettuce", Value = "v-let" }
-    };
-    private readonly List<BitDropdownItem<string>> dataItems = new()
-    {
-        new() { ItemType = BitDropdownItemType.Header, Text = "Items" },
+    ];
+    private readonly List<BitDropdownItem<string>> dataItems =
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Items", Data = new DropdownItemData { IconName = "BulletedList2" }  },
         new() { Text = "Item a", Value = "A", Data = new DropdownItemData { IconName = "Memo" } },
         new() { Text = "Item b", Value = "B", Data = new DropdownItemData { IconName = "Print" } },
         new() { Text = "Item c", Value = "C", Data = new DropdownItemData { IconName = "ShoppingCart" } },
         new() { ItemType = BitDropdownItemType.Divider },
-        new() { ItemType = BitDropdownItemType.Header, Text = "More Items" },
+        new() { ItemType = BitDropdownItemType.Header, Text = "More Items", Data = new DropdownItemData { IconName = "BulletedTreeList" }  },
         new() { Text = "Item d", Value = "D", Data = new DropdownItemData { IconName = "Train" } },
         new() { Text = "Item e", Value = "E", Data = new DropdownItemData { IconName = "Repair" } },
         new() { Text = "Item f", Value = "F", Data = new DropdownItemData { IconName = "Running" } }
-    };
-    private readonly List<BitDropdownItem<string>> rtlItems = new()
-    {
+    ];
+    private readonly List<BitDropdownItem<string>> rtlItems =
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "میوه ها" },
         new() { Text = "سیب", Value = "f-app" },
         new() { Text = "موز", Value = "f-ban" },
@@ -39,10 +39,10 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "کلم بروكلی", Value = "v-bro" },
         new() { Text = "هویج", Value = "v-car" },
         new() { Text = "کاهو", Value = "v-let" }
-    };
+    ];
     private ICollection<BitDropdownItem<string>> dropDirectionItems = default!;
-    private readonly List<BitDropdownItem<string>> styleClassItems = new()
-    {
+    private readonly List<BitDropdownItem<string>> styleClassItems =
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits", Style = "background-color:darkred" },
         new() { Text = "Apple", Value = "f-app", Class = "custom-fruit" },
         new() { Text = "Banana", Value = "f-ban", Class = "custom-fruit" },
@@ -53,9 +53,9 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Broccoli", Value = "v-bro", Class = "custom-veg" },
         new() { Text = "Carrot", Value = "v-car", Class = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", Class = "custom-veg" }
-    };
-    private readonly List<BitDropdownItem<string>> comboBoxItems = new()
-    {
+    ];
+    private readonly List<BitDropdownItem<string>> comboBoxItems =
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Banana", Value = "f-ban" },
@@ -66,7 +66,7 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Broccoli", Value = "v-bro" },
         new() { Text = "Carrot", Value = "v-car" },
         new() { Text = "Lettuce", Value = "v-let" }
-    };
+    ];
 
 
     private string controlledValue = "f-app";

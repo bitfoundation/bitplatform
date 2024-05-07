@@ -210,23 +210,42 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
         justify-content: flex-start;
     }
 
-    custom-drp.custom-drp-lbl {
+    .custom-drp.custom-drp-lbl {
         color: dodgerblue;
     }
 
-    custom-drp.custom-drp-txt {
+    .custom-drp.custom-drp-txt {
         color: goldenrod;
     }
 
-    custom-drp.custom-drp-ph {
+    .custom-drp.custom-drp-ph {
         color: orangered;
     }
 
-    custom-drp.custom-drp-item {
+    .custom-drp.custom-drp-item {
         width: 100%;
         cursor: pointer;
     }
+
+    .custom-drp.custom-drp-header {
+        width: 100%;
+        padding: 5px 12px;
+        color: #ff4600;
+        font-weight: bold;
+    }
 </style>
+
+<BitDropdown Label=""Header template""
+             Items=""GetDataItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item"">
+    <HeaderTemplate Context=""item"">
+        <div class=""custom-drp custom-drp-header"">
+            <BitIcon IconName=""@((item.Data as DropdownItemData)?.IconName)"" />
+            <div>@item.Text</div>
+        </div>
+    </HeaderTemplate>
+</BitDropdown>
 
 <BitDropdown Label=""Text & Item templates""
              Items=""GetDataItems()""
@@ -295,12 +314,12 @@ public class DropdownItemData
 
 private List<BitDropdownItem<string>> GetDataItems() =>  new()
 {
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Items"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Items"", Data = new DropdownItemData { IconName = ""BulletedList2"" } },
     new() { Text = ""Item a"", Value = ""A"", Data = new DropdownItemData { IconName = ""Memo"" } },
     new() { Text = ""Item b"", Value = ""B"", Data = new DropdownItemData { IconName = ""Print"" } },
     new() { Text = ""Item c"", Value = ""C"", Data = new DropdownItemData { IconName = ""ShoppingCart"" } },
     new() { ItemType = BitDropdownItemType.Divider },
-    new() { ItemType = BitDropdownItemType.Header, Text = ""More Items"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""More Items"", Data = new DropdownItemData { IconName = ""BulletedTreeList"" } },
     new() { Text = ""Item d"", Value = ""D"", Data = new DropdownItemData { IconName = ""Train"" } },
     new() { Text = ""Item e"", Value = ""E"", Data = new DropdownItemData { IconName = ""Repair"" } },
     new() { Text = ""Item f"", Value = ""F"", Data = new DropdownItemData { IconName = ""Running"" } }
