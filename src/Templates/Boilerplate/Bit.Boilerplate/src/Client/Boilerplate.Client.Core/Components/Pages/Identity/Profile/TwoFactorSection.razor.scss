@@ -1,8 +1,10 @@
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
-::deep .tfa-message-bar {
-    inset-block-end: 0;
-    inset-block-start: unset;
+::deep {
+    .tfa-message-bar {
+        inset-block-end: 0;
+        inset-block-start: unset;
+    }
 }
 
 .qr-code-container {
