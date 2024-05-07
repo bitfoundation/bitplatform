@@ -6,35 +6,64 @@
             Title="Message"
             Description="message component of the bit BlazorUI components" />
 <ComponentDemo ComponentName="Message"
-               ComponentDescription="A banner (Message) displays errors, warnings, or important information about an open app or file. For example, if a file failed to upload an error message bar should appear."
+               ComponentDescription="A Message displays errors, warnings, or important information. For example, if a file failed to upload an error message should appear."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums"
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <BitMessage Severity="BitSeverity.Info">
-                Info (default) Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
-            <br />
-            <BitMessage Severity="BitSeverity.Success">
-                Success Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
-            <br />
-            <BitMessage Severity="BitSeverity.Warning">
-                Warning Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
-            <br />
-            <BitMessage Severity="BitSeverity.SevereWarning">
-                SevereWarning Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
-            <br />
-            <BitMessage Severity="BitSeverity.Error">
-                Error Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
+            <BitMessage>
+                This is a Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
             </BitMessage>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Multiline" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Severity" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="box">
+                <BitMessage Severity="BitSeverity.Info">Info (default).</BitMessage>
+                <BitMessage Severity="BitSeverity.Success">Success.</BitMessage>
+                <BitMessage Severity="BitSeverity.Warning">Warning.</BitMessage>
+                <BitMessage Severity="BitSeverity.SevereWarning">SevereWarning.</BitMessage>
+                <BitMessage Severity="BitSeverity.Error">Error.</BitMessage>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Variant" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div class="box">
+                <div>Fill (default):</div>
+                <BitMessage Severity="BitSeverity.Info" Variant="BitVariant.Fill">Info.</BitMessage>
+                <BitMessage Severity="BitSeverity.Success" Variant="BitVariant.Fill">Success.</BitMessage>
+                <BitMessage Severity="BitSeverity.Warning" Variant="BitVariant.Fill">Warning.</BitMessage>
+                <BitMessage Severity="BitSeverity.SevereWarning" Variant="BitVariant.Fill">SevereWarning.</BitMessage>
+                <BitMessage Severity="BitSeverity.Error" Variant="BitVariant.Fill">Error.</BitMessage>
+            </div>
+            <br />
+            <br />
+            <div class="box">
+                <div>Outline:</div>
+                <BitMessage Severity="BitSeverity.Info" Variant="BitVariant.Outline">Info.</BitMessage>
+                <BitMessage Severity="BitSeverity.Success" Variant="BitVariant.Outline">Success.</BitMessage>
+                <BitMessage Severity="BitSeverity.Warning" Variant="BitVariant.Outline">Warning.</BitMessage>
+                <BitMessage Severity="BitSeverity.SevereWarning" Variant="BitVariant.Outline">SevereWarning.</BitMessage>
+                <BitMessage Severity="BitSeverity.Error" Variant="BitVariant.Outline">Error.</BitMessage>
+            </div>
+            <br />
+            <br />
+            <div class="box">
+                <div>Text:</div>
+                <BitMessage Severity="BitSeverity.Info" Variant="BitVariant.Text">Info.</BitMessage>
+                <BitMessage Severity="BitSeverity.Success" Variant="BitVariant.Text">Success.</BitMessage>
+                <BitMessage Severity="BitSeverity.Warning" Variant="BitVariant.Text">Warning.</BitMessage>
+                <BitMessage Severity="BitSeverity.SevereWarning" Variant="BitVariant.Text">SevereWarning.</BitMessage>
+                <BitMessage Severity="BitSeverity.Error" Variant="BitVariant.Text">Error.</BitMessage>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Multiline" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <BitMessage Multiline Severity="BitSeverity.Success">
                 Multiline parameter makes the content to be rendered in multiple lines.
@@ -43,7 +72,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Truncate" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Truncate" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <BitMessage Truncate Severity="BitSeverity.Warning">
                 Truncate parameter cut the overflowed content at the end of the single line Message.
@@ -53,7 +82,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Dismiss" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Dismiss" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             @if (isDismissed is false)
             {
@@ -68,7 +97,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Actions" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Actions" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <BitMessage>
                 <Actions>
@@ -83,7 +112,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="HideIcon" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="HideIcon" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <BitMessage Severity="BitSeverity.Info" HideIcon>
                 HideIcon parameter removes the icon.
@@ -107,7 +136,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div>
                 <div>Component's Style & Class:</div>
@@ -156,7 +185,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Advanced" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Advanced" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             @if (isWarningDismissed is false)
             {
@@ -200,7 +229,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icons" RazorCode="@example9RazorCode" Id="example9">
+    <ComponentExampleBox Title="Icons" RazorCode="@example11RazorCode" Id="example11">
         <ExamplePreview>
             <BitMessage Severity="BitSeverity.Success" IconName="@BitIconName.CheckMark">
                 Message with a custom icon.
@@ -220,7 +249,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+    <ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Info">
                 اطلاعات (پیش فرض) نوار پیام. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>

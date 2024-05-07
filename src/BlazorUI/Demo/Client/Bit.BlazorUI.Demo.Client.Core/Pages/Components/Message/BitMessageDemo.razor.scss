@@ -1,4 +1,10 @@
-﻿::deep {
+﻿.box {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: column;
+}
+
+::deep {
     .custom-class {
         padding: 1rem;
         color: deeppink;
