@@ -148,6 +148,18 @@
 <ComponentExampleBox Title="Customization" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div class="example-content">
+            <BitDropdown Label="Header template"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item">
+                <HeaderTemplate Context="item">
+                    <div class="custom-drp custom-drp-header">
+                        <BitIcon IconName="@((item.Payload as DropdownItemData)?.IconName)" />
+                        <div>@item.Text</div>
+                    </div>
+                </HeaderTemplate>
+            </BitDropdown>
+
             <BitDropdown Label="Text & Item templates"
                          Items="GetDataCustoms()"
                          NameSelectors="nameSelectors"

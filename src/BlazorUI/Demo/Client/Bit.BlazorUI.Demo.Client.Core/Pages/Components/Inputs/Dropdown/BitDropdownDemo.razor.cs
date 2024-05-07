@@ -104,6 +104,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "HeaderTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "The custom template for rendering the header items of the dropdown.",
+        },
+        new()
+        {
             Name = "IsMultiSelect",
             Type = "bool",
             DefaultValue = "false",

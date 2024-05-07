@@ -358,6 +358,12 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// </summary>
     [Parameter] public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
 
+    /// <summary>
+    /// The custom template for rendering the header items of the dropdown.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
+
+
 
     /// <summary>
     /// A readonly list of the current selected items in multi-select mode.

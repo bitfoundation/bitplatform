@@ -218,6 +218,23 @@
 <ComponentExampleBox Title="Customization" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div class="example-content">
+            <BitDropdown Label="Header template"
+                         Placeholder="Select an item"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                <HeaderTemplate Context="item">
+                    <div class="custom-drp custom-drp-header">
+                        <BitIcon IconName="@((item.Data as DropdownItemData)?.IconName)" />
+                        <div>@item.Text</div>
+                    </div>
+                </HeaderTemplate>
+                <Options>
+                    @foreach (var item in dataItems)
+                    {
+                        <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" Data="item.Data" />
+                    }
+                </Options>
+            </BitDropdown>
+
             <BitDropdown Label="Text & Item templates"
                          Placeholder="Select an item"
                          TItem="BitDropdownOption<string>" TValue="string">

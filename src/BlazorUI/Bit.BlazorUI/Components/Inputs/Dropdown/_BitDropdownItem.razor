@@ -14,11 +14,18 @@
 <div style="@Dropdown.GetStyle(Item)" class="@Dropdown.GetClass(Item)">
     @if (itemType == BitDropdownItemType.Header)
     {
-        <div id="@id"
-             style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemHeader"
-             class="bit-drp-ihd @Dropdown.Classes?.ItemHeader">
-            @text
-        </div>
+        @if (Dropdown.HeaderTemplate is not null)
+        {
+            @Dropdown.HeaderTemplate(Item)
+        }
+        else
+        {
+            <div id="@id"
+                 style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemHeader"
+                 class="bit-drp-ihd @Dropdown.Classes?.ItemHeader">
+                @text
+            </div>
+        }
     }
     else if (itemType == BitDropdownItemType.Normal)
     {
