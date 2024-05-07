@@ -363,25 +363,11 @@ private bool isDismissed;";
 </BitMessage>";
 
     private readonly string example8RazorCode = @"
-<BitMessage Severity=""BitSeverity.Info"" HideIcon>
-    HideIcon parameter removes the icon.
-</BitMessage>
-
-<BitMessage Severity=""BitSeverity.Success"" HideIcon>
-    Success Message. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-</BitMessage>
-
-<BitMessage Severity=""BitSeverity.Warning"" HideIcon>
-    Warning Message. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-</BitMessage>
-
-<BitMessage Severity=""BitSeverity.SevereWarning"" HideIcon>
-    SevereWarning Message. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-</BitMessage>
-
-<BitMessage Severity=""BitSeverity.Error"" HideIcon>
-    Error Message. <BitLink Href=""https://bitplatform.dev"">Visit our website.</BitLink>
-</BitMessage>";
+<BitMessage Severity=""BitSeverity.Info"" HideIcon>Info (default) Message.</BitMessage>
+<BitMessage Severity=""BitSeverity.Success"" HideIcon>Success Message.</BitMessage>
+<BitMessage Severity=""BitSeverity.Warning"" HideIcon>Warning Message.</BitMessage>
+<BitMessage Severity=""BitSeverity.SevereWarning"" HideIcon>SevereWarning Message.</BitMessage>
+<BitMessage Severity=""BitSeverity.Error"" HideIcon>Error Message.</BitMessage>";
 
     private readonly string example9RazorCode = @"
 <style>

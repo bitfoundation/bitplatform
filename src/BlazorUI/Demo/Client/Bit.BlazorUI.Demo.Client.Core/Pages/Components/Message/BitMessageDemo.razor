@@ -114,25 +114,14 @@
 
     <ComponentExampleBox Title="HideIcon" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
-            <BitMessage Severity="BitSeverity.Info" HideIcon>
-                HideIcon parameter removes the icon.
-            </BitMessage>
-            <br />
-            <BitMessage Severity="BitSeverity.Success" HideIcon>
-                Success Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
-            <br />
-            <BitMessage Severity="BitSeverity.Warning" HideIcon>
-                Warning Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
-            <br />
-            <BitMessage Severity="BitSeverity.SevereWarning" HideIcon>
-                SevereWarning Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
-            <br />
-            <BitMessage Severity="BitSeverity.Error" HideIcon>
-                Error Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
+            <div class="box">
+                <div>HideIcon parameter removes the icon:</div>
+                <BitMessage Severity="BitSeverity.Info" HideIcon>Info (default) Message.</BitMessage>
+                <BitMessage Severity="BitSeverity.Success" HideIcon>Success Message.</BitMessage>
+                <BitMessage Severity="BitSeverity.Warning" HideIcon>Warning Message.</BitMessage>
+                <BitMessage Severity="BitSeverity.SevereWarning" HideIcon>SevereWarning Message.</BitMessage>
+                <BitMessage Severity="BitSeverity.Error" HideIcon>Error Message.</BitMessage>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
