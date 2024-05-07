@@ -47,7 +47,12 @@
                         </div>
                         <div class="tfa-key-container">
                             <div class="tfa-key">@sharedKey</div>
-                            <BitIconButton OnClick="CopyToClipboard" IconName="@BitIconName.Copy" Title="Copy" />
+                            <BitButton OnClick="WrapHandled(CopySharedKeyToClipboard)"
+                                       IconName="@(isKeyCopiedShown ? "" : BitIconName.Copy)"
+                                       Title="Copy" Style="padding:0"
+                                       ButtonStyle="BitButtonStyle.Standard">
+                                @(isKeyCopiedShown ? "Copied" : "")
+                            </BitButton>
                         </div>
                     </li>
                     <br />
@@ -114,12 +119,23 @@
                                 <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarning)]</p>
                             </BitMessageBar>
 
-                            <BitMessageBar MessageBarType="BitMessageBarType.Info" IsMultiline>
-                                <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesTitle)]</strong>
+                            <BitMessageBar MessageBarType="BitMessageBarType.Info" IsMultiline Class="copy-recovery-con">
+                                <div style="display:flex">
+                                    <div style="flex-grow:1">
+                                        <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesTitle)]</strong>
+                                    </div>
+                                    <BitButton OnClick="WrapHandled(CopyRecoveryCodesToClipboard)"
+                                               IconName="@(isCodesCopiedShown ? "" : BitIconName.Copy)"
+                                               Title="Copy" Style="padding:0"
+                                               ButtonStyle="BitButtonStyle.Standard">
+                                        @(isCodesCopiedShown ? "Copied" : "")
+                                    </BitButton>
+                                </div>
                                 @foreach (var recoveryCode in recoveryCodes)
                                 {
                                     <div class="recovery-code">@recoveryCode</div>
                                 }
+
                             </BitMessageBar>
                         }
                     </div>

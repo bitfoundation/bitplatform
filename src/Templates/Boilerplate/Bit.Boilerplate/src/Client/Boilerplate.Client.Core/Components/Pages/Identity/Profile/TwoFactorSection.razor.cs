@@ -13,6 +13,8 @@ public partial class TwoFactorSection
     private bool isLoading;
     private string? sharedKey;
     private int recoveryCodesLeft;
+    private bool isKeyCopiedShown;
+    private bool isCodesCopiedShown;
     private string[]? recoveryCodes;
     private string? authenticatorUri;
     private string? verificationCode;
@@ -98,8 +100,33 @@ public partial class TwoFactorSection
         }
     }
 
-    private async Task CopyToClipboard()
+    private async Task CopySharedKeyToClipboard()
     {
+        if (isKeyCopiedShown) return;
+
         await clipboard.WriteText(sharedKey!);
+
+        isKeyCopiedShown = true;
+        StateHasChanged();
+
+        await Task.Delay(1000);
+
+        isKeyCopiedShown = false;
+        StateHasChanged();
+    }
+
+    private async Task CopyRecoveryCodesToClipboard()
+    {
+        if (isCodesCopiedShown) return;
+
+        await clipboard.WriteText(string.Join(Environment.NewLine, recoveryCodes ?? []));
+
+        isCodesCopiedShown = true;
+        StateHasChanged();
+
+        await Task.Delay(1000);
+
+        isCodesCopiedShown = false;
+        StateHasChanged();
     }
 }
