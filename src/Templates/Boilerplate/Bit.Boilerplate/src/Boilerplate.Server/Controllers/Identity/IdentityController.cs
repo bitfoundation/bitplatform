@@ -157,11 +157,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
         var result = await signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+        var user = await userManager.FindByNameAsync(signInRequest.UserName!) ?? throw new ResourceNotFoundException();
 
         if (result.IsLockedOut)
         {
-            var user = await userManager.FindByNameAsync(signInRequest.UserName!);
-            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")));
+            throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")));
         }
 
         if (result.RequiresTwoFactor)
@@ -176,8 +176,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             }
             else if (string.IsNullOrEmpty(signInRequest.TwoFactorToken) is false)
             {
-                //var isValid = await userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider, token);
                 result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, signInRequest.TwoFactorToken, false, false);
+                if (result.Succeeded)
+                {
+                    // since this token is not a one-time use code and it has a rather long expiration time,
+                    // we can generate a new token to revoke the used one:
+                    await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
+                }
             }
             else
             {
@@ -262,7 +267,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task SendTwoFactorTokenEmail(SignInRequestDto signInRequest, CancellationToken cancellationToken)
+    public async Task SendTwoFactorToken(SignInRequestDto signInRequest, CancellationToken cancellationToken)
     {
         var signInResult = await signInManager.PasswordSignInAsync(signInRequest.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
         var user = await userManager.FindByNameAsync(signInRequest.UserName!) ?? throw new ResourceNotFoundException();
@@ -275,12 +280,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new BadRequestException();
         }
 
-        var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenEmailRequestedOn) - AppSettings.IdentitySettings.TwoFactorTokenEmailResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.IdentitySettings.TwoFactorTokenEmailResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.WaitForTfaTokenEmailResendDelay), resendDelay.Value.ToString("mm\\:ss")));
 
         var token = await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
+
 
         var templateParameters = new Dictionary<string, object?>()
         {
@@ -300,7 +306,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                                            .Body(body, isHtml: true)
                                            .SendAsync(cancellationToken);
 
-        user.TwoFactorTokenEmailRequestedOn = DateTimeOffset.Now;
+        user.TwoFactorTokenRequestedOn = DateTimeOffset.Now;
 
         await userManager.UpdateAsync(user);
 

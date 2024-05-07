@@ -69,10 +69,8 @@
                 <div>@Localizer[nameof(AppStrings.TfaTokenSignInTitle)]</div>
                 <BitButton Style="padding:0"
                            ButtonType="BitButtonType.Button"
-                           IconName="@BitIconName.Mail"
-                           IconPosition="BitButtonIconPosition.End"
                            IsLoading="isGeneratingToken"
-                           OnClick="WrapHandled(SendTfaTokenEmail)">
+                           OnClick="WrapHandled(SendTwoFactorToken)">
                     @Localizer[nameof(AppStrings.TfaTokenGenerateButtonText)]
                 </BitButton>
                 <BitTextField @bind-Value="signInModel.TwoFactorToken"

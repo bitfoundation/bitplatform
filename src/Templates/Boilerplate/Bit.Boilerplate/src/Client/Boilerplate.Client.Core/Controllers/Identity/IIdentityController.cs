@@ -27,7 +27,7 @@ public interface IIdentityController : IAppController
     Task<SignInResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default) => default!;
 
     [HttpPost]
-    Task SendTwoFactorTokenEmail(SignInRequestDto signInRequest, CancellationToken cancellationToken = default) => default!;
+    Task SendTwoFactorToken(SignInRequestDto signInRequest, CancellationToken cancellationToken = default) => default!;
 
     [HttpPost]
     [Route("~/api/[controller]/2fa")]

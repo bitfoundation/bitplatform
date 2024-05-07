@@ -62,7 +62,7 @@ public partial class SignInPage
         }
     }
 
-    private async Task SendTfaTokenEmail()
+    private async Task SendTwoFactorToken()
     {
         if (isGeneratingToken) return;
 
@@ -71,7 +71,7 @@ public partial class SignInPage
 
         try
         {
-            await identityController.SendTwoFactorTokenEmail(signInModel, CurrentCancellationToken);
+            await identityController.SendTwoFactorToken(signInModel, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.TfaTokenEmailSent)];
             messageType = BitMessageBarType.Success;

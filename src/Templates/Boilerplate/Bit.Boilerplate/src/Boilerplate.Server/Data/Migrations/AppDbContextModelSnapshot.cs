@@ -126,7 +126,7 @@ namespace Boilerplate.Server.Data.Migrations
                     b.Property<DateTimeOffset?>("ConfirmationEmailRequestedOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("TwoFactorTokenEmailRequestedOn")
+                    b.Property<DateTimeOffset?>("TwoFactorTokenRequestedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Email")

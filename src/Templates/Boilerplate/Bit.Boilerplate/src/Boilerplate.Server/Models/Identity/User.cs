@@ -20,5 +20,5 @@ public class User : IdentityUser<int>
 
     public string? DisplayName => FullName ?? NormalizedUserName;
 
-    public DateTimeOffset? TwoFactorTokenEmailRequestedOn { get; set; }
+    public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
 }
