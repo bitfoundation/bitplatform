@@ -129,6 +129,9 @@ namespace Boilerplate.Server.Data.Migrations
                     b.Property<DateTimeOffset?>("ConfirmationEmailRequestedOn")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<DateTimeOffset?>("TwoFactorTokenEmailRequestedOn")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");

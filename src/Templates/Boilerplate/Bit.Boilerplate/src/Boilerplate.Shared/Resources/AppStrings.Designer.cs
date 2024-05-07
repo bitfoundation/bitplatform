@@ -1574,6 +1574,33 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The 2FA token has been generated and sent to your email..
+        /// </summary>
+        public static string TfaTokenEmailSent {
+            get {
+                return ResourceManager.GetString("TfaTokenEmailSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate a 2FA token and Email.
+        /// </summary>
+        public static string TfaTokenGenerateButtonText {
+            get {
+                return ResourceManager.GetString("TfaTokenGenerateButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No access to authenticator app?.
+        /// </summary>
+        public static string TfaTokenSignInTitle {
+            get {
+                return ResourceManager.GetString("TfaTokenSignInTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Title.
         /// </summary>
         public static string Title {
@@ -1669,6 +1696,15 @@ namespace Boilerplate.Shared.Resources {
         public static string TwoFactorRecoveryCode {
             get {
                 return ResourceManager.GetString("TwoFactorRecoveryCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 2FA Token.
+        /// </summary>
+        public static string TwoFactorToken {
+            get {
+                return ResourceManager.GetString("TwoFactorToken", resourceCulture);
             }
         }
         

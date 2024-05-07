@@ -672,6 +672,18 @@
     <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>Désactiver 2FA</value>
   </data>
+    <data name="TwoFactorToken" xml:space="preserve">
+    <value>2FA Token</value>
+  </data>
+    <data name="TfaTokenSignInTitle" xml:space="preserve">
+    <value>Pas d'accès à l'application d'authentification?</value>
+  </data>
+    <data name="TfaTokenGenerateButtonText" xml:space="preserve">
+    <value>Générez un code 2FA et un e-mail</value>
+  </data>
+    <data name="TfaTokenEmailSent" xml:space="preserve">
+    <value>Le jeton 2FA a été généré et envoyé à votre email.</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
   </data>

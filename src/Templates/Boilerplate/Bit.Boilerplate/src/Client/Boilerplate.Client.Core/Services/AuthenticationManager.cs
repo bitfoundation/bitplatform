@@ -29,6 +29,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         return false;
     }
 
+    public async Task SendTfaTokenEmail(SignInRequestDto request, CancellationToken cancellationToken)
+    {
+        await identityController.SendTfaTokenEmail(request, cancellationToken);
+    }
+
     public async Task SignOut()
     {
         await storageService.RemoveItem("access_token");

@@ -151,4 +151,16 @@
   <data name="WelcomeToApp" xml:space="preserve">
     <value>Bienvenue dans le panneau d'administration !</value>
   </data>
+    <data name="TfaTokenEmailSubject" xml:space="preserve">
+    <value>Boilerplate - 2FA token</value>
+  </data>
+    <data name="TfaTokenHello" xml:space="preserve">
+    <value>Bonjour chère {0}</value>
+  </data>
+    <data name="TfaTokenMessage" xml:space="preserve">
+    <value>Voici votre nouveau token 2FA pour vous connecter:</value>
+  </data>
+    <data name="TfaTokenNote" xml:space="preserve">
+    <value>Copiez ce code et utilisez-le dans la page de connexion.</value>
+  </data>
 </root>

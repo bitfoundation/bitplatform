@@ -152,6 +152,42 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Boilerplate - 2FA token.
+        /// </summary>
+        public static string TfaTokenEmailSubject {
+            get {
+                return ResourceManager.GetString("TfaTokenEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hello dear {0}.
+        /// </summary>
+        public static string TfaTokenHello {
+            get {
+                return ResourceManager.GetString("TfaTokenHello", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Here is your new 2FA token to login:.
+        /// </summary>
+        public static string TfaTokenMessage {
+            get {
+                return ResourceManager.GetString("TfaTokenMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy this code and use it in the login page..
+        /// </summary>
+        public static string TfaTokenNote {
+            get {
+                return ResourceManager.GetString("TfaTokenNote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Welcome to Boilerplate!.
         /// </summary>
         public static string WelcomeToApp {

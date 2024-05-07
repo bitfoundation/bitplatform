@@ -57,16 +57,31 @@
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
             </div>
 
-            <br />
-
             <div class="form-input-container">
                 <div>@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]</div>
                 <BitTextField @bind-Value="signInModel.TwoFactorRecoveryCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
             </div>
+
+            <br />
+
+            <div class="form-input-container tfa-token-container">
+                <div>@Localizer[nameof(AppStrings.TfaTokenSignInTitle)]</div>
+                <BitButton Style="padding:0"
+                           ButtonType="BitButtonType.Button"
+                           IconName="@BitIconName.Mail"
+                           IconPosition="BitButtonIconPosition.End"
+                           IsLoading="isGeneratingToken"
+                           OnClick="WrapHandled(SendTfaTokenEmail)">
+                    @Localizer[nameof(AppStrings.TfaTokenGenerateButtonText)]
+                </BitButton>
+                <BitTextField @bind-Value="signInModel.TwoFactorToken"
+                              Style="flex-grow:1"
+                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorToken)]" />
+            </div>
         }
 
-        <BitButton IsLoading="isLoading"
+        <BitButton IsLoading="isSigningIn"
                    Class="form-submit-button"
                    ButtonStyle="BitButtonStyle.Primary"
                    Title="@Localizer[nameof(AppStrings.SignIn)]"
