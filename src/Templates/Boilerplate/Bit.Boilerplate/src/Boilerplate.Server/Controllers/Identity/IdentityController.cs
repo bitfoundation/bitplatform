@@ -174,7 +174,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             {
                 result = await signInManager.TwoFactorRecoveryCodeSignInAsync(signInRequest.TwoFactorRecoveryCode);
             }
-            else if(string.IsNullOrEmpty(signInRequest.TwoFactorToken) is false)
+            else if (string.IsNullOrEmpty(signInRequest.TwoFactorToken) is false)
             {
                 //var isValid = await userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider, token);
                 result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, signInRequest.TwoFactorToken, false, false);
