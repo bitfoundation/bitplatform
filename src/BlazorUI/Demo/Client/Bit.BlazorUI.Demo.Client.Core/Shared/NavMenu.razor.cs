@@ -88,6 +88,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Message", Url = "/components/message", AdditionalUrls = ["/components/messagebar", "/components/message-bar"], Description = "Alert, MessageBar" },
                 new() { Text = "Persona", Url = "/components/persona", Description = "Avatar" },
                 new() { Text = "SnackBar", Url = "/components/snackbar", Description = "Toast" },
+                new() { Text = "Tag", Url = "/components/tag", Description = "Chip" },
             ]
         },
         new()
