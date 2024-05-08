@@ -26,6 +26,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     private bool _isCalloutOpen;
     private uint _internalOverflowIndex;
     private uint _internalMaxDisplayedItems;
+    private List<TItem> _items = new();
     private List<TItem> _internalItems = new();
     private List<TItem> _displayItems = new();
     private List<TItem> _overflowItems = new();
@@ -169,8 +170,9 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
     internal void RegisterOptions(BitBreadcrumbOption option)
     {
-        _internalItems.Add((option as TItem)!);
-        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
+        _items.Add((option as TItem)!);
+        _internalItems = [.. _items];
+        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_items.Count : MaxDisplayedItems;
         _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
         SetItemsToShow();
         StateHasChanged();
@@ -178,13 +180,9 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
     internal void UnregisterOptions(BitBreadcrumbOption option)
     {
-        _internalItems.Remove((option as TItem)!);
+        _items.Remove((option as TItem)!);
+        _internalItems = [.. _items];
         SetItemsToShow();
-        StateHasChanged();
-    }
-
-    internal void InternalStateHasChanged()
-    {
         StateHasChanged();
     }
 
@@ -214,12 +212,17 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     {
         _internalDividerIconName = Dir == BitDir.Rtl ? "ChevronLeft" : "ChevronRight";
 
-        if (ChildContent is null && Items.Any())
+        if (ChildContent is null)
+        {
+            _items = [.. Items];
+        }
+
+        if (_items.Any())
         {
             bool shouldCallSetItemsToShow = false;
 
-            shouldCallSetItemsToShow = _internalItems.Count != Items.Count || _internalItems.Any(item => Items.Contains(item) is false);
-            _internalItems = Items.ToList();
+            shouldCallSetItemsToShow = _internalItems.Count != _items.Count || _internalItems.Any(item => _items.Contains(item) is false);
+            _internalItems = [.. _items];
 
             shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
             _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
@@ -253,8 +256,10 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         {
             await bitBreadcrumbOption.OnClick.InvokeAsync(bitBreadcrumbOption);
         }
-
-        item.GetValueFromProperty<Action<TItem>?>(_internalOnClickField)?.Invoke(item);
+        else
+        {
+            item.GetValueFromProperty<Action<TItem>?>(_internalOnClickField)?.Invoke(item);
+        }
     }
 
     private void SetItemsToShow()

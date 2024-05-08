@@ -41,13 +41,6 @@ public partial class BitBreadcrumbOption : IDisposable
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        Parent.InternalStateHasChanged();
-
-        await base.OnParametersSetAsync();
-    }
-
     public void Dispose()
     {
         Dispose(true);

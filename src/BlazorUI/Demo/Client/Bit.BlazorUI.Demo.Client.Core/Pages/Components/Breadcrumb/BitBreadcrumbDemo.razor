@@ -355,7 +355,7 @@
                                            StyleField="@nameof(PageInfoModel.HtmlStyle)"
                                            MaxDisplayedItems="3"
                                            OverflowIndex="2"
-                                           OnItemClick="(PageInfoModel item) => HandleOnItemClick(item)"
+                                           OnItemClick="(PageInfoModel model) => HandleOnCustomClick(model)"
                                            SelectedItemStyle="color:red;background:lightgreen" />
                         </div>
                     </ExamplePreview>
@@ -373,7 +373,7 @@
                                                StyleField="@nameof(PageInfoModel.HtmlStyle)"
                                                MaxDisplayedItems="@MaxDisplayedItems"
                                                OverflowIndex="@OverflowIndex"
-                                               OnItemClick="(PageInfoModel item) => HandleOnCustomizedItemClick(item)" />
+                                               OnItemClick="(PageInfoModel model) => HandleOnCustomizedCustomClick(model)" />
                             </div>
                             <div class="operators">
                                 <div>

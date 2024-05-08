@@ -418,15 +418,15 @@ public partial class BitBreadcrumbDemo
         item.IsSelected = true;
     }
 
-    private void HandleOnItemClick(PageInfoModel item)
+    private void HandleOnCustomClick(PageInfoModel model)
     {
-        BreadcrumbItemsWithControlled.First(i => i.IsSelected).IsSelected = false;
-        item.IsCurrent = true;
+        CustomBreadcrumbItemsWithControlled.First(i => i.IsCurrent).IsCurrent = false;
+        model.IsCurrent = true;
     }
-    private void HandleOnCustomizedItemClick(PageInfoModel item)
+    private void HandleOnCustomizedCustomClick(PageInfoModel model)
     {
-        BreadcrumbItemsWithCustomized.First(i => i.IsSelected).IsSelected = false;
-        item.IsCurrent = true;
+        CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
+        model.IsCurrent = true;
     }
 
     private void AddBreadcrumbItem()
@@ -456,23 +456,23 @@ public partial class BitBreadcrumbDemo
     private void AddCustomItem()
     {
         ItemsCount++;
-        BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
+        CustomBreadcrumbItemsWithCustomized.Add(new PageInfoModel()
         {
-            Text = $"Folder {ItemsCount}"
+            Name = $"Folder {ItemsCount}"
         });
     }
     private void RemoveCustomItem()
     {
-        if (BreadcrumbItemsWithCustomized.Count > 1)
+        if (CustomBreadcrumbItemsWithCustomized.Count > 1)
         {
             ItemsCount--;
 
-            var item = BreadcrumbItemsWithCustomized[^1];
-            BreadcrumbItemsWithCustomized.Remove(item);
+            var item = CustomBreadcrumbItemsWithCustomized[^1];
+            CustomBreadcrumbItemsWithCustomized.Remove(item);
 
-            if (item.IsSelected)
+            if (item.IsCurrent)
             {
-                BreadcrumbItemsWithCustomized[^1].IsSelected = true;
+                CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = true;
             }
         }
     }
@@ -952,7 +952,7 @@ public partial class BitBreadcrumbDemo
                 StyleField=""@nameof(PageInfoModel.HtmlStyle)""
                 MaxDisplayedItems=""3""
                 OverflowIndex=""2""
-                OnItemClick=""(PageInfoModel item) => HandleOnItemClick(item)""
+                OnItemClick=""(PageInfoModel model) => HandleOnCustomClick(model)""
                 SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
     private readonly string example5BreadcrumbOptionRazorCode = @"
@@ -994,7 +994,7 @@ public partial class BitBreadcrumbDemo
                     StyleField=""@nameof(PageInfoModel.HtmlStyle)""
                     MaxDisplayedItems=""@MaxDisplayedItems""
                     OverflowIndex=""@OverflowIndex""
-                    OnItemClick=""(PageInfoModel item) => HandleOnCustomizedItemClick(item)"" />
+                    OnItemClick=""(PageInfoModel model) => HandleOnCustomizedCustomClick(model)"" />
 </div>
 <div class=""operators"">
     <div>
@@ -1280,12 +1280,12 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsWithControlled = new()
     new() { Name = ""Folder 6"", IsCurrent = true }
 };
 
-private void HandleOnItemClick(PageInfoModel item)
+private void HandleOnCustomClick(PageInfoModel model)
 {
-    BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    item.IsCurrent = true;
-}
-";
+    CustomBreadcrumbItemsWithControlled.First(i => i.IsCurrent).IsCurrent = false;
+    model.IsCurrent = true;
+}";
+
     private readonly string example5BreadcrumbOptionCsharpCode = @"
 private int SelectedOptionNumber = 6;
 ";
@@ -1304,37 +1304,35 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; } = ne
     new() { Text = ""Folder 4"", IsSelected = true }
 };
 
-private void AddBreadcrumbItem()
-{
-    ItemsCount++;
-    BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
-    {
-        Text = $""Folder {ItemsCount}""
-    });
-}
-
-private void RemoveBreadcrumbItem()
-{
-    if (BreadcrumbItemsWithCustomized.Count > 1)
-    {
-        ItemsCount--;
-
-        var item = BreadcrumbItemsWithCustomized[^1];
-        BreadcrumbItemsWithCustomized.Remove(item);
-
-        if (item.IsSelected)
-        {
-            BreadcrumbItemsWithCustomized[^1].IsSelected = true;
-        }
-    }
-}
-
 private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
 {
     BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
     item.IsSelected = true;
 }
-";
+
+private void AddCustomItem()
+{
+    ItemsCount++;
+    CustomBreadcrumbItemsWithCustomized.Add(new PageInfoModel()
+    {
+        Name = $""Folder {ItemsCount}""
+    });
+}
+private void RemoveCustomItem()
+{
+    if (CustomBreadcrumbItemsWithCustomized.Count > 1)
+    {
+        ItemsCount--;
+
+        var item = CustomBreadcrumbItemsWithCustomized[^1];
+        CustomBreadcrumbItemsWithCustomized.Remove(item);
+
+        if (item.IsCurrent)
+        {
+            CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = true;
+        }
+    }
+}";
     private readonly string example6CustomItemCsharpCode = @"
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
@@ -1364,10 +1362,10 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsWithCustomized = new()
     new() { Name = ""Folder 4"", IsCurrent = true }
 };
 
-private void HandleOnCustomizedItemClick(PageInfoModel item)
+private void HandleOnCustomizedCustomClick(PageInfoModel model)
 {
-    BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    item.IsCurrent = true;
+    CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
+    model.IsCurrent = true;
 }
 
 private void AddCustomItem()
