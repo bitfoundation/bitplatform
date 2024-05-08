@@ -151,7 +151,7 @@
                 <ComponentExampleBox Title="RTL" RazorCode="@example7BreadcrumbItemRazorCode" CsharpCode="@example7BreadcrumbItemCsharpCode" Id="example7">
                     <ExamplePreview>
                         <div class="example-box">
-                            <BitBreadcrumb Dir="BitDir.Rtl" Items="RtlBreadcrumbItems" />
+                            <BitBreadcrumb Dir="BitDir.Rtl" Items="RtlBreadcrumbItems" MaxDisplayedItems="3" OverflowIndex="2" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
@@ -393,6 +393,8 @@
                     <ExamplePreview>
                         <div class="example-box">
                             <BitBreadcrumb Dir="BitDir.Rtl"
+                                           OverflowIndex="2"
+                                           MaxDisplayedItems="3"
                                            Items="RtlCustomBreadcrumbItems"
                                            TextField="@nameof(PageInfoModel.Name)"
                                            HrefField="@nameof(PageInfoModel.Address)"
@@ -620,11 +622,13 @@
                 <ComponentExampleBox Title="RTL" RazorCode="@example7BreadcrumbOptionRazorCode" Id="example7">
                     <ExamplePreview>
                         <div class="example-box">
-                            <BitBreadcrumb Dir="BitDir.Rtl" TItem="BitBreadcrumbOption">
-                                <BitBreadcrumbOption Text="پوشه ۱" />
-                                <BitBreadcrumbOption Text="پوشه ۲" />
-                                <BitBreadcrumbOption Text="پوشه ۳" />
-                                <BitBreadcrumbOption Text="پوشه ۴" IsSelected="true" />
+                            <BitBreadcrumb Dir="BitDir.Rtl" TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2">
+                                <BitBreadcrumbOption Text="پوشه اول" />
+                                <BitBreadcrumbOption Text="پوشه دوم" IsSelected="true" />
+                                <BitBreadcrumbOption Text="پوشه سوم" />
+                                <BitBreadcrumbOption Text="پوشه چهارم" />
+                                <BitBreadcrumbOption Text="پوشه پنجم" />
+                                <BitBreadcrumbOption Text="پوشه ششم" />
                             </BitBreadcrumb>
                         </div>
                     </ExamplePreview>

@@ -338,10 +338,12 @@ public partial class BitBreadcrumbDemo
 
     private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems = new()
     {
-        new() { Text = "پوشه ۱", },
-        new() { Text = "پوشه ۲", },
-        new() { Text = "پوشه ۳", },
-        new() { Text = "پوشه ۴", IsSelected = true }
+        new() { Text = "پوشه اول" },
+        new() { Text = "پوشه دوم", IsSelected = true },
+        new() { Text = "پوشه سوم" },
+        new() { Text = "پوشه چهارم" },
+        new() { Text = "پوشه پنجم" },
+        new() { Text = "پوشه ششم" },
     };
 
 
@@ -397,10 +399,12 @@ public partial class BitBreadcrumbDemo
 
     private readonly List<PageInfoModel> RtlCustomBreadcrumbItems = new()
     {
-        new() { Name = "پوشه ۱", },
-        new() { Name = "پوشه ۲", },
-        new() { Name = "پوشه ۳", },
-        new() { Name = "پوشه ۴", IsCurrent = true }
+        new() { Name = "پوشه اول" },
+        new() { Name = "پوشه دوم", IsCurrent = true },
+        new() { Name = "پوشه سوم" },
+        new() { Name = "پوشه چهارم" },
+        new() { Name = "پوشه پنجم" },
+        new() { Name = "پوشه ششم" },
     };
 
     private void HandleOnItemClick(BitBreadcrumbItem item)
@@ -1026,10 +1030,12 @@ public partial class BitBreadcrumbDemo
 ";
 
     private readonly string example7BreadcrumbItemRazorCode = @"
-<BitBreadcrumb Dir=""BitDir.Rtl"" Items=""RtlBreadcrumbItems"" />
+<BitBreadcrumb Dir=""BitDir.Rtl"" Items=""RtlBreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 ";
     private readonly string example7CustomItemRazorCode = @"
 <BitBreadcrumb Dir=""BitDir.Rtl""
+               OverflowIndex=""2""
+               MaxDisplayedItems=""3""
                Items=""RtlCustomBreadcrumbItems""
                TextField=""@nameof(PageInfoModel.Name)""
                HrefField=""@nameof(PageInfoModel.Address)""
@@ -1038,13 +1044,14 @@ public partial class BitBreadcrumbDemo
                IsSelectedField=""@nameof(PageInfoModel.IsCurrent)"" />
 ";
     private readonly string example7BreadcrumbOptionRazorCode = @"
-<BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"">
-    <BitBreadcrumbOption Text=""پوشه ۱"" />
-    <BitBreadcrumbOption Text=""پوشه ۲"" />
-    <BitBreadcrumbOption Text=""پوشه ۳"" />
-    <BitBreadcrumbOption Text=""پوشه ۴"" IsSelected=""true"" />
-</BitBreadcrumb>
-";
+<BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
+    <BitBreadcrumbOption Text=""پوشه اول"" />
+    <BitBreadcrumbOption Text=""پوشه دوم"" IsSelected=""true"" />
+    <BitBreadcrumbOption Text=""پوشه سوم"" />
+    <BitBreadcrumbOption Text=""پوشه چهارم"" />
+    <BitBreadcrumbOption Text=""پوشه پنجم"" />
+    <BitBreadcrumbOption Text=""پوشه ششم"" />
+</BitBreadcrumb>";
 
     private readonly string example1BreadcrumbItemCsharpCode = @"
 private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
@@ -1399,10 +1406,12 @@ private int CustomizedSelectedOptionNumber = 4;
     private readonly string example7BreadcrumbItemCsharpCode = @"
 private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems = new()
 {
-    new() { Text = ""پوشه ۱"", },
-    new() { Text = ""پوشه ۲"", },
-    new() { Text = ""پوشه ۳"", },
-    new() { Text = ""پوشه ۴"", IsSelected = true }
+    new() { Text = ""پوشه اول"" },
+    new() { Text = ""پوشه دوم"", IsSelected = true },
+    new() { Text = ""پوشه سوم"" },
+    new() { Text = ""پوشه چهارم"" },
+    new() { Text = ""پوشه پنجم"" },
+    new() { Text = ""پوشه ششم"" },
 };";
     private readonly string example7CustomItemCsharpCode = @"
 public class PageInfoModel
@@ -1422,9 +1431,11 @@ public class PageInfoModel
 
 private readonly List<PageInfoModel> RtlCustomBreadcrumbItems = new()
 {
-    new() { Name = ""پوشه ۱"", },
-    new() { Name = ""پوشه ۲"", },
-    new() { Name = ""پوشه ۳"", },
-    new() { Name = ""پوشه ۴"", IsCurrent = true }
+    new() { Name = ""پوشه اول"" },
+    new() { Name = ""پوشه دوم"", IsCurrent = true },
+    new() { Name = ""پوشه سوم"" },
+    new() { Name = ""پوشه چهارم"" },
+    new() { Name = ""پوشه پنجم"" },
+    new() { Name = ""پوشه ششم"" },
 };";
 }

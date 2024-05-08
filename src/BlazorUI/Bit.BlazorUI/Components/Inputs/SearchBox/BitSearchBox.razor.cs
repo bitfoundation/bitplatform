@@ -344,7 +344,7 @@ public partial class BitSearchBox
                                 isOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
-                                false,
+                                Dir is BitDir.Rtl,
                                 _scrollContainerId,
                                 0,
                                 string.Empty,

@@ -378,7 +378,7 @@ public partial class BitTimePicker
                                 IsOpen,
                                 IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                 DropDirection,
-                                false,
+                                Dir is BitDir.Rtl,
                                 string.Empty,
                                 0,
                                 string.Empty,
