@@ -105,15 +105,14 @@ namespace BitBlazorUI {
 
             const componentWidth = component.offsetWidth;
             const componentHeight = component.offsetHeight;
-
-            const calloutHeight = callout.offsetHeight;
-            const calloutWidth = callout.offsetWidth;
-            const { x: calloutLeft } = callout.getBoundingClientRect();
-
             const { x: componentX, y: componentY } = component.getBoundingClientRect();
 
-            const distanceToScreenBottom = window.innerHeight - (componentHeight + componentY);
-            const distanceToScreenRight = window.innerWidth - (componentWidth + componentX);
+            let calloutWidth = callout.offsetWidth;
+            const calloutHeight = callout.offsetHeight;
+            const { x: calloutLeft } = callout.getBoundingClientRect();
+
+            const distanceToBottom = window.innerHeight - (componentY + componentHeight);
+            const distanceToRight = window.innerWidth - (componentX + componentWidth);
 
             const { height: headerHeight } = header.getBoundingClientRect();
             const { height: footerHeight } = footer.getBoundingClientRect();
@@ -126,6 +125,7 @@ namespace BitBlazorUI {
                     width = window.innerWidth > Utils.MIN_MOBILE_WIDTH ? Utils.MIN_MOBILE_WIDTH : window.innerWidth;
                 }
                 callout.style.width = width + 'px';
+                calloutWidth = width;
             }
 
             const responseCssClass = `${rootCssClass}-rsp`;
@@ -150,31 +150,31 @@ namespace BitBlazorUI {
             callout.classList.remove(responseCssClass);
 
             if (dropDirection == BitDropDirection.TopAndBottom) {
-                callout.style.left = componentX + 'px';
+                callout.style.left = componentX + (isRtl ? (componentWidth - calloutWidth) : 0) + 'px';
 
-                if (calloutHeight <= distanceToScreenBottom || distanceToScreenBottom >= componentY) {
+                if (calloutHeight <= distanceToBottom || distanceToBottom >= componentY) {
                     callout.style.top = componentY + componentHeight + 1 + 'px';
-                    scrollContainer.style.maxHeight = (distanceToScreenBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = (distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
-                    callout.style.bottom = distanceToScreenBottom + componentHeight + 1 + 'px';
+                    callout.style.bottom = distanceToBottom + componentHeight + 1 + 'px';
                     scrollContainer.style.maxHeight = (componentY - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             } else {
-                if (distanceToScreenBottom >= calloutHeight) {
-                    callout.style.left = componentX + 'px';
+                if (distanceToBottom >= calloutHeight) {
+                    callout.style.left = componentX + (isRtl ? (componentWidth - calloutWidth) : 0) + 'px';
                     callout.style.top = componentY + componentHeight + 1 + 'px';
-                    scrollContainer.style.maxHeight = (distanceToScreenBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = (distanceToBottom - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else if (componentY >= calloutHeight) {
-                    callout.style.left = componentX + 'px';
-                    callout.style.bottom = distanceToScreenBottom + componentHeight + 1 + 'px';
+                    callout.style.left = componentX + (isRtl ? (componentWidth - calloutWidth) : 0) + 'px';
+                    callout.style.bottom = distanceToBottom + componentHeight + 1 + 'px';
                     scrollContainer.style.maxHeight = (componentY - scrollOffset - headerHeight - footerHeight - 10) + 'px';
-                } else if (distanceToScreenRight >= calloutWidth) {
+                } else if ((isRtl ? componentX : distanceToRight) >= calloutWidth) {
                     callout.style.bottom = '2px';
-                    callout.style.left = componentX + componentWidth + 1 + 'px';
+                    callout.style.left = (isRtl ? (componentX - calloutWidth - 1) : (componentX + componentWidth + 1)) + 'px';
                     scrollContainer.style.maxHeight = (window.innerHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
                     callout.style.bottom = '2px';
-                    callout.style.left = componentX - calloutWidth - 1 + 'px';
+                    callout.style.left = (isRtl ? (componentX + componentWidth + 1) : (componentX - calloutWidth - 1)) + 'px';
                     scrollContainer.style.maxHeight = (window.innerHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             }

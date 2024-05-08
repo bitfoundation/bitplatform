@@ -1990,7 +1990,7 @@ public partial class BitDateRangePicker
                                        IsOpen,
                                        IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                        BitDropDirection.TopAndBottom,
-                                       false,
+                                       Dir is BitDir.Rtl,
                                        "",
                                        0,
                                        "",

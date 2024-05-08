@@ -459,7 +459,7 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
                                 _isCalloutOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
-                                false,
+                                Dir is BitDir.Rtl,
                                 _scrollContainerId,
                                 0,
                                 "",
