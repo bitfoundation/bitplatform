@@ -1,7 +1,8 @@
 ﻿namespace BitBlazorUI {
     class BitController {
-        id: string = Date.now().toString();
+        id: string = BitBlazorUI.Utils.uuidv4();
         controller = new AbortController();
+        dotnetObj: DotNetObject | undefined;
     }
 
     export class ColorPicker {
@@ -9,20 +10,26 @@
 
         public static registerEvent(event: string, dotnetObj: DotNetObject, methodName: string): string {
             const bitController = new BitController();
-
-            const listenerOptions = { signal: bitController.controller.signal };
+            bitController.dotnetObj = dotnetObj;
 
             document.addEventListener(event, e => {
                 dotnetObj.invokeMethodAsync(methodName, ColorPicker.extractArgs(e as MouseEvent));
-            }, listenerOptions);
+            }, { signal: bitController.controller.signal });
 
             ColorPicker._bitControllers.push(bitController);
 
             return bitController.id;
         }
 
-        public static abort(id: string): void {
-            ColorPicker._bitControllers.find(ac => ac.id == id)?.controller?.abort();
+        public static abort(id: string, dispose: boolean): void {
+            const bitController = ColorPicker._bitControllers.find(bc => bc.id == id);
+            bitController?.controller.abort();
+
+            if (dispose) {
+                bitController?.dotnetObj?.dispose();
+            }
+
+            ColorPicker._bitControllers = ColorPicker._bitControllers.filter(bc => bc.id != id);
         }
 
         private static extractArgs(e: MouseEvent): object {
