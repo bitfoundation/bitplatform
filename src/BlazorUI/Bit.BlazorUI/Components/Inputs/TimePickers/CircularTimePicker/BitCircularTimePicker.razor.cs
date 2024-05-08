@@ -549,9 +549,9 @@ public partial class BitCircularTimePicker
     {
         if (disposing)
         {
-            _dotnetObj.Dispose();
             OnValueChanged -= HandleOnValueChanged;
-            _ = _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId);
+
+            _ = _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId, true);
             _ = _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
         }
 

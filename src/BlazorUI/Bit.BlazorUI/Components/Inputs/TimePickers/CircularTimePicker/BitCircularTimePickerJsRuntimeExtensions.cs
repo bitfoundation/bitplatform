@@ -12,8 +12,8 @@ internal static class BitCircularTimePickerJsRuntimeExtensions
         return js.InvokeAsync<string>("BitBlazorUI.CircularTimePicker.registerEvent", "pointermove", obj, methodName);
     }
 
-    internal static ValueTask BitCircularTimePickerAbort(this IJSRuntime jSRuntime, string? abortControllerId)
+    internal static ValueTask BitCircularTimePickerAbort(this IJSRuntime jSRuntime, string? abortControllerId, bool dispose = false)
     {
-        return jSRuntime.InvokeVoidAsync("BitBlazorUI.CircularTimePicker.abort", abortControllerId);
+        return jSRuntime.InvokeVoidAsync("BitBlazorUI.CircularTimePicker.abort", abortControllerId, dispose);
     }
 }
