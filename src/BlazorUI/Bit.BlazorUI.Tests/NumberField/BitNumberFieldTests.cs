@@ -729,7 +729,7 @@ public class BitNumberFieldTests : BunitTestContext
          DataRow(5, 2, 4),
          DataRow(1, 15, 1)
     ]
-    public void BitNumberFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(int value, int countOfIncrements, int step)
+    public async Task BitNumberFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(int value, int countOfIncrements, int step)
     {
         BitNumberFieldTwoWayBoundValue = value;
 
@@ -745,6 +745,8 @@ public class BitNumberFieldTests : BunitTestContext
         for (var i = 0; i < countOfIncrements; i++)
         {
             incrementButton.PointerDown();
+
+            await Task.Delay(1);
         }
 
         var expectedValue = value + (step * countOfIncrements);
