@@ -432,6 +432,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Tag/BitTagDemo.razor.css",
+        "inputFile": "Pages/Components/Tag/BitTagDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Timeline/BitTimelineDemo.razor.css",
         "inputFile": "Pages/Components/Timeline/BitTimelineDemo.razor.scss",
         "minify": { "enabled": false },
