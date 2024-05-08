@@ -2,12 +2,9 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (ChildContent is not null)
-{
-    <CascadingValue Value="this" IsFixed="true">
-        @ChildContent
-    </CascadingValue>
-}
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@ChildContent</div>
+</CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
