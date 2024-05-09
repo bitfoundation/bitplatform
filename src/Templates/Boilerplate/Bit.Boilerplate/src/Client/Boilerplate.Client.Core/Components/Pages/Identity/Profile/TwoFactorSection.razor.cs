@@ -5,8 +5,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
 public partial class TwoFactorSection
 {
-    [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private Clipboard clipboard = default!;
+    [AutoInject] private IIdentityController identityController = default!;
 
 
     private string? qrCode;
@@ -22,7 +22,7 @@ public partial class TwoFactorSection
 
 
     private string? message;
-    private BitMessageBarType messageType;
+    private BitSeverity messageSeverity;
 
 
     protected override async Task OnInitAsync()
@@ -90,7 +90,7 @@ public partial class TwoFactorSection
         catch (KnownException e)
         {
             message = e.Message;
-            messageType = BitMessageBarType.Error;
+            messageSeverity = BitSeverity.Error;
 
             return null;
         }

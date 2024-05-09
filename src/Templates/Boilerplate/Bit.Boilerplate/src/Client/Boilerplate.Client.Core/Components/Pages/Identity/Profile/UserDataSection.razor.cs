@@ -20,7 +20,7 @@ public partial class UserDataSection
     private readonly EditUserDto editUserDto = new();
 
     private string? message;
-    private BitMessageBarType messageType;
+    private BitSeverity messageSeverity;
 
     [Parameter] public bool Loading { get; set; }
 
@@ -69,13 +69,13 @@ public partial class UserDataSection
 
             PubSubService.Publish(PubSubMessages.USER_DATA_UPDATED, userDto);
 
-            messageType = BitMessageBarType.Success;
+            messageSeverity = BitSeverity.Success;
             message = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
         }
         catch (KnownException e)
         {
             message = e.Message;
-            messageType = BitMessageBarType.Error;
+            messageSeverity = BitSeverity.Error;
         }
         finally
         {
@@ -98,7 +98,7 @@ public partial class UserDataSection
         catch (KnownException e)
         {
             message = e.Message;
-            messageType = BitMessageBarType.Error;
+            messageSeverity = BitSeverity.Error;
         }
         finally
         {

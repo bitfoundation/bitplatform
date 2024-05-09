@@ -3,11 +3,11 @@
 <div>
     @if (string.IsNullOrEmpty(message) is false)
     {
-        <BitMessageBar Class="form-message-bar tfa-message-bar"
-                       MessageBarType="messageType"
-                       OnDismiss="() => message = null">
+        <BitMessage Class="form-message-bar tfa-message-bar"
+                    Severity="messageSeverity"
+                    OnDismiss="() => message = null">
             @message
-        </BitMessageBar>
+        </BitMessage>
     }
 
     <BitTypography Variant="BitTypographyVariant.H2" Style="text-align:center">
@@ -81,31 +81,31 @@
                     <div class="tab-item-container">
                         @if (recoveryCodesLeft == 0)
                         {
-                            <BitMessageBar MessageBarType="BitMessageBarType.Error" IsMultiline Style="margin-bottom:1rem">
+                            <BitMessage Severity="BitSeverity.Error" Multiline Style="margin-bottom:1rem">
                                 <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftTitle)]</strong>
                                 <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftSubtitle)]</p>
-                            </BitMessageBar>
+                            </BitMessage>
                         }
                         else if (recoveryCodesLeft == 1)
                         {
-                            <BitMessageBar MessageBarType="BitMessageBarType.SevereWarning" IsMultiline Style="margin-bottom:1rem">
+                            <BitMessage Severity="BitSeverity.SevereWarning" Multiline Style="margin-bottom:1rem">
                                 <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesOneLeftTitle)]</strong>
                                 <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesOneLeftSubtitle)]</p>
-                            </BitMessageBar>
+                            </BitMessage>
                         }
                         else if (recoveryCodesLeft <= 3)
                         {
-                            <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin-bottom:1rem">
+                            <BitMessage Severity="BitSeverity.Warning" Multiline Style="margin-bottom:1rem">
                                 <strong>@Localizer.GetString(nameof(AppStrings.TfaRecoveryCodesThreeLeftTitle), recoveryCodesLeft)</strong>
                                 <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesThreeLeftSubtitle)]</p>
-                            </BitMessageBar>
+                            </BitMessage>
                         }
 
                         @if (recoveryCodes is null)
                         {
-                            <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin-bottom:1rem">
+                            <BitMessage Severity="BitSeverity.Warning" Multiline Style="margin-bottom:1rem">
                                 @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateWraning)]
-                            </BitMessageBar>
+                            </BitMessage>
 
                             <BitButton OnClick="WrapHandled(GenerateRecoveryCode)">
                                 @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateButtonText)]
@@ -113,13 +113,13 @@
                         }
                         else
                         {
-                            <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin: 1rem 0">
+                            <BitMessage Severity="BitSeverity.Warning" Multiline Style="margin: 1rem 0">
                                 <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarningTitle)]</strong>
                                 <br />
                                 <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarning)]</p>
-                            </BitMessageBar>
+                            </BitMessage>
 
-                            <BitMessageBar MessageBarType="BitMessageBarType.Info" IsMultiline Class="copy-recovery-con">
+                            <BitMessage Severity="BitSeverity.Info" Multiline Class="copy-recovery-con">
                                 <div style="display:flex">
                                     <div style="flex-grow:1">
                                         <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesTitle)]</strong>
@@ -136,17 +136,17 @@
                                     <div class="recovery-code">@recoveryCode</div>
                                 }
 
-                            </BitMessageBar>
+                            </BitMessage>
                         }
                     </div>
                 </BitPivotItem>
 
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaAuthAppHeader)]">
                     <div class="tab-item-container">
-                        <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin:1rem 0">
+                        <BitMessage Severity="BitSeverity.Warning" Multiline Style="margin:1rem 0">
                             <strong>@Localizer[nameof(AppStrings.TfaAuthAppWarningTitle)]</strong>
                             <p>@Localizer[nameof(AppStrings.TfaAuthAppWarning)]</p>
-                        </BitMessageBar>
+                        </BitMessage>
                         <BitButton OnClick="WrapHandled(ResetAuthenticatorKey)">
                             @Localizer[nameof(AppStrings.TfaAuthAppResetKeyButtonText)]
                         </BitButton>
@@ -155,10 +155,10 @@
 
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaDisable2faHeader)]">
                     <div class="tab-item-container">
-                        <BitMessageBar MessageBarType="BitMessageBarType.Warning" IsMultiline Style="margin:1rem 0">
+                        <BitMessage Severity="BitSeverity.Warning" Multiline Style="margin:1rem 0">
                             <strong>@Localizer[nameof(AppStrings.TfaDisable2faWarningTitle)]</strong>
                             <p>@Localizer[nameof(AppStrings.TfaDisable2faWarning)]</p>
-                        </BitMessageBar>
+                        </BitMessage>
 
                         <BitButton OnClick="WrapHandled(DisableTwoFactorAuth)">
                             @Localizer[nameof(AppStrings.TfaDisable2faButtonText)]

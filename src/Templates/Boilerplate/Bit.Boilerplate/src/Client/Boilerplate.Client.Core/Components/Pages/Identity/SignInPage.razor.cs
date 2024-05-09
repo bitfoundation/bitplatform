@@ -15,7 +15,7 @@ public partial class SignInPage
     private SignInRequestDto signInModel = new();
 
     private string? message;
-    private BitMessageBarType messageType;
+    private BitSeverity messageSeverity;
 
     [SupplyParameterFromQuery(Name = "email"), Parameter] public string? Email { get; set; }
     [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
@@ -54,7 +54,7 @@ public partial class SignInPage
         catch (KnownException e)
         {
             message = e.Message;
-            messageType = BitMessageBarType.Error;
+            messageSeverity = BitSeverity.Error;
         }
         finally
         {
@@ -74,12 +74,12 @@ public partial class SignInPage
             await identityController.SendTwoFactorToken(signInModel, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.TfaTokenEmailSent)];
-            messageType = BitMessageBarType.Success;
+            messageSeverity = BitSeverity.Success;
         }
         catch (KnownException e)
         {
             message = e.Message;
-            messageType = BitMessageBarType.Error;
+            messageSeverity = BitSeverity.Error;
         }
         finally
         {

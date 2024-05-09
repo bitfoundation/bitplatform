@@ -10,11 +10,11 @@
 
         @if (string.IsNullOrEmpty(signUpMessage) is false)
         {
-            <BitMessageBar Class="form-message-bar"
-                           MessageBarType="@signUpMessageType"
-                           OnDismiss="() => signUpMessage = null">
+            <BitMessage Class="form-message-bar"
+                        Severity="@signUpMessageSeverity"
+                        OnDismiss="() => signUpMessage = null">
                 @signUpMessage
-            </BitMessageBar>
+            </BitMessage>
         }
 
         @if (isSignedUp)

@@ -1,5 +1,4 @@
 ﻿@page "/add-edit-category/{Id:int?}"
-
 @inherits AppComponentBase
 
 <PageTitle>
@@ -42,7 +41,7 @@
 
         @if (string.IsNullOrEmpty(saveMessage) is false)
         {
-            <BitMessageBar MessageBarType="@saveMessageType" OnDismiss="() => saveMessage = null">@saveMessage</BitMessageBar>
+            <BitMessage Severity="@saveMessageSeverity" OnDismiss="() => saveMessage = null">@saveMessage</BitMessage>
         }
 
         <div class="form-input-container">
