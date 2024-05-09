@@ -14,21 +14,21 @@
     }
     else if (Label.HasValue())
     {
-        <div style="@Styles?.Label" class="bit-pin-lbl @Classes?.Label" id="@_labelId">
+        <div style="@Styles?.Label" class="bit-prb-lbl @Classes?.Label" id="@_labelId">
             @Label
         </div>
     }
 
     @if (ShowPercentNumber && Indeterminate is false)
     {
-        <div style="@Styles?.PercentNumber" class="bit-pin-pct @Classes?.PercentNumber">
+        <div style="@Styles?.PercentNumber" class="bit-prb-pct @Classes?.PercentNumber">
             @string.Format(PercentNumberFormat, Normalize(Percent))
         </div>
     }
 
-    <div style="@($"height: {Height}px;") @Styles?.BarContainer" class="bit-pin-bcn @Classes?.BarContainer">
-        <div style="@Styles?.Track" class="bit-pin-trc @Classes?.Track"></div>
-        <div class="bit-pin-bar @(Indeterminate ? "bit-pin-ind" : null) @Classes?.Bar"
+    <div style="@($"height: {Height}px;") @Styles?.BarContainer" class="bit-prb-bcn @Classes?.BarContainer">
+        <div style="@Styles?.Track" class="bit-prb-trc @Classes?.Track"></div>
+        <div class="bit-prb-bar @(Indeterminate ? "bit-prb-ind" : null) @Classes?.Bar"
              role="progressbar"
              aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
              aria-valuetext="@AriaValueText"
@@ -48,7 +48,7 @@
     }
     else if (Description.HasValue())
     {
-        <div style="@Styles?.Description" class="bit-pin-des @Classes?.Description" id="@_descriptionId">
+        <div style="@Styles?.Description" class="bit-prb-des @Classes?.Description" id="@_descriptionId">
             @Description
         </div>
     }

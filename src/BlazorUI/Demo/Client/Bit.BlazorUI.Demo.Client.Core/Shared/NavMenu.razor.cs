@@ -7,8 +7,8 @@ public partial class NavMenu : IDisposable
     private string _searchText = string.Empty;
     private List<BitNavItem> _flatNavItemList = default!;
     private List<BitNavItem> _filteredNavItems = default!;
-    private readonly List<BitNavItem> _allNavItems = new()
-    {
+    private readonly List<BitNavItem> _allNavItems =
+    [
         new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
         new()
@@ -96,7 +96,7 @@ public partial class NavMenu : IDisposable
             Text = "Progress",
             ChildItems =
             [
-                new() { Text = "ProgressIndicator", Url = "/components/progressindicator", AdditionalUrls = ["/components/progress-indicator"] },
+                new() { Text = "ProgressBar", Url = "/components/progressbar", AdditionalUrls = ["/components/progressindicator", "/components/progress-indicator"], Description = "ProgressIndicator" },
                 new() { Text = "Shimmer", Url = "/components/shimmer", Description = "Skeleton" },
                 new() { Text = "Spinner", Url = "/components/spinner", Description = "Busy, Waiting, Loading" },
                 new() { Text = "Loading", Url = "/components/loading" }
@@ -142,7 +142,7 @@ public partial class NavMenu : IDisposable
         },
         new() { Text = "Iconography", Url = "/iconography" },
         new() { Text = "Theming", Url = "/theming" },
-    };
+    ];
 
 
     [Inject] public NavManuService _navMenuService { get; set; } = default!;
