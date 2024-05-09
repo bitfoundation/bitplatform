@@ -3,11 +3,11 @@
 <div>
     @if (string.IsNullOrEmpty(message) is false)
     {
-        <BitMessageBar Class="form-message-bar"
-                       MessageBarType="messageType"
-                       OnDismiss="() => message = null">
+        <BitMessage Class="form-message-bar"
+                    Severity="messageSeverity"
+                    OnDismiss="() => message = null">
             @message
-        </BitMessageBar>
+        </BitMessage>
     }
 
     <BitTypography Variant="BitTypographyVariant.H2">

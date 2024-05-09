@@ -11,7 +11,7 @@ public partial class SignUpPage
     private bool isLoading;
     private bool isSignedUp;
     private string? signUpMessage;
-    private BitMessageBarType signUpMessageType;
+    private BitSeverity signUpMessageSeverity;
     private SignUpRequestDto signUpModel = new();
 
     private async Task DoSignUp()
@@ -22,7 +22,7 @@ public partial class SignUpPage
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
-            signUpMessageType = BitMessageBarType.Error;
+            signUpMessageSeverity = BitSeverity.Error;
             signUpMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
             return;
         }
@@ -41,13 +41,13 @@ public partial class SignUpPage
         }
         catch (ResourceValidationException e)
         {
-            signUpMessageType = BitMessageBarType.Error;
+            signUpMessageSeverity = BitSeverity.Error;
             signUpMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
         }
         catch (KnownException e)
         {
             signUpMessage = e.Message;
-            signUpMessageType = BitMessageBarType.Error;
+            signUpMessageSeverity = BitSeverity.Error;
         }
         finally
         {
@@ -71,13 +71,13 @@ public partial class SignUpPage
 
             await identityController.SendConfirmationEmail(sendConfirmationEmailRequest, CurrentCancellationToken);
 
-            signUpMessageType = BitMessageBarType.Success;
+            signUpMessageSeverity = BitSeverity.Success;
             signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
         }
         catch (KnownException e)
         {
             signUpMessage = e.Message;
-            signUpMessageType = BitMessageBarType.Error;
+            signUpMessageSeverity = BitSeverity.Error;
         }
         finally
         {
