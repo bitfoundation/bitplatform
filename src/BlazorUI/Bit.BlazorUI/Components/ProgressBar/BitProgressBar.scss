@@ -1,12 +1,12 @@
 ﻿@import "../../Styles/functions.scss";
 
-.bit-pin {
+.bit-prb {
     font-weight: 400;
     position: relative;
     font-size: spacing(1.75);
     font-family: $typography-font-family;
 
-    @keyframes bit-pin-animation {
+    @keyframes bit-prb-animation {
         0% {
             inset-inline-start: -100%;
             transform: translateX(100%);
@@ -19,7 +19,7 @@
     }
 }
 
-.bit-pin-lbl {
+.bit-prb-lbl {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -28,45 +28,45 @@
     color: $color-foreground-primary;
 }
 
-.bit-pin-pct {
+.bit-prb-pct {
     top: 0;
     position: absolute;
     inset-inline-end: 0;
     color: $color-foreground-primary;
 }
 
-.bit-pin-bcn {
+.bit-prb-bcn {
     position: relative;
     overflow: hidden;
 }
 
-.bit-pin-trc {
+.bit-prb-trc {
     width: 100%;
     height: inherit;
     position: absolute;
     background-color: $color-background-secondary;
 }
 
-.bit-pin-bar {
+.bit-prb-bar {
     width: 0;
     height: inherit;
     position: absolute;
     transition: width 0.15s linear 0s;
-    background-color: var(--bit-pin-bar-color);
+    background-color: var(--bit-prb-bar-color);
 }
 
-.bit-pin-des {
+.bit-prb-des {
     font-size: spacing(1.5);
     line-height: spacing(2.25);
     color: $color-foreground-secondary;
 }
 
 
-.bit-pin-ind {
+.bit-prb-ind {
     width: 0;
     min-width: 33%;
     position: absolute;
     transition: width 0.3s ease 0s;
-    animation: 3s ease 0s infinite normal none running bit-pin-animation;
-    background: linear-gradient(to right, $color-background-secondary 0%, var(--bit-pin-bar-color) 50%, $color-background-secondary 100%);
+    animation: 3s ease 0s infinite normal none running bit-prb-animation;
+    background: linear-gradient(to right, $color-background-secondary 0%, var(--bit-prb-bar-color) 50%, $color-background-secondary 100%);
 }
