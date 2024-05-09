@@ -34,7 +34,7 @@
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
         <!--/+:msbuild-conditional:noEmit -->
         <AndroidStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</AndroidStripILAfterAOT>
-        <RunAOTCompilation Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == ''">false</RunAOTCompilation>
+        <RunAOTCompilation Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</RunAOTCompilation>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -44,8 +44,8 @@
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
         <!--/+:msbuild-conditional:noEmit -->
-        <UseInterpreter Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == '' or '$(sample)' == 'Admin' or '$(sample)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == '' or '$(sample)' == 'Admin' or '$(sample)' == ''">false</PublishAot>
+        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' OR '$(sample)' == 'Admin' OR '$(sample)' == ''">True</UseInterpreter>
+        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' OR '$(sample)' == 'Admin' OR '$(sample)' == ''">false</PublishAot>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -59,8 +59,8 @@
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
         <!--/+:msbuild-conditional:noEmit -->
-        <UseInterpreter Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == '' or '$(sample)' == 'Admin' or '$(sample)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == '' or '$(sample)' == 'Admin' or '$(sample)' == ''">false</PublishAot>
+        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' OR '$(sample)' == 'Admin' OR '$(sample)' == ''">True</UseInterpreter>
+        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' OR '$(sample)' == 'Admin' OR '$(sample)' == ''">false</PublishAot>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 

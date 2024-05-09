@@ -16,7 +16,7 @@
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
-        <WasmBuildNative Condition=" '$(offlineDb)' == 'true' or '$(offlineDb)' == ''">true</WasmBuildNative>
+        <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -52,7 +52,7 @@
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->
-    <ItemGroup Condition=" '$(sample)' == 'Admin'  or '$(sample)' == ''">
+    <ItemGroup Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->

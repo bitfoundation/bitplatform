@@ -307,7 +307,7 @@
                 {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
-                        "src/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
                     ]
                 },
                 {
