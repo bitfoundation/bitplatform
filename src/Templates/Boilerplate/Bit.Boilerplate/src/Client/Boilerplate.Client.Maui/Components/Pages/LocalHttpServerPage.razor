@@ -1,0 +1,19 @@
+﻿@code {
+    [Inject] public IStringLocalizer<AppStrings> Localizer { get; set; } = default!;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <title>@Localizer[nameof(AppStrings.LocalHttpServerTitle)]</title>
+</head>
+<body dir="@(CultureInfo.CurrentCulture.TextInfo.IsRightToLeft ? "rtl" : null)" style="width:100%; height:100%; margin:0; padding:0; background-color:#FCFCFC; font-family:Arial,sans-serif;">
+    <main style="padding: 6% 4%;">
+        <h1 class="hero-section-title">@Localizer[nameof(AppStrings.LocalHttpServerTitle)]</h1>
+        <div class="hero-section-desc">@Localizer[nameof(AppStrings.LocalHttpServerWelcomeMessage)]</div>
+    </main>
+</body>
+</html>

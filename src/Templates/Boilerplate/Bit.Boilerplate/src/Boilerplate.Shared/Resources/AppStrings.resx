@@ -595,6 +595,12 @@ Please confirm your email by clicking on the link.</value>
     <data name="AboutTitle" xml:space="preserve">
     <value>About</value>
   </data>
+    <data name="LocalHttpServerTitle" xml:space="preserve">
+    <value>Boilerplate</value>
+  </data>
+    <data name="LocalHttpServerWelcomeMessage" xml:space="preserve">
+    <value>You can now return to the app.</value>
+  </data>
     <!--#if (sample == "Todo") -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Add a todo</value>

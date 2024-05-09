@@ -18,7 +18,7 @@ public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, 
 
             if (response.IsSuccessStatusCode is false && response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
             {
-                if (response.Headers.TryGetValues("Request-Id", out IEnumerable<string>? values) && values is not null && values.Any())
+                if (response.Headers.TryGetValues(HeaderName.RequestId, out IEnumerable<string>? values) && values is not null && values.Any())
                 {
                     RestErrorInfo restError = (await response!.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken))!;
 

@@ -21,7 +21,7 @@ public static partial class MauiProgram
 
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
 
-        services.TryAddTransient(sp =>
+        services.TryAddSingleton(sp =>
         {
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
@@ -68,6 +68,9 @@ public static partial class MauiProgram
         services.TryAddTransient<IStorageService, MauiStorageService>();
         services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
+#if Windows // You can register local http server for other platforms if needed
+        services.TryAddSingleton<LocalHttpServer>();
+#endif
 
 #if ANDROID
         services.AddClientMauiProjectAndroidServices();

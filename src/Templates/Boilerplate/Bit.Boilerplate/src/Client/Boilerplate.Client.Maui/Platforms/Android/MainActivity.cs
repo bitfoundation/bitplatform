@@ -8,7 +8,7 @@ using Java.Net;
 namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [IntentFilter([Intent.ActionView],
-                        DataScheme = "https",
+                        DataSchemes = ["https", "http"],
                         DataHost = "bp.bitplatform.dev",
                         DataPathPrefix = "/",
                         AutoVerify = true,
