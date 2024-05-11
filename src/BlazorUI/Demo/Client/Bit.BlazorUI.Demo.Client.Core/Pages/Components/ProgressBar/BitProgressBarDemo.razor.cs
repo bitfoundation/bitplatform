@@ -214,13 +214,13 @@ public partial class BitProgressBarDemo
                 Height=""10"" />
 
 
-<BitProgressBar Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
-                                   Track = ""background-color: green;"" })""
+<BitProgressBar Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"",
+                                  Track = ""background-color: green;"" })""
                 Height=""10""
                 Indeterminate />
 
 <BitProgressBar Classes=""@(new() { Bar = ""custom-bar"",
-                                          Track = ""custom-track""})""
+                                   Track = ""custom-track""})""
                 Percent=""69""
                 Height=""10"" />";
 
