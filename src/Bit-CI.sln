@@ -184,7 +184,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Iac", "Template
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{62253EDF-1D35-4184-8E2B-3CC1C419F2C0}"
 	ProjectSection(SolutionItems) = preProject
-		..\.github\workflows\adminpanel.cd.yml = ..\.github\workflows\adminpanel.cd.yml
+		..\.github\workflows\admin-sample.cd.yml = ..\.github\workflows\admin-sample.cd.yml
 		..\.github\workflows\bit.ci.yml = ..\.github\workflows\bit.ci.yml
 		..\.github\workflows\bit.full.ci.yml = ..\.github\workflows\bit.full.ci.yml
 		..\.github\workflows\blazorui.demo.cd.yml = ..\.github\workflows\blazorui.demo.cd.yml
@@ -192,7 +192,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		..\.github\workflows\platform.website.cd.yml = ..\.github\workflows\platform.website.cd.yml
 		..\.github\workflows\prerelease.nuget.org.yml = ..\.github\workflows\prerelease.nuget.org.yml
 		..\.github\workflows\sales.website.cd.yml = ..\.github\workflows\sales.website.cd.yml
-		..\.github\workflows\todosample.cd.yml = ..\.github\workflows\todosample.cd.yml
+		..\.github\workflows\todo-sample.cd.yml = ..\.github\workflows\todo-sample.cd.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{D7242830-A91D-4729-BF2D-B1E7E141953E}"

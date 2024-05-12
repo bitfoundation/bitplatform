@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
-        <Exec Condition="!Exists('node_modules/.bin/sass')" Command="npm install sass@1.72.0 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition="!Exists('node_modules/.bin/sass')" Command="npm install sass@1.77.1 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.assets.scss:wwwroot/styles/bit.blazorui.assets.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
