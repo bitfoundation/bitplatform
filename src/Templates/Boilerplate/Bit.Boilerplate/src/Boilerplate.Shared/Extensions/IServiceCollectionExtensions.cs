@@ -5,7 +5,7 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection AddSharedProjectServices(this IServiceCollection services)
     {
         // Services being registered here can get injected everywhere (Api, Web, Android, iOS, Windows and macOS)
-
+        services.TryAddSingleton(services);
         services.TryAddTransient<IDateTimeProvider, DateTimeProvider>();
         services.TryAddTransient<CultureInfoManager>();
 

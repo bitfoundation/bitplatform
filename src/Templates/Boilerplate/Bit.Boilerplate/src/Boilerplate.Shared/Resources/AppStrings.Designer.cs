@@ -755,24 +755,6 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Boilerplate.
-        /// </summary>
-        public static string LocalHttpServerTitle {
-            get {
-                return ResourceManager.GetString("LocalHttpServerTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You can now return to the app..
-        /// </summary>
-        public static string LocalHttpServerWelcomeMessage {
-            get {
-                return ResourceManager.GetString("LocalHttpServerWelcomeMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to MaxLengthAttribute must have a Length value that is greater than zero. Use MaxLength() without parameters to indicate that the string or array can have the maximum allowable length..
         /// </summary>
         public static string MaxLengthAttribute_InvalidMaxLength {

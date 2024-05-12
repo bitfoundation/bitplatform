@@ -16,7 +16,7 @@ public partial class ServerExceptionHandler : IExceptionHandler
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception e, CancellationToken cancellationToken)
     {
         // Using the Request-Id header, one can find the log for server-related exceptions
-        httpContext.Response.Headers.Append(HeaderName.RequestId, Activity.Current?.Id ?? httpContext.TraceIdentifier);
+        httpContext.Response.Headers.Append(HeaderNames.RequestId, Activity.Current?.Id ?? httpContext.TraceIdentifier);
 
         var exception = UnWrapException(e);
         var knownException = exception as KnownException;

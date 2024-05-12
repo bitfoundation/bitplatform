@@ -4,7 +4,6 @@ using Maui.AppStores;
 using Maui.InAppReviews;
 using Maui.Android.InAppUpdates;
 using Boilerplate.Client.Core;
-using Boilerplate.Client.Maui.Services;
 #if IOS || MACCATALYST
 using UIKit;
 using WebKit;
@@ -71,10 +70,6 @@ public static partial class MauiProgram
         SetupBlazorWebView();
 
         var mauiApp = builder.Build();
-
-#if Windows // You can run local http server for other platforms if needed
-        mauiApp.Services.GetRequiredService<LocalHttpServer>().Start(builder.Services);
-#endif
 
         return mauiApp;
     }

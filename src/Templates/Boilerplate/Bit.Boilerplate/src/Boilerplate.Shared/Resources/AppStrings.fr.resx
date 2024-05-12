@@ -714,10 +714,4 @@
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>
   </data>
-    <data name="LocalHttpServerTitle" xml:space="preserve">
-    <value>Boilerplate</value>
-  </data>
-    <data name="LocalHttpServerWelcomeMessage" xml:space="preserve">
-    <value>Vous pouvez maintenant revenir à l'application.</value>
-  </data>
 </root>

@@ -36,7 +36,7 @@ public static partial class Program
         services.TryAddTransient<IStorageService, WindowsStorageService>();
         services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
-        services.TryAddSingleton<LocalHttpServer>();
+        services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
 
         services.AddLogging(loggingBuilder =>
         {

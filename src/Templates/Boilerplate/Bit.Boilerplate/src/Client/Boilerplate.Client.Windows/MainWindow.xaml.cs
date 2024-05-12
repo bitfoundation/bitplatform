@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components.WebView.Wpf;
-using Boilerplate.Client.Windows.Services;
 
 namespace Boilerplate.Client.Windows;
 
@@ -32,7 +31,5 @@ public partial class MainWindow
                 await BlazorWebView.WebView.ExecuteScriptAsync("Blazor.start()");
             };
         };
-
-        BlazorWebView.Services.GetRequiredService<LocalHttpServer>().Start(services);
     }
 }
