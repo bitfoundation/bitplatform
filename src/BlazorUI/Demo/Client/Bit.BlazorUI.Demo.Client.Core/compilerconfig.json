@@ -372,8 +372,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/ProgressIndicator/BitProgressIndicatorDemo.razor.css",
-        "inputFile": "Pages/Components/ProgressIndicator/BitProgressIndicatorDemo.razor.scss",
+        "outputFile": "Pages/Components/ProgressBar/BitProgressBarDemo.razor.css",
+        "inputFile": "Pages/Components/ProgressBar/BitProgressBarDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

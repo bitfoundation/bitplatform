@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitProgressIndicator
+public partial class BitProgressBar
 {
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
@@ -14,12 +14,12 @@ public partial class BitProgressIndicator
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitProgressIndicator.
+    /// Custom CSS classes for different parts of the BitProgressBar.
     /// </summary>
-    [Parameter] public BitProgressIndicatorClassStyles? Classes { get; set; }
+    [Parameter] public BitProgressBarClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Color of the BitProgressIndicator.
+    /// Color of the BitProgressBar.
     /// </summary>
     [Parameter] public string? Color { get; set; }
 
@@ -34,7 +34,7 @@ public partial class BitProgressIndicator
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// Height of the BitProgressIndicator.
+    /// Height of the BitProgressBar.
     /// </summary>
     [Parameter] public int Height { get; set; } = 2;
 
@@ -44,12 +44,12 @@ public partial class BitProgressIndicator
     [Parameter] public bool Indeterminate { get; set; }
 
     /// <summary>
-    /// Label to display above the BitProgressIndicator.
+    /// Label to display above the BitProgressBar.
     /// </summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>
-    /// Custom label template to display above the BitProgressIndicator.
+    /// Custom label template to display above the BitProgressBar.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
@@ -69,12 +69,12 @@ public partial class BitProgressIndicator
     [Parameter] public bool ShowPercentNumber { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitProgressIndicator.
+    /// Custom CSS styles for different parts of the BitProgressBar.
     /// </summary>
-    [Parameter] public BitProgressIndicatorClassStyles? Styles { get; set; }
+    [Parameter] public BitProgressBarClassStyles? Styles { get; set; }
 
 
-    protected override string RootElementClass => "bit-pin";
+    protected override string RootElementClass => "bit-prb";
 
     protected override void RegisterCssClasses()
     {
@@ -88,8 +88,8 @@ public partial class BitProgressIndicator
 
     protected override Task OnInitializedAsync()
     {
-        _labelId = $"BitProgressIndicator-{UniqueId}-label";
-        _descriptionId = $"BitProgressIndicator-{UniqueId}-description";
+        _labelId = $"BitProgressBar-{UniqueId}-label";
+        _descriptionId = $"BitProgressBar-{UniqueId}-description";
 
         return base.OnInitializedAsync();
     }
@@ -100,7 +100,7 @@ public partial class BitProgressIndicator
     {
         StringBuilder sb = new();
 
-        sb.Append($"--bit-pin-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-primary-main)")};");
+        sb.Append($"--bit-prb-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-primary-main)")};");
 
         sb.Append(Styles?.Bar);
 

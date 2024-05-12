@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.ProgressIndicator;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.ProgressBar;
 
-public partial class BitProgressIndicatorDemo
+public partial class BitProgressBarDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -14,25 +14,25 @@ public partial class BitProgressIndicatorDemo
         new()
         {
             Name = "Classes",
-            Type = "BitProgressIndicatorClassStyles?",
+            Type = "BitProgressBarClassStyles?",
             LinkType = LinkType.Link,
-            Href = "#progressIndicator-class-styles",
+            Href = "#progressBar-class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitProgressIndicator.",
+            Description = "Custom CSS classes for different parts of the BitProgressBar.",
         },
         new()
         {
             Name = "Color",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Color of the BitProgressIndicator.",
+            Description = "Color of the BitProgressBar.",
         },
         new()
         {
             Name = "Height",
             Type = "int",
             DefaultValue = "2",
-            Description = "Height of the BitProgressIndicator.",
+            Description = "Height of the BitProgressBar.",
         },
         new()
         {
@@ -60,14 +60,14 @@ public partial class BitProgressIndicatorDemo
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Label to display above the BitProgressIndicator.",
+            Description = "Label to display above the BitProgressBar.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom label template to display above the BitProgressIndicator.",
+            Description = "Custom label template to display above the BitProgressBar.",
         },
         new()
         {
@@ -93,11 +93,11 @@ public partial class BitProgressIndicatorDemo
         new()
         {
             Name = "Styles",
-            Type = "BitProgressIndicatorClassStyles?",
+            Type = "BitProgressBarClassStyles?",
             LinkType = LinkType.Link,
-            Href = "#progressIndicator-class-styles",
+            Href = "#progressBar-class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS Styles for different parts of the BitProgressIndicator.",
+            Description = "Custom CSS Styles for different parts of the BitProgressBar.",
         }
     ];
 
@@ -105,8 +105,8 @@ public partial class BitProgressIndicatorDemo
     [
         new()
         {
-            Id = "progressIndicator-class-styles",
-            Title = "BitProgressIndicatorClassStyles",
+            Id = "progressBar-class-styles",
+            Title = "BitProgressBarClassStyles",
             Parameters =
             [
                new()
@@ -114,49 +114,49 @@ public partial class BitProgressIndicatorDemo
                    Name = "Root",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the root element of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the root element of the BitProgressBar."
                },
                new()
                {
                    Name = "Label",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the label of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the label of the BitProgressBar."
                },
                new()
                {
                    Name = "PercentNumber",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the percent number of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the percent number of the BitProgressBar."
                },
                new()
                {
                    Name = "BarContainer",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the bar container of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the bar container of the BitProgressBar."
                },
                new()
                {
                    Name = "Track",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the track of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the track of the BitProgressBar."
                },
                new()
                {
                    Name = "Bar",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the bar of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the bar of the BitProgressBar."
                },
                new()
                {
                    Name = "Description",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the description of the BitProgressIndicator."
+                   Description = "Custom CSS classes/styles for the description of the BitProgressBar."
                }
             ]
         }
@@ -164,30 +164,30 @@ public partial class BitProgressIndicatorDemo
 
 
     private readonly string example1RazorCode = @"
-<BitProgressIndicator Label=""Basic ProgressIndicator""
+<BitProgressBar Label=""Basic ProgressBar""
                       Description=""Example description""
                       Percent=""42"" />";
 
     private readonly string example2RazorCode = @"
-<BitProgressIndicator Percent=""69"" Height=""10"" />";
+<BitProgressBar Percent=""69"" Height=""10"" />";
 
     private readonly string example3RazorCode = @"
-<BitProgressIndicator Label=""Show Percent Number""
+<BitProgressBar Label=""Show Percent Number""
                       Percent=""85.69""
                       ShowPercentNumber />
 
-<BitProgressIndicator Label=""Percent Number Format""
+<BitProgressBar Label=""Percent Number Format""
                       Percent=""85.69""
                       PercentNumberFormat=""{0:F2} %""
                       ShowPercentNumber />";
 
     private readonly string example4RazorCode = @"
-<BitProgressIndicator Indeterminate />";
+<BitProgressBar Indeterminate />";
 
     private readonly string example5RazorCode = @"
-<BitProgressIndicator Color=""#c10606"" Percent=""69"" />
+<BitProgressBar Color=""#c10606"" Percent=""69"" />
 
-<BitProgressIndicator Color=""#ffba17"" Indeterminate />";
+<BitProgressBar Color=""#ffba17"" Indeterminate />";
 
     private readonly string example6RazorCode = @"
 <style>
@@ -207,29 +207,29 @@ public partial class BitProgressIndicatorDemo
     }
 </style>
 
-<BitProgressIndicator Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" Indeterminate />
+<BitProgressBar Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" Indeterminate />
 
-<BitProgressIndicator Class=""custom-class""
+<BitProgressBar Class=""custom-class""
                       Percent=""69""
                       Height=""10"" />
 
 
-<BitProgressIndicator Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
-                                         Track = ""background-color: green;"" })""
+<BitProgressBar Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
+                                   Track = ""background-color: green;"" })""
                       Height=""10""
                       Indeterminate />
 
-<BitProgressIndicator Classes=""@(new() { Bar = ""custom-bar"",
+<BitProgressBar Classes=""@(new() { Bar = ""custom-bar"",
                                           Track = ""custom-track""})""
                       Percent=""69""
                       Height=""10"" />";
 
     private readonly string example7RazorCode = @"
-<BitProgressIndicator Dir=""BitDir.Rtl""
+<BitProgressBar Dir=""BitDir.Rtl""
                       Height=""10""
                       Indeterminate />
 
-<BitProgressIndicator Label=""لیبل تست""
+<BitProgressBar Label=""لیبل تست""
                       Description=""توضیحات تست""
                       Dir=""BitDir.Rtl""
                       Percent=""69""
