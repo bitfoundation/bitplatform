@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(api)' == 'true' OR '$(api)' == '' ">
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.7.0" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.8.0" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.4" />
