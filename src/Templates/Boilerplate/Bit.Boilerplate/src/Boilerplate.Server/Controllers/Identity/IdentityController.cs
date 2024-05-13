@@ -65,6 +65,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 var deleteResult = await userManager.DeleteAsync(existingUser);
                 if (!deleteResult.Succeeded)
                     throw new ResourceValidationException(deleteResult.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+                userToAdd.EmailTokenRequestedOn = existingUser.EmailTokenRequestedOn;
+                userToAdd.PhoneNumberTokenRequestedOn = existingUser.PhoneNumberTokenRequestedOn;
             }
         }
 
@@ -128,7 +130,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 {   nameof(EmailTokenTemplate.Model),
                     new SendEmailTokenModel
                     {
-                        Token = token
+                        Token = token,
+                        Email = request.Email
                     }
                 },
                 { nameof(HttpContext), HttpContext }
@@ -162,18 +165,16 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{body.Email}", body.Token!);
 
-            if (tokenIsValid)
-            {
-                var userEmailStore = (IUserEmailStore<User>)userStore;
-                await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
-                var result = await userManager.UpdateAsync(user);
-                if (result.Succeeded is false)
-                    throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-            }
-            else
+            if (tokenIsValid is false)
             {
                 throw new BadRequestException();
             }
+
+            var userEmailStore = (IUserEmailStore<User>)userStore;
+            await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
+            var result = await userManager.UpdateAsync(user);
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
     }
 
@@ -216,17 +217,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{body.PhoneNumber}", body.Token!);
 
-            if (tokenIsValid)
-            {
-                await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
-                var result = await userManager.UpdateAsync(user);
-                if (result.Succeeded is false)
-                    throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-            }
-            else
+            if (tokenIsValid is false)
             {
                 throw new BadRequestException();
             }
+            await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
+            var result = await userManager.UpdateAsync(user);
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
     }
 
@@ -350,7 +348,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                                                    .Body(body, isHtml: true)
                                                    .SendAsync(cancellationToken);
 
-                user.TwoFactorTokenRequestedOn = DateTimeOffset.Now;
+                user.ResetPasswordTokenRequestedOn = DateTimeOffset.Now;
                 var result = await userManager.UpdateAsync(user);
                 if (result.Succeeded is false)
                     throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
@@ -364,7 +362,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
                 // TODO: Send token through SMS
 
-                user.PhoneNumberTokenRequestedOn = DateTimeOffset.Now;
+                user.ResetPasswordTokenRequestedOn = DateTimeOffset.Now;
                 var result = await userManager.UpdateAsync(user);
                 if (result.Succeeded is false)
                     throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());

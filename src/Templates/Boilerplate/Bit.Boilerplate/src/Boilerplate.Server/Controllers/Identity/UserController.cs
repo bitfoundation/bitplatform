@@ -130,16 +130,13 @@ public partial class UserController : AppControllerBase, IUserController
 
         if (tokenIsVerified)
         {
-            await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, body.Email, cancellationToken);
-            var result = await userManager.UpdateAsync(user!);
-            if (result.Succeeded is false)
-                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-        }
-        else
-        {
             throw new BadRequestException();
         }
 
+        await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, body.Email, cancellationToken);
+        var result = await userManager.UpdateAsync(user!);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
