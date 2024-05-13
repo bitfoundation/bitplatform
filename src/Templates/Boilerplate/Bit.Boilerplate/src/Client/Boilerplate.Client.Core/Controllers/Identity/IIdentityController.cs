@@ -9,13 +9,13 @@ public interface IIdentityController : IAppController
     Task SignUp(SignUpRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendConfirmEmailToken(SendConfirmEmailTokenRequestDto body, CancellationToken cancellationToken = default);
+    Task SendConfirmEmailToken(SendEmailTokenRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task ConfirmEmail(ConfirmEmailRequestDto body, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task SendConfirmPhoneNumberToken(SendConfirmPhoneNumberTokenRequestDto body, CancellationToken cancellationToken = default);
+    Task SendConfirmPhoneNumberToken(SendPhoneNumberTokenRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task ConfirmPhoneNumber(ConfirmPhoneNumberRequestDto body, CancellationToken cancellationToken);

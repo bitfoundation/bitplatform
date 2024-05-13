@@ -67,7 +67,7 @@ public partial class SignUpPage
 
         try
         {
-            var sendConfirmEmailTokenRequest = new SendConfirmEmailTokenRequestDto { Email = signUpModel.Email };
+            var sendConfirmEmailTokenRequest = new SendEmailTokenRequestDto { Email = signUpModel.Email };
 
             await identityController.SendConfirmEmailToken(sendConfirmEmailTokenRequest, CurrentCancellationToken);
 

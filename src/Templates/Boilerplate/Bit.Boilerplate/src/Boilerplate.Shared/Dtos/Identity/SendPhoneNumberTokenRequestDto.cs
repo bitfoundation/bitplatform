@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class SendConfirmPhoneNumberTokenRequestDto
+public class SendPhoneNumberTokenRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Phone(ErrorMessage = nameof(AppStrings.PhoneAttribute_Invalid))]

@@ -34,7 +34,13 @@ public class IdentitySettings
     public bool PasswordRequireUppercase { get; set; }
     public bool PasswordRequireLowercase { get; set; }
     public bool RequireUniqueEmail { get; set; }
+    /// <summary>
+    /// To either confirm and/or change email
+    /// </summary>
     public TimeSpan EmailTokenRequestResendDelay { get; set; }
+    /// <summary>
+    /// To either confirm and/or change phone number
+    /// </summary>
     public TimeSpan PhoneNumberTokenRequestResendDelay { get; set; }
     public TimeSpan ResetPasswordTokenRequestResendDelay { get; set; }
     public TimeSpan TwoFactorTokenRequestResendDelay { get; set; }

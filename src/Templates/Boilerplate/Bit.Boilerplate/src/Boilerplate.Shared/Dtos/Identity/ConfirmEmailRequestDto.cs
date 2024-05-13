@@ -12,3 +12,8 @@ public class ConfirmEmailRequestDto
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? Token { get; set; }
 }
+
+public class UpdateEmailRequestDto : ConfirmEmailRequestDto
+{
+    // This class needs the same set of properties as ConfirmEmailRequestDto
+}

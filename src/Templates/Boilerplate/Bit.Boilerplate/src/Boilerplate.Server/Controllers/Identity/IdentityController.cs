@@ -33,8 +33,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
-    [AutoInject] private UrlEncoder urlEncoder = default!;
-
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -52,7 +50,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
         //#endif
 
-        var existingUser = await FindUser(signUpRequest.UserName, signUpRequest.Email, signUpRequest.PhoneNumber, cancellationToken, throwErrorOnNotFound: false);
+        var existingUser = await FindUser(signUpRequest.UserName, signUpRequest.Email, signUpRequest.PhoneNumber, throwErrorOnNotFound: false, cancellationToken);
 
         var userToAdd = new User { };
 
@@ -67,22 +65,22 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 var deleteResult = await userManager.DeleteAsync(existingUser);
                 if (!deleteResult.Succeeded)
                     throw new ResourceValidationException(deleteResult.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
-                if (string.IsNullOrEmpty(signUpRequest.Email) is false)
-                {
-                    userToAdd.EmailTokenRequestedOn = existingUser.EmailTokenRequestedOn;
-                }
-                if (string.IsNullOrEmpty(signUpRequest.PhoneNumber) is false)
-                {
-                    userToAdd.PhoneNumberTokenRequestedOn = existingUser.PhoneNumberTokenRequestedOn;
-                }
             }
         }
 
         userToAdd.LockoutEnabled = true;
 
         await userStore.SetUserNameAsync(userToAdd, signUpRequest.UserName!, cancellationToken);
-        await ((IUserEmailStore<User>)userStore).SetEmailAsync(userToAdd, signUpRequest.Email!, cancellationToken);
-        await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(userToAdd, signUpRequest.PhoneNumber!, cancellationToken);
+
+        if (string.IsNullOrEmpty(signUpRequest.Email) is false)
+        {
+            await ((IUserEmailStore<User>)userStore).SetEmailAsync(userToAdd, signUpRequest.Email!, cancellationToken);
+        }
+
+        if (string.IsNullOrEmpty(signUpRequest.PhoneNumber) is false)
+        {
+            await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(userToAdd, signUpRequest.PhoneNumber!, cancellationToken);
+        }
 
         var result = await userManager.CreateAsync(userToAdd, signUpRequest.Password!);
 
@@ -103,7 +101,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task SendConfirmEmailToken(SendConfirmEmailTokenRequestDto request, CancellationToken cancellationToken)
+    public async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound), request.Email!]);
@@ -114,7 +112,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await SendConfirmEmailToken(request, user, cancellationToken);
     }
 
-    private async Task SendConfirmEmailToken(SendConfirmEmailTokenRequestDto request, User user, CancellationToken cancellationToken)
+    private async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, User user, CancellationToken cancellationToken)
     {
         var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.IdentitySettings.EmailTokenRequestResendDelay;
 
@@ -180,7 +178,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task SendConfirmPhoneNumberToken(SendConfirmPhoneNumberTokenRequestDto request, CancellationToken cancellationToken)
+    public async Task SendConfirmPhoneNumberToken(SendPhoneNumberTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == request.PhoneNumber!, cancellationToken)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound), request.PhoneNumber!]);
@@ -191,7 +189,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await SendConfirmPhoneNumberToken(request, user, cancellationToken);
     }
 
-    private async Task SendConfirmPhoneNumberToken(SendConfirmPhoneNumberTokenRequestDto request, User user, CancellationToken cancellationToken)
+    private async Task SendConfirmPhoneNumberToken(SendPhoneNumberTokenRequestDto request, User user, CancellationToken cancellationToken)
     {
         var resendDelay = (DateTimeOffset.Now - user.PhoneNumberTokenRequestedOn) - AppSettings.IdentitySettings.PhoneNumberTokenRequestResendDelay;
 
@@ -237,7 +235,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-        var user = await FindUser(signInRequest.UserName, signInRequest.Email, signInRequest.PhoneNumber, cancellationToken, throwErrorOnNotFound: true);
+        var user = await FindUser(signInRequest.UserName, signInRequest.Email, signInRequest.PhoneNumber, throwErrorOnNotFound: true, cancellationToken);
 
         var result = await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
 
@@ -272,7 +270,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         return Empty;
     }
 
-    private async Task<User?> FindUser(string? userName, string? email, string? phoneNumber, CancellationToken cancellationToken, bool throwErrorOnNotFound)
+    private async Task<User?> FindUser(string? userName, string? email, string? phoneNumber, bool throwErrorOnNotFound, CancellationToken cancellationToken)
     {
         User? user = default;
 
@@ -320,7 +318,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SendResetPasswordToken(SendResetPasswordTokenRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await FindUser(request.UserName, request.Email, request.PhoneNumber, cancellationToken, throwErrorOnNotFound: true)
+        var user = await FindUser(request.UserName, request.Email, request.PhoneNumber, throwErrorOnNotFound: true, cancellationToken)
                     ?? throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserNotFound), request.Email!));
 
         var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.IdentitySettings.ResetPasswordTokenRequestResendDelay;
@@ -377,7 +375,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest, CancellationToken cancellationToken)
     {
-        var user = await FindUser(resetPasswordRequest.UserName, resetPasswordRequest.Email, resetPasswordRequest.PhoneNumber, cancellationToken, throwErrorOnNotFound: true);
+        var user = await FindUser(resetPasswordRequest.UserName, resetPasswordRequest.Email, resetPasswordRequest.PhoneNumber, throwErrorOnNotFound: true, cancellationToken);
 
         bool tokenIsValid = false;
 
@@ -406,9 +404,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SendTwoFactorToken(SignInRequestDto signInRequest, CancellationToken cancellationToken)
     {
-        var user = await FindUser(signInRequest.UserName, signInRequest.Email, signInRequest.PhoneNumber, cancellationToken, throwErrorOnNotFound: true);
+        var user = await FindUser(signInRequest.UserName, signInRequest.Email, signInRequest.PhoneNumber, throwErrorOnNotFound: true, cancellationToken);
 
-        var signInResult = await signInManager.PasswordSignInAsync(user.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+        var signInResult = await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
 
         if (signInResult.IsLockedOut)
             throw new BadRequestException(Localizer.GetString(nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")));

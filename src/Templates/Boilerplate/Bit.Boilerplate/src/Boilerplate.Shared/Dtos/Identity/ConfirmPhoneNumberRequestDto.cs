@@ -11,3 +11,8 @@ public class ConfirmPhoneNumberRequestDto
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? Token { get; set; }
 }
+
+public class UpdatePhoneNumberRequestDto : ConfirmPhoneNumberRequestDto
+{
+    // This class needs the same set of properties as ConfirmPhoneNumberRequestDto
+}

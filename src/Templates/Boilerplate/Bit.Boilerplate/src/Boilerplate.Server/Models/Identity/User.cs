@@ -16,8 +16,14 @@ public class User : IdentityUser<int>
     [PersonalData]
     public string? ProfileImageName { get; set; }
 
+    /// <summary>
+    /// To either confirm and/or change email
+    /// </summary>
     public DateTimeOffset? EmailTokenRequestedOn { get; set; }
 
+    /// <summary>
+    /// To either confirm and/or change phone number
+    /// </summary>
     public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
 
     public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
