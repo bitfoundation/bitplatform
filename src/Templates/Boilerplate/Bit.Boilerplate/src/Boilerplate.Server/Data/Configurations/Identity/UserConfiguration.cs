@@ -21,7 +21,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             NormalizedUserName = userName.ToUpperInvariant(),
             Email = email,
             NormalizedEmail = email.ToUpperInvariant(),
-            ConfirmationEmailRequestedOn = new DateTime(2023,1,1),
+            EmailTokenRequestedOn = new DateTime(2023,1,1),
             PhoneNumber = "+31684207362",
             PhoneNumberConfirmed = true,
             SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",

@@ -9,19 +9,19 @@ public interface IIdentityController : IAppController
     Task SignUp(SignUpRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendConfirmationEmail(SendConfirmationEmailRequestDto body, CancellationToken cancellationToken = default);
-
-    [HttpPost]
-    Task SendConfirmationSms(SendConfirmationSmsRequestDto body, CancellationToken cancellationToken = default);
-
-    [HttpPost]
-    Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto body, CancellationToken cancellationToken = default);
+    Task SendConfirmEmailToken(SendConfirmEmailTokenRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task ConfirmEmail(ConfirmEmailRequestDto body, CancellationToken cancellationToken);
 
     [HttpPost]
+    Task SendConfirmPhoneNumberToken(SendConfirmPhoneNumberTokenRequestDto body, CancellationToken cancellationToken = default);
+
+    [HttpPost]
     Task ConfirmPhoneNumber(ConfirmPhoneNumberRequestDto body, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task SendResetPasswordToken(SendResetPasswordTokenRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task ResetPassword(ResetPasswordRequestDto body, CancellationToken cancellationToken = default);

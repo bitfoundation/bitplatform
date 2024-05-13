@@ -72,9 +72,9 @@ namespace Boilerplate.Server.Data.Migrations
                     Gender = table.Column<int>(type: "int", nullable: true),
                     BirthDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     ProfileImageName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConfirmationEmailRequestedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    ConfirmationSmsRequestedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    ResetPasswordEmailRequestedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    EmailTokenRequestedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    PhoneNumberTokenRequestedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    ResetPasswordTokenRequestedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     TwoFactorTokenRequestedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -274,8 +274,8 @@ namespace Boilerplate.Server.Data.Migrations
             migrationBuilder.InsertData(
                 schema: "identity",
                 table: "Users",
-                columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ConfirmationEmailRequestedOn", "ConfirmationSmsRequestedOn", "Email", "EmailConfirmed", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageName", "ResetPasswordEmailRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
-                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "315e1a26-5b3a-4544-8e91-2760cd28e231", new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), null, "test@bitplatform.dev", true, "Boilerplate test account", 2, true, null, "TEST@BITPLATFORM.DEV", "BITPLATFORM", "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", "+31684207362", true, null, null, "959ff4a9-4b07-4cc1-8141-c5fc033daf83", false, null, "bitplatform" });
+                columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ProfileImageName", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
+                values: new object[] { 1, 0, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "315e1a26-5b3a-4544-8e91-2760cd28e231", "test@bitplatform.dev", true, new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)), "Boilerplate test account", 2, true, null, "TEST@BITPLATFORM.DEV", "BITPLATFORM", "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", "+31684207362", true, null, null, null, "959ff4a9-4b07-4cc1-8141-c5fc033daf83", false, null, "bitplatform" });
 
             migrationBuilder.InsertData(
                 table: "Products",

@@ -249,7 +249,7 @@
     <data name="Error" xml:space="preserve">
     <value>Erreur</value>
   </data>
-    <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
+    <data name="ResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de réinitialisation du mot de passe.</value>
   </data>
     <data name="TermsAccepted" xml:space="preserve">
@@ -312,10 +312,10 @@
     <data name="InvalidUsernameOrPassword" xml:space="preserve">
     <value>Nom d'utilisateur ou mot de passe invalide</value>
   </data>
-    <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
+    <data name="EmailTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de confirmation.</value>
   </data>
-    <data name="WaitForConfirmationSmsResendDelay" xml:space="preserve">
+    <data name="PhoneNumberTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé le sms de confirmation. Réessayez dans {0}</value>
   </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
@@ -705,7 +705,7 @@
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>Le jeton 2FA a été généré et envoyé à votre email.</value>
   </data>
-    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <data name="TwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail du token 2FA. Réessayez en {0}.</value>
   </data>
     <data name="Update" xml:space="preserve">

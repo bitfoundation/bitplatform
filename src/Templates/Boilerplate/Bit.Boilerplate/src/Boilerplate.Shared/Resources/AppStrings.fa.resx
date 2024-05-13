@@ -231,7 +231,7 @@
     <data name="Error" xml:space="preserve">
     <value>خطا</value>
   </data>
-    <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
+    <data name="ResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست تنظیم مجدد ایمیل رمز عبور را دارید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="TermsAccepted" xml:space="preserve">
@@ -270,10 +270,10 @@
     <data name="InvalidUsernameOrPassword" xml:space="preserve">
     <value>نام کاربری یا رمز عبور نامعتبر است</value>
   </data>
-    <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
+    <data name="EmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
-    <data name="WaitForConfirmationSmsResendDelay" xml:space="preserve">
+    <data name="PhoneNumberTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا پیامک تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
@@ -589,7 +589,7 @@
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>توکن 2FA تولید و به ایمیل شما ارسال شد.</value>
   </data>
-    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <data name="TwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="Update" xml:space="preserve">

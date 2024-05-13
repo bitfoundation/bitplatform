@@ -240,9 +240,6 @@
     <data name="Error" xml:space="preserve">
     <value>Error</value>
   </data>
-    <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
-    <value>You have already requested the reset password email. Try again in {0}</value>
-  </data>
     <data name="TermsAccepted" xml:space="preserve">
     <value>Is accept terms?</value>
   </data>
@@ -278,12 +275,6 @@
   </data>
     <data name="InvalidUsernameOrPassword" xml:space="preserve">
     <value>Invalid username or password</value>
-  </data>
-    <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
-    <value>You have already requested the confirmation email. Try again in {0}</value>
-  </data>
-    <data name="WaitForConfirmationSmsResendDelay" xml:space="preserve">
-    <value>You have already requested the confirmation sms. Try again in {0}</value>
   </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Your email is already confirmed.</value>
@@ -601,7 +592,16 @@ Please confirm your email by clicking on the link.</value>
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>The 2FA token has been generated and sent to your email.</value>
   </data>
-    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <data name="EmailTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested the confirmation email. Try again in {0}</value>
+  </data>
+    <data name="PhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested the confirmation sms. Try again in {0}</value>
+  </data>
+    <data name="ResetPasswordTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested the reset password email. Try again in {0}</value>
+  </data>
+    <data name="TwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the 2FA token email. Try again in {0}.</value>
   </data>
     <data name="Update" xml:space="preserve">

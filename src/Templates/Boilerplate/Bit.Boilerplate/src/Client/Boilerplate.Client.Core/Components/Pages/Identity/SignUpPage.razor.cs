@@ -67,9 +67,9 @@ public partial class SignUpPage
 
         try
         {
-            var sendConfirmationEmailRequest = new SendConfirmationEmailRequestDto { Email = signUpModel.Email };
+            var sendConfirmEmailTokenRequest = new SendConfirmEmailTokenRequestDto { Email = signUpModel.Email };
 
-            await identityController.SendConfirmationEmail(sendConfirmationEmailRequest, CurrentCancellationToken);
+            await identityController.SendConfirmEmailToken(sendConfirmEmailTokenRequest, CurrentCancellationToken);
 
             signUpMessageSeverity = BitSeverity.Success;
             signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];

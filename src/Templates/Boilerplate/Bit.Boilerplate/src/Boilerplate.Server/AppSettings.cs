@@ -34,10 +34,10 @@ public class IdentitySettings
     public bool PasswordRequireUppercase { get; set; }
     public bool PasswordRequireLowercase { get; set; }
     public bool RequireUniqueEmail { get; set; }
-    public TimeSpan ConfirmationEmailResendDelay { get; set; }
-    public TimeSpan ConfirmationSmsResendDelay { get; set; }
-    public TimeSpan ResetPasswordEmailResendDelay { get; set; }
-    public TimeSpan TwoFactorTokenEmailResendDelay { get; set; }
+    public TimeSpan EmailTokenRequestResendDelay { get; set; }
+    public TimeSpan PhoneNumberTokenRequestResendDelay { get; set; }
+    public TimeSpan ResetPasswordTokenRequestResendDelay { get; set; }
+    public TimeSpan TwoFactorTokenRequestResendDelay { get; set; }
 }
 
 public class EmailSettings

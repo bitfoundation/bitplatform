@@ -16,11 +16,11 @@ public class User : IdentityUser<int>
     [PersonalData]
     public string? ProfileImageName { get; set; }
 
-    public DateTimeOffset? ConfirmationEmailRequestedOn { get; set; }
+    public DateTimeOffset? EmailTokenRequestedOn { get; set; }
 
-    public DateTimeOffset? ConfirmationSmsRequestedOn { get; set; }
+    public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
 
-    public DateTimeOffset? ResetPasswordEmailRequestedOn { get; set; }
+    public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
 
     public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
 }

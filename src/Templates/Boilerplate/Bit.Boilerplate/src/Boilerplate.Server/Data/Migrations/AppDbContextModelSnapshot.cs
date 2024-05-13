@@ -123,18 +123,15 @@ namespace Boilerplate.Server.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("ConfirmationEmailRequestedOn")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("ConfirmationSmsRequestedOn")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("EmailTokenRequestedOn")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
@@ -165,10 +162,13 @@ namespace Boilerplate.Server.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<DateTimeOffset?>("PhoneNumberTokenRequestedOn")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("ProfileImageName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("ResetPasswordEmailRequestedOn")
+                    b.Property<DateTimeOffset?>("ResetPasswordTokenRequestedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("SecurityStamp")
@@ -203,9 +203,9 @@ namespace Boilerplate.Server.Data.Migrations
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
                             ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
-                            ConfirmationEmailRequestedOn = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
+                            EmailTokenRequestedOn = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
                             FullName = "Boilerplate test account",
                             Gender = 2,
                             LockoutEnabled = true,

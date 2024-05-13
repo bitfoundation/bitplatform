@@ -1846,36 +1846,36 @@ namespace Boilerplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to You have already requested the confirmation email. Try again in {0}.
         /// </summary>
-        public static string WaitForConfirmationEmailResendDelay {
+        public static string EmailTokenRequestResendDelay {
             get {
-                return ResourceManager.GetString("WaitForConfirmationEmailResendDelay", resourceCulture);
+                return ResourceManager.GetString("EmailTokenRequestResendDelay", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to You have already requested the confirmation sms. Try again in {0}.
         /// </summary>
-        public static string WaitForConfirmationSmsResendDelay {
+        public static string PhoneNumberTokenRequestResendDelay {
             get {
-                return ResourceManager.GetString("WaitForConfirmationSmsResendDelay", resourceCulture);
+                return ResourceManager.GetString("PhoneNumberTokenRequestResendDelay", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to You have already requested the reset password email. Try again in {0}.
         /// </summary>
-        public static string WaitForResetPasswordEmailResendDelay {
+        public static string ResetPasswordTokenRequestResendDelay {
             get {
-                return ResourceManager.GetString("WaitForResetPasswordEmailResendDelay", resourceCulture);
+                return ResourceManager.GetString("ResetPasswordTokenRequestResendDelay", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to You have already requested the 2FA token email. Try again in {0}..
         /// </summary>
-        public static string WaitForTfaTokenEmailResendDelay {
+        public static string TwoFactorTokenRequestResendDelay {
             get {
-                return ResourceManager.GetString("WaitForTfaTokenEmailResendDelay", resourceCulture);
+                return ResourceManager.GetString("TwoFactorTokenRequestResendDelay", resourceCulture);
             }
         }
         
