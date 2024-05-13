@@ -127,7 +127,7 @@
     <value>Ou copiez le lien ci-dessous dans la barre d'adresse de votre navigateur :</value>
   </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>Vous recevez ce message car vous avez récemment créé un compte Boilerplate.
+    <value>Vous recevez ce message car vous avez récemment enregistré {0} sur votre compte Boilerplate.
                      Confirmez votre adresse e-mail en saisissant le numéro ci-dessous dans l'application.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">

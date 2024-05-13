@@ -5,10 +5,16 @@ using Boilerplate.Client.Core.Controllers.Identity;
 using QRCoder;
 using System.Text.Encodings.Web;
 using System.Text;
+using Boilerplate.Server.Resources;
+using Microsoft.AspNetCore.Components.Web;
+using Boilerplate.Server.Components;
+using Microsoft.AspNetCore.Components;
+using Boilerplate.Server.Models.Emailing;
+using FluentEmail.Core;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[Route("api/[controller]/[action]")]
+[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 [ApiController]
 public partial class UserController : AppControllerBase, IUserController
 {
@@ -17,6 +23,12 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private IUserStore<User> userStore = default!;
 
     [AutoInject] private UrlEncoder urlEncoder = default!;
+
+    [AutoInject] private HtmlRenderer htmlRenderer = default!;
+
+    [AutoInject] private IFluentEmail fluentEmail = default!;
+
+    [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
 
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
@@ -66,7 +78,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task SendChangeEmailToken(SendEmailTokenRequestDto body, CancellationToken cancellationToken = default)
+    public async Task SendChangeEmailToken(SendEmailTokenRequestDto sendEmailTokenRequest, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -75,9 +87,33 @@ public partial class UserController : AppControllerBase, IUserController
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.EmailTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")));
 
-        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{body.Email}");
+        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{sendEmailTokenRequest.Email}");
 
-        // TODO: Send token through email
+        var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var renderedComponent = await htmlRenderer.RenderComponentAsync<EmailTokenTemplate>(ParameterView.FromDictionary(new Dictionary<string, object?>()
+            {
+                {   nameof(EmailTokenTemplate.Model),
+                    new SendEmailTokenModel
+                    {
+                        Token = token,
+                        Email = sendEmailTokenRequest.Email
+                    }
+                },
+                { nameof(HttpContext), HttpContext }
+            }));
+
+            return renderedComponent.ToHtmlString();
+        });
+
+        var emailResult = await fluentEmail
+                           .To(user.Email, user.DisplayName)
+                           .Subject(emailLocalizer[EmailStrings.ConfirmationEmailSubject])
+                           .Body(body, isHtml: true)
+                           .SendAsync(cancellationToken);
+
+        if (!emailResult.Successful)
+            throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
 
         user.EmailTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -151,7 +187,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
 
-    [HttpPost, Route("~/api/[controller]/manage/2fa")]
+    [HttpPost, Microsoft.AspNetCore.Mvc.Route("~/api/[controller]/manage/2fa")]
     public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto tfaRequest, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

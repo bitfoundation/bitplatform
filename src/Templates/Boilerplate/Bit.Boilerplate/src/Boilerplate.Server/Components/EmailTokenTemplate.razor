@@ -2,7 +2,7 @@
 @using Boilerplate.Server.Resources
 
 @code {
-    [Parameter] public EmailConfirmationModel Model { get; set; } = default!;
+    [Parameter] public SendEmailTokenModel Model { get; set; } = default!;
     [Parameter] public HttpContext HttpContext { get; set; } = default!;
     [Inject] public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
 }
@@ -25,7 +25,7 @@
             </tr>
             <tr>
                 <td style="font-weight:400; font-size:18px; line-height:155%; padding-bottom:50px;">
-                    @EmailLocalizer[nameof(EmailStrings.EmailConfirmationMessageBody)]
+                    @EmailLocalizer.GetString(nameof(EmailStrings.EmailConfirmationMessageBody), Model.Email!)
                 </td>
             </tr>
             <tr>

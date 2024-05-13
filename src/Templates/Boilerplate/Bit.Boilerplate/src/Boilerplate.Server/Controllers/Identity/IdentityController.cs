@@ -123,10 +123,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
-            var renderedComponent = await htmlRenderer.RenderComponentAsync<EmailConfirmationTemplate>(ParameterView.FromDictionary(new Dictionary<string, object?>()
+            var renderedComponent = await htmlRenderer.RenderComponentAsync<EmailTokenTemplate>(ParameterView.FromDictionary(new Dictionary<string, object?>()
             {
-                {   nameof(EmailConfirmationTemplate.Model),
-                    new EmailConfirmationModel
+                {   nameof(EmailTokenTemplate.Model),
+                    new SendEmailTokenModel
                     {
                         Token = token
                     }
@@ -334,7 +334,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
                 var templateParameters = new Dictionary<string, object?>()
                 {
-                    [nameof(TwoFactorTokenTemplate.Model)] = new TwoFactorTokenModel { DisplayName = user.DisplayName ?? "User", Token = token },
+                    [nameof(TwoFactorTokenTemplate.Model)] = new SendTwoFactorTokenModel { DisplayName = user.DisplayName ?? "User", Token = token },
                     [nameof(HttpContext)] = HttpContext
                 };
 
@@ -427,7 +427,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             var templateParameters = new Dictionary<string, object?>()
             {
-                [nameof(TwoFactorTokenTemplate.Model)] = new TwoFactorTokenModel { DisplayName = user.DisplayName ?? "User", Token = token },
+                [nameof(TwoFactorTokenTemplate.Model)] = new SendTwoFactorTokenModel { DisplayName = user.DisplayName ?? "User", Token = token },
                 [nameof(HttpContext)] = HttpContext
             };
 
