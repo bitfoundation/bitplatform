@@ -13,7 +13,7 @@ public class ConfirmEmailRequestDto
     public string? Token { get; set; }
 }
 
-public class UpdateEmailRequestDto : ConfirmEmailRequestDto
+public class ChangeEmailRequestDto : ConfirmEmailRequestDto
 {
     // This class needs the same set of properties as ConfirmEmailRequestDto
 }

@@ -12,7 +12,7 @@ public class ConfirmPhoneNumberRequestDto
     public string? Token { get; set; }
 }
 
-public class UpdatePhoneNumberRequestDto : ConfirmPhoneNumberRequestDto
+public class ChangePhoneNumberRequestDto : ConfirmPhoneNumberRequestDto
 {
     // This class needs the same set of properties as ConfirmPhoneNumberRequestDto
 }

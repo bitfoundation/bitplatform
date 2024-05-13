@@ -14,6 +14,8 @@ public partial class UserController : AppControllerBase, IUserController
 {
     [AutoInject] private UserManager<User> userManager = default!;
 
+    [AutoInject] private IUserStore<User> userStore = default!;
+
     [AutoInject] private UrlEncoder urlEncoder = default!;
 
     [HttpGet]
@@ -61,6 +63,78 @@ public partial class UserController : AppControllerBase, IUserController
         var result = await userManager.SetUserNameAsync(user!, body.UserName);
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+    }
+
+    [HttpPost]
+    public async Task SendChangeEmailToken(SendEmailTokenRequestDto body, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+
+        var resendDelay = (DateTimeOffset.Now - user!.EmailTokenRequestedOn) - AppSettings.IdentitySettings.EmailTokenRequestResendDelay;
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.EmailTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")));
+
+        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{body.Email}");
+
+        // TODO: Send token through email
+
+        user.EmailTokenRequestedOn = DateTimeOffset.Now;
+        var result = await userManager.UpdateAsync(user);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+    }
+
+    [HttpPost]
+    public async Task ChangeEmail(ChangeEmailRequestDto body, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+
+        var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{body.Email}", body.Token!);
+
+        if (tokenIsVerified)
+        {
+            await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, body.Email, cancellationToken);
+            var result = await userManager.UpdateAsync(user!);
+            if (result.Succeeded is false)
+                throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+        }
+        else
+        {
+            throw new BadRequestException();
+        }
+
+    }
+
+    [HttpPost]
+    public async Task SendChangePhoneNumberToken(SendPhoneNumberTokenRequestDto body, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+
+        var resendDelay = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) - AppSettings.IdentitySettings.PhoneNumberTokenRequestResendDelay;
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.PhoneNumberTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")));
+
+        var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, body.PhoneNumber!);
+
+        // TODO: Send token through SMS
+
+        user.PhoneNumberTokenRequestedOn = DateTimeOffset.Now;
+        var result = await userManager.UpdateAsync(user);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+    }
+
+    [HttpPost]
+    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto body, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+
+        var result = await userManager.ChangePhoneNumberAsync(user!, body.PhoneNumber!, body.Token!);
+
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpDelete]
