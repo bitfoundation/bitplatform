@@ -45,20 +45,20 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangePassword(ChangePasswordRequestDto body, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
         string token = await userManager.GeneratePasswordResetTokenAsync(user!);
-        var result = await userManager.ResetPasswordAsync(user!, token, request.Password);
+        var result = await userManager.ResetPasswordAsync(user!, token, body.Password!);
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
 
     [HttpPost]
-    public async Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangeUserName(ChangeUserNameRequestDto body, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
-        var result = await userManager.SetUserNameAsync(user!, request.UserName);
+        var result = await userManager.SetUserNameAsync(user!, body.UserName);
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }

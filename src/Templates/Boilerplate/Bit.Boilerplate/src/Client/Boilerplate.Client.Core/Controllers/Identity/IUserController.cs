@@ -12,10 +12,10 @@ public interface IUserController : IAppController
     Task<UserDto> Update(EditUserDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default);
+    Task ChangePassword(ChangePasswordRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken = default);
+    Task ChangeUserName(ChangeUserNameRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpDelete]
     Task Delete(CancellationToken cancellationToken = default);

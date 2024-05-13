@@ -10,7 +10,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private IIdentityController identityController = default;
+    [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
