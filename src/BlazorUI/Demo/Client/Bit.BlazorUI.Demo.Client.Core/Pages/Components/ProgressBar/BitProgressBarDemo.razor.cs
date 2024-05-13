@@ -165,21 +165,21 @@ public partial class BitProgressBarDemo
 
     private readonly string example1RazorCode = @"
 <BitProgressBar Label=""Basic ProgressBar""
-                      Description=""Example description""
-                      Percent=""42"" />";
+                Description=""Example description""
+                Percent=""42"" />";
 
     private readonly string example2RazorCode = @"
 <BitProgressBar Percent=""69"" Height=""10"" />";
 
     private readonly string example3RazorCode = @"
 <BitProgressBar Label=""Show Percent Number""
-                      Percent=""85.69""
-                      ShowPercentNumber />
+                Percent=""85.69""
+                ShowPercentNumber />
 
 <BitProgressBar Label=""Percent Number Format""
-                      Percent=""85.69""
-                      PercentNumberFormat=""{0:F2} %""
-                      ShowPercentNumber />";
+                Percent=""85.69""
+                PercentNumberFormat=""{0:F2} %""
+                ShowPercentNumber />";
 
     private readonly string example4RazorCode = @"
 <BitProgressBar Indeterminate />";
@@ -210,29 +210,29 @@ public partial class BitProgressBarDemo
 <BitProgressBar Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" Indeterminate />
 
 <BitProgressBar Class=""custom-class""
-                      Percent=""69""
-                      Height=""10"" />
+                Percent=""69""
+                Height=""10"" />
 
 
-<BitProgressBar Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"" ,
-                                   Track = ""background-color: green;"" })""
-                      Height=""10""
-                      Indeterminate />
+<BitProgressBar Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"",
+                                  Track = ""background-color: green;"" })""
+                Height=""10""
+                Indeterminate />
 
 <BitProgressBar Classes=""@(new() { Bar = ""custom-bar"",
-                                          Track = ""custom-track""})""
-                      Percent=""69""
-                      Height=""10"" />";
+                                   Track = ""custom-track""})""
+                Percent=""69""
+                Height=""10"" />";
 
     private readonly string example7RazorCode = @"
 <BitProgressBar Dir=""BitDir.Rtl""
-                      Height=""10""
-                      Indeterminate />
+                Height=""10""
+                Indeterminate />
 
 <BitProgressBar Label=""لیبل تست""
-                      Description=""توضیحات تست""
-                      Dir=""BitDir.Rtl""
-                      Percent=""69""
-                      Height=""10""
-                      ShowPercent />";
+                Description=""توضیحات تست""
+                Dir=""BitDir.Rtl""
+                Percent=""69""
+                Height=""10""
+                ShowPercent />";
 }
