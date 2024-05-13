@@ -20,8 +20,8 @@ Bars moving backward reduce confidence in the service."
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <BitProgressBar Label="Basic ProgressBar"
-                                  Description="Example description"
-                                  Percent="42" />
+                            Description="Example description"
+                            Percent="42" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -34,15 +34,15 @@ Bars moving backward reduce confidence in the service."
     <ComponentExampleBox Title="ShowPercentNumber" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <BitProgressBar Label="Show Percent Number"
-                                  Percent="85.69"
-                                  ShowPercentNumber />
+                            Percent="85.69"
+                            ShowPercentNumber />
 
             <br />
 
             <BitProgressBar Label="Percent Number Format"
-                                  Percent="85.69"
-                                  PercentNumberFormat="{0:F2} %"
-                                  ShowPercentNumber />
+                            Percent="85.69"
+                            PercentNumberFormat="{0:F2} %"
+                            ShowPercentNumber />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -72,22 +72,22 @@ Bars moving backward reduce confidence in the service."
                 <br />
 
                 <BitProgressBar Class="custom-class"
-                                      Percent="69"
-                                      Height="10" />
+                                Percent="69"
+                                Height="10" />
                 <br /><br /><br />
                 <div>Styles & Classes:</div>
                 <br />
-                <BitProgressBar Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);" ,
+                <BitProgressBar Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);",
                                                   Track = "background-color: green;" })"
-                                      Height="10"
-                                      Indeterminate />
+                                Height="10"
+                                Indeterminate />
 
                 <br />
 
                 <BitProgressBar Classes="@(new() { Bar = "custom-bar",
                                                    Track = "custom-tracker"})"
-                                      Percent="69"
-                                      Height="10" />
+                                Percent="69"
+                                Height="10" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -95,17 +95,17 @@ Bars moving backward reduce confidence in the service."
     <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <BitProgressBar Dir="BitDir.Rtl"
-                                  Height="10"
-                                  Indeterminate />
+                            Height="10"
+                            Indeterminate />
 
             <br />
 
             <BitProgressBar Label="لیبل تست"
-                                  Description="توضیحات تست"
-                                  Dir="BitDir.Rtl"
-                                  Percent="69"
-                                  Height="10"
-                                  ShowPercentNumber />
+                            Description="توضیحات تست"
+                            Dir="BitDir.Rtl"
+                            Percent="69"
+                            Height="10"
+                            ShowPercentNumber />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
