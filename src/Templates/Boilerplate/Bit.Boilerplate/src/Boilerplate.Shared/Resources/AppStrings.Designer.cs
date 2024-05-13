@@ -1846,36 +1846,36 @@ namespace Boilerplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to You have already requested the confirmation email. Try again in {0}.
         /// </summary>
-        public static string EmailTokenRequestResendDelay {
+        public static string WaitForEmailTokenRequestResendDelay {
             get {
-                return ResourceManager.GetString("EmailTokenRequestResendDelay", resourceCulture);
+                return ResourceManager.GetString("WaitForEmailTokenRequestResendDelay", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to You have already requested the confirmation sms. Try again in {0}.
         /// </summary>
-        public static string PhoneNumberTokenRequestResendDelay {
+        public static string WaitForPhoneNumberTokenRequestResendDelay {
             get {
-                return ResourceManager.GetString("PhoneNumberTokenRequestResendDelay", resourceCulture);
+                return ResourceManager.GetString("WaitForPhoneNumberTokenRequestResendDelay", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to You have already requested the reset password email. Try again in {0}.
         /// </summary>
-        public static string ResetPasswordTokenRequestResendDelay {
+        public static string WaitForResetPasswordTokenRequestResendDelay {
             get {
-                return ResourceManager.GetString("ResetPasswordTokenRequestResendDelay", resourceCulture);
+                return ResourceManager.GetString("WaitForResetPasswordTokenRequestResendDelay", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to You have already requested the 2FA token email. Try again in {0}..
         /// </summary>
-        public static string TwoFactorTokenRequestResendDelay {
+        public static string WaitForTwoFactorTokenRequestResendDelay {
             get {
-                return ResourceManager.GetString("TwoFactorTokenRequestResendDelay", resourceCulture);
+                return ResourceManager.GetString("WaitForTwoFactorTokenRequestResendDelay", resourceCulture);
             }
         }
         

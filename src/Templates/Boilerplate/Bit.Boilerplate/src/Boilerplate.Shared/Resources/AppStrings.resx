@@ -592,16 +592,16 @@ Please confirm your email by clicking on the link.</value>
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>The 2FA token has been generated and sent to your email.</value>
   </data>
-    <data name="EmailTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
   </data>
-    <data name="PhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation sms. Try again in {0}</value>
   </data>
-    <data name="ResetPasswordTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the reset password email. Try again in {0}</value>
   </data>
-    <data name="TwoFactorTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the 2FA token email. Try again in {0}.</value>
   </data>
     <data name="Update" xml:space="preserve">

@@ -85,7 +85,7 @@ public partial class UserController : AppControllerBase, IUserController
         var resendDelay = (DateTimeOffset.Now - user!.EmailTokenRequestedOn) - AppSettings.IdentitySettings.EmailTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.EmailTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")));
+            throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")));
 
         var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{sendEmailTokenRequest.Email}");
 
@@ -147,7 +147,7 @@ public partial class UserController : AppControllerBase, IUserController
         var resendDelay = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) - AppSettings.IdentitySettings.PhoneNumberTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.PhoneNumberTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")));
+            throw new TooManyRequestsExceptions(Localizer.GetString(nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")));
 
         var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, body.PhoneNumber!);
 
