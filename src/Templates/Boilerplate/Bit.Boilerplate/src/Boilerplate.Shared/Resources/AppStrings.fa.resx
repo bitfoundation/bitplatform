@@ -135,6 +135,9 @@
     <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} الزامی است.</value>
   </data>
+    <data name="PhoneAttribute_Invalid" xml:space="preserve">
+    <value>مقدار {0} یک شماره تلفن معتبر نیست.</value>
+  </data>
     <data name="BadRequestException" xml:space="preserve">
     <value>درخواست نامعتبر</value>
   </data>
@@ -207,6 +210,9 @@
     <data name="Email" xml:space="preserve">
     <value>ایمیل</value>
   </data>
+    <data name="PhoneNumber" xml:space="preserve">
+    <value>شماره تلفن</value>
+  </data>
     <data name="Password" xml:space="preserve">
     <value>رمز عبور</value>
   </data>
@@ -240,6 +246,9 @@
     <data name="BirthDate" xml:space="preserve">
     <value>تاریخ تولد</value>
   </data>
+    <data name="UserName" xml:space="preserve">
+    <value>نام کاربری</value>
+  </data>
     <data name="Name" xml:space="preserve">
     <value>نام</value>
   </data>
@@ -248,6 +257,12 @@
   </data>
     <data name="Price" xml:space="preserve">
     <value>قيمت</value>
+  </data>
+    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>یا ایمیل یا شماره تلفن را وارد کنید.</value>
+  </data>
+    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>یا ایمیل یا شماره تلفن یا نام کاربری را وارد کنید.</value>
   </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>برای ادامه باید وارد شوید.</value>
@@ -258,8 +273,14 @@
     <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
+    <data name="WaitForConfirmationSmsResendDelay" xml:space="preserve">
+    <value>شما قبلا پیامک تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
+  </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>ایمیل شما قبلا تایید شده است.</value>
+  </data>
+    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>شماره تلفن شما قبلا تایید شده است</value>
   </data>
     <data name="Title" xml:space="preserve">
     <value>عنوان</value>
@@ -273,11 +294,11 @@
     <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
   </data>
-    <data name="UserNameNotFound" xml:space="preserve">
+    <data name="UserNotFound" xml:space="preserve">
     <value>کاربر {0} وجود ندارد.</value>
   </data>
-    <data name="DuplicateEmail" xml:space="preserve">
-    <value>ایمیل '{0}' قبلا گرفته شده است.</value>
+    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>این ایمیل یا شماره تلفن قبلا گرفته شده است.</value>
   </data>
     <data name="Add" xml:space="preserve">
     <value>اضافه کردن</value>

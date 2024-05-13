@@ -431,11 +431,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Email &apos;{0}&apos; is already taken..
+        ///   Looks up a localized string similar to This email or phone number is already taken..
         /// </summary>
-        public static string DuplicateEmail {
+        public static string DuplicateEmailOrPhoneNumber {
             get {
-                return ResourceManager.GetString("DuplicateEmail", resourceCulture);
+                return ResourceManager.GetString("DuplicateEmailOrPhoneNumber", resourceCulture);
             }
         }
         
@@ -472,6 +472,24 @@ namespace Boilerplate.Shared.Resources {
         public static string EditProfileTitle {
             get {
                 return ResourceManager.GetString("EditProfileTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Either provider email or phone number..
+        /// </summary>
+        public static string EitherProvideEmailOrPhoneNumber {
+            get {
+                return ResourceManager.GetString("EitherProvideEmailOrPhoneNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Either provider username, email or phone number..
+        /// </summary>
+        public static string EitherProvideUserNameOrEmailOrPhoneNumber {
+            get {
+                return ResourceManager.GetString("EitherProvideUserNameOrEmailOrPhoneNumber", resourceCulture);
             }
         }
         
@@ -868,6 +886,33 @@ namespace Boilerplate.Shared.Resources {
         public static string PasswordChangedSuccessfullyMessage {
             get {
                 return ResourceManager.GetString("PasswordChangedSuccessfullyMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} field is not a valid phone number..
+        /// </summary>
+        public static string PhoneAttribute_Invalid {
+            get {
+                return ResourceManager.GetString("PhoneAttribute_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone Number.
+        /// </summary>
+        public static string PhoneNumber {
+            get {
+                return ResourceManager.GetString("PhoneNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your phone number is already confirmed..
+        /// </summary>
+        public static string PhoneNumberAlreadyConfirmed {
+            get {
+                return ResourceManager.GetString("PhoneNumberAlreadyConfirmed", resourceCulture);
             }
         }
         
@@ -1781,11 +1826,20 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Username.
+        /// </summary>
+        public static string UserName {
+            get {
+                return ResourceManager.GetString("UserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User {0} does not exist..
         /// </summary>
-        public static string UserNameNotFound {
+        public static string UserNotFound {
             get {
-                return ResourceManager.GetString("UserNameNotFound", resourceCulture);
+                return ResourceManager.GetString("UserNotFound", resourceCulture);
             }
         }
         
@@ -1795,6 +1849,15 @@ namespace Boilerplate.Shared.Resources {
         public static string WaitForConfirmationEmailResendDelay {
             get {
                 return ResourceManager.GetString("WaitForConfirmationEmailResendDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have already requested the confirmation sms. Try again in {0}.
+        /// </summary>
+        public static string WaitForConfirmationSmsResendDelay {
+            get {
+                return ResourceManager.GetString("WaitForConfirmationSmsResendDelay", resourceCulture);
             }
         }
         

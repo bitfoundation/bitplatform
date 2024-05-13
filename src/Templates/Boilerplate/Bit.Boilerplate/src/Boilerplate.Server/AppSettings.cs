@@ -35,6 +35,7 @@ public class IdentitySettings
     public bool PasswordRequireLowercase { get; set; }
     public bool RequireUniqueEmail { get; set; }
     public TimeSpan ConfirmationEmailResendDelay { get; set; }
+    public TimeSpan ConfirmationSmsResendDelay { get; set; }
     public TimeSpan ResetPasswordEmailResendDelay { get; set; }
     public TimeSpan TwoFactorTokenEmailResendDelay { get; set; }
 }

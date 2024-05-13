@@ -6,7 +6,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        const string userName = "test@bitplatform.dev";
+        const string userName = "bitplatform";
+        const string email = "test@bitplatform.dev";
 
         builder.HasData([new()
         {
@@ -17,9 +18,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             BirthDate = new DateTime(2023, 1, 1),
             FullName = "Boilerplate test account",
             UserName = userName,
-            Email = userName,
             NormalizedUserName = userName.ToUpperInvariant(),
-            NormalizedEmail = userName.ToUpperInvariant(),
+            Email = email,
+            NormalizedEmail = email.ToUpperInvariant(),
+            ConfirmationEmailRequestedOn = new DateTime(2023,1,1),
+            PhoneNumber = "+31684207362",
+            PhoneNumberConfirmed = true,
             SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
             ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
             PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456

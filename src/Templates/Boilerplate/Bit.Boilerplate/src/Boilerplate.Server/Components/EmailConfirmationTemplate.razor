@@ -33,9 +33,9 @@
                     <table border="0" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style="background-color:#0078D4; border-radius:2px; padding:10px 20px;">
-                                <a href="@Model.ConfirmationLink" style="text-decoration:none; color:#FFFFFF; font-weight:600;">
-                                    @EmailLocalizer[nameof(EmailStrings.ConfirmEmail)]
-                                </a>
+                                <div style="text-decoration:none; color:#FFFFFF; font-weight:600;">
+                                    @Model.Token
+                                </div>
                             </td>
                         </tr>
                     </table>

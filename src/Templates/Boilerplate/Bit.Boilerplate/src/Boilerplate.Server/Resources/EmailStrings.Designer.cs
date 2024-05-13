@@ -79,15 +79,6 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirm email.
-        /// </summary>
-        public static string ConfirmEmail {
-            get {
-                return ResourceManager.GetString("ConfirmEmail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Or, copy the link below to your browser address bar:.
         /// </summary>
         public static string CopyLink {
@@ -98,7 +89,7 @@ namespace Boilerplate.Server.Resources {
         
         /// <summary>
         ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have signed up for a Boilerplate account.
-        ///                    Confirm your email address by clicking the button below..
+        ///                    Confirm your email address by entering the number below in the app..
         /// </summary>
         public static string EmailConfirmationMessageBody {
             get {

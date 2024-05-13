@@ -5,6 +5,8 @@ public class User : IdentityUser<int>
     [PersonalData]
     public string? FullName { get; set; }
 
+    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+
     [PersonalData]
     public Gender? Gender { get; set; }
 
@@ -16,9 +18,9 @@ public class User : IdentityUser<int>
 
     public DateTimeOffset? ConfirmationEmailRequestedOn { get; set; }
 
-    public DateTimeOffset? ResetPasswordEmailRequestedOn { get; set; }
+    public DateTimeOffset? ConfirmationSmsRequestedOn { get; set; }
 
-    public string? DisplayName => FullName ?? NormalizedUserName;
+    public DateTimeOffset? ResetPasswordEmailRequestedOn { get; set; }
 
     public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
 }

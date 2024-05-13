@@ -2,5 +2,5 @@
 
 public class EmailConfirmationModel
 {
-    public Uri? ConfirmationLink { get; set; }
+    public string? Token { get; set; }
 }

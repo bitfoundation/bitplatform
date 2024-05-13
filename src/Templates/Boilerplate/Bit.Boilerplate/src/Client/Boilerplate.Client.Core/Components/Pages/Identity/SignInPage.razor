@@ -22,11 +22,11 @@
         @if (requiresTwoFactor is false)
         {
             <div class="form-input-container">
-                <BitTextField @bind-Value="signInModel.UserName"
+                <BitTextField @bind-Value="signInModel.Email"
                               Label="@Localizer[nameof(AppStrings.Email)]"
                               Placeholder="@Localizer[nameof(AppStrings.Email)]"
                               Type="BitTextFieldType.Email" />
-                <ValidationMessage For="@(() => signInModel.UserName)" />
+                <ValidationMessage For="@(() => signInModel.Email)" />
             </div>
 
             <div class="form-input-container">

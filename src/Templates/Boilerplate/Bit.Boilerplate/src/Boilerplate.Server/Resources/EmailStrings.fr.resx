@@ -123,15 +123,12 @@
   <data name="ConfirmationEmailSubject" xml:space="preserve">
     <value>Boilerplate - Confirmez votre adresse e-mail</value>
   </data>
-  <data name="ConfirmEmail" xml:space="preserve">
-    <value>Confirmez votre email</value>
-  </data>
   <data name="CopyLink" xml:space="preserve">
     <value>Ou copiez le lien ci-dessous dans la barre d'adresse de votre navigateur :</value>
   </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>Vous recevez ce message car vous vous êtes récemment inscrit pour un compte Boilerplate.
-                     Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.</value>
+    <value>Vous recevez ce message car vous avez récemment créé un compte Boilerplate.
+                     Confirmez votre adresse e-mail en saisissant le numéro ci-dessous dans l'application.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
     <value>Boilerplate - Réinitialisez votre mot de passe</value>

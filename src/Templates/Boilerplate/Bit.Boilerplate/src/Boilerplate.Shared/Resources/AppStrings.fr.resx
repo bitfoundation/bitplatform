@@ -120,6 +120,9 @@
     <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} est obligatoire.</value>
   </data>
+    <data name="PhoneAttribute_Invalid" xml:space="preserve">
+    <value>Le champ {0} n'est pas un numéro de téléphone valide.</value>
+  </data>
     <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>« {0} » et « {1} » ne correspondent pas.</value>
   </data>
@@ -135,13 +138,13 @@
     <data name="RangeAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} doit être compris entre {1} et {2}.</value>
   </data>
-    <data name="DuplicateEmail" xml:space="preserve">
-    <value>L'e-mail '{0}' est déjà pris.</value>
+    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>Cet email ou numéro de téléphone est déjà pris.</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
   </data>
-    <data name="UserNameNotFound" xml:space="preserve">
+    <data name="UserNotFound" xml:space="preserve">
     <value>L'utilisateur {0} n'existe pas.</value>
   </data>
     <data name="BadRequestException" xml:space="preserve">
@@ -216,6 +219,9 @@
     <data name="Email" xml:space="preserve">
     <value>E-mail</value>
   </data>
+    <data name="PhoneNumber" xml:space="preserve">
+    <value>Numéro de téléphone</value>
+  </data>
     <data name="Password" xml:space="preserve">
     <value>Mot de passe</value>
   </data>
@@ -258,6 +264,9 @@
     <data name="BirthDate" xml:space="preserve">
     <value>Date de naissance</value>
   </data>
+    <data name="UserName" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
     <data name="Name" xml:space="preserve">
     <value>Nom</value>
   </data>
@@ -291,6 +300,12 @@
     <data name="DeleteProduct" xml:space="preserve">
     <value>Supprimer le produit</value>
   </data>
+    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>Soit l'e-mail du fournisseur, soit le numéro de téléphone.</value>
+  </data>
+    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>Soit le nom d'utilisateur du fournisseur, l'e-mail ou le numéro de téléphone.</value>
+  </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>
   </data>
@@ -300,8 +315,14 @@
     <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de confirmation.</value>
   </data>
+    <data name="WaitForConfirmationSmsResendDelay" xml:space="preserve">
+    <value>Vous avez déjà demandé le sms de confirmation. Réessayez dans {0}</value>
+  </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Votre email est déjà confirmé.</value>
+  </data>
+    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>Votre numéro de téléphone est déjà confirmé.</value>
   </data>
     <data name="TodoTitle" xml:space="preserve">
     <value>Faire</value>

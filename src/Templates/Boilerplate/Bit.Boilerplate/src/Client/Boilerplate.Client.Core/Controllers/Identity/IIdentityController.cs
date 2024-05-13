@@ -12,10 +12,16 @@ public interface IIdentityController : IAppController
     Task SendConfirmationEmail(SendConfirmationEmailRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
+    Task SendConfirmationSms(SendConfirmationSmsRequestDto body, CancellationToken cancellationToken = default);
+
+    [HttpPost]
     Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ConfirmEmail(ConfirmEmailRequestDto body);
+    Task ConfirmEmail(ConfirmEmailRequestDto body, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task ConfirmPhoneNumber(ConfirmPhoneNumberRequestDto body, CancellationToken cancellationToken);
 
     [HttpPost]
     Task ResetPassword(ResetPasswordRequestDto body, CancellationToken cancellationToken = default);
@@ -28,8 +34,4 @@ public interface IIdentityController : IAppController
 
     [HttpPost]
     Task SendTwoFactorToken(SignInRequestDto signInRequest, CancellationToken cancellationToken = default) => default!;
-
-    [HttpPost]
-    [Route("~/api/[controller]/2fa")]
-    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto twoFactorAuthRequest, CancellationToken cancellationToken = default) => default!;
 }

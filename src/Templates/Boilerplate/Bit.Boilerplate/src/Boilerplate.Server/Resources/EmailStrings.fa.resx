@@ -120,15 +120,12 @@
   <data name="ConfirmationEmailSubject" xml:space="preserve">
     <value>Boilerplate - آدرس ایمیل خود را تایید کنید</value>
   </data>
-  <data name="ConfirmEmail" xml:space="preserve">
-    <value>تایید ایمیل</value>
-  </data>
   <data name="CopyLink" xml:space="preserve">
     <value>یا لینک زیر را به نوار آدرس مرورگر خود کپی کنید:</value>
   </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
     <value>شما این پیام را دریافت می کنید زیرا اخیرا برای یک حساب Boilerplate ثبت نام کرده اید.
-                    آدرس ایمیل خود را با کلیک بر روی دکمه زیر تایید کنید.</value>
+                    آدرس ایمیل خود را با وارد کردن عدد زیر در برنامه تایید کنید.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
     <value>Boilerplate - رمز عبور خود را ریست کنید</value>

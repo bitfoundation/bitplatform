@@ -1,21 +1,23 @@
 ﻿
+
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class UserDto
+public class UserDto : IValidatableObject
 {
     public int Id { get; set; }
 
-    // By default, username gets filled from email during signup in Api/Models/Mapper.cs class.
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
-    [Display(Name = nameof(AppStrings.Email))]
+    [Display(Name = nameof(AppStrings.UserName))]
     public string? UserName { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
+
+    [Phone(ErrorMessage = nameof(AppStrings.PhoneNumber))]
+    [Display(Name = nameof(AppStrings.PhoneAttribute_Invalid))]
+    public string? PhoneNumber { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
@@ -25,6 +27,8 @@ public class UserDto
     [Display(Name = nameof(AppStrings.FullName))]
     public string? FullName { get; set; }
 
+    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+
     [Display(Name = nameof(AppStrings.Gender))]
     public Gender? Gender { get; set; }
 
@@ -32,4 +36,10 @@ public class UserDto
     public DateTimeOffset? BirthDate { get; set; }
 
     public string? ProfileImageName { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
+            yield return new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideEmailOrPhoneNumber), [nameof(Email), nameof(PhoneNumber)]);
+    }
 }

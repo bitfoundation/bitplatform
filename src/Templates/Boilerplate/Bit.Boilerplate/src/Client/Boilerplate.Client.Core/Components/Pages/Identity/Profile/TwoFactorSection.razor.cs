@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 public partial class TwoFactorSection
 {
     [AutoInject] private Clipboard clipboard = default!;
-    [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private IUserController userController = default!;
 
 
     private string? qrCode;
@@ -77,7 +77,7 @@ public partial class TwoFactorSection
 
         try
         {
-            var response = await identityController.TwoFactorAuth(request);
+            var response = await userController.TwoFactorAuth(request);
 
             qrCode = response.QrCode;
             sharedKey = response.SharedKey;

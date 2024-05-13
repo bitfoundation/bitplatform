@@ -13,4 +13,8 @@ public interface IUserController : IAppController
 
     [HttpDelete]
     Task Delete(CancellationToken cancellationToken = default);
+
+    [HttpPost]
+    [Route("~/api/[controller]/manage/2fa")]
+    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto twoFactorAuthRequest, CancellationToken cancellationToken = default) => default!;
 }

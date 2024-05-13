@@ -17,7 +17,7 @@ namespace Boilerplate.Server.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -102,7 +102,7 @@ namespace Boilerplate.Server.Data.Migrations
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles", "identity");
                 });
 
             modelBuilder.Entity("Boilerplate.Server.Models.Identity.User", b =>
@@ -126,7 +126,7 @@ namespace Boilerplate.Server.Data.Migrations
                     b.Property<DateTimeOffset?>("ConfirmationEmailRequestedOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("TwoFactorTokenRequestedOn")
+                    b.Property<DateTimeOffset?>("ConfirmationSmsRequestedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Email")
@@ -177,6 +177,9 @@ namespace Boilerplate.Server.Data.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
+                    b.Property<DateTimeOffset?>("TwoFactorTokenRequestedOn")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -191,7 +194,7 @@ namespace Boilerplate.Server.Data.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users", "identity");
 
                     b.HasData(
                         new
@@ -200,18 +203,20 @@ namespace Boilerplate.Server.Data.Migrations
                             AccessFailedCount = 0,
                             BirthDate = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
                             ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
+                            ConfirmationEmailRequestedOn = new DateTimeOffset(new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 1, 0, 0, 0)),
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
                             FullName = "Boilerplate test account",
                             Gender = 2,
                             LockoutEnabled = true,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
-                            NormalizedUserName = "TEST@BITPLATFORM.DEV",
+                            NormalizedUserName = "BITPLATFORM",
                             PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==",
-                            PhoneNumberConfirmed = false,
+                            PhoneNumber = "+31684207362",
+                            PhoneNumberConfirmed = true,
                             SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
                             TwoFactorEnabled = false,
-                            UserName = "test@bitplatform.dev"
+                            UserName = "bitplatform"
                         });
                 });
 
@@ -525,7 +530,7 @@ namespace Boilerplate.Server.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("RoleClaims", (string)null);
+                    b.ToTable("RoleClaims", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -549,7 +554,7 @@ namespace Boilerplate.Server.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserClaims", (string)null);
+                    b.ToTable("UserClaims", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
@@ -570,7 +575,7 @@ namespace Boilerplate.Server.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLogins", (string)null);
+                    b.ToTable("UserLogins", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
@@ -585,7 +590,7 @@ namespace Boilerplate.Server.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UserRoles", (string)null);
+                    b.ToTable("UserRoles", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
@@ -604,7 +609,7 @@ namespace Boilerplate.Server.Data.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("UserTokens", (string)null);
+                    b.ToTable("UserTokens", "identity");
                 });
 
             modelBuilder.Entity("Boilerplate.Server.Models.Products.Product", b =>
