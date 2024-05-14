@@ -120,15 +120,9 @@
   <data name="ConfirmationEmailSubject" xml:space="preserve">
     <value>Boilerplate - آدرس ایمیل خود را تایید کنید</value>
   </data>
-  <data name="ConfirmEmail" xml:space="preserve">
-    <value>تایید ایمیل</value>
-  </data>
-  <data name="CopyLink" xml:space="preserve">
-    <value>یا لینک زیر را به نوار آدرس مرورگر خود کپی کنید:</value>
-  </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>شما این پیام را دریافت می کنید زیرا اخیرا برای یک حساب Boilerplate ثبت نام کرده اید.
-                    آدرس ایمیل خود را با کلیک بر روی دکمه زیر تایید کنید.</value>
+    <value>شما این ایمیل را دریافت می کنید زیرا اخیرا ایمیل {0} را به اکانت Boilerplate خود اختصاص داده اید.
+                    آدرس ایمیل خود را با وارد کردن عدد زیر در برنامه تایید کنید.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
     <value>Boilerplate - رمز عبور خود را ریست کنید</value>
@@ -137,7 +131,7 @@
     <value>سلام {0}</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>کسی برای تغییر رمز عبور شما لینکی درخواست کرده است.</value>
+    <value>کسی برای تغییر رمز عبور شما توکن درخواست کرده است.</value>
   </data>
   <data name="ResetPasswordNote" xml:space="preserve">
     <value>رمز عبور شما تغییر نخواهد کرد تا زمانی که به لینک بالا دسترسی داشته باشید و یک رمز جدید ایجاد کنید.</value>
@@ -160,7 +154,7 @@
     <data name="TfaTokenMessage" xml:space="preserve">
     <value>توکن 2FA جدید شما برای ورود:</value>
   </data>
-    <data name="TfaTokenNote" xml:space="preserve">
+    <data name="CopyTokenNote" xml:space="preserve">
     <value>این کد را کپی و در صفحه ورود استفاده کنید.</value>
   </data>
 </root>

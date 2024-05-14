@@ -120,15 +120,9 @@
   <data name="ConfirmationEmailSubject" xml:space="preserve">
     <value>Boilerplate - Confirm your email address</value>
   </data>
-  <data name="ConfirmEmail" xml:space="preserve">
-    <value>Confirm email</value>
-  </data>
-  <data name="CopyLink" xml:space="preserve">
-    <value>Or, copy the link below to your browser address bar:</value>
-  </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>You're receiving this message because recently you have signed up for a Boilerplate account.
-                    Confirm your email address by clicking the button below.</value>
+    <value>You're receiving this email because recently you have registered {0} to your Boilerplate account.
+                    Confirm your email address by entering the number below in the app.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">
     <value>Boilerplate - Reset your password</value>
@@ -137,7 +131,7 @@
     <value>Hello {0}</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>Someone has requested a link to change your password.</value>
+    <value>Someone has requested a token to change your password.</value>
   </data>
   <data name="ResetPasswordNote" xml:space="preserve">
     <value>Your password won't change until you access the link above and create a new one.</value>
@@ -160,7 +154,7 @@
     <data name="TfaTokenMessage" xml:space="preserve">
     <value>Here is your new 2FA token to login:</value>
   </data>
-    <data name="TfaTokenNote" xml:space="preserve">
+    <data name="CopyTokenNote" xml:space="preserve">
     <value>Copy this code and use it in the login page.</value>
   </data>
 </root>

@@ -12,7 +12,7 @@ public partial class SignUpPage
     private bool isSignedUp;
     private string? signUpMessage;
     private BitSeverity signUpMessageSeverity;
-    private SignUpRequestDto signUpModel = new();
+    private SignUpRequestDto signUpModel = new() { UserName = Guid.NewGuid().ToString() /* You can bind userName to the UI */ };
 
     private async Task DoSignUp()
     {
@@ -58,7 +58,7 @@ public partial class SignUpPage
         }
     }
 
-    private async Task DoResendLink()
+    private async Task DoResendToken()
     {
         if (isLoading) return;
 
@@ -67,12 +67,12 @@ public partial class SignUpPage
 
         try
         {
-            var sendConfirmationEmailRequest = new SendConfirmationEmailRequestDto { Email = signUpModel.Email };
+            var sendConfirmEmailTokenRequest = new SendEmailTokenRequestDto { Email = signUpModel.Email };
 
-            await identityController.SendConfirmationEmail(sendConfirmationEmailRequest, CurrentCancellationToken);
+            await identityController.SendConfirmEmailToken(sendConfirmEmailTokenRequest, CurrentCancellationToken);
 
             signUpMessageSeverity = BitSeverity.Success;
-            signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationLinkMessage)];
+            signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationTokenMessage)];
         }
         catch (KnownException e)
         {

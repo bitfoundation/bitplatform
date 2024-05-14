@@ -135,6 +135,9 @@
     <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} الزامی است.</value>
   </data>
+    <data name="PhoneAttribute_Invalid" xml:space="preserve">
+    <value>مقدار {0} یک شماره تلفن معتبر نیست.</value>
+  </data>
     <data name="BadRequestException" xml:space="preserve">
     <value>درخواست نامعتبر</value>
   </data>
@@ -207,17 +210,20 @@
     <data name="Email" xml:space="preserve">
     <value>ایمیل</value>
   </data>
+    <data name="PhoneNumber" xml:space="preserve">
+    <value>شماره تلفن</value>
+  </data>
     <data name="Password" xml:space="preserve">
     <value>رمز عبور</value>
   </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>رمز عبور شما با موفقیت تغییر کرد.</value>
   </data>
-    <data name="ResendConfirmationLinkMessage" xml:space="preserve">
-    <value>لینک تایید دوباره به آدرس ایمیل شما ارسال شده است.</value>
+    <data name="ResendConfirmationTokenMessage" xml:space="preserve">
+    <value>توکن تایید دوباره به آدرس ایمیل شما ارسال شده است.</value>
   </data>
-    <data name="ResetPasswordLinkSentMessage" xml:space="preserve">
-    <value>لینک ریست رمز عبور به آدرس ایمیل شما ارسال شده است.</value>
+    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
+    <value>توکن ریست رمز عبور به آدرس ایمیل شما ارسال شده است.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>تصویر کاربر پیدا نشد</value>
@@ -225,7 +231,7 @@
     <data name="Error" xml:space="preserve">
     <value>خطا</value>
   </data>
-    <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
+    <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست تنظیم مجدد ایمیل رمز عبور را دارید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="TermsAccepted" xml:space="preserve">
@@ -240,6 +246,9 @@
     <data name="BirthDate" xml:space="preserve">
     <value>تاریخ تولد</value>
   </data>
+    <data name="UserName" xml:space="preserve">
+    <value>نام کاربری</value>
+  </data>
     <data name="Name" xml:space="preserve">
     <value>نام</value>
   </data>
@@ -249,17 +258,29 @@
     <data name="Price" xml:space="preserve">
     <value>قيمت</value>
   </data>
+    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>یا ایمیل یا شماره تلفن را وارد کنید.</value>
+  </data>
+    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>یا ایمیل یا شماره تلفن یا نام کاربری را وارد کنید.</value>
+  </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>برای ادامه باید وارد شوید.</value>
   </data>
-    <data name="InvalidUsernameOrPassword" xml:space="preserve">
-    <value>نام کاربری یا رمز عبور نامعتبر است</value>
+    <data name="InvalidUserCredentials" xml:space="preserve">
+    <value>اطلاعات کاربری نادرست است</value>
   </data>
-    <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
+    <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
+  </data>
+    <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <value>شما قبلا پیامک تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>ایمیل شما قبلا تایید شده است.</value>
+  </data>
+    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>شماره تلفن شما قبلا تایید شده است</value>
   </data>
     <data name="Title" xml:space="preserve">
     <value>عنوان</value>
@@ -273,11 +294,11 @@
     <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
   </data>
-    <data name="UserNameNotFound" xml:space="preserve">
-    <value>کاربر {0} وجود ندارد.</value>
+    <data name="UserNotFound" xml:space="preserve">
+    <value>کاربر وجود ندارد.</value>
   </data>
-    <data name="DuplicateEmail" xml:space="preserve">
-    <value>ایمیل '{0}' قبلا گرفته شده است.</value>
+    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>این ایمیل یا شماره تلفن قبلا گرفته شده است.</value>
   </data>
     <data name="Add" xml:space="preserve">
     <value>اضافه کردن</value>
@@ -345,6 +366,9 @@
   </data>
     <data name="NewPassword" xml:space="preserve">
     <value>رمز عبور جدید</value>
+  </data>
+    <data name="OldPassword" xml:space="preserve">
+    <value>رمز عبور قبلی</value>
   </data>
     <data name="No" xml:space="preserve">
     <value>نه</value>
@@ -563,12 +587,12 @@
     <value>به برنامه authenticator دسترسی ندارید?</value>
   </data>
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
-    <value>تولید و ایمیل توکن 2FA</value>
+    <value>تولید و ارسال توکن 2FA</value>
   </data>
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>توکن 2FA تولید و به ایمیل شما ارسال شد.</value>
   </data>
-    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="Update" xml:space="preserve">

@@ -120,6 +120,9 @@
     <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} est obligatoire.</value>
   </data>
+    <data name="PhoneAttribute_Invalid" xml:space="preserve">
+    <value>Le champ {0} n'est pas un numéro de téléphone valide.</value>
+  </data>
     <data name="CompareAttribute_ValidationError" xml:space="preserve">
     <value>« {0} » et « {1} » ne correspondent pas.</value>
   </data>
@@ -135,14 +138,14 @@
     <data name="RangeAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} doit être compris entre {1} et {2}.</value>
   </data>
-    <data name="DuplicateEmail" xml:space="preserve">
-    <value>L'e-mail '{0}' est déjà pris.</value>
+    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>Cet email ou numéro de téléphone est déjà pris.</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
   </data>
-    <data name="UserNameNotFound" xml:space="preserve">
-    <value>L'utilisateur {0} n'existe pas.</value>
+    <data name="UserNotFound" xml:space="preserve">
+    <value>L'utilisateur n'existe pas.</value>
   </data>
     <data name="BadRequestException" xml:space="preserve">
     <value>Requête invalide</value>
@@ -213,8 +216,14 @@
     <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirmer le nouveau mot de passe</value>
   </data>
+    <data name="OldPassword" xml:space="preserve">
+    <value>Old Password</value>
+  </data>
     <data name="Email" xml:space="preserve">
     <value>E-mail</value>
+  </data>
+    <data name="PhoneNumber" xml:space="preserve">
+    <value>Numéro de téléphone</value>
   </data>
     <data name="Password" xml:space="preserve">
     <value>Mot de passe</value>
@@ -222,11 +231,11 @@
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Votre mot de passe a changé avec succès.</value>
   </data>
-    <data name="ResendConfirmationLinkMessage" xml:space="preserve">
-    <value>Le lien de confirmation a été renvoyé à votre adresse e-mail.</value>
+    <data name="ResendConfirmationTokenMessage" xml:space="preserve">
+    <value>Le jeton de confirmation a été renvoyé à votre adresse e-mail.</value>
   </data>
-    <data name="ResetPasswordLinkSentMessage" xml:space="preserve">
-    <value>Le lien de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.</value>
+    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
+    <value>Le jeton de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>L'image de l'utilisateur est introuvable</value>
@@ -243,7 +252,7 @@
     <data name="Error" xml:space="preserve">
     <value>Erreur</value>
   </data>
-    <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
+    <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de réinitialisation du mot de passe.</value>
   </data>
     <data name="TermsAccepted" xml:space="preserve">
@@ -257,6 +266,9 @@
   </data>
     <data name="BirthDate" xml:space="preserve">
     <value>Date de naissance</value>
+  </data>
+    <data name="UserName" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
   </data>
     <data name="Name" xml:space="preserve">
     <value>Nom</value>
@@ -291,17 +303,29 @@
     <data name="DeleteProduct" xml:space="preserve">
     <value>Supprimer le produit</value>
   </data>
+    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>Soit l'e-mail du fournisseur, soit le numéro de téléphone.</value>
+  </data>
+    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>Soit le nom d'utilisateur du fournisseur, l'e-mail ou le numéro de téléphone.</value>
+  </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>
   </data>
-    <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Nom d'utilisateur ou mot de passe invalide</value>
   </data>
-    <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
+    <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de confirmation.</value>
+  </data>
+    <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <value>Vous avez déjà demandé le sms de confirmation. Réessayez dans {0}</value>
   </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Votre email est déjà confirmé.</value>
+  </data>
+    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>Votre numéro de téléphone est déjà confirmé.</value>
   </data>
     <data name="TodoTitle" xml:space="preserve">
     <value>Faire</value>
@@ -679,12 +703,12 @@
     <value>Pas d'accès à l'application d'authentification?</value>
   </data>
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
-    <value>Générez un code 2FA et un e-mail</value>
+    <value>Générer et envoyer un jeton 2FA</value>
   </data>
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>Le jeton 2FA a été généré et envoyé à votre email.</value>
   </data>
-    <data name="WaitForTfaTokenEmailResendDelay" xml:space="preserve">
+    <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail du token 2FA. Réessayez en {0}.</value>
   </data>
     <data name="Update" xml:space="preserve">

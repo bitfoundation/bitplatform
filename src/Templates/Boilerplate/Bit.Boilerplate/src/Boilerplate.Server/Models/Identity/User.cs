@@ -5,6 +5,8 @@ public class User : IdentityUser<int>
     [PersonalData]
     public string? FullName { get; set; }
 
+    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+
     [PersonalData]
     public Gender? Gender { get; set; }
 
@@ -14,11 +16,17 @@ public class User : IdentityUser<int>
     [PersonalData]
     public string? ProfileImageName { get; set; }
 
-    public DateTimeOffset? ConfirmationEmailRequestedOn { get; set; }
+    /// <summary>
+    /// To either confirm and/or change email
+    /// </summary>
+    public DateTimeOffset? EmailTokenRequestedOn { get; set; }
 
-    public DateTimeOffset? ResetPasswordEmailRequestedOn { get; set; }
+    /// <summary>
+    /// To either confirm and/or change phone number
+    /// </summary>
+    public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
 
-    public string? DisplayName => FullName ?? NormalizedUserName;
+    public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
 
     public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
 }

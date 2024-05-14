@@ -103,12 +103,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/EmailConfirmationPage.razor.css",
-        "inputFile": "Components/Pages/Identity/EmailConfirmationPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Components/Pages/Identity/ForgotPasswordPage.razor.css",
         "inputFile": "Components/Pages/Identity/ForgotPasswordPage.razor.scss",
         "minify": { "enabled": false },

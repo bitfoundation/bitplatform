@@ -79,26 +79,8 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirm email.
-        /// </summary>
-        public static string ConfirmEmail {
-            get {
-                return ResourceManager.GetString("ConfirmEmail", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Or, copy the link below to your browser address bar:.
-        /// </summary>
-        public static string CopyLink {
-            get {
-                return ResourceManager.GetString("CopyLink", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have signed up for a Boilerplate account.
-        ///                    Confirm your email address by clicking the button below..
+        ///   Looks up a localized string similar to You&apos;re receiving this email because recently you have registered {0} to your Boilerplate account.
+        ///                    Confirm your email address by entering the number below in the app..
         /// </summary>
         public static string EmailConfirmationMessageBody {
             get {
@@ -125,7 +107,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Someone has requested a link to change your password..
+        ///   Looks up a localized string similar to Someone has requested a token to change your password..
         /// </summary>
         public static string ResetPasswordMessage {
             get {
@@ -181,9 +163,9 @@ namespace Boilerplate.Server.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Copy this code and use it in the login page..
         /// </summary>
-        public static string TfaTokenNote {
+        public static string CopyTokenNote {
             get {
-                return ResourceManager.GetString("TfaTokenNote", resourceCulture);
+                return ResourceManager.GetString("CopyTokenNote", resourceCulture);
             }
         }
         

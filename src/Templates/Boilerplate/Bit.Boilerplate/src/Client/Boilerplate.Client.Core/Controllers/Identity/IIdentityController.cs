@@ -9,13 +9,19 @@ public interface IIdentityController : IAppController
     Task SignUp(SignUpRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendConfirmationEmail(SendConfirmationEmailRequestDto body, CancellationToken cancellationToken = default);
+    Task SendConfirmEmailToken(SendEmailTokenRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto body, CancellationToken cancellationToken = default);
+    Task ConfirmEmail(ConfirmEmailRequestDto body, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task ConfirmEmail(ConfirmEmailRequestDto body);
+    Task SendConfirmPhoneNumberToken(SendPhoneNumberTokenRequestDto body, CancellationToken cancellationToken = default);
+
+    [HttpPost]
+    Task ConfirmPhoneNumber(ConfirmPhoneNumberRequestDto body, CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task SendResetPasswordToken(SendResetPasswordTokenRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task ResetPassword(ResetPasswordRequestDto body, CancellationToken cancellationToken = default);
@@ -27,9 +33,5 @@ public interface IIdentityController : IAppController
     Task<SignInResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default) => default!;
 
     [HttpPost]
-    Task SendTwoFactorToken(SignInRequestDto signInRequest, CancellationToken cancellationToken = default) => default!;
-
-    [HttpPost]
-    [Route("~/api/[controller]/2fa")]
-    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto twoFactorAuthRequest, CancellationToken cancellationToken = default) => default!;
+    Task SendTwoFactorToken(IdentityRequestDto body, CancellationToken cancellationToken) => default!;
 }

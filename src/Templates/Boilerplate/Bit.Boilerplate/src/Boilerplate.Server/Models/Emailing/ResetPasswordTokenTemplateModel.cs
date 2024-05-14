@@ -1,8 +1,8 @@
 ﻿namespace Boilerplate.Server.Models.Emailing;
 
-public class TwoFactorTokenModel
+public class ResetPasswordTokenTemplateModel
 {
-    public required string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
 
     public required string Token { get; set; }
 }

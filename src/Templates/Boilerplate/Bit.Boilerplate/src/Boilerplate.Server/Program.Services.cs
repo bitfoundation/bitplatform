@@ -205,10 +205,11 @@ public static partial class Program
             .PersistKeysToDbContext<AppDbContext>()
             .ProtectKeysWithCertificate(certificate);
 
+        services.AddTransient<IUserConfirmation<User>, AppUserConfirmation>();
+
         services.AddIdentity<User, Role>(options =>
         {
-            options.User.RequireUniqueEmail = settings.RequireUniqueEmail;
-            options.SignIn.RequireConfirmedEmail = true;
+            options.SignIn.RequireConfirmedAccount = true;
             options.Password.RequireDigit = settings.PasswordRequireDigit;
             options.Password.RequireLowercase = settings.PasswordRequireLowercase;
             options.Password.RequireUppercase = settings.PasswordRequireUppercase;

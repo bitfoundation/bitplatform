@@ -24,9 +24,9 @@ public partial class SignInPage
     {
         await base.OnParamsSetAsync();
 
-        if (string.IsNullOrEmpty(signInModel.UserName))
+        if (string.IsNullOrEmpty(signInModel.Email))
         {
-            signInModel.UserName = Email;
+            signInModel.Email = Email;
         }
     }
 

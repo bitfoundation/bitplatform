@@ -20,9 +20,9 @@ public partial class AuthenticationStateLogger : AppComponentBase
         {
             var user = (await AuthenticationStateTask).User;
 
-            var (userId, userName, isUserAuthenticated) = user.IsAuthenticated() ? (user.GetUserId().ToString(), user.GetUserName(), user.IsAuthenticated()) : default;
+            var (userId, userName, email, isUserAuthenticated) = user.IsAuthenticated() ? (user.GetUserId().ToString(), user.GetUserName(), user.GetEmail(), user.IsAuthenticated()) : default;
 
-            authLogger.LogInformation("Authentication State: {UserId}, {UserName}, {IsUserAuthenticated}", userId, userName, isUserAuthenticated);
+            authLogger.LogInformation("Authentication State: {UserId}, {UserName}, {Email}, {IsUserAuthenticated}", userId, userName, email, isUserAuthenticated);
         }
         catch (Exception exp)
         {

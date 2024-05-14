@@ -2,7 +2,7 @@
 @using Boilerplate.Server.Resources
 
 @code {
-    [Parameter] public TwoFactorTokenModel Model { get; set; } = default!;
+    [Parameter] public TwoFactorTokenTemplateModel Model { get; set; } = default!;
     [Parameter] public HttpContext HttpContext { get; set; } = default!;
     [Inject] public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
 }
@@ -20,7 +20,7 @@
                style="border:1px solid #EDEBE9; border-radius:2px; padding:50px; text-align:center;">
             <tr>
                 <td style="color:#0D2960; font-weight:600; font-size:24px; line-height:150%; padding-bottom:50px;">
-                    @EmailLocalizer.GetString(nameof(EmailStrings.TfaTokenHello), Model.DisplayName!)
+                    @EmailLocalizer[nameof(EmailStrings.TfaTokenHello), Model.DisplayName!]
                 </td>
             </tr>
             <tr>
@@ -41,7 +41,7 @@
             </tr>
             <tr>
                 <td style="font-weight:400; font-size:18px; line-height:155%;">
-                    @EmailLocalizer[nameof(EmailStrings.TfaTokenNote)]
+                    @EmailLocalizer[nameof(EmailStrings.CopyTokenNote)]
                 </td>
             </tr>
         </table>

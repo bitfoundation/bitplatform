@@ -11,7 +11,7 @@ public partial class ForgotPasswordPage
     private bool isLoading;
     private string? forgotPasswordMessage;
     private BitSeverity forgotPasswordMessageSeverity;
-    private SendResetPasswordEmailRequestDto forgotPasswordModel = new();
+    private SendResetPasswordTokenRequestDto forgotPasswordModel = new();
 
     private async Task DoSubmit()
     {
@@ -22,11 +22,11 @@ public partial class ForgotPasswordPage
 
         try
         {
-            await identityController.SendResetPasswordEmail(forgotPasswordModel, CurrentCancellationToken);
+            await identityController.SendResetPasswordToken(forgotPasswordModel, CurrentCancellationToken);
 
             forgotPasswordMessageSeverity = BitSeverity.Success;
 
-            forgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
+            forgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordTokenSentMessage)];
         }
         catch (KnownException e)
         {
