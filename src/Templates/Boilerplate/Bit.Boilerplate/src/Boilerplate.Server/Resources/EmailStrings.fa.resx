@@ -134,7 +134,7 @@
     <value>سلام {0}</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>کسی برای تغییر رمز عبور شما لینکی درخواست کرده است.</value>
+    <value>کسی برای تغییر رمز عبور شما توکن درخواست کرده است.</value>
   </data>
   <data name="ResetPasswordNote" xml:space="preserve">
     <value>رمز عبور شما تغییر نخواهد کرد تا زمانی که به لینک بالا دسترسی داشته باشید و یک رمز جدید ایجاد کنید.</value>

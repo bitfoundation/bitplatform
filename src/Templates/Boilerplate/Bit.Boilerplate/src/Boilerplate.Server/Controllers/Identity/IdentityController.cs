@@ -53,10 +53,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (existingUser is not null)
             throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]);
 
-        var userToAdd = new User
-        {
-            LockoutEnabled = true
-        };
+        var userToAdd = new User { LockoutEnabled = true };
 
         await userStore.SetUserNameAsync(userToAdd, signUpRequest.UserName!, cancellationToken);
 
@@ -106,8 +103,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var user = await userManager.FindByEmailAsync(body.Email!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
-        if (user.EmailConfirmed)
-            return;
+        if (user.EmailConfirmed) return;
 
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
@@ -148,8 +144,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        if (user.PhoneNumberConfirmed)
-            return;
+        if (user.PhoneNumberConfirmed) return;
 
         var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{body.PhoneNumber}", body.Token!);
 
@@ -245,13 +240,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             {
                 var templateParameters = new Dictionary<string, object?>()
                 {
-                    [nameof(TwoFactorTokenTemplate.Model)] = new TwoFactorTokenTemplateModel { DisplayName = user.DisplayName ?? "User", Token = token },
+                    [nameof(ResetPasswordTokenTemplate.Model)] = new ResetPasswordTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
                     [nameof(HttpContext)] = HttpContext
                 };
 
                 var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                 {
-                    var renderedComponent = await htmlRenderer.RenderComponentAsync<TwoFactorTokenTemplate>(ParameterView.FromDictionary(templateParameters));
+                    var renderedComponent = await htmlRenderer.RenderComponentAsync<ResetPasswordTokenTemplate>(ParameterView.FromDictionary(templateParameters));
 
                     return renderedComponent.ToHtmlString();
                 });
@@ -260,6 +255,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                                                    .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
                                                    .Body(body, isHtml: true)
                                                    .SendAsync(cancellationToken);
+
+                if (emailResult.Successful is false)
+                    throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
             }
         }
 
@@ -290,8 +288,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new BadRequestException();
         }
 
-        var token = await userManager.GeneratePasswordResetTokenAsync(user!);
-        var result = await userManager.ResetPasswordAsync(user!, token!, resetPasswordRequest.Password!);
+        var result = await userManager.ResetPasswordAsync(user!, await userManager.GeneratePasswordResetTokenAsync(user!), resetPasswordRequest.Password!);
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());

@@ -1,16 +1,16 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
-using FluentEmail.Core;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using QRCoder;
-using Boilerplate.Client.Core.Controllers.Identity;
+using FluentEmail.Core;
+using Boilerplate.Shared;
+using Boilerplate.Server.Resources;
 using Boilerplate.Server.Components;
+using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
-using Boilerplate.Server.Resources;
-using Boilerplate.Shared;
-using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
@@ -62,9 +62,18 @@ public partial class UserController : AppControllerBase, IUserController
     public async Task ChangePassword(ChangePasswordRequestDto body, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+
+        if (await userManager.IsLockedOutAsync(user!))
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")]);
+
         var result = await userManager.ChangePasswordAsync(user!, body.OldPassword!, body.NewPassword!);
+
         if (result.Succeeded is false)
+        {
+            await userManager.AccessFailedAsync(user!);
+
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+        }
     }
 
     [HttpPost]
@@ -124,16 +133,10 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        if (await userManager.IsLockedOutAsync(user!))
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")]);
-
         var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{body.Email}", body.Token!);
 
         if (tokenIsVerified)
-        {
-            await userManager.AccessFailedAsync(user!);
             throw new BadRequestException();
-        }
 
         await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, body.Email, cancellationToken);
         var result = await userManager.UpdateAsync(user!);

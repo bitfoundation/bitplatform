@@ -4,5 +4,5 @@ public class ResetPasswordTokenTemplateModel
 {
     public string? DisplayName { get; set; }
 
-    public Uri? ResetPasswordLink { get; set; }
+    public required string Token { get; set; }
 }

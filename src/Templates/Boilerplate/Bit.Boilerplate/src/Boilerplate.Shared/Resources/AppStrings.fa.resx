@@ -268,7 +268,7 @@
     <value>برای ادامه باید وارد شوید.</value>
   </data>
     <data name="InvalidUserCredentials" xml:space="preserve">
-    <value>نام کاربری یا رمز عبور نامعتبر است</value>
+    <value>اطلاعات کاربری نادرست است</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>

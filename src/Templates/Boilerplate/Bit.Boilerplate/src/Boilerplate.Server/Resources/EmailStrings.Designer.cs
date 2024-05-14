@@ -116,7 +116,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Someone has requested a link to change your password..
+        ///   Looks up a localized string similar to Someone has requested a token to change your password..
         /// </summary>
         public static string ResetPasswordMessage {
             get {

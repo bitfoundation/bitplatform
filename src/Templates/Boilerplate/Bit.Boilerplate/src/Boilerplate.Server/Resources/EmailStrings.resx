@@ -134,7 +134,7 @@
     <value>Hello {0}</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>Someone has requested a link to change your password.</value>
+    <value>Someone has requested a token to change your password.</value>
   </data>
   <data name="ResetPasswordNote" xml:space="preserve">
     <value>Your password won't change until you access the link above and create a new one.</value>
