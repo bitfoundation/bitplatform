@@ -32,6 +32,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(PagedResult<CategoryDto>))]
 [JsonSerializable(typeof(List<CategoryDto>))]
 //#endif
+[JsonSerializable(typeof(IdentityRequestDto))]
 [JsonSerializable(typeof(SignInRequestDto))]
 [JsonSerializable(typeof(SignInResponseDto))]
 [JsonSerializable(typeof(TokenResponseDto))]

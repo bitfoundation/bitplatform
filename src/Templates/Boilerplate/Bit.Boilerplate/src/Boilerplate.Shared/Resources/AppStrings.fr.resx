@@ -145,7 +145,7 @@
     <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
   </data>
     <data name="UserNotFound" xml:space="preserve">
-    <value>L'utilisateur {0} n'existe pas.</value>
+    <value>L'utilisateur n'existe pas.</value>
   </data>
     <data name="BadRequestException" xml:space="preserve">
     <value>Requête invalide</value>
@@ -215,6 +215,9 @@
   </data>
     <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirmer le nouveau mot de passe</value>
+  </data>
+    <data name="OldPassword" xml:space="preserve">
+    <value>Old Password</value>
   </data>
     <data name="Email" xml:space="preserve">
     <value>E-mail</value>
@@ -309,7 +312,7 @@
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>
   </data>
-    <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Nom d'utilisateur ou mot de passe invalide</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">

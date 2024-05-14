@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boilerplate.Client.Core.Data.Migrations
 {
     [DbContext(typeof(OfflineDbContext))]
-    [Migration("20240513085550_InitialMigration")]
+    [Migration("20240514124351_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -49,6 +49,7 @@ namespace Boilerplate.Client.Core.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -65,7 +66,7 @@ namespace Boilerplate.Client.Core.Data.Migrations
                             Gender = 2,
                             Password = "123456",
                             PhoneNumber = "+31684207362",
-                            UserName = "bitplatform"
+                            UserName = "test"
                         });
                 });
 #pragma warning restore 612, 618

@@ -2,25 +2,12 @@
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class SignUpRequestDto : IValidatableObject
+public class SignUpRequestDto : IdentityRequestDto
 {
     /// <example>user</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.UserName))]
-    public string? UserName { get; set; }
-
-    /// <summary>
-    /// The user's email
-    /// </summary>
-    /// <example>me@gmail.com</example>
-    [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
-    [Display(Name = nameof(AppStrings.Email))]
-    public string? Email { get; set; }
-
-    /// <example>+31123456789</example>
-    [Phone(ErrorMessage = nameof(AppStrings.PhoneNumber))]
-    [Display(Name = nameof(AppStrings.PhoneAttribute_Invalid))]
-    public string? PhoneNumber { get; set; }
+    public override string? UserName { get; set; }
 
     /// <example>123456</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
@@ -37,7 +24,7 @@ public class SignUpRequestDto : IValidatableObject
     public string? GoogleRecaptchaResponse { get; set; }
     //#endif
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
             yield return new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideEmailOrPhoneNumber), [nameof(Email), nameof(PhoneNumber)]);

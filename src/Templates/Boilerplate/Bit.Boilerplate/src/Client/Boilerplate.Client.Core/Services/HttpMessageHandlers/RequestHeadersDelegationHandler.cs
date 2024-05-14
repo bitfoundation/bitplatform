@@ -19,3 +19,4 @@ public class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
         return await base.SendAsync(request, cancellationToken);
     }
 }
+

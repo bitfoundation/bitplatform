@@ -209,7 +209,6 @@ public static partial class Program
 
         services.AddIdentity<User, Role>(options =>
         {
-            options.User.RequireUniqueEmail = settings.RequireUniqueEmail;
             options.SignIn.RequireConfirmedAccount = true;
             options.Password.RequireDigit = settings.PasswordRequireDigit;
             options.Password.RequireLowercase = settings.PasswordRequireLowercase;

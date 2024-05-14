@@ -124,7 +124,7 @@
     <value>یا لینک زیر را به نوار آدرس مرورگر خود کپی کنید:</value>
   </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>شما این پیام را دریافت می کنید زیرا اخیرا ایمیل {0} را به اکانت Boilerplate خود اختصاص داده اید.
+    <value>شما این ایمیل را دریافت می کنید زیرا اخیرا ایمیل {0} را به اکانت Boilerplate خود اختصاص داده اید.
                     آدرس ایمیل خود را با وارد کردن عدد زیر در برنامه تایید کنید.</value>
   </data>
   <data name="ResetPasswordEmailSubject" xml:space="preserve">

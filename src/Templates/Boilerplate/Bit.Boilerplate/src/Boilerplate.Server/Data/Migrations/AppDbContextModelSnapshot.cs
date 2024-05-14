@@ -157,7 +157,7 @@ namespace Boilerplate.Server.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -186,6 +186,10 @@ namespace Boilerplate.Server.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("Email IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -193,6 +197,10 @@ namespace Boilerplate.Server.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("PhoneNumber IS NOT NULL");
 
                     b.ToTable("Users", "identity");
 
@@ -210,13 +218,13 @@ namespace Boilerplate.Server.Data.Migrations
                             Gender = 2,
                             LockoutEnabled = true,
                             NormalizedEmail = "TEST@BITPLATFORM.DEV",
-                            NormalizedUserName = "BITPLATFORM",
+                            NormalizedUserName = "TEST",
                             PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==",
                             PhoneNumber = "+31684207362",
                             PhoneNumberConfirmed = true,
                             SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
                             TwoFactorEnabled = false,
-                            UserName = "bitplatform"
+                            UserName = "test"
                         });
                 });
 

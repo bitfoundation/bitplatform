@@ -88,7 +88,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have registered {0} to your Boilerplate account.
+        ///   Looks up a localized string similar to You&apos;re receiving this email because recently you have registered {0} to your Boilerplate account.
         ///                    Confirm your email address by entering the number below in the app..
         /// </summary>
         public static string EmailConfirmationMessageBody {

@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Models.Emailing;
 
-public class SendResetPasswordTokenModel
+public class ResetPasswordTokenTemplateModel
 {
     public string? DisplayName { get; set; }
 

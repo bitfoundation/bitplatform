@@ -746,11 +746,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid username or password.
+        ///   Looks up a localized string similar to Invalid user credentials.
         /// </summary>
-        public static string InvalidUsernameOrPassword {
+        public static string InvalidUserCredentials {
             get {
-                return ResourceManager.GetString("InvalidUsernameOrPassword", resourceCulture);
+                return ResourceManager.GetString("InvalidUserCredentials", resourceCulture);
             }
         }
         
@@ -859,6 +859,15 @@ namespace Boilerplate.Shared.Resources {
         public static string OfflineEditProfileTitle {
             get {
                 return ResourceManager.GetString("OfflineEditProfileTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Old Password.
+        /// </summary>
+        public static string OldPassword {
+            get {
+                return ResourceManager.GetString("OldPassword", resourceCulture);
             }
         }
         
@@ -1835,7 +1844,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User {0} does not exist..
+        ///   Looks up a localized string similar to User does not exist..
         /// </summary>
         public static string UserNotFound {
             get {

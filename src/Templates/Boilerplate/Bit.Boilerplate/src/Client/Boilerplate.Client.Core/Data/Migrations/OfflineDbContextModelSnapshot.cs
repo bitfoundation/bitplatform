@@ -46,6 +46,7 @@ namespace Boilerplate.Client.Core.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -62,7 +63,7 @@ namespace Boilerplate.Client.Core.Data.Migrations
                             Gender = 2,
                             Password = "123456",
                             PhoneNumber = "+31684207362",
-                            UserName = "bitplatform"
+                            UserName = "test"
                         });
                 });
 #pragma warning restore 612, 618

@@ -1,6 +1,4 @@
-﻿
-
-namespace Boilerplate.Shared.Dtos.Identity;
+﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
 public class UserDto : IValidatableObject
@@ -27,8 +25,6 @@ public class UserDto : IValidatableObject
     [Display(Name = nameof(AppStrings.FullName))]
     public string? FullName { get; set; }
 
-    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
-
     [Display(Name = nameof(AppStrings.Gender))]
     public Gender? Gender { get; set; }
 
@@ -36,6 +32,8 @@ public class UserDto : IValidatableObject
     public DateTimeOffset? BirthDate { get; set; }
 
     public string? ProfileImageName { get; set; }
+
+    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

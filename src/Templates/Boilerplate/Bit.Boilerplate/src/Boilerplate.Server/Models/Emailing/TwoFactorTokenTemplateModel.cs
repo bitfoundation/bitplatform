@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Models.Emailing;
 
-public class SendTwoFactorTokenModel
+public class TwoFactorTokenTemplateModel
 {
     public required string DisplayName { get; set; }
 

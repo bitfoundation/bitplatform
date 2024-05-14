@@ -23,7 +23,7 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbCo
             {
                 Id = 1,
                 Email = "test@bitplatform.dev",
-                UserName = "bitplatform",
+                UserName = "test",
                 PhoneNumber = "+31684207362",
                 BirthDate = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero),
                 Gender = Gender.Other,

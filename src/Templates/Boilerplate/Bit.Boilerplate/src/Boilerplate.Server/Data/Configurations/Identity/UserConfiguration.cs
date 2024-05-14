@@ -6,7 +6,17 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        const string userName = "bitplatform";
+        builder
+            .HasIndex(b => b.Email)
+            .HasFilter($"{nameof(User.Email)} IS NOT NULL")
+            .IsUnique();
+
+        builder
+            .HasIndex(b => b.PhoneNumber)
+            .HasFilter($"{nameof(User.PhoneNumber)} IS NOT NULL")
+            .IsUnique();
+
+        const string userName = "test";
         const string email = "test@bitplatform.dev";
 
         builder.HasData([new()

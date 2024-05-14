@@ -273,8 +273,8 @@
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>You must be signed in to continue.</value>
   </data>
-    <data name="InvalidUsernameOrPassword" xml:space="preserve">
-    <value>Invalid username or password</value>
+    <data name="InvalidUserCredentials" xml:space="preserve">
+    <value>Invalid user credentials</value>
   </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Your email is already confirmed.</value>
@@ -295,7 +295,7 @@
     <value>User is locked out. Try again in {0}</value>
   </data>
     <data name="UserNotFound" xml:space="preserve">
-    <value>User {0} does not exist.</value>
+    <value>User does not exist.</value>
   </data>
     <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
     <value>This email or phone number is already taken.</value>
@@ -366,6 +366,9 @@ Please confirm your email by clicking on the link.</value>
   </data>
     <data name="NewPassword" xml:space="preserve">
     <value>New Password</value>
+  </data>
+    <data name="OldPassword" xml:space="preserve">
+    <value>Old Password</value>
   </data>
     <data name="No" xml:space="preserve">
     <value>No</value>

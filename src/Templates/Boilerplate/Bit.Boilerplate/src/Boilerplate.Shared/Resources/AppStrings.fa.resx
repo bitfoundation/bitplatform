@@ -267,7 +267,7 @@
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>برای ادامه باید وارد شوید.</value>
   </data>
-    <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <data name="InvalidUserCredentials" xml:space="preserve">
     <value>نام کاربری یا رمز عبور نامعتبر است</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
@@ -295,7 +295,7 @@
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="UserNotFound" xml:space="preserve">
-    <value>کاربر {0} وجود ندارد.</value>
+    <value>کاربر وجود ندارد.</value>
   </data>
     <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
     <value>این ایمیل یا شماره تلفن قبلا گرفته شده است.</value>
@@ -366,6 +366,9 @@
   </data>
     <data name="NewPassword" xml:space="preserve">
     <value>رمز عبور جدید</value>
+  </data>
+    <data name="OldPassword" xml:space="preserve">
+    <value>رمز عبور قبلی</value>
   </data>
     <data name="No" xml:space="preserve">
     <value>نه</value>

@@ -12,9 +12,14 @@ public static class ClaimsPrincipalExtensions
         return (claimsPrincipal.FindFirst(ClaimTypes.Name) ?? claimsPrincipal.FindFirst("unique_name"))!.Value;
     }
 
-    public static string GetEmail(this ClaimsPrincipal claimsPrincipal)
+    public static string? GetEmail(this ClaimsPrincipal claimsPrincipal)
     {
-        return (claimsPrincipal.FindFirst(ClaimTypes.Email) ?? claimsPrincipal.FindFirst("email"))!.Value;
+        return (claimsPrincipal.FindFirst(ClaimTypes.Email) ?? claimsPrincipal.FindFirst("email"))?.Value;
+    }
+
+    public static string GetDisplayName(this ClaimsPrincipal claimsPrincipal)
+    {
+        return claimsPrincipal.GetEmail() ?? claimsPrincipal.GetUserName();
     }
 
     public static bool IsAuthenticated(this ClaimsPrincipal? claimsPrincipal)
