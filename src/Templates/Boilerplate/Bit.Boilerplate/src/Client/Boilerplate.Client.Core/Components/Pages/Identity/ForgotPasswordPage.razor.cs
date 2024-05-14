@@ -26,7 +26,7 @@ public partial class ForgotPasswordPage
 
             forgotPasswordMessageSeverity = BitSeverity.Success;
 
-            forgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordLinkSentMessage)];
+            forgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordTokenSentMessage)];
         }
         catch (KnownException e)
         {

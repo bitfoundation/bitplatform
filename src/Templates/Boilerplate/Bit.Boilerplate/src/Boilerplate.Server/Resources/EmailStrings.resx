@@ -120,9 +120,6 @@
   <data name="ConfirmationEmailSubject" xml:space="preserve">
     <value>Boilerplate - Confirm your email address</value>
   </data>
-  <data name="CopyLink" xml:space="preserve">
-    <value>Or, copy the link below to your browser address bar:</value>
-  </data>
   <data name="EmailConfirmationMessageBody" xml:space="preserve">
     <value>You're receiving this email because recently you have registered {0} to your Boilerplate account.
                     Confirm your email address by entering the number below in the app.</value>

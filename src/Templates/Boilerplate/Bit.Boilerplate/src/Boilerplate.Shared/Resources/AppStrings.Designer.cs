@@ -286,8 +286,8 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to We have sent a confirmation link to your email address.
-        ///Please confirm your email by clicking on the link..
+        ///   Looks up a localized string similar to We have sent a confirmation token to your email address.
+        ///Please confirm your email by typing the token here..
         /// </summary>
         public static string ConfirmEmailMessage {
             get {
@@ -593,7 +593,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please enter the email address you have been signed up with so we can send a reset password link to your email address..
+        ///   Looks up a localized string similar to Please enter the email address you have been signed up with so we can send a reset password token to your email address..
         /// </summary>
         public static string ForgetPasswordMessage {
             get {
@@ -719,11 +719,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Looks like the confirmation link either is invalid or has expired..
+        ///   Looks up a localized string similar to Looks like the confirmation token either is invalid or has expired..
         /// </summary>
-        public static string InvalidConfirmationLinkMessage {
+        public static string InvalidConfirmationTokenMessage {
             get {
-                return ResourceManager.GetString("InvalidConfirmationLinkMessage", resourceCulture);
+                return ResourceManager.GetString("InvalidConfirmationTokenMessage", resourceCulture);
             }
         }
         
@@ -1097,11 +1097,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The confirmation link has been re-sent to your email address..
+        ///   Looks up a localized string similar to The confirmation token has been re-sent to your email address..
         /// </summary>
-        public static string ResendConfirmationLinkMessage {
+        public static string ResendConfirmationTokenMessage {
             get {
-                return ResourceManager.GetString("ResendConfirmationLinkMessage", resourceCulture);
+                return ResourceManager.GetString("ResendConfirmationTokenMessage", resourceCulture);
             }
         }
         
@@ -1124,20 +1124,20 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The reset password link has been sent to your email address..
-        /// </summary>
-        public static string ResetPasswordLinkSentMessage {
-            get {
-                return ResourceManager.GetString("ResetPasswordLinkSentMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Reset password.
         /// </summary>
         public static string ResetPasswordTitle {
             get {
                 return ResourceManager.GetString("ResetPasswordTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The reset password token has been sent to your email address..
+        /// </summary>
+        public static string ResetPasswordTokenSentMessage {
+            get {
+                return ResourceManager.GetString("ResetPasswordTokenSentMessage", resourceCulture);
             }
         }
         

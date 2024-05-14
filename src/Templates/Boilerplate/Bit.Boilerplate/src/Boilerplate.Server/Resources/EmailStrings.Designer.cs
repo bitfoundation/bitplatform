@@ -79,15 +79,6 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Or, copy the link below to your browser address bar:.
-        /// </summary>
-        public static string CopyLink {
-            get {
-                return ResourceManager.GetString("CopyLink", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You&apos;re receiving this email because recently you have registered {0} to your Boilerplate account.
         ///                    Confirm your email address by entering the number below in the app..
         /// </summary>

@@ -219,11 +219,11 @@
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>رمز عبور شما با موفقیت تغییر کرد.</value>
   </data>
-    <data name="ResendConfirmationLinkMessage" xml:space="preserve">
-    <value>لینک تایید دوباره به آدرس ایمیل شما ارسال شده است.</value>
+    <data name="ResendConfirmationTokenMessage" xml:space="preserve">
+    <value>توکن تایید دوباره به آدرس ایمیل شما ارسال شده است.</value>
   </data>
-    <data name="ResetPasswordLinkSentMessage" xml:space="preserve">
-    <value>لینک ریست رمز عبور به آدرس ایمیل شما ارسال شده است.</value>
+    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
+    <value>توکن ریست رمز عبور به آدرس ایمیل شما ارسال شده است.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>تصویر کاربر پیدا نشد</value>

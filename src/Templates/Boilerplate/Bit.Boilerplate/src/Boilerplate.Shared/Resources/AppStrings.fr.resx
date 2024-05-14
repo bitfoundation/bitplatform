@@ -231,11 +231,11 @@
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Votre mot de passe a changé avec succès.</value>
   </data>
-    <data name="ResendConfirmationLinkMessage" xml:space="preserve">
-    <value>Le lien de confirmation a été renvoyé à votre adresse e-mail.</value>
+    <data name="ResendConfirmationTokenMessage" xml:space="preserve">
+    <value>Le jeton de confirmation a été renvoyé à votre adresse e-mail.</value>
   </data>
-    <data name="ResetPasswordLinkSentMessage" xml:space="preserve">
-    <value>Le lien de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.</value>
+    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
+    <value>Le jeton de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>L'image de l'utilisateur est introuvable</value>

@@ -228,11 +228,11 @@
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Your password changed successfully.</value>
   </data>
-    <data name="ResendConfirmationLinkMessage" xml:space="preserve">
-    <value>The confirmation link has been re-sent to your email address.</value>
+    <data name="ResendConfirmationTokenMessage" xml:space="preserve">
+    <value>The confirmation token has been re-sent to your email address.</value>
   </data>
-    <data name="ResetPasswordLinkSentMessage" xml:space="preserve">
-    <value>The reset password link has been sent to your email address.</value>
+    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
+    <value>The reset password token has been sent to your email address.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>User image could not be found</value>
@@ -307,8 +307,8 @@
     <value>Already have an account?</value>
   </data>
     <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>We have sent a confirmation link to your email address.
-Please confirm your email by clicking on the link.</value>
+    <value>We have sent a confirmation token to your email address.
+Please confirm your email by typing the token here.</value>
   </data>
     <data name="ConfirmEmailTitle" xml:space="preserve">
     <value>Confirm Your Email Address</value>
@@ -338,7 +338,7 @@ Please confirm your email by clicking on the link.</value>
     <value>An error occurred while uploading file</value>
   </data>
     <data name="ForgetPasswordMessage" xml:space="preserve">
-    <value>Please enter the email address you have been signed up with so we can send a reset password link to your email address.</value>
+    <value>Please enter the email address you have been signed up with so we can send a reset password token to your email address.</value>
   </data>
     <data name="ForgetPasswordTitle" xml:space="preserve">
     <value>Forget password</value>
@@ -361,8 +361,8 @@ Please confirm your email by clicking on the link.</value>
     <data name="HomeTitle" xml:space="preserve">
     <value>Boilerplate Home</value>
   </data>
-    <data name="InvalidConfirmationLinkMessage" xml:space="preserve">
-    <value>Looks like the confirmation link either is invalid or has expired.</value>
+    <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
+    <value>Looks like the confirmation token either is invalid or has expired.</value>
   </data>
     <data name="NewPassword" xml:space="preserve">
     <value>New Password</value>
