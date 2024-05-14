@@ -163,9 +163,9 @@ namespace Boilerplate.Server.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Copy this code and use it in the login page..
         /// </summary>
-        public static string TfaTokenNote {
+        public static string CopyTokenNote {
             get {
-                return ResourceManager.GetString("TfaTokenNote", resourceCulture);
+                return ResourceManager.GetString("CopyTokenNote", resourceCulture);
             }
         }
         

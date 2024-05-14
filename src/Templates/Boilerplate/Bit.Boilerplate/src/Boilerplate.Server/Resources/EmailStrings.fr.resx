@@ -154,7 +154,7 @@
     <data name="TfaTokenMessage" xml:space="preserve">
     <value>Voici votre nouveau token 2FA pour vous connecter:</value>
   </data>
-    <data name="TfaTokenNote" xml:space="preserve">
+    <data name="CopyTokenNote" xml:space="preserve">
     <value>Copiez ce code et utilisez-le dans la page de connexion.</value>
   </data>
 </root>
