@@ -703,7 +703,7 @@
     <value>Pas d'accès à l'application d'authentification?</value>
   </data>
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
-    <value>Générez un code 2FA et un e-mail</value>
+    <value>Générer et envoyer un jeton 2FA</value>
   </data>
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>Le jeton 2FA a été généré et envoyé à votre email.</value>

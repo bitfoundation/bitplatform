@@ -587,7 +587,7 @@
     <value>به برنامه authenticator دسترسی ندارید?</value>
   </data>
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
-    <value>تولید و ایمیل توکن 2FA</value>
+    <value>تولید و ارسال توکن 2FA</value>
   </data>
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>توکن 2FA تولید و به ایمیل شما ارسال شد.</value>

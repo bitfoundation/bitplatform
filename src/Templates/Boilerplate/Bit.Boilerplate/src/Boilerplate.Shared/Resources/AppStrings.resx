@@ -590,7 +590,7 @@ Please confirm your email by typing the token here.</value>
     <value>No access to authenticator app?</value>
   </data>
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
-    <value>Generate a 2FA token and Email</value>
+    <value>Generate and Send 2FA Token</value>
   </data>
     <data name="TfaTokenEmailSent" xml:space="preserve">
     <value>The 2FA token has been generated and sent to your email.</value>

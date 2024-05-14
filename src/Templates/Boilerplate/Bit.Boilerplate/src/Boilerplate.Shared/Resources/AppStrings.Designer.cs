@@ -1637,7 +1637,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Generate a 2FA token and Email.
+        ///   Looks up a localized string similar to Generate and Send 2FA Token.
         /// </summary>
         public static string TfaTokenGenerateButtonText {
             get {
