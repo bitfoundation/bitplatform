@@ -25,9 +25,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.21" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.40" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
-        <PackageReference Include="Velopack" Version="0.0.359" />
+        <PackageReference Include="Velopack" Version="0.0.466-g4f560f4" />
         
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

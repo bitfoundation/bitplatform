@@ -13,7 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.5" />
     </ItemGroup>
 
     <ItemGroup>

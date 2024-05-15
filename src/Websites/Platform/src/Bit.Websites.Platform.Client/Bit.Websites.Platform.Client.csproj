@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.5" />
     </ItemGroup>
 
     <ItemGroup>
@@ -38,7 +38,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.5" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -70,7 +70,7 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Condition="!Exists('node_modules/.bin/sass') OR !Exists('node_modules/.bin/esbuild') OR !Exists('node_modules/.bin/tsc')" Command="npm install sass@1.77.1 typescript@5.4.5 esbuild@0.21.1 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition="!Exists('node_modules/.bin/sass') OR !Exists('node_modules/.bin/esbuild') OR !Exists('node_modules/.bin/tsc')" Command="npm install sass@1.77.1 typescript@5.4.5 esbuild@0.21.2 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css  --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
