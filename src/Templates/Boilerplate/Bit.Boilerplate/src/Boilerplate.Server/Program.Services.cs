@@ -101,7 +101,7 @@ public static partial class Program
 
         services.AddEndpointsApiExplorer();
 
-        services.AddSwaggerGen();
+        AddSwaggerGen(builder);
 
         AddIdentity(builder);
 
