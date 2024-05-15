@@ -324,13 +324,13 @@ jobs:
           encodedString: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v2
+      uses: apple-actions/import-codesign-certs@v3
       with:
         p12-filepath: './DistributionCert.p12'
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v1
+      uses: Apple-Actions/download-provisioning-profiles@v3
       with:
         bundle-id: 'com.bitplatform.Todo.Template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
