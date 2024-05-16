@@ -26,6 +26,9 @@
         <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
+
+        <LocalHttpServerEnabled Condition="$(TargetFramework.Contains('-windows'))">true</LocalHttpServerEnabled>
+        <DefineConstants Condition="'$(LocalHttpServerEnabled)' == 'true'">$(DefineConstants);LocalHttpServerEnabled</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
@@ -64,7 +67,7 @@
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
-
+    
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
@@ -76,6 +79,10 @@
 
     <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
         <BundleResource Include="Platforms\iOS\PrivacyInfo.xcprivacy" LogicalName="PrivacyInfo.xcprivacy" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(LocalHttpServerEnabled)' == 'true'">
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>

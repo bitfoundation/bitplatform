@@ -18,7 +18,7 @@
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         <Watch Remove="*.scss" />
-        
+
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.2-pre-02" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.8.2-pre-02" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
@@ -38,6 +38,10 @@
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
         <Content Include=".config\dotnet-tools.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>
