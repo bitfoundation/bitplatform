@@ -170,6 +170,16 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
                     }
                 }
             }
+
+            if (EditContext.Model is IValidatableObject validatableObject)
+            {
+                foreach (var item in validatableObject.Validate(modelValidationContext))
+                {
+                    item.ErrorMessage = stringLocalizer.GetString(item.ErrorMessage!);
+
+                    results.Add(item);
+                }
+            }
         }
         else
         {
