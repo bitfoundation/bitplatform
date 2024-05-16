@@ -3,6 +3,8 @@
 using Boilerplate.Client.Core.Data;
 //#endif
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -25,6 +27,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddSessioned<HttpClientHandler>();
+        services.TryAddTransient<HtmlRenderer>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
