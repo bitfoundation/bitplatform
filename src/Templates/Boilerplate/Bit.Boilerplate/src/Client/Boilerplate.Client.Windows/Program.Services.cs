@@ -17,7 +17,7 @@ public static partial class Program
         services.TryAddTransient<IConfiguration>(sp => configuration);
 
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
-        services.TryAddTransient(sp =>
+        services.TryAddSingleton(sp =>
         {
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
