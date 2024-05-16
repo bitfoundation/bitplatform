@@ -22,7 +22,7 @@ public partial class WindowsLocalHttpServer(IServiceCollection services) : ILoca
         return startTask ??= StartImplementation();
     }
 
-    public int GetPort() => port;
+    public int Port => port;
 
     private async Task StartImplementation()
     {

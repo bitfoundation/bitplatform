@@ -4,5 +4,5 @@ public interface ILocalHttpServer
 {
     Task Start();
 
-    int GetPort();
+    int Port { get; }
 }

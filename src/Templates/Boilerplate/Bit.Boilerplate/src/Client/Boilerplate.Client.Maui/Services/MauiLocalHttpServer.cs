@@ -22,7 +22,7 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
         return startTask ??= StartImplementation();
     }
 
-    public int GetPort() => port;
+    public int Port => port;
 
     private async Task StartImplementation()
     {
