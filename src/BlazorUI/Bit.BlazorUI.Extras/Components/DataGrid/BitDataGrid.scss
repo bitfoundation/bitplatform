@@ -53,33 +53,33 @@
     }
 
     .col-options {
-        left: 0;
         z-index: 1;
         padding: 1rem;
         border: 1px solid;
         position: absolute;
+        inset-inline-start: 0;
         border-color: var(--bit-clr-brd-primary);
         background-color: var(--bit-clr-bg-secondary);
     }
 
     .col-justify-end .col-options {
-        right: 0;
-        left: unset;
+        inset-inline-end: 0;
+        inset-inline-start: unset;
     }
 
     .col-width-draghandle {
-        top: 0;
-        bottom: 0;
-        right: 0rem;
         cursor: ew-resize;
         position: absolute;
+        inset-block-end: 0;
+        inset-inline-end: 0;
+        inset-block-start: 0;
     }
 
     .col-width-draghandle:after {
-        top: 0;
-        bottom: 0;
         content: ' ';
         position: absolute;
+        inset-block-end: 0;
+        inset-block-start: 0;
         border-left: 1px solid black;
     }
 
@@ -180,9 +180,9 @@
     }
 
     > thead .col-width-draghandle:after {
-        top: 5px;
-        bottom: 5px;
-        left: 0.5rem;
+        inset-block-end: 5px;
+        inset-block-start: 5px;
+        inset-inline-start: 0.5rem;
         border-color: var(--bit-clr-brd-primary);
     }
 
