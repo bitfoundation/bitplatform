@@ -107,7 +107,6 @@ public static partial class Program
 
         AddHealthChecks(builder);
 
-        services.TryAddTransient<HtmlRenderer>();
         services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
