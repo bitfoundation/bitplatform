@@ -13,9 +13,9 @@ namespace Boilerplate.Client.Windows.Services;
 
 public partial class WindowsLocalHttpServer(IServiceCollection services) : ILocalHttpServer
 {
-    private WebApplication? localHttpServer;
-    private Task? startTask;
     private int port;
+    private Task? startTask;
+    private WebApplication? localHttpServer;
 
     public Task Start()
     {

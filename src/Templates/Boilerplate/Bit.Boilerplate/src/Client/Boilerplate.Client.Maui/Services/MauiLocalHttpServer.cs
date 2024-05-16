@@ -13,9 +13,9 @@ namespace Boilerplate.Client.Maui.Services;
 
 public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHttpServer
 {
-    private WebApplication? localHttpServer;
     private int port;
     private Task? startTask;
+    private WebApplication? localHttpServer;
 
     public Task Start()
     {
