@@ -69,6 +69,10 @@ public static partial class MauiProgram
         services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
 
+#if LocalHttpServerEnabled
+        services.AddSingleton<ILocalHttpServer>(sp => new MauiLocalHttpServer(services));
+#endif
+
 #if ANDROID
         services.AddClientMauiProjectAndroidServices();
 #elif iOS

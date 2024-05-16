@@ -18,14 +18,13 @@
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         <Watch Remove="*.scss" />
-        
+
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.2-pre-02" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.8.2-pre-02" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.40" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
         <PackageReference Include="Velopack" Version="0.0.466-g4f560f4" />
@@ -38,6 +37,10 @@
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
         <Content Include=".config\dotnet-tools.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>
