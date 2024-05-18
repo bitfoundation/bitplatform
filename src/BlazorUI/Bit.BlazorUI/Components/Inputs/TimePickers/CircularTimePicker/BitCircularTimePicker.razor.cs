@@ -203,6 +203,12 @@ public partial class BitCircularTimePicker
     /// </summary>
     [Parameter] public bool AutoClose { get; set; }
 
+    /// <summary>
+    /// The title of the close button (tooltip).
+    /// </summary>
+    [Parameter] public string CloseButtonTitle { get; set; } = "Close time picker";
+
+
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()

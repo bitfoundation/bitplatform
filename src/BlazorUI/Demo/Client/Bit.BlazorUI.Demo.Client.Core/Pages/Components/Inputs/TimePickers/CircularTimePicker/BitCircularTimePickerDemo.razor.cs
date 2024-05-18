@@ -87,6 +87,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "CloseButtonTitle",
+            Type = "string",
+            DefaultValue = "Close time picker",
+            Description = "The title of the close button (tooltip)."
+        },
+        new()
+        {
             Name = "PickerAriaLabel",
             Type = "string",
             DefaultValue = "Clock",
