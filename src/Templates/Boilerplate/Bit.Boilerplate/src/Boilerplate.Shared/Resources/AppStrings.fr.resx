@@ -120,7 +120,7 @@
     <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} est obligatoire.</value>
   </data>
-    <data name="PhoneAttribute_Invalid" xml:space="preserve">
+    <data name="PhoneAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} n'est pas un numéro de téléphone valide.</value>
   </data>
     <data name="CompareAttribute_ValidationError" xml:space="preserve">
@@ -231,7 +231,7 @@
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Votre mot de passe a changé avec succès.</value>
   </data>
-    <data name="ResendConfirmationTokenMessage" xml:space="preserve">
+    <data name="ResendConfirmationEmailTokenMessage" xml:space="preserve">
     <value>Le jeton de confirmation a été renvoyé à votre adresse e-mail.</value>
   </data>
     <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
@@ -351,11 +351,71 @@
     <data name="AlreadyHaveAccountMessage" xml:space="preserve">
     <value>Vous avez déjà un compte?</value>
   </data>
-    <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>Nous avons envoyé un lien de confirmation à votre adresse e-mail.</value>
-  </data>
     <data name="ConfirmEmailTitle" xml:space="preserve">
-    <value>confirmez votre adresse email</value>
+    <value>Confirmez votre email</value>
+  </data>
+    <data name="ConfirmEmailSubtitle" xml:space="preserve">
+    <value>Nous avons envoyé un jeton de confirmation à votre adresse e-mail.</value>
+  </data>
+    <data name="ConfirmTitle" xml:space="preserve">
+    <value>Confirmez votre compte</value>
+  </data>
+    <data name="ConfirmEmailMessage" xml:space="preserve">
+    <value>Veuillez confirmer votre e-mail en tapant le jeton ici.</value>
+  </data>
+    <data name="EmailPlaceholder" xml:space="preserve">
+    <value>Entrez l'adresse e-mail</value>
+  </data>
+    <data name="EmailToken" xml:space="preserve">
+    <value>Jeton de courrier électronique</value>
+  </data>
+    <data name="EmailTokenPlaceholder" xml:space="preserve">
+    <value>Entrez le jeton d'e-mail</value>
+  </data>
+    <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+    <value>Confirmez votre email</value>
+  </data>
+    <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+    <value>Votre adresse email a été confirmée.</value>
+  </data>
+    <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+    <value>Vous pouvez maintenant vous connecter avec votre compte.</value>
+  </data>
+    <data name="ConfirmPhoneTitle" xml:space="preserve">
+    <value>Confirmer le numéro de téléphone</value>
+  </data>
+    <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+    <value>Nous avons envoyé un jeton de confirmation sur votre téléphone.</value>
+  </data>
+    <data name="ConfirmPhoneMessage" xml:space="preserve">
+    <value>Veuillez confirmer votre numéro de téléphone en tapant le jeton ici.</value>
+  </data>
+    <data name="PhoneNumberPlaceholder" xml:space="preserve">
+    <value>Entrez le numéro de téléphone</value>
+  </data>
+    <data name="PhoneToken" xml:space="preserve">
+    <value>Jeton de téléphone</value>
+  </data>
+    <data name="PhoneTokenPlaceholder" xml:space="preserve">
+    <value>Entrez le jeton du téléphone</value>
+  </data>
+    <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+    <value>Confirmer le numéro de téléphone</value>
+  </data>
+    <data name="NotReceivedConfirmationPhoneMessage" xml:space="preserve">
+    <value>Vous n'avez pas reçu le token sur votre téléphone?</value>
+  </data>
+    <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
+    <value>Le jeton de confirmation a été renvoyé sur votre téléphone.</value>
+  </data>
+    <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+    <value>Renvoyer le jeton de téléphone</value>
+  </data>
+    <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+    <value>Votre numéro de téléphone a été confirmé.</value>
+  </data>
+    <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+    <value>Vous pouvez maintenant vous connecter avec votre compte.</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Supprimer le compte</value>
@@ -426,8 +486,8 @@
     <data name="Remove" xml:space="preserve">
     <value>Retirer</value>
   </data>
-    <data name="ResendEmail" xml:space="preserve">
-    <value>Ré-envoyer l'email</value>
+    <data name="ResendEmailTokenButtonText" xml:space="preserve">
+    <value>Renvoyer le jeton d'e-mail</value>
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Réinitialiser le mot de passe</value>

@@ -25,7 +25,7 @@ public interface IUserController : IAppController
     Task ChangeEmail(ChangeEmailRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendChangePhoneNumberToken(SendPhoneNumberTokenRequestDto body, CancellationToken cancellationToken = default);
+    Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto body, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task ChangePhoneNumber(ChangePhoneNumberRequestDto body, CancellationToken cancellationToken = default);

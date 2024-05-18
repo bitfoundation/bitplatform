@@ -79,12 +79,38 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You&apos;re receiving this email because recently you have registered {0} to your Boilerplate account.
-        ///                    Confirm your email address by entering the number below in the app..
+        ///   Looks up a localized string similar to Copy this code and use it in the login page..
         /// </summary>
-        public static string EmailConfirmationMessageBody {
+        public static string CopyTokenNote {
             get {
-                return ResourceManager.GetString("EmailConfirmationMessageBody", resourceCulture);
+                return ResourceManager.GetString("CopyTokenNote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Or click on the following link to confirm this email address..
+        /// </summary>
+        public static string EmailConfirmationMessageBodyLink {
+            get {
+                return ResourceManager.GetString("EmailConfirmationMessageBodyLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm your email address by entering the number below in the app..
+        /// </summary>
+        public static string EmailConfirmationMessageBodyToken {
+            get {
+                return ResourceManager.GetString("EmailConfirmationMessageBodyToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re receiving this email because recently you have registered {0} to your Boilerplate account..
+        /// </summary>
+        public static string EmailConfirmationMessageSubtitle {
+            get {
+                return ResourceManager.GetString("EmailConfirmationMessageSubtitle", resourceCulture);
             }
         }
         
@@ -157,15 +183,6 @@ namespace Boilerplate.Server.Resources {
         public static string TfaTokenMessage {
             get {
                 return ResourceManager.GetString("TfaTokenMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copy this code and use it in the login page..
-        /// </summary>
-        public static string CopyTokenNote {
-            get {
-                return ResourceManager.GetString("CopyTokenNote", resourceCulture);
             }
         }
         

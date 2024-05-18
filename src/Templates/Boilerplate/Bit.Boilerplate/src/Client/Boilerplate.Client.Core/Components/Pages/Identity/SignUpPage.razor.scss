@@ -10,9 +10,10 @@
     flex-flow: column nowrap;
 }
 
-.form-description {
+.input-container {
     font-weight: 600;
     line-height: 1.5;
+    text-align: start;
     font-size: rem2(14px);
     max-width: rem2(432px);
 }

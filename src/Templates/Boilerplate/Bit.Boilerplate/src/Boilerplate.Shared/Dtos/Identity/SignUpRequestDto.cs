@@ -27,6 +27,6 @@ public class SignUpRequestDto : IdentityRequestDto
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
-            yield return new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideEmailOrPhoneNumber), [nameof(Email), nameof(PhoneNumber)]);
+            yield return new ValidationResult(errorMessage: AppStrings.EitherProvideEmailOrPhoneNumber, [nameof(Email), nameof(PhoneNumber)]);
     }
 }
