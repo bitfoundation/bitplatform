@@ -208,6 +208,11 @@ public partial class BitCircularTimePicker
     /// </summary>
     [Parameter] public string CloseButtonTitle { get; set; } = "Close time picker";
 
+    /// <summary>
+    /// Whether the TimePicker's close button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; }
+
 
 
     [JSInvokable("CloseCallout")]

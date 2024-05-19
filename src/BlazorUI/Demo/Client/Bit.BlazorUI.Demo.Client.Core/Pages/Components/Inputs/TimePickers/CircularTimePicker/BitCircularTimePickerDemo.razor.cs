@@ -189,6 +189,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "ShowCloseButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the TimePicker's close button should be shown or not."
+        },
+        new()
+        {
             Name = "Value",
             Type = "TimeSpan?",
             DefaultValue = "null",

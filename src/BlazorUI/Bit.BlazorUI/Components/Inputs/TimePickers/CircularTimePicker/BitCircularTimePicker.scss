@@ -178,7 +178,7 @@
     font-family: $typography-font-family;
 }
 
-.bit-ctp-cac {
+.bit-ctp-mcal {
     outline: none;
     position: relative;
     overflow: hidden auto;
@@ -327,7 +327,6 @@
     right: 0;
     padding: 0;
     border: none;
-    display: none;
     cursor: pointer;
     aspect-ratio: 1;
     overflow: visible;
@@ -335,8 +334,6 @@
     text-align: center;
     width: spacing(3.75);
     max-width: spacing(5);
-    outline: transparent;
-    line-height: spacing(3.75);
     font-size: spacing(1.5);
     background-color: transparent;
     color: $color-foreground-primary;
@@ -351,11 +348,11 @@
     &:active {
         background-color: $color-action-hover-background-primary;
     }
+}
 
-    i {
-        speak: none;
-        display: inline-block;
-    }
+.bit-ctp-cbi {
+    speak: none;
+    display: inline-block;
 }
 
 .bit-ctp-rsp {
@@ -363,13 +360,12 @@
         .bit-ctp-clk {
             margin: spacing(2) auto;
         }
+    }
 
-        .bit-ctp-cbn {
-            width: 100%;
-            display: block;
-            min-width: spacing(7);
-            max-width: spacing(5);
-            font-size: spacing(3);
-        }
+    .bit-ctp-cbn {
+        width: 100%;
+        min-width: spacing(7);
+        max-width: spacing(5);
+        font-size: spacing(3);
     }
 }

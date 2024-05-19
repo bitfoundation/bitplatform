@@ -57,83 +57,89 @@
          @onclick="CloseCallout"></div>
 
     <div class="bit-ctp-cal" id="@_calloutId">
-        <div class="bit-ctp-cac" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
-            <div class="bit-ctp-tbr">
-                <div class="bit-ctp-hm">
-                    @if (EditMode == BitCircularTimePickerEditMode.Normal)
+        <div class="bit-ctp-mcal" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
+            <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
+            <div role="group" aria-label="">
+                <div class="bit-ctp-tbr">
+                    <div class="bit-ctp-hm">
+                        @if (EditMode == BitCircularTimePickerEditMode.Normal)
+                        {
+                            <button type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina")" @onclick="HandleOnHourClick">
+                                @GetHourString()
+                            </button>
+                            <span class="bit-ctp-txt">:</span>
+                            <button type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : "")" @onclick="HandleOnMinuteClick">
+                                @GetMinuteString()
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="bit-ctp-txt">@GetHourString():@GetMinuteString()</span>
+                        }
+                    </div>
+                    @if (TimeFormat == BitTimeFormat.TwelveHours)
                     {
-                        <button type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina")" @onclick="HandleOnHourClick">
-                            @GetHourString()
-                        </button>
-                        <span class="bit-ctp-txt">:</span>
-                        <button type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : "")" @onclick="HandleOnMinuteClick">
-                            @GetMinuteString()
-                        </button>
-                    }
-                    else
-                    {
-                        <span class="bit-ctp-txt">@GetHourString():@GetMinuteString()</span>
+                        <div class="bit-ctp-am-pm">
+                            <button type="button" class="bit-ctp-txt @(IsAm() ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
+                            <button type="button" class="bit-ctp-txt @(IsAm() is false ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
+                        </div>
                     }
                 </div>
-                @if (TimeFormat == BitTimeFormat.TwelveHours)
-                {
-                    <div class="bit-ctp-am-pm">
-                        <button type="button" class="bit-ctp-txt @(IsAm() ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
-                        <button type="button" class="bit-ctp-txt @(IsAm() is false ? string.Empty : "bit-ctp-ina")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
-                    </div>
-                }
-            </div>
-            <div class="bit-ctp-clk">
-                <div @ref="_clockRef" class="bit-ctp-clf" @onpointerdown="HandleOnPointerDown">
-                    <div class="bit-ctp-pin"></div>
+                <div class="bit-ctp-clk">
+                    <div @ref="_clockRef" class="bit-ctp-clf" @onpointerdown="HandleOnPointerDown">
+                        <div class="bit-ctp-pin"></div>
 
-                    @if (_showHourView)
-                    {
-                        if (TimeFormat == BitTimeFormat.TwelveHours)
+                        @if (_showHourView)
                         {
-                            for (int i = 1; i <= 12; ++i)
+                            if (TimeFormat == BitTimeFormat.TwelveHours)
                             {
-                                <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5));">@i</p>
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5));">@i</p>
+                                }
+                            }
+                            else
+                            {
+                                @*Hours from 13 to 24 (00)*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="bit-ctp-num @GetHoursMinutesClass((i + 12) % 24)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@(((i + 12) % 24).ToString("D2"))</p>
+                                }
+                                @*Hours from 1 to 12*@
+                                for (int i = 1; i <= 12; ++i)
+                                {
+                                    <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 74, 0, 40))">@(i.ToString("D2"))</p>
+                                }
                             }
                         }
                         else
                         {
-                            @*Hours from 13 to 24 (00)*@
-                            for (int i = 1; i <= 12; ++i)
+                            @for (int i = 0; i < 12; ++i)
                             {
-                                <p class="bit-ctp-num @GetHoursMinutesClass((i + 12) % 24)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@(((i + 12) % 24).ToString("D2"))</p>
-                            }
-                            @*Hours from 1 to 12*@
-                            for (int i = 1; i <= 12; ++i)
-                            {
-                                <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 74, 0, 40))">@(i.ToString("D2"))</p>
+                                <p class="bit-ctp-num @GetHoursMinutesClass(i * 5)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@((i * 5).ToString("D2"))</p>
                             }
                         }
-                    }
-                    else
-                    {
-                        @for (int i = 0; i < 12; ++i)
-                        {
-                            <p class="bit-ctp-num @GetHoursMinutesClass(i * 5)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@((i * 5).ToString("D2"))</p>
-                        }
-                    }
 
-                    @{
-                        var deg = GetPointerDegree();
-                    }
-                    <div class="bit-ctp-ptr@(_isPointerDown ? string.Empty : " bit-ctp-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
-                        <div class="bit-ctp-thm@(deg % 30 == 0 ? string.Empty : " bit-ctp-thm-min")"></div>
+                        @{
+                            var deg = GetPointerDegree();
+                        }
+                        <div class="bit-ctp-ptr@(_isPointerDown ? string.Empty : " bit-ctp-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
+                            <div class="bit-ctp-thm@(deg % 30 == 0 ? string.Empty : " bit-ctp-thm-min")"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <button @onclick="CloseCallout"
-                    type="button"
-                    class="bit-ctp-cbn"
-                    title="@CloseButtonTitle"
-                    aria-label="@CloseButtonTitle">
-                <i class="bit-icon bit-icon--Cancel" aria-hidden="true" />
-            </button>
+            <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
+            @if (ShowCloseButton)
+            {
+                <button @onclick="CloseCallout"
+                        type="button"
+                        class="bit-ctp-cbn"
+                        title="@CloseButtonTitle"
+                        aria-label="@CloseButtonTitle">
+                    <i class="bit-ctp-cbi bit-icon bit-icon--Cancel" aria-hidden="true" />
+                </button>
+            }
         </div>
     </div>
 
