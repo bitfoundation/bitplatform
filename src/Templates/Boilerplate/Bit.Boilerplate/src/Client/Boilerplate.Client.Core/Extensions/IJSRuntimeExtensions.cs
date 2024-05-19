@@ -22,12 +22,12 @@ public static class IJSRuntimeExtensions
     }
     //#endif
 
-
     public static bool IsInitialized(this IJSRuntime jsRuntime)
     {
-        return (bool)_IsInitializedProp.GetValue(jsRuntime)!;
+        var type = jsRuntime.GetType();
+
+        if (type.Name is not "RemoteJSRuntime") return true;
+
+        return (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!;
     }
-    private static PropertyInfo _IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")!
-                                                             .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")!
-                                                             .GetProperty("IsInitialized")!;
 }
