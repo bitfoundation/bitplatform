@@ -12,15 +12,11 @@ namespace Boilerplate.Server.Services;
 /// </summary>
 public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 {
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IStorageService storageService = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
-    private static readonly PropertyInfo IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")!
-                                                                .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")!
-                                                                .GetProperty("IsInitialized")!;
-
-    public bool IsInitialized => jsRuntime.GetType().Name is not "UnsupportedJavaScriptRuntime" && (bool)IsInitializedProp.GetValue(jsRuntime)!;
+    public bool IsInitialized => jsRuntime.GetType().Name is not "UnsupportedJavaScriptRuntime" && jsRuntime.IsInitialized();
 
     public async Task<string?> GetAccessTokenAsync()
     {

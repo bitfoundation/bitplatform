@@ -1,4 +1,6 @@
 ﻿//+:cnd:noEmit
+using System.Reflection;
+
 namespace Microsoft.JSInterop;
 
 public static class IJSRuntimeExtensions
@@ -20,8 +22,12 @@ public static class IJSRuntimeExtensions
     }
     //#endif
 
+
     public static bool IsInitialized(this IJSRuntime jsRuntime)
     {
-        return (bool)jsRuntime.GetType().GetProperty("IsInitialized")!.GetValue(jsRuntime)!;
+        return (bool)_IsInitializedProp.GetValue(jsRuntime)!;
     }
+    private static PropertyInfo _IsInitializedProp = Assembly.Load("Microsoft.AspNetCore.Components.Server")!
+                                                             .GetType("Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime")!
+                                                             .GetProperty("IsInitialized")!;
 }
