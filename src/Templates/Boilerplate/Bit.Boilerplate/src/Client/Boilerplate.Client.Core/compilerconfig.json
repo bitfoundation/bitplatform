@@ -79,12 +79,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/DeleteAccountConfirmModal.razor.css",
-        "inputFile": "Components/Pages/Identity/DeleteAccountConfirmModal.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Components/Pages/Identity/Profile/ProfilePage.razor.css",
         "inputFile": "Components/Pages/Identity/Profile/ProfilePage.razor.scss",
         "minify": { "enabled": false },
@@ -99,6 +93,18 @@
     {
         "outputFile": "Components/Pages/Identity/Profile/TwoFactorSection.razor.css",
         "inputFile": "Components/Pages/Identity/Profile/TwoFactorSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/ConfirmPage.razor.css",
+        "inputFile": "Components/Pages/Identity/ConfirmPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/DeleteAccountConfirmModal.razor.css",
+        "inputFile": "Components/Pages/Identity/DeleteAccountConfirmModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

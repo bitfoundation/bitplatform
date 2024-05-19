@@ -349,6 +349,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await Task.WhenAll(SendEmail(), SendSms());
     }
 
+
+
     private async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, User user, CancellationToken cancellationToken)
     {
         var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.IdentitySettings.EmailTokenRequestResendDelay;
@@ -364,7 +366,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var email = request.Email!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{user.Email}");
-        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"sign-up?email={Uri.EscapeDataString(email!)}&emailToken={Uri.EscapeDataString(token)}");
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(email!)}&emailToken={Uri.EscapeDataString(token)}");
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>()
         {
             [nameof(EmailTokenTemplate.Model)] = new EmailTokenTemplateModel { Email = email, Token = token, Link = link },
@@ -402,7 +404,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var phoneNumber = user.PhoneNumber;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{phoneNumber}");
-        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"sign-up?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}");
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}");
 
         // TODO: Send token through SMS
     }

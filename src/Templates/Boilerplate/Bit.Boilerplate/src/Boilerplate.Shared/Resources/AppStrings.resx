@@ -303,11 +303,14 @@
     <data name="Add" xml:space="preserve">
     <value>Add</value>
   </data>
-    <data name="AlreadyHaveAccountMessage" xml:space="preserve">
+    <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Already have an account?</value>
   </data>
-    <data name="ConfirmEmailTitle" xml:space="preserve">
-    <value>Confirm Email</value>
+    <data name="ConfirmMessageInSignUp" xml:space="preserve">
+    <value>Want to confirm an account?</value>
+  </data>
+    <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <value>Email Address</value>
   </data>
     <data name="ConfirmEmailSubtitle" xml:space="preserve">
     <value>We have sent a confirmation token to your email address.</value>
@@ -328,22 +331,22 @@
     <value>Enter the email token</value>
   </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
-    <value>Confirm Email</value>
+    <value>Confirm Email Address</value>
   </data>
     <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
-    <value>Your email address has been confirmed.</value>
+    <value>Your email address ({0}) has been confirmed.</value>
   </data>
     <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
     <value>You can now login with your account.</value>
   </data>
-    <data name="ConfirmPhoneTitle" xml:space="preserve">
-    <value>Confirm Phone Number</value>
+    <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <value>Phone Number</value>
   </data>
     <data name="ConfirmPhoneSubtitle" xml:space="preserve">
     <value>We have sent a confirmation token to your phone.</value>
   </data>
     <data name="ConfirmPhoneMessage" xml:space="preserve">
-    <value>Please confirm your Phone Number by typing the token here.</value>
+    <value>Please confirm your phone number by typing the token here.</value>
   </data>
     <data name="PhoneNumberPlaceholder" xml:space="preserve">
     <value>Enter the phone number</value>
@@ -367,7 +370,7 @@
     <value>Resend Phone Token</value>
   </data>
     <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
-    <value>Your phone number has been confirmed.</value>
+    <value>Your phone number ({0}) has been confirmed.</value>
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>You can now login with your account.</value>
@@ -512,6 +515,9 @@
   </data>
     <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
+  </data>
+    <data name="Confirm" xml:space="preserve">
+    <value>Confirm</value>
   </data>
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>Sign in as different user</value>

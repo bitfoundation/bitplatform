@@ -133,15 +133,6 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Already have an account?.
-        /// </summary>
-        public static string AlreadyHaveAccountMessage {
-            get {
-                return ResourceManager.GetString("AlreadyHaveAccountMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Are you sure you want to delete {0}?.
         /// </summary>
         public static string AreYouSureWannaDelete {
@@ -286,6 +277,24 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Confirm.
+        /// </summary>
+        public static string Confirm {
+            get {
+                return ResourceManager.GetString("Confirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email Address.
+        /// </summary>
+        public static string ConfirmEmailHeaderText {
+            get {
+                return ResourceManager.GetString("ConfirmEmailHeaderText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please confirm your email by typing the token here..
         /// </summary>
         public static string ConfirmEmailMessage {
@@ -304,11 +313,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirm Email.
+        ///   Looks up a localized string similar to Want to confirm an account?.
         /// </summary>
-        public static string ConfirmEmailTitle {
+        public static string ConfirmMessageInSignUp {
             get {
-                return ResourceManager.GetString("ConfirmEmailTitle", resourceCulture);
+                return ResourceManager.GetString("ConfirmMessageInSignUp", resourceCulture);
             }
         }
         
@@ -322,7 +331,16 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please confirm your Phone Number by typing the token here..
+        ///   Looks up a localized string similar to Phone Number.
+        /// </summary>
+        public static string ConfirmPhoneHeaderText {
+            get {
+                return ResourceManager.GetString("ConfirmPhoneHeaderText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please confirm your phone number by typing the token here..
         /// </summary>
         public static string ConfirmPhoneMessage {
             get {
@@ -336,15 +354,6 @@ namespace Boilerplate.Shared.Resources {
         public static string ConfirmPhoneSubtitle {
             get {
                 return ResourceManager.GetString("ConfirmPhoneSubtitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Confirm Phone Number.
-        /// </summary>
-        public static string ConfirmPhoneTitle {
-            get {
-                return ResourceManager.GetString("ConfirmPhoneTitle", resourceCulture);
             }
         }
         
@@ -583,7 +592,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your email address has been confirmed..
+        ///   Looks up a localized string similar to Your email address ({0}) has been confirmed..
         /// </summary>
         public static string EmailConfirmationSuccessTitle {
             get {
@@ -628,7 +637,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirm Email.
+        ///   Looks up a localized string similar to Confirm Email Address.
         /// </summary>
         public static string EmailTokenConfirmButtonText {
             get {
@@ -1024,7 +1033,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your phone number has been confirmed..
+        ///   Looks up a localized string similar to Your phone number ({0}) has been confirmed..
         /// </summary>
         public static string PhoneConfirmationSuccessTitle {
             get {
@@ -1407,6 +1416,15 @@ namespace Boilerplate.Shared.Resources {
         public static string SignInAsDifferentUser {
             get {
                 return ResourceManager.GetString("SignInAsDifferentUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Already have an account?.
+        /// </summary>
+        public static string SignInMessageInSignUp {
+            get {
+                return ResourceManager.GetString("SignInMessageInSignUp", resourceCulture);
             }
         }
         

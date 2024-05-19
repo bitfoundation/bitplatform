@@ -303,11 +303,14 @@
     <data name="Add" xml:space="preserve">
     <value>اضافه کردن</value>
   </data>
-    <data name="AlreadyHaveAccountMessage" xml:space="preserve">
-    <value>در حال حاضر یک حساب کاربری دارید؟</value>
+    <data name="SignInMessageInSignUp" xml:space="preserve">
+    <value>از قبل حساب کاربری دارید؟</value>
   </data>
-    <data name="ConfirmEmailTitle" xml:space="preserve">
-    <value>تایید ایمیل</value>
+    <data name="ConfirmMessageInSignUp" xml:space="preserve">
+    <value>می خواهید یک حساب کاربری را تأیید کنید؟</value>
+  </data>
+    <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <value>آدرس ایمیل</value>
   </data>
     <data name="ConfirmEmailSubtitle" xml:space="preserve">
     <value>ما یک توکن به آدرس ایمیل شما ارسال کرده ایم.</value>
@@ -328,16 +331,16 @@
     <value>توکن ایمیل را وارد کنید</value>
   </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
-    <value>تایید ایمیل</value>
+    <value>تایید آدرس ایمیل</value>
   </data>
     <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
-    <value>آدرس ایمیل شما تایید شد.</value>
+    <value>آدرس ایمیل شما ({0}) تایید شد.</value>
   </data>
     <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
     <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
   </data>
-    <data name="ConfirmPhoneTitle" xml:space="preserve">
-    <value>تایید شماره تلفن</value>
+    <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <value>شماره تلفن</value>
   </data>
     <data name="ConfirmPhoneSubtitle" xml:space="preserve">
     <value>ما یک توکن به تلفن شما ارسال کرده ایم.</value>
@@ -367,7 +370,7 @@
     <value>ارسال دوباره توکن تلفن</value>
   </data>
     <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
-    <value>شماره تلفن شما تایید شد.</value>
+    <value>شماره تلفن شما ({0}) تایید شد.</value>
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
@@ -512,6 +515,9 @@
   </data>
     <data name="SignIn" xml:space="preserve">
     <value>ورود به برنامه</value>
+  </data>
+    <data name="Confirm" xml:space="preserve">
+    <value>تایید</value>
   </data>
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>ورود به سیستم به عنوان کاربر متفاوت</value>
