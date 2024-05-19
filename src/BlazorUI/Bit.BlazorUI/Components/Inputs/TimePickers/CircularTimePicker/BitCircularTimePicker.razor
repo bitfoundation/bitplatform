@@ -56,7 +56,7 @@
          style="display:@(IsOpen ? "block;" : "none;")"
          @onclick="CloseCallout"></div>
 
-    <div class="bit-ctp-cal" id="@_calloutId">
+    <div class="bit-ctp-cal @(IsResponsive ? "bit-ctp-rsp" : string.Empty)" id="@_calloutId">
         <div class="bit-ctp-mcal" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@PickerAriaLabel">
             <div aria-hidden="true" tabindex="0" data-is-visible="true" style="pointer-events: none; position: fixed;"></div>
             <div role="group" aria-label="">
