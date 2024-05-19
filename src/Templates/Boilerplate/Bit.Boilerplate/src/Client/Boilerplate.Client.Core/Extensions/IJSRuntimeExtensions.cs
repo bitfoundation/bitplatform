@@ -19,4 +19,9 @@ public static class IJSRuntimeExtensions
         return jsRuntime.InvokeAsync<string>("grecaptcha.reset");
     }
     //#endif
+
+    public static bool IsInitialized(this IJSRuntime jsRuntime)
+    {
+        return (bool)jsRuntime.GetType().GetProperty("IsInitialized")!.GetValue(jsRuntime)!;
+    }
 }
