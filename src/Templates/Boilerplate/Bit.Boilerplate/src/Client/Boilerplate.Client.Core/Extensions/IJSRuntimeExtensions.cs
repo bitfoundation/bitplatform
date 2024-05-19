@@ -1,4 +1,6 @@
 ﻿//+:cnd:noEmit
+using System.Reflection;
+
 namespace Microsoft.JSInterop;
 
 public static class IJSRuntimeExtensions
@@ -19,4 +21,13 @@ public static class IJSRuntimeExtensions
         return jsRuntime.InvokeAsync<string>("grecaptcha.reset");
     }
     //#endif
+
+    public static bool IsInitialized(this IJSRuntime jsRuntime)
+    {
+        var type = jsRuntime.GetType();
+
+        if (type.Name is not "RemoteJSRuntime") return true; // Blazor WASM/Hybrid
+
+        return (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!;
+    }
 }
