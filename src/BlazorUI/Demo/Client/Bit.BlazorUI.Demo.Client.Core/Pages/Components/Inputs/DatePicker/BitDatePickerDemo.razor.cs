@@ -932,7 +932,7 @@ public partial class BitDatePickerDemo
 <BitDatePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
 <BitDatePicker Label=""TimePicker"" ShowTimePicker=""true"" />
 <BitDatePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />
-<BitDatePicker Label=""StartingValue: December 2020, Time: 20:45"" ShowTimePicker=""true"" StartingValue=""startingValue"" />";
+<BitDatePicker Label=""StartingValue: December 2020, 20:45"" ShowTimePicker=""true"" StartingValue=""startingValue"" />";
 
     private readonly string example1CsharpCode = @"
 private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);";
