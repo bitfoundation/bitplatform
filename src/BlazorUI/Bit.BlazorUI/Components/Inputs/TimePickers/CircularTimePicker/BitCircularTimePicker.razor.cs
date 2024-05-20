@@ -211,7 +211,12 @@ public partial class BitCircularTimePicker
     /// <summary>
     /// Whether the TimePicker's close button should be shown or not.
     /// </summary>
-    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool ShowCloseButton { get; set; }
+
+
+
+    public string? LabelId => _labelId;
+    public string? InputId => _inputId;
 
 
 
