@@ -125,7 +125,7 @@ public partial class BitCircularTimePicker
     /// <summary>
     /// Aria label for time picker popup for screen reader users.
     /// </summary>
-    [Parameter] public string PickerAriaLabel { get; set; } = "Clock";
+    [Parameter] public string CalloutAriaLabel { get; set; } = "Clock";
 
     /// <summary>
     /// Enables the responsive mode in small screens
@@ -211,7 +211,7 @@ public partial class BitCircularTimePicker
     /// <summary>
     /// Whether the TimePicker's close button should be shown or not.
     /// </summary>
-    [Parameter] public bool ShowCloseButton { get; set; }
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
 
 
 
