@@ -259,11 +259,11 @@ public partial class BitCircularTimePicker
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lfic" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lfic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-ctp-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-no-brd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder ? string.Empty : "bit-ctp-no-brd");
 
         ClassBuilder.Register(() => _focusClass);
     }
@@ -299,7 +299,7 @@ public partial class BitCircularTimePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
+        _focusClass = "bit-ctp-foc";
         await OnFocusIn.InvokeAsync();
     }
 
@@ -315,7 +315,7 @@ public partial class BitCircularTimePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
+        _focusClass = "bit-ctp-foc";
         await OnFocus.InvokeAsync();
     }
 
@@ -367,7 +367,7 @@ public partial class BitCircularTimePicker
 
     private int GetClockHandHeightPercent() => (_showHourView && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
 
-    private double GetPointerDegree() => _showHourView ? ((_hour.GetValueOrDefault()* 30) % 360) : ((_minute.GetValueOrDefault()* 6) % 360);
+    private double GetPointerDegree() => _showHourView ? ((_hour.GetValueOrDefault() * 30) % 360) : ((_minute.GetValueOrDefault() * 6) % 360);
 
     private async Task HandleOnPointerDown(MouseEventArgs e)
     {
