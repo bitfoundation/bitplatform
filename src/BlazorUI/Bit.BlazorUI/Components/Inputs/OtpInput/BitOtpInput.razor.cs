@@ -291,6 +291,13 @@ public partial class BitOtpInput : IDisposable
             return;
         }
 
+        if (code is "Delete" || key is "Delete")
+        {
+            await Task.Delay(1);
+            await _inputRefs[nextIndex].FocusAsync();
+            return;
+        }
+
         var targetIndex = code switch
         {
             "ArrowLeft" => Vertical ? index : ((Dir is BitDir.Rtl ^ Reversed) ? nextIndex : previousIndex),
