@@ -4,6 +4,10 @@ namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+
+
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
     [AutoInject] protected IStorageService StorageService = default!;
@@ -34,10 +38,18 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
 
-    [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
 
     private readonly CancellationTokenSource cts = new();
     protected CancellationToken CurrentCancellationToken => cts.Token;
+
+    protected bool InPrerenderSession => JSRuntime.IsInitialized() is false;
+
+
+    protected sealed override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
 
     protected sealed override async Task OnInitializedAsync()
     {
@@ -51,6 +63,15 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             ExceptionHandler.Handle(exp);
         }
     }
+
+    /// <summary>
+    /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// </summary>
+    protected virtual Task OnInitAsync()
+    {
+        return Task.CompletedTask;
+    }
+
 
     protected sealed override async Task OnParametersSetAsync()
     {
@@ -66,12 +87,13 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Replacement for <see cref="OnInitializedAsync"/> which catches all possible exceptions in order to prevent app crash.
+    /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
     /// </summary>
-    protected virtual Task OnInitAsync()
+    protected virtual Task OnParamsSetAsync()
     {
         return Task.CompletedTask;
     }
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -90,19 +112,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    protected sealed override void OnInitialized()
-    {
-        base.OnInitialized();
-    }
-
-    /// <summary>
-    /// Replacement for <see cref="OnParametersSetAsync"/> which catches all possible exceptions in order to prevent app crash.
-    /// </summary>
-    protected virtual Task OnParamsSetAsync()
-    {
-        return Task.CompletedTask;
-    }
-
     /// <summary>
     /// Method invoked after first time the component has been rendered.
     /// </summary>
@@ -110,6 +119,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     {
         return Task.CompletedTask;
     }
+
 
     /// <summary>
     /// Executes passed action while catching all possible exceptions to prevent app crash.
