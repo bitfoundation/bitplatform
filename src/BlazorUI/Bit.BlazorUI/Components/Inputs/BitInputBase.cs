@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Reflection;
+using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -13,7 +14,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     private bool? valueInvalid;
 
-    private Type? _nullableUnderlyingType;
+    private bool _isUnderlyingTypeNullable;
     private bool _hasInitializedParameters;
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
@@ -190,13 +191,13 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
             bool parsingFailed;
 
-            if (_nullableUnderlyingType is not null && value.HasNoValue())
+            if (_isUnderlyingTypeNullable && value.HasNoValue())
             {
                 // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
                 // Then all subclasses get nullable support almost automatically (they just have to
                 // not reject Nullable<T> based on the type itself).
                 parsingFailed = false;
-                CurrentValue = default!;
+                CurrentValue = default;
             }
             else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
             {
@@ -245,7 +246,25 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             EditContext.OnValidationStateChanged += _validationStateChangedHandler;
         }
 
-        _nullableUnderlyingType = Nullable.GetUnderlyingType(valueType);
+        if (Nullable.GetUnderlyingType(valueType) is not null)
+        {
+            _isUnderlyingTypeNullable = true;
+            return;
+        }
+
+        if (valueExpression?.Body is not null && valueExpression!.Body is MemberExpression memberExpression)
+        {
+            var memberInfo = memberExpression.Member;
+            var prop = memberInfo.DeclaringType?.GetProperty(memberInfo.Name);
+            if (prop is not null)
+            {
+                var infoContext = new NullabilityInfoContext().Create(prop);
+                _isUnderlyingTypeNullable = infoContext.ReadState is NullabilityState.Nullable;
+                return;
+            }
+        }
+
+        _isUnderlyingTypeNullable = default(TValue) is null;
     }
 
 
