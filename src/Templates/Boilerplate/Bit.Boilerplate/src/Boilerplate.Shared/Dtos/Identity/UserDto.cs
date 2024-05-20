@@ -13,8 +13,8 @@ public class UserDto : IValidatableObject
     [Display(Name = nameof(AppStrings.Email))]
     public string? Email { get; set; }
 
-    [Phone(ErrorMessage = nameof(AppStrings.PhoneNumber))]
-    [Display(Name = nameof(AppStrings.PhoneAttribute_Invalid))]
+    [Phone(ErrorMessage = nameof(AppStrings.PhoneAttribute_ValidationError))]
+    [Display(Name = nameof(AppStrings.PhoneNumber))]
     public string? PhoneNumber { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]

@@ -135,7 +135,7 @@
     <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} الزامی است.</value>
   </data>
-    <data name="PhoneAttribute_Invalid" xml:space="preserve">
+    <data name="PhoneAttribute_ValidationError" xml:space="preserve">
     <value>مقدار {0} یک شماره تلفن معتبر نیست.</value>
   </data>
     <data name="BadRequestException" xml:space="preserve">
@@ -219,7 +219,7 @@
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>رمز عبور شما با موفقیت تغییر کرد.</value>
   </data>
-    <data name="ResendConfirmationTokenMessage" xml:space="preserve">
+    <data name="ResendConfirmationEmailTokenMessage" xml:space="preserve">
     <value>توکن تایید دوباره به آدرس ایمیل شما ارسال شده است.</value>
   </data>
     <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
@@ -303,15 +303,77 @@
     <data name="Add" xml:space="preserve">
     <value>اضافه کردن</value>
   </data>
-    <data name="AlreadyHaveAccountMessage" xml:space="preserve">
-    <value>در حال حاضر یک حساب کاربری دارید؟</value>
+    <data name="SignInMessageInSignUp" xml:space="preserve">
+    <value>از قبل حساب کاربری دارید؟</value>
+  </data>
+    <data name="ConfirmMessageInSignUp" xml:space="preserve">
+    <value>می خواهید یک حساب کاربری را تأیید کنید؟</value>
+  </data>
+    <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <value>آدرس ایمیل</value>
+  </data>
+    <data name="ConfirmEmailSubtitle" xml:space="preserve">
+    <value>ما یک توکن به آدرس ایمیل شما ارسال کرده ایم.</value>
+  </data>
+    <data name="ConfirmTitle" xml:space="preserve">
+    <value>تایید حساب کاربری</value>
   </data>
     <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>ما یک لینک تایید به آدرس ایمیل شما ارسال کرده ایم.
-لطفا ایمیل خود را با کلیک بر روی لینک تایید کنید.</value>
+    <value>لطفا ایمیل خود را با تایپ توکن در اینجا تایید کنید.</value>
   </data>
-    <data name="ConfirmEmailTitle" xml:space="preserve">
-    <value>آدرس ایمیل خود را تایید کنید</value>
+    <data name="EmailPlaceholder" xml:space="preserve">
+    <value>آدرس ایمیل را وارد کنید</value>
+  </data>
+    <data name="EmailToken" xml:space="preserve">
+    <value>توکن ایمیل</value>
+  </data>
+    <data name="EmailTokenPlaceholder" xml:space="preserve">
+    <value>توکن ایمیل را وارد کنید</value>
+  </data>
+    <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+    <value>تایید آدرس ایمیل</value>
+  </data>
+    <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+    <value>آدرس ایمیل شما ({0}) تایید شد.</value>
+  </data>
+    <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+    <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
+  </data>
+    <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <value>شماره تلفن</value>
+  </data>
+    <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+    <value>ما یک توکن به تلفن شما ارسال کرده ایم.</value>
+  </data>
+    <data name="ConfirmPhoneMessage" xml:space="preserve">
+    <value>لطفاً شماره تلفن خود را با تایپ توکن در اینجا تأیید کنید.</value>
+  </data>
+    <data name="PhoneNumberPlaceholder" xml:space="preserve">
+    <value>شماره تلفن را وارد کنید</value>
+  </data>
+    <data name="PhoneToken" xml:space="preserve">
+    <value>توکن تلفن</value>
+  </data>
+    <data name="PhoneTokenPlaceholder" xml:space="preserve">
+    <value>توکن تلفن را وارد کنید</value>
+  </data>
+    <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+    <value>تایید شماره تلفن</value>
+  </data>
+    <data name="NotReceivedConfirmationPhoneMessage" xml:space="preserve">
+    <value>آیا توکن تلفن خود را دریافت نکرده اید؟</value>
+  </data>
+    <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
+    <value>توکن دوباره به تلفن شما ارسال شد.</value>
+  </data>
+    <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+    <value>ارسال دوباره توکن تلفن</value>
+  </data>
+    <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+    <value>شماره تلفن شما ({0}) تایید شد.</value>
+  </data>
+    <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+    <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>حذف حساب</value>
@@ -385,8 +447,8 @@
     <data name="Remove" xml:space="preserve">
     <value>حذف</value>
   </data>
-    <data name="ResendEmail" xml:space="preserve">
-    <value>ارسال مجدد ایمیل</value>
+    <data name="ResendEmailTokenButtonText" xml:space="preserve">
+    <value>ارسال دوباره ایمیل</value>
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>ریست رمز عبور</value>
@@ -453,6 +515,9 @@
   </data>
     <data name="SignIn" xml:space="preserve">
     <value>ورود به برنامه</value>
+  </data>
+    <data name="Confirm" xml:space="preserve">
+    <value>تایید</value>
   </data>
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>ورود به سیستم به عنوان کاربر متفاوت</value>

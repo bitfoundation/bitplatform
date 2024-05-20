@@ -8,80 +8,63 @@ public partial class SignUpPage
 {
     [AutoInject] private IIdentityController identityController = default!;
 
-    private bool isLoading;
-    private bool isSignedUp;
-    private string? signUpMessage;
-    private BitSeverity signUpMessageSeverity;
-    private SignUpRequestDto signUpModel = new() { UserName = Guid.NewGuid().ToString() /* You can bind userName to the UI */ };
+    private bool isWaiting;
+    private string? signUpErrorMessage;
+    private readonly SignUpRequestDto signUpModel = new()
+    {
+        UserName = Guid.NewGuid().ToString() /* You can also bind the UserName property to an input */
+    };
+
 
     private async Task DoSignUp()
     {
-        if (isLoading) return;
+        if (isWaiting) return;
 
         //#if (captcha == "reCaptcha")
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
-            signUpMessageSeverity = BitSeverity.Error;
-            signUpMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+            signUpErrorMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
             return;
         }
 
         signUpModel.GoogleRecaptchaResponse = googleRecaptchaResponse;
         //#endif
 
-        isLoading = true;
-        signUpMessage = null;
+        isWaiting = true;
+        signUpErrorMessage = null;
+        StateHasChanged();
 
         try
         {
             await identityController.SignUp(signUpModel, CurrentCancellationToken);
 
-            isSignedUp = true;
+            var queryParams = new Dictionary<string, object?>();
+            if (string.IsNullOrEmpty(signUpModel.Email) is false)
+            {
+                queryParams.Add("email", signUpModel.Email);
+            }
+            if (string.IsNullOrEmpty(signUpModel.PhoneNumber) is false)
+            {
+                queryParams.Add("phoneNumber", signUpModel.PhoneNumber);
+            }
+            var confirmUrl = NavigationManager.GetUriWithQueryParameters("confirm", queryParams);
+            NavigationManager.NavigateTo(confirmUrl);
         }
         catch (ResourceValidationException e)
         {
-            signUpMessageSeverity = BitSeverity.Error;
-            signUpMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
+            signUpErrorMessage = string.Join(" ", e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
         }
         catch (KnownException e)
         {
-            signUpMessage = e.Message;
-            signUpMessageSeverity = BitSeverity.Error;
+            signUpErrorMessage = e.Message;
         }
         finally
         {
             //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
             //#endif
-            isLoading = false;
-        }
-    }
-
-    private async Task DoResendToken()
-    {
-        if (isLoading) return;
-
-        isLoading = true;
-        signUpMessage = null;
-
-        try
-        {
-            var sendConfirmEmailTokenRequest = new SendEmailTokenRequestDto { Email = signUpModel.Email };
-
-            await identityController.SendConfirmEmailToken(sendConfirmEmailTokenRequest, CurrentCancellationToken);
-
-            signUpMessageSeverity = BitSeverity.Success;
-            signUpMessage = Localizer[nameof(AppStrings.ResendConfirmationTokenMessage)];
-        }
-        catch (KnownException e)
-        {
-            signUpMessage = e.Message;
-            signUpMessageSeverity = BitSeverity.Error;
-        }
-        finally
-        {
-            isLoading = false;
+            isWaiting = false;
         }
     }
 }

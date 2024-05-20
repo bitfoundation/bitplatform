@@ -13,8 +13,8 @@ public class IdentityRequestDto : IValidatableObject
     public virtual string? Email { get; set; }
 
     /// <example>+31684207362</example>
-    [Phone(ErrorMessage = nameof(AppStrings.PhoneNumber))]
-    [Display(Name = nameof(AppStrings.PhoneAttribute_Invalid))]
+    [Phone(ErrorMessage = nameof(AppStrings.PhoneAttribute_ValidationError))]
+    [Display(Name = nameof(AppStrings.PhoneNumber))]
     public virtual string? PhoneNumber { get; set; }
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

@@ -9,3 +9,9 @@
     justify-content: center;
     flex-flow: column nowrap;
 }
+
+::deep .confirm-form {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+}
