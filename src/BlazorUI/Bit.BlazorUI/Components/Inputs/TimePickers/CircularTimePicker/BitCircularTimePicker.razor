@@ -37,7 +37,7 @@
                    readonly=@(AllowTextInput is false)
                    aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-controls="@(IsOpen ? _calloutId : null)"
-                   aria-labelledby="@(Label.HasValue() ? _labelId : null)" />
+                   aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
 
             @if (IconTemplate is not null)
             {
