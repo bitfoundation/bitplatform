@@ -322,10 +322,50 @@
     border-radius: 50%;
 }
 
+.bit-ctp-cbn {
+    top: 0;
+    right: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    aspect-ratio: 1;
+    overflow: visible;
+    position: absolute;
+    text-align: center;
+    width: spacing(3.75);
+    max-width: spacing(5);
+    font-size: spacing(1.5);
+    background-color: transparent;
+    color: $color-foreground-primary;
+    border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+
+    &:active {
+        background-color: $color-action-hover-background-primary;
+    }
+}
+
+.bit-ctp-cbi {
+    speak: none;
+    display: inline-block;
+}
+
 .bit-ctp-rsp {
     @media only screen and (max-width: 600px) {
         .bit-ctp-clk {
             margin: spacing(2) auto;
         }
+    }
+
+    .bit-ctp-cbn {
+        width: 100%;
+        min-width: spacing(7);
+        max-width: spacing(5);
+        font-size: spacing(3);
     }
 }

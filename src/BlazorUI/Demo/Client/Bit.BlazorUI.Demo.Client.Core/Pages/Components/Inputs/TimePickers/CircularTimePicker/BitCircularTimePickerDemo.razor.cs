@@ -87,6 +87,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "CloseButtonTitle",
+            Type = "string",
+            DefaultValue = "Close time picker",
+            Description = "The title of the close button (tooltip)."
+        },
+        new()
+        {
             Name = "PickerAriaLabel",
             Type = "string",
             DefaultValue = "Clock",
@@ -179,6 +186,13 @@ public partial class BitCircularTimePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If AutoClose is set to true and PickerActions are defined, the hour and the minutes can be defined without any action."
+        },
+        new()
+        {
+            Name = "ShowCloseButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the TimePicker's close button should be shown or not."
         },
         new()
         {

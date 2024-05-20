@@ -88,7 +88,7 @@
                 <div class="bit-ctp-clk">
                     <div @ref="_clockRef" class="bit-ctp-clf" @onpointerdown="HandleOnPointerDown">
                         <div class="bit-ctp-pin"></div>
-                        
+
                         @if (_showHourView)
                         {
                             if (TimeFormat == BitTimeFormat.TwelveHours)
@@ -130,6 +130,16 @@
                 </div>
             </div>
             <div aria-hidden="true" tabindex="0" style="pointer-events: none; position: fixed;"></div>
+            @if (ShowCloseButton)
+            {
+                <button @onclick="CloseCallout"
+                        type="button"
+                        class="bit-ctp-cbn"
+                        title="@CloseButtonTitle"
+                        aria-label="@CloseButtonTitle">
+                    <i class="bit-ctp-cbi bit-icon bit-icon--Cancel" aria-hidden="true" />
+                </button>
+            }
         </div>
     </div>
 
