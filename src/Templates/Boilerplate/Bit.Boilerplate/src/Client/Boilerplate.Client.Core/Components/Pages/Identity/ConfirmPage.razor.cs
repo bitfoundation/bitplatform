@@ -40,7 +40,10 @@ public partial class ConfirmPage
             if (string.IsNullOrEmpty(EmailTokenQueryString) is false)
             {
                 emailModel.Token = EmailTokenQueryString;
-                await ConfirmEmail();
+                if (InPrerenderSession is false)
+                {
+                    await ConfirmEmail();
+                }
             }
         }
 
@@ -52,7 +55,10 @@ public partial class ConfirmPage
             if (string.IsNullOrEmpty(PhoneTokenQueryString) is false)
             {
                 phoneModel.Token = PhoneTokenQueryString;
-                await ConfirmPhone();
+                if (InPrerenderSession is false)
+                {
+                    await ConfirmPhone();
+                }
             }
         }
 
