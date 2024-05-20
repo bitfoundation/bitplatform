@@ -46,6 +46,12 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "OnFill",
+            Type = "EventCallback<string?>",
+            Description = "Callback for when all of the inputs are filled.",
+        },
+        new()
+        {
             Name = "OnFocusIn",
             Type = "EventCallback<FocusEventArgs>",
             Description = "onfocusin event callback for each input.",
