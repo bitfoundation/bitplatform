@@ -174,6 +174,7 @@ public partial class BitOtpInputDemo
     private string? twoWayValue;
 
     private string? onChangeValue;
+    private string? onFillValue;
     private (FocusEventArgs Event, int Index)? onFocusInArgs;
     private (FocusEventArgs Event, int Index)? onFocusOutArgs;
     private (ChangeEventArgs Event, int Index)? onInputArgs;
@@ -252,6 +253,9 @@ private string? twoWayValue;";
 <BitOtpInput OnChange=""v => onChangeValue = v"" />
 <div>OnChange value: @onChangeValue</div>
 
+<BitOtpInput OnFill=""v => onFillValue = v"" />
+<div>OnFill value: @onFillValue</div>
+
 <BitOtpInput OnFocusIn=""args => onFocusInArgs = args"" />
 <div>Focus type: @onFocusInArgs?.Event.Type</div>
 <div>Input index: @onFocusInArgs?.Index</div>
@@ -273,6 +277,7 @@ private string? twoWayValue;";
 <div>Input index: @onPasteArgs?.Index</div>";
     private readonly string example6CsharpCode = @"
 private string? onChangeValue;
+private string? onFillValue;
 private (FocusEventArgs Event, int Index)? onFocusInArgs;
 private (FocusEventArgs Event, int Index)? onFocusOutArgs;
 private (ChangeEventArgs Event, int Index)? onInputArgs;

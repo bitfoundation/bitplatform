@@ -40,6 +40,11 @@ public partial class BitOtpInput : IDisposable
     [Parameter] public EventCallback<string?> OnChange { get; set; }
 
     /// <summary>
+    /// Callback for when all of the inputs are filled.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnFill { get; set; }
+
+    /// <summary>
     /// onfocusin event callback for each input.
     /// </summary>
     [Parameter] public EventCallback<(FocusEventArgs Event, int Index)> OnFocusIn { get; set; }
@@ -175,9 +180,9 @@ public partial class BitOtpInput : IDisposable
 
         SetInputsValue(pastedValue);
 
-        CurrentValue = string.Join(string.Empty, _inputValues);
+        CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
-        await OnChange.InvokeAsync(CurrentValue);
+        await CallOnChange();
     }
 
 
@@ -251,10 +256,10 @@ public partial class BitOtpInput : IDisposable
             _inputValues[index] = null;
         }
 
-        CurrentValue = string.Join(string.Empty, _inputValues);
+        CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
         await OnInput.InvokeAsync((e, index));
-        await OnChange.InvokeAsync(CurrentValue);
+        await CallOnChange();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
@@ -308,6 +313,16 @@ public partial class BitOtpInput : IDisposable
         for (int i = 0; i < Length; i++)
         {
             _inputValues[i] = chars.Length > i ? chars[i].ToString() : null;
+        }
+    }
+
+    private async Task CallOnChange()
+    {
+        await OnChange.InvokeAsync(CurrentValue);
+
+        if (Length == CurrentValue?.Length)
+        {
+            await OnFill.InvokeAsync(CurrentValue);
         }
     }
 
