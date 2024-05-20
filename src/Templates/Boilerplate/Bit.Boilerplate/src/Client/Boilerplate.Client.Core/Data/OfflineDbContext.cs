@@ -34,21 +34,6 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbCo
         base.OnModelCreating(modelBuilder);
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var dirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Boilerplate-Data");
-
-        Directory.CreateDirectory(dirPath);
-
-        var dbPath = Path.Combine(dirPath, "ClientDb.db");
-
-        optionsBuilder
-            // .UseModel(OfflineDbContextModel.Instance)
-            .UseSqlite($"Data Source={dbPath}");
-
-        base.OnConfiguring(optionsBuilder);
-    }
-
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type:

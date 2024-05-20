@@ -1,12 +1,12 @@
 ﻿//+:cnd:noEmit
 //#if (offlineDb == true)
 using Boilerplate.Client.Core.Data;
+using Microsoft.EntityFrameworkCore;
 //#endif
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -43,7 +43,21 @@ public static class IServiceCollectionExtensions
         services.AddBitBlazorUIServices();
 
         //#if (offlineDb == true)
-        services.AddBesqlDbContextFactory<OfflineDbContext>();
+        services.AddBesqlDbContextFactory<OfflineDbContext>(options =>
+        {
+            var dirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Boilerplate");
+
+            Directory.CreateDirectory(dirPath);
+
+            var dbPath = Path.Combine(dirPath, "Offline.db");
+
+            options
+                // .UseModel(OfflineDbContextModel.Instance)
+                .UseSqlite($"Data Source={dbPath}");
+
+            options.EnableSensitiveDataLogging(BuildConfiguration.IsDebug())
+                    .EnableDetailedErrors(BuildConfiguration.IsDebug());
+        });
         //#endif
 
         services.AddSharedProjectServices();
