@@ -3,7 +3,7 @@
 [DtoResourceType(typeof(AppStrings))]
 public class ChangeUserNameRequestDto
 {
-    /// <example>bitplatform</example>
+    /// <example>new</example>
     [Display(Name = nameof(AppStrings.UserName))]
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? UserName { get; set; }
