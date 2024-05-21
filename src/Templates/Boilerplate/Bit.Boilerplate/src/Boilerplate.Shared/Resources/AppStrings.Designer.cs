@@ -538,6 +538,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Either provider password, or one-time-password token..
+        /// </summary>
+        public static string EitherProvideOtpTokenOrPassword {
+            get {
+                return ResourceManager.GetString("EitherProvideOtpTokenOrPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Either provider username, email or phone number..
         /// </summary>
         public static string EitherProvideUserNameOrEmailOrPhoneNumber {
@@ -700,7 +709,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please enter the email address you have been signed up with so we can send a reset password token to your email address..
+        ///   Looks up a localized string similar to Please enter the email or phone number you have been signed up with so we can send a reset password token to you..
         /// </summary>
         public static string ForgetPasswordMessage {
             get {
@@ -993,6 +1002,15 @@ namespace Boilerplate.Shared.Resources {
         public static string Or {
             get {
                 return ResourceManager.GetString("Or", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One time password.
+        /// </summary>
+        public static string OtpToken {
+            get {
+                return ResourceManager.GetString("OtpToken", resourceCulture);
             }
         }
         
@@ -1321,7 +1339,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The reset password token has been sent to your email address..
+        ///   Looks up a localized string similar to The reset password token has been sent to you..
         /// </summary>
         public static string ResetPasswordTokenSentMessage {
             get {
@@ -1825,20 +1843,20 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The 2FA token has been generated and sent to your email..
-        /// </summary>
-        public static string TfaTokenEmailSent {
-            get {
-                return ResourceManager.GetString("TfaTokenEmailSent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Generate and Send 2FA Token.
         /// </summary>
         public static string TfaTokenGenerateButtonText {
             get {
                 return ResourceManager.GetString("TfaTokenGenerateButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The 2FA token has been generated and sent to you..
+        /// </summary>
+        public static string TfaTokenSent {
+            get {
+                return ResourceManager.GetString("TfaTokenSent", resourceCulture);
             }
         }
         
@@ -2059,6 +2077,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You have already requested the one time password token. Try again in {0}.
+        /// </summary>
+        public static string WaitForOtpTokenRequestResendDelay {
+            get {
+                return ResourceManager.GetString("WaitForOtpTokenRequestResendDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have already requested the confirmation sms. Try again in {0}.
         /// </summary>
         public static string WaitForPhoneNumberTokenRequestResendDelay {
@@ -2068,7 +2095,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have already requested the reset password email. Try again in {0}.
+        ///   Looks up a localized string similar to You have already requested the reset password token. Try again in {0}.
         /// </summary>
         public static string WaitForResetPasswordTokenRequestResendDelay {
             get {
@@ -2077,7 +2104,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have already requested the 2FA token email. Try again in {0}..
+        ///   Looks up a localized string similar to You have already requested the 2FA token. Try again in {0}..
         /// </summary>
         public static string WaitForTwoFactorTokenRequestResendDelay {
             get {

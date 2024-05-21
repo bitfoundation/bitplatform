@@ -6,9 +6,14 @@ namespace Boilerplate.Shared.Dtos.Identity;
 public class SignInRequestDto : IdentityRequestDto
 {
     /// <example>123456</example>
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
+
+    /// <summary>
+    /// For either Otp or magic link
+    /// </summary>
+    [Display(Name = nameof(AppStrings.OtpToken))]
+    public string? OtpToken { get; set; }
 
     [JsonIgnore]
     [Display(Name = nameof(AppStrings.RememberMe))]
@@ -28,4 +33,15 @@ public class SignInRequestDto : IdentityRequestDto
 
     [Display(Name = nameof(AppStrings.TwoFactorRecoveryCode))]
     public string? TwoFactorRecoveryCode { get; set; }
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        foreach (var validationResult in base.Validate(validationContext))
+            yield return validationResult;
+
+        if (string.IsNullOrEmpty(Password) && string.IsNullOrEmpty(OtpToken))
+        {
+            yield return new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideOtpTokenOrPassword), [nameof(Password), nameof(OtpToken)]);
+        }
+    }
 }

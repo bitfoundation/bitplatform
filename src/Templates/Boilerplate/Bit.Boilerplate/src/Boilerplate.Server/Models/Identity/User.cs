@@ -29,4 +29,9 @@ public class User : IdentityUser<int>
     public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
 
     public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
+
+    /// <summary>
+    /// To sign in with either Otp or magic link.
+    /// </summary>
+    public DateTimeOffset? OtpTokenRequestedOn { get; set; }
 }

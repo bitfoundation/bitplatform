@@ -115,6 +115,33 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Boilerplate - Otp Token.
+        /// </summary>
+        public static string OtpEmailSubject {
+            get {
+                return ResourceManager.GetString("OtpEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hello {0}.
+        /// </summary>
+        public static string OtpHello {
+            get {
+                return ResourceManager.GetString("OtpHello", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Someone has requested a one-time-password token to sign in..
+        /// </summary>
+        public static string OtpMessage {
+            get {
+                return ResourceManager.GetString("OtpMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Boilerplate - Reset your password.
         /// </summary>
         public static string ResetPasswordEmailSubject {

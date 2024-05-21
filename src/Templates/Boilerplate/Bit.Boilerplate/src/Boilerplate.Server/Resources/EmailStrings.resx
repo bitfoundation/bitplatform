@@ -138,6 +138,15 @@
     <data name="ResetPasswordMessage" xml:space="preserve">
     <value>Someone has requested a token to change your password.</value>
   </data>
+    <data name="OtpEmailSubject" xml:space="preserve">
+    <value>Boilerplate - Otp Token</value>
+  </data>
+    <data name="OtpHello" xml:space="preserve">
+    <value>Hello {0}</value>
+  </data>
+    <data name="OtpMessage" xml:space="preserve">
+    <value>Someone has requested a one-time-password token to sign in.</value>
+  </data>
     <data name="ResetPasswordNote" xml:space="preserve">
     <value>Your password won't change until you access the link above and create a new one.</value>
   </data>

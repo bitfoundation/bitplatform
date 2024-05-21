@@ -164,9 +164,40 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-        var user = await userManager.FindUser(signInRequest) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+        var user = await userManager.FindUser(signInRequest) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var result = await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+        Microsoft.AspNetCore.Identity.SignInResult? result = null;
+
+        if (string.IsNullOrEmpty(signInRequest.Password) is false)
+        {
+            result = await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+        }
+        else if (string.IsNullOrEmpty(signInRequest.OtpToken) is false)
+        {
+            if (await userManager.IsLockedOutAsync(user))
+            {
+                result = Microsoft.AspNetCore.Identity.SignInResult.LockedOut;
+            }
+            else
+            {
+                bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, "Otp", signInRequest.OtpToken!);
+
+                if (tokenIsValid is false)
+                {
+                    result = Microsoft.AspNetCore.Identity.SignInResult.Failed;
+                    await userManager.AccessFailedAsync(user);
+                }
+                else
+                {
+                    await signInManager.SignInAsync(user!, isPersistent: false);
+                    result = user.TwoFactorEnabled ? Microsoft.AspNetCore.Identity.SignInResult.TwoFactorRequired : Microsoft.AspNetCore.Identity.SignInResult.Success;
+                }
+            }
+        }
+        else
+        {
+            throw new BadRequestException();
+        }
 
         if (result.IsLockedOut)
         {
@@ -247,6 +278,65 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                 {
                     var renderedComponent = await htmlRenderer.RenderComponentAsync<ResetPasswordTokenTemplate>(ParameterView.FromDictionary(templateParameters));
+
+                    return renderedComponent.ToHtmlString();
+                });
+
+                var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
+                                                   .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
+                                                   .Body(body, isHtml: true)
+                                                   .SendAsync(cancellationToken);
+
+                if (emailResult.Successful is false)
+                    throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
+            }
+        }
+
+        async Task SendSms()
+        {
+            if (await userManager.IsPhoneNumberConfirmedAsync(user))
+            {
+                // TODO: Send token through SMS
+            }
+        }
+
+        await Task.WhenAll(SendEmail(), SendSms());
+    }
+
+    /// <summary>
+    /// For either otp or magic link
+    /// </summary>
+    [HttpPost]
+    public async Task SendOtpToken(SendOtpTokenRequestDto request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindUser(request)
+                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+
+        var resendDelay = (DateTimeOffset.Now - user.OtpTokenRequestedOn) - AppSettings.IdentitySettings.OtpTokenRequestResendDelay;
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+
+        user.OtpTokenRequestedOn = DateTimeOffset.Now;
+        var result = await userManager.UpdateAsync(user);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "Otp");
+
+        async Task SendEmail()
+        {
+            if (await userManager.IsEmailConfirmedAsync(user))
+            {
+                var templateParameters = new Dictionary<string, object?>()
+                {
+                    [nameof(OtpTokenTemplate.Model)] = new OtpTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
+                    [nameof(HttpContext)] = HttpContext
+                };
+
+                var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+                {
+                    var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTokenTemplate>(ParameterView.FromDictionary(templateParameters));
 
                     return renderedComponent.ToHtmlString();
                 });
