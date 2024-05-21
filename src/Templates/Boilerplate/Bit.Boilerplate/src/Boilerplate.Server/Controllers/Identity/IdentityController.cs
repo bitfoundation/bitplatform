@@ -10,12 +10,11 @@ using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
-using static QRCoder.PayloadGenerator;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
+[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private UserManager<User> userManager = default!;
