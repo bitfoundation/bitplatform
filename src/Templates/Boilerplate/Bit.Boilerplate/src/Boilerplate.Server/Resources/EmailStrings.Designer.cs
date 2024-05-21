@@ -115,6 +115,15 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If you&apos;re not the one requested the reset password, you can ignore this email..
+        /// </summary>
+        public static string ResetPasswordBody {
+            get {
+                return ResourceManager.GetString("ResetPasswordBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Boilerplate - Reset your password.
         /// </summary>
         public static string ResetPasswordEmailSubject {
@@ -124,29 +133,38 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hello {0}.
+        ///   Looks up a localized string similar to Or you can click on the following link to try to reset your password..
         /// </summary>
-        public static string ResetPasswordHello {
+        public static string ResetPasswordLinkMessage {
             get {
-                return ResourceManager.GetString("ResetPasswordHello", resourceCulture);
+                return ResourceManager.GetString("ResetPasswordLinkMessage", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Someone has requested a token to change your password..
         /// </summary>
-        public static string ResetPasswordMessage {
+        public static string ResetPasswordSubtitle {
             get {
-                return ResourceManager.GetString("ResetPasswordMessage", resourceCulture);
+                return ResourceManager.GetString("ResetPasswordSubtitle", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your password won&apos;t change until you access the link above and create a new one..
+        ///   Looks up a localized string similar to Hello {0}.
         /// </summary>
-        public static string ResetPasswordNote {
+        public static string ResetPasswordTitle {
             get {
-                return ResourceManager.GetString("ResetPasswordNote", resourceCulture);
+                return ResourceManager.GetString("ResetPasswordTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can copy the below token and enter it in the reset password page..
+        /// </summary>
+        public static string ResetPasswordTokenMessage {
+            get {
+                return ResourceManager.GetString("ResetPasswordTokenMessage", resourceCulture);
             }
         }
         

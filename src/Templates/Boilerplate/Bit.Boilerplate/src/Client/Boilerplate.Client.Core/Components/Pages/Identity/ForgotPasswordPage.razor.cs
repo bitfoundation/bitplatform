@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
@@ -8,35 +8,40 @@ public partial class ForgotPasswordPage
 {
     [AutoInject] IIdentityController identityController = default!;
 
-    private bool isLoading;
-    private string? forgotPasswordMessage;
-    private BitSeverity forgotPasswordMessageSeverity;
-    private SendResetPasswordTokenRequestDto forgotPasswordModel = new();
+    private bool isWaiting;
+    private string? errorMessage;
+    private readonly SendResetPasswordTokenRequestDto model = new();
 
-    private async Task DoSubmit()
+    private async Task Submit()
     {
-        if (isLoading) return;
+        if (isWaiting) return;
 
-        isLoading = true;
-        forgotPasswordMessage = null;
+        isWaiting = true;
+        errorMessage = null;
 
         try
         {
-            await identityController.SendResetPasswordToken(forgotPasswordModel, CurrentCancellationToken);
+            await identityController.SendResetPasswordToken(model, CurrentCancellationToken);
 
-            forgotPasswordMessageSeverity = BitSeverity.Success;
-
-            forgotPasswordMessage = Localizer[nameof(AppStrings.ResetPasswordTokenSentMessage)];
+            var queryParams = new Dictionary<string, object?>();
+            if (string.IsNullOrEmpty(model.Email) is false)
+            {
+                queryParams.Add("email", model.Email);
+            }
+            if (string.IsNullOrEmpty(model.PhoneNumber) is false)
+            {
+                queryParams.Add("phoneNumber", model.PhoneNumber);
+            }
+            var resetPasswordUrl = NavigationManager.GetUriWithQueryParameters("reset-password", queryParams);
+            NavigationManager.NavigateTo(resetPasswordUrl);
         }
         catch (KnownException e)
         {
-            forgotPasswordMessageSeverity = BitSeverity.Error;
-
-            forgotPasswordMessage = e.Message;
+            errorMessage = e.Message;
         }
         finally
         {
-            isLoading = false;
+            isWaiting = false;
         }
     }
 }

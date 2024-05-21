@@ -331,6 +331,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Confirm Password.
+        /// </summary>
+        public static string ConfirmPassword {
+            get {
+                return ResourceManager.GetString("ConfirmPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Phone Number.
         /// </summary>
         public static string ConfirmPhoneHeaderText {
@@ -700,20 +709,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please enter the email address you have been signed up with so we can send a reset password token to your email address..
+        ///   Looks up a localized string similar to Forgot password.
         /// </summary>
-        public static string ForgetPasswordMessage {
+        public static string ForgotPassword {
             get {
-                return ResourceManager.GetString("ForgetPasswordMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Forget password.
-        /// </summary>
-        public static string ForgetPasswordTitle {
-            get {
-                return ResourceManager.GetString("ForgetPasswordTitle", resourceCulture);
+                return ResourceManager.GetString("ForgotPassword", resourceCulture);
             }
         }
         
@@ -723,6 +723,24 @@ namespace Boilerplate.Shared.Resources {
         public static string ForgotPasswordLink {
             get {
                 return ResourceManager.GetString("ForgotPasswordLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter your email address or phone number so we can send a reset password token to you..
+        /// </summary>
+        public static string ForgotPasswordMessage {
+            get {
+                return ResourceManager.GetString("ForgotPasswordMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forgot password.
+        /// </summary>
+        public static string ForgotPasswordTitle {
+            get {
+                return ResourceManager.GetString("ForgotPasswordTitle", resourceCulture);
             }
         }
         
@@ -1312,6 +1330,60 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Set Password.
+        /// </summary>
+        public static string ResetPasswordButtonText {
+            get {
+                return ResourceManager.GetString("ResetPasswordButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please submit the token together with your new password here..
+        /// </summary>
+        public static string ResetPasswordMessage {
+            get {
+                return ResourceManager.GetString("ResetPasswordMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Already have a reset password token?.
+        /// </summary>
+        public static string ResetPasswordMessageInForgot {
+            get {
+                return ResourceManager.GetString("ResetPasswordMessageInForgot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to We have sent a token to your phone or email..
+        /// </summary>
+        public static string ResetPasswordSubtitle {
+            get {
+                return ResourceManager.GetString("ResetPasswordSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can now login with your password..
+        /// </summary>
+        public static string ResetPasswordSuccessBody {
+            get {
+                return ResourceManager.GetString("ResetPasswordSuccessBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your password has been reset..
+        /// </summary>
+        public static string ResetPasswordSuccessTitle {
+            get {
+                return ResourceManager.GetString("ResetPasswordSuccessTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reset password.
         /// </summary>
         public static string ResetPasswordTitle {
@@ -1893,6 +1965,24 @@ namespace Boilerplate.Shared.Resources {
         public static string TodoTitle {
             get {
                 return ResourceManager.GetString("TodoTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Token.
+        /// </summary>
+        public static string Token {
+            get {
+                return ResourceManager.GetString("Token", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter token.
+        /// </summary>
+        public static string TokenPlaceholder {
+            get {
+                return ResourceManager.GetString("TokenPlaceholder", resourceCulture);
             }
         }
         
