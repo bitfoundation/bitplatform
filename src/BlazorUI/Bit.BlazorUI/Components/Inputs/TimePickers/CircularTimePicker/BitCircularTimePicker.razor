@@ -9,7 +9,9 @@
 
     @if (LabelTemplate is not null)
     {
-        @LabelTemplate
+        <label id="@_labelId" for="@_inputId">
+            @LabelTemplate
+        </label>
     }
     else if (Label.HasValue())
     {
@@ -19,7 +21,7 @@
     }
 
     <div class="bit-ctp-wrp" id="@_circularTimePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
-        <div class="bit-ctp-fld-grp @(AllowTextInput ? "bit-ctp-edt-inp" : "")">
+        <div class="bit-ctp-fgp">
             <input @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
                    @oninput="@HandleOnChange"
@@ -37,7 +39,8 @@
                    readonly=@(AllowTextInput is false)
                    aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-controls="@(IsOpen ? _calloutId : null)"
-                   aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
+                   aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                   class="bit-ctp-inp @(AllowTextInput ? "bit-ctp-ein" : "")" />
 
             @if (IconTemplate is not null)
             {
@@ -45,7 +48,7 @@
             }
             else
             {
-                <i class="bit-icon bit-icon--@IconName" aria-hidden="true" />
+                <i class="bit-ctp-ico bit-icon bit-icon--@IconName" aria-hidden="true" />
             }
         </div>
     </div>
@@ -75,9 +78,9 @@
                 </div>
                 @if (TimeFormat == BitTimeFormat.TwelveHours)
                 {
-                    <div class="bit-ctp-am-pm">
-                        <button type="button" class="bit-ctp-txt @(IsAm() ? "" : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
-                        <button type="button" class="bit-ctp-txt @(IsAm() ? "bit-ctp-ina" : "")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
+                    <div class="bit-ctp-apc">
+                        <button type="button" class="bit-ctp-apb @(IsAm() ? "" : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
+                        <button type="button" class="bit-ctp-apb @(IsAm() ? "bit-ctp-ina" : "")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
                     </div>
                 }
             </div>
@@ -120,7 +123,7 @@
                         var deg = GetPointerDegree();
                     }
                     <div class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
-                        <div class="bit-ctp-thm@(deg % 30 == 0 ? "" : " bit-ctp-thm-min")"></div>
+                        <div class="bit-ctp-pth@(deg % 30 == 0 ? "" : " bit-ctp-ptm")"></div>
                     </div>
                 </div>
             </div>

@@ -6,7 +6,7 @@
             color: $color-foreground-disabled;
         }
 
-        .bit-ctp-fld-grp {
+        .bit-ctp-fgp {
             cursor: default;
             pointer-events: none;
             color: $color-foreground-disabled;
@@ -18,7 +18,7 @@
                 color: $color-foreground-disabled;
             }
 
-            input {
+            .bit-ctp-inp {
                 cursor: default;
                 color: $color-foreground-disabled;
                 background: none $color-background-disabled;
@@ -27,7 +27,7 @@
     }
 
     &.bit-inv {
-        .bit-ctp-fld-grp {
+        .bit-ctp-fgp {
             border-color: $color-state-error;
         }
     }
@@ -49,7 +49,7 @@
     position: relative;
 }
 
-.bit-ctp-fld-grp {
+.bit-ctp-fgp {
     margin: 0;
     display: flex;
     cursor: pointer;
@@ -63,54 +63,52 @@
     border-radius: $shape-border-radius;
     background-color: $color-background-primary;
     border: $shape-border-width $shape-border-style $color-border-primary;
-
-    .bit-icon {
-        cursor: pointer;
-        padding-right: 0;
-        padding-left: spacing(1);
-        color: $color-foreground-secondary;
-    }
-
-    input {
-        margin: 0;
-        outline: 0;
-        padding: 0;
-        width: 100%;
-        min-width: 0;
-        height: 100%;
-        border: none;
-        cursor: pointer;
-        border-radius: 0;
-        box-shadow: none;
-        font-weight: 400;
-        box-sizing: border-box;
-        text-overflow: ellipsis;
-        font-size: spacing(1.75);
-        background: none transparent;
-        color: $color-foreground-primary;
-        font-family: $typography-font-family;
-    }
 }
 
-.bit-ctp-edt-inp {
-    input {
-        cursor: default;
-    }
+.bit-ctp-ico {
+    cursor: pointer;
+    padding-right: 0;
+    padding-left: spacing(1);
+    color: $color-foreground-secondary;
 }
 
-.bit-ctp-lfic {
-    .bit-ctp-fld-grp {
+.bit-ctp-inp {
+    margin: 0;
+    outline: 0;
+    padding: 0;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    cursor: pointer;
+    border-radius: 0;
+    box-shadow: none;
+    font-weight: 400;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    font-size: spacing(1.75);
+    background: none transparent;
+    color: $color-foreground-primary;
+    font-family: $typography-font-family;
+}
+
+.bit-ctp-ein {
+    cursor: default;
+}
+
+.bit-ctp-lic {
+    .bit-ctp-fgp {
         flex-direction: row-reverse;
+    }
 
-        .bit-icon {
-            padding-left: 0;
-            padding-right: spacing(1);
-        }
+    .bit-ctp-ico {
+        padding-left: 0;
+        padding-right: spacing(1);
     }
 }
 
 .bit-ctp-foc {
-    .bit-ctp-fld-grp::after {
+    .bit-ctp-fgp::after {
         content: "";
         position: absolute;
         pointer-events: none;
@@ -127,7 +125,7 @@
         border-bottom: $shape-border-width $shape-border-style $color-border-primary;
     }
 
-    .bit-ctp-fld-grp {
+    .bit-ctp-fgp {
         border: none;
         flex: 1 1 0px;
         text-align: left;
@@ -140,7 +138,7 @@
     }
 
     &.bit-ctp-foc {
-        .bit-ctp-fld-grp::after {
+        .bit-ctp-fgp::after {
             border: none;
             border-radius: 0;
             border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
@@ -148,8 +146,8 @@
     }
 }
 
-.bit-ctp-no-brd {
-    .bit-ctp-fld-grp {
+.bit-ctp-nbd {
+    .bit-ctp-fgp {
         border: none;
     }
 }
@@ -197,7 +195,8 @@
     background-color: $color-primary-main;
 }
 
-.bit-ctp-txt {
+.bit-ctp-txt,
+.bit-ctp-apb {
     border: 0;
     margin: 0;
     padding: 0;
@@ -228,16 +227,16 @@
     justify-content: flex-end;
 }
 
-.bit-ctp-am-pm {
+.bit-ctp-apc {
     display: flex;
     margin-left: spacing(2.5);
     flex-direction: column;
+}
 
-    .bit-ctp-txt {
-        font-size: spacing(2.6);
-        min-width: spacing(2);
-        padding-top: spacing(0.5);
-    }
+.bit-ctp-apb {
+    font-size: spacing(2.6);
+    min-width: spacing(2);
+    padding-top: spacing(0.5);
 }
 
 .bit-ctp-clk {
@@ -268,13 +267,13 @@
     left: calc(50% - spacing(0.125));
     transform-origin: center bottom 0;
     background-color: $color-primary-main;
-
-    &.bit-ctp-ani {
-        transition: transform 150ms cubic-bezier(0.4,0,0.2,1) 0ms,height 150ms cubic-bezier(0.4,0,0.2,1) 0ms;
-    }
 }
 
-.bit-ctp-thm {
+.bit-ctp-ani {
+    transition: transform 150ms cubic-bezier(0.4,0,0.2,1) 0ms,height 150ms cubic-bezier(0.4,0,0.2,1) 0ms;
+}
+
+.bit-ctp-pth {
     border: none;
     position: absolute;
     width: spacing(3.5);
@@ -283,16 +282,16 @@
     height: spacing(3.5);
     left: spacing(-1.625);
     background-color: unset;
+}
 
-    &.bit-ctp-thm-min {
-        left: spacing(-0.5);
-        width: spacing(1.25);
-        top: spacing(-1.125);
-        height: spacing(1.25);
-        background: transparent;
-        color: $color-primary-main;
-        border: spacing(0.25) $shape-border-style;
-    }
+.bit-ctp-ptm {
+    left: spacing(-0.5);
+    width: spacing(1.25);
+    top: spacing(-1.125);
+    height: spacing(1.25);
+    background: transparent;
+    color: $color-primary-main;
+    border: spacing(0.25) $shape-border-style;
 }
 
 .bit-ctp-num {
@@ -309,12 +308,12 @@
     bottom: calc(100% - spacing(4));
     color: $color-foreground-primary;
     left: calc((100% - spacing(4))/2);
+}
 
-    &.bit-ctp-sel {
-        color: $color-foreground-primary;
-        background-color: $color-primary-main;
-        z-index: 1;
-    }
+.bit-ctp-sel {
+    color: $color-foreground-primary;
+    background-color: $color-primary-main;
+    z-index: 1;
 }
 
 .bit-ctp-clf {

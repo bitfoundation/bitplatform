@@ -215,7 +215,6 @@ public partial class BitCircularTimePicker
 
 
 
-    public string? LabelId => _labelId;
     public string? InputId => _inputId;
 
 
@@ -264,11 +263,11 @@ public partial class BitCircularTimePicker
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lfic" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lic" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined ? "bit-ctp-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder ? string.Empty : "bit-ctp-no-brd");
+        ClassBuilder.Register(() => HasBorder ? string.Empty : "bit-ctp-nbd");
 
         ClassBuilder.Register(() => _focusClass);
     }
