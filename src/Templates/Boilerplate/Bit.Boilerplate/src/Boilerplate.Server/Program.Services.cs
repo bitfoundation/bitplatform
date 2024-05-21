@@ -1,20 +1,20 @@
 ﻿//+:cnd:noEmit
 using System.IO.Compression;
-using Boilerplate.Server.Services;
-using Boilerplate.Client.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
+using Boilerplate.Client.Web;
+using Boilerplate.Server.Services;
 //#if (api == true)
-using System.Net.Mail;
 using System.Net;
+using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
 using Boilerplate.Server.Models.Identity;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.DataProtection;
+using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.DataProtection;
+using Azure.Communication.Sms;
 //#endif
 
 namespace Boilerplate.Server;
@@ -138,6 +138,9 @@ public static partial class Program
                 fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
             }
         }
+
+        services.TryAddTransient<SmsService>();
+        services.TryAddTransient(sp => new SmsClient(sp.GetRequiredService<AppSettings>().SmsSettings.ConnectionString));
 
         //#endif
 
