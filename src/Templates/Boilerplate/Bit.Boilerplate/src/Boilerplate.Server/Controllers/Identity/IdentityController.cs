@@ -263,7 +263,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             });
 
             var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                               .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
+                                               .Subject(emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
                                                .Body(body, isHtml: true)
                                                .SendAsync(cancellationToken);
 
