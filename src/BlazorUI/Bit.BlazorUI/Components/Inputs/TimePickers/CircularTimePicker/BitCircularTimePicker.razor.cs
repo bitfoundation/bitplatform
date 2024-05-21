@@ -13,9 +13,9 @@ public partial class BitCircularTimePicker
     private bool IsOpenHasBeenSet;
 
     private bool isOpen;
+    private string? focusClass;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private BitIconLocation iconLocation = BitIconLocation.Right;
-    private string focusClass = string.Empty;
 
     private int? _hour;
     private int? _minute;
@@ -29,7 +29,7 @@ public partial class BitCircularTimePicker
     private string? _pointerMoveAbortControllerId;
     private ElementReference _clockRef;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
-    private string _focusClass
+    private string? _focusClass
     {
         get => focusClass;
         set
@@ -311,7 +311,7 @@ public partial class BitCircularTimePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _focusClass = null;
         await OnFocusOut.InvokeAsync();
     }
 
