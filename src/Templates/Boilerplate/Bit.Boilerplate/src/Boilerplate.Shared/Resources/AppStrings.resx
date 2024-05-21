@@ -213,6 +213,9 @@
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profile updated successfully.</value>
   </data>
+    <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
+  </data>
     <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirm New Password</value>
   </data>
@@ -302,6 +305,12 @@
   </data>
     <data name="Add" xml:space="preserve">
     <value>Add</value>
+  </data>
+    <data name="Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+    <data name="TokenPlaceholder" xml:space="preserve">
+    <value>Enter token</value>
   </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Already have an account?</value>
@@ -399,11 +408,14 @@
     <data name="FileUploadFailed" xml:space="preserve">
     <value>An error occurred while uploading file</value>
   </data>
-    <data name="ForgetPasswordMessage" xml:space="preserve">
-    <value>Please enter the email address you have been signed up with so we can send a reset password token to your email address.</value>
+    <data name="ForgotPassword" xml:space="preserve">
+    <value>Forgot password</value>
   </data>
-    <data name="ForgetPasswordTitle" xml:space="preserve">
-    <value>Forget password</value>
+    <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Forgot password</value>
+  </data>
+    <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>Please enter your email address or phone number so we can send a reset password token to you.</value>
   </data>
     <data name="GenderMale" xml:space="preserve">
     <value>Male</value>
@@ -452,6 +464,24 @@
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset password</value>
+  </data>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>We have sent a token to your phone or email.</value>
+  </data>
+    <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>Please submit the token together with your new password here.</value>
+  </data>
+    <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>Set Password</value>
+  </data>
+    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>Your password has been reset.</value>
+  </data>
+    <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>You can now login with your password.</value>
+  </data>
+    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>Already have a reset password token?</value>
   </data>
     <data name="Save" xml:space="preserve">
     <value>Save</value>
