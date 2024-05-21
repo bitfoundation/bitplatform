@@ -168,14 +168,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         Microsoft.AspNetCore.Identity.SignInResult? result = null;
 
-        if (string.IsNullOrEmpty(signInRequest.Password) is false)
-        {
-            result = await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
-        }
-        else
-        {
-            result = await signInManager.OtpSignInAsync(user, signInRequest.Otp!);
-        }
+        result = string.IsNullOrEmpty(signInRequest.Password)
+            ? await signInManager.OtpSignInAsync(user, signInRequest.Otp!)
+            : await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
 
         if (result.IsLockedOut)
         {
