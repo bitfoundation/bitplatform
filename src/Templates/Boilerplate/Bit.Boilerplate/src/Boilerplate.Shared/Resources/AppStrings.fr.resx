@@ -687,8 +687,8 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>Générer et envoyer un jeton 2FA</value>
   </data>
-    <data name="TfaTokenEmailSent" xml:space="preserve">
-    <value>Le jeton 2FA a été généré et envoyé à votre email.</value>
+    <data name="TfaTokenSent" xml:space="preserve">
+    <value>Le token 2FA a été généré et vous a été envoyé.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de confirmation.</value>
@@ -697,7 +697,16 @@
     <value>Vous avez déjà demandé le sms de confirmation. Réessayez dans {0}</value>
   </data>
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>Vous avez déjà demandé l'e-mail de réinitialisation du mot de passe.</value>
+    <value>Vous avez déjà demandé le jeton de réinitialisation du mot de passe. Réessayez dans {0}</value>
+  </data>
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>Vous avez déjà demandé le mot de passe à usage unique. Réessayez dans {0}</value>
+  </data>
+    <data name="Otp" xml:space="preserve">
+    <value>Mot de passe à usage unique</value>
+  </data>
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>Soit fournir un mot de passe, soit Otp</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail du token 2FA. Réessayez en {0}.</value>

@@ -286,11 +286,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             // TODO: Send token through SMS
         }
-            if (await userManager.IsPhoneNumberConfirmedAsync(user))
-            {
-                // TODO: Send token through SMS
-            }
-        }
 
         await Task.WhenAll(SendEmail(), SendSms());
     }
@@ -310,31 +305,42 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
 
         user.OtpRequestedOn = DateTimeOffset.Now;
+
         var result = await userManager.UpdateAsync(user);
+
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
+        var isEmail = string.IsNullOrEmpty(request.Email) is false;
+        var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
+        var url = $"otp?token={Uri.EscapeDataString(token)}&{qs}";
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), url);
 
         async Task SendEmail()
         {
             if (await userManager.IsEmailConfirmedAsync(user) is false) return;
 
-            var templateParameters = ParameterView.FromDictionary(new Dictionary<string, object?>()
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
             {
-                [nameof(OtpTemplate.Model)] = new OtpTemplateModel { DisplayName = user.DisplayName!, Token = token },
+                [nameof(OtpTemplate.Model)] = new OtpTemplateModel
+                {
+                    Token = token,
+                    Link = link,
+                    DisplayName = user.DisplayName!,
+                },
                 [nameof(HttpContext)] = HttpContext
             });
 
             var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTemplate>(templateParameters);
+                var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTemplate>(parameters);
 
                 return renderedComponent.ToHtmlString();
             });
 
             var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                               .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
+                                               .Subject(emailLocalizer[EmailStrings.OtpEmailSubject])
                                                .Body(body, isHtml: true)
                                                .SendAsync(cancellationToken);
 

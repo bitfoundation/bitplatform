@@ -687,8 +687,8 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>Generate and Send 2FA Token</value>
   </data>
-    <data name="TfaTokenEmailSent" xml:space="preserve">
-    <value>The 2FA token has been generated and sent to your email.</value>
+    <data name="TfaTokenSent" xml:space="preserve">
+    <value>The 2FA token has been generated and sent to you.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
@@ -697,7 +697,16 @@
     <value>You have already requested the confirmation sms. Try again in {0}</value>
   </data>
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>You have already requested the reset password email. Try again in {0}</value>
+    <value>You have already requested the reset password token. Try again in {0}</value>
+  </data>
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>You have already requested the one time password. Try again in {0}</value>
+  </data>
+    <data name="Otp" xml:space="preserve">
+    <value>One time password</value>
+  </data>
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>Either provide password or Otp</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the 2FA token email. Try again in {0}.</value>

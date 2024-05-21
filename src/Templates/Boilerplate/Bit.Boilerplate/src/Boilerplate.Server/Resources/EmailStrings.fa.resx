@@ -151,6 +151,24 @@
     <data name="ResetYourPassword" xml:space="preserve">
     <value>رمز عبور خود را ریست کنید</value>
   </data>
+    <data name="OtpEmailSubject" xml:space="preserve">
+    <value>Boilerplate - رمز یک‌بار مصرف</value>
+  </data>
+    <data name="OtpTitle" xml:space="preserve">
+    <value>سلام {0}</value>
+  </data>
+    <data name="OtpSubtitle" xml:space="preserve">
+    <value>فردی برای ورود به برنامه رمز یک‌بار مصرف درخواست کرده است</value>
+  </data>
+    <data name="OtpBody" xml:space="preserve">
+    <value>اگر شما آن فرد نیستید، میتوانید این ایمیل را نادیده بگیرید</value>
+  </data>
+    <data name="OtpMessage" xml:space="preserve">
+    <value>شما میتوانید رمز زیر را کپی کرده و در صفحه لاگین استفاده کنید</value>
+  </data>
+    <data name="OtpLinkMessage" xml:space="preserve">
+    <value>یا بر روی لینک زیر کلیک کنید</value>
+  </data>
     <data name="AppName" xml:space="preserve">
     <value>Boilerplate</value>
   </data>

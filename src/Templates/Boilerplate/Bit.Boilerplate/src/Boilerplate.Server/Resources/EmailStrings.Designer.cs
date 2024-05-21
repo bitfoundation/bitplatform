@@ -115,6 +115,60 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If you&apos;re not the one requested the one time password, you can ignore this email..
+        /// </summary>
+        public static string OtpBody {
+            get {
+                return ResourceManager.GetString("OtpBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Boilerplate - One time password.
+        /// </summary>
+        public static string OtpEmailSubject {
+            get {
+                return ResourceManager.GetString("OtpEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Or you can click on the following link to sign in..
+        /// </summary>
+        public static string OtpLinkMessage {
+            get {
+                return ResourceManager.GetString("OtpLinkMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can copy the below token and enter it in the sign in page..
+        /// </summary>
+        public static string OtpMessage {
+            get {
+                return ResourceManager.GetString("OtpMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Someone has requested a token to sign in to the app..
+        /// </summary>
+        public static string OtpSubtitle {
+            get {
+                return ResourceManager.GetString("OtpSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hello {0}.
+        /// </summary>
+        public static string OtpTitle {
+            get {
+                return ResourceManager.GetString("OtpTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to If you&apos;re not the one requested the reset password, you can ignore this email..
         /// </summary>
         public static string ResetPasswordBody {
