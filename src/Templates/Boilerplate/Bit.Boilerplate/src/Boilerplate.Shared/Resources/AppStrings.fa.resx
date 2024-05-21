@@ -697,16 +697,16 @@
     <value>شما قبلا پیامک تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>You have already requested the reset password token. Try again in {0}</value>
+    <value>شما قبلا توکن تغییر رمز‌عبور را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>You have already requested the one time password. Try again in {0}</value>
+    <value>شما قبلا رمز عبور یک‌بار مصرف را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
-    <value>One time password</value>
+    <value>رمز یک‌بار مصرف</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Either provide password or Otp</value>
+    <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
