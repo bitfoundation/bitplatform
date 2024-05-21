@@ -538,11 +538,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Either provider password, or one-time-password token..
+        ///   Looks up a localized string similar to Either provider password, or one-time-password..
         /// </summary>
-        public static string EitherProvideOtpTokenOrPassword {
+        public static string EitherProvidePasswordOrOtp {
             get {
-                return ResourceManager.GetString("EitherProvideOtpTokenOrPassword", resourceCulture);
+                return ResourceManager.GetString("EitherProvidePasswordOrOtp", resourceCulture);
             }
         }
         
@@ -1008,9 +1008,9 @@ namespace Boilerplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to One time password.
         /// </summary>
-        public static string OtpToken {
+        public static string Otp {
             get {
-                return ResourceManager.GetString("OtpToken", resourceCulture);
+                return ResourceManager.GetString("Otp", resourceCulture);
             }
         }
         
@@ -2077,11 +2077,11 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have already requested the one time password token. Try again in {0}.
+        ///   Looks up a localized string similar to You have already requested the one time password. Try again in {0}.
         /// </summary>
-        public static string WaitForOtpTokenRequestResendDelay {
+        public static string WaitForOtpRequestResendDelay {
             get {
-                return ResourceManager.GetString("WaitForOtpTokenRequestResendDelay", resourceCulture);
+                return ResourceManager.GetString("WaitForOtpRequestResendDelay", resourceCulture);
             }
         }
         

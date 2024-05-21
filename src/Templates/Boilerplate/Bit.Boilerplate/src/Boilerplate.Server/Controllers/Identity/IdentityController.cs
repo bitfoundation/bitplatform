@@ -174,7 +174,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
         else
         {
-            result = await signInManager.OtpSignInAsync(user, signInRequest.OtpToken!);
+            result = await signInManager.OtpSignInAsync(user, signInRequest.Otp!);
         }
 
         if (result.IsLockedOut)
@@ -285,22 +285,22 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// For either otp or magic link
     /// </summary>
     [HttpPost]
-    public async Task SendOtpToken(SendOtpTokenRequestDto request, CancellationToken cancellationToken)
+    public async Task SendOtp(SendOtpRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindUser(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
-        var resendDelay = (DateTimeOffset.Now - user.OtpTokenRequestedOn) - AppSettings.IdentitySettings.OtpTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.IdentitySettings.OtpRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
 
-        user.OtpTokenRequestedOn = DateTimeOffset.Now;
+        user.OtpRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpTokenRequestedOn}");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
 
         async Task SendEmail()
         {
@@ -308,13 +308,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             var templateParameters = ParameterView.FromDictionary(new Dictionary<string, object?>()
             {
-                [nameof(OtpTokenTemplate.Model)] = new OtpTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
+                [nameof(OtpTemplate.Model)] = new OtpTemplateModel { DisplayName = user.DisplayName!, Token = token },
                 [nameof(HttpContext)] = HttpContext
             });
 
             var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTokenTemplate>(templateParameters);
+                var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTemplate>(templateParameters);
 
                 return renderedComponent.ToHtmlString();
             });

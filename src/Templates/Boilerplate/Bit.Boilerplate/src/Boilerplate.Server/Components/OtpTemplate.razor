@@ -2,7 +2,7 @@
 @using Boilerplate.Server.Resources
 
 @code {
-    [Parameter] public OtpTokenTemplateModel Model { get; set; } = default!;
+    [Parameter] public OtpTemplateModel Model { get; set; } = default!;
     [Parameter] public HttpContext HttpContext { get; set; } = default!;
     [Inject] public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
 }

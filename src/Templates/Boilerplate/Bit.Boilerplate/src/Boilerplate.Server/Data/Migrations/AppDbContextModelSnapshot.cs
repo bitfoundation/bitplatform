@@ -153,7 +153,7 @@ namespace Boilerplate.Server.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<DateTimeOffset?>("OtpTokenRequestedOn")
+                    b.Property<DateTimeOffset?>("OtpRequestedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PasswordHash")

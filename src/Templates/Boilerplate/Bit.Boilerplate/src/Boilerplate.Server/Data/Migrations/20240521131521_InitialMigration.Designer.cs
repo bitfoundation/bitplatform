@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boilerplate.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240521101638_InitialMigration")]
+    [Migration("20240521131521_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -156,7 +156,7 @@ namespace Boilerplate.Server.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<DateTimeOffset?>("OtpTokenRequestedOn")
+                    b.Property<DateTimeOffset?>("OtpRequestedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PasswordHash")

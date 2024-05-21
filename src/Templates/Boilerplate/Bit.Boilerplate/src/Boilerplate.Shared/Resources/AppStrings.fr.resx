@@ -225,7 +225,7 @@
     <data name="Password" xml:space="preserve">
     <value>Mot de passe</value>
   </data>
-    <data name="OtpToken" xml:space="preserve">
+    <data name="Otp" xml:space="preserve">
     <value>Mot de passe à usage unique</value>
   </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
@@ -273,8 +273,8 @@
     <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
     <value>Soit le nom d'utilisateur du fournisseur, l'e-mail ou le numéro de téléphone.</value>
   </data>
-    <data name="EitherProvideOtpTokenOrPassword" xml:space="preserve">
-    <value>Soit le mot de passe du fournisseur, soit un jeton de mot de passe à temps.</value>
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>Soit le mot de passe du fournisseur, soit le mot de passe à usage unique.</value>
   </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>
@@ -675,8 +675,8 @@
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé le jeton de mot de passe de réinitialisation. Réessayer dans {0}</value>
   </data>
-    <data name="WaitForOtpTokenRequestResendDelay" xml:space="preserve">
-    <value>Vous avez déjà demandé le jeton de mot de passe unique. Réessayer dans {0}</value>
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>Vous avez déjà demandé le mot de passe à usage unique. Réessayez dans {0}</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé le jeton 2FA. Réessayez dans {0}.</value>

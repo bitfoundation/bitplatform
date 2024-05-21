@@ -47,7 +47,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(ConfirmPhoneRequestDto))]
 [JsonSerializable(typeof(ChangePhoneNumberRequestDto))]
 [JsonSerializable(typeof(SendResetPasswordTokenRequestDto))]
-[JsonSerializable(typeof(SendOtpTokenRequestDto))]
+[JsonSerializable(typeof(SendOtpRequestDto))]
 [JsonSerializable(typeof(ResetPasswordRequestDto))]
 [JsonSerializable(typeof(TwoFactorAuthRequestDto))]
 [JsonSerializable(typeof(TwoFactorAuthResponseDto))]

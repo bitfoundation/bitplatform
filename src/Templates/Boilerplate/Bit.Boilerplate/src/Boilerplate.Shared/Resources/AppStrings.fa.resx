@@ -225,7 +225,7 @@
     <data name="Password" xml:space="preserve">
     <value>رمز عبور</value>
   </data>
-    <data name="OtpToken" xml:space="preserve">
+    <data name="Otp" xml:space="preserve">
     <value>رمز یک‌بار مصرف</value>
   </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
@@ -273,7 +273,7 @@
     <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
     <value>یا ایمیل یا شماره تلفن یا نام کاربری را وارد کنید.</value>
   </data>
-    <data name="EitherProvideOtpTokenOrPassword" xml:space="preserve">
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>یا رمز عبور یا توکن رمز عبور یک بار مصرف را وارد کنید</value>
   </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
@@ -675,7 +675,7 @@
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا توکن تغییر رمز عبور را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
-    <data name="WaitForOtpTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>شما قبلا رمز یک بار مصرف را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">

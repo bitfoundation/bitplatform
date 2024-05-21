@@ -4,7 +4,7 @@ namespace Microsoft.AspNetCore.Identity;
 
 public static class SignInManagerExtensions
 {
-    public static async Task<SignInResult> OtpSignInAsync(this SignInManager<User> signInManager, User user, string otpToken)
+    public static async Task<SignInResult> OtpSignInAsync(this SignInManager<User> signInManager, User user, string otp)
     {
         SignInResult result;
         var userManager = signInManager.UserManager;
@@ -15,7 +15,7 @@ public static class SignInManagerExtensions
         }
         else
         {
-            bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpTokenRequestedOn}", otpToken!);
+            bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}", otp!);
 
             if (tokenIsValid is false)
             {

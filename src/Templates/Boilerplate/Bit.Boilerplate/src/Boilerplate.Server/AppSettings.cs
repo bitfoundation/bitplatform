@@ -48,7 +48,7 @@ public class IdentitySettings
     /// <summary>
     /// To sign in with either Otp or magic link.
     /// </summary>
-    public TimeSpan OtpTokenRequestResendDelay { get; set; }
+    public TimeSpan OtpRequestResendDelay { get; set; }
 }
 
 public class EmailSettings

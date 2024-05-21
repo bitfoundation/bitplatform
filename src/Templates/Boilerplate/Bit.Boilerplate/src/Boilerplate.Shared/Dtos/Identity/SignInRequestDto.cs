@@ -13,8 +13,8 @@ public class SignInRequestDto : IdentityRequestDto
     /// For either Otp or magic link
     /// </summary>
     /// <example>null</example>
-    [Display(Name = nameof(AppStrings.OtpToken))]
-    public string? OtpToken { get; set; }
+    [Display(Name = nameof(AppStrings.Otp))]
+    public string? Otp { get; set; }
 
     [JsonIgnore]
     [Display(Name = nameof(AppStrings.RememberMe))]
@@ -42,9 +42,9 @@ public class SignInRequestDto : IdentityRequestDto
     {
         var result = base.Validate(validationContext).ToList();
 
-        if (string.IsNullOrEmpty(Password) && string.IsNullOrEmpty(OtpToken))
+        if (string.IsNullOrEmpty(Password) && string.IsNullOrEmpty(Otp))
         {
-            result.Add(new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideOtpTokenOrPassword), [nameof(Password), nameof(OtpToken)]));
+            result.Add(new ValidationResult(errorMessage: nameof(AppStrings.EitherProvidePasswordOrOtp), [nameof(Password), nameof(Otp)]));
         }
 
         return result;

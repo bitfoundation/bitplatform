@@ -33,5 +33,5 @@ public class User : IdentityUser<int>
     /// <summary>
     /// To sign in with either Otp or magic link.
     /// </summary>
-    public DateTimeOffset? OtpTokenRequestedOn { get; set; }
+    public DateTimeOffset? OtpRequestedOn { get; set; }
 }
