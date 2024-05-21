@@ -711,6 +711,21 @@
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail du token 2FA. Réessayez en {0}.</value>
   </data>
+    <data name="ChangePhoneNumberTokenSmsText" xml:space="preserve">
+    <value>{0} est votre jeton de changement de numéro de téléphone dans Boilerplate.</value>
+  </data>
+    <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
+    <value>{0} est votre jeton de confirmation de numéro de téléphone dans Boilerplate.</value>
+  </data>
+    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <value>{0} est votre jeton à deux facteurs dans Boilerplate.</value>
+  </data>
+    <data name="OtpSmsText" xml:space="preserve">
+    <value>{0} est votre mot de passe à usage unique dans Boilerplate.</value>
+  </data>
+    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <value>{0} est votre jeton de réinitialisation de mot de passe dans Boilerplate.</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
   </data>

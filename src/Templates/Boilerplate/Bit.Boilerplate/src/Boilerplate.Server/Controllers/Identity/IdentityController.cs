@@ -31,6 +31,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
+    [AutoInject] private SmsService smsService = default!;
+
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -279,7 +281,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             if (await userManager.IsPhoneNumberConfirmedAsync(user) is false) return;
 
-            // TODO: Send token through SMS
+            await smsService.SendSms(Localizer[nameof(AppStrings.ResetPasswordTokenSmsText), token], user.PhoneNumber!, cancellationToken);
         }
 
         await Task.WhenAll(SendEmail(), SendSms());
@@ -347,7 +349,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             if (await userManager.IsPhoneNumberConfirmedAsync(user) is false) return;
 
-            // TODO: Send token through SMS
+            await smsService.SendSms(Localizer[nameof(AppStrings.OtpSmsText), token], user.PhoneNumber!, cancellationToken);
         }
 
         await Task.WhenAll(SendEmail(), SendSms());
@@ -423,7 +425,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             if (await userManager.IsPhoneNumberConfirmedAsync(user))
             {
-                // TODO: Send token through sms
+                await smsService.SendSms(Localizer[nameof(AppStrings.TwoFactorTokenSmsText), token], user.PhoneNumber!, cancellationToken);
             }
         }
 
@@ -487,6 +489,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{phoneNumber},Date:{user.PhoneNumberTokenRequestedOn}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}");
 
-        // TODO: Send token through SMS
+        await smsService.SendSms(Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token], user.PhoneNumber!, cancellationToken);
     }
 }

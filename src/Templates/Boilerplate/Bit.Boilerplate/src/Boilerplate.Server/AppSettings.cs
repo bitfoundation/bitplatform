@@ -7,6 +7,8 @@ public class AppSettings
 
     public EmailSettings EmailSettings { get; set; } = default!;
 
+    public SmsSettings SmsSettings { get; set; } = default!;
+
     public HealthCheckSettings HealthCheckSettings { get; set; } = default!;
 
     public string UserProfileImagesDir { get; set; } = default!;
@@ -64,4 +66,13 @@ public class EmailSettings
     public string DefaultFromEmail { get; set; } = default!;
     public string DefaultFromName { get; set; } = default!;
     public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
+}
+
+public class SmsSettings
+{
+    public string FromPhoneNumber { get; set; } = default!;
+
+    public string ConnectionString { get; set; } = default!;
+
+    public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false && string.IsNullOrEmpty(ConnectionString) is false;
 }

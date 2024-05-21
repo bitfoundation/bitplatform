@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using QRCoder;
 using FluentEmail.Core;
 using Boilerplate.Shared;
+using Boilerplate.Server.Services;
 using Boilerplate.Server.Resources;
 using Boilerplate.Server.Components;
 using Boilerplate.Shared.Dtos.Identity;
@@ -29,6 +30,8 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private IFluentEmail fluentEmail = default!;
 
     [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
+
+    [AutoInject] private SmsService smsService = default!;
 
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
@@ -161,7 +164,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, body.PhoneNumber!);
 
-        // TODO: Send token through SMS
+        await smsService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], user.PhoneNumber!, cancellationToken);
     }
 
     [HttpPost]
