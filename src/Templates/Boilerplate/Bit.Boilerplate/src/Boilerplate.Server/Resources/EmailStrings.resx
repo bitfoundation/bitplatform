@@ -151,6 +151,24 @@
     <data name="ResetYourPassword" xml:space="preserve">
     <value>Reset your password</value>
   </data>
+    <data name="OtpEmailSubject" xml:space="preserve">
+    <value>Boilerplate - One time password</value>
+  </data>
+    <data name="OtpTitle" xml:space="preserve">
+    <value>Hello {0}</value>
+  </data>
+    <data name="OtpSubtitle" xml:space="preserve">
+    <value>Someone has requested a token to sign in to the app.</value>
+  </data>
+    <data name="OtpBody" xml:space="preserve">
+    <value>If you're not the one requested the one time password, you can ignore this email.</value>
+  </data>
+    <data name="OtpMessage" xml:space="preserve">
+    <value>You can copy the below token and enter it in the sign in page.</value>
+  </data>
+    <data name="OtpLinkMessage" xml:space="preserve">
+    <value>Or you can click on the following link to sign in.</value>
+  </data>
     <data name="AppName" xml:space="preserve">
     <value>Boilerplate</value>
   </data>

@@ -4,7 +4,7 @@ namespace Boilerplate.Shared.Dtos.Identity;
 [DtoResourceType(typeof(AppStrings))]
 public class SignUpRequestDto : IdentityRequestDto
 {
-    /// <example>user</example>
+    /// <example>test2</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.UserName))]
     public override string? UserName { get; set; }

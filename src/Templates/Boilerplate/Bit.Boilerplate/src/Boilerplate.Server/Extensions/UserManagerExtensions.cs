@@ -18,11 +18,13 @@ public static class UserManagerExtensions
         {
             user = await userManager.FindByNameAsync(userName!);
         }
-        else if (string.IsNullOrEmpty(email) is false)
+
+        if (user is null && string.IsNullOrEmpty(email) is false)
         {
             user = await userManager.FindByEmailAsync(email!);
         }
-        else if (string.IsNullOrEmpty(phoneNumber) is false)
+
+        if (user is null && string.IsNullOrEmpty(phoneNumber) is false)
         {
             user = await userManager.FindByPhoneNumber(phoneNumber);
         }

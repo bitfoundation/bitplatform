@@ -108,7 +108,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{body.Email}", body.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{body.Email},Date:{user.EmailTokenRequestedOn}", body.Token!);
 
         if (tokenIsValid is false)
         {
@@ -146,7 +146,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (user.PhoneNumberConfirmed) return;
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{body.PhoneNumber}", body.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{body.PhoneNumber},Date:{user.PhoneNumberTokenRequestedOn}", body.Token!);
 
         if (tokenIsValid is false)
         {
@@ -164,9 +164,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-        var user = await userManager.FindUser(signInRequest) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+        var user = await userManager.FindUser(signInRequest) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var result = await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+        Microsoft.AspNetCore.Identity.SignInResult? result = null;
+
+        result = string.IsNullOrEmpty(signInRequest.Password)
+            ? await signInManager.OtpSignInAsync(user, signInRequest.Otp!)
+            : await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
 
         if (result.IsLockedOut)
         {
@@ -234,7 +238,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "ResetPassword");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}");
         var isEmail = string.IsNullOrEmpty(request.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
         var url = $"reset-password?token={Uri.EscapeDataString(token)}&{qs}";
@@ -281,6 +285,74 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await Task.WhenAll(SendEmail(), SendSms());
     }
 
+    /// <summary>
+    /// For either otp or magic link
+    /// </summary>
+    [HttpPost]
+    public async Task SendOtp(SendOtpRequestDto request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindUser(request)
+                    ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+
+        var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.IdentitySettings.OtpRequestResendDelay;
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+
+        user.OtpRequestedOn = DateTimeOffset.Now;
+
+        var result = await userManager.UpdateAsync(user);
+
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
+        var isEmail = string.IsNullOrEmpty(request.Email) is false;
+        var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
+        var url = $"otp?token={Uri.EscapeDataString(token)}&{qs}";
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), url);
+
+        async Task SendEmail()
+        {
+            if (await userManager.IsEmailConfirmedAsync(user) is false) return;
+
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+            {
+                [nameof(OtpTemplate.Model)] = new OtpTemplateModel
+                {
+                    Token = token,
+                    Link = link,
+                    DisplayName = user.DisplayName!,
+                },
+                [nameof(HttpContext)] = HttpContext
+            });
+
+            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+            {
+                var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTemplate>(parameters);
+
+                return renderedComponent.ToHtmlString();
+            });
+
+            var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
+                                               .Subject(emailLocalizer[EmailStrings.OtpEmailSubject])
+                                               .Body(body, isHtml: true)
+                                               .SendAsync(cancellationToken);
+
+            if (emailResult.Successful is false)
+                throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
+        }
+
+        async Task SendSms()
+        {
+            if (await userManager.IsPhoneNumberConfirmedAsync(user) is false) return;
+
+            // TODO: Send token through SMS
+        }
+
+        await Task.WhenAll(SendEmail(), SendSms());
+    }
+
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest, CancellationToken cancellationToken)
     {
@@ -289,7 +361,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, "ResetPassword", resetPasswordRequest.Token!);
+        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}", resetPasswordRequest.Token!);
 
         if (tokenIsValid is false)
         {
@@ -374,7 +446,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var email = request.Email!;
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{user.Email}");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{user.Email},Date:{user.EmailTokenRequestedOn}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(email!)}&emailToken={Uri.EscapeDataString(token)}");
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>()
         {
@@ -412,7 +484,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var phoneNumber = user.PhoneNumber;
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{phoneNumber}");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{phoneNumber},Date:{user.PhoneNumberTokenRequestedOn}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}");
 
         // TODO: Send token through SMS
