@@ -2241,9 +2241,9 @@ namespace Boilerplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to {0} is your change phone number token in Boilerplate..
         /// </summary>
-        public static string ChangeNumberPhoneTokenSmsText {
+        public static string ChangePhoneNumberTokenSmsText {
             get {
-                return ResourceManager.GetString("ChangeNumberPhoneTokenSmsText", resourceCulture);
+                return ResourceManager.GetString("ChangePhoneNumberTokenSmsText", resourceCulture);
             }
         }
         

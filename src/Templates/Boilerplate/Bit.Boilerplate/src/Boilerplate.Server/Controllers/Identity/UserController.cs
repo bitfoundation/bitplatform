@@ -164,7 +164,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, body.PhoneNumber!);
 
-        await smsService.SendSms(Localizer[nameof(AppStrings.ChangeNumberPhoneTokenSmsText), token], user.PhoneNumber!, cancellationToken);
+        await smsService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], user.PhoneNumber!, cancellationToken);
     }
 
     [HttpPost]

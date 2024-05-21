@@ -711,7 +711,7 @@
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the 2FA token email. Try again in {0}.</value>
   </data>
-    <data name="ChangeNumberPhoneTokenSmsText" xml:space="preserve">
+    <data name="ChangePhoneNumberTokenSmsText" xml:space="preserve">
     <value>{0} is your change phone number token in Boilerplate.</value>
   </data>
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
