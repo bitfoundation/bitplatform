@@ -2237,5 +2237,50 @@ namespace Boilerplate.Shared.Resources {
                 return ResourceManager.GetString("YouNeedToSignIn", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is your change phone number token in Boilerplate..
+        /// </summary>
+        public static string YourChangeNumberPhoneToken {
+            get {
+                return ResourceManager.GetString("YourChangeNumberPhoneToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is your confirm phone number token in Boilerplate..
+        /// </summary>
+        public static string YourConfirmPhoneToken {
+            get {
+                return ResourceManager.GetString("YourConfirmPhoneToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is your one time password in Boilerplate..
+        /// </summary>
+        public static string YourOtp {
+            get {
+                return ResourceManager.GetString("YourOtp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is your reset password token in Boilerplate..
+        /// </summary>
+        public static string YourResetPasswordToken {
+            get {
+                return ResourceManager.GetString("YourResetPasswordToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is your two factor token in Boilerplate..
+        /// </summary>
+        public static string YourTwoFactorToken {
+            get {
+                return ResourceManager.GetString("YourTwoFactorToken", resourceCulture);
+            }
+        }
     }
 }
