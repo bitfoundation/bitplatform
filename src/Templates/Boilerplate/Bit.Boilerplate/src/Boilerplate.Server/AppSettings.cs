@@ -46,6 +46,11 @@ public class IdentitySettings
     public TimeSpan PhoneNumberTokenRequestResendDelay { get; set; }
     public TimeSpan ResetPasswordTokenRequestResendDelay { get; set; }
     public TimeSpan TwoFactorTokenRequestResendDelay { get; set; }
+
+    /// <summary>
+    /// To sign in with either Otp or magic link.
+    /// </summary>
+    public TimeSpan OtpRequestResendDelay { get; set; }
 }
 
 public class EmailSettings

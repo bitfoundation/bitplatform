@@ -73,7 +73,7 @@ public partial class SignInPage
         {
             await identityController.SendTwoFactorToken(signInModel, CurrentCancellationToken);
 
-            message = Localizer[nameof(AppStrings.TfaTokenEmailSent)];
+            message = Localizer[nameof(AppStrings.TfaTokenSent)];
             messageSeverity = BitSeverity.Success;
         }
         catch (KnownException e)

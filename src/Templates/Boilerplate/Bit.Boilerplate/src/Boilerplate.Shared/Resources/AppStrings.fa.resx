@@ -687,8 +687,8 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>تولید و ارسال توکن 2FA</value>
   </data>
-    <data name="TfaTokenEmailSent" xml:space="preserve">
-    <value>توکن 2FA تولید و به ایمیل شما ارسال شد.</value>
+    <data name="TfaTokenSent" xml:space="preserve">
+    <value>The 2FA token has been generated and sent to you.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
@@ -697,7 +697,16 @@
     <value>شما قبلا پیامک تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>شما قبلا درخواست تنظیم مجدد ایمیل رمز عبور را دارید. دوباره امتحان کنید در {0}</value>
+    <value>شما قبلا توکن تغییر رمز‌عبور را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
+  </data>
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>شما قبلا رمز عبور یک‌بار مصرف را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
+  </data>
+    <data name="Otp" xml:space="preserve">
+    <value>رمز یک‌بار مصرف</value>
+  </data>
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>

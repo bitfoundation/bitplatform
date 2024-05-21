@@ -547,6 +547,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Either provide password or Otp.
+        /// </summary>
+        public static string EitherProvidePasswordOrOtp {
+            get {
+                return ResourceManager.GetString("EitherProvidePasswordOrOtp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Either provider username, email or phone number..
         /// </summary>
         public static string EitherProvideUserNameOrEmailOrPhoneNumber {
@@ -1011,6 +1020,15 @@ namespace Boilerplate.Shared.Resources {
         public static string Or {
             get {
                 return ResourceManager.GetString("Or", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One time password.
+        /// </summary>
+        public static string Otp {
+            get {
+                return ResourceManager.GetString("Otp", resourceCulture);
             }
         }
         
@@ -1897,20 +1915,20 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The 2FA token has been generated and sent to your email..
-        /// </summary>
-        public static string TfaTokenEmailSent {
-            get {
-                return ResourceManager.GetString("TfaTokenEmailSent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Generate and Send 2FA Token.
         /// </summary>
         public static string TfaTokenGenerateButtonText {
             get {
                 return ResourceManager.GetString("TfaTokenGenerateButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The 2FA token has been generated and sent to you..
+        /// </summary>
+        public static string TfaTokenSent {
+            get {
+                return ResourceManager.GetString("TfaTokenSent", resourceCulture);
             }
         }
         
@@ -2149,6 +2167,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You have already requested the one time password. Try again in {0}.
+        /// </summary>
+        public static string WaitForOtpRequestResendDelay {
+            get {
+                return ResourceManager.GetString("WaitForOtpRequestResendDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have already requested the confirmation sms. Try again in {0}.
         /// </summary>
         public static string WaitForPhoneNumberTokenRequestResendDelay {
@@ -2158,7 +2185,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have already requested the reset password email. Try again in {0}.
+        ///   Looks up a localized string similar to You have already requested the reset password token. Try again in {0}.
         /// </summary>
         public static string WaitForResetPasswordTokenRequestResendDelay {
             get {
