@@ -4,7 +4,7 @@ namespace Boilerplate.Shared.Dtos.Identity;
 [DtoResourceType(typeof(AppStrings))]
 public class IdentityRequestDto : IValidatableObject
 {
-    /// <example>bitplatform</example>
+    /// <example>test</example>
     [Display(Name = nameof(AppStrings.UserName))]
     public virtual string? UserName { get; set; }
 
