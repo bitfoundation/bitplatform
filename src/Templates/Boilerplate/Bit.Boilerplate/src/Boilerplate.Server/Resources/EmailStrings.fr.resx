@@ -133,23 +133,20 @@
     <data name="ResetPasswordEmailSubject" xml:space="preserve">
     <value>Boilerplate - Réinitialisez votre mot de passe</value>
   </data>
-    <data name="ResetPasswordHello" xml:space="preserve">
+    <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Bonjour {0}</value>
   </data>
-    <data name="ResetPasswordMessage" xml:space="preserve">
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
     <value>Quelqu'un a demandé un jeton pour changer votre mot de passe.</value>
   </data>
-    <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Boilerplate - Jeton OTP</value>
+    <data name="ResetPasswordBody" xml:space="preserve">
+    <value>Si ce n'est pas vous qui avez demandé la réinitialisation du mot de passe, vous pouvez ignorer cet e-mail.</value>
   </data>
-    <data name="OtpHello" xml:space="preserve">
-    <value>Bonjour {0}</value>
+    <data name="ResetPasswordTokenMessage" xml:space="preserve">
+    <value>Vous pouvez copier le jeton ci-dessous et le saisir sur la page de réinitialisation du mot de passe.</value>
   </data>
-    <data name="OtpMessage" xml:space="preserve">
-    <value>Quelqu'un a demandé un jeton de mot de passe à usage unique pour se connecter.</value>
-  </data>
-    <data name="ResetPasswordNote" xml:space="preserve">
-    <value>Votre mot de passe ne changera pas tant que vous n'aurez pas accédé au lien ci-dessus et créé un nouveau.</value>
+    <data name="ResetPasswordLinkMessage" xml:space="preserve">
+    <value>Ou vous pouvez cliquer sur le lien suivant pour essayer de réinitialiser votre mot de passe.</value>
   </data>
     <data name="ResetYourPassword" xml:space="preserve">
     <value>réinitialisez votre mot de passe</value>

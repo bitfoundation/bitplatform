@@ -213,6 +213,9 @@
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Mise à jour du profil réussie.</value>
   </data>
+    <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirmez le mot de passe</value>
+  </data>
     <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirmer le nouveau mot de passe</value>
   </data>
@@ -225,9 +228,6 @@
     <data name="Password" xml:space="preserve">
     <value>Mot de passe</value>
   </data>
-    <data name="Otp" xml:space="preserve">
-    <value>Mot de passe à usage unique</value>
-  </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Votre mot de passe a changé avec succès.</value>
   </data>
@@ -235,7 +235,7 @@
     <value>Le jeton de confirmation a été renvoyé à votre adresse e-mail.</value>
   </data>
     <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
-    <value>Le jeton de mot de passe de réinitialisation vous a été envoyé.</value>
+    <value>Le jeton de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>L'image de l'utilisateur est introuvable</value>
@@ -273,9 +273,6 @@
     <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
     <value>Soit le nom d'utilisateur du fournisseur, l'e-mail ou le numéro de téléphone.</value>
   </data>
-    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Soit le mot de passe du fournisseur, soit le mot de passe à usage unique.</value>
-  </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>
   </data>
@@ -308,6 +305,12 @@
   </data>
     <data name="Add" xml:space="preserve">
     <value>Ajouter</value>
+  </data>
+    <data name="Token" xml:space="preserve">
+    <value>Jeton</value>
+  </data>
+    <data name="TokenPlaceholder" xml:space="preserve">
+    <value>Entrez le jeton</value>
   </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Vous avez déjà un compte?</value>
@@ -405,11 +408,14 @@
     <data name="FileUploadFailed" xml:space="preserve">
     <value>Une erreur s'est produite lors du téléchargement du fichier</value>
   </data>
-    <data name="ForgetPasswordMessage" xml:space="preserve">
-    <value>Veuillez saisir l'e-mail ou le numéro de téléphone avec lequel vous avez été inscrit afin que nous puissions vous envoyer un jeton de mot de passe de réinitialisation.</value>
-  </data>
-    <data name="ForgetPasswordTitle" xml:space="preserve">
+    <data name="ForgotPassword" xml:space="preserve">
     <value>Mot de passe oublié</value>
+  </data>
+    <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Mot de passe oublié</value>
+  </data>
+    <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>Veuillez saisir votre adresse e-mail ou votre numéro de téléphone afin que nous puissions vous envoyer un jeton de réinitialisation de mot de passe.</value>
   </data>
     <data name="GenderMale" xml:space="preserve">
     <value>Mâle</value>
@@ -458,6 +464,24 @@
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Réinitialiser le mot de passe</value>
+  </data>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>Nous avons envoyé un jeton sur votre téléphone ou par e-mail.</value>
+  </data>
+    <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>Veuillez soumettre le jeton avec votre nouveau mot de passe ici.</value>
+  </data>
+    <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>Définir le mot de passe</value>
+  </data>
+    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>Votre mot de passe a été réinitialisé.</value>
+  </data>
+    <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>Vous pouvez maintenant vous connecter avec votre mot de passe.</value>
+  </data>
+    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>Vous disposez déjà d'un jeton de réinitialisation de mot de passe?</value>
   </data>
     <data name="Save" xml:space="preserve">
     <value>Sauvegarder</value>
@@ -663,8 +687,8 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>Générer et envoyer un jeton 2FA</value>
   </data>
-    <data name="TfaTokenSent" xml:space="preserve">
-    <value>Le jeton 2FA a été généré et envoyé.</value>
+    <data name="TfaTokenEmailSent" xml:space="preserve">
+    <value>Le jeton 2FA a été généré et envoyé à votre email.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>Vous avez déjà demandé l'e-mail de confirmation.</value>
@@ -673,13 +697,10 @@
     <value>Vous avez déjà demandé le sms de confirmation. Réessayez dans {0}</value>
   </data>
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>Vous avez déjà demandé le jeton de mot de passe de réinitialisation. Réessayer dans {0}</value>
-  </data>
-    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>Vous avez déjà demandé le mot de passe à usage unique. Réessayez dans {0}</value>
+    <value>Vous avez déjà demandé l'e-mail de réinitialisation du mot de passe.</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>Vous avez déjà demandé le jeton 2FA. Réessayez dans {0}.</value>
+    <value>Vous avez déjà demandé l'e-mail du token 2FA. Réessayez en {0}.</value>
   </data>
     <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>

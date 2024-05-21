@@ -133,23 +133,20 @@
     <data name="ResetPasswordEmailSubject" xml:space="preserve">
     <value>Boilerplate - Reset your password</value>
   </data>
-    <data name="ResetPasswordHello" xml:space="preserve">
+    <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Hello {0}</value>
   </data>
-    <data name="ResetPasswordMessage" xml:space="preserve">
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
     <value>Someone has requested a token to change your password.</value>
   </data>
-    <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Boilerplate - Otp Token</value>
+    <data name="ResetPasswordBody" xml:space="preserve">
+    <value>If you're not the one requested the reset password, you can ignore this email.</value>
   </data>
-    <data name="OtpHello" xml:space="preserve">
-    <value>Hello {0}</value>
+    <data name="ResetPasswordTokenMessage" xml:space="preserve">
+    <value>You can copy the below token and enter it in the reset password page.</value>
   </data>
-    <data name="OtpMessage" xml:space="preserve">
-    <value>Someone has requested a one-time-password token to sign in.</value>
-  </data>
-    <data name="ResetPasswordNote" xml:space="preserve">
-    <value>Your password won't change until you access the link above and create a new one.</value>
+    <data name="ResetPasswordLinkMessage" xml:space="preserve">
+    <value>Or you can click on the following link to try to reset your password.</value>
   </data>
     <data name="ResetYourPassword" xml:space="preserve">
     <value>Reset your password</value>

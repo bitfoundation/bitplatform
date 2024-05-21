@@ -1,6 +1,7 @@
 ﻿
 namespace Boilerplate.Shared.Dtos.Identity;
 
+[DtoResourceType(typeof(AppStrings))]
 public class IdentityRequestDto : IValidatableObject
 {
     /// <example>bitplatform</example>

@@ -13,8 +13,8 @@ using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
+[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private UserManager<User> userManager = default!;
@@ -237,41 +237,55 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
 
         user.ResetPasswordTokenRequestedOn = DateTimeOffset.Now;
+        
         var result = await userManager.UpdateAsync(user);
+
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}");
+        var isEmail = string.IsNullOrEmpty(request.Email) is false;
+        var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
+        var url = $"reset-password?token={Uri.EscapeDataString(token)}&{qs}";
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), url);
 
         async Task SendEmail()
         {
-            if (await userManager.IsEmailConfirmedAsync(user))
+            if (await userManager.IsEmailConfirmedAsync(user) is false) return;
+
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
             {
-                var templateParameters = new Dictionary<string, object?>()
+                [nameof(ResetPasswordTokenTemplate.Model)] = new ResetPasswordTokenTemplateModel
                 {
-                    [nameof(ResetPasswordTokenTemplate.Model)] = new ResetPasswordTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
-                    [nameof(HttpContext)] = HttpContext
-                };
+                    Token = token,
+                    Link = link,
+                    DisplayName = user.DisplayName!,
+                },
+                [nameof(HttpContext)] = HttpContext
+            });
 
-                var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                {
-                    var renderedComponent = await htmlRenderer.RenderComponentAsync<ResetPasswordTokenTemplate>(ParameterView.FromDictionary(templateParameters));
+            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+            {
+                var renderedComponent = await htmlRenderer.RenderComponentAsync<ResetPasswordTokenTemplate>(parameters);
 
-                    return renderedComponent.ToHtmlString();
-                });
+                return renderedComponent.ToHtmlString();
+            });
 
-                var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                                   .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
-                                                   .Body(body, isHtml: true)
-                                                   .SendAsync(cancellationToken);
+            var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
+                                               .Subject(emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
+                                               .Body(body, isHtml: true)
+                                               .SendAsync(cancellationToken);
 
-                if (emailResult.Successful is false)
-                    throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
-            }
+            if (emailResult.Successful is false)
+                throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
         }
 
         async Task SendSms()
         {
+            if (await userManager.IsPhoneNumberConfirmedAsync(user) is false) return;
+
+            // TODO: Send token through SMS
+        }
             if (await userManager.IsPhoneNumberConfirmedAsync(user))
             {
                 // TODO: Send token through SMS

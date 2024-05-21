@@ -213,6 +213,9 @@
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>پروفایل با موفقیت به روز شد.</value>
   </data>
+    <data name="ConfirmPassword" xml:space="preserve">
+    <value>تایید رمز عبور</value>
+  </data>
     <data name="ConfirmNewPassword" xml:space="preserve">
     <value>تایید رمز عبور جدید</value>
   </data>
@@ -225,9 +228,6 @@
     <data name="Password" xml:space="preserve">
     <value>رمز عبور</value>
   </data>
-    <data name="Otp" xml:space="preserve">
-    <value>رمز یک‌بار مصرف</value>
-  </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>رمز عبور شما با موفقیت تغییر کرد.</value>
   </data>
@@ -235,7 +235,7 @@
     <value>توکن تایید دوباره به آدرس ایمیل شما ارسال شده است.</value>
   </data>
     <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
-    <value>توکن ریست رمز عبور برای شما ارسال شده است.</value>
+    <value>توکن ریست رمز عبور به آدرس ایمیل شما ارسال شده است.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>تصویر کاربر پیدا نشد</value>
@@ -273,9 +273,6 @@
     <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
     <value>یا ایمیل یا شماره تلفن یا نام کاربری را وارد کنید.</value>
   </data>
-    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>یا رمز عبور یا توکن رمز عبور یک بار مصرف را وارد کنید</value>
-  </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>برای ادامه باید وارد شوید.</value>
   </data>
@@ -308,6 +305,12 @@
   </data>
     <data name="Add" xml:space="preserve">
     <value>اضافه کردن</value>
+  </data>
+    <data name="Token" xml:space="preserve">
+    <value>توکن</value>
+  </data>
+    <data name="TokenPlaceholder" xml:space="preserve">
+    <value>توکن را وارد کنید</value>
   </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>از قبل حساب کاربری دارید؟</value>
@@ -405,11 +408,14 @@
     <data name="FileUploadFailed" xml:space="preserve">
     <value>هنگام بارگذاری فایل خطایی رخ داد</value>
   </data>
-    <data name="ForgetPasswordMessage" xml:space="preserve">
-    <value>لطفا آدرس ایمیل یا شماره تلفن ای که با آن ثبت نام کرده اید وارد کنید تا ما بتوانیم لینک ریست کردن رمز عبور را برای شما ارسال کنیم.</value>
+    <data name="ForgotPassword" xml:space="preserve">
+    <value>فراموشی رمزعبور</value>
   </data>
-    <data name="ForgetPasswordTitle" xml:space="preserve">
-    <value>رمز عبور را فراموش کرده ام</value>
+    <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>رمزعبور را فراموش کردم</value>
+  </data>
+    <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>لطفا آدرس ایمیل یا شماره تلفن خود را وارد کنید تا بتوانیم توکن بازنشانی رمزعبور را برای شما ارسال کنیم.</value>
   </data>
     <data name="GenderMale" xml:space="preserve">
     <value>مرد</value>
@@ -458,6 +464,24 @@
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>ریست رمز عبور</value>
+  </data>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>ما یک توکن به تلفن یا ایمیل شما ارسال کرده ایم.</value>
+  </data>
+    <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>لطفا توکن را همراه با رمز عبور جدید خود در اینجا ارسال کنید.</value>
+  </data>
+    <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>تغییر پسورد</value>
+  </data>
+    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>رمزعبور شما بازنشانی شد.</value>
+  </data>
+    <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>اکنون می توانید با رمزعبور خود وارد شوید.</value>
+  </data>
+    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>از قبل یک توکن بازنشانی رمزعبور دارید?</value>
   </data>
     <data name="Save" xml:space="preserve">
     <value>ذخیره</value>
@@ -663,8 +687,8 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>تولید و ارسال توکن 2FA</value>
   </data>
-    <data name="TfaTokenSent" xml:space="preserve">
-    <value>توکن 2FA تولید و برای شما ارسال شد.</value>
+    <data name="TfaTokenEmailSent" xml:space="preserve">
+    <value>توکن 2FA تولید و به ایمیل شما ارسال شد.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
@@ -673,13 +697,10 @@
     <value>شما قبلا پیامک تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>شما قبلا توکن تغییر رمز عبور را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
-  </data>
-    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>شما قبلا رمز یک بار مصرف را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
+    <value>شما قبلا درخواست تنظیم مجدد ایمیل رمز عبور را دارید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>شما قبلا درخواست ارسال توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
+    <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>

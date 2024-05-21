@@ -213,6 +213,9 @@
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profile updated successfully.</value>
   </data>
+    <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
+  </data>
     <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirm New Password</value>
   </data>
@@ -225,9 +228,6 @@
     <data name="Password" xml:space="preserve">
     <value>Password</value>
   </data>
-    <data name="Otp" xml:space="preserve">
-    <value>One time password</value>
-  </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Your password changed successfully.</value>
   </data>
@@ -235,7 +235,7 @@
     <value>The confirmation token has been re-sent to your email address.</value>
   </data>
     <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
-    <value>The reset password token has been sent to you.</value>
+    <value>The reset password token has been sent to your email address.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>User image could not be found</value>
@@ -273,9 +273,6 @@
     <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
     <value>Either provider username, email or phone number.</value>
   </data>
-    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Either provider password, or one-time-password.</value>
-  </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>You must be signed in to continue.</value>
   </data>
@@ -308,6 +305,12 @@
   </data>
     <data name="Add" xml:space="preserve">
     <value>Add</value>
+  </data>
+    <data name="Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+    <data name="TokenPlaceholder" xml:space="preserve">
+    <value>Enter token</value>
   </data>
     <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Already have an account?</value>
@@ -405,11 +408,14 @@
     <data name="FileUploadFailed" xml:space="preserve">
     <value>An error occurred while uploading file</value>
   </data>
-    <data name="ForgetPasswordMessage" xml:space="preserve">
-    <value>Please enter the email or phone number you have been signed up with so we can send a reset password token to you.</value>
+    <data name="ForgotPassword" xml:space="preserve">
+    <value>Forgot password</value>
   </data>
-    <data name="ForgetPasswordTitle" xml:space="preserve">
-    <value>Forget password</value>
+    <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Forgot password</value>
+  </data>
+    <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>Please enter your email address or phone number so we can send a reset password token to you.</value>
   </data>
     <data name="GenderMale" xml:space="preserve">
     <value>Male</value>
@@ -458,6 +464,24 @@
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset password</value>
+  </data>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>We have sent a token to your phone or email.</value>
+  </data>
+    <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>Please submit the token together with your new password here.</value>
+  </data>
+    <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>Set Password</value>
+  </data>
+    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>Your password has been reset.</value>
+  </data>
+    <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>You can now login with your password.</value>
+  </data>
+    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>Already have a reset password token?</value>
   </data>
     <data name="Save" xml:space="preserve">
     <value>Save</value>
@@ -663,8 +687,8 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>Generate and Send 2FA Token</value>
   </data>
-    <data name="TfaTokenSent" xml:space="preserve">
-    <value>The 2FA token has been generated and sent to you.</value>
+    <data name="TfaTokenEmailSent" xml:space="preserve">
+    <value>The 2FA token has been generated and sent to your email.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
@@ -673,13 +697,10 @@
     <value>You have already requested the confirmation sms. Try again in {0}</value>
   </data>
     <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
-    <value>You have already requested the reset password token. Try again in {0}</value>
-  </data>
-    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>You have already requested the one time password. Try again in {0}</value>
+    <value>You have already requested the reset password email. Try again in {0}</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
-    <value>You have already requested the 2FA token. Try again in {0}.</value>
+    <value>You have already requested the 2FA token email. Try again in {0}.</value>
   </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>

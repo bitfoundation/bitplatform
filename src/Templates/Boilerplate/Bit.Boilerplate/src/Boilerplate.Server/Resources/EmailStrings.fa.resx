@@ -133,23 +133,20 @@
     <data name="ResetPasswordEmailSubject" xml:space="preserve">
     <value>Boilerplate - رمز عبور خود را ریست کنید</value>
   </data>
-    <data name="ResetPasswordHello" xml:space="preserve">
+    <data name="ResetPasswordTitle" xml:space="preserve">
     <value>سلام {0}</value>
   </data>
-    <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>کسی برای تغییر رمز عبور شما توکن درخواست کرده است.</value>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>شخصی برای تغییر رمز عبور شما یک توکن درخواست کرده است.</value>
   </data>
-    <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Boilerplate - رمز عبور یک بار مصرف</value>
+    <data name="ResetPasswordBody" xml:space="preserve">
+    <value>اگر شما درخواست توکن بازنشانی رمزعبور را نداده اید، می توانید این ایمیل را نادیده بگیرید.</value>
   </data>
-    <data name="OtpHello" xml:space="preserve">
-    <value>سلام {0}</value>
+    <data name="ResetPasswordTokenMessage" xml:space="preserve">
+    <value>می توانید کد زیر را کپی کرده و در صفحه بازنشانی رعبور وارد کنید.</value>
   </data>
-    <data name="OtpMessage" xml:space="preserve">
-    <value>فردی رمز عبور یک بار مصرف درخواست کرده تا به برنامه ورود کند</value>
-  </data>
-    <data name="ResetPasswordNote" xml:space="preserve">
-    <value>رمز عبور شما تغییر نخواهد کرد تا زمانی که به لینک بالا دسترسی داشته باشید و یک رمز جدید ایجاد کنید.</value>
+    <data name="ResetPasswordLinkMessage" xml:space="preserve">
+    <value>یا می توانید روی لینک زیر کلیک کنید تا رمز عبور خود را بازنشانی کنید.</value>
   </data>
     <data name="ResetYourPassword" xml:space="preserve">
     <value>رمز عبور خود را ریست کنید</value>
