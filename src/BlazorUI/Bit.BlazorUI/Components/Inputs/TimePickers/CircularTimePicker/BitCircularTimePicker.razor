@@ -89,7 +89,7 @@
                     {
                         if (TimeFormat == BitTimeFormat.TwelveHours)
                         {
-                            for (int i = 1; i <= 12; ++i)
+                            for (int i = 1; i <= 12; i++)
                             {
                                 <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5));">@i</p>
                             }
@@ -97,12 +97,12 @@
                         else
                         {
                             @*Hours from 13 to 24 (00)*@
-                            for (int i = 1; i <= 12; ++i)
+                            for (int i = 1; i <= 12; i++)
                             {
                                 <p class="bit-ctp-num @GetHoursMinutesClass((i + 12) % 24)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@(((i + 12) % 24).ToString("D2"))</p>
                             }
                             @*Hours from 1 to 12*@
-                            for (int i = 1; i <= 12; ++i)
+                            for (int i = 1; i <= 12; i++)
                             {
                                 <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 74, 0, 40))">@(i.ToString("D2"))</p>
                             }
@@ -110,7 +110,7 @@
                     }
                     else
                     {
-                        @for (int i = 0; i < 12; ++i)
+                        @for (int i = 0; i < 12; i++)
                         {
                             <p class="bit-ctp-num @GetHoursMinutesClass(i * 5)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@((i * 5).ToString("D2"))</p>
                         }
