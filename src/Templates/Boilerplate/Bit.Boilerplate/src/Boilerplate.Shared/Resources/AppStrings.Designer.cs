@@ -2241,45 +2241,45 @@ namespace Boilerplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to {0} is your change phone number token in Boilerplate..
         /// </summary>
-        public static string YourChangeNumberPhoneToken {
+        public static string ChangeNumberPhoneTokenSmsText {
             get {
-                return ResourceManager.GetString("YourChangeNumberPhoneToken", resourceCulture);
+                return ResourceManager.GetString("ChangeNumberPhoneTokenSmsText", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} is your confirm phone number token in Boilerplate..
         /// </summary>
-        public static string YourConfirmPhoneToken {
+        public static string ConfirmPhoneTokenSmsText {
             get {
-                return ResourceManager.GetString("YourConfirmPhoneToken", resourceCulture);
+                return ResourceManager.GetString("ConfirmPhoneTokenSmsText", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} is your one time password in Boilerplate..
         /// </summary>
-        public static string YourOtp {
+        public static string OtpSmsText {
             get {
-                return ResourceManager.GetString("YourOtp", resourceCulture);
+                return ResourceManager.GetString("OtpSmsText", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} is your reset password token in Boilerplate..
         /// </summary>
-        public static string YourResetPasswordToken {
+        public static string ResetPasswordTokenSmsText {
             get {
-                return ResourceManager.GetString("YourResetPasswordToken", resourceCulture);
+                return ResourceManager.GetString("ResetPasswordTokenSmsText", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} is your two factor token in Boilerplate..
         /// </summary>
-        public static string YourTwoFactorToken {
+        public static string TwoFactorTokenSmsText {
             get {
-                return ResourceManager.GetString("YourTwoFactorToken", resourceCulture);
+                return ResourceManager.GetString("TwoFactorTokenSmsText", resourceCulture);
             }
         }
     }

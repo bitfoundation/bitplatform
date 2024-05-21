@@ -711,19 +711,19 @@
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
   </data>
-    <data name="YourChangeNumberPhoneToken" xml:space="preserve">
+    <data name="ChangeNumberPhoneTokenSmsText" xml:space="preserve">
     <value>{0} توکن تغییر شماره تلفن شما است در Boilerplate.</value>
   </data>
-    <data name="YourConfirmPhoneToken" xml:space="preserve">
+    <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
     <value>{0} توکن تایید شماره تلفن شما است در Boilerplate.</value>
   </data>
-    <data name="YourTwoFactorToken" xml:space="preserve">
+    <data name="TwoFactorTokenSmsText" xml:space="preserve">
     <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
   </data>
-    <data name="YourOtp" xml:space="preserve">
+    <data name="OtpSmsText" xml:space="preserve">
     <value>{0} پسورد یک‌بار مصرف شما است در Boilerplate.</value>
   </data>
-    <data name="YourResetPasswordToken" xml:space="preserve">
+    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
     <value>{0} توکن تغییر رمز عبور شما است در Boilerplate.</value>
   </data>
     <data name="Update" xml:space="preserve">
