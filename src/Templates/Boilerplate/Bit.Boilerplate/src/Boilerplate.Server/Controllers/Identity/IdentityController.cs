@@ -108,7 +108,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{body.Email}", body.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{body.Email},Date:{user.EmailTokenRequestedOn}", body.Token!);
 
         if (tokenIsValid is false)
         {
@@ -146,7 +146,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (user.PhoneNumberConfirmed) return;
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{body.PhoneNumber}", body.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{body.PhoneNumber},Date:{user.PhoneNumberTokenRequestedOn}", body.Token!);
 
         if (tokenIsValid is false)
         {
@@ -180,7 +180,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             }
             else
             {
-                bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, "Otp", signInRequest.OtpToken!);
+                bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpTokenRequestedOn}", signInRequest.OtpToken!);
 
                 if (tokenIsValid is false)
                 {
@@ -189,6 +189,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 }
                 else
                 {
+                    await userManager.UpdateSecurityStampAsync(user);
                     await signInManager.SignInAsync(user!, isPersistent: false);
                     result = user.TwoFactorEnabled ? Microsoft.AspNetCore.Identity.SignInResult.TwoFactorRequired : Microsoft.AspNetCore.Identity.SignInResult.Success;
                 }
@@ -263,7 +264,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "ResetPassword");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}");
 
         async Task SendEmail()
         {
@@ -322,7 +323,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "Otp");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpTokenRequestedOn}");
 
         async Task SendEmail()
         {
@@ -370,7 +371,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, "ResetPassword", resetPasswordRequest.Token!);
+        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}", resetPasswordRequest.Token!);
 
         if (tokenIsValid is false)
         {
@@ -455,7 +456,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var email = request.Email!;
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{user.Email}");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{user.Email},Date:{user.EmailTokenRequestedOn}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(email!)}&emailToken={Uri.EscapeDataString(token)}");
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>()
         {
@@ -493,7 +494,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var phoneNumber = user.PhoneNumber;
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{phoneNumber}");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{phoneNumber},Date:{user.PhoneNumberTokenRequestedOn}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}");
 
         // TODO: Send token through SMS

@@ -100,7 +100,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{sendEmailTokenRequest.Email}");
+        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{sendEmailTokenRequest.Email},Date:{user.EmailTokenRequestedOn}");
 
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
@@ -133,7 +133,7 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{body.Email}", body.Token!);
+        var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{body.Email},Date:{user!.EmailTokenRequestedOn}", body.Token!);
 
         if (tokenIsVerified)
             throw new BadRequestException();
