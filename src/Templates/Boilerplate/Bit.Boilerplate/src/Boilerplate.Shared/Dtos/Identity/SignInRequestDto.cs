@@ -36,12 +36,13 @@ public class SignInRequestDto : IdentityRequestDto
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        foreach (var validationResult in base.Validate(validationContext))
-            yield return validationResult;
+        var result = base.Validate(validationContext).ToList();
 
         if (string.IsNullOrEmpty(Password) && string.IsNullOrEmpty(OtpToken))
         {
-            yield return new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideOtpTokenOrPassword), [nameof(Password), nameof(OtpToken)]);
+            result.Add(new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideOtpTokenOrPassword), [nameof(Password), nameof(OtpToken)]));
         }
+
+        return result;
     }
 }

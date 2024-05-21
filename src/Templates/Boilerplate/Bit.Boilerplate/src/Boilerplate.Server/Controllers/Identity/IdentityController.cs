@@ -172,32 +172,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             result = await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
         }
-        else if (string.IsNullOrEmpty(signInRequest.OtpToken) is false)
-        {
-            if (await userManager.IsLockedOutAsync(user))
-            {
-                result = Microsoft.AspNetCore.Identity.SignInResult.LockedOut;
-            }
-            else
-            {
-                bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpTokenRequestedOn}", signInRequest.OtpToken!);
-
-                if (tokenIsValid is false)
-                {
-                    result = Microsoft.AspNetCore.Identity.SignInResult.Failed;
-                    await userManager.AccessFailedAsync(user);
-                }
-                else
-                {
-                    await userManager.UpdateSecurityStampAsync(user);
-                    await signInManager.SignInAsync(user!, isPersistent: false);
-                    result = user.TwoFactorEnabled ? Microsoft.AspNetCore.Identity.SignInResult.TwoFactorRequired : Microsoft.AspNetCore.Identity.SignInResult.Success;
-                }
-            }
-        }
         else
         {
-            throw new BadRequestException();
+            result = await signInManager.OtpSignInAsync(user, signInRequest.OtpToken!);
         }
 
         if (result.IsLockedOut)
@@ -327,37 +304,35 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         async Task SendEmail()
         {
-            if (await userManager.IsEmailConfirmedAsync(user))
+            if (await userManager.IsEmailConfirmedAsync(user) is false) return;
+
+            var templateParameters = ParameterView.FromDictionary(new Dictionary<string, object?>()
             {
-                var templateParameters = new Dictionary<string, object?>()
-                {
-                    [nameof(OtpTokenTemplate.Model)] = new OtpTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
-                    [nameof(HttpContext)] = HttpContext
-                };
+                [nameof(OtpTokenTemplate.Model)] = new OtpTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
+                [nameof(HttpContext)] = HttpContext
+            });
 
-                var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                {
-                    var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTokenTemplate>(ParameterView.FromDictionary(templateParameters));
+            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+            {
+                var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTokenTemplate>(templateParameters);
 
-                    return renderedComponent.ToHtmlString();
-                });
+                return renderedComponent.ToHtmlString();
+            });
 
-                var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                                   .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
-                                                   .Body(body, isHtml: true)
-                                                   .SendAsync(cancellationToken);
+            var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
+                                               .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
+                                               .Body(body, isHtml: true)
+                                               .SendAsync(cancellationToken);
 
-                if (emailResult.Successful is false)
-                    throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
-            }
+            if (emailResult.Successful is false)
+                throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
         }
 
         async Task SendSms()
         {
-            if (await userManager.IsPhoneNumberConfirmedAsync(user))
-            {
-                // TODO: Send token through SMS
-            }
+            if (await userManager.IsPhoneNumberConfirmedAsync(user) is false) return;
+
+            // TODO: Send token through SMS
         }
 
         await Task.WhenAll(SendEmail(), SendSms());
