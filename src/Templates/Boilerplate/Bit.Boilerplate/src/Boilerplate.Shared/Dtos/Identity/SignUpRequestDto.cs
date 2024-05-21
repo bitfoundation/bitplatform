@@ -21,6 +21,7 @@ public class SignUpRequestDto : IdentityRequestDto
     public bool TermsAccepted { get; set; }
 
     //#if (captcha == "reCaptcha")
+    /// <example>null</example>
     public string? GoogleRecaptchaResponse { get; set; }
     //#endif
 
