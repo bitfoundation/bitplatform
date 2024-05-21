@@ -77,7 +77,7 @@
                 {
                     <div class="bit-ctp-am-pm">
                         <button type="button" class="bit-ctp-txt @(IsAm() ? "" : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
-                        <button type="button" class="bit-ctp-txt @(IsAm() is false ? "" : "bit-ctp-ina")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
+                        <button type="button" class="bit-ctp-txt @(IsAm() ? "bit-ctp-ina" : "")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
                     </div>
                 }
             </div>
@@ -119,8 +119,8 @@
                     @{
                         var deg = GetPointerDegree();
                     }
-                    <div class="bit-ctp-ptr@(_isPointerDown ? string.Empty : " bit-ctp-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
-                        <div class="bit-ctp-thm@(deg % 30 == 0 ? string.Empty : " bit-ctp-thm-min")"></div>
+                    <div class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
+                        <div class="bit-ctp-thm@(deg % 30 == 0 ? "" : " bit-ctp-thm-min")"></div>
                     </div>
                 </div>
             </div>
