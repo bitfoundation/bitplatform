@@ -13,9 +13,9 @@ public partial class BitCircularTimePicker
     private bool IsOpenHasBeenSet;
 
     private bool isOpen;
+    private string? focusClass;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private BitIconLocation iconLocation = BitIconLocation.Right;
-    private string focusClass = string.Empty;
 
     private int? _hour;
     private int? _minute;
@@ -29,7 +29,7 @@ public partial class BitCircularTimePicker
     private string? _pointerMoveAbortControllerId;
     private ElementReference _clockRef;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
-    private string _focusClass
+    private string? _focusClass
     {
         get => focusClass;
         set
@@ -125,7 +125,7 @@ public partial class BitCircularTimePicker
     /// <summary>
     /// Aria label for time picker popup for screen reader users.
     /// </summary>
-    [Parameter] public string PickerAriaLabel { get; set; } = "Clock";
+    [Parameter] public string CalloutAriaLabel { get; set; } = "Clock";
 
     /// <summary>
     /// Enables the responsive mode in small screens
@@ -215,6 +215,10 @@ public partial class BitCircularTimePicker
 
 
 
+    public string? InputId => _inputId;
+
+
+
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {
@@ -259,11 +263,11 @@ public partial class BitCircularTimePicker
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lfic" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-ctp-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-no-brd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder ? string.Empty : "bit-ctp-nbd");
 
         ClassBuilder.Register(() => _focusClass);
     }
@@ -299,7 +303,7 @@ public partial class BitCircularTimePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
+        _focusClass = "bit-ctp-foc";
         await OnFocusIn.InvokeAsync();
     }
 
@@ -307,7 +311,7 @@ public partial class BitCircularTimePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _focusClass = null;
         await OnFocusOut.InvokeAsync();
     }
 
@@ -315,7 +319,7 @@ public partial class BitCircularTimePicker
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
+        _focusClass = "bit-ctp-foc";
         await OnFocus.InvokeAsync();
     }
 
@@ -367,7 +371,7 @@ public partial class BitCircularTimePicker
 
     private int GetClockHandHeightPercent() => (_showHourView && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
 
-    private double GetPointerDegree() => _showHourView ? ((_hour.GetValueOrDefault()* 30) % 360) : ((_minute.GetValueOrDefault()* 6) % 360);
+    private double GetPointerDegree() => _showHourView ? ((_hour.GetValueOrDefault() * 30) % 360) : ((_minute.GetValueOrDefault() * 6) % 360);
 
     private async Task HandleOnPointerDown(MouseEventArgs e)
     {

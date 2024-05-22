@@ -94,7 +94,7 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "PickerAriaLabel",
+            Name = "CalloutAriaLabel",
             Type = "string",
             DefaultValue = "Clock",
             Description = "Aria label for time picker popup for screen reader users."
