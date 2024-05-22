@@ -115,7 +115,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If you&apos;re not the one requested the one time password, you can ignore this email..
+        ///   Looks up a localized string similar to If you did not request the OTP, you can ignore this email..
         /// </summary>
         public static string OtpBody {
             get {
@@ -124,7 +124,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Boilerplate - One time password.
+        ///   Looks up a localized string similar to Boilerplate - OTP.
         /// </summary>
         public static string OtpEmailSubject {
             get {
@@ -133,7 +133,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Or you can click on the following link to sign in..
+        ///   Looks up a localized string similar to Or you can click on the following link to login..
         /// </summary>
         public static string OtpLinkMessage {
             get {
@@ -142,7 +142,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You can copy the below token and enter it in the sign in page..
+        ///   Looks up a localized string similar to You can copy the below OTP and enter it in the login page..
         /// </summary>
         public static string OtpMessage {
             get {
@@ -151,7 +151,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Someone has requested a token to sign in to the app..
+        ///   Looks up a localized string similar to Someone has requested an OTP to login to the app..
         /// </summary>
         public static string OtpSubtitle {
             get {

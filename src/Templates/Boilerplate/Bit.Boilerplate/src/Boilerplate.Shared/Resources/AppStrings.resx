@@ -228,6 +228,9 @@
     <data name="Password" xml:space="preserve">
     <value>Password</value>
   </data>
+    <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>Enter password</value>
+  </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Your password changed successfully.</value>
   </data>
@@ -331,13 +334,13 @@
     <value>Please confirm your email by typing the token here.</value>
   </data>
     <data name="EmailPlaceholder" xml:space="preserve">
-    <value>Enter the email address</value>
+    <value>Enter email address</value>
   </data>
     <data name="EmailToken" xml:space="preserve">
     <value>Email Token</value>
   </data>
     <data name="EmailTokenPlaceholder" xml:space="preserve">
-    <value>Enter the email token</value>
+    <value>Enter email token</value>
   </data>
     <data name="EmailTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Email Address</value>
@@ -358,13 +361,13 @@
     <value>Please confirm your phone number by typing the token here.</value>
   </data>
     <data name="PhoneNumberPlaceholder" xml:space="preserve">
-    <value>Enter the phone number</value>
+    <value>Enter phone number</value>
   </data>
     <data name="PhoneToken" xml:space="preserve">
     <value>Phone Token</value>
   </data>
     <data name="PhoneTokenPlaceholder" xml:space="preserve">
-    <value>Enter the phone token</value>
+    <value>Enter phone token</value>
   </data>
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Phone Number</value>
@@ -613,7 +616,7 @@
     <value>Verification Code:</value>
   </data>
     <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Please enter the code.</value>
+    <value>Enter verification code.</value>
   </data>
     <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verify</value>
@@ -687,7 +690,7 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>Generate and Send 2FA Token</value>
   </data>
-    <data name="TfaTokenSent" xml:space="preserve">
+    <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
@@ -700,13 +703,22 @@
     <value>You have already requested the reset password token. Try again in {0}</value>
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
-    <value>You have already requested the one time password. Try again in {0}</value>
+    <value>You have already requested an OTP. Try again in {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
-    <value>One time password</value>
+    <value>OTP</value>
+  </data>
+    <data name="OtpPlaceholder" xml:space="preserve">
+    <value>Enter OTP</value>
+  </data>
+    <data name="OtpSentMessage" xml:space="preserve">
+    <value>An OTP has been generated and sent to you.</value>
+  </data>
+    <data name="SendOtpButtonText" xml:space="preserve">
+    <value>Generate and send OTP.</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
-    <value>Either provide password or Otp</value>
+    <value>Either provide password or OTP</value>
   </data>
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the 2FA token email. Try again in {0}.</value>
@@ -721,7 +733,7 @@
     <value>{0} is your two factor token in Boilerplate.</value>
   </data>
     <data name="OtpSmsText" xml:space="preserve">
-    <value>{0} is your one time password in Boilerplate.</value>
+    <value>{0} is your OTP in Boilerplate.</value>
   </data>
     <data name="ResetPasswordTokenSmsText" xml:space="preserve">
     <value>{0} is your reset password token in Boilerplate.</value>

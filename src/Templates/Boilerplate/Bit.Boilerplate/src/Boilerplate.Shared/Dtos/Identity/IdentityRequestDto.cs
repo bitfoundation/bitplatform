@@ -23,4 +23,9 @@ public class IdentityRequestDto : IValidatableObject
         if (string.IsNullOrEmpty(UserName) && string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
             yield return new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideUserNameOrEmailOrPhoneNumber), [nameof(Email), nameof(PhoneNumber)]);
     }
+
+    public IdentityRequestDto ToIdentityRequest()
+    {
+        return new IdentityRequestDto { UserName = UserName, Email = Email, PhoneNumber = PhoneNumber };
+    }
 }

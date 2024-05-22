@@ -241,6 +241,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is your change phone number token in Boilerplate..
+        /// </summary>
+        public static string ChangePhoneNumberTokenSmsText {
+            get {
+                return ResourceManager.GetString("ChangePhoneNumberTokenSmsText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Check your Spam/Junk, if you could not find it in the Inbox..
         /// </summary>
         public static string CheckSpamMailMessage {
@@ -363,6 +372,15 @@ namespace Boilerplate.Shared.Resources {
         public static string ConfirmPhoneSubtitle {
             get {
                 return ResourceManager.GetString("ConfirmPhoneSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is your confirm phone number token in Boilerplate..
+        /// </summary>
+        public static string ConfirmPhoneTokenSmsText {
+            get {
+                return ResourceManager.GetString("ConfirmPhoneTokenSmsText", resourceCulture);
             }
         }
         
@@ -547,7 +565,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Either provide password or Otp.
+        ///   Looks up a localized string similar to Either provide password or OTP.
         /// </summary>
         public static string EitherProvidePasswordOrOtp {
             get {
@@ -637,7 +655,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enter the email address.
+        ///   Looks up a localized string similar to Enter email address.
         /// </summary>
         public static string EmailPlaceholder {
             get {
@@ -664,7 +682,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enter the email token.
+        ///   Looks up a localized string similar to Enter email token.
         /// </summary>
         public static string EmailTokenPlaceholder {
             get {
@@ -1024,11 +1042,38 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One time password.
+        ///   Looks up a localized string similar to OTP.
         /// </summary>
         public static string Otp {
             get {
                 return ResourceManager.GetString("Otp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter OTP.
+        /// </summary>
+        public static string OtpPlaceholder {
+            get {
+                return ResourceManager.GetString("OtpPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An OTP has been generated and sent to you..
+        /// </summary>
+        public static string OtpSentMessage {
+            get {
+                return ResourceManager.GetString("OtpSentMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is your OTP in Boilerplate..
+        /// </summary>
+        public static string OtpSmsText {
+            get {
+                return ResourceManager.GetString("OtpSmsText", resourceCulture);
             }
         }
         
@@ -1047,6 +1092,15 @@ namespace Boilerplate.Shared.Resources {
         public static string PasswordChangedSuccessfullyMessage {
             get {
                 return ResourceManager.GetString("PasswordChangedSuccessfullyMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter password.
+        /// </summary>
+        public static string PasswordPlaceholder {
+            get {
+                return ResourceManager.GetString("PasswordPlaceholder", resourceCulture);
             }
         }
         
@@ -1096,7 +1150,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enter the phone number.
+        ///   Looks up a localized string similar to Enter phone number.
         /// </summary>
         public static string PhoneNumberPlaceholder {
             get {
@@ -1123,7 +1177,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enter the phone token.
+        ///   Looks up a localized string similar to Enter phone token.
         /// </summary>
         public static string PhoneTokenPlaceholder {
             get {
@@ -1420,6 +1474,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is your reset password token in Boilerplate..
+        /// </summary>
+        public static string ResetPasswordTokenSmsText {
+            get {
+                return ResourceManager.GetString("ResetPasswordTokenSmsText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resource not found.
         /// </summary>
         public static string ResourceNotFoundException {
@@ -1479,6 +1542,15 @@ namespace Boilerplate.Shared.Resources {
         public static string SelectCategory {
             get {
                 return ResourceManager.GetString("SelectCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate and send OTP..
+        /// </summary>
+        public static string SendOtpButtonText {
+            get {
+                return ResourceManager.GetString("SendOtpButtonText", resourceCulture);
             }
         }
         
@@ -1699,7 +1771,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please enter the code..
+        ///   Looks up a localized string similar to Enter verification code..
         /// </summary>
         public static string TfaConfigureAutAppVerificationCodePlaceholder {
             get {
@@ -1926,9 +1998,9 @@ namespace Boilerplate.Shared.Resources {
         /// <summary>
         ///   Looks up a localized string similar to The 2FA token has been generated and sent to you..
         /// </summary>
-        public static string TfaTokenSent {
+        public static string TfaTokenSentMessage {
             get {
-                return ResourceManager.GetString("TfaTokenSent", resourceCulture);
+                return ResourceManager.GetString("TfaTokenSentMessage", resourceCulture);
             }
         }
         
@@ -2068,6 +2140,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is your two factor token in Boilerplate..
+        /// </summary>
+        public static string TwoFactorTokenSmsText {
+            get {
+                return ResourceManager.GetString("TwoFactorTokenSmsText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Your request lacks valid authentication credentials.
         /// </summary>
         public static string UnauthorizedException {
@@ -2167,7 +2248,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have already requested the one time password. Try again in {0}.
+        ///   Looks up a localized string similar to You have already requested an OTP. Try again in {0}.
         /// </summary>
         public static string WaitForOtpRequestResendDelay {
             get {
@@ -2235,51 +2316,6 @@ namespace Boilerplate.Shared.Resources {
         public static string YouNeedToSignIn {
             get {
                 return ResourceManager.GetString("YouNeedToSignIn", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is your change phone number token in Boilerplate..
-        /// </summary>
-        public static string ChangePhoneNumberTokenSmsText {
-            get {
-                return ResourceManager.GetString("ChangePhoneNumberTokenSmsText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is your confirm phone number token in Boilerplate..
-        /// </summary>
-        public static string ConfirmPhoneTokenSmsText {
-            get {
-                return ResourceManager.GetString("ConfirmPhoneTokenSmsText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is your one time password in Boilerplate..
-        /// </summary>
-        public static string OtpSmsText {
-            get {
-                return ResourceManager.GetString("OtpSmsText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is your reset password token in Boilerplate..
-        /// </summary>
-        public static string ResetPasswordTokenSmsText {
-            get {
-                return ResourceManager.GetString("ResetPasswordTokenSmsText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} is your two factor token in Boilerplate..
-        /// </summary>
-        public static string TwoFactorTokenSmsText {
-            get {
-                return ResourceManager.GetString("TwoFactorTokenSmsText", resourceCulture);
             }
         }
     }
