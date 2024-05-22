@@ -201,7 +201,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (string.IsNullOrEmpty(signInRequest.Otp) is false)
         {
-            await userManager.UpdateSecurityStampAsync(user); // reset for the one time password.
+            await userManager.UpdateSecurityStampAsync(user); // invalidates the OTP.
         }
 
         return Empty;
