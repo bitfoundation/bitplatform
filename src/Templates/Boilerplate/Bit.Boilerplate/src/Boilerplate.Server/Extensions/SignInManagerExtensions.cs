@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Server.Models.Identity;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -18,8 +19,23 @@ public static class SignInManagerExtensions
             return SignInResult.Failed;
         }
 
-        await userManager.UpdateSecurityStampAsync(user);
+        if (user.TwoFactorEnabled)
+        {
+            await signInManager.Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(user.Id));
+            return SignInResult.TwoFactorRequired;
+        }
+
         await signInManager.SignInWithClaimsAsync(user!, isPersistent: false, [new Claim("amr", "otp")]);
-        return user.TwoFactorEnabled ? SignInResult.TwoFactorRequired : SignInResult.Success;
+
+        return SignInResult.Success;
+    }
+
+    private static ClaimsPrincipal StoreTwoFactorInfo(int userId)
+    {
+        var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
+
+        identity.AddClaim(new Claim(ClaimTypes.Name, userId.ToString()));
+
+        return new ClaimsPrincipal(identity);
     }
 }
