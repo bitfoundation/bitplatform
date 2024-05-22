@@ -100,7 +100,8 @@ public partial class SignInPage
 
         try
         {
-            await identityController.SendOtp(model.ToIdentityRequest(), CurrentCancellationToken);
+            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+            await identityController.SendOtp(request, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.OtpSentMessage)];
             messageSeverity = BitSeverity.Success;
