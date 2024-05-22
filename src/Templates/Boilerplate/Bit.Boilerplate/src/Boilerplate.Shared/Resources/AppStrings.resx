@@ -271,10 +271,10 @@
     <value>Price</value>
   </data>
     <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>Either provider email or phone number.</value>
+    <value>Either provide email or phone number.</value>
   </data>
     <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>Either provider username, email or phone number.</value>
+    <value>Either provide username, email or phone number.</value>
   </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>You must be signed in to continue.</value>

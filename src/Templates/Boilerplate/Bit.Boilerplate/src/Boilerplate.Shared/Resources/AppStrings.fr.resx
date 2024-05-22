@@ -271,10 +271,10 @@
     <value>Prix</value>
   </data>
     <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>Soit l'e-mail du fournisseur, soit le numéro de téléphone.</value>
+    <value>Soit fournir un e-mail ou un numéro de téléphone.</value>
   </data>
     <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>Soit le nom d'utilisateur du fournisseur, l'e-mail ou le numéro de téléphone.</value>
+    <value>Soit fournissez votre nom d'utilisateur, votre e-mail ou votre numéro de téléphone.</value>
   </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>

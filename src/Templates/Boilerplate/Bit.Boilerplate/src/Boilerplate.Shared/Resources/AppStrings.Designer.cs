@@ -556,7 +556,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Either provider email or phone number..
+        ///   Looks up a localized string similar to Either provide email or phone number..
         /// </summary>
         public static string EitherProvideEmailOrPhoneNumber {
             get {
@@ -574,7 +574,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Either provider username, email or phone number..
+        ///   Looks up a localized string similar to Either provide username, email or phone number..
         /// </summary>
         public static string EitherProvideUserNameOrEmailOrPhoneNumber {
             get {
