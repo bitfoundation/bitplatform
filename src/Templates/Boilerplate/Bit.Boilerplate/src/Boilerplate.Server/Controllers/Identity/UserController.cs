@@ -1,15 +1,9 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using QRCoder;
-using FluentEmail.Core;
 using Boilerplate.Shared;
 using Boilerplate.Server.Services;
-using Boilerplate.Server.Resources;
-using Boilerplate.Server.Components;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
 
@@ -23,15 +17,11 @@ public partial class UserController : AppControllerBase, IUserController
 
     [AutoInject] private IUserStore<User> userStore = default!;
 
-    [AutoInject] private UrlEncoder urlEncoder = default!;
-
-    [AutoInject] private HtmlRenderer htmlRenderer = default!;
-
-    [AutoInject] private IFluentEmail fluentEmail = default!;
-
-    [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
-
     [AutoInject] private SmsService smsService = default!;
+
+    [AutoInject] private EmailService emailService = default!;
+
+    [AutoInject] private UrlEncoder urlEncoder = default!;
 
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
@@ -104,31 +94,9 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{sendEmailTokenRequest.Email},Date:{user.EmailTokenRequestedOn}");
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(user.Email!)}&emailToken={Uri.EscapeDataString(token)}");
 
-        var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-        {
-            var renderedComponent = await htmlRenderer.RenderComponentAsync<EmailTokenTemplate>(ParameterView.FromDictionary(new Dictionary<string, object?>()
-            {
-                {   nameof(EmailTokenTemplate.Model),
-                    new EmailTokenTemplateModel
-                    {
-                        Token = token,
-                        Email = sendEmailTokenRequest.Email
-                    }
-                },
-                { nameof(HttpContext), HttpContext }
-            }));
-
-            return renderedComponent.ToHtmlString();
-        });
-
-        var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                           .Subject(emailLocalizer[EmailStrings.ConfirmationEmailSubject])
-                                           .Body(body, isHtml: true)
-                                           .SendAsync(cancellationToken);
-
-        if (emailResult.Successful is false)
-            throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
+        await emailService.SendEmailToken(user, sendEmailTokenRequest.Email!, token, link, cancellationToken);
     }
 
     [HttpPost]

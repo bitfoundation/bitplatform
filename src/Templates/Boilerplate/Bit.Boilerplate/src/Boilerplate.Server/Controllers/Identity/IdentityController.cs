@@ -1,13 +1,7 @@
 ﻿//+:cnd:noEmit
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using FluentEmail.Core;
 using Boilerplate.Server.Services;
-using Boilerplate.Server.Resources;
-using Boilerplate.Server.Components;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
 
@@ -23,16 +17,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     [AutoInject] private IUserStore<User> userStore = default!;
 
-    [AutoInject] private IFluentEmail fluentEmail = default!;
-
-    [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
-
-    [AutoInject] private HtmlRenderer htmlRenderer = default!;
-
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
     [AutoInject] private SmsService smsService = default!;
 
+    [AutoInject] private EmailService emailService = default!;
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -234,7 +223,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
 
         user.ResetPasswordTokenRequestedOn = DateTimeOffset.Now;
-        
+
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded is false)
@@ -250,31 +239,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             if (await userManager.IsEmailConfirmedAsync(user) is false) return;
 
-            var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
-            {
-                [nameof(ResetPasswordTokenTemplate.Model)] = new ResetPasswordTokenTemplateModel
-                {
-                    Token = token,
-                    Link = link,
-                    DisplayName = user.DisplayName!,
-                },
-                [nameof(HttpContext)] = HttpContext
-            });
-
-            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<ResetPasswordTokenTemplate>(parameters);
-
-                return renderedComponent.ToHtmlString();
-            });
-
-            var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                               .Subject(emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
-                                               .Body(body, isHtml: true)
-                                               .SendAsync(cancellationToken);
-
-            if (emailResult.Successful is false)
-                throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
+            await emailService.SendResetPasswordToken(user, token, link, cancellationToken);
         }
 
         async Task SendSms()
@@ -318,31 +283,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             if (await userManager.IsEmailConfirmedAsync(user) is false) return;
 
-            var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
-            {
-                [nameof(OtpTemplate.Model)] = new OtpTemplateModel
-                {
-                    Token = token,
-                    Link = link,
-                    DisplayName = user.DisplayName!,
-                },
-                [nameof(HttpContext)] = HttpContext
-            });
-
-            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTemplate>(parameters);
-
-                return renderedComponent.ToHtmlString();
-            });
-
-            var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                               .Subject(emailLocalizer[EmailStrings.OtpEmailSubject])
-                                               .Body(body, isHtml: true)
-                                               .SendAsync(cancellationToken);
-
-            if (emailResult.Successful is false)
-                throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
+            await emailService.SendOtp(user, token, link, cancellationToken);
         }
 
         async Task SendSms()
@@ -398,26 +339,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             if (await userManager.IsEmailConfirmedAsync(user))
             {
-                var templateParameters = new Dictionary<string, object?>()
-                {
-                    [nameof(TwoFactorTokenTemplate.Model)] = new TwoFactorTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
-                    [nameof(HttpContext)] = HttpContext
-                };
-
-                var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                {
-                    var renderedComponent = await htmlRenderer.RenderComponentAsync<TwoFactorTokenTemplate>(ParameterView.FromDictionary(templateParameters));
-
-                    return renderedComponent.ToHtmlString();
-                });
-
-                var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                                   .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
-                                                   .Body(body, isHtml: true)
-                                                   .SendAsync(cancellationToken);
-
-                if (emailResult.Successful is false)
-                    throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
+                await emailService.SendTwoFactorToken(user, token, cancellationToken);
             }
         }
 
@@ -431,8 +353,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         await Task.WhenAll(SendEmail(), SendSms());
     }
-
-
 
     private async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, User user, CancellationToken cancellationToken)
     {
@@ -450,26 +370,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var email = request.Email!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{user.Email},Date:{user.EmailTokenRequestedOn}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(email!)}&emailToken={Uri.EscapeDataString(token)}");
-        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>()
-        {
-            [nameof(EmailTokenTemplate.Model)] = new EmailTokenTemplateModel { Email = email, Token = token, Link = link },
-            [nameof(HttpContext)] = HttpContext
-        });
 
-        var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-        {
-            var renderedComponent = await htmlRenderer.RenderComponentAsync<EmailTokenTemplate>(parameters);
-
-            return renderedComponent.ToHtmlString();
-        });
-
-        var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                           .Subject(emailLocalizer[nameof(EmailStrings.ConfirmationEmailSubject)])
-                                           .Body(body, isHtml: true)
-                                           .SendAsync(cancellationToken);
-
-        if (emailResult.Successful is false)
-            throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
+        await emailService.SendEmailToken(user, user.Email!, token, link, cancellationToken);
     }
 
     private async Task SendConfirmPhoneToken(SendPhoneTokenRequestDto request, User user, CancellationToken cancellationToken)

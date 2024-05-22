@@ -70,7 +70,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Boilerplate - Confirm your email address.
+        ///   Looks up a localized string similar to Boilerplate {0} - Confirm your email address.
         /// </summary>
         public static string ConfirmationEmailSubject {
             get {
@@ -84,6 +84,15 @@ namespace Boilerplate.Server.Resources {
         public static string CopyTokenNote {
             get {
                 return ResourceManager.GetString("CopyTokenNote", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Boilerplate app.
+        /// </summary>
+        public static string DefaultFromName {
+            get {
+                return ResourceManager.GetString("DefaultFromName", resourceCulture);
             }
         }
         
@@ -124,7 +133,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Boilerplate - One time password.
+        ///   Looks up a localized string similar to Boilerplate {0} - One time password.
         /// </summary>
         public static string OtpEmailSubject {
             get {
@@ -178,7 +187,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Boilerplate - Reset your password.
+        ///   Looks up a localized string similar to Boilerplate {0} - Reset your password.
         /// </summary>
         public static string ResetPasswordEmailSubject {
             get {
@@ -232,7 +241,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Boilerplate - 2FA token.
+        ///   Looks up a localized string similar to Boilerplate {0} - 2FA token.
         /// </summary>
         public static string TfaTokenEmailSubject {
             get {
