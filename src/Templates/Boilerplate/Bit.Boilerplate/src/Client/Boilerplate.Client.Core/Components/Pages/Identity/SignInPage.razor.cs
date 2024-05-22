@@ -30,8 +30,6 @@ public partial class SignInPage
     public string? OtpQueryString { get; set; }
 
 
-    [AutoInject] HttpClient httpClient { get; set; } = default!;
-
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
@@ -142,4 +140,3 @@ public partial class SignInPage
         }
     }
 }
-
