@@ -715,7 +715,7 @@
     <value>An OTP has been generated and sent to you.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
-    <value>Generate and send OTP.</value>
+    <value>Send OTP and Magic link</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>Either provide password or OTP</value>

@@ -715,7 +715,7 @@
     <value>یک رمز یکبار مصرف ایجاد و برای شما ارسال شد.</value>
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
-    <value>تولید و ارسال رمز یکبار مصرف.</value>
+    <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>

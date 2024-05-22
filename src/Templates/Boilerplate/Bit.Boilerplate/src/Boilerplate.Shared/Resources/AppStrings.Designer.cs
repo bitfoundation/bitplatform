@@ -1546,7 +1546,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Generate and send OTP..
+        ///   Looks up a localized string similar to Send OTP and Magic link.
         /// </summary>
         public static string SendOtpButtonText {
             get {
