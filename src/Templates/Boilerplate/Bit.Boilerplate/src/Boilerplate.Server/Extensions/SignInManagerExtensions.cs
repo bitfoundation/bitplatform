@@ -1,5 +1,5 @@
-﻿using Boilerplate.Server.Models.Identity;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
+using Boilerplate.Server.Models.Identity;
 
 namespace Microsoft.AspNetCore.Identity;
 
