@@ -168,9 +168,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUser(signInRequest) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        Microsoft.AspNetCore.Identity.SignInResult? result = null;
-
-        result = string.IsNullOrEmpty(signInRequest.Password)
+        var result = string.IsNullOrEmpty(signInRequest.Password)
             ? await signInManager.OtpSignInAsync(user, signInRequest.Otp!)
             : await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
 
@@ -201,6 +199,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.Succeeded is false)
             throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
+
+        if (string.IsNullOrEmpty(signInRequest.Otp) is false)
+        {
+            await userManager.UpdateSecurityStampAsync(user); // invalidates the OTP.
+        }
 
         return Empty;
     }
@@ -234,7 +237,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
 
         user.ResetPasswordTokenRequestedOn = DateTimeOffset.Now;
-        
+
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded is false)
@@ -291,7 +294,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// For either otp or magic link
     /// </summary>
     [HttpPost]
-    public async Task SendOtp(SendOtpRequestDto request, CancellationToken cancellationToken)
+    public async Task SendOtp(IdentityRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindUser(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
