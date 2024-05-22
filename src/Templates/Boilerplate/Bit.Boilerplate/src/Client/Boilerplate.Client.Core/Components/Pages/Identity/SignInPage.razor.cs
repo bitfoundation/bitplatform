@@ -1,11 +1,6 @@
 ﻿//+:cnd:noEmit
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
-using Boilerplate.Client.Core.Controllers.Identity;
-using Boilerplate.Client.Core.Services;
 using Boilerplate.Shared.Dtos.Identity;
-using Microsoft.Extensions.Options;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
