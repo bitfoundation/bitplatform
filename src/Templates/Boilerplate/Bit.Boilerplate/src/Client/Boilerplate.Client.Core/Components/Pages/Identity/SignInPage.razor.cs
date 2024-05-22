@@ -75,13 +75,6 @@ public partial class SignInPage
 
             requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
 
-            //var url = $"api/Identity/SignIn/";
-            //using var request = new HttpRequestMessage(HttpMethod.Post, url);
-            //request.Content = JsonContent.Create(model, JsonSerializerOptions.GetTypeInfo<Boilerplate.Shared.Dtos.Identity.SignInRequestDto>());
-            //using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, CurrentCancellationToken);
-            //var result = await response.Content.ReadFromJsonAsync(JsonSerializerOptions.GetTypeInfo<Boilerplate.Shared.Dtos.Identity.SignInResponseDto>(), CurrentCancellationToken);
-            //requiresTwoFactor = result.RequiresTwoFactor;
-
             if (requiresTwoFactor is false)
             {
                 NavigationManager.NavigateTo(RedirectUrlQueryString ?? "/");
