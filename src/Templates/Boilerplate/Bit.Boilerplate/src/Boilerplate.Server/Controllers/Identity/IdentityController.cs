@@ -300,8 +300,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.IdentitySettings.OtpRequestResendDelay;
 
-        //if (resendDelay < TimeSpan.Zero)
-        //    throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
 
         user.OtpRequestedOn = DateTimeOffset.Now;
 
