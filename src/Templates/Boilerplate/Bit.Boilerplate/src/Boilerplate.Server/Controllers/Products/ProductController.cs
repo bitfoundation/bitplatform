@@ -1,11 +1,9 @@
 ﻿using Boilerplate.Client.Core.Controllers.Product;
-using Boilerplate.Server.Models.Products;
 using Boilerplate.Shared.Dtos.Products;
 
 namespace Boilerplate.Server.Controllers;
 
-[Route("api/[controller]/[action]")]
-[ApiController]
+[ApiController, Route("api/[controller]/[action]")]
 public partial class ProductController : AppControllerBase, IProductController
 {
     [HttpGet, EnableQuery]

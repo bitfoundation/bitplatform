@@ -10,30 +10,30 @@ public interface IUserController : IAppController
     Task<UserDto> GetCurrentUser(CancellationToken cancellationToken = default);
 
     [HttpPut]
-    Task<UserDto> Update(EditUserDto body, CancellationToken cancellationToken = default);
+    Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ChangePassword(ChangePasswordRequestDto body, CancellationToken cancellationToken = default);
+    Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ChangeUserName(ChangeUserNameRequestDto body, CancellationToken cancellationToken = default);
+    Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendChangeEmailToken(SendEmailTokenRequestDto body, CancellationToken cancellationToken = default);
+    Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ChangeEmail(ChangeEmailRequestDto body, CancellationToken cancellationToken = default);
+    Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto body, CancellationToken cancellationToken = default);
+    Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ChangePhoneNumber(ChangePhoneNumberRequestDto body, CancellationToken cancellationToken = default);
+    Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpDelete]
     Task Delete(CancellationToken cancellationToken = default);
 
     [HttpPost]
     [Route("~/api/[controller]/2fa")]
-    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto twoFactorAuthRequest, CancellationToken cancellationToken = default) => default!;
+    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken = default) => default!;
 }

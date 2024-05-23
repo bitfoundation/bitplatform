@@ -9,8 +9,7 @@ using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[Route("api/[controller]/[action]")]
-[ApiController]
+[ApiController, Route("api/[controller]/[action]")]
 public partial class UserController : AppControllerBase, IUserController
 {
     [AutoInject] private UserManager<User> userManager = default!;
@@ -52,14 +51,14 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangePassword(ChangePasswordRequestDto body, CancellationToken cancellationToken = default)
+    public async Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         if (await userManager.IsLockedOutAsync(user!))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        var result = await userManager.ChangePasswordAsync(user!, body.OldPassword!, body.NewPassword!);
+        var result = await userManager.ChangePasswordAsync(user!, request.OldPassword!, request.NewPassword!);
 
         if (result.Succeeded is false)
         {
@@ -70,16 +69,16 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangeUserName(ChangeUserNameRequestDto body, CancellationToken cancellationToken = default)
+    public async Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
-        var result = await userManager.SetUserNameAsync(user!, body.UserName);
+        var result = await userManager.SetUserNameAsync(user!, request.UserName);
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
 
     [HttpPost]
-    public async Task SendChangeEmailToken(SendEmailTokenRequestDto sendEmailTokenRequest, CancellationToken cancellationToken = default)
+    public async Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -93,30 +92,30 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{sendEmailTokenRequest.Email},Date:{user.EmailTokenRequestedOn}");
+        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},Date:{user.EmailTokenRequestedOn}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(user.Email!)}&emailToken={Uri.EscapeDataString(token)}");
 
-        await emailService.SendEmailToken(user, sendEmailTokenRequest.Email!, token, link, cancellationToken);
+        await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
     }
 
     [HttpPost]
-    public async Task ChangeEmail(ChangeEmailRequestDto body, CancellationToken cancellationToken = default)
+    public async Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{body.Email},Date:{user!.EmailTokenRequestedOn}", body.Token!);
+        var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},Date:{user!.EmailTokenRequestedOn}", request.Token!);
 
         if (tokenIsVerified)
             throw new BadRequestException();
 
-        await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, body.Email, cancellationToken);
+        await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, request.Email, cancellationToken);
         var result = await userManager.UpdateAsync(user!);
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
-    public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto body, CancellationToken cancellationToken = default)
+    public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -130,17 +129,17 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, body.PhoneNumber!);
+        var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, request.PhoneNumber!);
 
         await smsService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], user.PhoneNumber!, cancellationToken);
     }
 
     [HttpPost]
-    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto body, CancellationToken cancellationToken = default)
+    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var result = await userManager.ChangePhoneNumberAsync(user!, body.PhoneNumber!, body.Token!);
+        var result = await userManager.ChangePhoneNumberAsync(user!, request.PhoneNumber!, request.Token!);
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
@@ -161,34 +160,34 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost, Route("~/api/[controller]/2fa")]
-    public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto tfaRequest, CancellationToken cancellationToken)
+    public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
 
-        if (tfaRequest.Enable is true)
+        if (request.Enable is true)
         {
-            if (tfaRequest.ResetSharedKey)
+            if (request.ResetSharedKey)
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaResetSharedKeyError)]);
-            else if (string.IsNullOrEmpty(tfaRequest.TwoFactorCode))
+            else if (string.IsNullOrEmpty(request.TwoFactorCode))
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaEmptyCodeError)]);
-            else if (await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, tfaRequest.TwoFactorCode) is false)
+            else if (await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.TwoFactorCode) is false)
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaInvalidCodeError)]);
 
             await userManager.SetTwoFactorEnabledAsync(user, true);
         }
-        else if (tfaRequest.Enable is false || tfaRequest.ResetSharedKey)
+        else if (request.Enable is false || request.ResetSharedKey)
         {
             await userManager.SetTwoFactorEnabledAsync(user, false);
         }
 
-        if (tfaRequest.ResetSharedKey)
+        if (request.ResetSharedKey)
         {
             await userManager.ResetAuthenticatorKeyAsync(user);
         }
 
         string[]? recoveryCodes = null;
-        if (tfaRequest.ResetRecoveryCodes || (tfaRequest.Enable == true && await userManager.CountRecoveryCodesAsync(user) == 0))
+        if (request.ResetRecoveryCodes || (request.Enable == true && await userManager.CountRecoveryCodesAsync(user) == 0))
         {
             var recoveryCodesEnumerable = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
             recoveryCodes = recoveryCodesEnumerable?.ToArray();
