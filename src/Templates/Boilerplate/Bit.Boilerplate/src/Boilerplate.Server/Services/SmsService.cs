@@ -7,19 +7,19 @@ public partial class SmsService
 {
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
     [AutoInject] private ILogger<SmsService> logger = default!;
-    [AutoInject] private Lazy<SmsClient> smsClientProvider = default!;
     [AutoInject] private AppSettings appSettings = default!;
+    [AutoInject] private SmsClient? smsService = null;
 
     public async Task SendSms(string message, string phoneNumber, CancellationToken cancellationToken)
     {
         if (hostEnvironment.IsDevelopment())
         {
-            LogSms(logger, message, phoneNumber);
+            LogSendSms(logger, message, phoneNumber);
         }
 
-        if (appSettings.SmsSettings.Configured)
+        if (smsService is not null)
         {
-            SmsSendResult sendResult = smsClientProvider.Value.Send(
+            SmsSendResult sendResult = smsService.Send(
                 from: appSettings.SmsSettings.FromPhoneNumber,
                 to: phoneNumber,
                 message: message,
@@ -35,8 +35,8 @@ public partial class SmsService
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS: {message} to {phoneNumber}.")]
-    static partial void LogSms(ILogger logger, string message, string phoneNumber);
+    private static partial void LogSendSms(ILogger logger, string message, string phoneNumber);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to send Sms to {phoneNumber}. Id: {id}, Status code: {statusCode}, Error message: {errorMessage}")]
-    static partial void LogSendSmsFailed(ILogger logger, string phoneNumber, string id, HttpStatusCode statusCode, string errorMessage);
+    private static partial void LogSendSmsFailed(ILogger logger, string phoneNumber, string id, HttpStatusCode statusCode, string errorMessage);
 }

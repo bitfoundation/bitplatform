@@ -109,7 +109,7 @@ public static partial class Program
 
         services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
-        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
+        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail);
 
         if (appSettings.EmailSettings.UseLocalFolderForEmails)
         {
@@ -139,6 +139,7 @@ public static partial class Program
             }
         }
 
+        services.TryAddTransient<EmailService>();
         services.TryAddTransient<SmsService>();
         services.TryAddTransient(sp => new SmsClient(appSettings.SmsSettings.ConnectionString));
 

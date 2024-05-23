@@ -2,8 +2,10 @@
 //#if (appInsights == true)
 using BlazorApplicationInsights;
 //#endif
-using Boilerplate.Client.Web.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Boilerplate.Client.Web.Services;
 
 namespace Boilerplate.Client.Web;
 

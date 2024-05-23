@@ -1,21 +1,15 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using QRCoder;
-using FluentEmail.Core;
 using Boilerplate.Shared;
 using Boilerplate.Server.Services;
-using Boilerplate.Server.Resources;
-using Boilerplate.Server.Components;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class UserController : AppControllerBase, IUserController
 {
@@ -23,15 +17,11 @@ public partial class UserController : AppControllerBase, IUserController
 
     [AutoInject] private IUserStore<User> userStore = default!;
 
-    [AutoInject] private UrlEncoder urlEncoder = default!;
-
-    [AutoInject] private HtmlRenderer htmlRenderer = default!;
-
-    [AutoInject] private IFluentEmail fluentEmail = default!;
-
-    [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
-
     [AutoInject] private SmsService smsService = default!;
+
+    [AutoInject] private EmailService emailService = default!;
+
+    [AutoInject] private UrlEncoder urlEncoder = default!;
 
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
@@ -62,14 +52,14 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangePassword(ChangePasswordRequestDto body, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         if (await userManager.IsLockedOutAsync(user!))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        var result = await userManager.ChangePasswordAsync(user!, request.OldPassword!, request.NewPassword!);
+        var result = await userManager.ChangePasswordAsync(user!, body.OldPassword!, body.NewPassword!);
 
         if (result.Succeeded is false)
         {
@@ -80,10 +70,10 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangeUserName(ChangeUserNameRequestDto body, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
-        var result = await userManager.SetUserNameAsync(user!, request.UserName);
+        var result = await userManager.SetUserNameAsync(user!, body.UserName);
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
@@ -104,51 +94,29 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{sendEmailTokenRequest.Email},Date:{user.EmailTokenRequestedOn}");
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(user.Email!)}&emailToken={Uri.EscapeDataString(token)}");
 
-        var request = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-        {
-            var renderedComponent = await htmlRenderer.RenderComponentAsync<EmailTokenTemplate>(ParameterView.FromDictionary(new Dictionary<string, object?>()
-            {
-                {   nameof(EmailTokenTemplate.Model),
-                    new EmailTokenTemplateModel
-                    {
-                        Token = token,
-                        Email = sendEmailTokenRequest.Email
-                    }
-                },
-                { nameof(HttpContext), HttpContext }
-            }));
-
-            return renderedComponent.ToHtmlString();
-        });
-
-        var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
-                                           .Subject(emailLocalizer[EmailStrings.ConfirmationEmailSubject])
-                                           .Body(request, isHtml: true)
-                                           .SendAsync(cancellationToken);
-
-        if (emailResult.Successful is false)
-            throw new ResourceValidationException(emailResult.ErrorMessages.Select(err => Localizer[err]).ToArray());
+        await emailService.SendEmailToken(user, sendEmailTokenRequest.Email!, token, link, cancellationToken);
     }
 
     [HttpPost]
-    public async Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangeEmail(ChangeEmailRequestDto body, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},Date:{user!.EmailTokenRequestedOn}", request.Token!);
+        var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{body.Email},Date:{user!.EmailTokenRequestedOn}", body.Token!);
 
         if (tokenIsVerified)
             throw new BadRequestException();
 
-        await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, request.Email, cancellationToken);
+        await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, body.Email, cancellationToken);
         var result = await userManager.UpdateAsync(user!);
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
-    public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken = default)
+    public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto body, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -162,17 +130,17 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, request.PhoneNumber!);
+        var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, body.PhoneNumber!);
 
         await smsService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], user.PhoneNumber!, cancellationToken);
     }
 
     [HttpPost]
-    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto body, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var result = await userManager.ChangePhoneNumberAsync(user!, request.PhoneNumber!, request.Token!);
+        var result = await userManager.ChangePhoneNumberAsync(user!, body.PhoneNumber!, body.Token!);
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
@@ -192,7 +160,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
 
-    [HttpPost, Microsoft.AspNetCore.Mvc.Route("~/api/[controller]/2fa")]
+    [HttpPost, Route("~/api/[controller]/2fa")]
     public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto tfaRequest, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
