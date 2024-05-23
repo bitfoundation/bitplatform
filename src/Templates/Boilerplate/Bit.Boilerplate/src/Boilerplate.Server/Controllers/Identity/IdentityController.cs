@@ -7,7 +7,8 @@ using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[Route("api/[controller]/[action]"), ApiController, AllowAnonymous]
+[ApiController, AllowAnonymous]
+[Route("api/[controller]/[action]")]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private UserManager<User> userManager = default!;

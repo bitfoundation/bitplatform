@@ -9,7 +9,7 @@ using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[Route("api/[controller]/[action]"), ApiController]
+[ApiController, Route("api/[controller]/[action]")]
 public partial class UserController : AppControllerBase, IUserController
 {
     [AutoInject] private UserManager<User> userManager = default!;

@@ -3,7 +3,7 @@ using Boilerplate.Client.Core.Controllers.Dashboard;
 
 namespace Boilerplate.Server.Controllers;
 
-[Route("api/[controller]/[action]"), ApiController]
+[ApiController, Route("api/[controller]/[action]")]
 public partial class DashboardController : AppControllerBase, IDashboardController
 {
     [HttpGet]

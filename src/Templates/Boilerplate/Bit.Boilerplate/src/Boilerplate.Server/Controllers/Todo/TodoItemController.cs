@@ -3,7 +3,7 @@ using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Server.Controllers.Todo;
 
-[Route("api/[controller]/[action]"), ApiController]
+[ApiController, Route("api/[controller]/[action]")]
 public partial class TodoItemController : AppControllerBase, ITodoItemController
 {
     [HttpGet, EnableQuery]
