@@ -1,11 +1,9 @@
 ﻿using Boilerplate.Client.Core.Controllers.Categories;
-using Boilerplate.Server.Models.Categories;
 using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Server.Controllers;
 
-[Route("api/[controller]/[action]")]
-[ApiController]
+[Route("api/[controller]/[action]"), ApiController]
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
     [HttpGet, EnableQuery]

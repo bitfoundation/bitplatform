@@ -10,7 +10,7 @@ public interface IUserController : IAppController
     Task<UserDto> GetCurrentUser(CancellationToken cancellationToken = default);
 
     [HttpPut]
-    Task<UserDto> Update(EditUserDto request, CancellationToken cancellationToken = default);
+    Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default);
@@ -35,5 +35,5 @@ public interface IUserController : IAppController
 
     [HttpPost]
     [Route("~/api/[controller]/2fa")]
-    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto twoFactorAuthRequest, CancellationToken cancellationToken = default) => default!;
+    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken = default) => default!;
 }

@@ -7,8 +7,7 @@ using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[ApiController, AllowAnonymous]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]/[action]"), ApiController, AllowAnonymous]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private UserManager<User> userManager = default!;
@@ -32,33 +31,33 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// These comments will also be used in swagger docs and ui.
     /// </summary>
     [HttpPost]
-    public async Task SignUp(SignUpRequestDto signUpRequest, CancellationToken cancellationToken)
+    public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)
     {
         //#if (captcha == "reCaptcha")
-        if (await googleRecaptchaHttpClient.Verify(signUpRequest.GoogleRecaptchaResponse, cancellationToken) is false)
+        if (await googleRecaptchaHttpClient.Verify(request.GoogleRecaptchaResponse, cancellationToken) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
         //#endif
 
         // Attempt to locate an existing user using either their email address or phone number. The enforcement of a unique username policy is integral to the aspnetcore identity framework.
-        var existingUser = await userManager.FindUser(new() { Email = signUpRequest.Email, PhoneNumber = signUpRequest.PhoneNumber });
+        var existingUser = await userManager.FindUser(new() { Email = request.Email, PhoneNumber = request.PhoneNumber });
         if (existingUser is not null)
             throw new BadRequestException(Localizer[nameof(AppStrings.DuplicateEmailOrPhoneNumber)]);
 
         var userToAdd = new User { LockoutEnabled = true };
 
-        await userStore.SetUserNameAsync(userToAdd, signUpRequest.UserName!, cancellationToken);
+        await userStore.SetUserNameAsync(userToAdd, request.UserName!, cancellationToken);
 
-        if (string.IsNullOrEmpty(signUpRequest.Email) is false)
+        if (string.IsNullOrEmpty(request.Email) is false)
         {
-            await ((IUserEmailStore<User>)userStore).SetEmailAsync(userToAdd, signUpRequest.Email!, cancellationToken);
+            await ((IUserEmailStore<User>)userStore).SetEmailAsync(userToAdd, request.Email!, cancellationToken);
         }
 
-        if (string.IsNullOrEmpty(signUpRequest.PhoneNumber) is false)
+        if (string.IsNullOrEmpty(request.PhoneNumber) is false)
         {
-            await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(userToAdd, signUpRequest.PhoneNumber!, cancellationToken);
+            await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(userToAdd, request.PhoneNumber!, cancellationToken);
         }
 
-        var result = await userManager.CreateAsync(userToAdd, signUpRequest.Password!);
+        var result = await userManager.CreateAsync(userToAdd, request.Password!);
 
         if (result.Succeeded is false)
         {
@@ -89,9 +88,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task ConfirmEmail(ConfirmEmailRequestDto body, CancellationToken cancellationToken)
+    public async Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(body.Email!)
+        var user = await userManager.FindByEmailAsync(request.Email!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         if (user.EmailConfirmed) return;
@@ -99,7 +98,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{body.Email},Date:{user.EmailTokenRequestedOn}", body.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{request.Email},Date:{user.EmailTokenRequestedOn}", request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -127,9 +126,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task ConfirmPhone(ConfirmPhoneRequestDto body, CancellationToken cancellationToken)
+    public async Task ConfirmPhone(ConfirmPhoneRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByPhoneNumber(body.PhoneNumber!)
+        var user = await userManager.FindByPhoneNumber(request.PhoneNumber!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         if (await userManager.IsLockedOutAsync(user))
@@ -137,7 +136,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (user.PhoneNumberConfirmed) return;
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{body.PhoneNumber},Date:{user.PhoneNumberTokenRequestedOn}", body.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{request.PhoneNumber},Date:{user.PhoneNumberTokenRequestedOn}", request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -151,15 +150,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task<ActionResult<SignInResponseDto>> SignIn(SignInRequestDto signInRequest, CancellationToken cancellationToken)
+    public async Task<ActionResult<SignInResponseDto>> SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
-        var user = await userManager.FindUser(signInRequest) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
+        var user = await userManager.FindUser(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var result = string.IsNullOrEmpty(signInRequest.Password)
-            ? await signInManager.OtpSignInAsync(user, signInRequest.Otp!)
-            : await signInManager.PasswordSignInAsync(user!.UserName!, signInRequest.Password!, isPersistent: false, lockoutOnFailure: true);
+        var result = string.IsNullOrEmpty(request.Password)
+            ? await signInManager.OtpSignInAsync(user, request.Otp!)
+            : await signInManager.PasswordSignInAsync(user!.UserName!, request.Password!, isPersistent: false, lockoutOnFailure: true);
 
         if (result.IsLockedOut)
         {
@@ -168,17 +167,17 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.RequiresTwoFactor)
         {
-            if (string.IsNullOrEmpty(signInRequest.TwoFactorCode) is false)
+            if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
             {
-                result = await signInManager.TwoFactorAuthenticatorSignInAsync(signInRequest.TwoFactorCode, false, false);
+                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
             }
-            else if (string.IsNullOrEmpty(signInRequest.TwoFactorRecoveryCode) is false)
+            else if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
             {
-                result = await signInManager.TwoFactorRecoveryCodeSignInAsync(signInRequest.TwoFactorRecoveryCode);
+                result = await signInManager.TwoFactorRecoveryCodeSignInAsync(request.TwoFactorRecoveryCode);
             }
-            else if (string.IsNullOrEmpty(signInRequest.TwoFactorToken) is false)
+            else if (string.IsNullOrEmpty(request.TwoFactorToken) is false)
             {
-                result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, signInRequest.TwoFactorToken, false, false);
+                result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, request.TwoFactorToken, false, false);
             }
             else
             {
@@ -189,7 +188,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        if (string.IsNullOrEmpty(signInRequest.Otp) is false)
+        if (string.IsNullOrEmpty(request.Otp) is false)
         {
             await userManager.UpdateSecurityStampAsync(user); // invalidates the OTP.
         }
@@ -198,10 +197,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto refreshRequest)
+    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto request)
     {
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
-        var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
+        var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
 
         if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc ||
                 await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user)
@@ -300,14 +299,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task ResetPassword(ResetPasswordRequestDto resetPasswordRequest, CancellationToken cancellationToken)
+    public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindUser(resetPasswordRequest) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+        var user = await userManager.FindUser(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}", resetPasswordRequest.Token!);
+        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}", request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -315,16 +314,16 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new BadRequestException();
         }
 
-        var result = await userManager.ResetPasswordAsync(user!, await userManager.GeneratePasswordResetTokenAsync(user!), resetPasswordRequest.Password!);
+        var result = await userManager.ResetPasswordAsync(user!, await userManager.GeneratePasswordResetTokenAsync(user!), request.Password!);
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
-    public async Task SendTwoFactorToken(IdentityRequestDto body, CancellationToken cancellationToken)
+    public async Task SendTwoFactorToken(IdentityRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindUser(body) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+        var user = await userManager.FindUser(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.IdentitySettings.TwoFactorTokenRequestResendDelay;
 

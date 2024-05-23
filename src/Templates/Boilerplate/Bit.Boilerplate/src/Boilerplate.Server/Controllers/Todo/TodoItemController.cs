@@ -1,11 +1,9 @@
 ﻿using Boilerplate.Client.Core.Controllers.Todo;
-using Boilerplate.Server.Models.Todo;
 using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Server.Controllers.Todo;
 
-[Route("api/[controller]/[action]")]
-[ApiController]
+[Route("api/[controller]/[action]"), ApiController]
 public partial class TodoItemController : AppControllerBase, ITodoItemController
 {
     [HttpGet, EnableQuery]
