@@ -4,6 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitIconButton
 {
+    private BitButtonSize? size;
+
     private int? _tabIndex;
     private BitButtonType _buttonType;
 
@@ -55,6 +57,22 @@ public partial class BitIconButton
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// The size of button, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter]
+    public BitButtonSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+
+            size = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitIconButton component.
     /// </summary>
     [Parameter] public BitIconButtonClassStyles? Styles { get; set; }
@@ -75,6 +93,14 @@ public partial class BitIconButton
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitButtonSize.Small => "bit-icb-sm",
+            BitButtonSize.Medium => "bit-icb-md",
+            BitButtonSize.Large => "bit-icb-lg",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()

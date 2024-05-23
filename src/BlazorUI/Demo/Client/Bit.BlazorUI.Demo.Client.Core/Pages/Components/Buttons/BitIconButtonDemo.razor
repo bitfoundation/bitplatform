@@ -56,7 +56,23 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div>
+                Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
+            </div>
+            <br />
+            <div class="buttons-container-grid">
+                <div>
+                    <BitIconButton IconName="@BitIconName.People" Size="BitButtonSize.Small" Title="Small" />
+                    <BitIconButton IconName="@BitIconName.People" Size="BitButtonSize.Medium" Title="Medium" />
+                    <BitIconButton IconName="@BitIconName.People" Size="BitButtonSize.Large" Title="Large" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Button Type" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div class="form-container">
                 @if (formIsValidSubmit is false)
