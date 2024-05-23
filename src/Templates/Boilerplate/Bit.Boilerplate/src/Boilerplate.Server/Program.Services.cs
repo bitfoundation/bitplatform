@@ -141,7 +141,10 @@ public static partial class Program
 
         services.TryAddTransient<EmailService>();
         services.TryAddTransient<SmsService>();
-        services.TryAddTransient(sp => new SmsClient(appSettings.SmsSettings.ConnectionString));
+        if (appSettings.SmsSettings.Configured)
+        {
+            services.TryAddTransient(sp => new SmsClient(appSettings.SmsSettings.ConnectionString));
+        }
 
         //#endif
 
