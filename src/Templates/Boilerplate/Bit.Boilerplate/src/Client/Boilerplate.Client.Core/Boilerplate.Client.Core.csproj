@@ -16,17 +16,17 @@
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
 
-        <PackageReference Include="Bit.Butil" Version="8.8.2-pre-02" />
-        <PackageReference Include="Bit.BlazorUI" Version="8.8.2-pre-02" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.8.2-pre-02" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.8.2-pre-02" />
+        <PackageReference Include="Bit.Butil" Version="8.8.2-pre-03" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.8.2-pre-03" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.8.2-pre-03" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.8.2-pre-03" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.8.2-pre-02" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.8.2-pre-03" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.5" />
-        <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.8.2-pre-02" />
+        <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.8.2-pre-03" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.2-pre-02" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.2-pre-02" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.2-pre-03" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.2-pre-03" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.5" />
