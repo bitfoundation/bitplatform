@@ -5,10 +5,10 @@ namespace Boilerplate.Server.Services;
 
 public partial class SmsService
 {
-    [AutoInject] private IHostEnvironment hostEnvironment = default!;
-    [AutoInject] private ILogger<SmsService> logger = default!;
-    [AutoInject] private AppSettings appSettings = default!;
-    [AutoInject] private SmsClient? smsService = null;
+    [AutoInject] private readonly SmsClient? smsClient = null;
+    [AutoInject] private readonly AppSettings appSettings = default!;
+    [AutoInject] private readonly ILogger<SmsService> logger = default!;
+    [AutoInject] private readonly IHostEnvironment hostEnvironment = default!;
 
     public async Task SendSms(string message, string phoneNumber, CancellationToken cancellationToken)
     {
@@ -17,21 +17,19 @@ public partial class SmsService
             LogSendSms(logger, message, phoneNumber);
         }
 
-        if (smsService is not null)
-        {
-            SmsSendResult sendResult = smsService.Send(
-                from: appSettings.SmsSettings.FromPhoneNumber,
-                to: phoneNumber,
-                message: message,
-                options: new(enableDeliveryReport: true),
-                cancellationToken
-            );
+        if (smsClient is null) return;
 
-            if (sendResult.Successful is false)
-            {
-                LogSendSmsFailed(logger, sendResult.To, sendResult.MessageId, (HttpStatusCode)sendResult.HttpStatusCode, sendResult.ErrorMessage);
-            }
-        }
+        SmsSendResult sendResult = smsClient.Send(
+            from: appSettings.SmsSettings.FromPhoneNumber,
+            to: phoneNumber,
+            message: message,
+            options: new(enableDeliveryReport: true),
+            cancellationToken
+        );
+
+        if (sendResult.Successful is true) return;
+
+        LogSendSmsFailed(logger, sendResult.To, sendResult.MessageId, (HttpStatusCode)sendResult.HttpStatusCode, sendResult.ErrorMessage);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS: {message} to {phoneNumber}.")]
