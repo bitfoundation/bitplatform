@@ -9,7 +9,7 @@ using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
-[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
+[Route("api/[controller]/[action]")]
 [ApiController]
 public partial class UserController : AppControllerBase, IUserController
 {
@@ -160,7 +160,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
     }
 
-    [HttpPost, Microsoft.AspNetCore.Mvc.Route("~/api/[controller]/2fa")]
+    [HttpPost, Route("~/api/[controller]/2fa")]
     public async Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto tfaRequest, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

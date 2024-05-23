@@ -8,7 +8,7 @@ using Boilerplate.Client.Core.Controllers.Identity;
 namespace Boilerplate.Server.Controllers.Identity;
 
 [ApiController, AllowAnonymous]
-[Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
+[Route("api/[controller]/[action]")]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private UserManager<User> userManager = default!;
@@ -67,12 +67,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (string.IsNullOrEmpty(userToAdd.Email) is false)
         {
-            await SendConfirmEmailToken(new() { Email = userToAdd.Email }, userToAdd, cancellationToken);
+            await SendConfirmEmailToken(userToAdd, cancellationToken);
         }
 
         if (string.IsNullOrEmpty(userToAdd.PhoneNumber) is false)
         {
-            await SendConfirmPhoneToken(new() { PhoneNumber = userToAdd.PhoneNumber }, userToAdd, cancellationToken);
+            await SendConfirmPhoneToken(userToAdd, cancellationToken);
         }
     }
 
@@ -85,7 +85,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsEmailConfirmedAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)]);
 
-        await SendConfirmEmailToken(request, user, cancellationToken);
+        await SendConfirmEmailToken(user, cancellationToken);
     }
 
     [HttpPost]
@@ -123,7 +123,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.PhoneNumberAlreadyConfirmed)]);
 
-        await SendConfirmPhoneToken(request, user, cancellationToken);
+        await SendConfirmPhoneToken(user, cancellationToken);
     }
 
     [HttpPost]
@@ -357,7 +357,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await Task.WhenAll(SendEmail(), SendSms());
     }
 
-    private async Task SendConfirmEmailToken(SendEmailTokenRequestDto request, User user, CancellationToken cancellationToken)
+    private async Task SendConfirmEmailToken(User user, CancellationToken cancellationToken)
     {
         var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.IdentitySettings.EmailTokenRequestResendDelay;
 
@@ -370,14 +370,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var email = request.Email!;
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{user.Email},Date:{user.EmailTokenRequestedOn}");
-        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(email!)}&emailToken={Uri.EscapeDataString(token)}");
+        var email = user.Email!;
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{email},Date:{user.EmailTokenRequestedOn}");
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}");
 
-        await emailService.SendEmailToken(user, user.Email!, token, link, cancellationToken);
+        await emailService.SendEmailToken(user, email, token, link, cancellationToken);
     }
 
-    private async Task SendConfirmPhoneToken(SendPhoneTokenRequestDto request, User user, CancellationToken cancellationToken)
+    private async Task SendConfirmPhoneToken(User user, CancellationToken cancellationToken)
     {
         var resendDelay = (DateTimeOffset.Now - user.PhoneNumberTokenRequestedOn) - AppSettings.IdentitySettings.PhoneNumberTokenRequestResendDelay;
 
@@ -390,10 +390,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var phoneNumber = user.PhoneNumber;
+        var phoneNumber = user.PhoneNumber!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{phoneNumber},Date:{user.PhoneNumberTokenRequestedOn}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}");
 
-        await smsService.SendSms(Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token], user.PhoneNumber!, cancellationToken);
+        await smsService.SendSms(Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token], phoneNumber, cancellationToken);
     }
 }
