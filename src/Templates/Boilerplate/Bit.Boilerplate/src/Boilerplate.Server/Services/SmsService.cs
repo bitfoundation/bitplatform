@@ -35,8 +35,8 @@ public partial class SmsService
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS: {message} to {phoneNumber}.")]
-    static partial void LogSendSms(ILogger logger, string message, string phoneNumber);
+    private static partial void LogSendSms(ILogger logger, string message, string phoneNumber);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to send Sms to {phoneNumber}. Id: {id}, Status code: {statusCode}, Error message: {errorMessage}")]
-    static partial void LogSendSmsFailed(ILogger logger, string phoneNumber, string id, HttpStatusCode statusCode, string errorMessage);
+    private static partial void LogSendSmsFailed(ILogger logger, string phoneNumber, string id, HttpStatusCode statusCode, string errorMessage);
 }

@@ -127,5 +127,5 @@ public partial class EmailService
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "{type} e-mail with subject '{subject}' to {toEmailAddress}. {link}")]
-    static partial void LogSendEmail(ILogger logger, string subject, string toEmailAddress, string type, string? link = null);
+    private static partial void LogSendEmail(ILogger logger, string subject, string toEmailAddress, string type, string? link = null);
 }
