@@ -7,7 +7,7 @@ public partial class SmsService
 {
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
     [AutoInject] private ILogger<SmsService> logger = default!;
-    [AutoInject] private SmsClient smsClient = default!;
+    [AutoInject] private Lazy<SmsClient> smsClientProvider = default!;
     [AutoInject] private AppSettings appSettings = default!;
 
     public async Task SendSms(string message, string phoneNumber, CancellationToken cancellationToken)
@@ -19,7 +19,7 @@ public partial class SmsService
 
         if (appSettings.SmsSettings.Configured)
         {
-            SmsSendResult sendResult = smsClient.Send(
+            SmsSendResult sendResult = smsClientProvider.Value.Send(
                 from: appSettings.SmsSettings.FromPhoneNumber,
                 to: phoneNumber,
                 message: message,

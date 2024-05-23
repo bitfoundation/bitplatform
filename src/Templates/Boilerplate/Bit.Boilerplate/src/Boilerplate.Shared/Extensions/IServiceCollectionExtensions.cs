@@ -20,6 +20,8 @@ public static class IServiceCollectionExtensions
 
         services.AddLocalization();
 
+        services.AddTransient(typeof(Lazy<>), typeof(Lazy<>)); // add support for lazy injection
+
         return services;
     }
 }

@@ -228,6 +228,9 @@
     <data name="Password" xml:space="preserve">
     <value>Mot de passe</value>
   </data>
+    <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>Entrer le mot de passe</value>
+  </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Votre mot de passe a changé avec succès.</value>
   </data>
@@ -268,10 +271,10 @@
     <value>Prix</value>
   </data>
     <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
-    <value>Soit l'e-mail du fournisseur, soit le numéro de téléphone.</value>
+    <value>Soit fournir un e-mail ou un numéro de téléphone.</value>
   </data>
     <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
-    <value>Soit le nom d'utilisateur du fournisseur, l'e-mail ou le numéro de téléphone.</value>
+    <value>Soit fournissez votre nom d'utilisateur, votre e-mail ou votre numéro de téléphone.</value>
   </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>Vous devez être connecté pour continuer.</value>
@@ -613,7 +616,7 @@
     <value>Le code de vérification:</value>
   </data>
     <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Veuillez entrer le code.</value>
+    <value>Entrez le code de vérification.</value>
   </data>
     <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Vérifier</value>
@@ -687,7 +690,7 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>Générer et envoyer un jeton 2FA</value>
   </data>
-    <data name="TfaTokenSent" xml:space="preserve">
+    <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>Le token 2FA a été généré et vous a été envoyé.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
@@ -703,7 +706,16 @@
     <value>Vous avez déjà demandé le mot de passe à usage unique. Réessayez dans {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
-    <value>Mot de passe à usage unique</value>
+    <value>OTP</value>
+  </data>
+    <data name="OtpPlaceholder" xml:space="preserve">
+    <value>Entrez OTP</value>
+  </data>
+    <data name="OtpSentMessage" xml:space="preserve">
+    <value>Un OTP a été généré et vous a été envoyé.</value>
+  </data>
+    <data name="SendOtpButtonText" xml:space="preserve">
+    <value>Envoyer un lien OTP et Magic</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>Soit fournir un mot de passe, soit Otp</value>

@@ -228,6 +228,9 @@
     <data name="Password" xml:space="preserve">
     <value>رمز عبور</value>
   </data>
+    <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>پسورد را وارد کنید</value>
+  </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>رمز عبور شما با موفقیت تغییر کرد.</value>
   </data>
@@ -613,7 +616,7 @@
     <value>کد تایید:</value>
   </data>
     <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>لطفا کد را وارد کنید.</value>
+    <value>لطفا کد تایید را وارد کنید.</value>
   </data>
     <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>تأیید</value>
@@ -687,8 +690,8 @@
     <data name="TfaTokenGenerateButtonText" xml:space="preserve">
     <value>تولید و ارسال توکن 2FA</value>
   </data>
-    <data name="TfaTokenSent" xml:space="preserve">
-    <value>The 2FA token has been generated and sent to you.</value>
+    <data name="TfaTokenSentMessage" xml:space="preserve">
+    <value>توکن 2FA تولید و برای شما ارسال شده است.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
@@ -704,6 +707,15 @@
   </data>
     <data name="Otp" xml:space="preserve">
     <value>رمز یک‌بار مصرف</value>
+  </data>
+    <data name="OtpPlaceholder" xml:space="preserve">
+    <value>رمز یکبار مصرف را وارد کنید</value>
+  </data>
+    <data name="OtpSentMessage" xml:space="preserve">
+    <value>یک رمز یکبار مصرف ایجاد و برای شما ارسال شد.</value>
+  </data>
+    <data name="SendOtpButtonText" xml:space="preserve">
+    <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>

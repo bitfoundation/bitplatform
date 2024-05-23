@@ -152,19 +152,19 @@
     <value>réinitialisez votre mot de passe</value>
   </data>
     <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Boilerplate {0} - Mot de passe à usage unique</value>
+    <value>Boilerplate {0} - OTP</value>
   </data>
     <data name="OtpTitle" xml:space="preserve">
     <value>Bonjour {0}</value>
   </data>
     <data name="OtpSubtitle" xml:space="preserve">
-    <value>Quelqu'un a demandé un jeton pour se connecter à l'application.</value>
+    <value>Quelqu'un a demandé un OTP pour se connecter à l'application.</value>
   </data>
     <data name="OtpBody" xml:space="preserve">
-    <value>Si ce n'est pas vous qui avez demandé le mot de passe à usage unique, vous pouvez ignorer cet e-mail.</value>
+    <value>Si vous n'avez pas demandé l'OTP, vous pouvez ignorer cet e-mail.</value>
   </data>
     <data name="OtpMessage" xml:space="preserve">
-    <value>Vous pouvez copier le jeton ci-dessous et le saisir sur la page de connexion.</value>
+    <value>You can copy the below OTP and enter it in the login page.</value>
   </data>
     <data name="OtpLinkMessage" xml:space="preserve">
     <value>Ou vous pouvez cliquer sur le lien suivant pour vous connecter.</value>

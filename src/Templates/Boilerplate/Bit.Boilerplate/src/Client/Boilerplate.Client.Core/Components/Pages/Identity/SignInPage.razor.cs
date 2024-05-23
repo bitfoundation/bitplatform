@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
-using System.Threading;
-using Boilerplate.Client.Core.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
@@ -10,23 +9,51 @@ public partial class SignInPage
     [AutoInject] private IIdentityController identityController = default!;
 
     private bool isSigningIn;
+    private bool isSendingOtp;
     private bool requiresTwoFactor;
-    private bool isGeneratingToken;
-    private SignInRequestDto signInModel = new();
+    private bool isSendingTfaToken;
+    private SignInRequestDto model = new();
 
     private string? message;
     private BitSeverity messageSeverity;
 
-    [SupplyParameterFromQuery(Name = "email"), Parameter] public string? Email { get; set; }
-    [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "redirect-url")]
+    public string? RedirectUrlQueryString { get; set; }
 
-    protected override async Task OnParamsSetAsync()
+    [Parameter, SupplyParameterFromQuery(Name = "email")]
+    public string? EmailQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "phoneNumber")]
+    public string? PhoneNumberQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "otp")]
+    public string? OtpQueryString { get; set; }
+
+
+    protected override async Task OnInitAsync()
     {
-        await base.OnParamsSetAsync();
+        await base.OnInitAsync();
 
-        if (string.IsNullOrEmpty(signInModel.Email))
+        if (string.IsNullOrEmpty(EmailQueryString) is false)
         {
-            signInModel.Email = Email;
+            model.Email = EmailQueryString;
+        }
+
+        if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
+        {
+            model.PhoneNumber = PhoneNumberQueryString;
+        }
+
+        if (string.IsNullOrEmpty(OtpQueryString) is false)
+        {
+            model.Otp = OtpQueryString;
+
+            if (InPrerenderSession is false &&
+                (string.IsNullOrEmpty(model.Email) is false ||
+                 string.IsNullOrEmpty(model.PhoneNumber) is false))
+            {
+                await DoSignIn();
+            }
         }
     }
 
@@ -40,15 +67,15 @@ public partial class SignInPage
         try
         {
             if (requiresTwoFactor &&
-                string.IsNullOrWhiteSpace(signInModel.TwoFactorCode) &&
-                string.IsNullOrWhiteSpace(signInModel.TwoFactorRecoveryCode) &&
-                string.IsNullOrWhiteSpace(signInModel.TwoFactorToken)) return;
+                string.IsNullOrWhiteSpace(model.TwoFactorCode) &&
+                string.IsNullOrWhiteSpace(model.TwoFactorRecoveryCode) &&
+                string.IsNullOrWhiteSpace(model.TwoFactorToken)) return;
 
-            requiresTwoFactor = await AuthenticationManager.SignIn(signInModel, CurrentCancellationToken);
+            requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
 
             if (requiresTwoFactor is false)
             {
-                NavigationManager.NavigateTo(RedirectUrl ?? "/");
+                NavigationManager.NavigateTo(RedirectUrlQueryString ?? "/");
             }
         }
         catch (KnownException e)
@@ -62,18 +89,19 @@ public partial class SignInPage
         }
     }
 
-    private async Task SendTwoFactorToken()
+    private async Task SendOtp()
     {
-        if (isGeneratingToken) return;
+        if (isSendingOtp) return;
 
-        isGeneratingToken = true;
+        isSendingOtp = true;
         message = null;
 
         try
         {
-            await identityController.SendTwoFactorToken(signInModel, CurrentCancellationToken);
+            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+            await identityController.SendOtp(request, CurrentCancellationToken);
 
-            message = Localizer[nameof(AppStrings.TfaTokenSent)];
+            message = Localizer[nameof(AppStrings.OtpSentMessage)];
             messageSeverity = BitSeverity.Success;
         }
         catch (KnownException e)
@@ -83,8 +111,32 @@ public partial class SignInPage
         }
         finally
         {
-            isGeneratingToken = false;
+            isSendingOtp = false;
+        }
+    }
+
+    private async Task SendTfaToken()
+    {
+        if (isSendingTfaToken) return;
+
+        isSendingTfaToken = true;
+        message = null;
+
+        try
+        {
+            await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
+
+            message = Localizer[nameof(AppStrings.TfaTokenSentMessage)];
+            messageSeverity = BitSeverity.Success;
+        }
+        catch (KnownException e)
+        {
+            message = e.Message;
+            messageSeverity = BitSeverity.Error;
+        }
+        finally
+        {
+            isSendingTfaToken = false;
         }
     }
 }
-

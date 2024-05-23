@@ -34,4 +34,7 @@ public interface IIdentityController : IAppController
 
     [HttpPost]
     Task SendTwoFactorToken(IdentityRequestDto body, CancellationToken cancellationToken) => default!;
+
+    [HttpPost]
+    Task SendOtp(IdentityRequestDto body, CancellationToken cancellationToken) => default!;
 }
