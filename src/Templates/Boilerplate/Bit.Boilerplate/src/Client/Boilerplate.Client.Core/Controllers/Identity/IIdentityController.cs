@@ -33,8 +33,8 @@ public interface IIdentityController : IAppController
     Task<SignInResponseDto> SignIn(SignInRequestDto request, CancellationToken cancellationToken = default) => default!;
 
     [HttpPost]
-    Task SendTwoFactorToken(IdentityRequestDto request, CancellationToken cancellationToken) => default!;
+    Task SendTwoFactorToken(IdentityRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task SendOtp(IdentityRequestDto request, CancellationToken cancellationToken) => default!;
+    Task SendOtp(IdentityRequestDto request, CancellationToken cancellationToken);
 }
