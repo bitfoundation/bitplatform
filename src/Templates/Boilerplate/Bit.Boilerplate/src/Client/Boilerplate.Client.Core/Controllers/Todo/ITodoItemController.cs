@@ -9,10 +9,10 @@ public interface ITodoItemController : IAppController
     Task<TodoItemDto> Get(int id, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task<TodoItemDto> Create(TodoItemDto body, CancellationToken cancellationToken = default);
+    Task<TodoItemDto> Create(TodoItemDto request, CancellationToken cancellationToken = default);
 
     [HttpPut]
-    Task<TodoItemDto> Update(TodoItemDto body, CancellationToken cancellationToken = default);
+    Task<TodoItemDto> Update(TodoItemDto request, CancellationToken cancellationToken = default);
 
     [HttpDelete("{id}")]
     Task Delete(int id, CancellationToken cancellationToken = default);

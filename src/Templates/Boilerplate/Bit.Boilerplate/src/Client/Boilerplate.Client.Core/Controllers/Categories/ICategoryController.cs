@@ -9,10 +9,10 @@ public interface ICategoryController : IAppController
     Task<CategoryDto> Get(int id, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task<CategoryDto> Create(CategoryDto body, CancellationToken cancellationToken = default);
+    Task<CategoryDto> Create(CategoryDto request, CancellationToken cancellationToken = default);
 
     [HttpPut]
-    Task<CategoryDto> Update(CategoryDto body, CancellationToken cancellationToken = default);
+    Task<CategoryDto> Update(CategoryDto request, CancellationToken cancellationToken = default);
 
     [HttpDelete("{id}")]
     Task Delete(int id, CancellationToken cancellationToken = default);

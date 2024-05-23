@@ -100,9 +100,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task ConfirmEmail(ConfirmEmailRequestDto body, CancellationToken cancellationToken)
+    public async Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(body.Email!)
+        var user = await userManager.FindByEmailAsync(request.Email!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         if (user.EmailConfirmed) return;
@@ -110,7 +110,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{body.Email},Date:{user.EmailTokenRequestedOn}", body.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{request.Email},Date:{user.EmailTokenRequestedOn}", request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -138,9 +138,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task ConfirmPhone(ConfirmPhoneRequestDto body, CancellationToken cancellationToken)
+    public async Task ConfirmPhone(ConfirmPhoneRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByPhoneNumber(body.PhoneNumber!)
+        var user = await userManager.FindByPhoneNumber(request.PhoneNumber!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         if (await userManager.IsLockedOutAsync(user))
@@ -148,7 +148,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (user.PhoneNumberConfirmed) return;
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{body.PhoneNumber},Date:{user.PhoneNumberTokenRequestedOn}", body.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{request.PhoneNumber},Date:{user.PhoneNumberTokenRequestedOn}", request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -264,7 +264,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 [nameof(HttpContext)] = HttpContext
             });
 
-            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+            var request = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
                 var renderedComponent = await htmlRenderer.RenderComponentAsync<ResetPasswordTokenTemplate>(parameters);
 
@@ -273,7 +273,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
                                                .Subject(emailLocalizer[EmailStrings.ResetPasswordEmailSubject])
-                                               .Body(body, isHtml: true)
+                                               .Body(request, isHtml: true)
                                                .SendAsync(cancellationToken);
 
             if (emailResult.Successful is false)
@@ -332,7 +332,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 [nameof(HttpContext)] = HttpContext
             });
 
-            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+            var request = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
                 var renderedComponent = await htmlRenderer.RenderComponentAsync<OtpTemplate>(parameters);
 
@@ -341,7 +341,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
                                                .Subject(emailLocalizer[EmailStrings.OtpEmailSubject])
-                                               .Body(body, isHtml: true)
+                                               .Body(request, isHtml: true)
                                                .SendAsync(cancellationToken);
 
             if (emailResult.Successful is false)
@@ -381,9 +381,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task SendTwoFactorToken(IdentityRequestDto body, CancellationToken cancellationToken)
+    public async Task SendTwoFactorToken(IdentityRequestDto request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindUser(body) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+        var user = await userManager.FindUser(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.IdentitySettings.TwoFactorTokenRequestResendDelay;
 
@@ -407,7 +407,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                     [nameof(HttpContext)] = HttpContext
                 };
 
-                var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+                var request = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                 {
                     var renderedComponent = await htmlRenderer.RenderComponentAsync<TwoFactorTokenTemplate>(ParameterView.FromDictionary(templateParameters));
 
@@ -416,7 +416,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
                 var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
                                                    .Subject(emailLocalizer[EmailStrings.TfaTokenEmailSubject])
-                                                   .Body(body, isHtml: true)
+                                                   .Body(request, isHtml: true)
                                                    .SendAsync(cancellationToken);
 
                 if (emailResult.Successful is false)
@@ -459,7 +459,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             [nameof(HttpContext)] = HttpContext
         });
 
-        var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        var request = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             var renderedComponent = await htmlRenderer.RenderComponentAsync<EmailTokenTemplate>(parameters);
 
@@ -468,7 +468,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var emailResult = await fluentEmail.To(user.Email, user.DisplayName)
                                            .Subject(emailLocalizer[nameof(EmailStrings.ConfirmationEmailSubject)])
-                                           .Body(body, isHtml: true)
+                                           .Body(request, isHtml: true)
                                            .SendAsync(cancellationToken);
 
         if (emailResult.Successful is false)

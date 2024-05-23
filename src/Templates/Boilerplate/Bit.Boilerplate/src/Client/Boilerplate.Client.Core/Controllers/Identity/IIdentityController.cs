@@ -6,35 +6,35 @@ namespace Boilerplate.Client.Core.Controllers.Identity;
 public interface IIdentityController : IAppController
 {
     [HttpPost]
-    Task SignUp(SignUpRequestDto body, CancellationToken cancellationToken = default);
+    Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendConfirmEmailToken(SendEmailTokenRequestDto body, CancellationToken cancellationToken = default);
+    Task SendConfirmEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ConfirmEmail(ConfirmEmailRequestDto body, CancellationToken cancellationToken);
+    Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task SendConfirmPhoneToken(SendPhoneTokenRequestDto body, CancellationToken cancellationToken = default);
+    Task SendConfirmPhoneToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ConfirmPhone(ConfirmPhoneRequestDto body, CancellationToken cancellationToken);
+    Task ConfirmPhone(ConfirmPhoneRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task SendResetPasswordToken(SendResetPasswordTokenRequestDto body, CancellationToken cancellationToken = default);
+    Task SendResetPasswordToken(SendResetPasswordTokenRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ResetPassword(ResetPasswordRequestDto body, CancellationToken cancellationToken = default);
+    Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task<TokenResponseDto> Refresh(RefreshRequestDto body, CancellationToken cancellationToken = default) => default!;
+    Task<TokenResponseDto> Refresh(RefreshRequestDto request, CancellationToken cancellationToken = default) => default!;
 
     [HttpPost]
-    Task<SignInResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default) => default!;
+    Task<SignInResponseDto> SignIn(SignInRequestDto request, CancellationToken cancellationToken = default) => default!;
 
     [HttpPost]
-    Task SendTwoFactorToken(IdentityRequestDto body, CancellationToken cancellationToken) => default!;
+    Task SendTwoFactorToken(IdentityRequestDto request, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
-    Task SendOtp(IdentityRequestDto body, CancellationToken cancellationToken) => default!;
+    Task SendOtp(IdentityRequestDto request, CancellationToken cancellationToken) => default!;
 }
