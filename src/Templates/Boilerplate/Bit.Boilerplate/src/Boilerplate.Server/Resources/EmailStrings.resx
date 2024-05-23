@@ -119,7 +119,7 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
     <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>Boilerplate - Confirm your email address</value>
+    <value>Boilerplate {0} - Confirm your email address</value>
   </data>
     <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
     <value>You're receiving this email because recently you have registered {0} to your Boilerplate account.</value>
@@ -131,7 +131,7 @@
     <value>Or click on the following link to confirm this email address.</value>
   </data>
     <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>Boilerplate - Reset your password</value>
+    <value>Boilerplate {0} - Reset your password</value>
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Hello {0}</value>
@@ -152,7 +152,7 @@
     <value>Reset your password</value>
   </data>
     <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Boilerplate - OTP</value>
+    <value>Boilerplate {0} - OTP</value>
   </data>
     <data name="OtpTitle" xml:space="preserve">
     <value>Hello {0}</value>
@@ -176,7 +176,7 @@
     <value>Welcome to Boilerplate!</value>
   </data>
     <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>Boilerplate - 2FA token</value>
+    <value>Boilerplate {0} - 2FA token</value>
   </data>
     <data name="TfaTokenHello" xml:space="preserve">
     <value>Hello dear {0}</value>
@@ -186,5 +186,8 @@
   </data>
     <data name="CopyTokenNote" xml:space="preserve">
     <value>Copy this code and use it in the login page.</value>
+  </data>
+    <data name="DefaultFromName" xml:space="preserve">
+    <value>Boilerplate app</value>
   </data>
 </root>

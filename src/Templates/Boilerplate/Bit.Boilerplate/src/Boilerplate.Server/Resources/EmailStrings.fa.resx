@@ -119,7 +119,7 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
     <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>Boilerplate - آدرس ایمیل خود را تایید کنید</value>
+    <value>Boilerplate {0} - آدرس ایمیل خود را تایید کنید</value>
   </data>
     <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
     <value>شما این ایمیل را دریافت می کنید زیرا اخیرا ایمیل {0} را به اکانت Boilerplate خود اختصاص داده اید.</value>
@@ -131,7 +131,7 @@
     <value>یا برای تایید این آدرس ایمیل روی لینک زیر کلیک کنید.</value>
   </data>
     <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>Boilerplate - رمز عبور خود را ریست کنید</value>
+    <value>Boilerplate {0} - رمز عبور خود را ریست کنید</value>
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>سلام {0}</value>
@@ -152,7 +152,7 @@
     <value>رمز عبور خود را ریست کنید</value>
   </data>
     <data name="OtpEmailSubject" xml:space="preserve">
-    <value>Boilerplate - رمز یک‌بار مصرف</value>
+    <value>Boilerplate {0} - رمز یک‌بار مصرف</value>
   </data>
     <data name="OtpTitle" xml:space="preserve">
     <value>سلام {0}</value>
@@ -176,7 +176,7 @@
     <value>به Boilerplate خوش آمدید!</value>
   </data>
     <data name="TfaTokenEmailSubject" xml:space="preserve">
-    <value>Boilerplate - توکن 2FA</value>
+    <value>Boilerplate {0} - توکن 2FA</value>
   </data>
     <data name="TfaTokenHello" xml:space="preserve">
     <value>سلام {0} عزیز</value>
@@ -186,5 +186,8 @@
   </data>
     <data name="CopyTokenNote" xml:space="preserve">
     <value>این کد را کپی و در صفحه ورود استفاده کنید.</value>
+  </data>
+    <data name="DefaultFromName" xml:space="preserve">
+    <value>برنامه Boilerplate</value>
   </data>
 </root>
