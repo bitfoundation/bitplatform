@@ -65,6 +65,15 @@ public partial class BitIconButtonDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitButtonSize",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+            DefaultValue = "null",
+            Description = "The size of button, Possible values: Small | Medium | Large.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitIconButtonClassStyles",
             DefaultValue = "",
@@ -120,6 +129,33 @@ public partial class BitIconButtonDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums = new()
     {
+        new()
+        {
+            Id = "button-size-enum",
+            Name = "BitButtonSize",
+            Description = "",
+            Items = new List<ComponentEnumItem>()
+            {
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size button.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size button.",
+                    Value="2",
+                }
+            }
+        },
         new()
         {
             Id = "button-type-enum",
@@ -188,6 +224,11 @@ Collapsed: [<BitIconButton Visibility=""BitVisibility.Collapsed"" /> ]";
 <BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To bit platform"" />";
 
     private readonly string example6RazorCode = @"
+<BitIconButton IconName=""@BitIconName.People"" Size=""BitButtonSize.Small"" Title=""Small"" />
+<BitIconButton IconName=""@BitIconName.People"" Size=""BitButtonSize.Medium"" Title=""Medium"" />
+<BitIconButton IconName=""@BitIconName.People"" Size=""BitButtonSize.Large"" Title=""Large"" />";
+
+    private readonly string example7RazorCode = @"
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
 
@@ -201,7 +242,7 @@ Collapsed: [<BitIconButton Visibility=""BitVisibility.Collapsed"" /> ]";
     <BitIconButton IconName=""@BitIconName.Reset"" ButtonType=""BitButtonType.Reset"" Title=""Reset"" />
     <BitIconButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"" Title=""Button"" />
 </EditForm>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
