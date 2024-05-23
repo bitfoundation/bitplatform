@@ -27,7 +27,7 @@ public partial class SmsService
             cancellationToken
         );
 
-        if (sendResult.Successful is true) return;
+        if (sendResult.Successful) return;
 
         LogSendSmsFailed(logger, sendResult.To, sendResult.MessageId, (HttpStatusCode)sendResult.HttpStatusCode, sendResult.ErrorMessage);
     }
