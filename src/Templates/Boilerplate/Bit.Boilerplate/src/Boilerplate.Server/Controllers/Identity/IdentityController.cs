@@ -279,7 +279,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
         var isEmail = string.IsNullOrEmpty(request.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
-        var url = $"otp?token={Uri.EscapeDataString(token)}&{qs}";
+        var url = $"sign-in?otp={Uri.EscapeDataString(token)}&{qs}";
         var link = new Uri(HttpContext.Request.GetBaseUrl(), url);
 
         async Task SendEmail()
