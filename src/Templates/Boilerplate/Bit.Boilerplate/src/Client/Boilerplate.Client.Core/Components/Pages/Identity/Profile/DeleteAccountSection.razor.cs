@@ -3,5 +3,4 @@
 public partial class DeleteAccountSection
 {
     private bool isDeleteAccountConfirmModalOpen;
-
 }
