@@ -1,5 +1,5 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
@@ -31,8 +31,8 @@ public partial class ChangeEmailSection
     {
         if (string.IsNullOrEmpty(EmailQueryString) is false)
         {
-            isEmailUnavailable = false;
             showConfirmation = true;
+            isEmailUnavailable = false;
             changeModel.Email = EmailQueryString;
 
             if (string.IsNullOrEmpty(EmailTokenQueryString) is false)
@@ -60,8 +60,8 @@ public partial class ChangeEmailSection
         {
             await userController.SendChangeEmailToken(sendModel, CurrentCancellationToken);
 
-            isEmailUnavailable = false;
             showConfirmation = true;
+            isEmailUnavailable = false;
             changeModel.Email = sendModel.Email;
         }
         catch (KnownException e)
