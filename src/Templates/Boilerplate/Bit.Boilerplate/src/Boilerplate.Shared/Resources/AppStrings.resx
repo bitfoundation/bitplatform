@@ -196,6 +196,9 @@
     <data name="EditProfileTitle" xml:space="preserve">
     <value>Edit profile</value>
   </data>
+    <data name="ChangeEmailTitle" xml:space="preserve">
+    <value>Change email</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>There is nothing here.</value>
   </data>
@@ -221,6 +224,18 @@
   </data>
     <data name="Email" xml:space="preserve">
     <value>Email</value>
+  </data>
+    <data name="CurrentEmail" xml:space="preserve">
+    <value>Current email</value>
+  </data>
+    <data name="NewEmail" xml:space="preserve">
+    <value>New email</value>
+  </data>
+    <data name="NewEmailPlaceholder" xml:space="preserve">
+    <value>Enter new email</value>
+  </data>
+    <data name="GoBack" xml:space="preserve">
+    <value>Back</value>
   </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>Phone Number</value>
@@ -320,6 +335,9 @@
   </data>
     <data name="ConfirmMessageInSignUp" xml:space="preserve">
     <value>Want to confirm an account?</value>
+  </data>
+    <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <value>Already have a token?</value>
   </data>
     <data name="ConfirmEmailHeaderText" xml:space="preserve">
     <value>Email Address</value>
