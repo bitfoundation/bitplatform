@@ -115,6 +115,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Pages/Identity/Profile/ChangePhoneNumberSection.razor.css",
+        "inputFile": "Components/Pages/Identity/Profile/ChangePhoneNumberSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Pages/Identity/ConfirmPage.razor.css",
         "inputFile": "Components/Pages/Identity/ConfirmPage.razor.scss",
         "minify": { "enabled": false },

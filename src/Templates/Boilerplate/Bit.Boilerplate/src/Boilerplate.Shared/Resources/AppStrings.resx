@@ -199,6 +199,9 @@
     <data name="ChangeEmailTitle" xml:space="preserve">
     <value>Change email</value>
   </data>
+    <data name="ChangePhoneNumberTitle" xml:space="preserve">
+    <value>Change phone number</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>There is nothing here.</value>
   </data>
@@ -234,11 +237,20 @@
     <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>Enter new email</value>
   </data>
-    <data name="GoBack" xml:space="preserve">
-    <value>Back</value>
-  </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>Phone Number</value>
+  </data>
+    <data name="CurrentPhoneNumber" xml:space="preserve">
+    <value>Current phone number</value>
+  </data>
+    <data name="NewPhoneNumber" xml:space="preserve">
+    <value>New phone number</value>
+  </data>
+    <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+    <value>Enter new phone number</value>
+  </data>
+    <data name="GoBack" xml:space="preserve">
+    <value>Back</value>
   </data>
     <data name="Password" xml:space="preserve">
     <value>Password</value>

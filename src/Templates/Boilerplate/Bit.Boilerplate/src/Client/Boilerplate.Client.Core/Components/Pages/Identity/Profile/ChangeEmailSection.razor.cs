@@ -7,7 +7,6 @@ public partial class ChangeEmailSection
 {
     private bool isWaiting;
     private string? message;
-    private bool isEmailedChanged;
     private bool showConfirmation;
     private bool isEmailUnavailable = true;
     private readonly ChangeEmailRequestDto changeModel = new();
