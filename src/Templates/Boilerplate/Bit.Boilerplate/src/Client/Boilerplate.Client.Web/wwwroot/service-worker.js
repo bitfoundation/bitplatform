@@ -28,7 +28,8 @@ self.serverHandledUrls = [
     /\/healthchecks-ui/,
     /\/healthz/,
     /\/swagger/,
-    /\/signin-/
+    /\/signin-/,
+    /\/.well-known-/
 ];
 
 self.defaultUrl = "/";

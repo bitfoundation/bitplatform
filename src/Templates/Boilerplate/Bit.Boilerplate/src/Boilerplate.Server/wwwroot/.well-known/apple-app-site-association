@@ -48,6 +48,10 @@
                     {
                         "/": "/signin-*",
                         "exclude": true
+                    },
+                    {
+                        "/": "/.well-known-*",
+                        "exclude": true
                     }
                 ]
             },
@@ -93,6 +97,10 @@
                     },
                     {
                         "/": "/signin-*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/.well-known-*",
                         "exclude": true
                     }
                 ]
