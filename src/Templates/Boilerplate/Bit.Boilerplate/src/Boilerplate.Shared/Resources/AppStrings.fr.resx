@@ -196,6 +196,9 @@
     <data name="EditProfileTitle" xml:space="preserve">
     <value>Editer le profil</value>
   </data>
+    <data name="ChangeEmailTitle" xml:space="preserve">
+    <value>Changer l'e-mail</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>Il n'y a rien ici.</value>
   </data>
@@ -220,7 +223,19 @@
     <value>Confirmer le nouveau mot de passe</value>
   </data>
     <data name="Email" xml:space="preserve">
-    <value>E-mail</value>
+    <value>Email</value>
+  </data>
+    <data name="CurrentEmail" xml:space="preserve">
+    <value>Email actuel</value>
+  </data>
+    <data name="NewEmail" xml:space="preserve">
+    <value>Nouveau courriel</value>
+  </data>
+    <data name="NewEmailPlaceholder" xml:space="preserve">
+    <value>Entrez un nouvel e-mail</value>
+  </data>
+    <data name="GoBack" xml:space="preserve">
+    <value>Dos</value>
   </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>Numéro de téléphone</value>
@@ -320,6 +335,9 @@
   </data>
     <data name="ConfirmMessageInSignUp" xml:space="preserve">
     <value>Vous souhaitez confirmer un compte?</value>
+  </data>
+    <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <value>Vous avez déjà un jeton?</value>
   </data>
     <data name="ConfirmEmailHeaderText" xml:space="preserve">
     <value>Adresse e-mail</value>

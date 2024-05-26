@@ -97,14 +97,26 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/ConfirmPage.razor.css",
-        "inputFile": "Components/Pages/Identity/ConfirmPage.razor.scss",
+        "outputFile": "Components/Pages/Identity/Profile/DeleteAccountSection.razor.css",
+        "inputFile": "Components/Pages/Identity/Profile/DeleteAccountSection.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/DeleteAccountConfirmModal.razor.css",
-        "inputFile": "Components/Pages/Identity/DeleteAccountConfirmModal.razor.scss",
+        "outputFile": "Components/Pages/Identity/Profile/DeleteAccountConfirmModal.razor.css",
+        "inputFile": "Components/Pages/Identity/Profile/DeleteAccountConfirmModal.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/Profile/ChangeEmailSection.razor.css",
+        "inputFile": "Components/Pages/Identity/Profile/ChangeEmailSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/ConfirmPage.razor.css",
+        "inputFile": "Components/Pages/Identity/ConfirmPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
