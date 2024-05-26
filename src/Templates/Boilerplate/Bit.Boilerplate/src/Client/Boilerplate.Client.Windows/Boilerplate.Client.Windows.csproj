@@ -11,6 +11,10 @@
         <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
         <StartupObject>Boilerplate.Client.Windows.Program</StartupObject>
         <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -47,9 +51,8 @@
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" BeforeTargets="BeforeBuild">
-        <Exec Condition="!Exists('node_modules/.bin/sass')" Command="npm install sass@1.77.1 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
 </Project>
