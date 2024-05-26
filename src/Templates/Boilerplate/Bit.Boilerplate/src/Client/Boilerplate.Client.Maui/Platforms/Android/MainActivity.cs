@@ -9,7 +9,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [IntentFilter([Intent.ActionView],
                         DataSchemes = ["https", "http"],
-                        DataHosts = ["localhost", "wl6dq3z6-5030.euw.devtunnels.ms", "bp.bitplatform.dev"],
+                        DataHosts = ["bp.bitplatform.dev"],
                         DataPaths = ["/"],
                         DataPathPrefixes = ["/add-edit-category", "/categories", "/dashboard", "/confirm", "/forgot-password",
                             "/profile", "/reset-password", "/sign-in", "/sign-up", "/not-authorized", "/not-found",
