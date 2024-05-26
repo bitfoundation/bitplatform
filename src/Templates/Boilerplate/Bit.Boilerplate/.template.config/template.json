@@ -291,9 +291,14 @@
                         "src/Boilerplate.Server/Services/ODataOperationFilter.cs",
                         "src/Boilerplate.Server/Services/AppIdentityErrorDescriber.cs",
                         "src/Boilerplate.Server/Services/AppSecureJwtDataFormat.cs",
+                        "src/Boilerplate.Server/Services/ServerJsonContext.cs",
+                        "src/Boilerplate.Server/Services/AppUserConfirmation.cs",
+                        "src/Boilerplate.Server/Services/SmsService.cs",
+                        "src/Boilerplate.Server/Services/EmailService.cs",
+                        "src/Boilerplate.Server/Extensions/SignInManagerExtensions.cs",
+                        "src/Boilerplate.Server/Extensions/UserManagerExtensions.cs",
                         "src/Boilerplate.Server/wwwroot/swagger/**",
                         "src/Boilerplate.Server/AppSettings.cs",
-                        "src/Boilerplate.Server/Services/ServerJsonContext.cs",
                         "src/Boilerplate.Server/IdentityCertificate.pfx"
                     ]
                 },
