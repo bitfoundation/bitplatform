@@ -49,7 +49,7 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
       
     - name: Generate CSS/JS files
-      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
 
     - name: Publish
       run: dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
@@ -152,7 +152,7 @@ jobs:
         WindowsUpdateSettings.FilesUrl: https://windows-boilerplate.bitplatform.dev
   
     - name: Generate CSS/JS files
-      run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+      run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
 
     - name: Publish
       run: |
@@ -219,7 +219,7 @@ jobs:
   
     - name: Generate CSS/JS files
       run: |
-          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
           dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build aab
@@ -289,7 +289,7 @@ jobs:
 
     - name: Generate CSS/JS files
       run: |
-          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore
+          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
           dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore
   
     - name: Build ipa
