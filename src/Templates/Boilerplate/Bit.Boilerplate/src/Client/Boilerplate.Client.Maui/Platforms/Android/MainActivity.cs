@@ -1,7 +1,7 @@
-﻿using Android.App;
+﻿using Android.OS;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.OS;
 using Boilerplate.Client.Core;
 using Java.Net;
 
@@ -9,8 +9,11 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [IntentFilter([Intent.ActionView],
                         DataSchemes = ["https", "http"],
-                        DataHost = "bp.bitplatform.dev",
-                        DataPathPrefix = "/",
+                        DataHosts = ["localhost", "wl6dq3z6-5030.euw.devtunnels.ms", "bp.bitplatform.dev"],
+                        DataPaths = ["/"],
+                        DataPathPrefixes = ["/add-edit-category", "/categories", "/dashboard", "/confirm", "/forgot-password",
+                            "/profile", "/reset-password", "/sign-in", "/sign-up", "/not-authorized", "/not-found",
+                            "/offline-edit-profile", "/products", "/terms", "/todo", "/about", "/about"],
                         AutoVerify = true,
                         Categories = [Intent.ActionView, Intent.CategoryDefault, Intent.CategoryBrowsable])]
 

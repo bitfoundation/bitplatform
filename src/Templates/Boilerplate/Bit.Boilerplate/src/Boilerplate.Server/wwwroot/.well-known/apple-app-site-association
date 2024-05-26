@@ -12,6 +12,42 @@
                     {
                         "/": "/*",
                         "comment": "Matches any URL with a path that starts with /"
+                    },
+                    {
+                        "/": "/api*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/odata*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/jobs*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/core*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/signalr*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/healthchecks-ui*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/healthz*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/swagger*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/signin-*",
+                        "exclude": true
                     }
                 ]
             },
@@ -22,6 +58,42 @@
                     {
                         "/": "/*",
                         "comment": "Matches any URL with a path that starts with /"
+                    },
+                    {
+                        "/": "/api*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/odata*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/jobs*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/core*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/signalr*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/healthchecks-ui*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/healthz*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/swagger*",
+                        "exclude": true
+                    },
+                    {
+                        "/": "/signin-*",
+                        "exclude": true
                     }
                 ]
             }
