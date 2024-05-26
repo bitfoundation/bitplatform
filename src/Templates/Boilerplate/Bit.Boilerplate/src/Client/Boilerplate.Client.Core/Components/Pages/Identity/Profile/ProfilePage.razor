@@ -10,14 +10,20 @@
 
     <br />
 
+    <div class="content-container tfa-panel">
+        <TwoFactorSection />
+    </div>
+
+    <br />
+
     <div class="content-container email-panel">
         <ChangeEmailSection Email="@user?.Email" Loading="isLoading" />
     </div>
 
     <br />
 
-    <div class="content-container tfa-panel">
-        <TwoFactorSection />
+    <div class="content-container email-panel">
+        <ChangePhoneNumberSection PhoneNumber="@user?.PhoneNumber" Loading="isLoading" />
     </div>
 
     <br />

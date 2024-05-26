@@ -250,6 +250,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Change phone number.
+        /// </summary>
+        public static string ChangePhoneNumberTitle {
+            get {
+                return ResourceManager.GetString("ChangePhoneNumberTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} is your change phone number token in Boilerplate..
         /// </summary>
         public static string ChangePhoneNumberTokenSmsText {
@@ -426,6 +435,15 @@ namespace Boilerplate.Shared.Resources {
         public static string CurrentEmail {
             get {
                 return ResourceManager.GetString("CurrentEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current phone number.
+        /// </summary>
+        public static string CurrentPhoneNumber {
+            get {
+                return ResourceManager.GetString("CurrentPhoneNumber", resourceCulture);
             }
         }
         
@@ -1011,6 +1029,24 @@ namespace Boilerplate.Shared.Resources {
         public static string NewPassword {
             get {
                 return ResourceManager.GetString("NewPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New phone number.
+        /// </summary>
+        public static string NewPhoneNumber {
+            get {
+                return ResourceManager.GetString("NewPhoneNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter new phone number.
+        /// </summary>
+        public static string NewPhoneNumberPlaceholder {
+            get {
+                return ResourceManager.GetString("NewPhoneNumberPlaceholder", resourceCulture);
             }
         }
         

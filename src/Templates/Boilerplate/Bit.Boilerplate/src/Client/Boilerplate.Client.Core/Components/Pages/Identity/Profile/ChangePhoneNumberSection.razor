@@ -11,7 +11,7 @@
     }
 
     <BitTypography Variant="BitTypographyVariant.H2">
-        @Localizer[nameof(AppStrings.ChangeEmailTitle)]
+        @Localizer[nameof(AppStrings.ChangePhoneNumberTitle)]
     </BitTypography>
 
     <br />
@@ -26,20 +26,20 @@
     {
         if (showConfirmation is false)
         {
-            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)" class="change-email-form">
+            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)" class="change-phone-form">
                 <AppDataAnnotationsValidator />
 
                 <div class="form-input-container">
-                    <BitLabel>@Localizer[nameof(AppStrings.CurrentEmail)]</BitLabel>
-                    <BitTag Appearance="BitAppearance.Standard" Text="@Email" Style="width:100%;max-width:unset" />
+                    <BitLabel>@Localizer[nameof(AppStrings.CurrentPhoneNumber)]</BitLabel>
+                    <BitTag Appearance="BitAppearance.Standard" Text="@PhoneNumber" Style="width:100%;max-width:unset" />
                 </div>
 
                 <div class="form-input-container">
-                    <BitTextField @bind-Value="sendModel.Email"
-                                  Type="BitTextFieldType.Email"
-                                  Label="@Localizer[nameof(AppStrings.NewEmail)]"
-                                  Placeholder="@Localizer[nameof(AppStrings.NewEmailPlaceholder)]" />
-                    <ValidationMessage For="@(() => sendModel.Email)" />
+                    <BitTextField @bind-Value="sendModel.PhoneNumber"
+                                  Type="BitTextFieldType.Tel"
+                                  Label="@Localizer[nameof(AppStrings.NewPhoneNumber)]"
+                                  Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
+                    <ValidationMessage For="@(() => sendModel.PhoneNumber)" />
                 </div>
 
                 <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
@@ -59,33 +59,33 @@
         else
         {
             <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-                @Localizer[nameof(AppStrings.ConfirmEmailSubtitle)]
+                @Localizer[nameof(AppStrings.ConfirmPhoneSubtitle)]
                 <br />
-                @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
+                @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
             </BitTypography>
             <br />
-            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangeEmail)" class="change-email-form">
+            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangePhoneNumber)" class="change-phone-form">
                 <AppDataAnnotationsValidator />
 
                 <div class="form-input-container">
-                    <BitTextField @bind-Value="changeModel.Email"
-                                  IsEnabled="isEmailUnavailable"
-                                  Type="BitTextFieldType.Email"
-                                  Label="@Localizer[nameof(AppStrings.Email)]"
-                                  Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
-                    <ValidationMessage For="@(() => changeModel.Email)" />
+                    <BitTextField @bind-Value="changeModel.PhoneNumber"
+                                  IsEnabled="isPhoneNumberUnavailable"
+                                  Type="BitTextFieldType.Tel"
+                                  Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                  Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                    <ValidationMessage For="@(() => changeModel.PhoneNumber)" />
                 </div>
 
                 <div class="form-input-container">
                     <BitTextField @bind-Value="changeModel.Token"
                                   Type="BitTextFieldType.Number"
-                                  Label="@Localizer[nameof(AppStrings.EmailToken)]"
-                                  Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
+                                  Label="@Localizer[nameof(AppStrings.PhoneToken)]"
+                                  Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />
                 </div>
                 <br />
                 <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
-                    @Localizer[nameof(AppStrings.EmailTokenConfirmButtonText)]
+                    @Localizer[nameof(AppStrings.PhoneTokenConfirmButtonText)]
                 </BitButton>
                 <br />
                 <BitButton ButtonType="BitButtonType.Button"
@@ -95,22 +95,19 @@
                     @Localizer[nameof(AppStrings.GoBack)]
                 </BitButton>
             </EditForm>
-            @if (isEmailUnavailable is false)
+            @if (isPhoneNumberUnavailable is false)
             {
                 <br />
                 <br />
                 <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                    @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
-                </BitTypography>
-                <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                    @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
+                    @Localizer[nameof(AppStrings.NotReceivedConfirmationPhoneMessage)]
                 </BitTypography>
                 <br />
                 <BitButton IsLoading="isWaiting"
                            ButtonType="BitButtonType.Button"
                            ButtonStyle="BitButtonStyle.Standard"
                            OnClick="WrapHandled(SendToken)">
-                    @Localizer[nameof(AppStrings.ResendEmailTokenButtonText)]
+                    @Localizer[nameof(AppStrings.ResendPhoneTokenButtonText)]
                 </BitButton>
             }
         }
