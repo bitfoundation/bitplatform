@@ -151,11 +151,6 @@ public partial class BitSpinButton
     [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
     /// <summary>
-    /// Callback for when the spin button value change.
-    /// </summary>
-    [Parameter] public EventCallback<double> OnChange { get; set; }
-
-    /// <summary>
     /// Callback for when the decrement button or down arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<double> OnDecrement { get; set; }
@@ -298,8 +293,6 @@ public partial class BitSpinButton
 
         SetValue(result);
 
-        await OnChange.InvokeAsync(CurrentValue);
-
         StateHasChanged();
     }
 
@@ -422,7 +415,6 @@ public partial class BitSpinButton
                     if (isNumber)
                     {
                         SetValue(numericValue);
-                        await OnChange.InvokeAsync(CurrentValue);
                     }
                     else
                     {
@@ -486,7 +478,6 @@ public partial class BitSpinButton
         if (isNumber)
         {
             SetValue(numericValue);
-            await OnChange.InvokeAsync(CurrentValue);
         }
         else
         {

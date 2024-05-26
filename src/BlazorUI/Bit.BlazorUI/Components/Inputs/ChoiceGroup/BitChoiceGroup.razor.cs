@@ -98,11 +98,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public EventCallback<TItem> OnClick { get; set; }
 
     /// <summary>
-    /// Callback for when the option has been changed.
-    /// </summary>
-    [Parameter] public EventCallback<BitChangeEventArgs<TValue>> OnChange { get; set; }
-
-    /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
@@ -211,8 +206,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
         var oldValue = CurrentValue;
         CurrentValue = GetValue(item);
-
-        await OnChange.InvokeAsync(new(oldValue, CurrentValue));
     }
 
     private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;

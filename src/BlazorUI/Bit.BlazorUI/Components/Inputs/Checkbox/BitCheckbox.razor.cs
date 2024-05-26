@@ -115,11 +115,6 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public string? Name { get; set; }
 
     /// <summary>
-    /// Callback that is called when the checked value has changed
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
-
-    /// <summary>
     ///  Callback that is called when the check box is clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -210,8 +205,6 @@ public partial class BitCheckbox : IDisposable
         }
 
         CurrentValue = !CurrentValue;
-
-        _ = OnChange.InvokeAsync(CurrentValue);
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)

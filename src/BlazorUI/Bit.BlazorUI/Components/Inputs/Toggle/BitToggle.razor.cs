@@ -50,11 +50,6 @@ public partial class BitToggle
     [Parameter] public string? OffText { get; set; }
 
     /// <summary>
-    /// Callback that is called when the checked value has changed.
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
-
-    /// <summary>
     /// Denotes role of the toggle, default is switch.        
     /// </summary>
     [Parameter] public string? Role { get; set; } = "switch";
@@ -112,8 +107,6 @@ public partial class BitToggle
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         CurrentValue = !CurrentValue;
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SetStateText()

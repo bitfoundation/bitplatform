@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
+using System.Threading;
 
 namespace Bit.BlazorUI;
 
@@ -14,10 +15,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     private bool? valueInvalid;
 
+    private bool _throttlePause;
     private bool _isUnderlyingTypeNullable;
     private bool _hasInitializedParameters;
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
+    private CancellationTokenSource _debounceCts = new();
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
     protected event EventHandler OnValueChanged = default!;
@@ -25,10 +28,14 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
+    /// <summary>
+    /// The debounce time in milliseconds.
+    /// </summary>
+    [Parameter] public int DebounceTime { get; set; }
 
     /// <summary>
     /// Gets or sets the display name for this field.
-    /// <para>This value is used when generating error messages when the input value fails to parse correctly.</para>
+    /// This value is used when generating error messages when the input value fails to parse correctly.
     /// </summary>
     [Parameter] public string? DisplayName { get; set; }
 
@@ -36,6 +43,16 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, object>? InputHtmlAttributes { get; set; }
+
+    /// <summary>
+    /// Callback for when the current value changes.
+    /// </summary>
+    [Parameter] public EventCallback<TValue?> OnChange { get; set; }
+
+    /// <summary>
+    /// The throttle time in milliseconds.
+    /// </summary>
+    [Parameter] public int ThrottleTime { get; set; }
 
     /// <summary>
     /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -175,10 +192,52 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             var hasChanged = EqualityComparer<TValue>.Default.Equals(value, Value) is false;
             if (hasChanged is false) return;
 
-            Value = value;
-            _ = ValueChanged.InvokeAsync(value);
+            if (DebounceTime is not 0)
+            {
+                _debounceCts.Cancel();
+                _debounceCts.Dispose();
+                _debounceCts = new();
 
-            EditContext?.NotifyFieldChanged(FieldIdentifier);
+                Task.Run(async () =>
+                {
+                    await Task.Delay(DebounceTime, _debounceCts.Token);
+                    await InvokeAsync(async () =>
+                    {
+                        if (_debounceCts.IsCancellationRequested) return;
+
+                        await SetValue(value);
+                        //StateHasChanged();
+                    });
+                }, _debounceCts.Token);
+            }
+            else if (ThrottleTime is not 0)
+            {
+                if (_throttlePause) return;
+
+                _throttlePause = true;
+
+                Task.Run(async () =>
+                {
+                    await Task.Delay(ThrottleTime);
+                    await InvokeAsync(async () =>
+                    {
+                        await SetValue(value);
+                        _throttlePause = false;
+                        //StateHasChanged();
+                    });
+                });
+            }
+
+            async Task SetValue(TValue? value)
+            {
+                Value = value;
+
+                _ = ValueChanged.InvokeAsync(value);
+
+                EditContext?.NotifyFieldChanged(FieldIdentifier);
+
+                await OnChange.InvokeAsync(value);
+            }
         }
     }
 

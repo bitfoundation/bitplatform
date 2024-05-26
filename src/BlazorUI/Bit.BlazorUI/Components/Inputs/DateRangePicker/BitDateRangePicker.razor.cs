@@ -445,11 +445,6 @@ public partial class BitDateRangePicker
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
-    /// Callback for when the value changes in the DateRangePicker.
-    /// </summary>
-    [Parameter] public EventCallback<BitDateRangePickerValue> OnChange { get; set; }
-
-    /// <summary>
     /// The placeholder text of the DateRangePicker's input.
     /// </summary>
     [Parameter] public string Placeholder { get; set; } = string.Empty;
@@ -753,8 +748,6 @@ public partial class BitDateRangePicker
         if (AllowTextInput is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnClearButtonClick()
@@ -854,8 +847,6 @@ public partial class BitDateRangePicker
         CurrentValue = new BitDateRangePickerValue { StartDate = CurrentValue.StartDate, EndDate = CurrentValue.EndDate };
 
         GenerateMonthData(_currentYear, _currentMonth);
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SelectMonth(int month)
@@ -1549,10 +1540,12 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate.HasValue is false && CurrentValue.EndDate.HasValue is false) return;
 
-        var isEndTimeBiggerInOneDayRange = CurrentValue.StartDate.HasValue && CurrentValue.EndDate.HasValue &&
-            CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate!.Value.Date &&
-            new TimeSpan(_startTimeHour, _startTimeMinute, 0) > new TimeSpan(_endTimeHour, _endTimeMinute, 0);
-        if (isEndTimeBiggerInOneDayRange)
+        var isEndGreaterInOneDayRange = CurrentValue.StartDate.HasValue && 
+                                        CurrentValue.EndDate.HasValue &&
+                                        CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate!.Value.Date &&
+                                        new TimeSpan(_startTimeHour, _startTimeMinute, 0) > new TimeSpan(_endTimeHour, _endTimeMinute, 0);
+
+        if (isEndGreaterInOneDayRange)
         {
             _startTimeHour = _endTimeHour;
             _startTimeMinute = _endTimeMinute;
@@ -1563,8 +1556,6 @@ public partial class BitDateRangePicker
             StartDate = GetDateTimeOffset(CurrentValue.StartDate, _startTimeHour, _startTimeMinute),
             EndDate = GetDateTimeOffset(CurrentValue.EndDate, _endTimeHour, _endTimeMinute)
         };
-
-        _ = OnChange.InvokeAsync(CurrentValue);
     }
 
     private DateTimeOffset? GetDateTimeOffset(DateTimeOffset? date, int hour, int minute)

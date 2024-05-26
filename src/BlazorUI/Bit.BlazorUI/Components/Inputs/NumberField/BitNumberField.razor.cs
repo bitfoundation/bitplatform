@@ -53,8 +53,6 @@ public partial class BitNumberField<TValue>
                 if (numericValue == GetDoubleValueOrDefault(CurrentValue)) return;
                 SetValue(numericValue);
             }
-
-            _ = OnChange.InvokeAsync(CurrentValue);
         }
     }
 
@@ -196,11 +194,6 @@ public partial class BitNumberField<TValue>
     /// The format of the number in the number field.
     /// </summary>
     [Parameter] public string NumberFormat { get; set; } = "{0}";
-
-    /// <summary>
-    /// Callback for when the number field value change.
-    /// </summary>
-    [Parameter] public EventCallback<TValue> OnChange { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the input
@@ -404,8 +397,6 @@ public partial class BitNumberField<TValue>
         if (isValid is false) return;
 
         SetValue(result);
-
-        await OnChange.InvokeAsync(CurrentValue);
 
         StateHasChanged();
     }
@@ -619,7 +610,6 @@ public partial class BitNumberField<TValue>
         if (isNumber is false) return;
 
         SetValue(numericValue);
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private double GetMaxValue()
