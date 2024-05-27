@@ -240,7 +240,7 @@ public partial class BitSpinButton
 
         if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            CurrentValue = DefaultValue.Value;
+            InitCurrentValue(DefaultValue.Value);
         }
 
         return base.OnInitializedAsync();

@@ -155,7 +155,7 @@ public partial class BitCheckbox : IDisposable
 
         if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            CurrentValue = DefaultValue.Value;
+            InitCurrentValue(DefaultValue.Value);
         }
 
         if (IsIndeterminateHasBeenSet is false && DefaultIsIndeterminate is not null)

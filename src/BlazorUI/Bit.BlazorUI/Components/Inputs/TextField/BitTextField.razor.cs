@@ -313,9 +313,9 @@ public partial class BitTextField
         _labelId = $"BitTextField-{UniqueId}-label";
         _descriptionId = $"BitTextField-{UniqueId}-description";
 
-        if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
+        if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
         {
-            CurrentValueAsString = DefaultValue;
+            SetCurrentValueAsString(DefaultValue);
         }
 
         return base.OnInitializedAsync();

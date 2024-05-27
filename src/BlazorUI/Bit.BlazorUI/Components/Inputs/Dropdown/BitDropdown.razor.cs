@@ -603,7 +603,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         if (IsMultiSelect is false && EqualityComparer<TValue>.Default.Equals(CurrentValue, default) && EqualityComparer<TValue>.Default.Equals(DefaultValue, default) is false)
         {
-            CurrentValue = DefaultValue;
+            InitCurrentValue(DefaultValue);
         }
 
         if (IsMultiSelect && (Values is null || Values.Any() is false) && DefaultValues is not null && DefaultValues.Any())

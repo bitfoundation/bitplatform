@@ -149,7 +149,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
         if (ValueHasBeenSet is false && DefaultValue is not null && Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
-            CurrentValue = DefaultValue;
+            InitCurrentValue(DefaultValue);
         }
 
         await base.OnInitializedAsync();

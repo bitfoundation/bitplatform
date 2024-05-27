@@ -81,7 +81,7 @@ public partial class BitRating
     {
         if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            CurrentValue = DefaultValue.Value;
+            InitCurrentValue(DefaultValue.Value);
         }
 
         await base.OnInitializedAsync();

@@ -43,7 +43,7 @@ public partial class BitNumberField<TValue>
             var cleanValue = GetCleanValue(value);
             if (_isNullableType && cleanValue.HasNoValue())
             {
-                SetValue(null);
+                CurrentValue = AdoptValue(null);
             }
             else
             {
@@ -51,7 +51,7 @@ public partial class BitNumberField<TValue>
 
                 if (isNumber is false) return;
                 if (numericValue == GetDoubleValueOrDefault(CurrentValue)) return;
-                SetValue(numericValue);
+                CurrentValue = AdoptValue(numericValue);
             }
         }
     }
@@ -347,7 +347,8 @@ public partial class BitNumberField<TValue>
     {
         if ((ValueHasBeenSet is false || CurrentValue is null) && DefaultValue is not null)
         {
-            SetValue(GetDoubleValueOrDefault(DefaultValue).GetValueOrDefault());
+            var defaultValue = GetDoubleValueOrDefault(DefaultValue).GetValueOrDefault();
+            InitCurrentValue(AdoptValue(defaultValue));
         }
 
         return base.OnInitializedAsync();
@@ -396,7 +397,7 @@ public partial class BitNumberField<TValue>
 
         if (isValid is false) return;
 
-        SetValue(result);
+        CurrentValue = AdoptValue(result);
 
         StateHasChanged();
     }
@@ -560,28 +561,26 @@ public partial class BitNumberField<TValue>
         return 0;
     }
 
-    private void SetValue(double? value)
+    private TValue? AdoptValue(double? value)
     {
         if (value is null)
         {
-            CurrentValue = default;
-            return;
+            return default;
         }
 
         value = Normalize(value.Value);
 
         if (value > _internalMax)
         {
-            CurrentValue = GetGenericValue(_internalMax.Value);
+            return GetGenericValue(_internalMax.Value);
         }
-        else if (value < _internalMin)
+
+        if (value < _internalMin)
         {
-            CurrentValue = GetGenericValue(_internalMin.Value);
+            return GetGenericValue(_internalMin.Value);
         }
-        else
-        {
-            CurrentValue = GetGenericValue(value);
-        }
+
+        return GetGenericValue(value);
     }
 
     private static string? GetCleanValue(string? value)
@@ -609,7 +608,7 @@ public partial class BitNumberField<TValue>
         var isNumber = double.TryParse(_intermediateValue, out var numericValue);
         if (isNumber is false) return;
 
-        SetValue(numericValue);
+        CurrentValue = AdoptValue(numericValue);
     }
 
     private double GetMaxValue()

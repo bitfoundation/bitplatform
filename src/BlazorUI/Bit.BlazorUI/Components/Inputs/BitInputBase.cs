@@ -204,6 +204,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         get => _currentValue;
         set
         {
+            if (IsEnabled is false) return;
             if (EqualityComparer<TValue>.Default.Equals(value, _currentValue)) return;
 
             _currentValue = value;
@@ -259,49 +260,65 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         }
     }
 
+    protected void InitCurrentValue(TValue? value)
+    {
+        _currentValue = value;
+
+        Value = value;
+        _ = ValueChanged.InvokeAsync(value);
+        EditContext?.NotifyFieldChanged(FieldIdentifier);
+    }
+
     protected string? CurrentValueAsString
     {
         get => FormatValueAsString(CurrentValue);
         set
         {
-            _parsingValidationMessages?.Clear();
+            if (IsEnabled is false) return;
 
-            bool parsingFailed;
+            SetCurrentValueAsString(value);
+        }
+    }
 
-            if (_isUnderlyingTypeNullable && value.HasNoValue())
+    protected void SetCurrentValueAsString(string? value)
+    {
+        _parsingValidationMessages?.Clear();
+
+        bool parsingFailed;
+
+        if (_isUnderlyingTypeNullable && value.HasNoValue())
+        {
+            // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
+            // Then all subclasses get nullable support almost automatically (they just have to
+            // not reject Nullable<T> based on the type itself).
+            parsingFailed = false;
+            CurrentValue = default;
+        }
+        else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
+        {
+            parsingFailed = false;
+            CurrentValue = parsedValue!;
+        }
+        else
+        {
+            parsingFailed = true;
+
+            // EditContext may be null if the input is not a child component of EditForm.
+            if (EditContext is not null)
             {
-                // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
-                // Then all subclasses get nullable support almost automatically (they just have to
-                // not reject Nullable<T> based on the type itself).
-                parsingFailed = false;
-                CurrentValue = default;
-            }
-            else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
-            {
-                parsingFailed = false;
-                CurrentValue = parsedValue!;
-            }
-            else
-            {
-                parsingFailed = true;
+                _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
+                _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
 
-                // EditContext may be null if the input is not a child component of EditForm.
-                if (EditContext is not null)
-                {
-                    _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
-                    _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
-
-                    // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                    EditContext.NotifyFieldChanged(FieldIdentifier);
-                }
+                // Since we're not writing to CurrentValue, we'll need to notify about modification from here
+                EditContext.NotifyFieldChanged(FieldIdentifier);
             }
+        }
 
-            // We can skip the validation notification if we were previously valid and still are
-            if (parsingFailed || _previousParsingAttemptFailed)
-            {
-                EditContext?.NotifyValidationStateChanged();
-                _previousParsingAttemptFailed = parsingFailed;
-            }
+        // We can skip the validation notification if we were previously valid and still are
+        if (parsingFailed || _previousParsingAttemptFailed)
+        {
+            EditContext?.NotifyValidationStateChanged();
+            _previousParsingAttemptFailed = parsingFailed;
         }
     }
 

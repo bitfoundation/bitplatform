@@ -250,9 +250,9 @@ public partial class BitSearchBox
         _scrollContainerId = $"BitSearchBox-{UniqueId}-scroll-container";
         _inputId = $"BitSearchBox-{UniqueId}-input";
 
-        if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
+        if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
         {
-            CurrentValueAsString = DefaultValue;
+            SetCurrentValueAsString(DefaultValue);
         }
 
         OnValueChanged += HandleOnValueChanged;

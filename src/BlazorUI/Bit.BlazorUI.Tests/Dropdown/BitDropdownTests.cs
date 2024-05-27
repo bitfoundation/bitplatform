@@ -446,7 +446,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsReselectable, notifyOnReselect);
             parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.OnChange, () => itemSelected = true);
+            parameters.Add(p => p.OnSelectItem, () => itemSelected = true);
         });
 
         var selectedItem = component.Find(".bit-drp-sel");
@@ -480,7 +480,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.IsMultiSelect, isMultiSelect);
-            parameters.Add(p => p.OnChange, () => itemsSelected++);
+            parameters.Add(p => p.OnValuesChange, () => itemsSelected++);
         });
 
         if (isMultiSelect)
