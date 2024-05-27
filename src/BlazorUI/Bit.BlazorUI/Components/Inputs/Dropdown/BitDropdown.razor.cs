@@ -1,6 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Text;
 using System.Linq.Expressions;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -185,7 +185,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// <summary>
     /// The callback that called when selected items change.
     /// </summary>
-    [Parameter] public EventCallback<TItem[]> OnChange { get; set; }
+    [Parameter] public EventCallback<TItem[]> OnValuesChange { get; set; }
 
     /// <summary>
     /// The click callback for the dropdown.
@@ -505,7 +505,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
             await OnSelectItem.InvokeAsync(item);
         }
 
-        await OnChange.InvokeAsync([.. _selectedItems]);
+        await OnValuesChange.InvokeAsync([.. _selectedItems]);
     }
 
     internal string GetItemWrapperCssClasses(TItem item)
@@ -820,6 +820,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
             if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
             Values = Array.Empty<TValue?>();
+            await OnValuesChange.InvokeAsync();
         }
         else
         {
@@ -830,7 +831,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         UpdateSelectedItemsFromValues();
 
-        await OnChange.InvokeAsync();
     }
 
     private async Task HandleOnAddItemComboClick()
@@ -1207,7 +1207,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     private Task HandleOnClickUnselectItem(TItem? item) => UnselectItem(item);
 
-    private async Task HandleOnChange(ChangeEventArgs e)
+    private async Task HandleOnComboInput(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;

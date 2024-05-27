@@ -12,10 +12,10 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     protected bool ValueHasBeenSet;
 
     private TValue? value;
-
     private bool? valueInvalid;
 
     private bool _throttlePause;
+    private TValue? _currentValue;
     private bool _isUnderlyingTypeNullable;
     private bool _hasInitializedParameters;
     private bool _previousParsingAttemptFailed;
@@ -45,7 +45,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     [Parameter] public IReadOnlyDictionary<string, object>? InputHtmlAttributes { get; set; }
 
     /// <summary>
-    /// Callback for when the current value changes.
+    /// Callback for when the input value changes.
     /// </summary>
     [Parameter] public EventCallback<TValue?> OnChange { get; set; }
 
@@ -69,6 +69,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             if (EqualityComparer<TValue>.Default.Equals(value, Value)) return;
 
             this.value = value;
+            _currentValue = value;
 
             if (OnValueChanged is not null)
             {
@@ -88,6 +89,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     [Parameter] public Expression<Func<TValue>>? ValueExpression { get; set; }
 
 
+
     public override Task SetParametersAsync(ParameterView parameters)
     {
         ValueHasBeenSet = false;
@@ -101,8 +103,28 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(DebounceTime):
+                    DebounceTime = (int)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(DisplayName):
+                    DisplayName = (string?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(InputHtmlAttributes):
                     InputHtmlAttributes = (IReadOnlyDictionary<string, object>?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(OnChange):
+                    OnChange = (EventCallback<TValue?>)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(ThrottleTime):
+                    ThrottleTime = (int)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -119,11 +141,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
                 case nameof(ValueExpression):
                     ValueExpression = (Expression<Func<TValue>>?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
-                case nameof(DisplayName):
-                    DisplayName = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
             }
@@ -155,6 +172,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     }
 
 
+
     protected BitInputBase()
     {
         _validationStateChangedHandler = OnValidateStateChanged;
@@ -166,6 +184,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
         base.OnInitialized();
     }
+
 
 
     protected bool? ValueInvalid
@@ -184,13 +203,14 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected TValue? CurrentValue
     {
-        get => Value;
+        get => _currentValue;
         set
         {
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (EqualityComparer<TValue>.Default.Equals(value, _currentValue)) return;
 
-            var hasChanged = EqualityComparer<TValue>.Default.Equals(value, Value) is false;
-            if (hasChanged is false) return;
+            _currentValue = value;
+
+            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
             if (DebounceTime is not 0)
             {
@@ -205,8 +225,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     {
                         if (_debounceCts.IsCancellationRequested) return;
 
-                        await SetValue(value);
-                        //StateHasChanged();
+                        SetValue(_currentValue);
+
+                        StateHasChanged();
                     });
                 }, _debounceCts.Token);
             }
@@ -221,22 +242,25 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     await Task.Delay(ThrottleTime);
                     await InvokeAsync(async () =>
                     {
-                        await SetValue(value);
+                        SetValue(_currentValue);
+
                         _throttlePause = false;
                         //StateHasChanged();
                     });
                 });
             }
+            else
+            {
+                SetValue(_currentValue);
+                StateHasChanged();
+            }
 
-            async Task SetValue(TValue? value)
+            void SetValue(TValue? value)
             {
                 Value = value;
-
                 _ = ValueChanged.InvokeAsync(value);
-
                 EditContext?.NotifyFieldChanged(FieldIdentifier);
-
-                await OnChange.InvokeAsync(value);
+                _ = OnChange.InvokeAsync(value);
             }
         }
     }
