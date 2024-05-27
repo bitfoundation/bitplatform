@@ -210,7 +210,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
             if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            if (DebounceTime is not 0)
+            if (DebounceTime > 0)
             {
                 _debounceCts.Cancel();
                 _debounceCts.Dispose();
@@ -227,7 +227,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     });
                 }, _debounceCts.Token);
             }
-            else if (ThrottleTime is not 0)
+            else if (ThrottleTime > 0)
             {
                 if (_throttlePause) return;
 
