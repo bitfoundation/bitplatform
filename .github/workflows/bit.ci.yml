@@ -62,6 +62,10 @@ jobs:
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
+    - name: Install Nodejs dependencies
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Bit-CI.sln -t:InstallNodejsDependencies -m:1 # m:1 is her to run all projects required run npm install command one by one
+
     - name: Build
       run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false
       
