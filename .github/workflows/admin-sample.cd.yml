@@ -277,18 +277,11 @@ jobs:
         
     - name: Set iOS universal link
       run:  brew install gnu-sed && gsed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/iOS/Entitlements.plist
-  
-    - name: Extract iOS code signing certificate from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: './'
-          fileName: 'DistributionCert.p12'
-          encodedString: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v2
+      uses: apple-actions/import-codesign-certs@v3
       with:
-        p12-filepath: './DistributionCert.p12'
+        p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
