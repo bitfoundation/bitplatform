@@ -51,19 +51,18 @@ public partial class SignUpPage
             var confirmUrl = NavigationManager.GetUriWithQueryParameters("confirm", queryParams);
             NavigationManager.NavigateTo(confirmUrl);
         }
-        catch (ResourceValidationException e)
-        {
-            signUpErrorMessage = string.Join(" ", e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
-        }
         catch (KnownException e)
         {
-            signUpErrorMessage = e.Message;
-        }
-        finally
-        {
+            signUpErrorMessage = e is ResourceValidationException re
+                                    ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
+                                    : e.Message;
+
             //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
             //#endif
+        }
+        finally
+        {
             isWaiting = false;
         }
     }
