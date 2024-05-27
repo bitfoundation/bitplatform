@@ -1,4 +1,4 @@
-﻿﻿//+:cnd:noEmit
+﻿//+:cnd:noEmit
 namespace Boilerplate.Server;
 
 public class AppSettings : IValidatableObject
