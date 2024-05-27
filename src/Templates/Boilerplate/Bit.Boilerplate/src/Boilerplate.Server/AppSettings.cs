@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Server;
 
-public class AppSettings
+public class AppSettings : IValidatableObject
 {
     public IdentitySettings IdentitySettings { get; set; } = default!;
 
@@ -16,6 +16,18 @@ public class AppSettings
     //#if (captcha == "reCaptcha")
     public string GoogleRecaptchaSecretKey { get; set; } = default!;
     //#endif
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var validationResults = new List<ValidationResult>();
+
+        Validator.TryValidateObject(IdentitySettings, new ValidationContext(IdentitySettings), validationResults, true);
+        Validator.TryValidateObject(EmailSettings, new ValidationContext(EmailSettings), validationResults, true);
+        Validator.TryValidateObject(SmsSettings, new ValidationContext(SmsSettings), validationResults, true);
+        Validator.TryValidateObject(HealthCheckSettings, new ValidationContext(HealthCheckSettings), validationResults, true);
+
+        return validationResults;
+    }
 }
 
 public class HealthCheckSettings
@@ -60,6 +72,8 @@ public class EmailSettings
     /// If true, the web app tries to store emails as .eml file in the bin/Debug/net8.0/sent-emails folder instead of sending them using smtp server (recommended for testing purposes only).
     /// </summary>
     public bool UseLocalFolderForEmails => Host is "LocalFolder";
+
+    [Range(1, 65535)]
     public int Port { get; set; }
     public string UserName { get; set; } = default!;
     public string Password { get; set; } = default!;
@@ -69,6 +83,7 @@ public class EmailSettings
 
 public class SmsSettings
 {
+    [Phone]
     public string FromPhoneNumber { get; set; } = default!;
 
     public string ConnectionString { get; set; } = default!;
