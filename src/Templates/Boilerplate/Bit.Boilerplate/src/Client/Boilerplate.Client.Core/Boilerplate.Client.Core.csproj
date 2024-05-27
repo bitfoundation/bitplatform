@@ -76,12 +76,10 @@
     </Target>
 
     <ItemGroup>
-      <Content Update="package.json">
-        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      </Content>
-      <Content Update="tsconfig.json">
-        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      </Content>
+        <Content Remove="package*.json" />
+        <Content Remove="tsconfig.json" />
+        <None Include="package*json" />
+        <None Include="tsconfig.json" />
     </ItemGroup>
 
 </Project>

@@ -40,12 +40,8 @@
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
-        <Content Update="package.json">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </Content>
-        <Content Update="tsconfig.json">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </Content>
+        <Content Remove="package*.json" />
+        <None Include="package*json" />
     </ItemGroup>
 
 </Project>
