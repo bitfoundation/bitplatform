@@ -247,7 +247,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             else
             {
                 SetValue(_currentValue);
-                StateHasChanged();
             }
 
             void SetValue(TValue? value)
