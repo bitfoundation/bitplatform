@@ -38,17 +38,17 @@
             <div class="form-input-container">
                 <BitTextField @bind-Value="model.Password"
                               CanRevealPassword="true"
-                              AutoComplete="current-password"
                               Type="BitTextFieldType.Password"
                               Label="@Localizer[nameof(AppStrings.Password)]"
+                              AutoComplete="@BitAutoCompleteValue.CurrentPassword"
                               Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
                 <ValidationMessage For="@(() => model.Password)" />
 
                 <BitTextField @bind-Value="model.Otp"
                               CanRevealPassword="true"
-                              AutoComplete="current-password"
                               Type="BitTextFieldType.Password"
                               Label="@Localizer[nameof(AppStrings.Otp)]"
+                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.OtpPlaceholder)]" />
                 <ValidationMessage For="@(() => model.Otp)" />
                 <BitButton IsLoading="isSendingOtp"
@@ -74,12 +74,14 @@
             <div class="form-input-container">
                 <div>@Localizer[nameof(AppStrings.TfaEnterCodeInSignInMessage)]</div>
                 <BitTextField @bind-Value="model.TwoFactorCode"
+                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
             </div>
 
             <div class="form-input-container">
                 <div>@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]</div>
                 <BitTextField @bind-Value="model.TwoFactorRecoveryCode"
+                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
             </div>
 
@@ -93,8 +95,8 @@
                            OnClick="WrapHandled(SendTfaToken)">
                     @Localizer[nameof(AppStrings.TfaTokenGenerateButtonText)]
                 </BitButton>
-                <BitTextField @bind-Value="model.TwoFactorToken"
-                              Style="flex-grow:1"
+                <BitTextField @bind-Value="model.TwoFactorToken" Style="flex-grow:1"
+                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorToken)]" />
             </div>
         }
