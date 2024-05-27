@@ -287,7 +287,6 @@ jobs:
     - name: Download Apple Provisioning Profiles
       uses: Apple-Actions/download-provisioning-profiles@v3
       with:
-        profile-type: 'IOS_APP_STORE'
         bundle-id: 'com.bitplatform.AdminPanel.Template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
