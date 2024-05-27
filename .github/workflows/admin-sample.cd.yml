@@ -16,227 +16,227 @@ permissions:
 
 jobs:
 
-  build_api_blazor:
-    name: build api + blazor web
-    runs-on: ubuntu-22.04
+  # build_api_blazor:
+  #   name: build api + blazor web
+  #   runs-on: ubuntu-22.04
 
-    steps:
+  #   steps:
     
-    - name: Checkout source code
-      uses: actions/checkout@v4
+  #   - name: Checkout source code
+  #     uses: actions/checkout@v4
     
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+  #   - name: Setup .NET
+  #     uses: actions/setup-dotnet@v4
+  #     with:
+  #       global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-    - name: Create project from Boilerplate
-      run: |
-       cd src/Templates/Boilerplate && dotnet build -c Release
-       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
+  #   - name: Create project from Boilerplate
+  #     run: |
+  #      cd src/Templates/Boilerplate && dotnet build -c Release
+  #      dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+  #      dotnet new install Bit.Boilerplate.0.0.0.nupkg
+  #      cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
        
-    - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
-      with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+  #   - name: Update appsettings.json api server address
+  #     uses: devops-actions/variable-substitution@v1.2 
+  #     with:
+  #       files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
+  #     env:
+  #       ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20
+  #   - uses: actions/setup-node@v4
+  #     with:
+  #       node-version: 20
         
-    - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+  #   - name: Install wasm
+  #     run:  cd src && dotnet workload install wasm-tools wasm-experimental
 
-    - name: Configure app render mode
-      run: |
-          sed -i 's/Auto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
+  #   - name: Configure app render mode
+  #     run: |
+  #         sed -i 's/Auto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
 
-    - name: Configure bswup
-      run: |
-          sed -i 's/self.noPrerenderQuery/\/\/ self.noPrerenderQuery/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.js
-          sed -i 's/self.isPassive = self.disablePassiveFirstBoot = true;/self.isPassive = self.disablePassiveFirstBoot = false;/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.js
+  #   - name: Configure bswup
+  #     run: |
+  #         sed -i 's/self.noPrerenderQuery/\/\/ self.noPrerenderQuery/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.js
+  #         sed -i 's/self.isPassive = self.disablePassiveFirstBoot = true;/self.isPassive = self.disablePassiveFirstBoot = false;/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/service-worker.js
       
-    - name: Generate CSS/JS files
-      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
+  #   - name: Generate CSS/JS files
+  #     run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
 
-    - name: Publish
-      run: dotnet publish AdminPanel/src/AdminPanel.Server/AdminPanel.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+  #   - name: Publish
+  #     run: dotnet publish AdminPanel/src/AdminPanel.Server/AdminPanel.Server.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
-    - name: Upload server artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: server-bundle
-        path: ${{env.DOTNET_ROOT}}/server
+  #   - name: Upload server artifact
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: server-bundle
+  #       path: ${{env.DOTNET_ROOT}}/server
 
-  deploy_api_blazor:
-    name: deploy api + blazor
-    needs: build_api_blazor
-    runs-on: ubuntu-22.04
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  # deploy_api_blazor:
+  #   name: deploy api + blazor
+  #   needs: build_api_blazor
+  #   runs-on: ubuntu-22.04
+  #   environment:
+  #     name: 'production'
+  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-    steps:
+  #   steps:
 
-      - name: Retrieve server bundle
-        uses: actions/download-artifact@v4
-        with:
-          name: server-bundle
+  #     - name: Retrieve server bundle
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: server-bundle
 
-      - name: Delete IdentityCertificate.pfx
-        run: |
-            rm IdentityCertificate.pfx
+  #     - name: Delete IdentityCertificate.pfx
+  #       run: |
+  #           rm IdentityCertificate.pfx
 
-      - name: Extract identity certificate from env
-        uses: timheuer/base64-to-file@v1.2
-        with:
-            fileDir: './'
-            fileName: 'IdentityCertificate.pfx'
-            encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_FILE_BASE64 }}
+  #     - name: Extract identity certificate from env
+  #       uses: timheuer/base64-to-file@v1.2
+  #       with:
+  #           fileDir: './'
+  #           fileName: 'IdentityCertificate.pfx'
+  #           encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_FILE_BASE64 }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.APP_SERVICE_NAME }}
-          slot-name: 'production'
-          publish-profile: ${{ secrets.ADMINPANEL_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-          package: .
+  #     - name: Deploy to Azure Web App
+  #       id: deploy-to-webapp
+  #       uses: azure/webapps-deploy@v3
+  #       with:
+  #         app-name: ${{ env.APP_SERVICE_NAME }}
+  #         slot-name: 'production'
+  #         publish-profile: ${{ secrets.ADMINPANEL_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+  #         package: .
 
-      - name: Purge cache
-        uses: jakejarvis/cloudflare-purge-action@master
-        env:
-          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+  #     - name: Purge cache
+  #       uses: jakejarvis/cloudflare-purge-action@master
+  #       env:
+  #         CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
+  #         CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
-  build_blazor_hybrid_windows:
-    name: build blazor hybrid (windows)
-    runs-on: windows-2022
+  # build_blazor_hybrid_windows:
+  #   name: build blazor hybrid (windows)
+  #   runs-on: windows-2022
   
-    steps:
+  #   steps:
      
-    - name: Checkout source code
-      uses: actions/checkout@v4
+  #   - name: Checkout source code
+  #     uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
+  #   - name: Setup .NET
+  #     uses: actions/setup-dotnet@v4
+  #     with:
+  #       global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20
+  #   - uses: actions/setup-node@v4
+  #     with:
+  #       node-version: 20
 
-    - name: Create project from Boilerplate
-      run: |
-        cd src\Templates\Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --windows --appInsights
+  #   - name: Create project from Boilerplate
+  #     run: |
+  #       cd src\Templates\Boilerplate && dotnet build -c Release
+  #       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+  #       dotnet new install Bit.Boilerplate.0.0.0.nupkg
+  #       cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --windows --appInsights
   
-    - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
-      with:
-        files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+  #   - name: Update appsettings.json api server address
+  #     uses: devops-actions/variable-substitution@v1.2 
+  #     with:
+  #       files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json'
+  #     env:
+  #       ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+  #       WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
+  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
-    - name: Generate CSS/JS files
-      run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
+  #   - name: Generate CSS/JS files
+  #     run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
 
-    - name: Publish
-      run: |
-          cd AdminPanel\src\Client\AdminPanel.Client.Windows\
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-arm64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-arm64.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-x86\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x86.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-x64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          del .\bin\publish\AdminPanel.Client.Windows.exe
-          echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish .\publish-result /s /e /h
-          dotnet tool restore
-          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.4-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+  #   - name: Publish
+  #     run: |
+  #         cd AdminPanel\src\Client\AdminPanel.Client.Windows\
+  #         dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+  #         ren .\bin\publish-arm64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-arm64.exe
+  #         dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+  #         ren .\bin\publish-x86\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x86.exe
+  #         dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+  #         ren .\bin\publish-x64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
+  #         dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+  #         del .\bin\publish\AdminPanel.Client.Windows.exe
+  #         echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
+  #         echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
+  #         echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
+  #         echo A | xcopy .\bin\publish .\publish-result /s /e /h
+  #         dotnet tool restore
+  #         dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.4-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: win-exe-bundle
-        path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: win-exe-bundle
+  #       path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
   
-  build_blazor_hybrid_android:
-    name: build blazor hybrid (android)
-    runs-on: ubuntu-22.04
+  # build_blazor_hybrid_android:
+  #   name: build blazor hybrid (android)
+  #   runs-on: ubuntu-22.04
   
-    steps:
+  #   steps:
      
-    - name: Checkout source code
-      uses: actions/checkout@v4
+  #   - name: Checkout source code
+  #     uses: actions/checkout@v4
      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+  #   - name: Setup .NET
+  #     uses: actions/setup-dotnet@v4
+  #     with:
+  #       global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-    - name: Create project from Boilerplate
-      run: |
-       cd src/Templates/Boilerplate && dotnet build -c Release
-       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
+  #   - name: Create project from Boilerplate
+  #     run: |
+  #      cd src/Templates/Boilerplate && dotnet build -c Release
+  #      dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+  #      dotnet new install Bit.Boilerplate.0.0.0.nupkg
+  #      cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20
+  #   - uses: actions/setup-node@v4
+  #     with:
+  #       node-version: 20
   
-    - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
-          fileName: 'AdminPanel.keystore'
-          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+  #   - name: Extract Android signing key from env
+  #     uses: timheuer/base64-to-file@v1.2
+  #     with:
+  #         fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
+  #         fileName: 'AdminPanel.keystore'
+  #         encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
-    - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
-      with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+  #   - name: Update appsettings.json api server address
+  #     uses: devops-actions/variable-substitution@v1.2 
+  #     with:
+  #       files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
+  #     env:
+  #       ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         
-    - name: Set android universal link
-      run:  sed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android/MainActivity.cs
+  #   - name: Set android universal link
+  #     run:  sed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android/MainActivity.cs
 
-    - name: Install maui
-      run: cd src && dotnet workload install maui-android
+  #   - name: Install maui
+  #     run: cd src && dotnet workload install maui-android
 
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+  #   - name: Install Android Sdk platform tools
+  #     run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
-    - name: Generate CSS/JS files
-      run: |
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
-          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
+  #   - name: Generate CSS/JS files
+  #     run: |
+  #         dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
+  #         dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
   
-    - name: Build aab
-      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net8.0-android
+  #   - name: Build aab
+  #     run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net8.0-android
   
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: android-bundle
-        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net8.0-android/*-Signed.*
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: android-bundle
+  #       path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net8.0-android/*-Signed.*
   
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
