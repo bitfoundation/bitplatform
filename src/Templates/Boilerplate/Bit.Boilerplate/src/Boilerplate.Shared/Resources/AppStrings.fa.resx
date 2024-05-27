@@ -196,6 +196,12 @@
     <data name="EditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل</value>
   </data>
+    <data name="ChangeEmailTitle" xml:space="preserve">
+    <value>تغییر ایمیل</value>
+  </data>
+    <data name="ChangePhoneNumberTitle" xml:space="preserve">
+    <value>تغییر شماره تلفن</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>چیزی پیدا نشد.</value>
   </data>
@@ -222,8 +228,29 @@
     <data name="Email" xml:space="preserve">
     <value>ایمیل</value>
   </data>
+    <data name="CurrentEmail" xml:space="preserve">
+    <value>ایمیل جاری</value>
+  </data>
+    <data name="NewEmail" xml:space="preserve">
+    <value>ایمیل جدید</value>
+  </data>
+    <data name="NewEmailPlaceholder" xml:space="preserve">
+    <value>ایمیل جدید را وارد کنید</value>
+  </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>شماره تلفن</value>
+  </data>
+    <data name="CurrentPhoneNumber" xml:space="preserve">
+    <value>شماره تلفن جاری</value>
+  </data>
+    <data name="NewPhoneNumber" xml:space="preserve">
+    <value>شماره تلفن جدید</value>
+  </data>
+    <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+    <value>شماره تلفن جدید را وارد کنید</value>
+  </data>
+    <data name="GoBack" xml:space="preserve">
+    <value>بازگشت</value>
   </data>
     <data name="Password" xml:space="preserve">
     <value>رمز عبور</value>
@@ -320,6 +347,9 @@
   </data>
     <data name="ConfirmMessageInSignUp" xml:space="preserve">
     <value>می خواهید یک حساب کاربری را تأیید کنید؟</value>
+  </data>
+    <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <value>توکنی از قبل دارید؟</value>
   </data>
     <data name="ConfirmEmailHeaderText" xml:space="preserve">
     <value>آدرس ایمیل</value>

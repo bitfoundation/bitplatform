@@ -93,7 +93,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},Date:{user.EmailTokenRequestedOn}");
-        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(user.Email!)}&emailToken={Uri.EscapeDataString(token)}");
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"profile?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
     }
@@ -103,13 +103,14 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var tokenIsVerified = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},Date:{user!.EmailTokenRequestedOn}", request.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},Date:{user!.EmailTokenRequestedOn}", request.Token!);
 
-        if (tokenIsVerified)
+        if (tokenIsValid is false)
             throw new BadRequestException();
 
         await ((IUserEmailStore<User>)userStore).SetEmailAsync(user!, request.Email, cancellationToken);
         var result = await userManager.UpdateAsync(user!);
+
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
