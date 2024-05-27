@@ -76,7 +76,10 @@
             </div>
             <br />
             <div>
-                @Localizer[nameof(AppStrings.ConfirmMessageInSignUp)] <BitLink Href="/confirm">@Localizer[nameof(AppStrings.Confirm)]</BitLink>
+                @Localizer[nameof(AppStrings.ConfirmMessageInSignUp)]
+                <BitLink Href="@($"/confirm?email={signUpModel.Email}&phoneNumber={signUpModel.PhoneNumber}")">
+                    @Localizer[nameof(AppStrings.Confirm)]
+                </BitLink>
             </div>
 
         </EditForm>
