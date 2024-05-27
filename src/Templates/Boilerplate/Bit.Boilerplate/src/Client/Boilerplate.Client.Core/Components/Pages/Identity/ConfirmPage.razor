@@ -48,6 +48,7 @@
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="emailModel.Token"
                                               Type="BitTextFieldType.Number"
+                                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                               Label="@Localizer[nameof(AppStrings.EmailToken)]"
                                               Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
                                 <ValidationMessage For="@(() => emailModel.Token)" />
@@ -114,6 +115,7 @@
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="phoneModel.Token"
                                               Type="BitTextFieldType.Number"
+                                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                               Label="@Localizer[nameof(AppStrings.PhoneToken)]"
                                               Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
                                 <ValidationMessage For="@(() => phoneModel.Token)" />
