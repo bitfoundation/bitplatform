@@ -140,7 +140,7 @@
                 <BitTextField Label="One-way" Value="@oneWayValue" />
                 <BitOtpInput Length="4" Style="margin-top: 5px;" @bind-Value="oneWayValue" />
                 <br />
-                <BitTextField Label="Two-way" @bind-Value="twoWayValue" ThrottleTime="200" />
+                <BitTextField Label="Two-way" @bind-Value="twoWayValue" />
                 <BitOtpInput Length="4" Style="margin-top: 5px;" @bind-Value="twoWayValue" />
                 <br />
                 <BitTextField Label="OnChange" OnChange="(v) => onChangeValue = v" />
@@ -246,7 +246,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Debounce & Throttle" RazorCode="@example14RazorCode" Id="example14">
+    <ComponentExampleBox Title="Debounce & Throttle" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <ExamplePreview>
             <div class="example-box">
                 <BitTextField Label="Debounce: 300ms" @bind-Value="debounceValue" DebounceTime="300" />

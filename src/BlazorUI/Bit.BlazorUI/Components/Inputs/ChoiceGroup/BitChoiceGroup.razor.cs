@@ -204,7 +204,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        var oldValue = CurrentValue;
         CurrentValue = GetValue(item);
     }
 

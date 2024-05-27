@@ -57,12 +57,6 @@ public partial class BitRatingDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<double>",
-            Description = "Callback that is called when the rating has changed.",
-        },
-        new()
-        {
             Name = "SelectedIconName",
             Type = "string",
             DefaultValue = "FavoriteStarFill",

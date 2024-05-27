@@ -43,12 +43,6 @@ public partial class BitToggleDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<bool>",
-            Description = "Callback that is called when the checked value has changed.",
-        },
-        new()
-        {
             Name = "OffText",
             Type = "string?",
             DefaultValue = "null",

@@ -164,12 +164,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<string?>",
-            Description = "Callback for when the input value changes. This is called on both input and change events.",
-        },
-        new()
-        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the input clicked.",
@@ -678,4 +672,7 @@ private void HandleInvalidSubmit() { }";
               Dir=""BitDir.Rtl""
               Label=""تقویم"" 
               IconName=""@BitIconName.Calendar"" />";
+    private readonly string example14CsharpCode = @"
+private string? debounceValue;
+private string? throttleValue;";
 }
