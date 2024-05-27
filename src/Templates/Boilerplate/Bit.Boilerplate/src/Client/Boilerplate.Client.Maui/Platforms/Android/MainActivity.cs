@@ -1,7 +1,8 @@
-﻿using Android.App;
+﻿//+:cnd:noEmit
+using Android.OS;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.OS;
 using Boilerplate.Client.Core;
 using Java.Net;
 
@@ -9,8 +10,20 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [IntentFilter([Intent.ActionView],
                         DataSchemes = ["https", "http"],
-                        DataHost = "bp.bitplatform.dev",
-                        DataPathPrefix = "/",
+                        DataHosts = ["bp.bitplatform.dev"],
+                        // the following app links will be opened in app instead of browser if the app is installed on Android device.
+                        DataPaths = ["/"],
+                        DataPathPrefixes = [
+                            "/confirm", "/forgot-password","/profile", "/reset-password", "/sign-in", "/sign-up", "/not-authorized", "/not-found","/terms", "/about",
+                            //#if (sample == "Admin")
+                            "/add-edit-category", "/categories", "/dashboard", "/products",
+                            //#elif (sample == "Todo")
+                            "/todo",
+                            //#endif
+                            //#if (offlineDb == true)
+                            "/offline-edit-profile"
+                            //#endif
+                            ],
                         AutoVerify = true,
                         Categories = [Intent.ActionView, Intent.CategoryDefault, Intent.CategoryBrowsable])]
 
