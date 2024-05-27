@@ -248,7 +248,7 @@ jobs:
       with:
         global-json-file: global.json
 
-    - uses: maxim-lobanov/setup-xcode@v1
+    - uses: maxim-lobanov/setup-xcode@v1.6
       with:
         xcode-version: '15.3'
 

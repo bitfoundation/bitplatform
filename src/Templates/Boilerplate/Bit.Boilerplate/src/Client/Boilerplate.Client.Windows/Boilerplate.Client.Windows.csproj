@@ -31,7 +31,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.40" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
-        <PackageReference Include="Velopack" Version="0.0.466-g4f560f4" />
+        <PackageReference Include="Velopack" Version="0.0.503-gc69e323" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
         <!--/-:msbuild-conditional:noEmit -->
