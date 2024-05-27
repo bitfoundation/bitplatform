@@ -31,11 +31,10 @@ public static partial class Program
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
-        services.Configure<ForwardedHeadersOptions>(options =>
-        {
-            options.ForwardedHeaders = ForwardedHeaders.All;
-            options.ForwardedHostHeaderName = "X-Host";
-        });
+        services.AddOptions<ForwardedHeadersOptions>()
+            .Bind(configuration.GetRequiredSection(nameof(ForwardedHeadersOptions)))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddResponseCaching();
 
@@ -95,7 +94,10 @@ public static partial class Program
             //#endif
         });
 
-        services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
+        services.AddOptions<AppSettings>()
+            .Bind(configuration.GetRequiredSection(nameof(AppSettings)))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.TryAddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
