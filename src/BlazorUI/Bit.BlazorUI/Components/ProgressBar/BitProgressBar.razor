@@ -8,15 +8,15 @@
      dir="@Dir?.ToString().ToLower()">
     @if (LabelTemplate is not null)
     {
-        <div id="@_labelId">
+        <label id="@_labelId">
             @LabelTemplate
-        </div>
+        </label>
     }
     else if (Label.HasValue())
     {
-        <div style="@Styles?.Label" class="bit-prb-lbl @Classes?.Label" id="@_labelId">
+        <label style="@Styles?.Label" class="bit-prb-lbl @Classes?.Label" id="@_labelId">
             @Label
-        </div>
+        </label>
     }
 
     @if (ShowPercentNumber && Indeterminate is false)

@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Client.Core.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Identity;
+namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
 public partial class DeleteAccountConfirmModal
 {
