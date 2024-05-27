@@ -1,4 +1,4 @@
-// bit version: 8.8.2-pre-03-pre-01
+// bit version: 8.8.2-pre-05-pre-01
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -27,7 +27,9 @@ self.serverHandledUrls = [
     /\/signalr\//,
     /\/healthchecks-ui/,
     /\/healthz/,
-    /\/swagger/
+    /\/swagger/,
+    /\/signin-/,
+    /\/.well-known/
 ];
 
 self.defaultUrl = "/";

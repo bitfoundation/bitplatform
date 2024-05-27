@@ -311,18 +311,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             return;
         }
 
-        if (valueExpression?.Body is not null && valueExpression!.Body is MemberExpression memberExpression)
-        {
-            var memberInfo = memberExpression.Member;
-            var prop = memberInfo.DeclaringType?.GetProperty(memberInfo.Name);
-            if (prop is not null)
-            {
-                var infoContext = new NullabilityInfoContext().Create(prop);
-                _isUnderlyingTypeNullable = infoContext.ReadState is NullabilityState.Nullable;
-                return;
-            }
-        }
-
         _isUnderlyingTypeNullable = default(TValue) is null;
     }
 

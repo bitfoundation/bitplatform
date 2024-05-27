@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ResolveStaticWebAssetsInputsDependsOn>
+            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -16,17 +17,17 @@
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
 
-        <PackageReference Include="Bit.Butil" Version="8.8.2-pre-03" />
-        <PackageReference Include="Bit.BlazorUI" Version="8.8.2-pre-03" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.8.2-pre-03" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.8.2-pre-03" />
+        <PackageReference Include="Bit.Butil" Version="8.8.2-pre-05" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.8.2-pre-05" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.8.2-pre-05" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.8.2-pre-05" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.8.2-pre-03" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.8.2-pre-05" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.5" />
-        <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.8.2-pre-03" />
+        <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.8.2-pre-05" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.2-pre-03" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.2-pre-03" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.2-pre-05" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.8.2-pre-05" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.5" />
@@ -63,12 +64,22 @@
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
+    
+    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Condition="!Exists('node_modules/.bin/sass') OR !Exists('node_modules/.bin/esbuild') OR !Exists('node_modules/.bin/tsc')" Command="npm install sass@1.77.1 typescript@5.4.5 esbuild@0.21.2 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
+
+    <ItemGroup>
+        <Content Remove="package*.json" />
+        <Content Remove="tsconfig.json" />
+        <None Include="package*json" />
+        <None Include="tsconfig.json" />
+    </ItemGroup>
 
 </Project>

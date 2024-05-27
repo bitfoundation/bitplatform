@@ -241,6 +241,24 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Change email.
+        /// </summary>
+        public static string ChangeEmailTitle {
+            get {
+                return ResourceManager.GetString("ChangeEmailTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change phone number.
+        /// </summary>
+        public static string ChangePhoneNumberTitle {
+            get {
+                return ResourceManager.GetString("ChangePhoneNumberTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} is your change phone number token in Boilerplate..
         /// </summary>
         public static string ChangePhoneNumberTokenSmsText {
@@ -322,6 +340,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Already have a token?.
+        /// </summary>
+        public static string ConfirmMessageInProfile {
+            get {
+                return ResourceManager.GetString("ConfirmMessageInProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Want to confirm an account?.
         /// </summary>
         public static string ConfirmMessageInSignUp {
@@ -399,6 +426,24 @@ namespace Boilerplate.Shared.Resources {
         public static string ConflictException {
             get {
                 return ResourceManager.GetString("ConflictException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current email.
+        /// </summary>
+        public static string CurrentEmail {
+            get {
+                return ResourceManager.GetString("CurrentEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current phone number.
+        /// </summary>
+        public static string CurrentPhoneNumber {
+            get {
+                return ResourceManager.GetString("CurrentPhoneNumber", resourceCulture);
             }
         }
         
@@ -826,6 +871,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Back.
+        /// </summary>
+        public static string GoBack {
+            get {
+                return ResourceManager.GetString("GoBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Go to today.
         /// </summary>
         public static string GoToToday {
@@ -952,11 +1006,47 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New email.
+        /// </summary>
+        public static string NewEmail {
+            get {
+                return ResourceManager.GetString("NewEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter new email.
+        /// </summary>
+        public static string NewEmailPlaceholder {
+            get {
+                return ResourceManager.GetString("NewEmailPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to New Password.
         /// </summary>
         public static string NewPassword {
             get {
                 return ResourceManager.GetString("NewPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New phone number.
+        /// </summary>
+        public static string NewPhoneNumber {
+            get {
+                return ResourceManager.GetString("NewPhoneNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter new phone number.
+        /// </summary>
+        public static string NewPhoneNumberPlaceholder {
+            get {
+                return ResourceManager.GetString("NewPhoneNumberPlaceholder", resourceCulture);
             }
         }
         
