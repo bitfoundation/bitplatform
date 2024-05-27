@@ -27,6 +27,10 @@ jobs:
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
 
+    - name: Install Nodejs dependencies
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Bit-CI-release.sln -t:InstallNodejsDependencies -m:1 # m:1 is her to run all projects required run npm install command one by one
+
     - name: MSBuild prerelease
       run: dotnet build src/Bit-CI-release.sln
 
