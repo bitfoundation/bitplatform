@@ -10,7 +10,6 @@ public partial class ProfilePage
     [AutoInject] private IUserController userController = default!;
 
     private bool isLoading;
-    private bool isDeleteAccountConfirmModalOpen;
 
     private UserDto? user;
 
