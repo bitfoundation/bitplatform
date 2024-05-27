@@ -7,102 +7,34 @@
         "details": [
             {
                 "appID": "76WD644YU8.com.bitplatform.AdminPanel.Template",
-                "paths": [ "*", "/*" ],
-                "components": [
-                    {
-                        "/": "/*",
-                        "comment": "Matches any URL with a path that starts with /"
-                    },
-                    {
-                        "/": "/api*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/odata*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/jobs*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/core*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/signalr*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/healthchecks-ui*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/healthz*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/swagger*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/signin-*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/.well-known-*",
-                        "exclude": true
-                    }
+                "paths": [
+                    "NOT /api*",
+                    "NOT /odata*",
+                    "NOT /jobs*",
+                    "NOT /core*",
+                    "NOT /signalr*",
+                    "NOT /healthchecks-ui*",
+                    "NOT /healthz*",
+                    "NOT /swagger*",
+                    "NOT /signin*",
+                    "NOT /.well-known*",
+                    "*"
                 ]
             },
             {
                 "appID": "76WD644YU8.com.bitplatform.Todo.Template",
-                "paths": [ "*", "/*" ],
-                "components": [
-                    {
-                        "/": "/*",
-                        "comment": "Matches any URL with a path that starts with /"
-                    },
-                    {
-                        "/": "/api*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/odata*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/jobs*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/core*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/signalr*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/healthchecks-ui*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/healthz*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/swagger*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/signin-*",
-                        "exclude": true
-                    },
-                    {
-                        "/": "/.well-known-*",
-                        "exclude": true
-                    }
+                "paths": [
+                    "NOT /api*",
+                    "NOT /odata*",
+                    "NOT /jobs*",
+                    "NOT /core*",
+                    "NOT /signalr*",
+                    "NOT /healthchecks-ui*",
+                    "NOT /healthz*",
+                    "NOT /swagger*",
+                    "NOT /signin*",
+                    "NOT /.well-known*",
+                    "*"
                 ]
             }
         ]
