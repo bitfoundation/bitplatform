@@ -277,9 +277,6 @@ jobs:
         
     - name: Set iOS universal link
       run:  brew install gnu-sed && gsed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/iOS/Entitlements.plist
-
-    - name: Install maui
-      run: cd src && dotnet workload install maui
   
     - name: Extract iOS code signing certificate from env
       uses: timheuer/base64-to-file@v1.2
@@ -289,18 +286,21 @@ jobs:
           encodedString: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v3
+      uses: apple-actions/import-codesign-certs@v2
       with:
         p12-filepath: './DistributionCert.p12'
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v3
+      uses: Apple-Actions/download-provisioning-profiles@v2
       with:
         bundle-id: 'com.bitplatform.AdminPanel.Template'
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+
+    - name: Install maui
+      run: cd src && dotnet workload install maui
 
     - name: Generate CSS/JS files
       run: |
