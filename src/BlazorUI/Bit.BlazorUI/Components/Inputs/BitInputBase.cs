@@ -224,8 +224,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                         if (_debounceCts.IsCancellationRequested) return;
 
                         SetValue(_currentValue);
-
-                        StateHasChanged();
                     });
                 }, _debounceCts.Token);
             }
@@ -243,7 +241,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                         SetValue(_currentValue);
 
                         _throttlePause = false;
-                        //StateHasChanged();
                     });
                 });
             }
