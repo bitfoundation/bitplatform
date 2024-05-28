@@ -157,7 +157,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUser(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var result = string.IsNullOrEmpty(request.Password)
+        var result = string.IsNullOrEmpty(request.Otp) is false
             ? await signInManager.OtpSignInAsync(user, request.Otp!)
             : await signInManager.PasswordSignInAsync(user!.UserName!, request.Password!, isPersistent: false, lockoutOnFailure: true);
 
