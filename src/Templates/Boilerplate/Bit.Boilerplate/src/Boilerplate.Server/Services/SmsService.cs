@@ -26,8 +26,7 @@ public partial class SmsService
 
         var smsMessage = MessageResource.Create(messageOptions);
 
-        if (smsMessage.ErrorCode is null)
-            return;
+        if (smsMessage.ErrorCode is null) return;
 
         LogSendSmsFailed(logger, phoneNumber, smsMessage.ErrorCode, smsMessage.ErrorMessage);
     }
