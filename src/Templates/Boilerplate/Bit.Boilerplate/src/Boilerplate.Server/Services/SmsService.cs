@@ -1,5 +1,4 @@
-﻿using Twilio.Types;
-using Twilio.Rest.Api.V2010.Account;
+﻿using Twilio.Rest.Api.V2010.Account;
 
 namespace Boilerplate.Server.Services;
 
