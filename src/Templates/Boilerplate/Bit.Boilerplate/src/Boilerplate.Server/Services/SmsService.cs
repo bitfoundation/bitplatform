@@ -18,8 +18,7 @@ public partial class SmsService
 
         if (appSettings.SmsSettings.Configured is false) return;
 
-        var messageOptions = new CreateMessageOptions(
-          new PhoneNumber(phoneNumber))
+        var messageOptions = new CreateMessageOptions(new(phoneNumber))
         {
             From = new PhoneNumber(appSettings.SmsSettings.FromPhoneNumber),
             Body = messageText
