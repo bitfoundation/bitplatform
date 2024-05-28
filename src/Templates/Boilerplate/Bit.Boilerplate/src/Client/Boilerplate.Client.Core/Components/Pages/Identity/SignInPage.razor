@@ -8,14 +8,12 @@
     <EditForm OnValidSubmit="WrapHandled(DoSignIn)" class="form" Model="model">
         <AppDataAnnotationsValidator />
 
-        @if (string.IsNullOrEmpty(message) is false)
-        {
-            <BitMessage Class="form-message-bar"
-                        Severity="@messageSeverity"
-                        OnDismiss="() => message = null">
-                @message
-            </BitMessage>
-        }
+        <div @ref="messageRef" class="form-message-bar">
+            @if (string.IsNullOrEmpty(message) is false)
+            {
+                <BitMessage Multiline Severity="@messageSeverity" OnDismiss="() => message = null">@message</BitMessage>
+            }
+        </div>
 
         <h1 class="form-title">@Localizer[nameof(AppStrings.SignInTitle)]</h1>
 

@@ -5,10 +5,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
 public partial class TwoFactorSection
 {
-    [AutoInject] private Clipboard clipboard = default!;
-    [AutoInject] private IUserController userController = default!;
-
-
     private string? qrCode;
     private bool isLoading;
     private string? sharedKey;
@@ -20,9 +16,12 @@ public partial class TwoFactorSection
     private string? verificationCode;
     private bool isTwoFactorAuthEnabled;
 
-
     private string? message;
-    private BitSeverity messageSeverity;
+    private ElementReference messageRef = default!;
+
+
+    [AutoInject] private Clipboard clipboard = default!;
+    [AutoInject] private IUserController userController = default!;
 
 
     protected override async Task OnInitAsync()
@@ -90,7 +89,7 @@ public partial class TwoFactorSection
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
 
             return null;
         }

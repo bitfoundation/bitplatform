@@ -6,15 +6,14 @@
 
 <div class="page-container">
     <div class="form">
-        @if (string.IsNullOrEmpty(errorMessage) is false)
-        {
-            <BitMessage Multiline
-                        Class="form-message-bar"
-                        Severity="BitSeverity.Error"
-                        OnDismiss="() => errorMessage = null">
-                @errorMessage
-            </BitMessage>
-        }
+        <div @ref="messageRef" class="form-message-bar">
+            @if (string.IsNullOrEmpty(errorMessage) is false)
+            {
+                <BitMessage Multiline Severity="BitSeverity.Error" OnDismiss="() => errorMessage = null">
+                    @errorMessage
+                </BitMessage>
+            }
+        </div>
 
         <BitTypography Variant="BitTypographyVariant.H4" Gutter>
             @Localizer[nameof(AppStrings.ConfirmTitle)]

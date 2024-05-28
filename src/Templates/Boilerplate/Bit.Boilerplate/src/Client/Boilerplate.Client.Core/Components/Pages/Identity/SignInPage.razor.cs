@@ -6,8 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignInPage
 {
-    [AutoInject] private IIdentityController identityController = default!;
-
     private bool isSigningIn;
     private bool isSendingOtp;
     private bool requiresTwoFactor;
@@ -16,6 +14,11 @@ public partial class SignInPage
 
     private string? message;
     private BitSeverity messageSeverity;
+    private ElementReference messageRef = default!;
+
+
+    [AutoInject] private IIdentityController identityController = default!;
+
 
     [Parameter, SupplyParameterFromQuery(Name = "redirect-url")]
     public string? RedirectUrlQueryString { get; set; }
@@ -82,6 +85,7 @@ public partial class SignInPage
         {
             message = e.Message;
             messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
@@ -103,11 +107,13 @@ public partial class SignInPage
 
             message = Localizer[nameof(AppStrings.OtpSentMessage)];
             messageSeverity = BitSeverity.Success;
+            await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
             messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
@@ -128,11 +134,13 @@ public partial class SignInPage
 
             message = Localizer[nameof(AppStrings.TfaTokenSentMessage)];
             messageSeverity = BitSeverity.Success;
+            await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
             messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {

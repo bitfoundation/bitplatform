@@ -7,8 +7,6 @@ public partial class UserDataSection
 {
     private UserDto? user;
 
-    [AutoInject] private IUserController userController = default!;
-
     private bool isSaving;
     private bool isRemoving;
     private string? profileImageUrl;
@@ -21,6 +19,11 @@ public partial class UserDataSection
 
     private string? message;
     private BitSeverity messageSeverity;
+    private ElementReference messageRef = default!;
+
+
+    [AutoInject] private IUserController userController = default!;
+
 
     [Parameter] public bool Loading { get; set; }
 
@@ -71,11 +74,13 @@ public partial class UserDataSection
 
             messageSeverity = BitSeverity.Success;
             message = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
+            await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
             messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
@@ -99,6 +104,7 @@ public partial class UserDataSection
         {
             message = e.Message;
             messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
