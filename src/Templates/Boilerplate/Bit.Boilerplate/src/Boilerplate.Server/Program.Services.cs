@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.DataProtection;
-using Azure.Communication.Sms;
+using Twilio;
 //#endif
 
 namespace Boilerplate.Server;
@@ -145,7 +145,7 @@ public static partial class Program
         services.TryAddTransient<SmsService>();
         if (appSettings.SmsSettings.Configured)
         {
-            services.TryAddTransient(sp => new SmsClient(appSettings.SmsSettings.ConnectionString));
+            TwilioClient.Init(appSettings.SmsSettings.AccountSid, appSettings.SmsSettings.AuthToken);
         }
 
         //#endif
