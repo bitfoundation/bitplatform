@@ -327,6 +327,9 @@
     <data name="UserLockedOut" xml:space="preserve">
     <value>User is locked out. Try again in {0}</value>
   </data>
+    <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>User is not confirmed.</value>
+  </data>
     <data name="UserNotFound" xml:space="preserve">
     <value>User does not exist.</value>
   </data>
