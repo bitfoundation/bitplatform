@@ -20,7 +20,7 @@ public partial class SmsService
 
         var messageOptions = new CreateMessageOptions(new(phoneNumber))
         {
-            From = new PhoneNumber(appSettings.SmsSettings.FromPhoneNumber),
+            From = new(appSettings.SmsSettings.FromPhoneNumber),
             Body = messageText
         };
 
