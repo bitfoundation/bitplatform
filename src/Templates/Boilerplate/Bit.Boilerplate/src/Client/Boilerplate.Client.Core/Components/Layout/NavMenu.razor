@@ -7,9 +7,12 @@
 
 <section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
     <div class="top-container">
+        @{
+            var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
+        }
         <BitPersona Class="persona"
                     Text="@user.FullName"
-                    ImageUrl="@profileImageUrl"
+                    ImageUrl="@imageUrl"
                     Size=@BitPersonaSize.Size48
                     SecondaryText="@user.DisplayName"
                     Presence="BitPersonaPresenceStatus.Online"

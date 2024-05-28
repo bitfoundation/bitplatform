@@ -7,11 +7,11 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 [Authorize]
 public partial class ProfilePage
 {
-    [AutoInject] private IUserController userController = default!;
-
+    private UserDto? user;
     private bool isLoading;
 
-    private UserDto? user;
+
+    [AutoInject] private IUserController userController = default!;
 
 
     protected override async Task OnInitAsync()
