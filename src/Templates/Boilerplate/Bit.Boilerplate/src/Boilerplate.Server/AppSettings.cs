@@ -98,7 +98,7 @@ public class SmsSettings
     public string? AccountSid { get; set; }
     public string? AuthToken { get; set; }
 
-    public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false 
-        && string.IsNullOrEmpty(AccountSid) is false
-        && string.IsNullOrEmpty(AuthToken) is false;
+    public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
+                              string.IsNullOrEmpty(AccountSid) is false &&
+                              string.IsNullOrEmpty(AuthToken) is false;
 }
