@@ -2302,6 +2302,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to User is not confirmed..
+        /// </summary>
+        public static string UserIsNotConfirmed {
+            get {
+                return ResourceManager.GetString("UserIsNotConfirmed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User is locked out. Try again in {0}.
         /// </summary>
         public static string UserLockedOut {
