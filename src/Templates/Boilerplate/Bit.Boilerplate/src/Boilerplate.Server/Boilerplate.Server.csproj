@@ -40,7 +40,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.Network" Version="8.0.1" />
         <PackageReference Include="Riok.Mapperly" Version="3.5.1" />
-        <PackageReference Include="Azure.Communication.Sms" Version="1.0.1" />
+        <PackageReference Include="Twilio" Version="7.1.0" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
