@@ -132,7 +132,7 @@ jobs:
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
-          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows-x86.exe -r win-x86 --framework net8.0.4-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
+          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcorewebview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
