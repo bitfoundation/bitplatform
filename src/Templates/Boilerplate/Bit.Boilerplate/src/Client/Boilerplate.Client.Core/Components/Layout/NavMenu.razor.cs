@@ -8,7 +8,6 @@ public partial class NavMenu
     private bool disposed;
     private bool isSignOutModalOpen;
     private string? profileImageUrl;
-    private string? profileImageUrlBase;
     private UserDto user = new();
     private List<BitNavItem> navItems = [];
     private Action unsubscribe = default!;
@@ -101,22 +100,14 @@ public partial class NavMenu
 
             user = (UserDto)payload;
 
-            SetProfileImageUrl();
-
             await InvokeAsync(StateHasChanged);
         });
 
         user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
 
+        var apiUri = Configuration.GetApiServerAddress();
         var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
-        profileImageUrlBase = $"{Configuration.GetApiServerAddress()}api/Attachment/GetProfileImage?access_token={access_token}&file=";
-
-        SetProfileImageUrl();
-    }
-
-    private void SetProfileImageUrl()
-    {
-        profileImageUrl = user.ProfileImageName is not null ? profileImageUrlBase + user.ProfileImageName : null;
+        profileImageUrl = $"{apiUri}/api/Attachment/GetProfileImage?access_token={access_token}";
     }
 
     private async Task DoSignOut()

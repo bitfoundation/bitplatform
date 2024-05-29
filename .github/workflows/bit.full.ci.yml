@@ -57,6 +57,10 @@ jobs:
         dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github
         dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
 
+    - name: Install Nodejs dependencies
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Bit-CI-release.sln -t:InstallNodejsDependencies -m:1 
+
     - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release
 

@@ -96,9 +96,12 @@ main {
     }
 
     .form-message-bar {
+        width: 100%;
         position: absolute;
+        text-align: center;
         inset-block-start: 0;
         inset-inline-start: 0;
+        scroll-margin-top: 10px;
         border-radius: rem2(4px) rem2(4px) 0 0;
     }
 }

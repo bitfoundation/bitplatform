@@ -9,6 +9,8 @@ public static class SignInManagerExtensions
     {
         var userManager = signInManager.UserManager;
 
+        if (await signInManager.CanSignInAsync(user) is false) return SignInResult.NotAllowed;
+
         if (await userManager.IsLockedOutAsync(user)) return SignInResult.LockedOut;
 
         bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}", otp!);

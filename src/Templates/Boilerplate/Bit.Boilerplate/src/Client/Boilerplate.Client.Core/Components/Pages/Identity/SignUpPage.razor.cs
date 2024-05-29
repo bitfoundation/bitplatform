@@ -6,14 +6,16 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignUpPage
 {
-    [AutoInject] private IIdentityController identityController = default!;
-
     private bool isWaiting;
     private string? signUpErrorMessage;
+    private ElementReference messageRef = default!;
     private readonly SignUpRequestDto signUpModel = new()
     {
         UserName = Guid.NewGuid().ToString() /* You can also bind the UserName property to an input */
     };
+
+
+    [AutoInject] private IIdentityController identityController = default!;
 
 
     private async Task DoSignUp()
@@ -25,6 +27,7 @@ public partial class SignUpPage
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
             signUpErrorMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+            await messageRef.ScrollIntoView();
             return;
         }
 
@@ -51,19 +54,19 @@ public partial class SignUpPage
             var confirmUrl = NavigationManager.GetUriWithQueryParameters("confirm", queryParams);
             NavigationManager.NavigateTo(confirmUrl);
         }
-        catch (ResourceValidationException e)
-        {
-            signUpErrorMessage = string.Join(" ", e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
-        }
         catch (KnownException e)
         {
-            signUpErrorMessage = e.Message;
-        }
-        finally
-        {
+            signUpErrorMessage = e is ResourceValidationException re
+                                    ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
+                                    : e.Message;
+            await messageRef.ScrollIntoView();
+
             //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
             //#endif
+        }
+        finally
+        {
             isWaiting = false;
         }
     }

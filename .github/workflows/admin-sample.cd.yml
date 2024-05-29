@@ -167,7 +167,7 @@ jobs:
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
-          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.4-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -252,7 +252,7 @@ jobs:
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-    - uses: maxim-lobanov/setup-xcode@v1.6
+    - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
         xcode-version: '15.3'
 
@@ -280,18 +280,11 @@ jobs:
 
     - name: Install maui
       run: cd src && dotnet workload install maui
-  
-    - name: Extract iOS code signing certificate from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: './'
-          fileName: 'DistributionCert.p12'
-          encodedString: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
 
     - name: Import Code-Signing Certificates
       uses: apple-actions/import-codesign-certs@v3
       with:
-        p12-filepath: './DistributionCert.p12'
+        p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles

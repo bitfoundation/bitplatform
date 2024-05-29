@@ -5,37 +5,35 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
 public partial class UserDataSection
 {
-    private UserDto? user;
-
-    [AutoInject] private IUserController userController = default!;
-
     private bool isSaving;
     private bool isRemoving;
+    private bool isUploading;
     private string? profileImageUrl;
     private string? profileImageError;
     private string? profileImageUploadUrl;
     private string? removeProfileImageHttpUrl;
 
-    private UserDto userDto = default!;
+    private UserDto user = default!;
     private readonly EditUserDto editUserDto = new();
 
     private string? message;
     private BitSeverity messageSeverity;
+    private ElementReference messageRef = default!;
+
+
+    [AutoInject] private IUserController userController = default!;
+
 
     [Parameter] public bool Loading { get; set; }
 
     [Parameter]
-    public UserDto? User
+    public UserDto User
     {
         get => user;
         set
         {
-            if (value is null || user == value) return;
-
             user = value;
-
-            userDto = user;
-            userDto.Patch(editUserDto);
+            user?.Patch(editUserDto);
         }
     }
 
@@ -53,7 +51,6 @@ public partial class UserDataSection
         await base.OnInitAsync();
     }
 
-
     private async Task SaveProfile()
     {
         if (isSaving) return;
@@ -63,19 +60,21 @@ public partial class UserDataSection
 
         try
         {
-            editUserDto.Patch(userDto);
+            editUserDto.Patch(user);
 
-            (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(userDto);
+            (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(user);
 
-            PubSubService.Publish(PubSubMessages.USER_DATA_UPDATED, userDto);
+            PublishUserDataUpdated();
 
             messageSeverity = BitSeverity.Success;
             message = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
+            await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
             messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
@@ -93,12 +92,15 @@ public partial class UserDataSection
         {
             await HttpClient.DeleteAsync(removeProfileImageHttpUrl, CurrentCancellationToken);
 
-            userDto.ProfileImageName = null;
+            user.ProfileImageName = null;
+
+            PublishUserDataUpdated();
         }
         catch (KnownException e)
         {
             message = e.Message;
             messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
@@ -106,8 +108,30 @@ public partial class UserDataSection
         }
     }
 
-    private void HandleOnUploadProfileImageComplete()
+    private async Task HandleOnUploadComplete()
     {
-        PubSubService.Publish(PubSubMessages.USER_DATA_UPDATED, userDto);
+        try
+        {
+            var updatedUser = await userController.GetCurrentUser(CurrentCancellationToken);
+
+            user.ProfileImageName = updatedUser.ProfileImageName;
+
+            PublishUserDataUpdated();
+        }
+        catch (KnownException e)
+        {
+            message = e.Message;
+            messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+
+    private void PublishUserDataUpdated()
+    {
+        PubSubService.Publish(PubSubMessages.USER_DATA_UPDATED, user);
     }
 }

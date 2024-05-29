@@ -1,14 +1,12 @@
 @inherits AppComponentBase
 
 <div>
-    @if (string.IsNullOrEmpty(message) is false)
-    {
-        <BitMessage Class="form-message-bar"
-                    Severity="messageSeverity"
-                    OnDismiss="() => message = null">
-            @message
-        </BitMessage>
-    }
+    <div @ref="messageRef" class="form-message-bar">
+        @if (string.IsNullOrEmpty(message) is false)
+        {
+            <BitMessage Multiline Severity="messageSeverity" OnDismiss="() => message = null">@message</BitMessage>
+        }
+    </div>
 
     <BitTypography Variant="BitTypographyVariant.H2">
         @Localizer[nameof(AppStrings.EditProfileTitle)]
@@ -24,17 +22,17 @@
     }
     else
     {
-        var imageUrl = userDto.ProfileImageName is null ? null : $"{profileImageUrl}&file={userDto.ProfileImageName}";
+        var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
         <div class="form-input-container">
             <BitPersona ImageUrl="@imageUrl"
                         Size=@BitPersonaSize.Size72
-                        Text="@userDto.FullName"
-                        SecondaryText="@userDto.DisplayName"
+                        Text="@user.FullName"
+                        SecondaryText="@user.DisplayName"
                         Presence="BitPersonaPresenceStatus.Online" />
         </div>
 
         <div class="form-input-container">
-            @if (userDto.ProfileImageName is not null)
+            @if (user.ProfileImageName is not null)
             {
                 <BitButton IsLoading="isRemoving"
                            ButtonStyle="BitButtonStyle.Standard"
@@ -51,8 +49,10 @@
                            MaxSize="1024 * 1024 * 10"
                            ChunkedUploadEnabled="false"
                            UploadUrl="@profileImageUploadUrl"
-                           OnUploadComplete="WrapHandled(HandleOnUploadProfileImageComplete)"
+                           OnUploading="() => isUploading = true"
+                           OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
                            OnUploadFailed="() => profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]" />
+            <BitSpinner Visibility="isUploading ? BitVisibility.Visible : BitVisibility.Collapsed" />
             <div class="form-input-error">@profileImageError</div>
         </div>
 

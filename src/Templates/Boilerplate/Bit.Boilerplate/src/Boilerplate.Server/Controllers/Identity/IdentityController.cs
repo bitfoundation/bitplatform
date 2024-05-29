@@ -17,6 +17,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     [AutoInject] private IUserStore<User> userStore = default!;
 
+    [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
+
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
     [AutoInject] private SmsService smsService = default!;
@@ -94,7 +96,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var user = await userManager.FindByEmailAsync(request.Email!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
-        if (user.EmailConfirmed) return;
+        if (await userManager.IsEmailConfirmedAsync(user)) return;
 
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
@@ -135,7 +137,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        if (user.PhoneNumberConfirmed) return;
+        if (await userManager.IsPhoneNumberConfirmedAsync(user)) return;
 
         var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{request.PhoneNumber},Date:{user.PhoneNumberTokenRequestedOn}", request.Token!);
 
@@ -157,14 +159,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUser(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var result = string.IsNullOrEmpty(request.Password)
+        var result = string.IsNullOrEmpty(request.Otp) is false
             ? await signInManager.OtpSignInAsync(user, request.Otp!)
             : await signInManager.PasswordSignInAsync(user!.UserName!, request.Password!, isPersistent: false, lockoutOnFailure: true);
 
+        if (result.IsNotAllowed && await userConfirmation.IsConfirmedAsync(userManager, user) is false)
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
+
         if (result.IsLockedOut)
-        {
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
-        }
 
         if (result.RequiresTwoFactor)
         {
@@ -220,6 +223,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var user = await userManager.FindUser(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
+        if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
+
         var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.IdentitySettings.ResetPasswordTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
@@ -263,6 +269,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         var user = await userManager.FindUser(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
+
+        if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
 
         var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.IdentitySettings.OtpRequestResendDelay;
 

@@ -327,6 +327,9 @@
     <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
   </data>
+    <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>حساب خود را تایید نکرده اید</value>
+  </data>
     <data name="UserNotFound" xml:space="preserve">
     <value>کاربر وجود ندارد.</value>
   </data>
