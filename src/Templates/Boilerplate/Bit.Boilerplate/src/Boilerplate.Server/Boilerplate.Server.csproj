@@ -8,7 +8,7 @@
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0-pre-01" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.9.0-pre-01" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
         <PackageReference Include="QRCoder" Version="1.5.1" />
     </ItemGroup>
@@ -22,17 +22,17 @@
     <ItemGroup Condition=" '$(api)' == 'true' OR '$(api)' == '' ">
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.8.0" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.5" />
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.5" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.5" />
-        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.5" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.6" />
+        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.6" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.6" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.1" />

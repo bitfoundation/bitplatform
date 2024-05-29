@@ -23,14 +23,14 @@
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.9.0-pre-01" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.9.0-pre-01" />
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.5" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
         <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.9.0-pre-01" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0-pre-01" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.9.0-pre-01" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.0" />
 
         <Using Include="System.Net.Http.Json" />

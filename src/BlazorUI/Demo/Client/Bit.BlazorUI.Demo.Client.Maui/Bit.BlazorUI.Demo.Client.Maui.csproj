@@ -12,7 +12,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>Bit&#x2004;BlazorUI</ApplicationTitle>
+        <ApplicationTitle>bit&#x2004;BlazorUI</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -89,7 +89,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.3" />
+        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.4" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.9.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

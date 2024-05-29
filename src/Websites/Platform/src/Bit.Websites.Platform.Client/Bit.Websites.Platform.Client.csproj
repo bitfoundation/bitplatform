@@ -16,7 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6" />
     </ItemGroup>
 
     <ItemGroup>
@@ -39,7 +39,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
