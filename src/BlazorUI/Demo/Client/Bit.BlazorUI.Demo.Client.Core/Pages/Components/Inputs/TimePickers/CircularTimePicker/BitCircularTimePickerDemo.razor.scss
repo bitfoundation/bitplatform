@@ -2,6 +2,13 @@
 @import '../../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../../Styles/abstracts/_functions.scss';
 
+.example-content {
+    width: 17rem;
+    display: flex;
+    overflow-x: auto;
+    flex-flow: column wrap;
+}
+
 .validation-summary {
     border-left: rem2(5px) solid $Red10;
     background-color: $ErrorBlockRed;
@@ -18,11 +25,4 @@
     .validation-errors {
         margin: rem2(5px);
     }
-}
-
-.example-box {
-    display: flex;
-    gap: rem2(15px);
-    flex-flow: column nowrap;
-    width: fit-content;
 }
