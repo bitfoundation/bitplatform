@@ -13,12 +13,11 @@
     height: $headerHeight;
     flex-flow: row nowrap;
     min-height: rem2(48px);
-    padding-bottom: rem2(7px);
     padding-inline: rem2(16px);
     justify-content: space-between;
     box-shadow: $bit-box-shadow-callout;
+    padding-top: var(--bit-status-bar-height);
     background-color: $bit-color-background-primary;
-    padding-top: calc(rem2(7px) + var(--bit-status-bar-height));
 }
 
 .bit-ios {
