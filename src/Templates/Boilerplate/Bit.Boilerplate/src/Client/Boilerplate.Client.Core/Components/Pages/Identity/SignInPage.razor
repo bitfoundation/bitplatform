@@ -49,12 +49,17 @@
                               AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.OtpPlaceholder)]" />
                 <ValidationMessage For="@(() => model.Otp)" />
-                <BitButton IsLoading="isSendingOtp"
+                <BitButton IsLoading="isSendingOtp || isSigningIn"
                            OnClick="WrapHandled(SendOtp)"
                            Style="padding:0;margin-top:4px"
                            ButtonType="BitButtonType.Button">
                     @Localizer[nameof(AppStrings.SendOtpButtonText)]
                 </BitButton>
+				<BitButton OnClick="WrapHandled(LoginByGoogle)"
+						   Style="padding:0;margin-top:4px"
+						   ButtonType="BitButtonType.Button">
+					Login by google
+				</BitButton>
             </div>
 
             <div class="form-input-container form-input-container--no-margin">

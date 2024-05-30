@@ -229,7 +229,7 @@ public static partial class Program
             .AddErrorDescriber<AppIdentityErrorDescriber>()
             .AddApiEndpoints();
 
-        services.AddAuthentication(options =>
+        var authenticationBuilder = services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
             options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
@@ -271,6 +271,16 @@ public static partial class Program
                 }
             };
         });
+
+        if (configuration["Authentication:Google:ClientId"] is not { Length: 0 })
+        {
+            authenticationBuilder.AddGoogle(options =>
+            {
+                options.ClientId = configuration["Authentication:Google:ClientId"]!;
+                options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
 
         services.AddAuthorization();
     }

@@ -18,10 +18,12 @@ public partial class SignInPage
 
 
     [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private ILocalHttpServer localHttpServer = default!; // to faciliate social login in windows clients.
+    [AutoInject] private IBrowserService browserService = default!;
 
 
-    [Parameter, SupplyParameterFromQuery(Name = "redirect-url")]
-    public string? RedirectUrlQueryString { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "email")]
     public string? EmailQueryString { get; set; }
@@ -78,7 +80,7 @@ public partial class SignInPage
 
             if (requiresTwoFactor is false)
             {
-                NavigationManager.NavigateTo(RedirectUrlQueryString ?? "/");
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? "/");
             }
         }
         catch (KnownException e)
@@ -103,11 +105,37 @@ public partial class SignInPage
         try
         {
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
-            await identityController.SendOtp(request, CurrentCancellationToken);
+            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.OtpSentMessage)];
             messageSeverity = BitSeverity.Success;
             await messageRef.ScrollIntoView();
+        }
+        catch (KnownException e)
+        {
+            message = e.Message;
+            messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
+        }
+        finally
+        {
+            isSendingOtp = false;
+        }
+    }
+
+    private async Task LoginByGoogle()
+    {
+        if (isSendingOtp) return; // use another variable instead of isSendingOtp
+
+        isSendingOtp = true;
+        message = null;
+
+        try
+        {
+            await localHttpServer.Start();
+            var port = localHttpServer.Port;
+            var url = await identityController.GetSocialSignInUri("Google", ReturnUrlQueryString, port > 0 ? port : null);
+            await browserService.OpenUrl(url);
         }
         catch (KnownException e)
         {
