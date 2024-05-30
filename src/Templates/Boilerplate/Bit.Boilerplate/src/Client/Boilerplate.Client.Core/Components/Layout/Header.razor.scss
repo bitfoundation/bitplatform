@@ -10,9 +10,9 @@
     display: flex;
     position: fixed;
     align-items: center;
-    height: $headerHeight;
     flex-flow: row nowrap;
     min-height: rem2(48px);
+    min-height: $headerHeight;
     padding-inline: rem2(16px);
     justify-content: space-between;
     box-shadow: $bit-box-shadow-callout;
