@@ -6,7 +6,7 @@
     <div dir="@currentDir?.ToString()" class="layout">
         <Header OnToggleMenu=ToggleMenuHandler />
 
-        <main class="@BitCss.Class.Color.Background.Primary">
+        <main>
             @if (isUserAuthenticated)
             {
                 <NavMenu @bind-IsMenuOpen=isMenuOpen />

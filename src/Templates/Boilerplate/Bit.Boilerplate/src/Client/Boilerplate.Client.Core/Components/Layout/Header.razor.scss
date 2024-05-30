@@ -5,9 +5,12 @@
 
 .header {
     top: 0;
+    z-index: 1;
     width: 100%;
     display: flex;
+    position: fixed;
     align-items: center;
+    height: $headerHeight;
     flex-flow: row nowrap;
     min-height: rem2(48px);
     padding-bottom: rem2(7px);

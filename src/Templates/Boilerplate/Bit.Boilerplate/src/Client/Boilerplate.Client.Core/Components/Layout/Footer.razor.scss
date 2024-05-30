@@ -4,10 +4,14 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .footer {
+    bottom: 0;
+    z-index: 1;
     width: 100%;
     display: flex;
     padding: 0.5rem;
+    position: fixed;
     align-items: center;
+    height: $footerHeight;
     justify-content: center;
     background-color: $bit-color-background-primary;
 
