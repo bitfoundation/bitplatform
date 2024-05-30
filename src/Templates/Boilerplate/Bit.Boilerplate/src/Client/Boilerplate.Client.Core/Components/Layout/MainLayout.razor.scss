@@ -39,6 +39,34 @@ main {
     }
 }
 
+.status-bar {
+    top: 0;
+    width: 100%;
+    z-index: 101;
+    display: none;
+    position: fixed;
+    overflow: hidden;
+    text-align: center;
+    align-items: center;
+    font-size: rem2(14px);
+    justify-content: center;
+    background-color: transparent;
+}
+
+.bit-windows,
+.bit-macos {
+    .status-bar {
+        display: flex;
+        height: var(--bit-status-bar-height);
+    }
+}
+
+.bit-ios .status-bar {
+    display: flex;
+    color: transparent;
+    height: env(safe-area-inset-top);
+}
+
 ::deep {
     .form {
         width: 100%;
@@ -108,33 +136,4 @@ main {
         scroll-margin-top: 10px;
         border-radius: rem2(4px) rem2(4px) 0 0;
     }
-}
-
-.status-bar {
-    top: 0;
-    width: 100%;
-    z-index: 101;
-    display: none;
-    position: fixed;
-    overflow: hidden;
-    text-align: center;
-    align-items: center;
-    font-size: rem2(14px);
-    justify-content: center;
-    background-color: $bit-color-background-primary;
-}
-
-.bit-windows, .bit-macos {
-    .status-bar {
-        display: flex;
-        background-color: transparent;
-        height: var(--bit-status-bar-height);
-    }
-}
-
-.bit-ios .status-bar {
-    display: flex;
-    color: transparent;
-    background-color: transparent;
-    height: env(safe-area-inset-top);
 }
