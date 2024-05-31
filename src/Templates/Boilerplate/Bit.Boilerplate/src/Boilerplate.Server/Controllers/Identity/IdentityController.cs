@@ -25,6 +25,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     [AutoInject] private EmailService emailService = default!;
 
+    [AutoInject] private ILogger<IdentityController> logger = default!;
+
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
     //#endif
@@ -114,6 +116,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var result = await userManager.UpdateAsync(user);
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates email token
+        if (updateSecurityStampResult.Succeeded is false)
+            throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
@@ -150,6 +156,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var result = await userManager.UpdateAsync(user);
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates phone token
+        if (updateSecurityStampResult.Succeeded is false)
+            throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
@@ -194,7 +204,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (string.IsNullOrEmpty(request.Otp) is false)
         {
-            await userManager.UpdateSecurityStampAsync(user); // invalidates the OTP.
+            var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates the OTP.
+            if (updateSecurityStampResult.Succeeded is false)
+                throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
 
         return Empty;
@@ -265,7 +277,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// For either otp or magic link
     /// </summary>
     [HttpPost]
-    public async Task SendOtp(IdentityRequestDto request, CancellationToken cancellationToken)
+    public async Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindUser(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
@@ -285,10 +297,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
-        var isEmail = string.IsNullOrEmpty(request.Email) is false;
-        var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
-        var url = $"sign-in?otp={Uri.EscapeDataString(token)}&{qs}";
+        var (token, url) = await GenerateOtpTokenData(user, returnUrl);
+
         var link = new Uri(HttpContext.Request.GetBaseUrl(), url);
 
         async Task SendEmail()
@@ -328,6 +338,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates reset password token
+        if (updateSecurityStampResult.Succeeded is false)
+            throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
@@ -364,6 +378,111 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
 
         await Task.WhenAll(SendEmail(), SendSms());
+    }
+
+    [HttpGet]
+    public async Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null)
+    {
+        var uri = Url.Action(nameof(SocialSignIn), new { provider, returnUrl, localHttpPort })!;
+        return new Uri(Request.GetBaseUrl(), uri).ToString();
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> SocialSignIn(string provider, string? returnUrl = null, int? localHttpPort = null)
+    {
+        var redirectUrl = Url.Action(nameof(SocialSignInCallback), "Identity", new { returnUrl, localHttpPort });
+        var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+        return new ChallengeResult(provider, properties);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> SocialSignInCallback(string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
+    {
+        string? url;
+
+        var info = await signInManager.GetExternalLoginInfoAsync() ?? throw new BadRequestException();
+
+        try
+        {
+            var email = info.Principal.GetEmail();
+            var phoneNumber = info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value;
+
+            if (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(phoneNumber))
+                throw new InvalidOperationException(); // The app requires users to have at least one communication channel: phone or email.
+
+            var user = await userManager.FindUser(new() { Email = email, PhoneNumber = phoneNumber });
+
+            if (user is null)
+            {
+                // Instead of automatically creating a user here, you can navigate to the sign-up page and pass the email and phone number in the query string.
+
+                user = new() { LockoutEnabled = true };
+
+                await userStore.SetUserNameAsync(user, Guid.NewGuid().ToString(), cancellationToken);
+
+                if (string.IsNullOrEmpty(email) is false)
+                {
+                    await ((IUserEmailStore<User>)userStore).SetEmailAsync(user, email, cancellationToken);
+                }
+
+                if (string.IsNullOrEmpty(phoneNumber) is false)
+                {
+                    await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
+                }
+
+                var result = await userManager.CreateAsync(user, password: Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
+
+                if (result.Succeeded is false)
+                {
+                    throw new BadRequestException(string.Join(", ", result.Errors.Select(e => new LocalizedString(e.Code, e.Description))));
+                }
+
+                await userManager.AddLoginAsync(user, info);
+            }
+
+            if (string.IsNullOrEmpty(email) is false && email == user.Email && await userManager.IsEmailConfirmedAsync(user) is false)
+            {
+                await ((IUserEmailStore<User>)userStore).SetEmailConfirmedAsync(user, true, cancellationToken);
+                await userManager.UpdateAsync(user);
+            }
+
+            if (string.IsNullOrEmpty(phoneNumber) is false && phoneNumber == user.PhoneNumber && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
+            {
+                await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
+                await userManager.UpdateAsync(user);
+            }
+
+            (_, url) = await GenerateOtpTokenData(user, returnUrl); // Sign in with a magic link, and 2FA will be prompted if already enabled.
+        }
+        catch (Exception exp)
+        {
+            LogSocialSignInCallbackFailed(logger, exp, info.LoginProvider, info.Principal.GetDisplayName());
+            url = $"sign-in?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
+        }
+
+        if (localHttpPort is null) return LocalRedirect($"~/{url}");
+
+        return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), url).ToString());
+    }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
+    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string loginProvider, string principal);
+
+    private async Task<(string token, string url)> GenerateOtpTokenData(User user, string? returnUrl)
+    {
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
+
+        var isEmail = string.IsNullOrEmpty(user.Email) is false;
+        var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? user.Email! : user.PhoneNumber!)}";
+
+        if (string.IsNullOrEmpty(returnUrl) is false)
+        {
+            qs += $"&return-url={Uri.EscapeDataString(returnUrl)}";
+        }
+
+        var url = $"sign-in?otp={Uri.EscapeDataString(token)}&{qs}";
+
+        return (token, url);
     }
 
     private async Task SendConfirmEmailToken(User user, CancellationToken cancellationToken)

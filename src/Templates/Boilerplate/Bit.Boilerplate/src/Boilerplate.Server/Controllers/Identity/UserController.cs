@@ -113,6 +113,10 @@ public partial class UserController : AppControllerBase, IUserController
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates email token
+        if (updateSecurityStampResult.Succeeded is false)
+            throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]

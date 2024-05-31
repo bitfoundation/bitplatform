@@ -6,7 +6,7 @@
 ![Code size](https://img.shields.io/github/languages/code-size/bitfoundation/bitplatform.svg?logo=github)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
-[![Nuget downloads](https://img.shields.io/badge/packages_download-4.4M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
+[![Nuget downloads](https://img.shields.io/badge/packages_download-4.9M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
 [![](https://dcbadge.vercel.app/api/server/7bNMRNYshd?style=flat-square&compact=true&v=2)](https://discord.gg/7bNMRNYshd)
 
 <br/>

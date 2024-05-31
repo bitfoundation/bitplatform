@@ -1,19 +1,22 @@
 ﻿#if LocalHttpServerEnabled
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Maui.Platform;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http.Extensions;
 using Bit.BlazorUI;
+using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Maui.Services;
 
 public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHttpServer
 {
-    private int port;
+    private int port = -1;
     private Task? startTask;
     private WebApplication? localHttpServer;
 
@@ -46,12 +49,13 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
 
         app.UseStaticFiles(); // Put static files in wwwroot folder of the Client.Maui project.
 
-        app.MapGet("social-login", async (HttpContext context, HtmlRenderer htmlRenderer) =>
+        app.MapGet("sign-in", async (HttpContext context, HtmlRenderer htmlRenderer) =>
         {
-            // await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery());
+            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery());
+
             var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<BitButton>(ParameterView.FromDictionary(new Dictionary<string, object?>
+                var renderedComponent = await htmlRenderer.RenderComponentAsync<BitLabel>(ParameterView.FromDictionary(new Dictionary<string, object?>
                 {
                 }));
                 return renderedComponent.ToHtmlString();
