@@ -297,9 +297,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var (token, pageUrl) = await GenerateOtpTokenData(user, returnUrl);
+        var (token, url) = await GenerateOtpTokenData(user, returnUrl);
 
-        var link = new Uri(HttpContext.Request.GetBaseUrl(), pageUrl);
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), url);
 
         async Task SendEmail()
         {
@@ -398,7 +398,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpGet]
     public async Task<ActionResult> SocialSignInCallback(string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
-        string? pageUrl;
+        string? url;
 
         var info = await signInManager.GetExternalLoginInfoAsync();
 
@@ -453,32 +453,37 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 await userManager.UpdateAsync(user);
             }
 
-            (_, pageUrl) = await GenerateOtpTokenData(user, returnUrl); // Sign in with a magic link, and 2FA will be prompted if already enabled.
+            (_, url) = await GenerateOtpTokenData(user, returnUrl); // Sign in with a magic link, and 2FA will be prompted if already enabled.
         }
         catch (Exception exp)
         {
             LogSocialSignInCallbackFailed(logger, exp, info.LoginProvider, info.Principal.GetDisplayName());
-            pageUrl = $"sign-in?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
+            url = $"sign-in?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
 
-        if (localHttpPort is null) return LocalRedirect($"~/{pageUrl}");
+        if (localHttpPort is null) return LocalRedirect($"~/{url}");
 
-        return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), pageUrl).ToString());
+        return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), url).ToString());
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
     private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string loginProvider, string principal);
 
-    private async Task<(string token, string pageUrl)> GenerateOtpTokenData(User user, string? returnUrl)
+    private async Task<(string token, string url)> GenerateOtpTokenData(User user, string? returnUrl)
     {
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
+
         var isEmail = string.IsNullOrEmpty(user.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? user.Email! : user.PhoneNumber!)}";
-        if (string.IsNullOrEmpty(returnUrl) is false)
-            qs += $"&return-url={Uri.EscapeDataString(returnUrl)}";
-        var pageUrl = $"sign-in?otp={Uri.EscapeDataString(token)}&{qs}";
 
-        return (token, pageUrl);
+        if (string.IsNullOrEmpty(returnUrl) is false)
+        {
+            qs += $"&return-url={Uri.EscapeDataString(returnUrl)}";
+        }
+
+        var url = $"sign-in?otp={Uri.EscapeDataString(token)}&{qs}";
+
+        return (token, url);
     }
 
     private async Task SendConfirmEmailToken(User user, CancellationToken cancellationToken)
