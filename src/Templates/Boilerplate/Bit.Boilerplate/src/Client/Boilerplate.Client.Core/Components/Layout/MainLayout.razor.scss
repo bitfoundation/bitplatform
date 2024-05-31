@@ -15,6 +15,7 @@ main {
     position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
+    background-color: $bit-color-background-primary;
     padding-top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
 
     .bit-ios & {
