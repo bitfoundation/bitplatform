@@ -400,14 +400,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         string? url;
 
-        var info = await signInManager.GetExternalLoginInfoAsync();
-
-        if (info is null)
-            throw new BadRequestException();
+        var info = await signInManager.GetExternalLoginInfoAsync() ?? throw new BadRequestException();
 
         try
         {
-            var email = info.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var email = info.Principal.GetEmail();
             var phoneNumber = info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value;
 
             if (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(phoneNumber))
@@ -417,7 +414,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             if (user is null)
             {
-                user = new User { LockoutEnabled = true };
+                // Instead of automatically creating a user here, you can navigate to the sign-up page and pass the email and phone number in the query string.
+
+                user = new() { LockoutEnabled = true };
 
                 await userStore.SetUserNameAsync(user, Guid.NewGuid().ToString(), cancellationToken);
 
