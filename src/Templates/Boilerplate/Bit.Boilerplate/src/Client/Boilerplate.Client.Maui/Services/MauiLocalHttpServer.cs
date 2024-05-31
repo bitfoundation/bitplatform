@@ -55,9 +55,8 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
 
             var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<BitButton>(ParameterView.FromDictionary(new Dictionary<string, object?>
+                var renderedComponent = await htmlRenderer.RenderComponentAsync<BitLabel>(ParameterView.FromDictionary(new Dictionary<string, object?>
                 {
-                    { nameof(BitButton.Title), "Success!" }
                 }));
                 return renderedComponent.ToHtmlString();
             });

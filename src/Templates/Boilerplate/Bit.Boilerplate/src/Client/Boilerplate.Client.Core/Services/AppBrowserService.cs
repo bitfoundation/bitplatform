@@ -1,9 +1,11 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public class AppBrowserService : IBrowserService
+public partial class AppBrowserService : IBrowserService
 {
+    [AutoInject] private NavigationManager navigationManager = default!;
+
     public async Task OpenUrl(string url)
     {
-        await Routes.OpenUniversalLink(url, forceLoad: true, replace: true);
+        navigationManager.NavigateTo(url, forceLoad: true, replace: true);
     }
 }
