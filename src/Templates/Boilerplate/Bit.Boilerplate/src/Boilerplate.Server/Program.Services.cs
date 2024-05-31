@@ -272,7 +272,7 @@ public static partial class Program
             };
         });
 
-        if (configuration["Authentication:Google:ClientId"] is not { Length: 0 })
+        if (string.IsNullOrEmpty(configuration["Authentication:Google:ClientId"]) is false)
         {
             authenticationBuilder.AddGoogle(options =>
             {
@@ -282,7 +282,7 @@ public static partial class Program
             });
         }
 
-        if (configuration["Authentication:GitHub:ClientId"] is not { Length: 0 })
+        if (string.IsNullOrEmpty(configuration["Authentication:GitHub:ClientId"]) is false)
         {
             authenticationBuilder.AddGitHub(options =>
             {
