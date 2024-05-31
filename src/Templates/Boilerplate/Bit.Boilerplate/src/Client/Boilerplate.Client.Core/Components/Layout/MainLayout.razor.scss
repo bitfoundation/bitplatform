@@ -33,7 +33,12 @@ main {
     flex-flow: column;
     align-items: center;
     justify-content: center;
+    padding-inline-start: calc(1rem + $navMenuWidth);
     background-color: $bit-color-background-secondary;
+
+    @include lt-lg {
+        padding-inline-start: 1rem;
+    }
 }
 
 .status-bar {

@@ -14,8 +14,8 @@
     justify-content: flex-start;
     min-width: rem2($navMenuWidth);
     background-color: $bit-color-background-primary;
-    padding-bottom: calc($headerHeight + $footerHeight);
     top: calc($headerHeight + var(--bit-status-bar-height));
+    padding-bottom: calc($headerHeight + $footerHeight + var(--bit-status-bar-height));
 
     .bit-ios & {
         top: calc(env(safe-area-inset-top));

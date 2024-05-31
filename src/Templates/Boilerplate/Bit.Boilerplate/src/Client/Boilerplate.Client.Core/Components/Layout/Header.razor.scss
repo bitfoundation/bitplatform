@@ -10,25 +10,23 @@
     display: flex;
     padding: 0.5rem;
     position: fixed;
-    align-items: center;
+    align-items: end;
     flex-flow: row nowrap;
-    min-height: $headerHeight;
     justify-content: space-between;
     background-color: $bit-color-background-primary;
     padding-top: calc(0.5rem + var(--bit-status-bar-height));
-}
+    height: calc($headerHeight + var(--bit-status-bar-height));
 
-.bit-ios {
-    .header {
-        padding-top: calc(0.5rem + env(safe-area-inset-top));
+    .bit-ios & {
+        height: calc($headerHeight + env(safe-area-inset-top));
     }
 }
 
 .logo-lnk {
+    width: 2rem;
+    height: 2rem;
     cursor: pointer;
-    width: rem2(24px);
-    height: rem2(24px);
-    min-width: rem2(24px);
+    margin: 0 0.5rem;
     border-radius: rem2(4px);
     background-size: contain;
     background-position: center;
@@ -46,7 +44,6 @@
 ::deep {
     .header-menu {
         display: none;
-        margin-inline-end: rem2(12px);
 
         @include lt-lg {
             display: block;
@@ -54,6 +51,7 @@
     }
 
     .header-item {
+        display: flex;
         padding: rem2(4px) rem2(16px);
 
         @include lt-lg {
