@@ -1,7 +1,6 @@
 var BitButil = BitButil || {};
 
 (function (butil: any) {
-    crypto.subtle.generateKey
     butil.crypto = {
         encryptRsaOaep(algorithm, key, data, keyHash) { return endecryptRsaOaep(algorithm, key, data, keyHash, "encrypt") },
         decryptRsaOaep(algorithm, key, data, keyHash) { return endecryptRsaOaep(algorithm, key, data, keyHash, "decrypt") },
