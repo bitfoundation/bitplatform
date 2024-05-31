@@ -35,6 +35,9 @@ public interface IIdentityController : IAppController
     [HttpPost]
     Task SendTwoFactorToken(IdentityRequestDto request, CancellationToken cancellationToken);
 
-    [HttpPost]
-    Task SendOtp(IdentityRequestDto request, CancellationToken cancellationToken);
+    [HttpPost("{?returnUrl}")]
+    Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default);
+
+    [HttpGet("{?provider,returnUrl,localHttpPort}")]
+    Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null);
 }

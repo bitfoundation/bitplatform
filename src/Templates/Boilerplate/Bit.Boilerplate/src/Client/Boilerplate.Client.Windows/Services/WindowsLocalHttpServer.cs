@@ -7,13 +7,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http.Extensions;
 using Bit.BlazorUI;
+using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Windows.Services;
 
 public partial class WindowsLocalHttpServer(IServiceCollection services) : ILocalHttpServer
 {
-    private int port;
+    private int port = -1;
     private Task? startTask;
     private WebApplication? localHttpServer;
 
@@ -46,12 +48,14 @@ public partial class WindowsLocalHttpServer(IServiceCollection services) : ILoca
 
         app.UseStaticFiles(); // Put static files in wwwroot folder of the Client.Windows project.
 
-        app.MapGet("social-login", async (HttpContext context, HtmlRenderer htmlRenderer) =>
+        app.MapGet("sign-in", async (HttpContext context, HtmlRenderer htmlRenderer) =>
         {
-            // await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery());
+            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery());
+            await App.Current.Dispatcher.InvokeAsync(() => App.Current.MainWindow.Activate());
+
             var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<BitButton>(ParameterView.FromDictionary(new Dictionary<string, object?>
+                var renderedComponent = await htmlRenderer.RenderComponentAsync<BitLabel>(ParameterView.FromDictionary(new Dictionary<string, object?>
                 {
                 }));
                 return renderedComponent.ToHtmlString();

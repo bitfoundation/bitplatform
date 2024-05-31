@@ -20,8 +20,8 @@ public partial class SignInPage
     [AutoInject] private IIdentityController identityController = default!;
 
 
-    [Parameter, SupplyParameterFromQuery(Name = "redirect-url")]
-    public string? RedirectUrlQueryString { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "email")]
     public string? EmailQueryString { get; set; }
@@ -78,7 +78,7 @@ public partial class SignInPage
 
             if (requiresTwoFactor is false)
             {
-                NavigationManager.NavigateTo(RedirectUrlQueryString ?? "/");
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? "/");
             }
         }
         catch (KnownException e)
@@ -103,7 +103,7 @@ public partial class SignInPage
         try
         {
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
-            await identityController.SendOtp(request, CurrentCancellationToken);
+            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.OtpSentMessage)];
             messageSeverity = BitSeverity.Success;
