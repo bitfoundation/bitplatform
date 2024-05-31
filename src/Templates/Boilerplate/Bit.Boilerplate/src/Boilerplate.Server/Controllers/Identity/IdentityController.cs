@@ -4,7 +4,6 @@ using Boilerplate.Server.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
-using Microsoft.AspNetCore.Identity;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
@@ -25,6 +24,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private SmsService smsService = default!;
 
     [AutoInject] private EmailService emailService = default!;
+
+    [AutoInject] private ILogger<IdentityController> logger = default!;
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -284,6 +285,18 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
 
+        var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.IdentitySettings.OtpRequestResendDelay;
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+
+        user.OtpRequestedOn = DateTimeOffset.Now;
+
+        var result = await userManager.UpdateAsync(user);
+
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
         var (token, pageUrl) = await GenerateOtpTokenData(user, returnUrl);
 
         var link = new Uri(HttpContext.Request.GetBaseUrl(), pageUrl);
@@ -383,36 +396,69 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpGet]
-    public async Task<ActionResult> SocialSignInCallback(string? returnUrl = null, int? localHttpPort = null)
+    public async Task<ActionResult> SocialSignInCallback(string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
-        // basic implementation
+        string? pageUrl;
 
         var info = await signInManager.GetExternalLoginInfoAsync();
 
         if (info is null)
             throw new BadRequestException();
 
-        var email = info.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-        var phoneNumber = info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value;
-
-        var user = await userManager.FindUser(new() { Email = email, PhoneNumber = phoneNumber });
-
-        string? pageUrl;
-        if (user is not null)
+        try
         {
-            if (await userConfirmation.IsConfirmedAsync(userManager, user) is true)
+            var email = info.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var phoneNumber = info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value;
+
+            if (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(phoneNumber))
+                throw new InvalidOperationException(); // The app requires users to have at least one communication channel: phone or email.
+
+            var user = await userManager.FindUser(new() { Email = email, PhoneNumber = phoneNumber });
+
+            if (user is null)
             {
-                (_, pageUrl) = await GenerateOtpTokenData(user, returnUrl);
+                user = new User { LockoutEnabled = true };
+
+                await userStore.SetUserNameAsync(user, Guid.NewGuid().ToString(), cancellationToken);
+
+                if (string.IsNullOrEmpty(email) is false)
+                {
+                    await ((IUserEmailStore<User>)userStore).SetEmailAsync(user, email, cancellationToken);
+                }
+
+                if (string.IsNullOrEmpty(phoneNumber) is false)
+                {
+                    await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
+                }
+
+                var result = await userManager.CreateAsync(user, Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
+
+                if (result.Succeeded is false)
+                {
+                    throw new BadRequestException(string.Join(", ", result.Errors.Select(e => new LocalizedString(e.Code, e.Description))));
+                }
+
+                await userManager.AddLoginAsync(user, info);
             }
-            else
+
+            if (string.IsNullOrEmpty(email) is false && email == user.Email && await userManager.IsEmailConfirmedAsync(user) is false)
             {
-                var isEmail = string.IsNullOrEmpty(user.Email) is false;
-                pageUrl = $"confirm?email={Uri.EscapeDataString(email ?? string.Empty)}&phone={Uri.EscapeDataString(phoneNumber ?? string.Empty)}";
+                await ((IUserEmailStore<User>)userStore).SetEmailConfirmedAsync(user, true, cancellationToken);
+                await userManager.UpdateAsync(user);
             }
+
+            if (string.IsNullOrEmpty(phoneNumber) is false && phoneNumber == user.PhoneNumber && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
+            {
+                await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
+                await userManager.UpdateAsync(user);
+            }
+
+            (_, pageUrl) = await GenerateOtpTokenData(user, returnUrl); // Sign in with a magic link, and 2FA will be prompted if already enabled.
         }
-        else
+        catch (Exception exp)
         {
-            pageUrl = $"sign-up?email={Uri.EscapeDataString(email ?? string.Empty)}&phone={Uri.EscapeDataString(phoneNumber ?? string.Empty)}";
+            LogSocialSignInCallbackFailed(logger, exp, info.ProviderKey);
+            pageUrl = $"sign-in?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
 
         if (localHttpPort is null) return LocalRedirect($"~/{pageUrl}");
@@ -420,20 +466,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), pageUrl).ToString());
     }
 
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform social sign in for {provider}")]
+    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string provider);
+
     private async Task<(string token, string pageUrl)> GenerateOtpTokenData(User user, string? returnUrl)
     {
-        var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.IdentitySettings.OtpRequestResendDelay;
-
-        if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
-
-        user.OtpRequestedOn = DateTimeOffset.Now;
-
-        var result = await userManager.UpdateAsync(user);
-
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
         var isEmail = string.IsNullOrEmpty(user.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? user.Email! : user.PhoneNumber!)}";

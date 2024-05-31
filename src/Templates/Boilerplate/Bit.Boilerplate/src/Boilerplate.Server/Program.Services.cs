@@ -282,6 +282,16 @@ public static partial class Program
             });
         }
 
+        if (configuration["Authentication:GitHub:ClientId"] is not { Length: 0 })
+        {
+            authenticationBuilder.AddGitHub(options =>
+            {
+                options.ClientId = configuration["Authentication:GitHub:ClientId"]!;
+                options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"]!;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
+
         services.AddAuthorization();
     }
 

@@ -1,6 +1,7 @@
 ﻿#if LocalHttpServerEnabled
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Maui.Platform;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +11,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http.Extensions;
 using Bit.BlazorUI;
 using Boilerplate.Client.Core;
-using Microsoft.Maui.Platform;
 
 namespace Boilerplate.Client.Maui.Services;
 
