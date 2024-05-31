@@ -14,8 +14,8 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
     min-width: rem2($navMenuWidth);
-    background-color: $bit-color-background-primary;
     top: calc(var(--bit-status-bar-height));
+    background-color: $bit-color-background-primary;
 
     .bit-ios & {
         top: calc(env(safe-area-inset-top));
