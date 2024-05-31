@@ -4,18 +4,18 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .main-container {
-    z-index: 3;
     height: 100%;
     display: flex;
-    position: sticky;
+    position: fixed;
     min-height: 100%;
     max-height: 100vh;
     overflow: hidden auto;
     flex-flow: column nowrap;
     justify-content: flex-start;
     min-width: rem2($navMenuWidth);
-    top: calc(var(--bit-status-bar-height));
     background-color: $bit-color-background-primary;
+    padding-bottom: calc($headerHeight + $footerHeight);
+    top: calc($headerHeight + var(--bit-status-bar-height));
 
     .bit-ios & {
         top: calc(env(safe-area-inset-top));
@@ -28,7 +28,9 @@
 
 @include lt-lg {
     .main-container {
-        position: fixed;
+        z-index: 3;
+        padding-bottom: 0;
+        top: calc(var(--bit-status-bar-height));
     }
 
     .main-container--closed {
