@@ -4,35 +4,64 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .layout {
-    height: 100vh;
-    display: flex;
-    flex-flow: column;
+    width: 100%;
+    height: 100%;
 }
 
 main {
     width: 100%;
-    flex-grow: 1;
     display: flex;
-    overflow: auto;
+    min-height: 100vh;
     position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
+    padding-bottom: $footerHeight;
+    background-color: $bit-color-background-primary;
+    padding-top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
+
+    .bit-ios & {
+        padding-top: calc(rem2($headerHeight) + env(safe-area-inset-top));
+        padding-bottom: calc($footerHeight + env(safe-area-inset-bottom));
+    }
 }
 
 .main-content {
     flex-grow: 1;
     display: flex;
-    padding: 2rem;
+    padding: 1rem;
     min-height: 100%;
     flex-flow: column;
-    height: fit-content;
     align-items: center;
     justify-content: center;
     background-color: $bit-color-background-secondary;
+}
 
-    @include lt-md {
-        padding: 1rem;
+.status-bar {
+    top: 0;
+    width: 100%;
+    z-index: 101;
+    display: none;
+    position: fixed;
+    overflow: hidden;
+    text-align: center;
+    align-items: center;
+    font-size: rem2(14px);
+    justify-content: center;
+    background-color: transparent;
+}
+
+.bit-windows,
+.bit-macos {
+    .status-bar {
+        display: flex;
+        height: var(--bit-status-bar-height);
     }
+}
+
+.bit-ios .status-bar {
+    display: flex;
+    color: transparent;
+    height: env(safe-area-inset-top);
 }
 
 ::deep {
@@ -104,33 +133,4 @@ main {
         scroll-margin-top: 10px;
         border-radius: rem2(4px) rem2(4px) 0 0;
     }
-}
-
-.status-bar {
-    top: 0;
-    width: 100%;
-    z-index: 101;
-    display: none;
-    position: fixed;
-    overflow: hidden;
-    text-align: center;
-    align-items: center;
-    font-size: rem2(14px);
-    justify-content: center;
-    background-color: $bit-color-background-primary;
-}
-
-.bit-windows, .bit-macos {
-    .status-bar {
-        display: flex;
-        background-color: transparent;
-        height: var(--bit-status-bar-height);
-    }
-}
-
-.bit-ios .status-bar {
-    display: flex;
-    color: transparent;
-    background-color: transparent;
-    height: env(safe-area-inset-top);
 }

@@ -15,7 +15,9 @@
             }
         </div>
 
-        <h1 class="form-title">@Localizer[nameof(AppStrings.SignInTitle)]</h1>
+        <BitTypography Variant="BitTypographyVariant.H4" Gutter>
+            @Localizer[nameof(AppStrings.SignIn)]
+        </BitTypography>
 
         @if (requiresTwoFactor is false)
         {
