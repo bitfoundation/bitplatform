@@ -15,6 +15,7 @@ main {
     position: relative;
     box-sizing: border-box;
     justify-content: flex-start;
+    padding-bottom: $footerHeight;
     background-color: $bit-color-background-primary;
     padding-top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
 
@@ -32,7 +33,6 @@ main {
     flex-flow: column;
     align-items: center;
     justify-content: center;
-    padding-bottom: $footerHeight;
     background-color: $bit-color-background-secondary;
 }
 
