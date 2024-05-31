@@ -16,6 +16,7 @@
     background-color: $bit-color-background-primary;
 
     .bit-ios & {
+        padding-bottom: env(safe-area-inset-bottom);
         height: calc($footerHeight + env(safe-area-inset-bottom));
     }
 }
