@@ -21,6 +21,7 @@ main {
 
     .bit-ios & {
         padding-top: calc(rem2($headerHeight) + env(safe-area-inset-top));
+        padding-bottom: calc($footerHeight + env(safe-area-inset-bottom));
     }
 }
 

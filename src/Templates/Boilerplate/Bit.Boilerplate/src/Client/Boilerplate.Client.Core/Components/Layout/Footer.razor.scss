@@ -11,12 +11,12 @@
     padding: 0.5rem;
     position: fixed;
     align-items: center;
+    height: $footerHeight;
     justify-content: center;
-    min-height: $footerHeight;
     background-color: $bit-color-background-primary;
 
     .bit-ios & {
-        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+        height: calc($footerHeight + env(safe-area-inset-bottom));
     }
 }
 

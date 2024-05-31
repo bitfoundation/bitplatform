@@ -4,6 +4,7 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .main-container {
+    top: 0;
     height: 100%;
     display: flex;
     position: fixed;
@@ -14,11 +15,11 @@
     justify-content: flex-start;
     min-width: rem2($navMenuWidth);
     background-color: $bit-color-background-primary;
-    top: calc($headerHeight + var(--bit-status-bar-height));
+    padding-top: calc($headerHeight + var(--bit-status-bar-height));
     padding-bottom: calc($headerHeight + $footerHeight + var(--bit-status-bar-height));
 
     .bit-ios & {
-        top: calc(env(safe-area-inset-top));
+        padding-top: calc(env(safe-area-inset-top));
     }
 
     &::-webkit-scrollbar {
@@ -30,7 +31,7 @@
     .main-container {
         z-index: 3;
         padding-bottom: 0;
-        top: calc(var(--bit-status-bar-height));
+        padding-top: calc(var(--bit-status-bar-height));
     }
 
     .main-container--closed {
