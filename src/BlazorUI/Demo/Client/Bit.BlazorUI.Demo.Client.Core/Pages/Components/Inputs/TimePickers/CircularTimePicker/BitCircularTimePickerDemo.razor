@@ -130,8 +130,6 @@
                     <div>
                         <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time"
                                                AllowTextInput="true"
-                                               Style="max-width: 300px"
-                                               AriaLabel="Select a time"
                                                Placeholder="Select a time"
                                                Label="Time required" />
                         <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
@@ -147,33 +145,30 @@
                     <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
                 }
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
+            <br /><br />
 
-    <ComponentExampleBox Title="Custom Invalid Error Message" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <ExamplePreview>
             <div class="example-desc">The custom invalid error message will show when an invalid time is entered.</div>
-
-            <EditForm Model="formValidationCircularTimePickerModel">
-                <DataAnnotationsValidator />
-                <div>
-                    <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time"
-                                           Style="max-width: 350px"
-                                           AllowTextInput="true"
-                                           Label="BitCircularTimePicker with Custom Invalid Error Message"
-                                           InvalidErrorMessage="Invalid Time!!!" />
-                    <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
-                </div>
-                <br />
-                <div class="validation-summary">
-                    <ValidationSummary />
-                </div>
-            </EditForm>
+            <div class="example-content">
+                <EditForm Model="formValidationCircularTimePickerModel">
+                    <DataAnnotationsValidator />
+                    <div>
+                        <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time"
+                                               AllowTextInput="true"
+                                               Label="Custom Invalid Error Message"
+                                               InvalidErrorMessage="Invalid Time!!!" />
+                        <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
+                    </div>
+                    <br />
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+                </EditForm>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div class="example-content">
                 <BitCircularTimePicker Dir="BitDir.Rtl" />

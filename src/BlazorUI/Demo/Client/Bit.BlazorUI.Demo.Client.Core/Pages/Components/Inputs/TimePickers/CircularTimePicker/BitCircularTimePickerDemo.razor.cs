@@ -400,8 +400,6 @@ private async Task OpenCallout()
     <div>
         <BitCircularTimePicker @bind-Value=""formValidationCircularTimePickerModel.Time""
                                 AllowTextInput=""true""
-                                Style=""max-width: 300px""
-                                AriaLabel=""Select a time""
                                 Placeholder=""Select a time""
                                 Label=""Time required"" />
         <ValidationMessage For=""@(() => formValidationCircularTimePickerModel.Time)"" />
@@ -415,7 +413,24 @@ private async Task OpenCallout()
 @if (string.IsNullOrEmpty(successMessage) is false)
 {
     <BitMessage Severity=""BitSeverity.Success"">@successMessage</BitMessage>
-}";
+}
+
+
+
+<EditForm Model=""formValidationCircularTimePickerModel"">
+    <DataAnnotationsValidator />
+    <div>
+        <BitCircularTimePicker @bind-Value=""formValidationCircularTimePickerModel.Time""
+                        AllowTextInput=""true""
+                        Label=""Custom Invalid Error Message""
+                        InvalidErrorMessage=""Invalid Time!!!"" />
+        <ValidationMessage For=""@(() => formValidationCircularTimePickerModel.Time)"" />
+    </div>
+    <br />
+    <div class=""validation-summary"">
+        <ValidationSummary />
+    </div>
+</EditForm>";
     private readonly string example8CsharpCode = @"
 public class FormValidationCircularTimePickerModel
 {
@@ -435,30 +450,5 @@ private async Task HandleValidSubmit()
 }";
 
     private readonly string example9RazorCode = @"
-<EditForm Model=""formValidationCircularTimePickerModel"">
-    <DataAnnotationsValidator />
-    <div>
-        <BitCircularTimePicker @bind-Value=""formValidationCircularTimePickerModel.Time""
-                        Style=""max-width: 350px""
-                        AllowTextInput=""true""
-                        Label=""BitCircularTimePicker with Custom Invalid Error Message""
-                        InvalidErrorMessage=""Invalid Time!!!"" />
-        <ValidationMessage For=""@(() => formValidationCircularTimePickerModel.Time)"" />
-    </div>
-    <br />
-    <div class=""validation-summary"">
-        <ValidationSummary />
-    </div>
-</EditForm>";
-    private readonly string example9CsharpCode = @"
-public class FormValidationCircularTimePickerModel
-{
-    [Required]
-    public TimeSpan? Time { get; set; }
-}
-
-private FormValidationCircularTimePickerModel formValidationCircularTimePickerModel = new();";
-
-    private readonly string example10RazorCode = @"
 <BitCircularTimePicker Dir=""BitDir.Rtl"" />";
 }
