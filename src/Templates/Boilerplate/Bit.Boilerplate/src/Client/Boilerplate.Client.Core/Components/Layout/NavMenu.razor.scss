@@ -29,11 +29,6 @@
 @include lt-lg {
     .main-container {
         position: fixed;
-        padding-top: calc(var(--bit-status-bar-height));
-
-        .bit-ios & {
-            padding-top: calc(env(safe-area-inset-top));
-        }
     }
 
     .main-container--closed {
