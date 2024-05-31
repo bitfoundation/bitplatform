@@ -29,8 +29,6 @@ public partial class SignOutConfirmModal
     {
         await CloseModal();
 
-        await Task.Delay(1);
-
         await AuthenticationManager.SignOut();
     }
 }
