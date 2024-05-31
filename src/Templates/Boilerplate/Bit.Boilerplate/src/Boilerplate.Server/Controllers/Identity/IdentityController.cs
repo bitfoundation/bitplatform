@@ -457,7 +457,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
         catch (Exception exp)
         {
-            LogSocialSignInCallbackFailed(logger, exp, info.ProviderKey);
+            LogSocialSignInCallbackFailed(logger, exp, info.LoginProvider, info.Principal.GetDisplayName());
             pageUrl = $"sign-in?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
 
@@ -466,8 +466,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), pageUrl).ToString());
     }
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform social sign in for {provider}")]
-    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string provider);
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
+    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string loginProvider, string principal);
 
     private async Task<(string token, string pageUrl)> GenerateOtpTokenData(User user, string? returnUrl)
     {
