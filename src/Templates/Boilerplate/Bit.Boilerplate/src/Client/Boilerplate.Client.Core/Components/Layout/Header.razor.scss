@@ -15,13 +15,13 @@
     height: $headerHeight;
     min-height: $headerHeight;
     justify-content: space-between;
-    padding-top: calc(var(--bit-status-bar-height));
     background-color: $bit-color-background-primary;
+    padding-top: calc(0.5rem + var(--bit-status-bar-height));
 }
 
 .bit-ios {
     .header {
-        padding-top: calc(env(safe-area-inset-top));
+        padding-top: calc(0.5rem + env(safe-area-inset-top));
     }
 }
 

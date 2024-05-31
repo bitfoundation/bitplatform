@@ -17,7 +17,7 @@
     background-color: $bit-color-background-primary;
 
     .bit-ios & {
-        padding-bottom: env(safe-area-inset-bottom);
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
     }
 }
 
