@@ -431,7 +431,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                     await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
                 }
 
-                var result = await userManager.CreateAsync(user, Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
+                var result = await userManager.CreateAsync(user, password: Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
 
                 if (result.Succeeded is false)
                 {
