@@ -30,8 +30,13 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
 
             return data;
         }
-        catch
+        catch (Exception ex)
         {
+            if (BuildConfiguration.IsDebug())
+            {
+                Console.WriteLine(ex); // since we do not have access to any logger at this point!
+            }
+
             return NotSignedIn();
         }
     }
