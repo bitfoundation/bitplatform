@@ -9,10 +9,7 @@ public partial class SignUpPage
     private bool isWaiting;
     private string? signUpErrorMessage;
     private ElementReference messageRef = default!;
-    private readonly SignUpRequestDto signUpModel = new()
-    {
-        UserName = Guid.NewGuid().ToString() /* You can also bind the UserName property to an input */
-    };
+    private readonly SignUpRequestDto signUpModel = new();
 
 
     [AutoInject] private IIdentityController identityController = default!;
@@ -40,6 +37,8 @@ public partial class SignUpPage
 
         try
         {
+            signUpModel.UserName = Guid.NewGuid().ToString(); // You can also bind the UserName property to an input
+
             await identityController.SignUp(signUpModel, CurrentCancellationToken);
 
             var queryParams = new Dictionary<string, object?>();
