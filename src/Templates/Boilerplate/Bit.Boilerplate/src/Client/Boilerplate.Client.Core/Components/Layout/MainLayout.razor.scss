@@ -17,10 +17,10 @@ main {
     justify-content: flex-start;
     padding-bottom: $footerHeight;
     background-color: $bit-color-background-primary;
-    padding-top: calc(rem2($headerHeight) + var(--bit-status-bar-height));
+    padding-top: calc($headerHeight + var(--bit-status-bar-height));
 
     .bit-ios & {
-        padding-top: calc(rem2($headerHeight) + env(safe-area-inset-top));
+        padding-top: calc($headerHeight + env(safe-area-inset-top));
         padding-bottom: calc($footerHeight + env(safe-area-inset-bottom));
     }
 }
@@ -48,20 +48,17 @@ main {
     font-size: rem2(14px);
     justify-content: center;
     background-color: transparent;
-}
 
-.bit-windows,
-.bit-macos {
-    .status-bar {
+    .bit-ios & {
+        display: flex;
+        color: transparent;
+        height: env(safe-area-inset-top);
+    }
+
+    .bit-windows &, .bit-macos & {
         display: flex;
         height: var(--bit-status-bar-height);
     }
-}
-
-.bit-ios .status-bar {
-    display: flex;
-    color: transparent;
-    height: env(safe-area-inset-top);
 }
 
 ::deep {
@@ -72,9 +69,9 @@ main {
         text-align: center;
         align-items: center;
         max-width: rem2(504px);
-        border-radius: rem2(4px);
         justify-content: center;
         flex-flow: column nowrap;
+        border-radius: rem2(4px);
         padding: rem2(48px) rem2(16px);
         box-shadow: $bit-box-shadow-callout;
         background-color: $bit-color-background-primary;
@@ -130,7 +127,13 @@ main {
         text-align: center;
         inset-block-start: 0;
         inset-inline-start: 0;
-        scroll-margin-top: rem2(50px);
         border-radius: rem2(4px) rem2(4px) 0 0;
+        scroll-margin-top: calc($headerHeight + var(--bit-status-bar-height) + 1px);
+    }
+}
+
+.bit-ios {
+    ::deep .form-message-bar {
+        scroll-margin-top: calc($headerHeight + env(safe-area-inset-top) + 1px);
     }
 }
