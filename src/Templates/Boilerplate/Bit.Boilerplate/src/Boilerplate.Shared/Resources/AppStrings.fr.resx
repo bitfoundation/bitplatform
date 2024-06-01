@@ -525,6 +525,12 @@
     <data name="SignInTitle" xml:space="preserve">
     <value>Se connecter</value>
   </data>
+    <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>Connectez-vous avec Google</value>
+  </data>
+    <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>Connectez-vous avec GitHub</value>
+  </data>
     <data name="SignOut" xml:space="preserve">
     <value>se déconnecter</value>
   </data>

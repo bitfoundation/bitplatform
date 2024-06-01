@@ -525,6 +525,12 @@
     <data name="SignInTitle" xml:space="preserve">
     <value>ورود به برنامه</value>
   </data>
+    <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>ورود با گوگل</value>
+  </data>
+    <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>ورود با گیتهاب</value>
+  </data>
     <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>
   </data>

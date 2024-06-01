@@ -871,11 +871,29 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sign in with GitHub.
+        /// </summary>
+        public static string GitHubSignInButtonText {
+            get {
+                return ResourceManager.GetString("GitHubSignInButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Back.
         /// </summary>
         public static string GoBack {
             get {
                 return ResourceManager.GetString("GoBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign in with Google.
+        /// </summary>
+        public static string GoogleSignInButtonText {
+            get {
+                return ResourceManager.GetString("GoogleSignInButtonText", resourceCulture);
             }
         }
         

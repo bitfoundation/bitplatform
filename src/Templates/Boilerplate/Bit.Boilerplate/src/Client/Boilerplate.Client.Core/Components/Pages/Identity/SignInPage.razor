@@ -21,6 +21,23 @@
 
         @if (requiresTwoFactor is false)
         {
+            <br /><br />
+            <BitButton ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(GoogleSignIn)"
+                       ButtonStyle="BitButtonStyle.Standard"
+                       Style="width:300px">
+                @Localizer[AppStrings.GoogleSignInButtonText]
+            </BitButton>
+            <br />
+            <BitButton ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(GitHubSignIn)"
+                       ButtonStyle="BitButtonStyle.Standard"
+                       Style="width:300px">
+                @Localizer[AppStrings.GitHubSignInButtonText]
+            </BitButton>
+            <br /><br />
+            <BitSeparator Style="width:100%">Or</BitSeparator>
+            <br/>
             <div class="form-input-container">
                 <BitTextField @bind-Value="model.Email"
                               Type="BitTextFieldType.Email"
@@ -54,7 +71,8 @@
                 <BitButton IsLoading="isSendingOtp"
                            OnClick="WrapHandled(SendOtp)"
                            Style="padding:0;margin-top:4px"
-                           ButtonType="BitButtonType.Button">
+                           ButtonType="BitButtonType.Button"
+                           ButtonStyle="BitButtonStyle.Standard">
                     @Localizer[nameof(AppStrings.SendOtpButtonText)]
                 </BitButton>
             </div>
