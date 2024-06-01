@@ -526,10 +526,10 @@
     <value>Sign in</value>
   </data>
     <data name="GoogleSignInButtonText" xml:space="preserve">
-    <value>Sign-in with Google</value>
+    <value>Sign in with Google</value>
   </data>
     <data name="GitHubSignInButtonText" xml:space="preserve">
-    <value>Sign-in with GitHub</value>
+    <value>Sign in with GitHub</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>Sign out</value>

@@ -871,7 +871,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sign-in with GitHub.
+        ///   Looks up a localized string similar to Sign in with GitHub.
         /// </summary>
         public static string GitHubSignInButtonText {
             get {
@@ -889,7 +889,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sign-in with Google.
+        ///   Looks up a localized string similar to Sign in with Google.
         /// </summary>
         public static string GoogleSignInButtonText {
             get {
