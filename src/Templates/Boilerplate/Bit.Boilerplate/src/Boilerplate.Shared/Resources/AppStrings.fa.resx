@@ -531,6 +531,12 @@
     <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>ورود با گیتهاب</value>
   </data>
+    <data name="GoogleSignUpButtonText" xml:space="preserve">
+    <value>ثبت نام با گوگل</value>
+  </data>
+    <data name="GitHubSignUpButtonText" xml:space="preserve">
+    <value>ثبت نام با گیتهاب</value>
+  </data>
     <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>
   </data>

@@ -7,7 +7,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 public partial class SignUpPage
 {
     private bool isWaiting;
-    private string? signUpErrorMessage;
+    private string? message;
     private ElementReference messageRef = default!;
     private readonly SignUpRequestDto signUpModel = new();
 
@@ -23,7 +23,7 @@ public partial class SignUpPage
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
-            signUpErrorMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+            message = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
             await messageRef.ScrollIntoView();
             return;
         }
@@ -32,7 +32,7 @@ public partial class SignUpPage
         //#endif
 
         isWaiting = true;
-        signUpErrorMessage = null;
+        message = null;
         StateHasChanged();
 
         try
@@ -55,7 +55,7 @@ public partial class SignUpPage
         }
         catch (KnownException e)
         {
-            signUpErrorMessage = e is ResourceValidationException re
+            message = e is ResourceValidationException re
                                     ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
                                     : e.Message;
             await messageRef.ScrollIntoView();
@@ -63,6 +63,40 @@ public partial class SignUpPage
             //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
             //#endif
+        }
+        finally
+        {
+            isWaiting = false;
+        }
+    }
+
+    private async Task GoogleSignUp()
+    {
+        await SocialSignUp("Google");
+    }
+
+    private async Task GitHubSignUp()
+    {
+        await SocialSignUp("GitHub");
+    }
+
+    private async Task SocialSignUp(string provider)
+    {
+        if (isWaiting) return;
+
+        isWaiting = true;
+        message = null;
+
+        try
+        {
+            var redirectUrl = await identityController.GetSocialSignInUri(provider);
+
+            NavigationManager.NavigateTo(redirectUrl, true);
+        }
+        catch (KnownException e)
+        {
+            message = e.Message;
+            await messageRef.ScrollIntoView();
         }
         finally
         {

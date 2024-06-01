@@ -880,6 +880,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sign up with GitHub.
+        /// </summary>
+        public static string GitHubSignUpButtonText {
+            get {
+                return ResourceManager.GetString("GitHubSignUpButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Back.
         /// </summary>
         public static string GoBack {
@@ -894,6 +903,15 @@ namespace Boilerplate.Shared.Resources {
         public static string GoogleSignInButtonText {
             get {
                 return ResourceManager.GetString("GoogleSignInButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign up with Google.
+        /// </summary>
+        public static string GoogleSignUpButtonText {
+            get {
+                return ResourceManager.GetString("GoogleSignUpButtonText", resourceCulture);
             }
         }
         
