@@ -7,10 +7,10 @@
 <div class="page-container">
     <div class="form">
         <div @ref="messageRef" class="form-message-bar">
-            @if (string.IsNullOrEmpty(signUpErrorMessage) is false)
+            @if (string.IsNullOrEmpty(message) is false)
             {
-                <BitMessage Multiline Severity="BitSeverity.Error" OnDismiss="() => signUpErrorMessage = null">
-                    @signUpErrorMessage
+                <BitMessage Multiline Severity="BitSeverity.Error" OnDismiss="() => message = null">
+                    @message
                 </BitMessage>
             }
         </div>
@@ -18,6 +18,22 @@
         <BitTypography Variant="BitTypographyVariant.H4" Gutter>
             @Localizer[nameof(AppStrings.SignUp)]
         </BitTypography>
+        <br /><br />
+        <BitButton ButtonType="BitButtonType.Button"
+                   OnClick="WrapHandled(GoogleSignUp)"
+                   ButtonStyle="BitButtonStyle.Standard"
+                   Style="width:300px">
+            @Localizer[AppStrings.GoogleSignUpButtonText]
+        </BitButton>
+        <br />
+        <BitButton ButtonType="BitButtonType.Button"
+                   OnClick="WrapHandled(GitHubSignUp)"
+                   ButtonStyle="BitButtonStyle.Standard"
+                   Style="width:300px">
+            @Localizer[AppStrings.GitHubSignUpButtonText]
+        </BitButton>
+        <br /><br />
+        <BitSeparator Style="width:100%">Or</BitSeparator>
         <br />
         <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)">
             <AppDataAnnotationsValidator />

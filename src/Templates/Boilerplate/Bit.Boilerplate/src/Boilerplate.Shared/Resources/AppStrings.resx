@@ -531,6 +531,12 @@
     <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>Sign in with GitHub</value>
   </data>
+    <data name="GoogleSignUpButtonText" xml:space="preserve">
+    <value>Sign up with Google</value>
+  </data>
+    <data name="GitHubSignUpButtonText" xml:space="preserve">
+    <value>Sign up with GitHub</value>
+  </data>
     <data name="SignOut" xml:space="preserve">
     <value>Sign out</value>
   </data>
