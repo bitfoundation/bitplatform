@@ -1,6 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Boilerplate.Server.Services;
 
@@ -10,8 +10,7 @@ namespace Boilerplate.Server.Services;
 public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationParameters validationParameters)
     : ISecureDataFormat<AuthenticationTicket>
 {
-    public AuthenticationTicket? Unprotect(string? protectedText)
-        => Unprotect(protectedText, null);
+    public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);
 
     public AuthenticationTicket? Unprotect(string? protectedText, string? purpose)
     {
@@ -23,21 +22,21 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
             }
 
             var handler = new JwtSecurityTokenHandler();
-            ClaimsPrincipal? principal = handler.ValidateToken(protectedText, validationParameters, out var validToken);
+            var principal = handler.ValidateToken(protectedText, validationParameters, out var validToken);
+
             var validJwt = (JwtSecurityToken)validToken;
-            var data = new AuthenticationTicket(principal, properties: new AuthenticationProperties()
-            {
-                ExpiresUtc = validJwt.ValidTo
-            }, IdentityConstants.BearerScheme);
+            var properties = new AuthenticationProperties() { ExpiresUtc = validJwt.ValidTo };
+            var data = new AuthenticationTicket(principal, properties: properties, IdentityConstants.BearerScheme);
+
             return data;
         }
-        catch (Exception exp)
+        catch
         {
-            throw new UnauthorizedException(nameof(AppStrings.UnauthorizedException), exp);
+            return NotSignedIn();
         }
     }
 
-    private AuthenticationTicket NotSignedIn()
+    private static AuthenticationTicket NotSignedIn()
     {
         return new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity()), string.Empty);
     }
