@@ -51,7 +51,7 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
 
         app.MapGet("sign-in", async (HttpContext context, HtmlRenderer htmlRenderer) =>
         {
-            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery());
+            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
 
             var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
