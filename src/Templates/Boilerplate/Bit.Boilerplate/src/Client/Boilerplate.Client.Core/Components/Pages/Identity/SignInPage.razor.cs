@@ -10,7 +10,7 @@ public partial class SignInPage
     private bool isSendingOtp;
     private bool requiresTwoFactor;
     private bool isSendingTfaToken;
-    private SignInRequestDto model = new();
+    private readonly SignInRequestDto model = new();
 
     private string? message;
     private BitSeverity messageSeverity;
@@ -31,6 +31,9 @@ public partial class SignInPage
 
     [Parameter, SupplyParameterFromQuery(Name = "otp")]
     public string? OtpQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorQueryString { get; set; }
 
 
     protected override async Task OnInitAsync()
@@ -58,6 +61,12 @@ public partial class SignInPage
                 await DoSignIn();
             }
         }
+
+        if (string.IsNullOrEmpty(ErrorQueryString) is false)
+        {
+            message = ErrorQueryString;
+            messageSeverity = BitSeverity.Error;
+        }
     }
 
     private async Task DoSignIn()
@@ -78,7 +87,7 @@ public partial class SignInPage
 
             if (requiresTwoFactor is false)
             {
-                NavigationManager.NavigateTo(ReturnUrlQueryString ?? "/");
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? "/", replace: true);
             }
         }
         catch (KnownException e)
@@ -145,6 +154,41 @@ public partial class SignInPage
         finally
         {
             isSendingTfaToken = false;
+        }
+    }
+
+    private async Task GoogleSignIn()
+    {
+        await SocialSignIn("Google");
+    }
+
+    private async Task GitHubSignIn()
+    {
+        await SocialSignIn("GitHub");
+    }
+
+    private async Task SocialSignIn(string provider)
+    {
+        if (isSigningIn) return;
+
+        isSigningIn = true;
+        message = null;
+
+        try
+        {
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString);
+
+            NavigationManager.NavigateTo(redirectUrl, true, true);
+        }
+        catch (KnownException e)
+        {
+            message = e.Message;
+            messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
+        }
+        finally
+        {
+            isSigningIn = false;
         }
     }
 }
