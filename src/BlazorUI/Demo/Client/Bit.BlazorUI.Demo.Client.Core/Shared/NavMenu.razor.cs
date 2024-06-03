@@ -120,6 +120,7 @@ public partial class NavMenu : IDisposable
             Text = "Utilities",
             ChildItems =
             [
+                new() { Text = "Element", Url = "/components/element" },
                 new() { Text = "Icon", Url = "/components/icon" },
                 new() { Text = "Image", Url = "/components/image" },
                 new() { Text = "Label",  Url = "/components/label" },
