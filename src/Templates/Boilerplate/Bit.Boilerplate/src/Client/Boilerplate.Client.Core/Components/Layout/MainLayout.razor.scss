@@ -26,7 +26,6 @@ main {
 }
 
 .main-content {
-    width: 100%;
     flex-grow: 1;
     display: flex;
     padding: 1rem;
@@ -34,7 +33,12 @@ main {
     flex-flow: column;
     align-items: center;
     justify-content: center;
+    width: calc(100% - $navMenuWidth);
     background-color: $bit-color-background-secondary;
+
+    @include lt-lg {
+        width: 100%;
+    }
 }
 
 .status-bar {
