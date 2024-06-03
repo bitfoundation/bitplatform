@@ -8,5 +8,5 @@ public class NoopLocalHttpServer : ILocalHttpServer
 {
     public int Port => -1;
 
-    public Task Start() => Task.CompletedTask;
+    public Task<int> Start() => Task.FromResult(Port);
 }

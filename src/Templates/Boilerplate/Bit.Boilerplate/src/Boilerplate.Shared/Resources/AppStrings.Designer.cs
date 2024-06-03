@@ -1762,6 +1762,33 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to you can go back to the application now.
+        /// </summary>
+        public static string SocialSignedInMessageBody {
+            get {
+                return ResourceManager.GetString("SocialSignedInMessageBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The social sign-in is done.
+        /// </summary>
+        public static string SocialSignedInMessageTitle {
+            get {
+                return ResourceManager.GetString("SocialSignedInMessageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signed in.
+        /// </summary>
+        public static string SocialSignedInTitle {
+            get {
+                return ResourceManager.GetString("SocialSignedInTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Submit.
         /// </summary>
         public static string Submit {

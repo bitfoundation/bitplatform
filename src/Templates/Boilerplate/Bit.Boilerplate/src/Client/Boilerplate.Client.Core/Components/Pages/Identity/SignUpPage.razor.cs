@@ -12,6 +12,7 @@ public partial class SignUpPage
     private readonly SignUpRequestDto signUpModel = new();
 
 
+    [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IIdentityController identityController = default!;
 
 
@@ -89,18 +90,19 @@ public partial class SignUpPage
 
         try
         {
-            var redirectUrl = await identityController.GetSocialSignInUri(provider);
+            var port = await localHttpServer.Start();
+
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port);
 
             NavigationManager.NavigateTo(redirectUrl, true);
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            await messageRef.ScrollIntoView();
-        }
-        finally
-        {
             isWaiting = false;
+
+            message = e.Message;
+
+            await messageRef.ScrollIntoView();
         }
     }
 }

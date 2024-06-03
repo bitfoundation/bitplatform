@@ -2,7 +2,7 @@
 
 public interface ILocalHttpServer
 {
-    Task Start();
+    Task<int> Start();
 
     int Port { get; }
 }

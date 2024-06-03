@@ -6,10 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http.Extensions;
-using Bit.BlazorUI;
 using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Maui.Services;
@@ -17,17 +14,17 @@ namespace Boilerplate.Client.Maui.Services;
 public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHttpServer
 {
     private int port = -1;
-    private Task? startTask;
+    private Task<int>? startTask;
     private WebApplication? localHttpServer;
 
-    public Task Start()
+    public Task<int> Start()
     {
         return startTask ??= StartImplementation();
     }
 
     public int Port => port;
 
-    private async Task StartImplementation()
+    private async Task<int> StartImplementation()
     {
         var builder = WebApplication.CreateEmptyBuilder(options: new()
         {
@@ -49,22 +46,16 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
 
         app.UseStaticFiles(); // Put static files in wwwroot folder of the Client.Maui project.
 
-        app.MapGet("sign-in", async (HttpContext context, HtmlRenderer htmlRenderer) =>
+        app.MapGet("sign-in", async (HttpContext context, IConfiguration configuration) =>
         {
             await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
 
-            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<BitLabel>(ParameterView.FromDictionary(new Dictionary<string, object?>
-                {
-                }));
-                return renderedComponent.ToHtmlString();
-            });
-            context.Response.ContentType = "text/html";
-            await context.Response.WriteAsync(body);
+            context.Response.Redirect($"{configuration.GetApiServerAddress()}/social-signed-in");
         });
 
         await app.StartAsync();
+
+        return port;
     }
 
     private int GetAvailableTcpPort()
