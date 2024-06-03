@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignInPage
 {
-    private bool isSigningIn;
+    private bool isWaiting;
     private bool isSendingOtp;
     private bool requiresTwoFactor;
     private bool isSendingTfaToken;
@@ -17,6 +17,7 @@ public partial class SignInPage
     private ElementReference messageRef = default!;
 
 
+    [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IIdentityController identityController = default!;
 
 
@@ -71,9 +72,9 @@ public partial class SignInPage
 
     private async Task DoSignIn()
     {
-        if (isSigningIn) return;
+        if (isWaiting) return;
 
-        isSigningIn = true;
+        isWaiting = true;
         message = null;
 
         try
@@ -98,7 +99,7 @@ public partial class SignInPage
         }
         finally
         {
-            isSigningIn = false;
+            isWaiting = false;
         }
     }
 
@@ -169,26 +170,27 @@ public partial class SignInPage
 
     private async Task SocialSignIn(string provider)
     {
-        if (isSigningIn) return;
+        if (isWaiting) return;
 
-        isSigningIn = true;
+        isWaiting = true;
         message = null;
 
         try
         {
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString);
+            var port = await localHttpServer.Start();
+
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port);
 
             NavigationManager.NavigateTo(redirectUrl, true, true);
         }
         catch (KnownException e)
         {
+            isWaiting = false;
+
             message = e.Message;
             messageSeverity = BitSeverity.Error;
+
             await messageRef.ScrollIntoView();
-        }
-        finally
-        {
-            isSigningIn = false;
         }
     }
 }

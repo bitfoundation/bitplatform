@@ -525,6 +525,15 @@
     <data name="SignInTitle" xml:space="preserve">
     <value>Se connecter</value>
   </data>
+    <data name="SocialSignedInTitle" xml:space="preserve">
+    <value>Connecté</value>
+  </data>
+    <data name="SocialSignedInMessageTitle" xml:space="preserve">
+    <value>La connexion sociale est terminée</value>
+  </data>
+    <data name="SocialSignedInMessageBody" xml:space="preserve">
+    <value>vous pouvez revenir à l'application maintenant</value>
+  </data>
     <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>Connectez-vous avec Google</value>
   </data>
