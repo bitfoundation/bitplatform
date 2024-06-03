@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bunit;
 
 namespace Bit.BlazorUI.Tests.Element;
 
