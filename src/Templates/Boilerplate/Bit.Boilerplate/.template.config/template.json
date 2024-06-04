@@ -100,7 +100,7 @@
             "type": "parameter",
             "datatype": "string",
             "defaultValue": "use-your-server-url-here.com",
-            "description": "Set your backend server URL. You can change its value later if needed.",
+            "description": "The backend server url. You can change its value later if needed."
         },
         "normalizedServerUrl": {
             "type": "generated",
