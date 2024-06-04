@@ -9,7 +9,7 @@ variables:
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   AppSettings.IdentitySettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
   ApiServerAddress: 'https://use-your-server-url-here.com/'
-  WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy Windows publish files to wherever you want and put the url here.
+  WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
 
 jobs:
 

@@ -149,7 +149,7 @@ jobs:
         files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy Windows publish files to wherever you want and put the url here.
+        WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
   
     - name: Generate CSS/JS files
       run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
