@@ -1,0 +1,36 @@
+﻿@page "/components/element"
+
+<PageOutlet Url="components/element"
+            Title="Element"
+            Description="element component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Element"
+               ComponentDescription="A simple component with a customizable HTML tag, offering full control over styling, attributes, and directional flow, designed to integrate seamlessly into the bit BlazorUI."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitElement>This is default (div)</BitElement>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Tag" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <BitElement Tag="input" placeholder="Input" />
+            <br /><br />
+            <BitElement Tag="a" href="https://bitplatform.dev/" target="_blank">Anchor (Link)</BitElement>
+            <br /><br />
+            <BitElement Tag="button" @onclick="@(() => counter++)">Button (Click count @counter)</BitElement>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Advanced" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <BitElement Tag="@elementTag"
+                        placeholder="@elementTag"
+                        target="_blank"
+                        href="https://bitplatform.dev/">
+                @elementTag
+            </BitElement>
+            <br /><br />
+            <BitDropdown Label="Tags" Items="tagsList" @bind-Value="elementTag" Style="width: 8rem;" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
