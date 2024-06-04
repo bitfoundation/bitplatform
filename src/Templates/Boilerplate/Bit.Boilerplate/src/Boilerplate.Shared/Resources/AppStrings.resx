@@ -526,13 +526,13 @@
     <value>Sign in</value>
   </data>
     <data name="SocialSignedInTitle" xml:space="preserve">
-    <value>Signed in</value>
+    <value>Social signed in</value>
   </data>
     <data name="SocialSignedInMessageTitle" xml:space="preserve">
     <value>The social sign-in is done</value>
   </data>
     <data name="SocialSignedInMessageBody" xml:space="preserve">
-    <value>you can go back to the application now</value>
+    <value>You can go back to the application now</value>
   </data>
     <data name="GoogleSignInButtonText" xml:space="preserve">
     <value>Sign in with Google</value>

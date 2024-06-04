@@ -526,7 +526,7 @@
     <value>Se connecter</value>
   </data>
     <data name="SocialSignedInTitle" xml:space="preserve">
-    <value>Connecté</value>
+    <value>Connecté sociale</value>
   </data>
     <data name="SocialSignedInMessageTitle" xml:space="preserve">
     <value>La connexion sociale est terminée</value>
