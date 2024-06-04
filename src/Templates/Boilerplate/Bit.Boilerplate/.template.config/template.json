@@ -100,7 +100,21 @@
             "type": "parameter",
             "datatype": "string",
             "defaultValue": "use-your-server-url-here.com",
-            "description": "Use your backend server URL without the https prefix. You can update it later if needed.",
+            "description": "Set your backend server URL. You can change its value later if needed.",
+        },
+        "normalizedServerUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "serverUrl",
+                "steps": [
+                    {
+                        "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    }
+                ]
+            },
             "replaces": "use-your-server-url-here.com"
         },
         "pipeline": {
