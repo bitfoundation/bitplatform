@@ -221,7 +221,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc ||
                 await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user)
         {
-            return Challenge();
+            // Return 401 if refresh token is either invalid or expired.
+            throw new UnauthorizedException();
         }
 
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);

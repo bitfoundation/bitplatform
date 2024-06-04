@@ -20,7 +20,9 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
         {
             return await base.SendAsync(request, cancellationToken);
         }
-        catch (Exception _) when ((_ is ForbiddenException or UnauthorizedException) && tokenProvider.IsInitialized)
+        catch (Exception _) when ((_ is ForbiddenException or UnauthorizedException) &&
+                                  tokenProvider.IsInitialized &&
+                                  request.RequestUri?.LocalPath?.Contains("api/Identity/Refresh", StringComparison.InvariantCultureIgnoreCase) is false)
         {
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
@@ -33,13 +35,14 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
                 // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
                 await authManager.RefreshToken();
 
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await tokenProvider.GetAccessTokenAsync());
+                var access_token = await tokenProvider.GetAccessTokenAsync();
 
-                return await base.SendAsync(request, cancellationToken);
-            }
-            else
-            {
-                await authManager.SignOut();
+                if (string.IsNullOrEmpty(access_token) is false)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+
+                    return await base.SendAsync(request, cancellationToken);
+                }
             }
 
             throw;
