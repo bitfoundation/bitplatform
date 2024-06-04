@@ -32,7 +32,7 @@ jobs:
     - name: Release build todo sample + sqlite database
       run: |
         dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
-        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline none
+        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline none --serverUrl todo.bitplatform.dev
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
         cd TodoBPSqlite/src/TodoBPSqlite.Server/
         dotnet tool restore
@@ -54,7 +54,7 @@ jobs:
 
     - name: Release build admin panel sample + SqlServer database
       run: |
-        dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github
+        dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github --serverUrl adminpanel.bitplatform.dev
         dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
 
     - name: Install Nodejs dependencies
