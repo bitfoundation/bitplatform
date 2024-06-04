@@ -92,7 +92,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},Date:{user.EmailTokenRequestedOn}");
+        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},{user.ConcurrencyStamp}");
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"profile?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
@@ -103,7 +103,7 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},Date:{user!.EmailTokenRequestedOn}", request.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ChangeEmail:{request.Email},{user!.ConcurrencyStamp}", request.Token!);
 
         if (tokenIsValid is false)
             throw new BadRequestException();
@@ -114,7 +114,8 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates email token
+        await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+        var updateSecurityStampResult = await userManager.UpdateAsync(user); // invalidates email token by reseting concurrency token
         if (updateSecurityStampResult.Succeeded is false)
             throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }

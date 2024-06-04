@@ -73,10 +73,9 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                         await StoreTokens(refreshTokenResponse!);
                         access_token = refreshTokenResponse!.AccessToken;
                     }
-                    catch (ResourceValidationException) // refresh_token in invalid or expired
+                    catch (UnauthorizedException) // refresh_token is either invalid or expired.
                     {
                         await storageService.RemoveItem("refresh_token");
-                        throw;
                     }
                 }
             }
