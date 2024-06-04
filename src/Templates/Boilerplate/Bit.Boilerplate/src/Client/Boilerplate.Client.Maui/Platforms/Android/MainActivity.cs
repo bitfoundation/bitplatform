@@ -10,7 +10,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [IntentFilter([Intent.ActionView],
                         DataSchemes = ["https", "http"],
-                        DataHosts = ["bp.bitplatform.dev"],
+                        DataHosts = ["use-your-server-url-here.com"],
                         // the following app links will be opened in app instead of browser if the app is installed on Android device.
                         DataPaths = ["/"],
                         DataPathPrefixes = [
