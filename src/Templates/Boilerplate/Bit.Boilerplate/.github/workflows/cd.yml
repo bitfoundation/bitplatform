@@ -3,7 +3,7 @@ name: Boilerplate CD
 # https://bitplatform.dev/templates/dev-ops
 
 env:
-  API_SERVER_ADDRESS: 'https://bp.bitplatform.dev/'
+  API_SERVER_ADDRESS: 'https://use-your-server-url-here.com/'
   APP_SERVICE_NAME: 'app-service-bp-test'
   IOS_CODE_SIGN_PROVISION: 'Boilerplate'
 
@@ -149,7 +149,7 @@ jobs:
         files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-boilerplate.bitplatform.dev
+        WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy Windows publish files to wherever you want and put the url here.
   
     - name: Generate CSS/JS files
       run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore

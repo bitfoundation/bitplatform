@@ -29,6 +29,7 @@ dotnet new bit-bp</pre>
                 <li>--api defaults to true: '--api true' adds support for aspnetcore identity, webapi, odata, ef core and fluent email.</li>
                 <li>--database default to <i>SqlServer</i> among following options: <i>SqlServer</i> <i>Sqlite</i>, <i>Other</i></li>
                 <li>--captcha default to <i>reCaptcha</i> among following options: <i>reCaptcha</i> <i>None</i></li>
+                <li>--server-url Use your backend server URL without the https prefix. You can update it later if needed.</li>
                 <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>None</i></li>
                 <li>--sample default to <i>None</i> among the following options: <i>Admin</i>, <i>Todo</i>, <i>None</i></li>
                 <li>--offlineDb defaults to false: '--offlineDb true' adds sqlite database support to the client mobile, web and desktop apps</li>
@@ -45,11 +46,11 @@ dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sa
 
         2- Create a cross-platform Todo app for mobile, desktop and web with GitHub Actions and a SQLite database:
         <pre class="code-box">
-dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo</pre>
+dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo --server-url todo.bitplatform.dev</pre>
 
         3- Create a mobile, desktop and web app without sample pages, integrating GitHub Actions and a SQL Server database:
         <pre class="code-box">
-dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None</pre>
+dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --server-url app.mycompany.com</pre>
 
         4- Create an offline capable mobile, desktop and web app:
         <pre class="code-box">
