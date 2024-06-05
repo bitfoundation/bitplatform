@@ -8,7 +8,7 @@ public partial class Routes
     [AutoInject] CultureInfoManager cultureInfoManager = default!;
 
     [Parameter, SupplyParameterFromQuery(Name = "culture")]
-    public string? CultureQueryString { get; set; } // /* Android App links and iOS/macOS universal links containing ?culture=en-US */
+    public string? Culture { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -17,7 +17,7 @@ public partial class Routes
             if (AppRenderMode.MultilingualEnabled)
             {
                 cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
-                    CultureQueryString ?? // 2- Culture query string
+                    Culture ?? // 2- Culture query string for Android App links and iOS/macOS universal links
                     CultureInfo.CurrentUICulture.Name); // 3- OS settings
             }
 
