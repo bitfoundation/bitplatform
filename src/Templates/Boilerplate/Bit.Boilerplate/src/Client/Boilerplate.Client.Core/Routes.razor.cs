@@ -13,7 +13,8 @@ public partial class Routes
         {
             if (AppRenderMode.MultilingualEnabled)
             {
-                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture"));
+                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
+                                                     CultureInfo.CurrentUICulture.Name); // 2- OS settings
             }
 
             await SetupBodyClasses();
