@@ -40,7 +40,7 @@ public static partial class MauiProgram
                     {
                         var url = $"{userActivity.WebPageUrl.Path}?{userActivity.WebPageUrl.Query}";
 
-                        var _ = Routes.OpenUniversalLink(url);
+                        Routes.OpenUniversalLink(url);
 
                         return true;
                     }

@@ -47,7 +47,7 @@ public partial class WindowsLocalHttpServer(IServiceCollection services) : ILoca
 
         app.MapGet("sign-in", async (HttpContext context, IConfiguration configuration) =>
         {
-            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
+            Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
             
             await App.Current.Dispatcher.InvokeAsync(() => App.Current.MainWindow.Activate());
 

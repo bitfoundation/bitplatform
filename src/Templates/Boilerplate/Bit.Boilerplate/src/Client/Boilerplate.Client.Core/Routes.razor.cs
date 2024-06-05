@@ -66,16 +66,17 @@ public partial class Routes
     [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }
     public static NavigationManager? universalLinksNavigationManager;
 
-    public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
-    {
-        await Task.Run(async () =>
-        {
-            while (universalLinksNavigationManager is null)
-            {
-                await Task.Yield();
-            }
-        });
+    public static string StartPath = "/";
 
-        universalLinksNavigationManager!.NavigateTo(url, forceLoad, replace);
+    public static void OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
+    {
+        if (universalLinksNavigationManager is not null) // Blazor app is already loaded, open android app link or iOS universal link or windows app local http server link using navigation manager
+        {
+            universalLinksNavigationManager.NavigateTo(url, forceLoad, replace);
+        }
+        else
+        {
+            StartPath = url; // Set it to start path, so blazor uses that as a start path of the web view.
+        }
     }
 }
