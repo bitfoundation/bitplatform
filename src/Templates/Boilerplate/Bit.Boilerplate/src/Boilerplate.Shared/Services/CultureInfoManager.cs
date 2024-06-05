@@ -28,12 +28,10 @@ public class CultureInfoManager
 
     public void SetCurrentCulture(string cultureName)
     {
-        var uiCultureInfo = SupportedUICultures.FirstOrDefault(sc => sc.Name == cultureName) ?? DefaultUICulture; // for string values from resx files, detect RTL or LTR etc. 
-        var cultureInfo = CreateCultureInfo(cultureName); // for ToString call on numbers etc.
+        var cultureInfo = SupportedUICultures.FirstOrDefault(sc => sc.Name == cultureName) ?? DefaultUICulture;
 
         CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
-
-        CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = uiCultureInfo;
+        CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
     }
 
     /// <summary>
@@ -41,8 +39,6 @@ public class CultureInfoManager
     /// </summary>
     public static CultureInfo CustomizeCultureInfoForFaCulture(CultureInfo cultureInfo)
     {
-        cultureInfo.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(cultureInfo, new PersianCalendar());
-
         cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
         cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
@@ -54,6 +50,8 @@ public class CultureInfoManager
         [
             "ی", "د", "س", "چ", "پ", "ج", "ش"
         ];
+
+        cultureInfo.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(cultureInfo, new PersianCalendar());
 
         return cultureInfo;
     }
