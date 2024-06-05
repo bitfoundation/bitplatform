@@ -36,15 +36,26 @@ const tryAuthorizeWithLocalData = (swagger) => {
 const overrideSwaggerAuthorizeEvent = (swagger) => {
     const originalAuthorize = swagger.authActions.authorize;
     swagger.authActions.authorize = async (args) => {
-        const result = await originalAuthorize(args);
+        originalAuthorize(args);
 
         if (!getCookie(ACCESS_TOKEN_COOKIE_NAME)) {
-            setCookie(ACCESS_TOKEN_COOKIE_NAME, result.payload.bearerAuth.value, accessTokenExpiresIn);
+            const access_token = args.bearerAuth.value;
+            const jwt = parseJwt(access_token);
+            setCookie(ACCESS_TOKEN_COOKIE_NAME, args.bearerAuth.value, parseInt(jwt.exp));
         }
 
         reloadPage(swagger);
-        return result;
     };
+}
+
+function parseJwt(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
 }
 
 const overrideSwaggerLogoutEvent = (swagger) => {
@@ -94,19 +105,47 @@ const createSignInUI = function (swagger, rootDiv) {
 
     rootDiv.appendChild(div);
 
-    //username
+    //UserName
     const userNameLabel = document.createElement("label");
     div.appendChild(userNameLabel);
 
     const userNameSpan = document.createElement("span");
-    userNameSpan.innerText = "User";
+    userNameSpan.innerText = "UserName";
     userNameLabel.appendChild(userNameSpan);
 
     const userNameInput = document.createElement("input");
     userNameInput.type = "text";
-    userNameInput.placeholder = "test@bitplatform.dev";
+    userNameInput.placeholder = "test";
     userNameInput.style = "margin-left: 10px; margin-right: 10px;";
     userNameLabel.appendChild(userNameInput);
+
+    //Email
+    const emailLabel = document.createElement("label");
+    div.appendChild(emailLabel);
+
+    const emailSpan = document.createElement("span");
+    emailSpan.innerText = "Email";
+    emailLabel.appendChild(emailSpan);
+
+    const emailInput = document.createElement("input");
+    emailInput.type = "text";
+    emailInput.placeholder = "test@bitplatform.dev";
+    emailInput.style = "margin-left: 10px; margin-right: 10px;";
+    emailLabel.appendChild(emailInput);
+
+    //Phone
+    const phoneLabel = document.createElement("label");
+    div.appendChild(phoneLabel);
+
+    const phoneSpan = document.createElement("span");
+    phoneSpan.innerText = "Phone";
+    phoneLabel.appendChild(phoneSpan);
+
+    const phoneInput = document.createElement("input");
+    phoneInput.type = "text";
+    phoneInput.placeholder = "+31684207362";
+    phoneInput.style = "margin-left: 10px; margin-right: 10px;";
+    phoneLabel.appendChild(phoneInput);
 
     //Password
     const passwordLabel = document.createElement("label");
@@ -132,25 +171,32 @@ const createSignInUI = function (swagger, rootDiv) {
     signInButton.classList.add("button");
     signInButton.innerText = "Sign in";
     signInButton.onclick = function () {
-        const userName = userNameInput.value;
-        const password = passwordInput.value;
+        const userName = userNameInput.value === "" ? null : userNameInput.value;
+        const email = emailInput.value === "" ? null : emailInput.value;
+        const phone = phoneInput.value === "" ? null : phoneInput.value;
+        const password = passwordInput.value === "" ? null : passwordInput.value;
 
-        if (userName === "" || password === "") {
-            alert("Insert userName and password!");
+        if (userName === null && email === null && phone === null) {
+            alert("Either provide username, email or phone.");
             return;
         }
 
-        signIn(swagger, userName, password);
+        if (password === null) {
+            alert("Password is required.");
+            return;
+        }
+
+        signIn(swagger, userName, email, phone, password);
     };
 
     div.appendChild(signInButton);
 }
 
-const signIn = async (swagger, userName, password) => {
+const signIn = async (swagger, userName, email, phone, password) => {
     const response = await fetch('/api/Identity/SignIn', {
         headers: { "Content-Type": "application/json; charset=utf-8" },
         method: 'POST',
-        body: JSON.stringify({ "userName": userName, "password": password })
+        body: JSON.stringify({ "userName": userName, "email": email, "phoneNumber": phone, "password": password })
     })
     if (response.ok) {
         const result = await response.json();
