@@ -17,14 +17,7 @@ public partial class Footer
                                       .Select(sc => new BitDropdownItem<string> { Value = sc.Name, Text = sc.DisplayName })
                                       .ToArray();
 
-        if (InPrerenderSession)
-        {
-            SelectedCulture = CultureInfo.CurrentUICulture.Name;
-        }
-        else
-        {
-            SelectedCulture = await StorageService.GetItem("Culture") ?? CultureInfo.CurrentUICulture.Name;
-        }
+        SelectedCulture = CultureInfo.CurrentUICulture.Name;
 
         await base.OnInitAsync();
     }

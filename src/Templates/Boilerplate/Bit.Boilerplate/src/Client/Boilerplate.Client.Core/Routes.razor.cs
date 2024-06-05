@@ -16,8 +16,8 @@ public partial class Routes
         {
             if (AppRenderMode.MultilingualEnabled)
             {
-                cultureInfoManager.SetCurrentCulture(CultureQueryString ?? // 1- Culture query string for Android App links and iOS/macOS universal links
-                                                     await storageService.GetItem("Culture") ?? // 2- User settings
+                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
+                                                     CultureQueryString ?? // 2- Culture query string for Android App links and iOS/macOS universal links
                                                      CultureInfo.CurrentUICulture.Name); // 3- OS settings
             }
 

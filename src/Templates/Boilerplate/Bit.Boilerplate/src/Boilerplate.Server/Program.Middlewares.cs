@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
 //#endif
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Localization;
 
 namespace Boilerplate.Server;
 
@@ -34,7 +35,8 @@ public static partial class Program
             {
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
-                ApplyCurrentCultureToResponseHeaders = true
+                ApplyCurrentCultureToResponseHeaders = true,
+                RequestCultureProviders = [new CookieRequestCultureProvider(), new QueryStringRequestCultureProvider(), new AcceptLanguageHeaderRequestCultureProvider()]
             }.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name));
         }
 
