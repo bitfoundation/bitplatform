@@ -41,7 +41,10 @@ public partial class _BitNavChild<TItem> where TItem : class
             await Nav.SetSelectedItem(Item);
         }
 
-        await Nav.OnItemClick.InvokeAsync(Item);
+        if (Nav.SelectedItem != Item || Nav.Reselectable)
+        {
+            await Nav.OnItemClick.InvokeAsync(Item);
+        }
     }
 
     private async Task ToggleItem()

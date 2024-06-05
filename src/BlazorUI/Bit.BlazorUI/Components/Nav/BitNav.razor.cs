@@ -111,6 +111,11 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     [Parameter] public BitNavRenderType RenderType { get; set; } = BitNavRenderType.Normal;
 
     /// <summary>
+    /// Enables recalling the select events when the same item is selected.
+    /// </summary>
+    [Parameter] public bool Reselectable { get; set; }
+
+    /// <summary>
     /// Reverses the location of the expander chevron.
     /// </summary>
     [Parameter] public bool ReversedChevron { get; set; }
@@ -658,8 +663,12 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
     internal async Task SetSelectedItem(TItem item)
     {
+        if (item != SelectedItem || Reselectable)
+        {
+            await OnSelectItem.InvokeAsync(item);
+        }
+
         SelectedItem = item;
-        await OnSelectItem.InvokeAsync(item);
         StateHasChanged();
     }
 
