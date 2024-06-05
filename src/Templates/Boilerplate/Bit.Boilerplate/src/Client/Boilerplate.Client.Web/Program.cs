@@ -56,7 +56,9 @@ public static partial class Program
         catch (JSException exp) when (exp.Message is "Error: Could not find any element matching selector '#app-container'.")
         {
 #if BlazorWebAssemblyStandalone
-            await Console.Error.WriteLineAsync("Either run/publish Client.Web project or set BlazorWebAssemblyStandalone to false.");
+            await System.Console.Error.WriteLineAsync("Either run/publish Client.Web project or set BlazorWebAssemblyStandalone to false.");
+#else
+            throw;
 #endif
         }
 

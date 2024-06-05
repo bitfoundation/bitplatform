@@ -26,15 +26,20 @@ public partial class Footer
 
     private async Task OnCultureChanged()
     {
-        await cookie.Set(new()
+        if (AppRenderMode.IsBlazorHybrid)
         {
-            Name = ".AspNetCore.Culture",
-            Value = Uri.EscapeDataString($"c={SelectedCulture}|uic={SelectedCulture}"),
-            MaxAge = 30 * 24 * 3600,
-            Secure = BuildConfiguration.IsRelease()
-        });
-
-        await StorageService.SetItem("Culture", SelectedCulture, persistent: true);
+            await StorageService.SetItem("Culture", SelectedCulture, persistent: true);
+        }
+        else
+        {
+            await cookie.Set(new()
+            {
+                Name = ".AspNetCore.Culture",
+                Value = Uri.EscapeDataString($"c={SelectedCulture}|uic={SelectedCulture}"),
+                MaxAge = 30 * 24 * 3600,
+                Secure = BuildConfiguration.IsRelease()
+            });
+        }
 
         if (AppRenderMode.IsBlazorHybrid)
         {
