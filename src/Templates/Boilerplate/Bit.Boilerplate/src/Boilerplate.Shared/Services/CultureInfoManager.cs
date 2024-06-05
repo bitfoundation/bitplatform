@@ -6,12 +6,12 @@ public class CultureInfoManager
 {
     public static CultureInfo DefaultCulture { get; } = CreateCultureInfo("en-US");
 
-    public static CultureInfo[] SupportedCultures { get; } =
+    public static (string DisplayName, CultureInfo Culture)[] SupportedCultures { get; } =
     [
-        CreateCultureInfo("en-US"),
-        CreateCultureInfo("en-GB"),
-        CreateCultureInfo("fr-FR"),
-        CreateCultureInfo("fa-IR")
+        ("English US", CreateCultureInfo("en-US")),
+        ("English UK", CreateCultureInfo("en-GB")),
+        ("Française", CreateCultureInfo("fr-FR")),
+        ("فارسی", CreateCultureInfo("fa-IR"))
     ];
 
     public static CultureInfo CreateCultureInfo(string name)
@@ -28,7 +28,7 @@ public class CultureInfoManager
 
     public void SetCurrentCulture(string cultureName)
     {
-        var cultureInfo = SupportedCultures.FirstOrDefault(sc => sc.Name == cultureName) ?? DefaultCulture;
+        var cultureInfo = SupportedCultures.FirstOrDefault(sc => sc.Culture.Name == cultureName).Culture ?? DefaultCulture;
 
         CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;

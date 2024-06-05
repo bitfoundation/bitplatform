@@ -30,13 +30,12 @@ public static partial class Program
 
         if (AppRenderMode.MultilingualEnabled)
         {
-            var supportedCultures = CultureInfoManager.SupportedCultures;
+            var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => sc.Culture).ToArray();
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
-                ApplyCurrentCultureToResponseHeaders = true,
-                RequestCultureProviders = [new CookieRequestCultureProvider(), new QueryStringRequestCultureProvider(), new AcceptLanguageHeaderRequestCultureProvider()]
+                ApplyCurrentCultureToResponseHeaders = true
             }.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name));
         }
 
