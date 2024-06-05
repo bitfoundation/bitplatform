@@ -17,12 +17,12 @@ public class User : IdentityUser<int>
     public string? ProfileImageName { get; set; }
 
     /// <summary>
-    /// To either confirm and/or change email
+    /// Confirms or changes email. Ensures only the latest token is valid and single-use.
     /// </summary>
     public DateTimeOffset? EmailTokenRequestedOn { get; set; }
 
     /// <summary>
-    /// To either confirm and/or change phone number
+    /// Confirms or changes phone number. Ensures only the latest token is valid and single-use.
     /// </summary>
     public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
 
@@ -31,7 +31,7 @@ public class User : IdentityUser<int>
     public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
 
     /// <summary>
-    /// To sign in with either Otp or magic link.
+    /// Sign in with OTP or magic link. Ensures only the latest token is valid and single-use.
     /// </summary>
     public DateTimeOffset? OtpRequestedOn { get; set; }
 }

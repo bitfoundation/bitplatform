@@ -13,7 +13,7 @@ public static class SignInManagerExtensions
 
         if (await userManager.IsLockedOutAsync(user)) return SignInResult.LockedOut;
 
-        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"Otp,{user.ConcurrencyStamp}", otp!);
+        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"Otp,{user.OtpRequestedOn}", otp!);
 
         if (tokenIsValid is false)
         {
