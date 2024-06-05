@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
-public static class BitPersonaColorUtils
+internal static class BitPersonaColorUtils
 {
-    static readonly BitPersonaInitialsColor[] _colorSwatchesLookup = new BitPersonaInitialsColor[]
-    {
+    private static readonly BitPersonaInitialsColor[] _colorSwatchesLookup =
+    [
         BitPersonaInitialsColor.LightBlue,
         BitPersonaInitialsColor.Blue,
         BitPersonaInitialsColor.DarkBlue,
@@ -24,15 +24,15 @@ public static class BitPersonaColorUtils
         BitPersonaInitialsColor.Cyan,
         BitPersonaInitialsColor.Rust,
         BitPersonaInitialsColor.CoolGray
-    };
-    public static BitPersonaInitialsColor GetInitialsColorFromName(string? displayName)
+    ];
+
+    internal static BitPersonaInitialsColor GetInitialsColorFromName(string? displayName)
     {
         BitPersonaInitialsColor color = BitPersonaInitialsColor.Blue;
-        if (string.IsNullOrWhiteSpace(displayName))
-            return color;
+        if (displayName.HasNoValue()) return color;
 
         int hashCode = 0;
-        for (int iLen = displayName.Length - 1; iLen >= 0; iLen--)
+        for (int iLen = displayName!.Length - 1; iLen >= 0; iLen--)
         {
             char ch = displayName[iLen];
             int shift = iLen % 8;
@@ -44,7 +44,7 @@ public static class BitPersonaColorUtils
         return color;
     }
 
-    public static string GetPersonaColorHexCode(BitPersonaInitialsColor personaInitialsColor)
+    internal static string GetPersonaColorHexCode(BitPersonaInitialsColor personaInitialsColor)
     {
         return personaInitialsColor switch
         {

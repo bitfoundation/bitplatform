@@ -7,38 +7,61 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    <div role="presentation" class="bit-prs-coin">
-        @if (Size != BitPersonaSize.Size20)
+    <div role="presentation" class="bit-prs-cin">
+        @{
+            string dimension = GetPersonaImageDimension();
+            var presentationIcon = GetPresentationIcon();
+            var coinBackgroundColor = GetCoinBackgroundColor();
+            var coinWidth = GetCoinWidth();
+        }
+
+        @if (Size is BitPersonaSize.Size8)
         {
-            string dimension = CoinSize != -1 ? $"{CoinSize.ToString()}px" : Size!;
-
-            <div class="bit-prs-ima" style="width:@dimension; height:@dimension">
-
-                <div class="bit-prs-imc" @onclick="HandleImageClick">
-                    @if (ImageUrl is not null)
+            @if (Presence is BitPersonaPresenceStatus.None)
+            {
+                <i class="bit-prs-pic bit-icon bit-icon--@presentationIcon" role="presentation" />
+            }
+            else
+            {
+                <div title="@PresenceTitle" class="bit-prs-pre @GetPresentationClass()"></div>
+            }
+        }
+        else
+        {
+            <div style="@coinBackgroundColor @coinWidth" class="bit-prs-imc" @onclick="HandleImageClick">
+                @if (ShowUnknownPersonaCoin)
+                {
+                    <i class="bit-prs-upc bit-icon bit-icon--Help" role="presentation" />
+                }
+                else if (ImageUrl is not null)
+                {
+                    @if (OnImageClick.HasDelegate)
                     {
+                        <div style="@coinBackgroundColor" class="bit-prs-imo">
+                            @if (ImageOverlayTemplate is not null)
+                            {
+                                @ImageOverlayTemplate
+                            }
+                            else
+                            {
+                                <span>@ImageOverlayText</span>
+                            }
+                        </div>
+                    }
 
-                        @if (OnImageClick.HasDelegate)
-                        {
-                            <div class="bit-prs-imo">
-                                @if (ImageOverlayFragment is not null)
-                                {
-                                    @ImageOverlayFragment
-                                }
-                                else
-                                {
-                                    <span>Edit image</span>
-                                }
-                            </div>
-                        }
+                    @if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
+                    {
+                        <div class="bit-prs-ini">
+                            @GetInitials()
+                        </div>
+                    }
 
-                        @if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
-                        {
-                            <div class="bit-prs-ini">
-                                @_internalInitials
-                            </div>
-                        }
-
+                    @if (CoinTemplate is not null)
+                    {
+                        @CoinTemplate
+                    }
+                    else if (ImageUrl.HasValue())
+                    {
                         @if (_hasError is false)
                         {
                             <img src="@ImageUrl"
@@ -46,74 +69,90 @@
                                  class="bit-prs-img"
                                  alt="@ImageAlt"
                                  width="@dimension"
-                                 height="@dimension" @onerror="HandleOnError" @onload="HandleOnLoad" />
+                                 height="@dimension"
+                                 @onerror="HandleOnError"
+                                 @onload="HandleOnLoad" />
                         }
                     }
-                    else
-                    {
-                        <div class="initials">
-                            @_internalInitials
-                        </div>
-                    }
-                </div>
-
-                @if (OnActionClick.HasDelegate)
-                {
-                    @if (ActionFragment is not null)
-                    {
-                        @ActionFragment
-                    }
-                    else
-                    {
-                        <button @onclick="HandleActionClick" type="button" class="bit-prs-abt" title="Edit image">
-                            <span class="icon-container">
-                                <i class="bit-icon bit-icon--@ActionIconName" />
-                            </span>
-                        </button>
-                    }
                 }
-                else if (Presence != BitPersonaPresenceStatus.None)
+                else
                 {
-                    <div title=@PresenceTitle class="bit-prs-pre">
-                        <i class=@($"bit-icon bit-icon--{DetermineIcon()}") role="presentation" />
-                    </div>
+                    @GetInitials()
                 }
             </div>
-        }
-        else
-        {
-            if (Presence != BitPersonaPresenceStatus.None)
+
+            @if (OnActionClick.HasDelegate)
             {
-                <div title=@PresenceTitle class="bit-prs-pre" style="@_presenceStyle">
-                    @if (_shouldRenderIcon)
+                @if (ActionTemplate is not null)
+                {
+                    @ActionTemplate
+                }
+                else
+                {
+                    <button @onclick="HandleActionClick" type="button" class="bit-prs-abt" title="@ActionButtonTitle">
+                        <span class="bit-prs-icn">
+                            <i class="bit-prs-aic bit-icon bit-icon--@ActionIconName" />
+                        </span>
+                    </button>
+                }
+            }
+            else if (Presence is not BitPersonaPresenceStatus.None)
+            {
+                <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass()">
+                    @if (presentationIcon.HasValue())
                     {
-                        <i class="bit-icon bit-icon--@DetermineIcon()" role="presentation" style="@_iconStyle" />
+                        <i class="@($"bit-icon bit-icon--{presentationIcon}")" role="presentation" />
                     }
                 </div>
-            }
-            else
-            {
-                <i class="bit-icon bit-icon--person" />
             }
         }
     </div>
 
-    @if (HidePersonaDetails is false)
+    @if (HidePersonaDetails is false || Size is BitPersonaSize.Size8)
     {
         <div class="bit-prs-det">
-            <div dir="auto" class="bit-prs-ptx" title="@Text">
-                @Text
+            <div class="bit-prs-ptx" title="@PrimaryText">
+                @if (PrimaryTextTemplate is not null)
+                {
+                    @PrimaryTextTemplate
+                }
+                else
+                {
+                    @PrimaryText
+                }
             </div>
-            <div dir="auto" class="bit-prs-stx" title="@SecondaryText">
-                @SecondaryText
+            <div class="bit-prs-stx" title="@SecondaryText">
+                @if (SecondaryTextTemplate is not null)
+                {
+                    @SecondaryTextTemplate
+                }
+                else
+                {
+                    @SecondaryText
+                }
             </div>
-            <div dir="auto" class="bit-prs-ttx" title="@TertiaryText">
-                @TertiaryText
+            <div class="bit-prs-ttx" title="@TertiaryText">
+                @if (TertiaryTextTemplate is not null)
+                {
+                    @TertiaryTextTemplate
+                }
+                else
+                {
+                    @TertiaryText
+                }
             </div>
-            <div dir="auto" class="bit-prs-otx" title="@OptionalText">
-                @OptionalText
+            <div class="bit-prs-otx" title="@OptionalText">
+                @if (OptionalTextTemplate is not null)
+                {
+                    @OptionalTextTemplate
+                }
+                else
+                {
+                    @OptionalText
+                }
             </div>
         </div>
     }
+
 </div>
 

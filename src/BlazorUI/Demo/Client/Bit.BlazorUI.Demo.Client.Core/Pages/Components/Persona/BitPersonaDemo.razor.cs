@@ -117,7 +117,7 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "Text",
+            Name = "PrimaryText",
             Type = "string?",
             DefaultValue = "null",
             Description = "Primary text to display, usually the name of the person.",
@@ -416,21 +416,21 @@ public partial class BitPersonaDemo
              OnClick=""() => IsDetailsHidden = !IsDetailsHidden"">Include BitPersona details</BitCheckbox>
 
 <div>Size 24 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             Size=@BitPersonaSize.Size24
             HidePersonaDetails=""!IsDetailsHidden""
             Presence=@BitPersonaPresenceStatus.None
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 32 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             Size=@BitPersonaSize.Size32
             HidePersonaDetails=""!IsDetailsHidden""
             Presence=@BitPersonaPresenceStatus.Busy
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 40 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size40
             HidePersonaDetails=""!IsDetailsHidden""
@@ -438,7 +438,7 @@ public partial class BitPersonaDemo
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 48 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size48
             HidePersonaDetails=""!IsDetailsHidden""
@@ -446,7 +446,7 @@ public partial class BitPersonaDemo
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 56 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size56
             HidePersonaDetails=""!IsDetailsHidden""
@@ -454,7 +454,7 @@ public partial class BitPersonaDemo
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 72 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             Size=@BitPersonaSize.Size72
@@ -463,7 +463,7 @@ public partial class BitPersonaDemo
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 100 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
@@ -473,7 +473,7 @@ public partial class BitPersonaDemo
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 120 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm"" /
@@ -485,7 +485,7 @@ public partial class BitPersonaDemo
 public bool IsDetailsHidden { get; set; } = true;";
 
     private readonly string example2RazorCode = @"
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm"" 
@@ -500,7 +500,7 @@ public bool IsDetailsHidden { get; set; } = true;";
 private int ActionClickCount = 0;";
 
     private readonly string example3RazorCode = @"
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm"" 
@@ -514,7 +514,7 @@ private int ActionClickCount = 0;";
 private int ImageClickCount = 0;";
 
     private readonly string example4RazorCode = @"
-<BitPersona Text=""Annie Lindqvist""
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
@@ -523,7 +523,7 @@ private int ImageClickCount = 0;";
 
     private readonly string example5RazorCode = @"
 <BitPersona Dir=""BitDir.Rtl""
-            Text=""صالح یوسف نژاد""
+            PrimaryText=""صالح یوسف نژاد""
             SecondaryText=""مهندس نرم افزار""
             Size=""@BitPersonaSize.Size56"" />";
 }
