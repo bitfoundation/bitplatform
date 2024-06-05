@@ -29,6 +29,8 @@ public partial class Footer
         if (AppRenderMode.IsBlazorHybrid)
         {
             await StorageService.SetItem("Culture", SelectedCulture, persistent: true);
+            cultureInfoManager.SetCurrentCulture(SelectedCulture!);
+            pubSubService.Publish(PubSubMessages.CULTURE_CHANGED, SelectedCulture);
         }
         else
         {
@@ -39,12 +41,6 @@ public partial class Footer
                 MaxAge = 30 * 24 * 3600,
                 Secure = BuildConfiguration.IsRelease()
             });
-        }
-
-        if (AppRenderMode.IsBlazorHybrid)
-        {
-            cultureInfoManager.SetCurrentCulture(SelectedCulture!);
-            pubSubService.Publish(PubSubMessages.CULTURE_CHANGED, SelectedCulture);
         }
 
         NavigationManager.NavigateTo(NavigationManager.GetUriWithoutQueryParameter("culture"), forceLoad: true, replace: true);
