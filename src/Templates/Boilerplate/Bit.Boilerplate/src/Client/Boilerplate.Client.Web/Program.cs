@@ -38,12 +38,12 @@ public static partial class Program
 
             if (cultureCookie is not null)
             {
-                cultureCookie = Uri.EscapeDataString(cultureCookie); // temporary butil workaround
+                cultureCookie = Uri.UnescapeDataString(cultureCookie);
                 cultureCookie = cultureCookie[(cultureCookie.IndexOf("|uic=") + 5)..];
             }
 
-            var culture = (await host.Services.GetRequiredService<IStorageService>().GetItem("Culture")) ?? // 1- User settings
-                          HttpUtility.ParseQueryString(uri.Query)["culture"] ?? // 2- Culture query string
+            var culture = (HttpUtility.ParseQueryString(uri.Query)["culture"] ?? // 1- Culture query string
+                          await host.Services.GetRequiredService<IStorageService>().GetItem("Culture")) ?? // 2- User settings
                           cultureCookie ?? // 3- Culture cookie
                           CultureInfo.CurrentUICulture.Name; // 4- OS/Browser settings
 

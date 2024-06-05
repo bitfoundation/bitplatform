@@ -11,15 +11,22 @@ public partial class Footer
 
     private BitDropdownItem<string>[] cultures = default!;
 
-    protected override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         cultures = CultureInfoManager.SupportedCultures
                                       .Select(sc => new BitDropdownItem<string> { Value = sc.Name, Text = sc.DisplayName })
                                       .ToArray();
 
-        SelectedCulture = CultureInfo.CurrentUICulture.Name;
+        if (InPrerenderSession)
+        {
+            SelectedCulture = CultureInfo.CurrentUICulture.Name;
+        }
+        else
+        {
+            SelectedCulture = await StorageService.GetItem("Culture") ?? CultureInfo.CurrentUICulture.Name;
+        }
 
-        return base.OnInitAsync();
+        await base.OnInitAsync();
     }
 
     private string? SelectedCulture;
@@ -29,7 +36,7 @@ public partial class Footer
         await cookie.Set(new()
         {
             Name = ".AspNetCore.Culture",
-            Value = $"c={SelectedCulture}|uic={SelectedCulture}",
+            Value = Uri.EscapeDataString($"c={SelectedCulture}|uic={SelectedCulture}"),
             MaxAge = 30 * 24 * 3600,
             Secure = BuildConfiguration.IsRelease()
         });
@@ -42,7 +49,7 @@ public partial class Footer
             pubSubService.Publish(PubSubMessages.CULTURE_CHANGED, SelectedCulture);
         }
 
-        NavigationManager.Refresh(forceReload: true);
+        NavigationManager.NavigateTo(NavigationManager.GetWithoutQueryString("culture"), forceLoad: true, replace: true);
     }
 
     private async Task ToggleTheme()
