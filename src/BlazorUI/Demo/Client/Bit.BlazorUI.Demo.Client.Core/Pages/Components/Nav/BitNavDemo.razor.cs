@@ -134,6 +134,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "Reselectable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables recalling the select events when the same item is selected."
+        },
+        new()
+        {
             Name = "ReversedChevron",
             Type = "bool",
             DefaultValue = "false",
