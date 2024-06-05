@@ -7,13 +7,18 @@ public partial class Routes
     [AutoInject] IStorageService storageService = default!;
     [AutoInject] CultureInfoManager cultureInfoManager = default!;
 
+    [Parameter, SupplyParameterFromQuery(Name = "culture")]
+    public string? CultureQueryString { get; set; } // /* Android App links and iOS/macOS universal links containing ?culture=en-US */
+
     protected override async Task OnInitializedAsync()
     {
         if (AppRenderMode.IsBlazorHybrid)
         {
             if (AppRenderMode.MultilingualEnabled)
             {
-                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture"));
+                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
+                    CultureQueryString ?? // 2- Culture query string
+                    CultureInfo.CurrentUICulture.Name); // 3- OS settings
             }
 
             await SetupBodyClasses();

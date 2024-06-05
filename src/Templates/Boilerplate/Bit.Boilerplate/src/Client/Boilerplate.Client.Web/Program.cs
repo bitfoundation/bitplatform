@@ -1,4 +1,8 @@
 ﻿//-:cnd:noEmit
+using System.Net;
+using System.Web;
+using Bit.Butil;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #if BlazorWebAssemblyStandalone
 using Microsoft.AspNetCore.Components.Web;
@@ -29,7 +33,21 @@ public static partial class Program
 
         if (AppRenderMode.MultilingualEnabled)
         {
-            var culture = await host.Services.GetRequiredService<IStorageService>().GetItem("Culture");
+            var uri = new Uri(host.Services.GetRequiredService<NavigationManager>().Uri);
+
+            var cultureCookie = await host.Services.GetRequiredService<Bit.Butil.Cookie>().GetValue(".AspNetCore.Culture");
+
+            if (cultureCookie is not null)
+            {
+                cultureCookie = Uri.EscapeDataString(cultureCookie); // temporary butil workaround
+                cultureCookie = cultureCookie[(cultureCookie.IndexOf("|uic=") + 5)..];
+            }
+
+            var culture = (await host.Services.GetRequiredService<IStorageService>().GetItem("Culture")) ?? // 1- User settings
+                          HttpUtility.ParseQueryString(uri.Query)["culture"] ?? // 2- Culture query string
+                          cultureCookie ?? // 3- Culture cookie
+                          CultureInfo.CurrentUICulture.Name; // 4- OS/Browser settings
+
             host.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(culture);
         }
 

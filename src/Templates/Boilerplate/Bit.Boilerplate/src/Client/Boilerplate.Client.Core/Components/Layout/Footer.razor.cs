@@ -17,7 +17,7 @@ public partial class Footer
                                       .Select(sc => new BitDropdownItem<string> { Value = sc.code, Text = sc.name })
                                       .ToArray();
 
-        SelectedCulture = cultureInfoManager.GetCurrentCulture();
+        SelectedCulture = CultureInfo.CurrentUICulture.Name;
 
         return base.OnInitAsync();
     }
@@ -38,7 +38,7 @@ public partial class Footer
 
         if (AppRenderMode.IsBlazorHybrid)
         {
-            cultureInfoManager.SetCurrentCulture(SelectedCulture);
+            cultureInfoManager.SetCurrentCulture(SelectedCulture!);
             pubSubService.Publish(PubSubMessages.CULTURE_CHANGED, SelectedCulture);
         }
 

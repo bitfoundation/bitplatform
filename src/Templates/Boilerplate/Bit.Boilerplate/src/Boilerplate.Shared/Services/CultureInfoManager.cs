@@ -26,23 +26,16 @@ public class CultureInfoManager
         return cultureInfo;
     }
 
-    public void SetCurrentCulture(string? cultureInfoCookie)
+    public void SetCurrentCulture(string culture)
     {
-        var currentCulture = GetCurrentCulture(cultureInfoCookie);
-
-        var cultureInfo = CreateCultureInfo(currentCulture);
-
-        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
-    }
-
-    public string GetCurrentCulture(string? preferredCulture = null)
-    {
-        string culture = preferredCulture ?? CultureInfo.CurrentUICulture.Name;
         if (SupportedCultures.Any(sc => sc.code == culture) is false)
         {
             culture = DefaultCulture.code;
         }
-        return culture;
+
+        var cultureInfo = CreateCultureInfo(culture);
+
+        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
     }
 
     /// <summary>
