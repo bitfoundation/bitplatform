@@ -526,10 +526,10 @@
     <value>ورود به برنامه</value>
   </data>
     <data name="SocialSignedInTitle" xml:space="preserve">
-    <value>اتمام ورود</value>
+    <value>ورود سوشال</value>
   </data>
     <data name="SocialSignedInMessageTitle" xml:space="preserve">
-    <value>سوشال لاگین انجام شد</value>
+    <value>ورود سوشال انجام شد</value>
   </data>
     <data name="SocialSignedInMessageBody" xml:space="preserve">
     <value>حالا میتوانید به برنامه بازگردید</value>
