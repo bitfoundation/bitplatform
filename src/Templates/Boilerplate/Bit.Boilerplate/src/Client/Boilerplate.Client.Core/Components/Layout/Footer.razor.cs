@@ -47,7 +47,7 @@ public partial class Footer
             pubSubService.Publish(PubSubMessages.CULTURE_CHANGED, SelectedCulture);
         }
 
-        NavigationManager.NavigateTo(NavigationManager.GetWithoutQueryString("culture"), forceLoad: true, replace: true);
+        NavigationManager.NavigateTo(NavigationManager.GetUriWithoutQueryParameter("culture"), forceLoad: true, replace: true);
     }
 
     private async Task ToggleTheme()

@@ -4,7 +4,7 @@ namespace Microsoft.AspNetCore.Components;
 
 public static class NavigationManagerExtensions
 {
-    public static string GetWithoutQueryString(this NavigationManager navigationManager, string key)
+    public static string GetUriWithoutQueryParameter(this NavigationManager navigationManager, string key)
     {
         var url = navigationManager.Uri;
 
