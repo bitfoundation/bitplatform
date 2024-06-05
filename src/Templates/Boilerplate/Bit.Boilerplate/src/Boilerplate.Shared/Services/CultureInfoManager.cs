@@ -4,21 +4,21 @@ namespace Boilerplate.Shared.Services;
 
 public class CultureInfoManager
 {
-    public static (string name, string code) DefaultCulture { get; } = ("English", "en-US");
+    public static CultureInfo DefaultUICulture { get; } = CreateCultureInfo("en-US");
 
-    public static (string name, string code)[] SupportedCultures { get; } =
+    public static CultureInfo[] SupportedUICultures { get; } =
     [
-        ("English US", "en-US"),
-        ("English UK", "en-GB"),
-        ("Française", "fr-FR"),
-        ("فارسی", "fa-IR"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
+        CreateCultureInfo("en-US"),
+        CreateCultureInfo("en-GB"),
+        CreateCultureInfo("fr-FR"),
+        CreateCultureInfo("fa-IR")
     ];
 
-    public static CultureInfo CreateCultureInfo(string cultureInfoId)
+    public static CultureInfo CreateCultureInfo(string name)
     {
-        var cultureInfo = OperatingSystem.IsBrowser() ? CultureInfo.CreateSpecificCulture(cultureInfoId) : new CultureInfo(cultureInfoId);
+        var cultureInfo = OperatingSystem.IsBrowser() ? CultureInfo.CreateSpecificCulture(name) : new CultureInfo(name);
 
-        if (cultureInfoId == "fa-IR")
+        if (name == "fa-IR")
         {
             CustomizeCultureInfoForFaCulture(cultureInfo);
         }
@@ -26,16 +26,14 @@ public class CultureInfoManager
         return cultureInfo;
     }
 
-    public void SetCurrentCulture(string culture)
+    public void SetCurrentCulture(string cultureName)
     {
-        if (SupportedCultures.Any(sc => sc.code == culture) is false)
-        {
-            culture = DefaultCulture.code;
-        }
+        var uiCultureInfo = SupportedUICultures.FirstOrDefault(sc => sc.Name == cultureName) ?? DefaultUICulture; // for string values from resx files, detect RTL or LTR etc. 
+        var cultureInfo = CreateCultureInfo(cultureName); // for ToString call on numbers etc.
 
-        var cultureInfo = CreateCultureInfo(culture);
+        CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
 
-        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
+        CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = uiCultureInfo;
     }
 
     /// <summary>
