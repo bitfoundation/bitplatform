@@ -11,7 +11,6 @@
 
     <b:BlazorWebView
         x:Name="blazorWebView"
-        StartPath="{x:Static core:Routes.StartPath}"
         BackgroundColor="{AppThemeBinding Light={OnPlatform Android=#0D2960,
                                                             Default=#ffffff},
                                           Dark={OnPlatform Android=#0D2960,

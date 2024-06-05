@@ -48,7 +48,7 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
 
         app.MapGet("sign-in", async (HttpContext context, IConfiguration configuration) =>
         {
-            Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
+            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
 
             var url = $"{configuration.GetApiServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
             context.Response.Redirect(url);

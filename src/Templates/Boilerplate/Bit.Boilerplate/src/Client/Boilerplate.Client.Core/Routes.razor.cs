@@ -7,18 +7,14 @@ public partial class Routes
     [AutoInject] IStorageService storageService = default!;
     [AutoInject] CultureInfoManager cultureInfoManager = default!;
 
-    [Parameter, SupplyParameterFromQuery(Name = "culture")]
-    public string? CultureQueryString { get; set; }
-
     protected override async Task OnInitializedAsync()
     {
         if (AppRenderMode.IsBlazorHybrid)
         {
             if (AppRenderMode.MultilingualEnabled)
             {
-                cultureInfoManager.SetCurrentCulture(CultureQueryString ?? // 1- Culture query string for Android App links and iOS/macOS universal links
-                                                     await storageService.GetItem("Culture") ?? // 2- User settings
-                                                     CultureInfo.CurrentUICulture.Name); // 3- OS settings
+                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
+                                                     CultureInfo.CurrentUICulture.Name); // 2- OS settings
             }
 
             await SetupBodyClasses();
@@ -66,17 +62,16 @@ public partial class Routes
     [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }
     public static NavigationManager? universalLinksNavigationManager;
 
-    public static string StartPath = "/";
-
-    public static void OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
+    public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
     {
-        if (universalLinksNavigationManager is not null) // Blazor app is already loaded, open android app link or iOS universal link or windows app local http server link using navigation manager
+        await Task.Run(async () =>
         {
-            universalLinksNavigationManager.NavigateTo(url, forceLoad, replace);
-        }
-        else
-        {
-            StartPath = url; // Set it to start path, so blazor uses that as a start path of the web view.
-        }
+            while (universalLinksNavigationManager is null)
+            {
+                await Task.Yield();
+            }
+        });
+
+        universalLinksNavigationManager!.NavigateTo(url, forceLoad, replace);
     }
 }
