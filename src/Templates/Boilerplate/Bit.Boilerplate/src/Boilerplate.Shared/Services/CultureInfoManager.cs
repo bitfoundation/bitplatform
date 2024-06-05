@@ -4,9 +4,9 @@ namespace Boilerplate.Shared.Services;
 
 public class CultureInfoManager
 {
-    public static CultureInfo DefaultUICulture { get; } = CreateCultureInfo("en-US");
+    public static CultureInfo DefaultCulture { get; } = CreateCultureInfo("en-US");
 
-    public static CultureInfo[] SupportedUICultures { get; } =
+    public static CultureInfo[] SupportedCultures { get; } =
     [
         CreateCultureInfo("en-US"),
         CreateCultureInfo("en-GB"),
@@ -28,7 +28,7 @@ public class CultureInfoManager
 
     public void SetCurrentCulture(string cultureName)
     {
-        var cultureInfo = SupportedUICultures.FirstOrDefault(sc => sc.Name == cultureName) ?? DefaultUICulture;
+        var cultureInfo = SupportedCultures.FirstOrDefault(sc => sc.Name == cultureName) ?? DefaultCulture;
 
         CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;

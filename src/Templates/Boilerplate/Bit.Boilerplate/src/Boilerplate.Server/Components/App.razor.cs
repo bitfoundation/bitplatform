@@ -16,7 +16,7 @@ public partial class App
         if (AppRenderMode.MultilingualEnabled)
         {
             HttpContext?.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,
-            CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)));
+            CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)));
         }
     }
 }

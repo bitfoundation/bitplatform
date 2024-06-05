@@ -13,7 +13,7 @@ public partial class Footer
 
     protected override Task OnInitAsync()
     {
-        cultures = CultureInfoManager.SupportedUICultures
+        cultures = CultureInfoManager.SupportedCultures
                                       .Select(sc => new BitDropdownItem<string> { Value = sc.Name, Text = sc.DisplayName })
                                       .ToArray();
 

@@ -1,9 +1,8 @@
 ﻿//-:cnd:noEmit
-using System.Net;
 using System.Web;
-using Bit.Butil;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Bit.Butil;
 #if BlazorWebAssemblyStandalone
 using Microsoft.AspNetCore.Components.Web;
 #endif
@@ -35,7 +34,7 @@ public static partial class Program
         {
             var uri = new Uri(host.Services.GetRequiredService<NavigationManager>().Uri);
 
-            var cultureCookie = await host.Services.GetRequiredService<Bit.Butil.Cookie>().GetValue(".AspNetCore.Culture");
+            var cultureCookie = await host.Services.GetRequiredService<Cookie>().GetValue(".AspNetCore.Culture");
 
             if (cultureCookie is not null)
             {

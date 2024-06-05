@@ -29,13 +29,13 @@ public static partial class Program
 
         if (AppRenderMode.MultilingualEnabled)
         {
-            var supportedCultures = CultureInfoManager.SupportedUICultures;
+            var supportedCultures = CultureInfoManager.SupportedCultures;
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
                 ApplyCurrentCultureToResponseHeaders = true
-            }.SetDefaultCulture(CultureInfoManager.DefaultUICulture.Name));
+            }.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name));
         }
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
