@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
 //#endif
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Localization;
 
 namespace Boilerplate.Server;
 
