@@ -663,12 +663,13 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
 
     internal async Task SetSelectedItem(TItem item)
     {
+        SelectedItem = item;
+        
         if (item != SelectedItem || Reselectable)
         {
             await OnSelectItem.InvokeAsync(item);
         }
 
-        SelectedItem = item;
         StateHasChanged();
     }
 
