@@ -1762,7 +1762,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to you can go back to the application now.
+        ///   Looks up a localized string similar to You can go back to the application now.
         /// </summary>
         public static string SocialSignedInMessageBody {
             get {
@@ -1780,7 +1780,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signed in.
+        ///   Looks up a localized string similar to Social signed in.
         /// </summary>
         public static string SocialSignedInTitle {
             get {

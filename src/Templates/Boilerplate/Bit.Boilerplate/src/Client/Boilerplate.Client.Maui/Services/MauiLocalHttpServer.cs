@@ -50,7 +50,8 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
         {
             await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
 
-            context.Response.Redirect($"{configuration.GetApiServerAddress()}/social-signed-in");
+            var url = $"{configuration.GetApiServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
+            context.Response.Redirect(url);
         });
 
         await app.StartAsync();

@@ -1,6 +1,8 @@
 ﻿//+:cnd:noEmit
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Boilerplate.Server.Services;
+using Boilerplate.Server.Components;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
@@ -11,21 +13,15 @@ namespace Boilerplate.Server.Controllers.Identity;
 [Route("api/[controller]/[action]")]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
-    [AutoInject] private UserManager<User> userManager = default!;
-
-    [AutoInject] private SignInManager<User> signInManager = default!;
-
-    [AutoInject] private IUserStore<User> userStore = default!;
-
-    [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
-
-    [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
-
     [AutoInject] private SmsService smsService = default!;
-
     [AutoInject] private EmailService emailService = default!;
-
+    [AutoInject] private HtmlRenderer htmlRenderer = default!;
+    [AutoInject] private IUserStore<User> userStore = default!;
+    [AutoInject] private UserManager<User> userManager = default!;
+    [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private ILogger<IdentityController> logger = default!;
+    [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
+    [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -468,6 +464,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (localHttpPort is null) return LocalRedirect($"~/{url}");
 
         return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), url).ToString());
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> SocialSignedIn()
+    {
+        var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+                    (await htmlRenderer.RenderComponentAsync<SocialSignedInPage>()).ToHtmlString());
+
+        return Content(html, "text/html", System.Text.Encoding.UTF8);
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
