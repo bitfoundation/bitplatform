@@ -17,21 +17,15 @@ public class User : IdentityUser<int>
     public string? ProfileImageName { get; set; }
 
     /// <summary>
-    /// Confirms or changes email. Ensures only the latest token is valid and single-use.
+    /// The date and time of the last token request. Ensures the generated token is valid and can only be used once.
     /// </summary>
     public DateTimeOffset? EmailTokenRequestedOn { get; set; }
 
-    /// <summary>
-    /// Confirms or changes phone number. Ensures only the latest token is valid and single-use.
-    /// </summary>
     public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
 
     public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
 
     public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
 
-    /// <summary>
-    /// Sign in with OTP or magic link. Ensures only the latest token is valid and single-use.
-    /// </summary>
     public DateTimeOffset? OtpRequestedOn { get; set; }
 }
