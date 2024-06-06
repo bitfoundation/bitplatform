@@ -11,7 +11,10 @@ public partial class MainWindow
         services.ConfigureServices();
         InitializeComponent();
         BlazorWebView.Services = services.BuildServiceProvider();
-        BlazorWebView.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(App.Current.Properties["Culture"]?.ToString() ?? CultureInfo.CurrentUICulture.Name);
+        if (AppRenderMode.MultilingualEnabled)
+        {
+            BlazorWebView.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(App.Current.Properties["Culture"]?.ToString() ?? CultureInfo.CurrentUICulture.Name);
+        }
         BlazorWebView.Services.GetRequiredService<IPubSubService>().Subscribe(PubSubMessages.CULTURE_CHANGED, async culture =>
         {
             App.Current.Shutdown();

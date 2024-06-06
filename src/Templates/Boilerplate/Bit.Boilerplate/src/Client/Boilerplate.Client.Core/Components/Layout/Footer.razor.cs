@@ -13,11 +13,14 @@ public partial class Footer
 
     protected override async Task OnInitAsync()
     {
-        cultures = CultureInfoManager.SupportedCultures
-                                      .Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })
-                                      .ToArray();
+        if (AppRenderMode.MultilingualEnabled)
+        {
+            cultures = CultureInfoManager.SupportedCultures
+                              .Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })
+                              .ToArray();
 
-        SelectedCulture = CultureInfo.CurrentUICulture.Name;
+            SelectedCulture = CultureInfo.CurrentUICulture.Name;
+        }
 
         await base.OnInitAsync();
     }
