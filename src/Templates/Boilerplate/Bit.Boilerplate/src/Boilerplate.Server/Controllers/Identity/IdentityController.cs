@@ -181,17 +181,17 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.RequiresTwoFactor)
         {
-            if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
-            {
-                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
-            }
-            else if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
+            if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
             {
                 result = await signInManager.TwoFactorRecoveryCodeSignInAsync(request.TwoFactorRecoveryCode);
             }
             else if (string.IsNullOrEmpty(request.TwoFactorToken) is false)
             {
                 result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, request.TwoFactorToken, false, false);
+            }
+            else if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
+            {
+                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
             }
             else
             {

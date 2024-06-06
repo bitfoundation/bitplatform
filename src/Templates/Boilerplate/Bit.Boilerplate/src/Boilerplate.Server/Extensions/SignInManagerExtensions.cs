@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Reflection;
 using Boilerplate.Server.Models.Identity;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -23,7 +23,11 @@ public static class SignInManagerExtensions
 
         if (user.TwoFactorEnabled)
         {
-            await signInManager.Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(user.Id));
+            // Allow the two-factor flow to continue later within the same request
+            var twoFactorAuthenticationInfo = Activator.CreateInstance(TwoFactorAuthenticationInfoType);
+            TwoFactorAuthenticationInfoTypeUserProperty.SetValue(twoFactorAuthenticationInfo, user);
+            TwoFactorInfoField.SetValue(signInManager, twoFactorAuthenticationInfo);
+
             return SignInResult.TwoFactorRequired;
         }
 
@@ -32,12 +36,14 @@ public static class SignInManagerExtensions
         return SignInResult.Success;
     }
 
-    private static ClaimsPrincipal StoreTwoFactorInfo(int userId)
-    {
-        var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
+    private static readonly Type TwoFactorAuthenticationInfoType = typeof(SignInManager<User>)
+        .GetTypeInfo()
+        .DeclaredNestedTypes.Single(t => t.Name is "TwoFactorAuthenticationInfo")
+        .MakeGenericType(typeof(User));
 
-        identity.AddClaim(new Claim(ClaimTypes.Name, userId.ToString()));
+    private static readonly PropertyInfo TwoFactorAuthenticationInfoTypeUserProperty = TwoFactorAuthenticationInfoType!
+        .GetProperty("User")!;
 
-        return new ClaimsPrincipal(identity);
-    }
+    private static readonly FieldInfo TwoFactorInfoField = typeof(SignInManager<User>)
+        .GetField("_twoFactorInfo", BindingFlags.Instance | BindingFlags.NonPublic)!;
 }
