@@ -4,9 +4,9 @@ namespace Boilerplate.Shared.Services;
 
 public class CultureInfoManager
 {
-    public static CultureInfo DefaultCulture => CreateCultureInfo("en-US");
+    public static CultureInfo DefaultCulture { get; } = CreateCultureInfo("en-US");
 
-    public static (string DisplayName, CultureInfo Culture)[] SupportedCultures =>
+    public static (string DisplayName, CultureInfo Culture)[] SupportedCultures { get; } =
     [
         ("English US", CreateCultureInfo("en-US")),
         ("English UK", CreateCultureInfo("en-GB")),
@@ -37,7 +37,7 @@ public class CultureInfoManager
     /// <summary>
     /// This is an example to demonstrate the way you can customize application culture
     /// </summary>
-    private static CultureInfo CustomizeCultureInfoForFaCulture(CultureInfo cultureInfo)
+    public static CultureInfo CustomizeCultureInfoForFaCulture(CultureInfo cultureInfo)
     {
         cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
         cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
