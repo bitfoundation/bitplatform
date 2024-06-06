@@ -74,7 +74,7 @@
         }
         else
         {
-            <BitPivot>
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll">
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaRecoveryCodesHeader)]">
                     <div class="tab-item-container">
                         @if (recoveryCodesLeft == 0)

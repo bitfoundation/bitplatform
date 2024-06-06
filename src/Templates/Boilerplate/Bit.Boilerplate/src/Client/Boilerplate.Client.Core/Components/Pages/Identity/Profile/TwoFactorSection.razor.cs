@@ -42,6 +42,8 @@ public partial class TwoFactorSection
         var response = await SendTwoFactorAuthRequest(request);
 
         recoveryCodes = response?.RecoveryCodes;
+
+        await messageRef.ScrollIntoView();
     }
 
     private async Task DisableTwoFactorAuth()
@@ -93,13 +95,13 @@ public partial class TwoFactorSection
         {
             message = e.Message;
 
+            await messageRef.ScrollIntoView();
+
             return null;
         }
         finally
         {
             isWaiting = false;
-
-            await messageRef.ScrollIntoView();
         }
     }
 
