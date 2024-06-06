@@ -658,10 +658,10 @@
     <value>To use an authenticator app go through the following steps:</value>
   </data>
     <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Download a two-factor authenticator app like Microsoft Authenticator for {0} and {1} or Google Authenticator for {2} and {3}.</value>
+    <value>Download a two-factor authenticator app like Google Authenticator for {0} and {1}.</value>
   </data>
     <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Scan the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):</value>
+    <value>Scan/click the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):</value>
   </data>
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>
