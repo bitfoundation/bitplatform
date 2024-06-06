@@ -1,6 +1,6 @@
 @inherits AppComponentBase
 
-<div>
+<div style="width:100%">
     <div @ref="messageRef" class="form-message-bar">
         @if (string.IsNullOrEmpty(message) is false)
         {
@@ -13,7 +13,7 @@
     </BitTypography>
 
     <br />
-    @if (isLoading)
+    @if (isWaiting)
     {
         <div class="loading-container">
             <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>

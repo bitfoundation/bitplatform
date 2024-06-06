@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 public partial class TwoFactorSection
 {
     private string? qrCode;
-    private bool isLoading;
+    private bool isWaiting;
     private string? sharedKey;
     private int recoveryCodesLeft;
     private bool isKeyCopiedShown;
@@ -72,7 +72,10 @@ public partial class TwoFactorSection
 
     private async Task<TwoFactorAuthResponseDto?> SendTwoFactorAuthRequest(TwoFactorAuthRequestDto request)
     {
-        isLoading = true;
+        if (isWaiting) return null;
+
+        message = null;
+        isWaiting = true;
 
         try
         {
@@ -89,13 +92,14 @@ public partial class TwoFactorSection
         catch (KnownException e)
         {
             message = e.Message;
-            await messageRef.ScrollIntoView();
 
             return null;
         }
         finally
         {
-            isLoading = false;
+            isWaiting = false;
+
+            await messageRef.ScrollIntoView();
         }
     }
 
