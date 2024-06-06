@@ -6,7 +6,6 @@ using Boilerplate.Server.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
-using static System.FormattableString;
 
 namespace Boilerplate.Server.Controllers.Identity;
 
@@ -93,7 +92,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn}"));
+        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn}"));
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"profile?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
@@ -104,7 +103,7 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, Invariant($"ChangeEmail:{request.Email},{user!.EmailTokenRequestedOn}"), request.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user!.EmailTokenRequestedOn}"), request.Token!);
 
         if (tokenIsValid is false)
             throw new BadRequestException();
