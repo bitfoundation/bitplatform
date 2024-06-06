@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Boilerplate.Server.Services;
 using Boilerplate.Server.Components;
@@ -181,17 +182,17 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.RequiresTwoFactor)
         {
-            if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
-            {
-                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
-            }
-            else if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
+            if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
             {
                 result = await signInManager.TwoFactorRecoveryCodeSignInAsync(request.TwoFactorRecoveryCode);
             }
             else if (string.IsNullOrEmpty(request.TwoFactorToken) is false)
             {
                 result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, request.TwoFactorToken, false, false);
+            }
+            else if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
+            {
+                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
             }
             else
             {
@@ -456,6 +457,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             LogSocialSignInCallbackFailed(logger, exp, info.LoginProvider, info.Principal.GetDisplayName());
             url = $"sign-in?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
+        }
+        finally
+        {
+            await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
         }
 
         if (localHttpPort is null) return LocalRedirect($"~/{url}");
