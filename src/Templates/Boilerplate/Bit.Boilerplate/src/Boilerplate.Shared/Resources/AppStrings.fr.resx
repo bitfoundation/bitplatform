@@ -658,10 +658,10 @@
     <value>Pour utiliser une application d'authentification, suivez les étapes suivantes:</value>
   </data>
     <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Téléchargez une application d'authentification à deux facteurs comme Microsoft Authenticator pour {0} et {1} ou Google Authenticator pour {2} et {3}.</value>
+    <value>Téléchargez une application d'authentification à deux facteurs comme Google Authenticator pour {0} et {1}.</value>
   </data>
     <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Scannez le code QR ou entrez la clé suivante dans votre application d'authentification à deux facteurs (les espaces et la casse n'ont pas d'importance):</value>
+    <value>Scannez/click le code QR ou entrez la clé suivante dans votre application d'authentification à deux facteurs (les espaces et la casse n'ont pas d'importance):</value>
   </data>
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Une fois que vous avez scanné le code QR ou saisi la clé ci-dessus, votre application d'authentification à deux facteurs vous fournira un code unique. Entrez le code dans la case de confirmation ci-dessous.</value>

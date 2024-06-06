@@ -1870,7 +1870,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Download a two-factor authenticator app like Microsoft Authenticator for {0} and {1} or Google Authenticator for {2} and {3}..
+        ///   Looks up a localized string similar to Download a two-factor authenticator app like Google Authenticator for {0} and {1}..
         /// </summary>
         public static string TfaConfigureAutAppStep1 {
             get {
@@ -1879,7 +1879,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Scan the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):.
+        ///   Looks up a localized string similar to Scan/click the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):.
         /// </summary>
         public static string TfaConfigureAutAppStep2 {
             get {
