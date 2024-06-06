@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -62,6 +63,11 @@ public partial class BitCircularTimePicker
     /// Capture and render additional attributes in addition to the main callout's parameters
     /// </summary>
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the TimePicker component.
+    /// </summary>
+    [Parameter] public BitCircularTimePickerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The title of the close button (tooltip).
@@ -201,6 +207,11 @@ public partial class BitCircularTimePicker
     [Parameter] public bool ShowCloseButton { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the TimePicker component.
+    /// </summary>
+    [Parameter] public BitCircularTimePickerClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// The tabIndex of the TextField.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
@@ -265,6 +276,8 @@ public partial class BitCircularTimePicker
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lic" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined ? "bit-ctp-und" : string.Empty);
@@ -272,6 +285,11 @@ public partial class BitCircularTimePicker
         ClassBuilder.Register(() => HasBorder ? string.Empty : "bit-ctp-nbd");
 
         ClassBuilder.Register(() => _focusClass);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
@@ -366,10 +384,51 @@ public partial class BitCircularTimePicker
         return $"{x:F3}px, {y:F3}px";
     }
 
-    private string GetHoursMinutesClass(int value) =>
-        (_showHourView && GetHours() == value) || (_showHourView is false && _minute.GetValueOrDefault() == value)
-            ? "bit-ctp-sel"
-            : string.Empty;
+    private string GetHoursMinutesClass(int hourMinute)
+    {
+        StringBuilder classes = new();
+
+        if (Classes?.ClockNumber.HasValue() ?? false)
+        {
+            classes.Append(Classes.ClockNumber);
+        }
+
+        if ((_showHourView && GetHours() == hourMinute) || (_showHourView is false && _minute.GetValueOrDefault() == hourMinute))
+        {
+            if (classes.Length > 0)
+            {
+                classes.Append(' ');
+            }
+
+            classes.Append("bit-ctp-sel");
+
+            if ((Classes?.ClockSelectedNumber.HasValue() ?? false))
+            {
+                classes.Append(' ').Append(Classes.ClockSelectedNumber);
+            }
+        }
+
+        return classes.ToString();
+    }
+
+    private string GetHoursMinutesStyle(int hourMinute, int index, double radius, double offsetX, double offsetY)
+    {
+        StringBuilder styles = new();
+
+        styles.Append($"transform: translate({GetTransformStyle(index, radius, offsetX, offsetY)}); ");
+
+        if (Styles?.ClockNumber.HasValue() ?? false)
+        {
+            styles.Append(' ').Append(Styles.ClockNumber);
+        }
+
+        if ((Styles?.ClockSelectedNumber.HasValue() ?? false) && ((_showHourView && GetHours() == hourMinute) || (_showHourView is false && _minute.GetValueOrDefault() == hourMinute)))
+        {
+            styles.Append(' ').Append(Styles.ClockSelectedNumber);
+        }
+
+        return styles.ToString();
+    }
 
     private int GetClockHandHeightPercent() => (_showHourView && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
 

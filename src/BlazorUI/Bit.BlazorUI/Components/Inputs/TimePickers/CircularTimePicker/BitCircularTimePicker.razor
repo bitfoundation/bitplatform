@@ -15,13 +15,13 @@
     }
     else if (Label.HasValue())
     {
-        <label class="bit-ctp-lbl" id="@_labelId" for="@_inputId">
+        <label style="@Styles?.Label" class="bit-ctp-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
             @Label
         </label>
     }
 
-    <div class="bit-ctp-wrp" id="@_circularTimePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
-        <div class="bit-ctp-fgp">
+    <div style="@Styles?.InputWrapper" class="bit-ctp-wrp @Classes?.InputWrapper" id="@_circularTimePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+        <div style="@Styles?.InputContainer" class="bit-ctp-icn @Classes?.InputContainer">
             <input @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
                    @oninput="@HandleOnChange"
@@ -40,7 +40,8 @@
                    aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-controls="@(IsOpen ? _calloutId : null)"
                    aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                   class="bit-ctp-inp @(AllowTextInput ? "bit-ctp-ein" : "")" />
+                   style="@Styles?.Input"
+                   class="bit-ctp-inp@(AllowTextInput ? " bit-ctp-ein" : "") @Classes?.Input" />
 
             @if (IconTemplate is not null)
             {
@@ -48,45 +49,55 @@
             }
             else
             {
-                <i class="bit-ctp-ico bit-icon bit-icon--@IconName" aria-hidden="true" />
+                <i style="@Styles?.Icon" class="bit-ctp-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
             }
         </div>
     </div>
 
-    <div class="bit-ctp-ovl"
-         style="display:@(IsOpen ? "block;" : "none;")"
-         @onclick="CloseCallout"></div>
+    <div @onclick="CloseCallout"
+         style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+         class="bit-ctp-ovl @Classes?.Overlay"></div>
 
-    <div class="bit-ctp-cal" id="@_calloutId">
-        <div class="bit-ctp-cac" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
-            <div class="bit-ctp-tbr">
-                <div class="bit-ctp-hm">
+    <div style="@Styles?.Callout" class="bit-ctp-cal @Classes?.Callout" id="@_calloutId">
+        <div style="@Styles?.CalloutContainer" class="bit-ctp-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
+            <div style="@Styles?.Toolbar" class="bit-ctp-tbr @Classes?.Toolbar">
+                <div style="@Styles?.HourMinuteContainer" class="bit-ctp-hmc @Classes?.HourMinuteContainer">
                     @if (EditMode == BitCircularTimePickerEditMode.Normal)
                     {
-                        <button type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina")" @onclick="HandleOnHourClick">
+                        <button style="@Styles?.HourButton" type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina") @Classes?.HourButton" @onclick="HandleOnHourClick">
                             @GetHourString()
                         </button>
-                        <span class="bit-ctp-txt">:</span>
-                        <button type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : "")" @onclick="HandleOnMinuteClick">
+                        <span style="@Styles?.Divider" class="bit-ctp-txt @Classes?.Divider">:</span>
+                        <button style="@Styles?.MinuteButton" type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : "") @Classes?.MinuteButton" @onclick="HandleOnMinuteClick">
                             @GetMinuteString()
                         </button>
                     }
                     else
                     {
-                        <span class="bit-ctp-txt">@GetHourString():@GetMinuteString()</span>
+                        <span style="@Styles?.HourMinuteText" class="bit-ctp-txt @Classes?.HourMinuteText">@GetHourString():@GetMinuteString()</span>
                     }
                 </div>
                 @if (TimeFormat == BitTimeFormat.TwelveHours)
                 {
-                    <div class="bit-ctp-apc">
-                        <button type="button" class="bit-ctp-apb @(IsAm() ? "" : "bit-ctp-ina")" @onclick="HandleOnAmClick">@Culture.DateTimeFormat.AMDesignator</button>
-                        <button type="button" class="bit-ctp-apb @(IsAm() ? "bit-ctp-ina" : "")" @onclick="HandleOnPmClick">@Culture.DateTimeFormat.PMDesignator</button>
+                    <div style="@Styles?.AmPmContainer" class="bit-ctp-apc @Classes?.AmPmContainer">
+                        <button @onclick="HandleOnAmClick"
+                                type="button"
+                                style="@Styles?.AmButton"
+                                class="bit-ctp-apb @(IsAm() ? "" : "bit-ctp-ina") @Classes?.AmButton">
+                            @Culture.DateTimeFormat.AMDesignator
+                        </button>
+                        <button @onclick="HandleOnPmClick"
+                                type="button"
+                                style="@Styles?.PmButton"
+                                class="bit-ctp-apb @(IsAm() ? "bit-ctp-ina" : "") @Classes?.PmButton">
+                            @Culture.DateTimeFormat.PMDesignator
+                        </button>
                     </div>
                 }
             </div>
-            <div class="bit-ctp-clk">
-                <div @ref="_clockRef" class="bit-ctp-clf" @onpointerdown="HandleOnPointerDown">
-                    <div class="bit-ctp-pin"></div>
+            <div style="@Styles?.Clock" class="bit-ctp-clk @Classes?.Clock">
+                <div @ref="_clockRef" style="@Styles?.ClockFace" class="bit-ctp-clf @Classes?.ClockFace" @onpointerdown="HandleOnPointerDown">
+                    <div style="@Styles?.ClockPin" class="bit-ctp-pin @Classes?.ClockPin"></div>
 
                     @if (_showHourView)
                     {
@@ -94,7 +105,7 @@
                         {
                             for (int i = 1; i <= 12; i++)
                             {
-                                <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5));">@i</p>
+                                <p style="@GetHoursMinutesStyle(i, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(i)">@i</p>
                             }
                         }
                         else
@@ -102,12 +113,13 @@
                             @*Hours from 13 to 24 (00)*@
                             for (int i = 1; i <= 12; i++)
                             {
-                                <p class="bit-ctp-num @GetHoursMinutesClass((i + 12) % 24)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@(((i + 12) % 24).ToString("D2"))</p>
+                                var hour = (i + 12) % 24;
+                                <p style="@GetHoursMinutesStyle(hour, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(hour)">@(hour.ToString("D2"))</p>
                             }
                             @*Hours from 1 to 12*@
                             for (int i = 1; i <= 12; i++)
                             {
-                                <p class="bit-ctp-num @GetHoursMinutesClass(i)" style="transform: translate(@GetTransformStyle(i, 74, 0, 40))">@(i.ToString("D2"))</p>
+                                <p style="@GetHoursMinutesStyle(i, i, 74, 0, 40)" class="bit-ctp-num @GetHoursMinutesClass(i)">@(i.ToString("D2"))</p>
                             }
                         }
                     }
@@ -115,15 +127,17 @@
                     {
                         @for (int i = 0; i < 12; i++)
                         {
-                            <p class="bit-ctp-num @GetHoursMinutesClass(i * 5)" style="transform: translate(@GetTransformStyle(i, 109, 0, 5))">@((i * 5).ToString("D2"))</p>
+                            var minute = i * 5;
+                            <p style="@GetHoursMinutesStyle(minute, i, 109, 0, 5)" class="bit-ctp-num @GetHoursMinutesClass(minute)">@(minute.ToString("D2"))</p>
                         }
                     }
 
                     @{
                         var deg = GetPointerDegree();
                     }
-                    <div class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani")" style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg);">
-                        <div class="bit-ctp-pth@(deg % 30 == 0 ? "" : " bit-ctp-ptm")"></div>
+                    <div style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg); @Classes?.Pointer"
+                         class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani") @Classes?.Pointer">
+                        <div style="@Styles?.PointerThumb" class="bit-ctp-pth@(deg % 30 == 0 ? "" : " bit-ctp-ptm") @Classes?.PointerThumb"></div>
                     </div>
                 </div>
             </div>
@@ -132,10 +146,11 @@
             {
                 <button @onclick="CloseCallout"
                         type="button"
-                        class="bit-ctp-cbn"
+                        style="@Styles?.CloseButton"
+                        class="bit-ctp-cbn @Classes?.CloseButton"
                         title="@CloseButtonTitle"
                         aria-label="@CloseButtonTitle">
-                    <i class="bit-ctp-cbi bit-icon bit-icon--Cancel" aria-hidden="true" />
+                    <i style="@Styles?.CloseButtonIcon" class="bit-ctp-cbi bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" aria-hidden="true" />
                 </button>
             }
         </div>
