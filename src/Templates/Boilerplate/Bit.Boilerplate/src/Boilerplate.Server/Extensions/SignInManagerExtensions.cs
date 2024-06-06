@@ -21,12 +21,17 @@ public static class SignInManagerExtensions
             return SignInResult.Failed;
         }
 
+        return await SignInOrTwoFactorAsync(signInManager, user); // See SignInManager.SignInOrTwoFactorAsync in aspnetcore repo
+    }
+
+    private static async Task<SignInResult> SignInOrTwoFactorAsync(SignInManager<User> signInManager, User user)
+    {
         if (user.TwoFactorEnabled)
         {
             // Allow the two-factor flow to continue later within the same request
-            var twoFactorAuthenticationInfo = Activator.CreateInstance(TwoFactorAuthenticationInfoType);
-            TwoFactorAuthenticationInfoTypeUserProperty.SetValue(twoFactorAuthenticationInfo, user);
-            TwoFactorInfoField.SetValue(signInManager, twoFactorAuthenticationInfo);
+            var twoFactorAuthenticationInfo = Activator.CreateInstance(_TwoFactorAuthenticationInfoType);
+            _TwoFactorAuthenticationInfoTypeUserProperty.SetValue(twoFactorAuthenticationInfo, user);
+            _TwoFactorInfoField.SetValue(signInManager, twoFactorAuthenticationInfo);
 
             return SignInResult.TwoFactorRequired;
         }
@@ -36,14 +41,14 @@ public static class SignInManagerExtensions
         return SignInResult.Success;
     }
 
-    private static readonly Type TwoFactorAuthenticationInfoType = typeof(SignInManager<User>)
+    private static readonly Type _TwoFactorAuthenticationInfoType = typeof(SignInManager<User>)
         .GetTypeInfo()
         .DeclaredNestedTypes.Single(t => t.Name is "TwoFactorAuthenticationInfo")
         .MakeGenericType(typeof(User));
 
-    private static readonly PropertyInfo TwoFactorAuthenticationInfoTypeUserProperty = TwoFactorAuthenticationInfoType!
+    private static readonly PropertyInfo _TwoFactorAuthenticationInfoTypeUserProperty = _TwoFactorAuthenticationInfoType!
         .GetProperty("User")!;
 
-    private static readonly FieldInfo TwoFactorInfoField = typeof(SignInManager<User>)
+    private static readonly FieldInfo _TwoFactorInfoField = typeof(SignInManager<User>)
         .GetField("_twoFactorInfo", BindingFlags.Instance | BindingFlags.NonPublic)!;
 }
