@@ -292,6 +292,17 @@ public static partial class Program
             });
         }
 
+        if (string.IsNullOrEmpty(configuration["Authentication:Twitter:ConsumerKey"]) is false)
+        {
+            authenticationBuilder.AddTwitter(options =>
+            {
+                options.ConsumerKey = configuration["Authentication:Twitter:ConsumerKey"]!;
+                options.ConsumerSecret = configuration["Authentication:Twitter:ConsumerSecret"]!;
+                options.RetrieveUserDetails = true;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
+
         services.AddAuthorization();
     }
 

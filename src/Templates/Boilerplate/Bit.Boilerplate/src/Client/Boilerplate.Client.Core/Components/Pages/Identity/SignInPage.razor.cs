@@ -169,6 +169,11 @@ public partial class SignInPage
         await SocialSignIn("GitHub");
     }
 
+    private async Task TwitterSignIn()
+    {
+        await SocialSignIn("Twitter");
+    }
+
     private async Task SocialSignIn(string provider)
     {
         if (isWaiting) return;

@@ -540,6 +540,9 @@
     <data name="GitHubSignInButtonText" xml:space="preserve">
     <value>Connectez-vous avec GitHub</value>
   </data>
+    <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>Connectez-vous avec Twitter (X)</value>
+  </data>
     <data name="GoogleSignUpButtonText" xml:space="preserve">
     <value>Inscrivez-vous avec Google</value>
   </data>
