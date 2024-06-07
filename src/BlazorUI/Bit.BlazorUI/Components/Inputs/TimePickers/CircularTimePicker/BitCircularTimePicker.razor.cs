@@ -607,7 +607,7 @@ public partial class BitCircularTimePicker
 
     private string? GetPmButtonStyle(bool isAm)
     {
-        var style = $"{Styles?.AmButton?.Trim(';')};{(isAm ? null : Styles?.SelectedButtons)}".Trim(';');
+        var style = $"{Styles?.PmButton?.Trim(';')};{(isAm ? null : Styles?.SelectedButtons)}".Trim(';');
         return style.HasValue() ? style : null;
     }
 
