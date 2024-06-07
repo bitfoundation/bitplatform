@@ -599,6 +599,18 @@ public partial class BitCircularTimePicker
         return style.HasValue() ? style : null;
     }
 
+    private string? GetAmStyle(bool isAm)
+    {
+        var style = $"{Styles?.AmButton?.Trim(';')};{(isAm ? Styles?.SelectedButtons : null)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetPmStyle(bool isAm)
+    {
+        var style = $"{Styles?.AmButton?.Trim(';')};{(isAm ? null : Styles?.SelectedButtons)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
     private string? GetClockPointerThumbStyle(bool isMinute)
     {
         var style = $"{Styles?.ClockPointerThumb?.Trim(';')};{(isMinute ? null : Styles?.ClockPointerThumbMinute)}".Trim(';');

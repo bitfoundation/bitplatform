@@ -85,17 +85,18 @@
                 </div>
                 @if (TimeFormat == BitTimeFormat.TwelveHours)
                 {
+                    var isAm = IsAm();
                     <div style="@Styles?.AmPmContainer" class="bit-ctp-apc @Classes?.AmPmContainer">
                         <button @onclick="HandleOnAmClick"
                                 type="button"
-                                style="@(IsAm() ? (Styles?.AmButton + Styles?.SelectedButtons) : Styles?.AmButton)"
-                                class="bit-ctp-apb @(IsAm() ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
+                                style="@GetAmStyle(isAm)"
+                                class="bit-ctp-apb @(isAm ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
                             @Culture.DateTimeFormat.AMDesignator
                         </button>
                         <button @onclick="HandleOnPmClick"
                                 type="button"
-                                style="@(IsAm() ? Styles?.PmButton : (Styles?.PmButton + Styles?.SelectedButtons))"
-                                class="bit-ctp-apb @(IsAm() ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
+                                style="@GetPmStyle(isAm)"
+                                class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
                             @Culture.DateTimeFormat.PMDesignator
                         </button>
                     </div>
