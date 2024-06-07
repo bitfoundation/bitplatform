@@ -26,10 +26,10 @@
         else
         {
             var coinWidth = GetCoinWidth();
-            var coinColor = GetCoinColor();
+            var coinBgColor = GetCoinBackgroundColor();
 
-            <div style="@coinColor @coinWidth" class="bit-prs-imc" @onclick="HandleImageClick">
-                @if (ShowUnknownPersonaCoin)
+            <div style="@coinBgColor @coinWidth" class="bit-prs-imc" @onclick="HandleImageClick">
+                @if (Unknown)
                 {
                     <i class="bit-icon bit-icon--Help" role="presentation" />
                 }
@@ -37,7 +37,7 @@
                 {
                     if (OnImageClick.HasDelegate)
                     {
-                        <div style="@coinColor" class="bit-prs-imo">
+                        <div style="@coinBgColor" class="bit-prs-imo">
                             @if (ImageOverlayTemplate is not null)
                             {
                                 @ImageOverlayTemplate

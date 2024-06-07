@@ -4,8 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitPersona
 {
+    private bool unknown;
     private string? imageUrl;
-    private bool showUnknownPersonaCoin;
     private BitPersonaSize size = BitPersonaSize.Size48;
 
 
@@ -44,6 +44,11 @@ public partial class BitPersona
     /// Custom persona coin's image template
     /// </summary>
     [Parameter] public RenderFragment? CoinTemplate { get; set; }
+
+    /// <summary>
+    /// The background color when the user's initials are displayed.
+    /// </summary>
+    [Parameter] public string? Color { get; set; }
 
     /// <summary>
     /// Whether to not render persona details, and just render the persona image/initials.
@@ -85,16 +90,6 @@ public partial class BitPersona
             _hasError = false;
         }
     }
-
-    /// <summary>
-    /// The background color when the user's initials are displayed.
-    /// </summary>
-    [Parameter] public string? InitialsColor { get; set; }
-
-    /// <summary>
-    /// The text color when the user's initials are displayed.
-    /// </summary>
-    [Parameter] public string? InitialsTextColor { get; set; }
 
     /// <summary>
     /// Callback for the persona custom action.
@@ -161,13 +156,13 @@ public partial class BitPersona
     /// If true, show the special coin for unknown persona. 
     /// It has '?' in place of initials, with static font and background colors.
     /// </summary>
-    [Parameter] public bool ShowUnknownPersonaCoin
+    [Parameter] public bool Unknown
     {
-        get => showUnknownPersonaCoin; set
+        get => unknown; set
         {
-            if (showUnknownPersonaCoin == value) return;
+            if (unknown == value) return;
 
-            showUnknownPersonaCoin = value;
+            unknown = value;
             ClassBuilder.Reset();
         }
     }
@@ -219,7 +214,7 @@ public partial class BitPersona
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => ShowUnknownPersonaCoin && Size is not BitPersonaSize.Size8 ? "bit-prs-upc" : string.Empty);
+        ClassBuilder.Register(() => Unknown && Size is not BitPersonaSize.Size8 ? "bit-prs-unk" : string.Empty);
 
         ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-iac" : string.Empty);
     }
@@ -258,23 +253,12 @@ public partial class BitPersona
         return null;
     }
 
-    private string? GetCoinColor()
+    private string? GetCoinBackgroundColor()
     {
-        if (ShowUnknownPersonaCoin) return null;
         if (Size is BitPersonaSize.Size8) return null;
+        if (Color.HasNoValue()) return null;
 
-        StringBuilder sb = new();
-        if (InitialsColor.HasValue())
-        {
-            sb.Append($"--bit-prs-coin-color-bg:{InitialsColor};");
-        }
-
-        if (InitialsTextColor.HasValue())
-        {
-            sb.Append($"--bit-prs-coin-color:{InitialsTextColor};");
-        }
-
-        return sb.ToString();
+        return $"background-color:{Color};";
     }
 
     private string? GetCoinWidth()

@@ -55,9 +55,8 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "InitialsColor",
+            Name = "Color",
             Type = "string?",
-            LinkType = LinkType.Link,
             DefaultValue = "null",
             Description = "The background color when the user's initials are displayed.",
         },
@@ -100,7 +99,7 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "ShowUnknownPersonaCoin",
+            Name = "Unknown",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, show the special coin for unknown persona. It has '?' in place of initials, with static font and background colors.",

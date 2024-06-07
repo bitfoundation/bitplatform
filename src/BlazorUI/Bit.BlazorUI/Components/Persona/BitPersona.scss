@@ -1,7 +1,5 @@
 ﻿@import "../../Styles/functions.scss";
 
-$color-coin: var(--bit-prs-coin-color);
-$color-coin-bg: var(--bit-prs-coin-color-bg);
 
 .bit-prs {
     margin: 0;
@@ -10,10 +8,10 @@ $color-coin-bg: var(--bit-prs-coin-color-bg);
     font-weight: 400;
     box-shadow: none;
     position: relative;
-    color: $color-coin;
     align-items: center;
     box-sizing: border-box;
     font-size: spacing(1.75);
+    color: $color-foreground-primary;
     font-family: $typography-font-family;
 
     &.bit-dis {
@@ -21,9 +19,6 @@ $color-coin-bg: var(--bit-prs-coin-color-bg);
         color: $color-foreground-disabled;
         background-color: $color-background-disabled;
     }
-
-    --bit-prs-coin-color: var(--bit-clr-fg-primary);
-    --bit-prs-coin-color-bg: var(--bit-clr-primary-main);
 }
 
 .bit-prs-cin {
@@ -38,10 +33,9 @@ $color-coin-bg: var(--bit-prs-coin-color-bg);
     font-weight: 600;
     position: relative;
     border-radius: 50%;
-    color: $color-coin;
     align-items: center;
     justify-content: center;
-    background-color: $color-coin-bg;
+    background-color: $color-primary-main;
 }
 
 .bit-prs-imo {
@@ -50,12 +44,11 @@ $color-coin-bg: var(--bit-prs-coin-color-bg);
     display: none;
     font-weight: 400;
     position: absolute;
-    color: $color-coin;
     align-items: center;
     justify-content: center;
     font-size: spacing(1.75);
     transition: all 0.1s linear;
-    background-color: $color-coin-bg;
+    background-color: $color-primary-main;
 }
 
 .bit-prs-img {
@@ -84,9 +77,12 @@ $color-coin-bg: var(--bit-prs-coin-color-bg);
     border: spacing(0.125) $shape-border-style $color-border-secondary;
 }
 
-.bit-prs-upc {
-    --bit-prs-coin-color: var(--bit-clr-sta-error);
-    --bit-prs-coin-color-bg: var(--bit-clr-bg-secondary);
+.bit-prs-unk {
+    color: $color-state-error;
+
+    .bit-prs-imc {
+        background-color: $color-background-secondary;
+    }
 }
 
 .bit-prs-det {
