@@ -178,7 +178,7 @@
             "defaultValue": "false"
         },
         "appCenter": {
-            "displayName": "Add Microsoft AppCenter to project?",
+            "displayName": "Add Visual Studio AppCenter to project?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false"
