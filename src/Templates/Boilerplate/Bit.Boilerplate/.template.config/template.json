@@ -177,6 +177,12 @@
             "datatype": "bool",
             "defaultValue": "false"
         },
+        "appCenter": {
+            "displayName": "Add Visual Studio AppCenter to project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
+        },
         "nameToLower": {
             "type": "generated",
             "generator": "casing",

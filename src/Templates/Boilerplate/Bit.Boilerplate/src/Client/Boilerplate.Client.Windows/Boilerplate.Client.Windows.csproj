@@ -33,6 +33,9 @@
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
         <PackageReference Include="Velopack" Version="0.0.503-gc69e323" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.5" />
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" Version="5.0.5" />
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" Version="2.2.2" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
         <!--/-:msbuild-conditional:noEmit -->
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
