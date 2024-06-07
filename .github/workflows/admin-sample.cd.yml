@@ -282,7 +282,7 @@ jobs:
 
     - name: Set app center secret
       run: |
-          sed -i 's/appCenterSecret = null;/appCenterSecret = "0bc0d910-dc84-4887-a3a0-eee6b1b55797";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
+          brew install gnu-sed && sed -i 's/appCenterSecret = null;/appCenterSecret = "0bc0d910-dc84-4887-a3a0-eee6b1b55797";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui
