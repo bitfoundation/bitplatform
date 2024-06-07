@@ -144,7 +144,7 @@
                     }
                     <div style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg); @Classes?.ClockPointer"
                          class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani") @Classes?.ClockPointer">
-                        <div style="@Styles?.ClockPointerThumb@(isMinute ? "" : $"{Styles?.ClockPointerThumbMinute}")"
+                        <div style="@(isMinute ? Styles?.ClockPointerThumb : $"{Styles?.ClockPointerThumb}{Styles?.ClockPointerThumbMinute}")"
                              class="bit-ctp-pth@(isMinute ? "" : $" bit-ctp-ptm {Classes?.ClockPointerThumbMinute}") @Classes?.ClockPointerThumb"></div>
                     </div>
                 </div>
