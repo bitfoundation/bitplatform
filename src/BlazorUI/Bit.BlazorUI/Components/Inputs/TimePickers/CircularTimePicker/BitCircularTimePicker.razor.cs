@@ -587,25 +587,25 @@ public partial class BitCircularTimePicker
         StateHasChanged();
     }
 
-    private string? GetHourStyle()
+    private string? GetHourButtonStyle()
     {
         var style = $"{Styles?.HourButton?.Trim(';')};{(_showHourView ? Styles?.SelectedButtons : null)}".Trim(';');
         return style.HasValue() ? style : null;
     }
 
-    private string? GetMinuteStyle()
+    private string? GetMinuteButtonStyle()
     {
         var style = $"{Styles?.MinuteButton?.Trim(';')};{(_showHourView ? null : Styles?.SelectedButtons)}".Trim(';');
         return style.HasValue() ? style : null;
     }
 
-    private string? GetAmStyle(bool isAm)
+    private string? GetAmButtonStyle(bool isAm)
     {
         var style = $"{Styles?.AmButton?.Trim(';')};{(isAm ? Styles?.SelectedButtons : null)}".Trim(';');
         return style.HasValue() ? style : null;
     }
 
-    private string? GetPmStyle(bool isAm)
+    private string? GetPmButtonStyle(bool isAm)
     {
         var style = $"{Styles?.AmButton?.Trim(';')};{(isAm ? null : Styles?.SelectedButtons)}".Trim(';');
         return style.HasValue() ? style : null;

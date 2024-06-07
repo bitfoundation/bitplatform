@@ -65,14 +65,14 @@
                     @if (EditMode == BitCircularTimePickerEditMode.Normal)
                     {
                         <button @onclick="HandleOnHourClick"
-                                style="@GetHourStyle()"
+                                style="@GetHourButtonStyle()"
                                 class="bit-ctp-txt @(_showHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton"
                                 type="button">
                             @GetHourString()
                         </button>
                         <span style="@Styles?.HourMinuteSeparator" class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
                         <button @onclick="HandleOnMinuteClick"
-                                style="@GetMinuteStyle()"
+                                style="@GetMinuteButtonStyle()"
                                 class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.MinuteButton"
                                 type="button">
                             @GetMinuteString()
@@ -89,13 +89,13 @@
                     <div style="@Styles?.AmPmContainer" class="bit-ctp-apc @Classes?.AmPmContainer">
                         <button @onclick="HandleOnAmClick"
                                 type="button"
-                                style="@GetAmStyle(isAm)"
+                                style="@GetAmButtonStyle(isAm)"
                                 class="bit-ctp-apb @(isAm ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
                             @Culture.DateTimeFormat.AMDesignator
                         </button>
                         <button @onclick="HandleOnPmClick"
                                 type="button"
-                                style="@GetPmStyle(isAm)"
+                                style="@GetPmButtonStyle(isAm)"
                                 class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
                             @Culture.DateTimeFormat.PMDesignator
                         </button>
