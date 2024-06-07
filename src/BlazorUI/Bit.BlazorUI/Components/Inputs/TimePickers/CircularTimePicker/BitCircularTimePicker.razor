@@ -64,10 +64,10 @@
                 <div style="@Styles?.HourMinuteContainer" class="bit-ctp-hmc @Classes?.HourMinuteContainer">
                     @if (EditMode == BitCircularTimePickerEditMode.Normal)
                     {
-                        <button style="@Styles?.HourButton" type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina") @Classes?.HourButton" @onclick="HandleOnHourClick">
+                        <button style="@Styles?.HourButton @(_showHourView ? "Stay" : "bit-ctp-ina")" type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina") @Classes?.HourButton" @onclick="HandleOnHourClick">
                             @GetHourString()
                         </button>
-                        <span style="@Styles?.Divider" class="bit-ctp-txt @Classes?.Divider">:</span>
+                        <span style="@Styles?.HourMinuteSeparator" class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
                         <button style="@Styles?.MinuteButton" type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : "") @Classes?.MinuteButton" @onclick="HandleOnMinuteClick">
                             @GetMinuteString()
                         </button>
@@ -95,7 +95,7 @@
                     </div>
                 }
             </div>
-            <div style="@Styles?.Clock" class="bit-ctp-clk @Classes?.Clock">
+            <div style="@Styles?.ClockContainer" class="bit-ctp-clk @Classes?.ClockContainer">
                 <div @ref="_clockRef" style="@Styles?.ClockFace" class="bit-ctp-clf @Classes?.ClockFace" @onpointerdown="HandleOnPointerDown">
                     <div style="@Styles?.ClockPin" class="bit-ctp-pin @Classes?.ClockPin"></div>
 
@@ -135,9 +135,9 @@
                     @{
                         var deg = GetPointerDegree();
                     }
-                    <div style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg); @Classes?.Pointer"
-                         class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani") @Classes?.Pointer">
-                        <div style="@Styles?.PointerThumb" class="bit-ctp-pth@(deg % 30 == 0 ? "" : " bit-ctp-ptm") @Classes?.PointerThumb"></div>
+                    <div style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg); @Classes?.ClockPointer"
+                         class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani") @Classes?.ClockPointer">
+                        <div style="@Styles?.ClockPointerThumb" class="bit-ctp-pth@(deg % 30 == 0 ? "" : " bit-ctp-ptm") @Classes?.ClockPointerThumb"></div>
                     </div>
                 </div>
             </div>

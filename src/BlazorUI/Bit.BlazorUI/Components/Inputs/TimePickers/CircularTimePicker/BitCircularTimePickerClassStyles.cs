@@ -68,9 +68,9 @@ public class BitCircularTimePickerClassStyles
     public string? MinuteButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the divider of the BitCircularTimePicker.
+    /// Custom CSS classes/styles for the hour minute separator of the BitCircularTimePicker.
     /// </summary>
-    public string? Divider { get; set; }
+    public string? HourMinuteSeparator { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the hour/minute text of the BitCircularTimePicker.
@@ -93,9 +93,14 @@ public class BitCircularTimePickerClassStyles
     public string? PmButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the clock of the BitCircularTimePicker.
+    /// Custom CSS classes/styles for the selected buttons of the BitCircularTimePicker.
     /// </summary>
-    public string? Clock { get; set; }
+    public string? SelectedButtons { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the clock container of the BitCircularTimePicker.
+    /// </summary>
+    public string? ClockContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the clock face of the BitCircularTimePicker.
@@ -118,14 +123,14 @@ public class BitCircularTimePickerClassStyles
     public string? ClockSelectedNumber { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the pointer of the BitCircularTimePicker.
+    /// Custom CSS classes/styles for the clock pointer of the BitCircularTimePicker.
     /// </summary>
-    public string? Pointer { get; set; }
+    public string? ClockPointer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the pointer thumb of the BitCircularTimePicker.
+    /// Custom CSS classes/styles for the clock pointer thumb of the BitCircularTimePicker.
     /// </summary>
-    public string? PointerThumb { get; set; }
+    public string? ClockPointerThumb { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the close button of the BitCircularTimePicker.
