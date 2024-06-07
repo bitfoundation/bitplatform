@@ -79,7 +79,7 @@ public partial class _BitTimelineOptionDemo
 <BitTimeline TItem=""BitTimelineOption"">
     <BitTimelineOption>
         <PrimaryContent>
-            <BitPersona Text=""Annie Lindqvist""
+            <BitPersona PrimaryText=""Annie Lindqvist""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
@@ -98,7 +98,7 @@ public partial class _BitTimelineOptionDemo
     </BitTimelineOption>
     <BitTimelineOption Reversed>
         <PrimaryContent>
-            <BitPersona Text=""Saleh Khafan""
+            <BitPersona PrimaryText=""Saleh Khafan""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online"" />
         </PrimaryContent>
@@ -116,7 +116,7 @@ public partial class _BitTimelineOptionDemo
     </BitTimelineOption>
     <BitTimelineOption>
         <PrimaryContent>
-            <BitPersona Text=""Ted Randall""
+            <BitPersona PrimaryText=""Ted Randall""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />
@@ -138,7 +138,7 @@ public partial class _BitTimelineOptionDemo
 <BitTimeline Horizontal TItem=""BitTimelineOption"">
     <BitTimelineOption>
         <PrimaryContent>
-            <BitPersona Text=""Annie Lindqvist""
+            <BitPersona PrimaryText=""Annie Lindqvist""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
@@ -157,7 +157,7 @@ public partial class _BitTimelineOptionDemo
     </BitTimelineOption>
     <BitTimelineOption Reversed>
         <PrimaryContent>
-            <BitPersona Text=""Saleh Khafan""
+            <BitPersona PrimaryText=""Saleh Khafan""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online"" />
         </PrimaryContent>
@@ -175,7 +175,7 @@ public partial class _BitTimelineOptionDemo
     </BitTimelineOption>
     <BitTimelineOption>
         <PrimaryContent>
-            <BitPersona Text=""Ted Randall""
+            <BitPersona PrimaryText=""Ted Randall""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />

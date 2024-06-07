@@ -259,7 +259,7 @@ private bool isDataLoaded;";
                   Alt=""bit logo""
                   Src=""_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"" />
         <br />
-        <BitPersona Text=""Annie Lindqvist""
+        <BitPersona PrimaryText=""Annie Lindqvist""
                     SecondaryText=""Software Engineer""
                     Size=""@BitPersonaSize.Size56""
                     Presence=""@BitPersonaPresence.Online""
