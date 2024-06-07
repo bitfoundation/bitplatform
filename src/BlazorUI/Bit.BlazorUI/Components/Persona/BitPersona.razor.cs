@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitPersona
 {
@@ -266,7 +264,7 @@ public partial class BitPersona
         if (Size is BitPersonaSize.Size8) return null;
         if (CoinSize is null) return null;
 
-        return $"width: {CoinSize.Value}px;";
+        return $"width:{CoinSize.Value}px;";
     }
 
     private string GetInitials()
