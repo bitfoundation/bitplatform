@@ -587,6 +587,24 @@ public partial class BitCircularTimePicker
         StateHasChanged();
     }
 
+    private string? GetHourStyle()
+    {
+        var style = $"{Styles?.HourButton?.Trim(';')};{(_showHourView ? Styles?.SelectedButtons : null)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetMinuteStyle()
+    {
+        var style = $"{Styles?.MinuteButton?.Trim(';')};{(_showHourView ? null : Styles?.SelectedButtons)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetClockPointerThumbStyle(bool isMinute)
+    {
+        var style = $"{Styles?.ClockPointerThumb?.Trim(';')};{(isMinute ? null : Styles?.ClockPointerThumbMinute)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
