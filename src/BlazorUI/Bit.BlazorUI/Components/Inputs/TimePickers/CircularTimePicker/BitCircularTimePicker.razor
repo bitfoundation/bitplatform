@@ -64,11 +64,17 @@
                 <div style="@Styles?.HourMinuteContainer" class="bit-ctp-hmc @Classes?.HourMinuteContainer">
                     @if (EditMode == BitCircularTimePickerEditMode.Normal)
                     {
-                        <button style="@Styles?.HourButton @(_showHourView ? "Stay" : "bit-ctp-ina")" type="button" class="bit-ctp-txt @(_showHourView ? "" : "bit-ctp-ina") @Classes?.HourButton" @onclick="HandleOnHourClick">
+                        <button @onclick="HandleOnHourClick"
+                                style="@(_showHourView ? (Styles?.HourButton + Styles?.SelectedButtons) : Styles?.HourButton)"
+                                class="bit-ctp-txt @(_showHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton"
+                                type="button">
                             @GetHourString()
                         </button>
                         <span style="@Styles?.HourMinuteSeparator" class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
-                        <button style="@Styles?.MinuteButton" type="button" class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : "") @Classes?.MinuteButton" @onclick="HandleOnMinuteClick">
+                        <button @onclick="HandleOnMinuteClick"
+                                style="@(_showHourView ? Styles?.MinuteButton : (Styles?.MinuteButton + Styles?.SelectedButtons))"
+                                class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.MinuteButton"
+                                type="button">
                             @GetMinuteString()
                         </button>
                     }
@@ -82,14 +88,14 @@
                     <div style="@Styles?.AmPmContainer" class="bit-ctp-apc @Classes?.AmPmContainer">
                         <button @onclick="HandleOnAmClick"
                                 type="button"
-                                style="@Styles?.AmButton"
-                                class="bit-ctp-apb @(IsAm() ? "" : "bit-ctp-ina") @Classes?.AmButton">
+                                style="@(IsAm() ? (Styles?.AmButton + Styles?.SelectedButtons) : Styles?.AmButton)"
+                                class="bit-ctp-apb @(IsAm() ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
                             @Culture.DateTimeFormat.AMDesignator
                         </button>
                         <button @onclick="HandleOnPmClick"
                                 type="button"
-                                style="@Styles?.PmButton"
-                                class="bit-ctp-apb @(IsAm() ? "bit-ctp-ina" : "") @Classes?.PmButton">
+                                style="@(IsAm() ? Styles?.PmButton : (Styles?.PmButton + Styles?.SelectedButtons))"
+                                class="bit-ctp-apb @(IsAm() ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
                             @Culture.DateTimeFormat.PMDesignator
                         </button>
                     </div>
@@ -134,10 +140,12 @@
 
                     @{
                         var deg = GetPointerDegree();
+                        var isMinute = deg % 30 == 0;
                     }
                     <div style="height: @(GetClockHandHeightPercent())%; transform: rotateZ(@(deg)deg); @Classes?.ClockPointer"
                          class="bit-ctp-ptr@(_isPointerDown ? "" : " bit-ctp-ani") @Classes?.ClockPointer">
-                        <div style="@Styles?.ClockPointerThumb" class="bit-ctp-pth@(deg % 30 == 0 ? "" : " bit-ctp-ptm") @Classes?.ClockPointerThumb"></div>
+                        <div style="@Styles?.ClockPointerThumb@(isMinute ? "" : $"{Styles?.ClockPointerThumbMinute}")"
+                             class="bit-ctp-pth@(isMinute ? "" : $" bit-ctp-ptm {Classes?.ClockPointerThumbMinute}") @Classes?.ClockPointerThumb"></div>
                     </div>
                 </div>
             </div>

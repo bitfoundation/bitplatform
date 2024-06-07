@@ -133,6 +133,11 @@ public class BitCircularTimePickerClassStyles
     public string? ClockPointerThumb { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the clock pointer thumb minute of the BitCircularTimePicker.
+    /// </summary>
+    public string? ClockPointerThumbMinute { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the close button of the BitCircularTimePicker.
     /// </summary>
     public string? CloseButton { get; set; }
