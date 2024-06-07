@@ -9,15 +9,12 @@
 
     <div role="presentation" class="bit-prs-cin">
         @{
-            string dimension = GetPersonaImageDimension();
             var presentationIcon = GetPresentationIcon();
-            var coinBackgroundColor = GetCoinBackgroundColor();
-            var coinWidth = GetCoinWidth();
         }
 
         @if (Size is BitPersonaSize.Size8)
         {
-            @if (Presence is BitPersonaPresenceStatus.None)
+            if (Presence is BitPersonaPresence.None)
             {
                 <i class="bit-prs-pic bit-icon bit-icon--@presentationIcon" role="presentation" />
             }
@@ -28,16 +25,19 @@
         }
         else
         {
-            <div style="@coinBackgroundColor @coinWidth" class="bit-prs-imc" @onclick="HandleImageClick">
+            var coinWidth = GetCoinWidth();
+            var coinColor = GetCoinColor();
+
+            <div style="@coinColor @coinWidth" class="bit-prs-imc" @onclick="HandleImageClick">
                 @if (ShowUnknownPersonaCoin)
                 {
-                    <i class="bit-prs-upc bit-icon bit-icon--Help" role="presentation" />
+                    <i class="bit-icon bit-icon--Help" role="presentation" />
                 }
                 else if (ImageUrl is not null)
                 {
-                    @if (OnImageClick.HasDelegate)
+                    if (OnImageClick.HasDelegate)
                     {
-                        <div style="@coinBackgroundColor" class="bit-prs-imo">
+                        <div style="@coinColor" class="bit-prs-imo">
                             @if (ImageOverlayTemplate is not null)
                             {
                                 @ImageOverlayTemplate
@@ -49,21 +49,23 @@
                         </div>
                     }
 
-                    @if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
+                    if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
                     {
-                        <div class="bit-prs-ini">
+                        <span>
                             @GetInitials()
-                        </div>
+                        </span>
                     }
 
-                    @if (CoinTemplate is not null)
+                    if (CoinTemplate is not null)
                     {
                         @CoinTemplate
                     }
                     else if (ImageUrl.HasValue())
                     {
-                        @if (_hasError is false)
+                        if (_hasError is false)
                         {
+                            string dimension = GetPersonaImageDimension();
+
                             <img src="@ImageUrl"
                                  style="display:@(_isLoaded ? "unset": "none")"
                                  class="bit-prs-img"
@@ -96,7 +98,7 @@
                     </button>
                 }
             }
-            else if (Presence is not BitPersonaPresenceStatus.None)
+            else if (Presence is not BitPersonaPresence.None)
             {
                 <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass()">
                     @if (presentationIcon.HasValue())

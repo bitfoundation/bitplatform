@@ -99,14 +99,14 @@ public class BitPersonaTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("Presence Title", BitPersonaPresenceStatus.Blocked),
-        DataRow("Presence Title", BitPersonaPresenceStatus.Away),
-        DataRow("Presence Title", BitPersonaPresenceStatus.Offline),
-        DataRow("Presence Title", BitPersonaPresenceStatus.Online),
-        DataRow("Presence Title", BitPersonaPresenceStatus.Dnd),
-        DataRow("Presence Title", BitPersonaPresenceStatus.Busy)
+        DataRow("Presence Title", BitPersonaPresence.Blocked),
+        DataRow("Presence Title", BitPersonaPresence.Away),
+        DataRow("Presence Title", BitPersonaPresence.Offline),
+        DataRow("Presence Title", BitPersonaPresence.Online),
+        DataRow("Presence Title", BitPersonaPresence.Dnd),
+        DataRow("Presence Title", BitPersonaPresence.Busy)
     ]
-    public void BitPersonaPresenceTitleTest(string presenceTitle, BitPersonaPresenceStatus presenceStatus)
+    public void BitPersonaPresenceTitleTest(string presenceTitle, BitPersonaPresence presenceStatus)
     {
         var component = RenderComponent<BitPersona>(
             parameters =>

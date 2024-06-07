@@ -81,7 +81,7 @@ public partial class _BitTimelineOptionDemo
         <PrimaryContent>
             <BitPersona Text=""Annie Lindqvist""
                         Size=""@BitPersonaSize.Size32""
-                        Presence=""@BitPersonaPresenceStatus.Online""
+                        Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
         </PrimaryContent>
         <DotTemplate>
@@ -100,7 +100,7 @@ public partial class _BitTimelineOptionDemo
         <PrimaryContent>
             <BitPersona Text=""Saleh Khafan""
                         Size=""@BitPersonaSize.Size32""
-                        Presence=""@BitPersonaPresenceStatus.Online"" />
+                        Presence=""@BitPersonaPresence.Online"" />
         </PrimaryContent>
         <DotTemplate>
             <div class=""dot-template"">
@@ -118,7 +118,7 @@ public partial class _BitTimelineOptionDemo
         <PrimaryContent>
             <BitPersona Text=""Ted Randall""
                         Size=""@BitPersonaSize.Size32""
-                        Presence=""@BitPersonaPresenceStatus.Online""
+                        Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />
         </PrimaryContent>
         <DotTemplate>
@@ -140,7 +140,7 @@ public partial class _BitTimelineOptionDemo
         <PrimaryContent>
             <BitPersona Text=""Annie Lindqvist""
                         Size=""@BitPersonaSize.Size32""
-                        Presence=""@BitPersonaPresenceStatus.Online""
+                        Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
         </PrimaryContent>
         <DotTemplate>
@@ -159,7 +159,7 @@ public partial class _BitTimelineOptionDemo
         <PrimaryContent>
             <BitPersona Text=""Saleh Khafan""
                         Size=""@BitPersonaSize.Size32""
-                        Presence=""@BitPersonaPresenceStatus.Online"" />
+                        Presence=""@BitPersonaPresence.Online"" />
         </PrimaryContent>
         <DotTemplate>
             <div class=""dot-template"">
@@ -177,7 +177,7 @@ public partial class _BitTimelineOptionDemo
         <PrimaryContent>
             <BitPersona Text=""Ted Randall""
                         Size=""@BitPersonaSize.Size32""
-                        Presence=""@BitPersonaPresenceStatus.Online""
+                        Presence=""@BitPersonaPresence.Online""
                         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />
         </PrimaryContent>
         <DotTemplate>

@@ -56,9 +56,8 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "InitialsColor",
-            Type = "BitPersonaInitialsColor?",
+            Type = "string?",
             LinkType = LinkType.Link,
-            Href = "#bitpersona-initial-color",
             DefaultValue = "null",
             Description = "The background color when the user's initials are displayed.",
         },
@@ -72,10 +71,10 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "Presence",
-            Type = "BitPersonaPresenceStatus",
+            Type = "BitPersonaPresence",
             LinkType = LinkType.Link,
             Href = "#precence-status",
-            DefaultValue = "BitPersonaPresenceStatus.None",
+            DefaultValue = "BitPersonaPresence.None",
             Description = "Presence of the person to display - will not display presence if undefined.",
         },
         new()
@@ -170,7 +169,7 @@ public partial class BitPersonaDemo
         new()
         {
             Id = "precence-status",
-            Name = "BitPersonaPresenceStatus",
+            Name = "BitPersonaPresence",
             Items = new()
             {
                 new()
@@ -209,141 +208,6 @@ public partial class BitPersonaDemo
                     Value = "2",
                 },
             }
-        },
-        new()
-        {
-            Id = "bitpersona-initial-color",
-            Name = "BitPersonaInitialsColor",
-            Items = new()
-            {
-                new()
-                {
-                    Name = "Black",
-                    Value = "Black=11",
-                },
-                new()
-                {
-                    Name = "Blue",
-                    Value = "Blue=1",
-                },
-                new()
-                {
-                    Name = "Burgundy",
-                    Value = "Burgundy=19",
-                },
-                new()
-                {
-                    Name = "CoolGray",
-                    Value = "CoolGray=21",
-                },
-                new()
-                {
-                    Name = "Cyan",
-                    Value = "Cyan=23",
-                },
-                new()
-                {
-                    Name = "DarkBlue",
-                    Value = "DarkBlue=2",
-                },
-                new()
-                {
-                    Name = "DarkGreen",
-                    Value = "DarkGreen=6",
-                },
-                new()
-                {
-                    Name = "DarkRed",
-                    Value = "DarkRed=14",
-                },
-                new()
-                {
-                    Name = "Gold",
-                    Value = "Gold=18",
-                },
-                new()
-                {
-                    Name = "Gray",
-                    Description = "gray is a color that can result in offensive Bitpersona coins with some initials combinations, so it can only be set with overrides.",
-                    Value = "Gray=22",
-                },
-                new()
-                {
-                    Name = "Green",
-                    Value = "Green=5",
-                },
-                new()
-                {
-                    Name = "LightBlue",
-                    Value = "LightBlue=0",
-                },
-                new()
-                {
-                    Name = "LightGreen",
-                    Value = "LightGreen=4",
-                },
-                new()
-                {
-                    Name = "LightPink",
-                    Value = "LightPink=7",
-                },
-                new()
-                {
-                    Name = "LightRed",
-                    Value = "LightRed=17",
-                },
-                new()
-                {
-                    Name = "Magenta",
-                    Value = "Magenta=9",
-                },
-                new()
-                {
-                    Name = "Orange",
-                    Value = "Orange=12",
-                },
-                new()
-                {
-                    Name = "Pink",
-                    Value = "Pink=8",
-                },
-                new()
-                {
-                    Name = "Purple",
-                    Value = "Purple=10",
-                },
-                new()
-                {
-                    Name = "Red",
-                    Value = "Red=13",
-                },
-                new()
-                {
-                    Name = "Rust",
-                    Value = "Rust=24",
-                },
-                new()
-                {
-                    Name = "Teal",
-                    Value = "Teal=3",
-                },
-                new()
-                {
-                    Name = "Transparent",
-                    Description = "Transparent is not intended to be used with typical initials due to accessibility issues. Its primary use is for overflow buttons, so it is considered a reserved color and can only be set with overrides.",
-                    Value = "Transparent=15",
-                },
-                new()
-                {
-                    Name = "Violet",
-                    Value = "Violet=16",
-                },
-                new()
-                {
-                    Name = "WarmGray",
-                    Value = "WarmGray=20",
-                },
-            },
         },
         new()
         {
@@ -419,14 +283,14 @@ public partial class BitPersonaDemo
 <BitPersona PrimaryText=""Annie Lindqvist""
             Size=@BitPersonaSize.Size24
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.None
+            Presence=@BitPersonaPresence.None
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 32 BitPersona</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             Size=@BitPersonaSize.Size32
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Busy
+            Presence=@BitPersonaPresence.Busy
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 40 BitPersona</div>
@@ -434,7 +298,7 @@ public partial class BitPersonaDemo
             SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size40
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Away
+            Presence=@BitPersonaPresence.Away
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 48 BitPersona</div>
@@ -442,7 +306,7 @@ public partial class BitPersonaDemo
             SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size48
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Blocked
+            Presence=@BitPersonaPresence.Blocked
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 56 BitPersona</div>
@@ -450,7 +314,7 @@ public partial class BitPersonaDemo
             SecondaryText=""Software Engineer""
             Size=@BitPersonaSize.Size56
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Online
+            Presence=@BitPersonaPresence.Online
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 72 BitPersona</div>
@@ -459,7 +323,7 @@ public partial class BitPersonaDemo
             TertiaryText=""In a meeting""
             Size=@BitPersonaSize.Size72
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Busy
+            Presence=@BitPersonaPresence.Busy
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 100 BitPersona</div>
@@ -469,7 +333,7 @@ public partial class BitPersonaDemo
             OptionalText=""Available at 4:00pm""
             Size=@BitPersonaSize.Size100
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Offline
+            Presence=@BitPersonaPresence.Offline
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
 
 <div>Size 120 BitPersona</div>
@@ -479,7 +343,7 @@ public partial class BitPersonaDemo
             OptionalText=""Available at 4:00pm"" /
             Size=@BitPersonaSize.Size120
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Dnd
+            Presence=@BitPersonaPresence.Dnd
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" >";
     private readonly string example1CsharpCode = @"
 public bool IsDetailsHidden { get; set; } = true;";
@@ -491,7 +355,7 @@ public bool IsDetailsHidden { get; set; } = true;";
             OptionalText=""Available at 4:00pm"" 
             Size=@BitPersonaSize.Size120
             HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.None
+            Presence=@BitPersonaPresence.None
             ActionIconName=""@BitIconName.Edit""
             OnActionClick=""() => ActionClickCount++""
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
@@ -505,7 +369,7 @@ private int ActionClickCount = 0;";
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm"" 
             Size=@BitPersonaSize.Size120
-            Presence=@BitPersonaPresenceStatus.Online
+            Presence=@BitPersonaPresence.Online
             HidePersonaDetails=""!IsDetailsHidden""
             OnImageClick=""() => ImageClickCount++""
             ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />

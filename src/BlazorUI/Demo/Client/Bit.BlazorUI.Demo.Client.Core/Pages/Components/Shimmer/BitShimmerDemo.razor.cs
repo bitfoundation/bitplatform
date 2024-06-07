@@ -262,7 +262,7 @@ private bool isDataLoaded;";
         <BitPersona Text=""Annie Lindqvist""
                     SecondaryText=""Software Engineer""
                     Size=""@BitPersonaSize.Size56""
-                    Presence=""@BitPersonaPresenceStatus.Online""
+                    Presence=""@BitPersonaPresence.Online""
                     ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
         <br />
     </Content>

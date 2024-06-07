@@ -1,5 +1,8 @@
 ﻿@import "../../Styles/functions.scss";
 
+$color-coin: var(--bit-prs-coin-color);
+$color-coin-bg: var(--bit-prs-coin-color-bg);
+
 .bit-prs {
     margin: 0;
     padding: 0;
@@ -7,10 +10,10 @@
     font-weight: 400;
     box-shadow: none;
     position: relative;
+    color: $color-coin;
     align-items: center;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-foreground-primary;
     font-family: $typography-font-family;
 
     &.bit-dis {
@@ -18,6 +21,9 @@
         color: $color-foreground-disabled;
         background-color: $color-background-disabled;
     }
+
+    --bit-prs-coin-color: var(--bit-clr-fg-primary);
+    --bit-prs-coin-color-bg: var(--bit-clr-primary-main);
 }
 
 .bit-prs-cin {
@@ -32,9 +38,10 @@
     font-weight: 600;
     position: relative;
     border-radius: 50%;
+    color: $color-coin;
     align-items: center;
     justify-content: center;
-    background-color: $color-background-secondary;
+    background-color: $color-coin-bg;
 }
 
 .bit-prs-imo {
@@ -43,12 +50,12 @@
     display: none;
     font-weight: 400;
     position: absolute;
+    color: $color-coin;
     align-items: center;
     justify-content: center;
     font-size: spacing(1.75);
-    background-color: $color-background-secondary;
-    color: $color-primary-text;
     transition: all 0.1s linear;
+    background-color: $color-coin-bg;
 }
 
 .bit-prs-img {
@@ -78,7 +85,8 @@
 }
 
 .bit-prs-upc {
-    color: $color-state-error;
+    --bit-prs-coin-color: var(--bit-clr-sta-error);
+    --bit-prs-coin-color-bg: var(--bit-clr-bg-secondary);
 }
 
 .bit-prs-det {

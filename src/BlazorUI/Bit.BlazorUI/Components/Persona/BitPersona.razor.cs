@@ -1,12 +1,17 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Text;
+
+namespace Bit.BlazorUI;
 
 public partial class BitPersona
 {
+    private string? imageUrl;
+    private bool showUnknownPersonaCoin;
+    private BitPersonaSize size = BitPersonaSize.Size48;
+
+
+
     private bool _isLoaded;
     private bool _hasError;
-    private string? imageUrl;
-    private string? imageInitials;
-    private BitPersonaSize size = BitPersonaSize.Size48;
 
 
 
@@ -53,17 +58,7 @@ public partial class BitPersona
     /// <summary>
     /// The user's initials to display in the image area when there is no image.
     /// </summary>
-    [Parameter]
-    public string? ImageInitials
-    {
-        get => imageInitials;
-        set
-        {
-            if (imageInitials == value) return;
-
-            imageInitials = value;
-        }
-    }
+    [Parameter] public string? ImageInitials { get; set; }
 
     /// <summary>
     /// Optional Custom template for the image overlay.
@@ -94,12 +89,12 @@ public partial class BitPersona
     /// <summary>
     /// The background color when the user's initials are displayed.
     /// </summary>
-    [Parameter] public BitPersonaInitialsColor? InitialsColor { get; set; }
+    [Parameter] public string? InitialsColor { get; set; }
 
     /// <summary>
     /// The text color when the user's initials are displayed.
     /// </summary>
-    [Parameter] public BitPersonaInitialsColor? InitialsTextColor { get; set; }
+    [Parameter] public string? InitialsTextColor { get; set; }
 
     /// <summary>
     /// Callback for the persona custom action.
@@ -125,12 +120,12 @@ public partial class BitPersona
     /// <summary>
     /// Presence of the person to display - will not display presence if undefined.
     /// </summary>
-    [Parameter] public BitPersonaPresenceStatus Presence { get; set; } = BitPersonaPresenceStatus.None;
+    [Parameter] public BitPersonaPresence Presence { get; set; } = BitPersonaPresence.None;
 
     /// <summary>
     /// The icons to be used for the presence status.
     /// </summary>
-    [Parameter] public Dictionary<BitPersonaPresenceStatus, string>? PresenceIcons { get; set; }
+    [Parameter] public Dictionary<BitPersonaPresence, string>? PresenceIcons { get; set; }
 
     /// <summary>
     /// Presence title to be shown as a tooltip on hover over the presence icon.
@@ -166,7 +161,16 @@ public partial class BitPersona
     /// If true, show the special coin for unknown persona. 
     /// It has '?' in place of initials, with static font and background colors.
     /// </summary>
-    [Parameter] public bool ShowUnknownPersonaCoin { get; set; }
+    [Parameter] public bool ShowUnknownPersonaCoin
+    {
+        get => showUnknownPersonaCoin; set
+        {
+            if (showUnknownPersonaCoin == value) return;
+
+            showUnknownPersonaCoin = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Decides the size of the control.
@@ -215,6 +219,8 @@ public partial class BitPersona
             _ => string.Empty
         });
 
+        ClassBuilder.Register(() => ShowUnknownPersonaCoin && Size is not BitPersonaSize.Size8 ? "bit-prs-upc" : string.Empty);
+
         ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-iac" : string.Empty);
     }
 
@@ -222,19 +228,19 @@ public partial class BitPersona
     {
         return Presence switch
         {
-            BitPersonaPresenceStatus.Offline => "bit-prs-off",
-            BitPersonaPresenceStatus.Online => "bit-prs-onl",
-            BitPersonaPresenceStatus.Away => "bit-prs-awy",
-            BitPersonaPresenceStatus.Dnd => "bit-prs-dnd",
-            BitPersonaPresenceStatus.Blocked => "bit-prs-blk",
-            BitPersonaPresenceStatus.Busy => "bit-prs-bsy",
+            BitPersonaPresence.Offline => "bit-prs-off",
+            BitPersonaPresence.Online => "bit-prs-onl",
+            BitPersonaPresence.Away => "bit-prs-awy",
+            BitPersonaPresence.Dnd => "bit-prs-dnd",
+            BitPersonaPresence.Blocked => "bit-prs-blk",
+            BitPersonaPresence.Busy => "bit-prs-bsy",
             _ => null
         };
     }
 
     private string? GetPresentationStyle()
     {
-        if (CoinSize.HasValue is false) return null;
+        if (CoinSize is null) return null;
 
         var presentationSize = CoinSize.Value / 3D;
         return $"width: {presentationSize}px; height: {presentationSize}px;";
@@ -252,20 +258,29 @@ public partial class BitPersona
         return null;
     }
 
-    private string? GetCoinBackgroundColor()
+    private string? GetCoinColor()
     {
         if (ShowUnknownPersonaCoin) return null;
         if (Size is BitPersonaSize.Size8) return null;
 
-        var initialsColor = InitialsColor ?? BitPersonaColorUtils.GetInitialsColorFromName(PrimaryText);
-        var backgroundColor = BitPersonaColorUtils.GetPersonaColorHexCode(initialsColor);
-        return $"background-color: {backgroundColor};";
+        StringBuilder sb = new();
+        if (InitialsColor.HasValue())
+        {
+            sb.Append($"--bit-prs-coin-color-bg:{InitialsColor};");
+        }
+
+        if (InitialsTextColor.HasValue())
+        {
+            sb.Append($"--bit-prs-coin-color:{InitialsTextColor};");
+        }
+
+        return sb.ToString();
     }
 
     private string? GetCoinWidth()
     {
         if (Size is BitPersonaSize.Size8) return null;
-        if (CoinSize.HasValue is false) return null;
+        if (CoinSize is null) return null;
 
         return $"width: {CoinSize.Value}px;";
     }
