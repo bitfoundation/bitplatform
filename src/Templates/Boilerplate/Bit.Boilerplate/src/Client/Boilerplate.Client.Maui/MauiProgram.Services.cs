@@ -50,7 +50,10 @@ public static partial class MauiProgram
         //+:cnd:noEmit
 
         //#if (appCenter == true)
-        builder.Logging.AddAppCenter(options => { });
+        if (Microsoft.AppCenter.AppCenter.Configured)
+        {
+            builder.Logging.AddAppCenter(options => { });
+        }
         //#endif
 
         //#if (appInsights == true)

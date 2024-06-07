@@ -49,7 +49,10 @@ public static partial class Program
             }
             loggingBuilder.AddConsole();
             //#if (appCenter == true)
-            loggingBuilder.AddAppCenter(options => { });
+            if (Microsoft.AppCenter.AppCenter.Configured)
+            {
+                loggingBuilder.AddAppCenter(options => { });
+            }
             //#endif
             //#if (appInsights == true)
             loggingBuilder.AddApplicationInsights(config =>
