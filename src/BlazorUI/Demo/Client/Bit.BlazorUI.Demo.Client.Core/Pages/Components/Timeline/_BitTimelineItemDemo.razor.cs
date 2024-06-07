@@ -153,9 +153,9 @@ private List<BitTimelineItem> templateItems = new()
 {
     new() 
     { 
-        PrimaryContent = (item => @<BitPersona Text=""Annie Lindqvist""
+        PrimaryContent = (item => @<BitPersona PrimaryText=""Annie Lindqvist""
                                                Size=""@BitPersonaSize.Size32""
-                                               Presence=""@BitPersonaPresenceStatus.Online""
+                                               Presence=""@BitPersonaPresence.Online""
                                                ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />),
 
         DotTemplate = (item => @<div class=""dot-template""><BitRingLoading Size = ""30"" /></div>),
@@ -167,9 +167,9 @@ private List<BitTimelineItem> templateItems = new()
     },
     new() 
     { 
-        PrimaryContent = (item => @<BitPersona Text=""Saleh Khafan""
+        PrimaryContent = (item => @<BitPersona PrimaryText=""Saleh Khafan""
                                                Size=""@BitPersonaSize.Size32""
-                                               Presence=""@BitPersonaPresenceStatus.Online""/>),
+                                               Presence=""@BitPersonaPresence.Online""/>),
 
         DotTemplate = (item => @<div class=""dot-template""><BitSpinnerLoading Size=""30"" /></div>),
 
@@ -181,9 +181,9 @@ private List<BitTimelineItem> templateItems = new()
     },
     new() 
     { 
-        PrimaryContent = (item => @<BitPersona Text=""Ted Randall""
+        PrimaryContent = (item => @<BitPersona PrimaryText=""Ted Randall""
                                                Size=""@BitPersonaSize.Size32""
-                                               Presence=""@BitPersonaPresenceStatus.Online""
+                                               Presence=""@BitPersonaPresence.Online""
                                                ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />),
 
         DotTemplate = (item => @<div class=""dot-template""><BitRollerLoading Size=""30"" /></div>),

@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitPersonaPresenceStatus
+public enum BitPersonaPresence
 {
     None,
     Offline,
