@@ -253,7 +253,7 @@ public partial class BitPersona
         return null;
     }
 
-    private string? GetCoinBackgroundColor()
+    private string? GetCoinBgColorStyle()
     {
         if (Size is BitPersonaSize.Size8) return null;
         if (Color.HasNoValue()) return null;
@@ -261,7 +261,7 @@ public partial class BitPersona
         return $"background-color:{Color};";
     }
 
-    private string? GetCoinWidth()
+    private string? GetCoinWidthStyle()
     {
         if (Size is BitPersonaSize.Size8) return null;
         if (CoinSize is null) return null;
