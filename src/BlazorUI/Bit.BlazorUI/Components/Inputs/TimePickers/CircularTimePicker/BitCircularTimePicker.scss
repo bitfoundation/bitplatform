@@ -6,7 +6,7 @@
             color: $color-foreground-disabled;
         }
 
-        .bit-ctp-fgp {
+        .bit-ctp-icn {
             cursor: default;
             pointer-events: none;
             color: $color-foreground-disabled;
@@ -27,7 +27,7 @@
     }
 
     &.bit-inv {
-        .bit-ctp-fgp {
+        .bit-ctp-icn {
             border-color: $color-state-error;
         }
     }
@@ -49,7 +49,7 @@
     position: relative;
 }
 
-.bit-ctp-fgp {
+.bit-ctp-icn {
     margin: 0;
     display: flex;
     cursor: pointer;
@@ -97,7 +97,7 @@
 }
 
 .bit-ctp-lic {
-    .bit-ctp-fgp {
+    .bit-ctp-icn {
         flex-direction: row-reverse;
     }
 
@@ -108,7 +108,7 @@
 }
 
 .bit-ctp-foc {
-    .bit-ctp-fgp::after {
+    .bit-ctp-icn::after {
         content: "";
         position: absolute;
         pointer-events: none;
@@ -125,7 +125,7 @@
         border-bottom: $shape-border-width $shape-border-style $color-border-primary;
     }
 
-    .bit-ctp-fgp {
+    .bit-ctp-icn {
         border: none;
         flex: 1 1 0px;
         text-align: left;
@@ -138,7 +138,7 @@
     }
 
     &.bit-ctp-foc {
-        .bit-ctp-fgp::after {
+        .bit-ctp-icn::after {
             border: none;
             border-radius: 0;
             border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
@@ -147,7 +147,7 @@
 }
 
 .bit-ctp-nbd {
-    .bit-ctp-fgp {
+    .bit-ctp-icn {
         border: none;
     }
 }
@@ -220,7 +220,7 @@
     color: rgba(255,255,255,.54);
 }
 
-.bit-ctp-hm {
+.bit-ctp-hmc {
     display: flex;
     gap: spacing(0.5);
     align-items: baseline;
