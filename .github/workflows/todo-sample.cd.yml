@@ -152,7 +152,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --windows --appInsights --serverUrl todo.bitplatform.dev
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --windows --appInsights --appCenter --serverUrl todo.bitplatform.dev
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
@@ -162,6 +162,10 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+
+    - name: Set app center secret
+      run: (Get-Content TodoSample\src\Client\TodoSample.Client.Windows\Program.cs) -Replace 'string? appCenterSecret = null;', 'string? appCenterSecret = "39f576f2-7c16-4990-af3f-7b70509d41e2";' | Out-File -Encoding utf8 TodoSample\src\Client\TodoSample.Client.Windows\Program.cs
+      shell: pwsh
   
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
@@ -213,7 +217,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights --serverUrl todo.bitplatform.dev
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights --appCenter --serverUrl todo.bitplatform.dev
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -229,6 +233,10 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+
+    - name: Set app center secret
+      run: |
+          sed -i 's/string? appCenterSecret = null;/string? appCenterSecret = "de0219a6-fdcd-44f7-8c28-c108331ed27c";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -297,7 +305,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights --serverUrl todo.bitplatform.dev
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights --appCenter --serverUrl todo.bitplatform.dev
       
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
@@ -306,6 +314,10 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+
+    - name: Set app center secret
+      run: |
+          sed -i 's/string? appCenterSecret = null;/string? appCenterSecret = "f72e6774-1c83-404c-bca8-6e5198fb8e0e";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui

@@ -48,6 +48,11 @@ public static partial class MauiProgram
         builder.Logging.AddEventSourceLogger();
 
         //+:cnd:noEmit
+
+        //#if (appCenter == true)
+        builder.Logging.AddAppCenter(options => { });
+        //#endif
+
         //#if (appInsights == true)
         builder.Logging.AddApplicationInsights(config =>
         {

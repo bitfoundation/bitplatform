@@ -1,8 +1,8 @@
 ﻿//-:cnd:noEmit
-using Microsoft.Maui.LifecycleEvents;
 using Maui.AppStores;
 using Maui.InAppReviews;
 using Maui.Android.InAppUpdates;
+using Microsoft.Maui.LifecycleEvents;
 using Boilerplate.Client.Core;
 #if IOS || MACCATALYST
 using UIKit;
@@ -16,6 +16,16 @@ public static partial class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+        //+:cnd:noEmit
+        //#if (appCenter == true)
+        string? appCenterSecret = null;
+        if (appCenterSecret is not null)
+        {
+            Microsoft.AppCenter.AppCenter.Start(appCenterSecret, typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Analytics.Analytics));
+        }
+        //#endif
+        //-:cnd:noEmit
+
         AppRenderMode.IsBlazorHybrid = true;
 
         var builder = MauiApp.CreateBuilder();
@@ -117,28 +127,28 @@ public static partial class MauiProgram
                 }
             }
 #elif ANDROID
-                webView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+            webView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 
-                webView.OverScrollMode = Android.Views.OverScrollMode.Never;
+            webView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
-                webView.HapticFeedbackEnabled = false;
+            webView.HapticFeedbackEnabled = false;
 
-                Android.Webkit.WebSettings settings = webView.Settings;
+            Android.Webkit.WebSettings settings = webView.Settings;
 
-                settings.AllowFileAccessFromFileURLs =
-                    settings.AllowUniversalAccessFromFileURLs =
-                    settings.AllowContentAccess =
-                    settings.AllowFileAccess =
-                    settings.DatabaseEnabled =
-                    settings.JavaScriptCanOpenWindowsAutomatically =
-                    settings.DomStorageEnabled = true;
+            settings.AllowFileAccessFromFileURLs =
+                settings.AllowUniversalAccessFromFileURLs =
+                settings.AllowContentAccess =
+                settings.AllowFileAccess =
+                settings.DatabaseEnabled =
+                settings.JavaScriptCanOpenWindowsAutomatically =
+                settings.DomStorageEnabled = true;
 
-                if (BuildConfiguration.IsDebug())
-                {
-                    settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
-                }
+            if (BuildConfiguration.IsDebug())
+            {
+                settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
+            }
 
-                settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
+            settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
 #endif
         });
     }

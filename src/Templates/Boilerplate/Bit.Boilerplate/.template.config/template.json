@@ -177,6 +177,12 @@
             "datatype": "bool",
             "defaultValue": "false"
         },
+        "appCenter": {
+            "displayName": "Add Microsoft AppCenter to project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
+        },
         "nameToLower": {
             "type": "generated",
             "generator": "casing",

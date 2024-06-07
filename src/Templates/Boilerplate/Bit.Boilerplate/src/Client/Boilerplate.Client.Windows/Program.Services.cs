@@ -48,6 +48,9 @@ public static partial class Program
                 loggingBuilder.AddDebug();
             }
             loggingBuilder.AddConsole();
+            //#if (appCenter == true)
+            loggingBuilder.AddAppCenter(options => { });
+            //#endif
             //#if (appInsights == true)
             loggingBuilder.AddApplicationInsights(config =>
             {
