@@ -68,7 +68,7 @@ public static partial class MauiProgram
         services.TryAddTransient<IStorageService, MauiStorageService>();
         services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
-        services.TryAddTransient<IBrowserService, MauiBrowserService>();
+        services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
 
 #if LocalHttpServerEnabled
         services.AddSingleton<ILocalHttpServer>(sp => new MauiLocalHttpServer(services));

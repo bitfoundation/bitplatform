@@ -19,6 +19,7 @@ public partial class SignInPage
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
 
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
@@ -181,7 +182,7 @@ public partial class SignInPage
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port);
 
-            NavigationManager.NavigateTo(redirectUrl, true, true);
+            await externalNavigationService.NavigateToAsync(redirectUrl);
         }
         catch (KnownException e)
         {
