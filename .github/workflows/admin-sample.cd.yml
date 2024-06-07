@@ -152,7 +152,7 @@ jobs:
       run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
 
     - name: Set app center secret
-      run: (Get-Content AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs) -Replace 'string? appCenterSecret = null;', 'string? appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs
+      run: (Get-Content AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs
       shell: pwsh
 
     - name: Publish
@@ -221,7 +221,7 @@ jobs:
 
     - name: Set app center secret
       run: |
-          sed -i 's/string? appCenterSecret = null;/string? appCenterSecret = "ea9b98ea-93a0-48c7-982a-0a72f4ad6d04";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
+          sed -i 's/appCenterSecret = null;/appCenterSecret = "ea9b98ea-93a0-48c7-982a-0a72f4ad6d04";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -282,7 +282,7 @@ jobs:
 
     - name: Set app center secret
       run: |
-          sed -i 's/string? appCenterSecret = null;/string? appCenterSecret = "0bc0d910-dc84-4887-a3a0-eee6b1b55797";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
+          sed -i 's/appCenterSecret = null;/appCenterSecret = "0bc0d910-dc84-4887-a3a0-eee6b1b55797";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui
