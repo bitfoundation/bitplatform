@@ -1,7 +1,8 @@
 ﻿namespace Boilerplate.Client.Maui.Services;
-public class MauiBrowserService : IBrowserService
+
+public class MauiExternalNavigationService : IExternalNavigationService
 {
-    public async Task OpenUrl(string url)
+    public async Task NavigateToAsync(string url)
     {
         await Browser.OpenAsync(url, BrowserLaunchMode.External);
     }

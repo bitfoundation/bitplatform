@@ -14,6 +14,7 @@ public partial class SignUpPage
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
     private async Task DoSignUp()
     {
@@ -91,7 +92,7 @@ public partial class SignUpPage
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port);
 
-            NavigationManager.NavigateTo(redirectUrl, true);
+            await externalNavigationService.NavigateToAsync(redirectUrl);
         }
         catch (KnownException e)
         {
