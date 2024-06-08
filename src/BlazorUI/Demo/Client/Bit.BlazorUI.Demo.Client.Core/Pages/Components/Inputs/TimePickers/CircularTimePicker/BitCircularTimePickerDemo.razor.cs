@@ -34,6 +34,15 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitCircularTimePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the TimePicker.",
+            Href = "#timepicker-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "CloseButtonTitle",
             Type = "string",
             DefaultValue = "Close time picker",
@@ -170,6 +179,15 @@ public partial class BitCircularTimePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the TimePicker's close button should be shown or not."
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitCircularTimePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the TimePicker.",
+            Href = "#timepicker-class-styles",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -311,6 +329,223 @@ public partial class BitCircularTimePickerDemo
 
 
 
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "timepicker-class-styles",
+            Title = "BitCircularTimePickerClassStyles",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Label of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "InputWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input wrapper of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "InputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input container of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "Input",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the icon of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "Overlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the overlay of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "Callout",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "CalloutContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout container of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "Toolbar",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the toolbar of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "HourMinuteContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hour and minute container of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "HourButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hour button of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "MinuteButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the minute button of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "HourMinuteSeparator",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hour minute separator of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "HourMinuteText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hour/minute text of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "AmPmContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the AM/PM container of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "AmButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the AM button of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "PmButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the PM button of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "SelectedButtons",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the selected buttons of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "ClockContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clock container of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "ClockFace",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clock face of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "ClockPin",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clock pin of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "ClockNumber",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clock number of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "ClockSelectedNumber",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clock selected number of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "ClockPointer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clock pointer of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "ClockPointerThumb",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clock pointer thumb of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "ClockPointerThumbMinute",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "CloseButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "CloseButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the close button icon of the BitCircularTimePicker."
+                }
+            ]
+        }
+    ];
+
+
+
     private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);
     private FormValidationCircularTimePickerModel formValidationCircularTimePickerModel = new();
     private string successMessage = string.Empty;
@@ -353,17 +588,74 @@ public partial class BitCircularTimePickerDemo
                        Placeholder=""Select a time"" />";
 
     private readonly string example4RazorCode = @"
-<BitCircularTimePicker @bind-Value=""@selectedTime"" />
-<div>Selected time: @selectedTime.ToString()</div>";
-    private readonly string example4CsharpCode = @"
-private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
+<style>
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .custom-toolbar {
+        background-color: #ff6a00;
+    }
+
+    .custom-clock-face {
+        background-color: #ff6a00;
+    }
+
+    .custom-clock-number {
+        color: #621402;
+        font-weight: bold;
+    }
+
+    .custom-clock-pin,
+    .custom-clock-pointer,
+    .custom-clock-pointer-thumb,
+    .custom-clock-selected-number {
+        background-color: #fff;
+    }
+
+    .custom-clock-pointer-thumb-minute {
+        border-color: #fff;
+    }
+</style>
+
+<BitCircularTimePicker Style=""padding: 1rem; background: purple;"" />
+<BitCircularTimePicker Class=""custom-class"" />
+
+<BitCircularTimePicker Styles=""@(new() { Root = ""margin: 1rem; border: 1px solid gold;"",
+                                         HourMinuteSeparator = ""border-color: green;"",
+                                         Toolbar = ""color: red;"",
+                                         ClockPointer = ""background-color: red;"",
+                                         ClockPointerThumb = ""background-color: purple;"",
+                                         SelectedButtons = ""color: blue;"",
+                                         ClockFace=""background-color: green;""})"" />
+<BitCircularTimePicker Classes=""@(new() { Root = ""custom-root"",
+                                          Toolbar = ""custom-toolbar"",
+                                          ClockFace = ""custom-clock-face"",
+                                          ClockPin = ""custom-clock-pin"",
+                                          ClockPointer = ""custom-clock-pointer"",
+                                          ClockPointerThumb = ""custom-clock-pointer-thumb"",
+                                          ClockPointerThumbMinute = ""custom-clock-pointer-thumb-minute"",
+                                          ClockSelectedNumber = ""custom-clock-selected-number"",
+                                          ClockNumber = ""custom-clock-number"" })"" />";
 
     private readonly string example5RazorCode = @"
+<BitCircularTimePicker @bind-Value=""@selectedTime"" />
+<div>Selected time: @selectedTime.ToString()</div>";
+    private readonly string example5CsharpCode = @"
+private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
+
+    private readonly string example6RazorCode = @"
 <BitCircularTimePicker Label=""fa-IR culture""
                        TimeFormat=""BitTimeFormat.TwelveHours""
                        Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitCircularTimePicker @ref=""circularTimePicker"">
     <LabelTemplate>
         Custom label <BitIconButton IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
@@ -377,7 +669,7 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
         <img src=""https://img.icons8.com/fluency/2x/clock.png"" width=""24"" height=""24"" />
     </IconTemplate>
 </BitCircularTimePicker>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private BitCircularTimePicker circularTimePicker;
 
 private async Task OpenCallout()
@@ -385,12 +677,12 @@ private async Task OpenCallout()
     await circularTimePicker.OpenCallout();
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitCircularTimePicker Label=""Response CircularTimePicker""
                        IsResponsive=""true""
                        Placeholder=""Select a time"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <EditForm Model=""formValidationCircularTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -431,7 +723,7 @@ private async Task OpenCallout()
         <ValidationSummary />
     </div>
 </EditForm>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class FormValidationCircularTimePickerModel
 {
     [Required]
@@ -449,6 +741,6 @@ private async Task HandleValidSubmit()
     StateHasChanged();
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitCircularTimePicker Dir=""BitDir.Rtl"" />";
 }
