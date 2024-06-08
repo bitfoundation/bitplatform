@@ -25,4 +25,38 @@
     .validation-errors {
         margin: rem2(5px);
     }
+
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .custom-toolbar {
+        background-color: #ff6a00;
+    }
+
+    .custom-clock-face {
+        background-color: #ff6a00;
+    }
+
+    .custom-clock-number {
+        color: #621402;
+        font-weight: bold;
+    }
+
+    .custom-clock-pin,
+    .custom-clock-pointer,
+    .custom-clock-pointer-thumb,
+    .custom-clock-selected-number {
+        background-color: #fff;
+    }
+
+    .custom-clock-pointer-thumb-minute {
+        border-color: #fff;
+    }
 }
