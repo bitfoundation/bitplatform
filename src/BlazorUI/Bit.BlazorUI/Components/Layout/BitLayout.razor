@@ -1,11 +1,22 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<label @ref="RootElement" @attributes="HtmlAttributes"
-       id="@_Id"
-       style="@StyleBuilder.Value"
-       class="@ClassBuilder.Value"
-       dir="@Dir?.ToString().ToLower()"
-       for="@For">
-    @ChildContent
-</label>
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    
+     <header class="bit-lyt-hdr">
+        @Header
+    </header>
+
+    <main class="bit-lyt-man">
+        @Main
+    </main>
+
+    <footer class="bit-lyt-ftr">
+        @Footer
+    </footer>
+</div>
