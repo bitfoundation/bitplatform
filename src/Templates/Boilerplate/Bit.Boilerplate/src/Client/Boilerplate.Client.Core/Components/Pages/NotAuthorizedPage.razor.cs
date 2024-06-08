@@ -38,7 +38,7 @@ public partial class NotAuthorizedPage
         if ((await AuthenticationStateTask).User.IsAuthenticated() is false)
         {
             // If neither the refresh_token nor the access_token is present, proceed to the sign-in page.
-            await SignIn();
+            RedirectToSignInPage();
         }
 
         await base.OnAfterFirstRenderAsync();

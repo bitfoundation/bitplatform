@@ -1,6 +1,9 @@
 ﻿//+:cnd:noEmit
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Boilerplate.Server.Services;
+using Boilerplate.Server.Components;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Models.Identity;
 using Boilerplate.Client.Core.Controllers.Identity;
@@ -11,21 +14,15 @@ namespace Boilerplate.Server.Controllers.Identity;
 [Route("api/[controller]/[action]")]
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
-    [AutoInject] private UserManager<User> userManager = default!;
-
-    [AutoInject] private SignInManager<User> signInManager = default!;
-
-    [AutoInject] private IUserStore<User> userStore = default!;
-
-    [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
-
-    [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
-
     [AutoInject] private SmsService smsService = default!;
-
     [AutoInject] private EmailService emailService = default!;
-
+    [AutoInject] private HtmlRenderer htmlRenderer = default!;
+    [AutoInject] private IUserStore<User> userStore = default!;
+    [AutoInject] private UserManager<User> userManager = default!;
+    [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private ILogger<IdentityController> logger = default!;
+    [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
+    [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -103,7 +100,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{request.Email},Date:{user.EmailTokenRequestedOn}", request.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{request.Email},{user.EmailTokenRequestedOn}"), request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -117,9 +114,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates email token
-        if (updateSecurityStampResult.Succeeded is false)
-            throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+        await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+        user.EmailTokenRequestedOn = null; // invalidates email token
+        var updateResult = await userManager.UpdateAsync(user);
+        if (updateResult.Succeeded is false)
+            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
@@ -145,7 +144,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user)) return;
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{request.PhoneNumber},Date:{user.PhoneNumberTokenRequestedOn}", request.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyPhoneNumber:{request.PhoneNumber},{user.PhoneNumberTokenRequestedOn}"), request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -157,9 +156,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates phone token
-        if (updateSecurityStampResult.Succeeded is false)
-            throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+        await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+        user.PhoneNumberTokenRequestedOn = null; // invalidates phone token
+        var updateResult = await userManager.UpdateAsync(user);
+        if (updateResult.Succeeded is false)
+            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
@@ -181,17 +182,17 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.RequiresTwoFactor)
         {
-            if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
-            {
-                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
-            }
-            else if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
+            if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
             {
                 result = await signInManager.TwoFactorRecoveryCodeSignInAsync(request.TwoFactorRecoveryCode);
             }
             else if (string.IsNullOrEmpty(request.TwoFactorToken) is false)
             {
                 result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, request.TwoFactorToken, false, false);
+            }
+            else if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
+            {
+                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
             }
             else
             {
@@ -204,9 +205,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (string.IsNullOrEmpty(request.Otp) is false)
         {
-            var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates the OTP.
-            if (updateSecurityStampResult.Succeeded is false)
-                throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+            await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+            user.OtpRequestedOn = null; // invalidates the OTP
+            var updateResult = await userManager.UpdateAsync(user);
+            if (updateResult.Succeeded is false)
+                throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
 
         return Empty;
@@ -221,7 +224,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc ||
                 await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user)
         {
-            return Challenge();
+            // Return 401 if refresh token is either invalid or expired.
+            throw new UnauthorizedException();
         }
 
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);
@@ -250,7 +254,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn}"));
         var isEmail = string.IsNullOrEmpty(request.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
         var url = $"reset-password?token={Uri.EscapeDataString(token)}&{qs}";
@@ -290,13 +294,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
 
-        user.OtpRequestedOn = DateTimeOffset.Now;
-
-        var result = await userManager.UpdateAsync(user);
-
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-
         var (token, url) = await GenerateOtpTokenData(user, returnUrl);
 
         var link = new Uri(HttpContext.Request.GetBaseUrl(), url);
@@ -326,7 +323,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
 
-        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, $"ResetPassword,Date:{user.ResetPasswordTokenRequestedOn}", request.Token!);
+        bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn}"), request.Token!);
 
         if (tokenIsValid is false)
         {
@@ -339,9 +336,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var updateSecurityStampResult = await userManager.UpdateSecurityStampAsync(user); // invalidates reset password token
-        if (updateSecurityStampResult.Succeeded is false)
-            throw new ResourceValidationException(updateSecurityStampResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+        await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+        user.ResetPasswordTokenRequestedOn = null; // invalidates reset password token
+        var updateResult = await userManager.UpdateAsync(user);
+        if (updateResult.Succeeded is false)
+            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpPost]
@@ -459,10 +458,23 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             LogSocialSignInCallbackFailed(logger, exp, info.LoginProvider, info.Principal.GetDisplayName());
             url = $"sign-in?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
+        finally
+        {
+            await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
+        }
 
         if (localHttpPort is null) return LocalRedirect($"~/{url}");
 
         return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), url).ToString());
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> SocialSignedIn()
+    {
+        var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+                    (await htmlRenderer.RenderComponentAsync<SocialSignedInPage>()).ToHtmlString());
+
+        return Content(html, "text/html", System.Text.Encoding.UTF8);
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
@@ -470,7 +482,14 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     private async Task<(string token, string url)> GenerateOtpTokenData(User user, string? returnUrl)
     {
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"Otp,Date:{user.OtpRequestedOn}");
+        user.OtpRequestedOn = DateTimeOffset.Now;
+
+        var result = await userManager.UpdateAsync(user);
+
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp,{user.OtpRequestedOn}"));
 
         var isEmail = string.IsNullOrEmpty(user.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? user.Email! : user.PhoneNumber!)}";
@@ -499,7 +518,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var email = user.Email!;
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyEmail:{email},Date:{user.EmailTokenRequestedOn}");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{email},{user.EmailTokenRequestedOn}"));
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}");
 
         await emailService.SendEmailToken(user, email, token, link, cancellationToken);
@@ -519,7 +538,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var phoneNumber = user.PhoneNumber!;
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, $"VerifyPhoneNumber:{phoneNumber},Date:{user.PhoneNumberTokenRequestedOn}");
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyPhoneNumber:{phoneNumber},{user.PhoneNumberTokenRequestedOn}"));
         var link = new Uri(HttpContext.Request.GetBaseUrl(), $"confirm?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}");
 
         await smsService.SendSms(Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token], phoneNumber, cancellationToken);

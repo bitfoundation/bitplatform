@@ -19,17 +19,19 @@
             @Localizer[nameof(AppStrings.SignUp)]
         </BitTypography>
         <br /><br />
-        <BitButton ButtonType="BitButtonType.Button"
+        <BitButton Style="width:300px"
+                   IsLoading="isWaiting"
+                   ButtonType="BitButtonType.Button"
                    OnClick="WrapHandled(GoogleSignUp)"
-                   ButtonStyle="BitButtonStyle.Standard"
-                   Style="width:300px">
+                   ButtonStyle="BitButtonStyle.Standard">
             @Localizer[AppStrings.GoogleSignUpButtonText]
         </BitButton>
         <br />
-        <BitButton ButtonType="BitButtonType.Button"
+        <BitButton Style="width:300px"
+                   IsLoading="isWaiting"
+                   ButtonType="BitButtonType.Button"
                    OnClick="WrapHandled(GitHubSignUp)"
-                   ButtonStyle="BitButtonStyle.Standard"
-                   Style="width:300px">
+                   ButtonStyle="BitButtonStyle.Standard">
             @Localizer[AppStrings.GitHubSignUpButtonText]
         </BitButton>
         <br /><br />

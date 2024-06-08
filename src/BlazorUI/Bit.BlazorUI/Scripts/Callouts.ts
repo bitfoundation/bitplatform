@@ -103,8 +103,8 @@ namespace BitBlazorUI {
             scrollContainer.style.height = '';
             scrollContainer.style.maxHeight = '';
 
-            const bodyWidth = document.body.clientWidth;
-            const bodyHeight = document.body.clientHeight;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
 
             const componentWidth = component.offsetWidth;
             const componentHeight = component.offsetHeight;
@@ -114,8 +114,8 @@ namespace BitBlazorUI {
             const calloutHeight = callout.offsetHeight;
             const { x: calloutLeft } = callout.getBoundingClientRect();
 
-            const distanceToBottom = bodyHeight - (componentY + componentHeight);
-            const distanceToRight = bodyWidth - (componentX + componentWidth);
+            const distanceToBottom = windowHeight - (componentY + componentHeight);
+            const distanceToRight = windowWidth - (componentX + componentWidth);
 
             const { height: headerHeight } = header.getBoundingClientRect();
             const { height: footerHeight } = footer.getBoundingClientRect();
@@ -124,10 +124,10 @@ namespace BitBlazorUI {
                 let width = Math.max(componentWidth, calloutWidth);
                 if (responsiveMode == BitResponsiveMode.Panel &&
                     width < Utils.MIN_MOBILE_WIDTH &&
-                    bodyWidth < Utils.MAX_MOBILE_WIDTH) {
-                    width = bodyWidth > Utils.MIN_MOBILE_WIDTH
+                    windowWidth < Utils.MAX_MOBILE_WIDTH) {
+                    width = windowWidth > Utils.MIN_MOBILE_WIDTH
                         ? Utils.MIN_MOBILE_WIDTH
-                        : bodyWidth;
+                        : windowWidth;
                 }
                 callout.style.width = width + 'px';
                 calloutWidth = width;
@@ -135,17 +135,17 @@ namespace BitBlazorUI {
 
             const responseCssClass = `${rootCssClass}-rsp`;
 
-            if (bodyWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
+            if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
                 callout.style.top = '0';
                 callout.style[isRtl ? 'left' : 'right'] = '0';
-                callout.style.maxHeight = bodyHeight + 'px';
+                callout.style.maxHeight = windowHeight + 'px';
 
                 if (responsiveMode == BitResponsiveMode.Top) {
                     callout.style.width = '100%';
                 }
 
                 setTimeout(() => {
-                    scrollContainer.style.maxHeight = (bodyHeight - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = (windowHeight - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
                 });
 
                 callout.classList.add(responseCssClass);
@@ -155,7 +155,7 @@ namespace BitBlazorUI {
             callout.classList.remove(responseCssClass);
 
             let left = componentX + (isRtl ? (componentWidth - calloutWidth) : 0);
-            left = ((left + calloutWidth) > bodyWidth) ? (bodyWidth - calloutWidth - 2) : left;
+            left = ((left + calloutWidth) > windowWidth) ? (windowWidth - calloutWidth - 2) : left;
             left = (left < 0) ? 0 : left;
             callout.style.left = left + 'px';
 
@@ -177,11 +177,11 @@ namespace BitBlazorUI {
                 } else if ((isRtl ? componentX : distanceToRight) >= calloutWidth) {
                     callout.style.bottom = '2px';
                     callout.style.left = (isRtl ? (componentX - calloutWidth - 1) : (componentX + componentWidth + 1)) + 'px';
-                    scrollContainer.style.maxHeight = (bodyHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = (windowHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 } else {
                     callout.style.bottom = '2px';
                     callout.style.left = (isRtl ? (componentX + componentWidth + 1) : (componentX - calloutWidth - 1)) + 'px';
-                    scrollContainer.style.maxHeight = (bodyHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
+                    scrollContainer.style.maxHeight = (windowHeight - scrollOffset - headerHeight - footerHeight - 10) + 'px';
                 }
             }
 

@@ -570,8 +570,10 @@
     i {
         speak: none;
         width: 100%;
+        display: flex;
         aspect-ratio: 1;
-        display: inline-block;
+        align-items: center;
+        justify-content: center;
     }
 
     &:disabled {

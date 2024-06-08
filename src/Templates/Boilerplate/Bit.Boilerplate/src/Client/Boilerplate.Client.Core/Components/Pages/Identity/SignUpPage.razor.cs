@@ -9,11 +9,12 @@ public partial class SignUpPage
     private bool isWaiting;
     private string? message;
     private ElementReference messageRef = default!;
-    private readonly SignUpRequestDto signUpModel = new();
+    private readonly SignUpRequestDto signUpModel = new() { UserName = Guid.NewGuid().ToString() };
 
 
+    [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IIdentityController identityController = default!;
-
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
     private async Task DoSignUp()
     {
@@ -37,8 +38,6 @@ public partial class SignUpPage
 
         try
         {
-            signUpModel.UserName = Guid.NewGuid().ToString(); // You can also bind the UserName property to an input
-
             await identityController.SignUp(signUpModel, CurrentCancellationToken);
 
             var queryParams = new Dictionary<string, object?>();
@@ -89,18 +88,19 @@ public partial class SignUpPage
 
         try
         {
-            var redirectUrl = await identityController.GetSocialSignInUri(provider);
+            var port = await localHttpServer.Start();
 
-            NavigationManager.NavigateTo(redirectUrl, true);
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port);
+
+            await externalNavigationService.NavigateToAsync(redirectUrl);
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            await messageRef.ScrollIntoView();
-        }
-        finally
-        {
             isWaiting = false;
+
+            message = e.Message;
+
+            await messageRef.ScrollIntoView();
         }
     }
 }

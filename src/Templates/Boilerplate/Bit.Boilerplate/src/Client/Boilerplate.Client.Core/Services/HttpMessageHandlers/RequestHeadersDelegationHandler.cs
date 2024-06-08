@@ -13,7 +13,7 @@ public class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
 
         if (AppRenderMode.MultilingualEnabled)
         {
-            request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentCulture.Name));
+            request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
 
         return await base.SendAsync(request, cancellationToken);

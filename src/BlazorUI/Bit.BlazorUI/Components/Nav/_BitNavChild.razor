@@ -18,6 +18,7 @@
         var title = Nav.GetTitle(Item);
         var target = Nav.GetTarget(Item);
         var renderLink = url.HasValue() || Nav.GetForceAnchor(Item);
+        var href = (isEnabled && (Nav.SelectedItem != Item || Nav.Reselectable)) ? url : null;
     }
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
     {
@@ -139,7 +140,7 @@
                                aria-label="@Nav.GetAriaLabel(Item)"
                                class="bit-nav-itm @GetItemClasses()"
                                disabled="@(isEnabled is false)"
-                               href="@(isEnabled ? url : null)"
+                               href="@href"
                                title="@(title is not null ? title : text)"
                                aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                                rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
@@ -202,7 +203,7 @@
                            target="@target"
                            title="@description"
                            disabled="@(isEnabled is false)"
-                           href="@(isEnabled ? url : null)"
+                           href="@href"
                            style="padding-inline-start:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
                            class="bit-nav-des @Nav.Classes?.Description"
                            rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">

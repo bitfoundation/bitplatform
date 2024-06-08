@@ -64,13 +64,6 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "IconTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Custom TimePicker icon template."
-        },
-        new()
-        {
             Name = "IconLocation",
             Type = "BitIconLocation",
             LinkType = LinkType.Link,
@@ -84,6 +77,13 @@ public partial class BitCircularTimePickerDemo
             Type = "string",
             DefaultValue = "Clock",
             Description = "Optional TimePicker icon."
+        },
+        new()
+        {
+            Name = "IconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom TimePicker icon template."
         },
         new()
         {

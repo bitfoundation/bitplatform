@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -41,20 +42,7 @@ public partial class BitCircularTimePicker
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
-    /// <summary>
-    /// Label for the TimePicker
-    /// </summary>
-    [Parameter] public string? Label { get; set; }
 
-    /// <summary>
-    /// Shows the custom label for text field
-    /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
-
-    /// <summary>
-    /// Choose the edition mode. By default, you can edit hours and minutes.
-    /// </summary>
-    [Parameter] public BitCircularTimePickerEditMode EditMode { get; set; } = BitCircularTimePickerEditMode.Normal;
 
     /// <summary>
     /// Whether the TimePicker allows input a date string directly or not
@@ -62,19 +50,55 @@ public partial class BitCircularTimePicker
     [Parameter] public bool AllowTextInput { get; set; }
 
     /// <summary>
-    /// The tabIndex of the TextField.
+    /// If AutoClose is set to true and PickerActions are defined, the hour and the minutes can be defined without any action.
     /// </summary>
-    [Parameter] public int TabIndex { get; set; }
+    [Parameter] public bool AutoClose { get; set; }
 
     /// <summary>
-    /// Placeholder text for the TimePicker.
+    /// Aria label for time picker popup for screen reader users.
     /// </summary>
-    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string CalloutAriaLabel { get; set; } = "Clock";
 
     /// <summary>
-    /// Custom TimePicker icon template
+    /// Capture and render additional attributes in addition to the main callout's parameters
     /// </summary>
-    [Parameter] public RenderFragment? IconTemplate { get; set; }
+    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the TimePicker component.
+    /// </summary>
+    [Parameter] public BitCircularTimePickerClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The title of the close button (tooltip).
+    /// </summary>
+    [Parameter] public string CloseButtonTitle { get; set; } = "Close time picker";
+
+    /// <summary>
+    /// CultureInfo for the TimePicker
+    /// </summary>
+    [Parameter]
+    public CultureInfo Culture
+    {
+        get => culture;
+        set
+        {
+            if (culture == value) return;
+
+            culture = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Choose the edition mode. By default, you can edit hours and minutes.
+    /// </summary>
+    [Parameter] public BitCircularTimePickerEditMode EditMode { get; set; } = BitCircularTimePickerEditMode.Normal;
+
+    /// <summary>
+    /// Determines if the TimePicker has a border.
+    /// </summary>
+    [Parameter] public bool HasBorder { get; set; } = true;
 
     /// <summary>
     /// TimePicker icon location
@@ -98,6 +122,16 @@ public partial class BitCircularTimePicker
     [Parameter] public string IconName { get; set; } = "Clock";
 
     /// <summary>
+    /// Custom TimePicker icon template
+    /// </summary>
+    [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for the invalid value.
+    /// </summary>
+    [Parameter] public string? InvalidErrorMessage { get; set; }
+
+    /// <summary>
     /// Whether or not this TimePicker is open
     /// </summary>
     public bool IsOpen
@@ -118,19 +152,24 @@ public partial class BitCircularTimePicker
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
-    /// Capture and render additional attributes in addition to the main callout's parameters
-    /// </summary>
-    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
-
-    /// <summary>
-    /// Aria label for time picker popup for screen reader users.
-    /// </summary>
-    [Parameter] public string CalloutAriaLabel { get; set; } = "Clock";
-
-    /// <summary>
     /// Enables the responsive mode in small screens
     /// </summary>
     [Parameter] public bool IsResponsive { get; set; }
+
+    /// <summary>
+    /// Whether or not the Text field of the TimePicker is underlined.
+    /// </summary>
+    [Parameter] public bool IsUnderlined { get; set; }
+
+    /// <summary>
+    /// Label for the TimePicker
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Shows the custom label for text field
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Callback for when clicking on TimePicker input
@@ -153,30 +192,29 @@ public partial class BitCircularTimePicker
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
-    /// Whether or not the Text field of the TimePicker is underlined.
+    /// Callback for when the time changes.
     /// </summary>
-    [Parameter] public bool IsUnderlined { get; set; }
+    [Parameter] public EventCallback<TimeSpan?> OnSelectTime { get; set; }
 
     /// <summary>
-    /// Determines if the TimePicker has a border.
+    /// Placeholder text for the TimePicker.
     /// </summary>
-    [Parameter] public bool HasBorder { get; set; } = true;
+    [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
-    /// CultureInfo for the TimePicker
+    /// Whether the TimePicker's close button should be shown or not.
     /// </summary>
-    [Parameter]
-    public CultureInfo Culture
-    {
-        get => culture;
-        set
-        {
-            if (culture == value) return;
+    [Parameter] public bool ShowCloseButton { get; set; }
 
-            culture = value;
-            ClassBuilder.Reset();
-        }
-    }
+    /// <summary>
+    /// Custom CSS styles for different parts of the TimePicker component.
+    /// </summary>
+    [Parameter] public BitCircularTimePickerClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The tabIndex of the TextField.
+    /// </summary>
+    [Parameter] public int TabIndex { get; set; }
 
     /// <summary>
     /// The time format of the time-picker, 24H or 12H.
@@ -187,31 +225,6 @@ public partial class BitCircularTimePicker
     /// The format of the time in the TimePicker
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
-
-    /// <summary>
-    /// The custom validation error message for the invalid value.
-    /// </summary>
-    [Parameter] public string? InvalidErrorMessage { get; set; }
-
-    /// <summary>
-    /// Callback for when the time changes.
-    /// </summary>
-    [Parameter] public EventCallback<TimeSpan?> OnSelectTime { get; set; }
-
-    /// <summary>
-    /// If AutoClose is set to true and PickerActions are defined, the hour and the minutes can be defined without any action.
-    /// </summary>
-    [Parameter] public bool AutoClose { get; set; }
-
-    /// <summary>
-    /// The title of the close button (tooltip).
-    /// </summary>
-    [Parameter] public string CloseButtonTitle { get; set; } = "Close time picker";
-
-    /// <summary>
-    /// Whether the TimePicker's close button should be shown or not.
-    /// </summary>
-    [Parameter] public bool ShowCloseButton { get; set; }
 
 
 
@@ -263,6 +276,8 @@ public partial class BitCircularTimePicker
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lic" : string.Empty);
 
         ClassBuilder.Register(() => IsUnderlined ? "bit-ctp-und" : string.Empty);
@@ -270,6 +285,11 @@ public partial class BitCircularTimePicker
         ClassBuilder.Register(() => HasBorder ? string.Empty : "bit-ctp-nbd");
 
         ClassBuilder.Register(() => _focusClass);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
@@ -364,10 +384,51 @@ public partial class BitCircularTimePicker
         return $"{x:F3}px, {y:F3}px";
     }
 
-    private string GetHoursMinutesClass(int value) =>
-        (_showHourView && GetHours() == value) || (_showHourView is false && _minute.GetValueOrDefault() == value)
-            ? "bit-ctp-sel"
-            : string.Empty;
+    private string GetHoursMinutesClass(int hourMinute)
+    {
+        StringBuilder classes = new();
+
+        if (Classes?.ClockNumber.HasValue() ?? false)
+        {
+            classes.Append(Classes.ClockNumber);
+        }
+
+        if ((_showHourView && GetHours() == hourMinute) || (_showHourView is false && _minute.GetValueOrDefault() == hourMinute))
+        {
+            if (classes.Length > 0)
+            {
+                classes.Append(' ');
+            }
+
+            classes.Append("bit-ctp-sel");
+
+            if ((Classes?.ClockSelectedNumber.HasValue() ?? false))
+            {
+                classes.Append(' ').Append(Classes.ClockSelectedNumber);
+            }
+        }
+
+        return classes.ToString();
+    }
+
+    private string GetHoursMinutesStyle(int hourMinute, int index, double radius, double offsetX, double offsetY)
+    {
+        StringBuilder styles = new();
+
+        styles.Append($"transform: translate({GetTransformStyle(index, radius, offsetX, offsetY)}); ");
+
+        if (Styles?.ClockNumber.HasValue() ?? false)
+        {
+            styles.Append(' ').Append(Styles.ClockNumber);
+        }
+
+        if ((Styles?.ClockSelectedNumber.HasValue() ?? false) && ((_showHourView && GetHours() == hourMinute) || (_showHourView is false && _minute.GetValueOrDefault() == hourMinute)))
+        {
+            styles.Append(' ').Append(Styles.ClockSelectedNumber);
+        }
+
+        return styles.ToString();
+    }
 
     private int GetClockHandHeightPercent() => (_showHourView && TimeFormat == BitTimeFormat.TwentyFourHours && _hour > 0 && _hour < 13) ? 26 : 40;
 
@@ -524,6 +585,36 @@ public partial class BitCircularTimePicker
         await UpdateCurrentValue();
 
         StateHasChanged();
+    }
+
+    private string? GetHourButtonStyle()
+    {
+        var style = $"{Styles?.HourButton?.Trim(';')};{(_showHourView ? Styles?.SelectedButtons : null)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetMinuteButtonStyle()
+    {
+        var style = $"{Styles?.MinuteButton?.Trim(';')};{(_showHourView ? null : Styles?.SelectedButtons)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetAmButtonStyle(bool isAm)
+    {
+        var style = $"{Styles?.AmButton?.Trim(';')};{(isAm ? Styles?.SelectedButtons : null)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetPmButtonStyle(bool isAm)
+    {
+        var style = $"{Styles?.PmButton?.Trim(';')};{(isAm ? null : Styles?.SelectedButtons)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetClockPointerThumbStyle(bool isMinute)
+    {
+        var style = $"{Styles?.ClockPointerThumb?.Trim(';')};{(isMinute ? null : Styles?.ClockPointerThumbMinute)}".Trim(';');
+        return style.HasValue() ? style : null;
     }
 
     /// <inheritdoc />

@@ -4,21 +4,21 @@ namespace Boilerplate.Shared.Services;
 
 public class CultureInfoManager
 {
-    public static (string name, string code) DefaultCulture { get; } = ("English", "en-US");
+    public static CultureInfo DefaultCulture => CreateCultureInfo("en-US");
 
-    public static (string name, string code)[] SupportedCultures { get; } =
+    public static (string DisplayName, CultureInfo Culture)[] SupportedCultures =>
     [
-        ("English US", "en-US"),
-        ("English UK", "en-GB"),
-        ("Française", "fr-FR"),
-        ("فارسی", "fa-IR"), // To add more languages, you've to provide resx files. You might also put some efforts to change your app flow direction based on CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft
+        ("English US", CreateCultureInfo("en-US")),
+        ("English UK", CreateCultureInfo("en-GB")),
+        ("Française", CreateCultureInfo("fr-FR")),
+        ("فارسی", CreateCultureInfo("fa-IR"))
     ];
 
-    public static CultureInfo CreateCultureInfo(string cultureInfoId)
+    public static CultureInfo CreateCultureInfo(string name)
     {
-        var cultureInfo = OperatingSystem.IsBrowser() ? CultureInfo.CreateSpecificCulture(cultureInfoId) : new CultureInfo(cultureInfoId);
+        var cultureInfo = OperatingSystem.IsBrowser() ? CultureInfo.CreateSpecificCulture(name) : new CultureInfo(name);
 
-        if (cultureInfoId == "fa-IR")
+        if (name == "fa-IR")
         {
             CustomizeCultureInfoForFaCulture(cultureInfo);
         }
@@ -26,32 +26,19 @@ public class CultureInfoManager
         return cultureInfo;
     }
 
-    public void SetCurrentCulture(string? cultureInfoCookie)
+    public void SetCurrentCulture(string cultureName)
     {
-        var currentCulture = GetCurrentCulture(cultureInfoCookie);
+        var cultureInfo = SupportedCultures.FirstOrDefault(sc => sc.Culture.Name == cultureName).Culture ?? DefaultCulture;
 
-        var cultureInfo = CreateCultureInfo(currentCulture);
-
-        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
-    }
-
-    public string GetCurrentCulture(string? preferredCulture = null)
-    {
-        string culture = preferredCulture ?? CultureInfo.CurrentUICulture.Name;
-        if (SupportedCultures.Any(sc => sc.code == culture) is false)
-        {
-            culture = DefaultCulture.code;
-        }
-        return culture;
+        CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
+        CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
     }
 
     /// <summary>
     /// This is an example to demonstrate the way you can customize application culture
     /// </summary>
-    public static CultureInfo CustomizeCultureInfoForFaCulture(CultureInfo cultureInfo)
+    private static CultureInfo CustomizeCultureInfoForFaCulture(CultureInfo cultureInfo)
     {
-        cultureInfo.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(cultureInfo, new PersianCalendar());
-
         cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
         cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
@@ -63,6 +50,8 @@ public class CultureInfoManager
         [
             "ی", "د", "س", "چ", "پ", "ج", "ش"
         ];
+
+        cultureInfo.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(cultureInfo, new PersianCalendar());
 
         return cultureInfo;
     }

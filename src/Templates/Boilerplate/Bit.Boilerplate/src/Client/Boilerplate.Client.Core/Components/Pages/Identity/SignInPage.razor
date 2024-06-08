@@ -22,22 +22,32 @@
         @if (requiresTwoFactor is false)
         {
             <br /><br />
-            <BitButton ButtonType="BitButtonType.Button"
+            <BitButton Style="width:300px"
+                       IsLoading="isWaiting"
+                       ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(GoogleSignIn)"
-                       ButtonStyle="BitButtonStyle.Standard"
-                       Style="width:300px">
+                       ButtonStyle="BitButtonStyle.Standard">
                 @Localizer[AppStrings.GoogleSignInButtonText]
             </BitButton>
             <br />
-            <BitButton ButtonType="BitButtonType.Button"
+            <BitButton Style="width:300px"
+                       IsLoading="isWaiting"
+                       ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(GitHubSignIn)"
-                       ButtonStyle="BitButtonStyle.Standard"
-                       Style="width:300px">
+                       ButtonStyle="BitButtonStyle.Standard">
                 @Localizer[AppStrings.GitHubSignInButtonText]
+            </BitButton>
+            <br />
+            <BitButton Style="width:300px"
+                       IsLoading="isWaiting"
+                       ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(TwitterSignIn)"
+                       ButtonStyle="BitButtonStyle.Standard">
+                @Localizer[AppStrings.TwitterSignInButtonText]
             </BitButton>
             <br /><br />
             <BitSeparator Style="width:100%">Or</BitSeparator>
-            <br/>
+            <br />
             <div class="form-input-container">
                 <BitTextField @bind-Value="model.Email"
                               Type="BitTextFieldType.Email"
@@ -119,7 +129,7 @@
             </div>
         }
         <br />
-        <BitButton IsLoading="isSigningIn"
+        <BitButton IsLoading="isWaiting"
                    ButtonStyle="BitButtonStyle.Primary"
                    Title="@Localizer[nameof(AppStrings.SignIn)]"
                    AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
