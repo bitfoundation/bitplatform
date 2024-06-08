@@ -198,5 +198,11 @@ public partial class SignInPage
 
             await messageRef.ScrollIntoView();
         }
+        catch
+        {
+            isWaiting = false;
+
+            throw;
+        }
     }
 }
