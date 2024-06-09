@@ -31,7 +31,7 @@ jobs:
 
     - name: Release build todo sample + sqlite database
       run: |
-        dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
+        dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net8 wasm-experimental
         dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline none --serverUrl todo.bitplatform.dev
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
         cd TodoBPSqlite/src/TodoBPSqlite.Server/

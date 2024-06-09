@@ -40,7 +40,7 @@ jobs:
         node-version: 20
         
     - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+      run:  cd src && dotnet workload install wasm-tools wasm-tools-net8 wasm-experimental
 
     - name: Enable pre rendering
       run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Services/AppRenderMode.cs

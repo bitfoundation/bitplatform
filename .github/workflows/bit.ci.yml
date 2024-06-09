@@ -25,7 +25,7 @@ jobs:
         node-version: 20
       
     - name: Install wasm and maui
-      run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
+      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net8 wasm-experimental
 
     - name: Install Nodejs dependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
@@ -57,7 +57,7 @@ jobs:
         node-version: 20
 
     - name: Install wasm and maui
-      run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
+      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net8 wasm-experimental
 
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
