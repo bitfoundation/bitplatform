@@ -10,7 +10,7 @@
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="example-content">
                 <div>Basic Calendar:</div>
@@ -24,6 +24,9 @@
                 <br /><br />
                 <div>Highlight months:</div>
                 <BitCalendar HighlightCurrentMonth="true" HighlightSelectedMonth="true" />
+                <br /><br />
+                <div>StartingValue: December 2020, Time: 20:45:</div>
+                <BitCalendar ShowTimePicker="true" StartingValue="startingValue" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -205,7 +208,7 @@
 
                 @if (string.IsNullOrEmpty(SuccessMessage) is false)
                 {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@SuccessMessage</BitMessageBar>
+                    <BitMessage Severity="BitSeverity.Success">@SuccessMessage</BitMessage>
                 }
             </div>
         </ExamplePreview>
@@ -215,6 +218,22 @@
         <ExamplePreview>
             <div class="example-content">
                 <BitCalendar Dir="BitDir.Rtl" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Hour/minute step" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <div class="example-content">
+                <div>HourStep = 2:</div>
+                <br />
+                <BitCalendar ShowTimePicker="true" HourStep="2" />
+
+                <br />
+
+                <div>MinuteStep = 15:</div>
+                <br />
+                <BitCalendar ShowTimePicker="true" MinuteStep="15" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

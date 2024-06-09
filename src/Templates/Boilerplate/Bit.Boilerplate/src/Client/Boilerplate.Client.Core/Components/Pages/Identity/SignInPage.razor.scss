@@ -15,3 +15,9 @@
     line-height: rem2(24px);
     margin-bottom: rem2(20px);
 }
+
+.tfa-token-container {
+    gap: 4px;
+    display: flex;
+    flex-flow: column;
+}

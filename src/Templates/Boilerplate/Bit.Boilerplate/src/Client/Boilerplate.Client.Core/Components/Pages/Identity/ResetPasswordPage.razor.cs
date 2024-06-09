@@ -1,5 +1,5 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
@@ -7,55 +7,64 @@ public partial class ResetPasswordPage
 {
     [AutoInject] IIdentityController identityController = default!;
 
-    private bool isLoading;
-    private bool passwordChanged;
-    private string? resetPasswordMessage;
-    private BitMessageBarType resetPasswordMessageType;
-    private ResetPasswordRequestDto resetPasswordModel = new();
+    private bool isWaiting;
+    private bool showEmail;
+    private bool showPhone;
+    private bool isPasswordChanged;
+    private string? errorMessage;
+    private ResetPasswordRequestDto model = new();
 
-    [Parameter, SupplyParameterFromQuery] public string? Email { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "email")]
+    public string? EmailQueryString { get; set; }
 
-    [Parameter, SupplyParameterFromQuery] public string? Token { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "phoneNumber")]
+    public string? PhoneNumberQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "token")]
+    public string? TokenQueryString { get; set; }
 
     protected override async Task OnInitAsync()
     {
-        resetPasswordModel.Email = Email;
-        resetPasswordModel.Token = Token;
+        model.Email = EmailQueryString;
+        model.PhoneNumber = PhoneNumberQueryString;
+        model.Token = TokenQueryString;
+
+        if (string.IsNullOrEmpty(EmailQueryString) is false)
+        {
+            showEmail = true;
+        }
+        else if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
+        {
+            showPhone = true;
+        }
+        else
+        {
+            showEmail = showPhone = true;
+        }
 
         await base.OnInitAsync();
     }
 
-    private void RedirectToSignIn()
+    private async Task Submit()
     {
-        NavigationManager.NavigateTo($"/sign-in?email={Uri.EscapeDataString(Email ?? string.Empty)}");
-    }
+        if (isWaiting) return;
 
-    private async Task DoSubmit()
-    {
-        if (isLoading) return;
-
-        isLoading = true;
-        resetPasswordMessage = null;
+        isWaiting = true;
+        errorMessage = null;
 
         try
         {
-            await identityController.ResetPassword(resetPasswordModel, CurrentCancellationToken);
+            await identityController.ResetPassword(model, CurrentCancellationToken);
 
-            resetPasswordMessageType = BitMessageBarType.Success;
-
-            resetPasswordMessage = Localizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)];
-
-            passwordChanged = true;
+            isPasswordChanged = true;
         }
         catch (KnownException e)
         {
-            resetPasswordMessageType = BitMessageBarType.Error;
-
-            resetPasswordMessage = e.Message;
+            errorMessage = e.Message;
         }
         finally
         {
-            isLoading = false;
+            isWaiting = false;
         }
     }
 }

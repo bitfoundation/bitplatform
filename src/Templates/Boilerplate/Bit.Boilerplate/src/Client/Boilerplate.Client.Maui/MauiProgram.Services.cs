@@ -21,7 +21,7 @@ public static partial class MauiProgram
 
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
 
-        services.TryAddTransient(sp =>
+        services.TryAddSingleton(sp =>
         {
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
@@ -36,8 +36,9 @@ public static partial class MauiProgram
         if (BuildConfiguration.IsDebug())
         {
             builder.Logging.AddDebug();
-            builder.Logging.AddConsole();
         }
+
+        builder.Logging.AddConsole();
 
         if (OperatingSystem.IsWindows())
         {
@@ -47,11 +48,23 @@ public static partial class MauiProgram
         builder.Logging.AddEventSourceLogger();
 
         //+:cnd:noEmit
+
+        //#if (appCenter == true)
+        if (Microsoft.AppCenter.AppCenter.Configured)
+        {
+            builder.Logging.AddAppCenter(options => { });
+        }
+        //#endif
+
         //#if (appInsights == true)
         builder.Logging.AddApplicationInsights(config =>
         {
             config.TelemetryInitializers.Add(new MauiTelemetryInitializer());
-            config.ConnectionString = configuration["ApplicationInsights:ConnectionString"];
+            var connectionString = configuration["ApplicationInsights:ConnectionString"];
+            if (string.IsNullOrEmpty(connectionString) is false)
+            {
+                config.ConnectionString = connectionString;
+            }
         }, options =>
         {
             options.IncludeScopes = true;
@@ -63,6 +76,11 @@ public static partial class MauiProgram
         services.TryAddTransient<IStorageService, MauiStorageService>();
         services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
+        services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
+
+#if LocalHttpServerEnabled
+        services.AddSingleton<ILocalHttpServer>(sp => new MauiLocalHttpServer(services));
+#endif
 
 #if ANDROID
         services.AddClientMauiProjectAndroidServices();

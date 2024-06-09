@@ -17,7 +17,7 @@ public static partial class Program
         services.TryAddTransient<IConfiguration>(sp => configuration);
 
         Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
-        services.TryAddTransient(sp =>
+        services.TryAddSingleton(sp =>
         {
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
@@ -36,6 +36,7 @@ public static partial class Program
         services.TryAddTransient<IStorageService, WindowsStorageService>();
         services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
+        services.AddSingleton<ILocalHttpServer>(sp => new WindowsLocalHttpServer(services));
 
         services.AddLogging(loggingBuilder =>
         {
@@ -45,13 +46,23 @@ public static partial class Program
             if (BuildConfiguration.IsDebug())
             {
                 loggingBuilder.AddDebug();
-                loggingBuilder.AddConsole();
             }
+            loggingBuilder.AddConsole();
+            //#if (appCenter == true)
+            if (Microsoft.AppCenter.AppCenter.Configured)
+            {
+                loggingBuilder.AddAppCenter(options => { });
+            }
+            //#endif
             //#if (appInsights == true)
             loggingBuilder.AddApplicationInsights(config =>
             {
                 config.TelemetryInitializers.Add(new WindowsTelemetryInitializer());
-                config.ConnectionString = configuration["ApplicationInsights:ConnectionString"];
+                var connectionString = configuration["ApplicationInsights:ConnectionString"];
+                if (string.IsNullOrEmpty(connectionString) is false)
+                {
+                    config.ConnectionString = connectionString;
+                }
             }, options =>
             {
                 options.IncludeScopes = true;

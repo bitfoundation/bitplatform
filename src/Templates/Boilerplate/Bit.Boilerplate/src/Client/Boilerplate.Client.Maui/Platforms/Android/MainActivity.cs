@@ -1,16 +1,29 @@
-﻿using Android.App;
+﻿//+:cnd:noEmit
+using Android.OS;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.OS;
 using Boilerplate.Client.Core;
 using Java.Net;
 
 namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [IntentFilter([Intent.ActionView],
-                        DataScheme = "https",
-                        DataHost = "bp.bitplatform.dev",
-                        DataPathPrefix = "/",
+                        DataSchemes = ["https", "http"],
+                        DataHosts = ["use-your-server-url-here.com"],
+                        // the following app links will be opened in app instead of browser if the app is installed on Android device.
+                        DataPaths = ["/"],
+                        DataPathPrefixes = [
+                            "/confirm", "/forgot-password","/profile", "/reset-password", "/sign-in", "/sign-up", "/not-authorized", "/not-found","/terms", "/about",
+                            //#if (sample == "Admin")
+                            "/add-edit-category", "/categories", "/dashboard", "/products",
+                            //#elif (sample == "Todo")
+                            "/todo",
+                            //#endif
+                            //#if (offlineDb == true)
+                            "/offline-edit-profile"
+                            //#endif
+                            ],
                         AutoVerify = true,
                         Categories = [Intent.ActionView, Intent.CategoryDefault, Intent.CategoryBrowsable])]
 
@@ -25,7 +38,7 @@ public class MainActivity : MauiAppCompatActivity
         var url = Intent?.DataString;
         if (string.IsNullOrWhiteSpace(url) is false)
         {
-            var _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
+            _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
         }
     }
 
@@ -37,7 +50,7 @@ public class MainActivity : MauiAppCompatActivity
         var url = intent.DataString;
         if (action is Intent.ActionView && string.IsNullOrWhiteSpace(url) is false)
         {
-            var _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
+            _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
         }
     }
 }

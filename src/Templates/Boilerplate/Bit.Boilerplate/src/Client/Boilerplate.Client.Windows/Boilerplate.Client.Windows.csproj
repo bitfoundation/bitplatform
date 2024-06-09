@@ -11,6 +11,10 @@
         <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
         <StartupObject>Boilerplate.Client.Windows.Program</StartupObject>
         <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,18 +22,20 @@
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         <Watch Remove="*.scss" />
-        
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.1" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.1" PrivateAssets="all" />
+
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.9.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2420.47" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.20" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2420.47" />
-        <PackageReference Include="Velopack" Version="0.0.359" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.40" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
+        <PackageReference Include="Velopack" Version="0.0.503-gc69e323" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.5" />
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" Version="5.0.5" />
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" Version="2.2.2" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
         <!--/-:msbuild-conditional:noEmit -->
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
@@ -41,12 +47,15 @@
     </ItemGroup>
 
     <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" BeforeTargets="BeforeBuild">
-        <Exec Condition="!Exists('node_modules/.bin/sass')" Command="npm install sass@1.72.0 --no-save --prefix $(MSBuildProjectDirectory)" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
 </Project>

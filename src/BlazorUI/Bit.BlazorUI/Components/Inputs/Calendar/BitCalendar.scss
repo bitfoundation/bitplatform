@@ -59,8 +59,8 @@
     display: flex;
     box-shadow: none;
     padding: spacing(1.5);
+    min-width: spacing(26);
     box-sizing: content-box;
-    min-width: spacing(24.5);
     flex-flow: column nowrap;
 }
 
@@ -306,6 +306,8 @@
 
     i {
         speak: none;
+        width: 100%;
+        aspect-ratio: 1;
         display: inline-block;
     }
 
@@ -329,8 +331,8 @@
     display: flex;
     overflow: hidden;
     box-shadow: none;
-    width: spacing(24.5);
     padding: spacing(1.5);
+    min-width: spacing(26);
     box-sizing: content-box;
     flex-flow: column nowrap;
 }
@@ -346,17 +348,17 @@
 }
 
 .bit-cal-pkb {
+    padding: 0;
     border: none;
     cursor: pointer;
     overflow: hidden;
-    width: spacing(7);
+    width: spacing(6);
     position: relative;
     white-space: nowrap;
     outline: transparent;
     max-width: spacing(7);
     font-size: spacing(1.5);
     text-overflow: ellipsis;
-    padding: 0 spacing(1.25);
     line-height: spacing(5.17);
     background-color: transparent;
     color: $color-foreground-primary;

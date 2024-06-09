@@ -9,11 +9,11 @@
         <EditForm class="form" Model="contactUs" OnValidSubmit="WrapHandled(DoSubmit)">
             @if (string.IsNullOrWhiteSpace(successMessage) is false)
             {
-                <BitMessageBar MessageBarType="@BitMessageBarType.Success">@successMessage</BitMessageBar>
+                <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
             }
             else if (string.IsNullOrWhiteSpace(errorMessage) is false)
             {
-                <BitMessageBar MessageBarType="@BitMessageBarType.Error">@errorMessage</BitMessageBar>
+                <BitMessage Severity="BitSeverity.Error">@errorMessage</BitMessage>
             }
 
             <DataAnnotationsValidator />

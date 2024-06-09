@@ -4,7 +4,6 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .main-container {
-    z-index: 16;
     height: 100%;
     display: flex;
     position: sticky;
@@ -15,10 +14,11 @@
     justify-content: flex-start;
     min-width: rem2($navMenuWidth);
     background-color: $bit-color-background-primary;
-    top: calc(var(--bit-status-bar-height));
+    top: calc($headerHeight + var(--bit-status-bar-height));
+    padding-bottom: calc($headerHeight + $footerHeight + var(--bit-status-bar-height));
 
     .bit-ios & {
-        top: calc(env(safe-area-inset-top));
+        top: calc($headerHeight + env(safe-area-inset-top));
     }
 
     &::-webkit-scrollbar {
@@ -28,9 +28,17 @@
 
 @include lt-lg {
     .main-container {
+        z-index: 3;
         position: fixed;
-    } 
-    
+        padding-bottom: 0;
+        top: calc(var(--bit-status-bar-height));
+
+        .bit-ios & {
+            top: 0;
+            padding-top: calc(env(safe-area-inset-top));
+        }
+    }
+
     .main-container--closed {
         display: none;
     }
@@ -48,10 +56,11 @@
 
 .menu-overlay {
     top: 0;
+    z-index: 2;
     width: 100%;
-    z-index: 15;
-    height: 100vh;
+    height: 100%;
     position: fixed;
+    min-height: 100vh;
     inset-inline-start: 0;
     background-color: rgba(0, 0, 0, 0.5);
 

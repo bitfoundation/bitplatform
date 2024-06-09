@@ -4,7 +4,7 @@ public partial class NotAuthorizedPage
 {
     private ClaimsPrincipal user = default!;
 
-    [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
+    [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
 
     protected override async Task OnParamsSetAsync()
     {
@@ -21,16 +21,16 @@ public partial class NotAuthorizedPage
         // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
         // To prevent infinitie redirect loop, let's append refresh_token=false to the url, so we only redirect in case no refresh_token=false is present
 
-        if (string.IsNullOrEmpty(refresh_token) is false && RedirectUrl?.Contains("try_refreshing_token=false", StringComparison.InvariantCulture) is null or false)
+        if (string.IsNullOrEmpty(refresh_token) is false && ReturnUrl?.Contains("try_refreshing_token=false", StringComparison.InvariantCulture) is null or false)
         {
             await AuthenticationManager.RefreshToken();
 
             if ((await AuthenticationStateTask).User.IsAuthenticated())
             {
-                if (RedirectUrl is not null)
+                if (ReturnUrl is not null)
                 {
-                    var @char = RedirectUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
-                    NavigationManager.NavigateTo($"{RedirectUrl}{@char}try_refreshing_token=false");
+                    var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
+                    NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false");
                 }
             }
         }
@@ -38,7 +38,7 @@ public partial class NotAuthorizedPage
         if ((await AuthenticationStateTask).User.IsAuthenticated() is false)
         {
             // If neither the refresh_token nor the access_token is present, proceed to the sign-in page.
-            await SignIn();
+            RedirectToSignInPage();
         }
 
         await base.OnAfterFirstRenderAsync();
@@ -53,7 +53,7 @@ public partial class NotAuthorizedPage
 
     private void RedirectToSignInPage()
     {
-        var redirectUrl = RedirectUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.NavigateTo($"/sign-in{(string.IsNullOrEmpty(redirectUrl) ? "" : $"?redirect-url={redirectUrl}")}");
+        var returnUrl = ReturnUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.NavigateTo($"/sign-in{(string.IsNullOrEmpty(returnUrl) ? "" : $"?return-url={returnUrl}")}");
     }
 }

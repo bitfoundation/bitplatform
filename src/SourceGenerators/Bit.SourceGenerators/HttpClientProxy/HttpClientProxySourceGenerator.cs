@@ -1,7 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Bit.SourceGenerators;
@@ -33,21 +33,32 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
 
                 var hasQueryString = action.Url.Contains('?');
 
+                List<string> jsonReadParametersList = [];
+                if (action.DoesReturnSomething && action.DoesReturnString is false)
+                {
+                    jsonReadParametersList.Add($"options.GetTypeInfo<{action.ReturnType.GetUnderlyingType().ToDisplayString()}>()");
+                }
+                if (action.HasCancellationToken)
+                {
+                    jsonReadParametersList.Add(action.CancellationTokenParameterName!);
+                }
+                var jsonReadParameters = string.Join(", ", jsonReadParametersList);
+
                 generatedMethods.AppendLine($@"
         public async {action.ReturnType.ToDisplayString()} {action.Method.Name}({parameters})
         {{
-            {$@"var url = $""{action.Url}"";"}
+            {$@"var __url = $""{action.Url}"";"}
             var dynamicQS = GetDynamicQueryString();
             if (dynamicQS is not null)
             {{
-                url += {(action.Url.Contains('?') ? "'&'" : "'?'")} + dynamicQS;
+                __url += {(action.Url.Contains('?') ? "'&'" : "'?'")} + dynamicQS;
             }}
-            {(action.DoesReturnSomething ? $@"return (await prerenderStateService.GetValue(url, async () =>
+            {(action.DoesReturnSomething ? $@"return (await prerenderStateService.GetValue(__url, async () =>
             {{" : string.Empty)}
-                using var request = new HttpRequestMessage(HttpMethod.{action.HttpMethod}, url);
-                {(action.BodyParameter is not null ? $@"request.Content = JsonContent.Create({action.BodyParameter.Name}, options.GetTypeInfo<{action.BodyParameter.Type.ToDisplayString()}>());" : string.Empty)}
-                {(action.DoesReturnIAsyncEnumerable ? "" : "using ")}var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead {(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});
-                {(action.DoesReturnSomething ? ($"return {(action.DoesReturnIAsyncEnumerable ? "" : "await")} response.Content.{(action.DoesReturnIAsyncEnumerable ? "ReadFromJsonAsAsyncEnumerable" : "ReadFromJsonAsync")}(options.GetTypeInfo<{action.ReturnType.GetUnderlyingType().ToDisplayString()}>(){(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});" +
+                using var __request = new HttpRequestMessage(HttpMethod.{action.HttpMethod}, __url);
+                {(action.BodyParameter is not null ? $@"__request.Content = JsonContent.Create({action.BodyParameter.Name}, options.GetTypeInfo<{action.BodyParameter.Type.ToDisplayString()}>());" : string.Empty)}
+                {(action.DoesReturnIAsyncEnumerable ? "" : "using ")}var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});
+                {(action.DoesReturnSomething ? ($"return {(action.DoesReturnIAsyncEnumerable ? "" : "await")} __response.Content.{(action.DoesReturnIAsyncEnumerable ? "ReadFromJsonAsAsyncEnumerable" : action.DoesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});" +
           $"}}))!;") : string.Empty)}
         }}
 ");
@@ -62,6 +73,7 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
 
         StringBuilder finalSource = new(@$"
 using System.Text.Json;
+using System.Net.Http.Json;
 using System.Web;
 
 namespace Microsoft.Extensions.DependencyInjection;

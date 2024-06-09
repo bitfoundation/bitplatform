@@ -483,6 +483,11 @@ public partial class BitDatePicker
     /// </summary>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
+    /// <summary>
+    /// Specifies the date and time of the date-picker when it is opened without any selected value.
+    /// </summary>
+    [Parameter] public DateTimeOffset? StartingValue { get; set; }
+
 
     public Task OpenCallout()
     {
@@ -526,20 +531,20 @@ public partial class BitDatePicker
 
     protected override void OnParametersSet()
     {
-        var dateTime = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
+        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
 
         if (MinDate.HasValue && MinDate > dateTime)
         {
-            dateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now);
+            dateTime = MinDate.Value;
         }
 
         if (MaxDate.HasValue && MaxDate < dateTime)
         {
-            dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now);
+            dateTime = MaxDate.Value;
         }
 
-        _hour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
-        _minute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
+        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
+        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
 
         GenerateCalendarData(dateTime.DateTime);
 
@@ -1450,7 +1455,7 @@ public partial class BitDatePicker
                                        IsOpen,
                                        IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                        BitDropDirection.TopAndBottom,
-                                       false,
+                                       Dir is BitDir.Rtl,
                                        "",
                                        0,
                                        "",

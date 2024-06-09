@@ -1,20 +1,20 @@
 ﻿//+:cnd:noEmit
 using System.IO.Compression;
-using Boilerplate.Server.Services;
-using Boilerplate.Client.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
+using Boilerplate.Client.Web;
+using Boilerplate.Server.Services;
 //#if (api == true)
-using System.Net.Mail;
 using System.Net;
+using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
 using Boilerplate.Server.Models.Identity;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.DataProtection;
+using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.DataProtection;
+using Twilio;
 //#endif
 
 namespace Boilerplate.Server;
@@ -31,11 +31,10 @@ public static partial class Program
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
-        services.Configure<ForwardedHeadersOptions>(options =>
-        {
-            options.ForwardedHeaders = ForwardedHeaders.All;
-            options.ForwardedHostHeaderName = "X-Host";
-        });
+        services.AddOptions<ForwardedHeadersOptions>()
+            .Bind(configuration.GetRequiredSection(nameof(ForwardedHeadersOptions)))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddResponseCaching();
 
@@ -95,22 +94,24 @@ public static partial class Program
             //#endif
         });
 
-        services.Configure<AppSettings>(configuration.GetSection(nameof(AppSettings)));
+        services.AddOptions<AppSettings>()
+            .Bind(configuration.GetRequiredSection(nameof(AppSettings)))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.TryAddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
-        services.AddSwaggerGen();
+        AddSwaggerGen(builder);
 
         AddIdentity(builder);
 
         AddHealthChecks(builder);
 
-        services.TryAddTransient<HtmlRenderer>();
         services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
-        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail, appSettings.EmailSettings.DefaultFromName);
+        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail);
 
         if (appSettings.EmailSettings.UseLocalFolderForEmails)
         {
@@ -140,9 +141,23 @@ public static partial class Program
             }
         }
 
+        services.TryAddTransient<EmailService>();
+        services.TryAddTransient<SmsService>();
+        if (appSettings.SmsSettings.Configured)
+        {
+            TwilioClient.Init(appSettings.SmsSettings.AccountSid, appSettings.SmsSettings.AuthToken);
+        }
+
         //#endif
 
         AddBlazor(builder);
+
+        //#if (api == true && captcha == "reCaptcha")
+        services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
+        });
+        //#endif
     }
 
     private static void AddBlazor(WebApplicationBuilder builder)
@@ -198,10 +213,11 @@ public static partial class Program
             .PersistKeysToDbContext<AppDbContext>()
             .ProtectKeysWithCertificate(certificate);
 
+        services.AddTransient<IUserConfirmation<User>, AppUserConfirmation>();
+
         services.AddIdentity<User, Role>(options =>
         {
-            options.User.RequireUniqueEmail = settings.RequireUniqueEmail;
-            options.SignIn.RequireConfirmedEmail = true;
+            options.SignIn.RequireConfirmedAccount = true;
             options.Password.RequireDigit = settings.PasswordRequireDigit;
             options.Password.RequireLowercase = settings.PasswordRequireLowercase;
             options.Password.RequireUppercase = settings.PasswordRequireUppercase;
@@ -213,7 +229,7 @@ public static partial class Program
             .AddErrorDescriber<AppIdentityErrorDescriber>()
             .AddApiEndpoints();
 
-        services.AddAuthentication(options =>
+        var authenticationBuilder = services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
             options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
@@ -255,6 +271,37 @@ public static partial class Program
                 }
             };
         });
+
+        if (string.IsNullOrEmpty(configuration["Authentication:Google:ClientId"]) is false)
+        {
+            authenticationBuilder.AddGoogle(options =>
+            {
+                options.ClientId = configuration["Authentication:Google:ClientId"]!;
+                options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
+
+        if (string.IsNullOrEmpty(configuration["Authentication:GitHub:ClientId"]) is false)
+        {
+            authenticationBuilder.AddGitHub(options =>
+            {
+                options.ClientId = configuration["Authentication:GitHub:ClientId"]!;
+                options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"]!;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
+
+        if (string.IsNullOrEmpty(configuration["Authentication:Twitter:ConsumerKey"]) is false)
+        {
+            authenticationBuilder.AddTwitter(options =>
+            {
+                options.ConsumerKey = configuration["Authentication:Twitter:ConsumerKey"]!;
+                options.ConsumerSecret = configuration["Authentication:Twitter:ConsumerSecret"]!;
+                options.RetrieveUserDetails = true;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
 
         services.AddAuthorization();
     }

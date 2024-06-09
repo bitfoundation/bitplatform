@@ -101,6 +101,10 @@
                 <BitOtpInput OnChange="v => onChangeValue = v" />
                 <div>OnChange value: @onChangeValue</div>
                 <br />
+                <div class="lbl">OnFill</div>
+                <BitOtpInput OnFill="v => onFillValue = v" />
+                <div>OnFill value: @onFillValue</div>
+                <br />
                 <div class="lbl">OnFocusIn</div>
                 <BitOtpInput OnFocusIn="args => onFocusInArgs = args" />
                 <div>Focus type: @onFocusInArgs?.Event.Type</div>
@@ -147,9 +151,9 @@
                 }
                 else
                 {
-                    <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">
+                    <BitMessage Severity="BitSeverity.Success">
                         The form submitted successfully.
-                    </BitMessageBar>
+                    </BitMessage>
                 }
             </div>
         </ExamplePreview>

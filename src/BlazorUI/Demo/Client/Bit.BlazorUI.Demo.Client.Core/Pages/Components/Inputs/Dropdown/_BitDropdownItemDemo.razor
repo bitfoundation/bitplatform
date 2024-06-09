@@ -142,6 +142,18 @@
 <ComponentExampleBox Title="Customization" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div class="example-content">
+            <BitDropdown Label="Header template"
+                         Items="GetDataItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Select an item">
+                <HeaderTemplate Context="item">
+                    <div class="custom-drp custom-drp-header">
+                        <BitIcon IconName="@((item.Data as DropdownItemData)?.IconName)" />
+                        <div>@item.Text</div>
+                    </div>
+                </HeaderTemplate>
+            </BitDropdown>
+
             <BitDropdown Label="Text & Item templates"
                          Items="GetDataItems()"
                          DefaultValue="@string.Empty"
@@ -461,7 +473,7 @@
             }
             else
             {
-                <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@successMessage</BitMessageBar>
+                <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
             }
         </div>
     </ExamplePreview>

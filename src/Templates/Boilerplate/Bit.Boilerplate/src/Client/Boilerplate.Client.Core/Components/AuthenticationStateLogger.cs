@@ -20,13 +20,16 @@ public partial class AuthenticationStateLogger : AppComponentBase
         {
             var user = (await AuthenticationStateTask).User;
 
-            var (userId, userName, isUserAuthenticated) = user.IsAuthenticated() ? (user.GetUserId().ToString(), user.GetUserName(), user.IsAuthenticated()) : default;
+            var (userId, userName, email, isUserAuthenticated) = user.IsAuthenticated() ? (user.GetUserId().ToString(), user.GetUserName(), user.GetEmail(), user.IsAuthenticated()) : default;
 
-            authLogger.LogInformation("Authentication State: {UserId}, {UserName}, {IsUserAuthenticated}", userId, userName, isUserAuthenticated);
+            LogAuthenticationState(authLogger, userId, userName, email, isUserAuthenticated);
         }
         catch (Exception exp)
         {
             ExceptionHandler.Handle(exp);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Authentication State: {UserId}, {UserName}, {Email}, {IsUserAuthenticated}")]
+    private static partial void LogAuthenticationState(ILogger logger, string userId, string userName, string? email, bool isUserAuthenticated);
 }

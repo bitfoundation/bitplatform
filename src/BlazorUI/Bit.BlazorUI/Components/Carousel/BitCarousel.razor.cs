@@ -128,7 +128,7 @@ public partial class BitCarousel : IDisposable
         if (firstRender is false) return;
 
         _dotnetObjRef = DotNetObjectReference.Create(this);
-        _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjRef, "OnRootResize");
+        _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
 
         if (AutoPlay)
         {
@@ -365,7 +365,7 @@ public partial class BitCarousel : IDisposable
 
         if (_dotnetObjRef is not null)
         {
-            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId, _dotnetObjRef);
+            _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
             //_dotnetObjRef.Dispose();
         }
 

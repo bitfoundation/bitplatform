@@ -324,8 +324,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/MessageBar/BitMessageBarDemo.razor.css",
-        "inputFile": "Pages/Components/MessageBar/BitMessageBarDemo.razor.scss",
+        "outputFile": "Pages/Components/Message/BitMessageDemo.razor.css",
+        "inputFile": "Pages/Components/Message/BitMessageDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -368,6 +368,12 @@
     {
         "outputFile": "Pages/Components/Pivot/BitPivotDemo.razor.css",
         "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/ProgressBar/BitProgressBarDemo.razor.css",
+        "inputFile": "Pages/Components/ProgressBar/BitProgressBarDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -422,6 +428,12 @@
     {
         "outputFile": "Pages/Components/Swiper/BitSwiperDemo.razor.css",
         "inputFile": "Pages/Components/Swiper/BitSwiperDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Tag/BitTagDemo.razor.css",
+        "inputFile": "Pages/Components/Tag/BitTagDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

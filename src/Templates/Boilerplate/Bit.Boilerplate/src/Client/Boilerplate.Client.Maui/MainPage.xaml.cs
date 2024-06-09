@@ -21,7 +21,7 @@ public partial class MainPage
 
         InitializeComponent();
 
-        pubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async _ =>
+        pubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async _ =>
         {
             // It's an opportune moment to request a store review. (:
 

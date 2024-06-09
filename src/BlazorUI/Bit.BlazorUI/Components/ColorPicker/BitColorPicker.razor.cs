@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitColorPicker : IDisposable
 {
@@ -24,7 +22,7 @@ public partial class BitColorPicker : IDisposable
 
 
 
-    [Inject] public IJSRuntime _js { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -117,8 +115,8 @@ public partial class BitColorPicker : IDisposable
 
         if (firstRender is false) return;
 
-        _pointerUpAbortControllerId = await _js.RegisterPointerUp(_dotnetObj, "HandlePointerUp");
-        _pointerMoveAbortControllerId = await _js.RegisterPointerMove(_dotnetObj, "HandlePointerMove");
+        _pointerUpAbortControllerId = await _js.BitColorPickerRegisterPointerUp(_dotnetObj, nameof(HandlePointerUp));
+        _pointerMoveAbortControllerId = await _js.BitColorPickerRegisterPointerMove(_dotnetObj, nameof(HandlePointerMove));
 
         await SetSaturationPickerThumbPositionAsync();
     }
@@ -226,13 +224,13 @@ public partial class BitColorPicker : IDisposable
 
 
 
-    [JSInvokable("HandlePointerUp")]
+    [JSInvokable(nameof(HandlePointerUp))]
     public void HandlePointerUp(MouseEventArgs e)
     {
         _saturationPickerPointerDown = false;
     }
 
-    [JSInvokable("HandlePointerMove")]
+    [JSInvokable(nameof(HandlePointerMove))]
     public async Task HandlePointerMove(MouseEventArgs e)
     {
         if (_saturationPickerPointerDown is false) return;
@@ -252,8 +250,8 @@ public partial class BitColorPicker : IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        _ = _js.AbortProcedure(_pointerUpAbortControllerId);
-        _ = _js.AbortProcedure(_pointerMoveAbortControllerId);
+        _ = _js.BitColorPickerAbort(_pointerUpAbortControllerId, true);
+        _ = _js.BitColorPickerAbort(_pointerMoveAbortControllerId);
 
         _disposed = true;
     }

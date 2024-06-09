@@ -8,7 +8,6 @@ public partial class NavMenu
     private bool disposed;
     private bool isSignOutModalOpen;
     private string? profileImageUrl;
-    private string? profileImageUrlBase;
     private UserDto user = new();
     private List<BitNavItem> navItems = [];
     private Action unsubscribe = default!;
@@ -61,9 +60,9 @@ public partial class NavMenu
             //#endif
             new()
             {
-                Text = Localizer[nameof(AppStrings.EditProfileTitle)],
+                Text = Localizer[nameof(AppStrings.ProfileTitle)],
                 IconName = BitIconName.EditContact,
-                Url = "/edit-profile",
+                Url = "/profile",
             },
             //#if (offlineDb == true)
             new()
@@ -95,28 +94,20 @@ public partial class NavMenu
             });
         }
 
-        unsubscribe = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
+        unsubscribe = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
         {
             if (payload is null) return;
 
             user = (UserDto)payload;
-
-            SetProfileImageUrl();
 
             await InvokeAsync(StateHasChanged);
         });
 
         user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
 
+        var apiUri = Configuration.GetApiServerAddress();
         var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
-        profileImageUrlBase = $"{Configuration.GetApiServerAddress()}api/Attachment/GetProfileImage?access_token={access_token}&file=";
-
-        SetProfileImageUrl();
-    }
-
-    private void SetProfileImageUrl()
-    {
-        profileImageUrl = user.ProfileImageName is not null ? profileImageUrlBase + user.ProfileImageName : null;
+        profileImageUrl = $"{apiUri}/api/Attachment/GetProfileImage?access_token={access_token}";
     }
 
     private async Task DoSignOut()
@@ -126,10 +117,10 @@ public partial class NavMenu
         await CloseMenu();
     }
 
-    private async Task GoToEditProfile()
+    private async Task GoToProfile()
     {
         await CloseMenu();
-        navManager.NavigateTo("edit-profile");
+        navManager.NavigateTo("profile");
     }
 
     private async Task HandleNavItemClick(BitNavItem item)

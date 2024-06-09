@@ -11,7 +11,7 @@ public partial class AppIdentityErrorDescriber : IdentityErrorDescriber
         return new()
         {
             Code = code,
-            Description = localizer.GetString(code, args)
+            Description = localizer[code, args]
         };
     }
 

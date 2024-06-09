@@ -537,7 +537,7 @@ public partial class BitMenuButton<TItem> : IDisposable where TItem : class
                                 _isCalloutOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
-                                false,
+                                Dir is BitDir.Rtl,
                                 "",
                                 0,
                                 "",

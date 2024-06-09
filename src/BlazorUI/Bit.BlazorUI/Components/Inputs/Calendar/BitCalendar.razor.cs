@@ -310,6 +310,21 @@ public partial class BitCalendar
     /// </summary>
     [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
 
+    /// <summary>
+    /// Determines increment/decrement steps for calendar's hour.
+    /// </summary>
+    [Parameter] public int HourStep { get; set; } = 1;
+
+    /// <summary>
+    /// Determines increment/decrement steps for calendar's minute.
+    /// </summary>
+    [Parameter] public int MinuteStep { get; set; } = 1;
+
+    /// <summary>
+    /// Specifies the date and time of the calendar when it is showing without any selected value.
+    /// </summary>
+    [Parameter] public DateTimeOffset? StartingValue { get; set; }
+
 
     protected override string RootElementClass { get; } = "bit-cal";
 
@@ -335,20 +350,20 @@ public partial class BitCalendar
 
     protected override void OnParametersSet()
     {
-        var dateTime = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
+        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
 
         if (MinDate.HasValue && MinDate > dateTime)
         {
-            dateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now);
+            dateTime = MinDate.Value;
         }
 
         if (MaxDate.HasValue && MaxDate < dateTime)
         {
-            dateTime = MaxDate.GetValueOrDefault(DateTimeOffset.Now);
+            dateTime = MaxDate.Value;
         }
 
-        _hour = CurrentValue.HasValue ? CurrentValue.Value.Hour : 0;
-        _minute = CurrentValue.HasValue ? CurrentValue.Value.Minute : 0;
+        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
+        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
 
         GenerateCalendarData(dateTime.DateTime);
 
@@ -1016,25 +1031,20 @@ public partial class BitCalendar
     {
         if (isNext)
         {
-            if (_hour < 23)
-            {
-                _hour++;
-            }
-            else
-            {
-                _hour = 0;
-            }
+            _hour += HourStep;
         }
         else
         {
-            if (_hour > 0)
-            {
-                _hour--;
-            }
-            else
-            {
-                _hour = 23;
-            }
+            _hour -= HourStep;
+        }
+
+        if (_hour > 23)
+        {
+            _hour -= 24;
+        }
+        else if (_hour < 0)
+        {
+            _hour += 24;
         }
 
         UpdateTime();
@@ -1044,25 +1054,20 @@ public partial class BitCalendar
     {
         if (isNext)
         {
-            if (_minute < 59)
-            {
-                _minute++;
-            }
-            else
-            {
-                _minute = 0;
-            }
+            _minute += MinuteStep;
         }
         else
         {
-            if (_minute > 0)
-            {
-                _minute--;
-            }
-            else
-            {
-                _minute = 59;
-            }
+            _minute -= MinuteStep;
+        }
+
+        if (_minute > 59)
+        {
+            _minute -= 60;
+        }
+        else if (_minute < 0)
+        {
+            _minute += 60;
         }
 
         UpdateTime();

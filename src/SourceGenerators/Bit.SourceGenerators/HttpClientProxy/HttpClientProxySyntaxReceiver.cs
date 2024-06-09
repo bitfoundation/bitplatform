@@ -52,7 +52,17 @@ public class HttpClientProxySyntaxReceiver : ISyntaxContextReceiver
 
                 foreach (var action in actions)
                 {
-                    var uriTemplate = UriTemplate.For($"{route}{action.Method.GetAttributes()
+                    var actionSpecificRoute = action.Method
+                        .GetAttributes()
+                        .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Route") is true)?
+                        .ConstructorArguments
+                        .FirstOrDefault()
+                        .Value?
+                        .ToString()
+                        ?.Replace("[controller]", controllerName)
+                        ?.Replace("~/", string.Empty); // https://stackoverflow.com/a/34712201
+
+                    var uriTemplate = UriTemplate.For($"{actionSpecificRoute ?? route}{action.Method.GetAttributes()
                         .FirstOrDefault(a => a.AttributeClass?.Name.StartsWith("Http") is true)?
                         .ConstructorArguments.FirstOrDefault().Value?.ToString()}".Replace("[action]", action.Method.Name));
 

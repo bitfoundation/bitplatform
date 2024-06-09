@@ -169,6 +169,12 @@ public partial class BitBreadcrumbDemo
             {
                new()
                {
+                   Name = "Key",
+                   Type = "string?",
+                   Description = "A unique value to use as a key of the breadcrumb item.",
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "string?",
                    Description = "Text to display in the breadcrumb item.",
@@ -177,7 +183,7 @@ public partial class BitBreadcrumbDemo
                {
                    Name = "Href",
                    Type = "string?",
-                   Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link.",
+                   Description = "URL to navigate to when the breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link.",
                },
                new()
                {
@@ -204,6 +210,12 @@ public partial class BitBreadcrumbDemo
                    DefaultValue = "true",
                    Description = "Whether an item is enabled or not.",
                },
+               new()
+               {
+                   Name = "OnClick",
+                   Type = "Action<BitBreadcrumbItem>?",
+                   Description = "Click event handler of the breadcrumb item.",
+               }
             }
         },
         new()
@@ -214,41 +226,53 @@ public partial class BitBreadcrumbDemo
             {
                new()
                {
+                   Name = "Key",
+                   Type = "string?",
+                   Description = "A unique value to use as a key of the breadcrumb option.",
+               },
+               new()
+               {
                    Name = "Text",
                    Type = "string?",
-                   Description = "Text to display in the breadcrumb item.",
+                   Description = "Text to display in the breadcrumb option.",
                },
                new()
                {
                    Name = "Href",
                    Type = "string?",
-                   Description = "URL to navigate to when this breadcrumb item is clicked. If provided, the breadcrumb will be rendered as a link.",
+                   Description = "URL to navigate to when the breadcrumb option is clicked. If provided, the breadcrumb will be rendered as a link.",
                },
                new()
                {
                    Name = "Class",
                    Type = "string?",
-                   Description = "CSS class attribute for breadcrumb item.",
+                   Description = "CSS class attribute for breadcrumb option.",
                },
                new()
                {
                    Name = "Style",
                    Type = "string?",
-                   Description = "Style attribute for breadcrumb item.",
+                   Description = "Style attribute for breadcrumb option.",
                },
                new()
                {
                    Name = "IsSelected",
                    Type = "bool",
-                   Description = "Display the item as the selected item.",
+                   Description = "Display the breadcrumb option as the selected option.",
                },
                new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
                    DefaultValue = "true",
-                   Description = "Whether an item is enabled or not.",
+                   Description = "Whether an option is enabled or not.",
                },
+               new()
+               {
+                   Name = "OnClick",
+                   Type = "EventCallback<BitBreadcrumbOption>",
+                   Description = "Click event handler of the breadcrumb option.",
+               }
             }
         },
     };
@@ -314,10 +338,12 @@ public partial class BitBreadcrumbDemo
 
     private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems = new()
     {
-        new() { Text = "پوشه ۱", },
-        new() { Text = "پوشه ۲", },
-        new() { Text = "پوشه ۳", },
-        new() { Text = "پوشه ۴", IsSelected = true }
+        new() { Text = "پوشه اول" },
+        new() { Text = "پوشه دوم", IsSelected = true },
+        new() { Text = "پوشه سوم" },
+        new() { Text = "پوشه چهارم" },
+        new() { Text = "پوشه پنجم" },
+        new() { Text = "پوشه ششم" },
     };
 
 
@@ -373,10 +399,12 @@ public partial class BitBreadcrumbDemo
 
     private readonly List<PageInfoModel> RtlCustomBreadcrumbItems = new()
     {
-        new() { Name = "پوشه ۱", },
-        new() { Name = "پوشه ۲", },
-        new() { Name = "پوشه ۳", },
-        new() { Name = "پوشه ۴", IsCurrent = true }
+        new() { Name = "پوشه اول" },
+        new() { Name = "پوشه دوم", IsCurrent = true },
+        new() { Name = "پوشه سوم" },
+        new() { Name = "پوشه چهارم" },
+        new() { Name = "پوشه پنجم" },
+        new() { Name = "پوشه ششم" },
     };
 
     private void HandleOnItemClick(BitBreadcrumbItem item)
@@ -390,15 +418,15 @@ public partial class BitBreadcrumbDemo
         item.IsSelected = true;
     }
 
-    private void HandleOnItemClick(PageInfoModel item)
+    private void HandleOnCustomClick(PageInfoModel model)
     {
-        BreadcrumbItemsWithControlled.First(i => i.IsSelected).IsSelected = false;
-        item.IsCurrent = true;
+        CustomBreadcrumbItemsWithControlled.First(i => i.IsCurrent).IsCurrent = false;
+        model.IsCurrent = true;
     }
-    private void HandleOnCustomizedItemClick(PageInfoModel item)
+    private void HandleOnCustomizedCustomClick(PageInfoModel model)
     {
-        BreadcrumbItemsWithCustomized.First(i => i.IsSelected).IsSelected = false;
-        item.IsCurrent = true;
+        CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
+        model.IsCurrent = true;
     }
 
     private void AddBreadcrumbItem()
@@ -428,23 +456,23 @@ public partial class BitBreadcrumbDemo
     private void AddCustomItem()
     {
         ItemsCount++;
-        BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
+        CustomBreadcrumbItemsWithCustomized.Add(new PageInfoModel()
         {
-            Text = $"Folder {ItemsCount}"
+            Name = $"Folder {ItemsCount}"
         });
     }
     private void RemoveCustomItem()
     {
-        if (BreadcrumbItemsWithCustomized.Count > 1)
+        if (CustomBreadcrumbItemsWithCustomized.Count > 1)
         {
             ItemsCount--;
 
-            var item = BreadcrumbItemsWithCustomized[^1];
-            BreadcrumbItemsWithCustomized.Remove(item);
+            var item = CustomBreadcrumbItemsWithCustomized[^1];
+            CustomBreadcrumbItemsWithCustomized.Remove(item);
 
-            if (item.IsSelected)
+            if (item.IsCurrent)
             {
-                BreadcrumbItemsWithCustomized[^1].IsSelected = true;
+                CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = true;
             }
         }
     }
@@ -924,7 +952,7 @@ public partial class BitBreadcrumbDemo
                 StyleField=""@nameof(PageInfoModel.HtmlStyle)""
                 MaxDisplayedItems=""3""
                 OverflowIndex=""2""
-                OnItemClick=""(PageInfoModel item) => HandleOnItemClick(item)""
+                OnItemClick=""(PageInfoModel model) => HandleOnCustomClick(model)""
                 SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
     private readonly string example5BreadcrumbOptionRazorCode = @"
@@ -966,7 +994,7 @@ public partial class BitBreadcrumbDemo
                     StyleField=""@nameof(PageInfoModel.HtmlStyle)""
                     MaxDisplayedItems=""@MaxDisplayedItems""
                     OverflowIndex=""@OverflowIndex""
-                    OnItemClick=""(PageInfoModel item) => HandleOnCustomizedItemClick(item)"" />
+                    OnItemClick=""(PageInfoModel model) => HandleOnCustomizedCustomClick(model)"" />
 </div>
 <div class=""operators"">
     <div>
@@ -1002,10 +1030,12 @@ public partial class BitBreadcrumbDemo
 ";
 
     private readonly string example7BreadcrumbItemRazorCode = @"
-<BitBreadcrumb Dir=""BitDir.Rtl"" Items=""RtlBreadcrumbItems"" />
+<BitBreadcrumb Dir=""BitDir.Rtl"" Items=""RtlBreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
 ";
     private readonly string example7CustomItemRazorCode = @"
 <BitBreadcrumb Dir=""BitDir.Rtl""
+               OverflowIndex=""2""
+               MaxDisplayedItems=""3""
                Items=""RtlCustomBreadcrumbItems""
                TextField=""@nameof(PageInfoModel.Name)""
                HrefField=""@nameof(PageInfoModel.Address)""
@@ -1014,13 +1044,14 @@ public partial class BitBreadcrumbDemo
                IsSelectedField=""@nameof(PageInfoModel.IsCurrent)"" />
 ";
     private readonly string example7BreadcrumbOptionRazorCode = @"
-<BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"">
-    <BitBreadcrumbOption Text=""پوشه ۱"" />
-    <BitBreadcrumbOption Text=""پوشه ۲"" />
-    <BitBreadcrumbOption Text=""پوشه ۳"" />
-    <BitBreadcrumbOption Text=""پوشه ۴"" IsSelected=""true"" />
-</BitBreadcrumb>
-";
+<BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
+    <BitBreadcrumbOption Text=""پوشه اول"" />
+    <BitBreadcrumbOption Text=""پوشه دوم"" IsSelected=""true"" />
+    <BitBreadcrumbOption Text=""پوشه سوم"" />
+    <BitBreadcrumbOption Text=""پوشه چهارم"" />
+    <BitBreadcrumbOption Text=""پوشه پنجم"" />
+    <BitBreadcrumbOption Text=""پوشه ششم"" />
+</BitBreadcrumb>";
 
     private readonly string example1BreadcrumbItemCsharpCode = @"
 private List<BitBreadcrumbItem> BreadcrumbItems { get; set; } = new()
@@ -1249,12 +1280,12 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsWithControlled = new()
     new() { Name = ""Folder 6"", IsCurrent = true }
 };
 
-private void HandleOnItemClick(PageInfoModel item)
+private void HandleOnCustomClick(PageInfoModel model)
 {
-    BreadcrumbItemsWithControlled.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    item.IsCurrent = true;
-}
-";
+    CustomBreadcrumbItemsWithControlled.First(i => i.IsCurrent).IsCurrent = false;
+    model.IsCurrent = true;
+}";
+
     private readonly string example5BreadcrumbOptionCsharpCode = @"
 private int SelectedOptionNumber = 6;
 ";
@@ -1273,37 +1304,35 @@ private List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized { get; set; } = ne
     new() { Text = ""Folder 4"", IsSelected = true }
 };
 
-private void AddBreadcrumbItem()
-{
-    ItemsCount++;
-    BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
-    {
-        Text = $""Folder {ItemsCount}""
-    });
-}
-
-private void RemoveBreadcrumbItem()
-{
-    if (BreadcrumbItemsWithCustomized.Count > 1)
-    {
-        ItemsCount--;
-
-        var item = BreadcrumbItemsWithCustomized[^1];
-        BreadcrumbItemsWithCustomized.Remove(item);
-
-        if (item.IsSelected)
-        {
-            BreadcrumbItemsWithCustomized[^1].IsSelected = true;
-        }
-    }
-}
-
 private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
 {
     BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
     item.IsSelected = true;
 }
-";
+
+private void AddCustomItem()
+{
+    ItemsCount++;
+    CustomBreadcrumbItemsWithCustomized.Add(new PageInfoModel()
+    {
+        Name = $""Folder {ItemsCount}""
+    });
+}
+private void RemoveCustomItem()
+{
+    if (CustomBreadcrumbItemsWithCustomized.Count > 1)
+    {
+        ItemsCount--;
+
+        var item = CustomBreadcrumbItemsWithCustomized[^1];
+        CustomBreadcrumbItemsWithCustomized.Remove(item);
+
+        if (item.IsCurrent)
+        {
+            CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = true;
+        }
+    }
+}";
     private readonly string example6CustomItemCsharpCode = @"
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
@@ -1333,10 +1362,10 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsWithCustomized = new()
     new() { Name = ""Folder 4"", IsCurrent = true }
 };
 
-private void HandleOnCustomizedItemClick(PageInfoModel item)
+private void HandleOnCustomizedCustomClick(PageInfoModel model)
 {
-    BreadcrumbItemsWithCustomized.FirstOrDefault(i => i.IsSelected).IsSelected = false;
-    item.IsCurrent = true;
+    CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
+    model.IsCurrent = true;
 }
 
 private void AddCustomItem()
@@ -1375,10 +1404,12 @@ private int CustomizedSelectedOptionNumber = 4;
     private readonly string example7BreadcrumbItemCsharpCode = @"
 private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems = new()
 {
-    new() { Text = ""پوشه ۱"", },
-    new() { Text = ""پوشه ۲"", },
-    new() { Text = ""پوشه ۳"", },
-    new() { Text = ""پوشه ۴"", IsSelected = true }
+    new() { Text = ""پوشه اول"" },
+    new() { Text = ""پوشه دوم"", IsSelected = true },
+    new() { Text = ""پوشه سوم"" },
+    new() { Text = ""پوشه چهارم"" },
+    new() { Text = ""پوشه پنجم"" },
+    new() { Text = ""پوشه ششم"" },
 };";
     private readonly string example7CustomItemCsharpCode = @"
 public class PageInfoModel
@@ -1398,9 +1429,11 @@ public class PageInfoModel
 
 private readonly List<PageInfoModel> RtlCustomBreadcrumbItems = new()
 {
-    new() { Name = ""پوشه ۱"", },
-    new() { Name = ""پوشه ۲"", },
-    new() { Name = ""پوشه ۳"", },
-    new() { Name = ""پوشه ۴"", IsCurrent = true }
+    new() { Name = ""پوشه اول"" },
+    new() { Name = ""پوشه دوم"", IsCurrent = true },
+    new() { Name = ""پوشه سوم"" },
+    new() { Name = ""پوشه چهارم"" },
+    new() { Name = ""پوشه پنجم"" },
+    new() { Name = ""پوشه ششم"" },
 };";
 }

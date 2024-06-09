@@ -1,50 +1,208 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Client.Core.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignInPage
 {
-    private bool isLoading;
-    private string? signInMessage;
-    private BitMessageBarType signInMessageType;
-    private SignInRequestDto signInModel = new();
+    private bool isWaiting;
+    private bool isSendingOtp;
+    private bool requiresTwoFactor;
+    private bool isSendingTfaToken;
+    private readonly SignInRequestDto model = new();
 
-    [SupplyParameterFromQuery(Name = "redirect-url"), Parameter] public string? RedirectUrl { get; set; }
-    [SupplyParameterFromQuery(Name = "email"), Parameter] public string? Email { get; set; }
+    private string? message;
+    private BitSeverity messageSeverity;
+    private ElementReference messageRef = default!;
 
-    protected override async Task OnParamsSetAsync()
+
+    [AutoInject] private ILocalHttpServer localHttpServer = default!;
+    [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
+
+
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "email")]
+    public string? EmailQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "phoneNumber")]
+    public string? PhoneNumberQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "otp")]
+    public string? OtpQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorQueryString { get; set; }
+
+
+    protected override async Task OnInitAsync()
     {
-        await base.OnParamsSetAsync();
+        await base.OnInitAsync();
 
-        if (string.IsNullOrEmpty(signInModel.UserName))
+        if (string.IsNullOrEmpty(EmailQueryString) is false)
         {
-            signInModel.UserName = Email;
+            model.Email = EmailQueryString;
+        }
+
+        if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
+        {
+            model.PhoneNumber = PhoneNumberQueryString;
+        }
+
+        if (string.IsNullOrEmpty(OtpQueryString) is false)
+        {
+            model.Otp = OtpQueryString;
+
+            if (InPrerenderSession is false &&
+                (string.IsNullOrEmpty(model.Email) is false ||
+                 string.IsNullOrEmpty(model.PhoneNumber) is false))
+            {
+                await DoSignIn();
+            }
+        }
+
+        if (string.IsNullOrEmpty(ErrorQueryString) is false)
+        {
+            message = ErrorQueryString;
+            messageSeverity = BitSeverity.Error;
         }
     }
 
     private async Task DoSignIn()
     {
-        if (isLoading) return;
+        if (isWaiting) return;
 
-        isLoading = true;
-        signInMessage = null;
+        isWaiting = true;
+        message = null;
 
         try
         {
-            await AuthenticationManager.SignIn(signInModel, CurrentCancellationToken);
+            if (requiresTwoFactor &&
+                string.IsNullOrWhiteSpace(model.TwoFactorCode) &&
+                string.IsNullOrWhiteSpace(model.TwoFactorRecoveryCode) &&
+                string.IsNullOrWhiteSpace(model.TwoFactorToken)) return;
 
-            NavigationManager.NavigateTo(RedirectUrl ?? "/");
+            requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
+
+            if (requiresTwoFactor is false)
+            {
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? "/", replace: true);
+            }
         }
         catch (KnownException e)
         {
-            signInMessageType = BitMessageBarType.Error;
-
-            signInMessage = e.Message;
+            message = e.Message;
+            messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
-            isLoading = false;
+            isWaiting = false;
+        }
+    }
+
+    private async Task SendOtp()
+    {
+        if (isSendingOtp) return;
+
+        isSendingOtp = true;
+        message = null;
+
+        try
+        {
+            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
+
+            message = Localizer[nameof(AppStrings.OtpSentMessage)];
+            messageSeverity = BitSeverity.Success;
+            await messageRef.ScrollIntoView();
+        }
+        catch (KnownException e)
+        {
+            message = e.Message;
+            messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
+        }
+        finally
+        {
+            isSendingOtp = false;
+        }
+    }
+
+    private async Task SendTfaToken()
+    {
+        if (isSendingTfaToken) return;
+
+        isSendingTfaToken = true;
+        message = null;
+
+        try
+        {
+            await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
+
+            message = Localizer[nameof(AppStrings.TfaTokenSentMessage)];
+            messageSeverity = BitSeverity.Success;
+            await messageRef.ScrollIntoView();
+        }
+        catch (KnownException e)
+        {
+            message = e.Message;
+            messageSeverity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
+        }
+        finally
+        {
+            isSendingTfaToken = false;
+        }
+    }
+
+    private async Task GoogleSignIn()
+    {
+        await SocialSignIn("Google");
+    }
+
+    private async Task GitHubSignIn()
+    {
+        await SocialSignIn("GitHub");
+    }
+
+    private async Task TwitterSignIn()
+    {
+        await SocialSignIn("Twitter");
+    }
+
+    private async Task SocialSignIn(string provider)
+    {
+        if (isWaiting) return;
+
+        isWaiting = true;
+        message = null;
+
+        try
+        {
+            var port = await localHttpServer.Start();
+
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port);
+
+            await externalNavigationService.NavigateToAsync(redirectUrl);
+        }
+        catch (KnownException e)
+        {
+            isWaiting = false;
+
+            message = e.Message;
+            messageSeverity = BitSeverity.Error;
+
+            await messageRef.ScrollIntoView();
+        }
+        catch
+        {
+            isWaiting = false;
+
+            throw;
         }
     }
 }
-

@@ -17,17 +17,17 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.8.1">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.8.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.9.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.20" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2420.47" />
-        <PackageReference Include="Velopack" Version="0.0.359" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.40" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
+        <PackageReference Include="Velopack" Version="0.0.503-gc69e323" />
         
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

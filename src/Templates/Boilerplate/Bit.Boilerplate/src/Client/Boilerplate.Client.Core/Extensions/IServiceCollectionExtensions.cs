@@ -1,10 +1,12 @@
 ﻿//+:cnd:noEmit
 //#if (offlineDb == true)
 using Boilerplate.Client.Core.Data;
+using Microsoft.EntityFrameworkCore;
 //#endif
 using System.Diagnostics.CodeAnalysis;
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -19,12 +21,15 @@ public static class IServiceCollectionExtensions
         services.TryAddSessioned<IPubSubService, PubSubService>();
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IStorageService, BrowserStorageService>();
+        services.TryAddSingleton<ILocalHttpServer, NoopLocalHttpServer>();
+        services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
 
         services.TryAddKeyedTransient<DelegatingHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddSessioned<HttpClientHandler>();
+        services.TryAddTransient<HtmlRenderer>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
@@ -39,7 +44,21 @@ public static class IServiceCollectionExtensions
         services.AddBitBlazorUIServices();
 
         //#if (offlineDb == true)
-        services.AddBesqlDbContextFactory<OfflineDbContext>();
+        services.AddBesqlDbContextFactory<OfflineDbContext>(options =>
+        {
+            var dirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Boilerplate");
+
+            Directory.CreateDirectory(dirPath);
+
+            var dbPath = Path.Combine(dirPath, "Offline.db");
+
+            options
+                // .UseModel(OfflineDbContextModel.Instance)
+                .UseSqlite($"Data Source={dbPath}");
+
+            options.EnableSensitiveDataLogging(BuildConfiguration.IsDebug())
+                    .EnableDetailedErrors(BuildConfiguration.IsDebug());
+        });
         //#endif
 
         services.AddSharedProjectServices();

@@ -51,6 +51,13 @@
                 "format": "yyyy-MM-dd"
             }
         },
+        "api": {
+            "displayName": "Add API to Server project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "If you're not using your custom API backend, Boilerplate offers one pre-configured with ASP.NET Core Identity, EF Core, and more."
+        },
         "database": {
             "displayName": "Backend database",
             "type": "parameter",
@@ -69,7 +76,46 @@
                     "choice": "Other",
                     "description": "Other"
                 }
+            ],
+            "description": "Boilerplate's API uses EF Core. You can use SQL Server, SQLite, or any other EF Core provider."
+        },
+        "captcha": {
+            "displayName": "Captcha",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "reCaptcha",
+            "choices": [
+                {
+                    "choice": "reCaptcha",
+                    "description": "Google reCaptcha"
+                },
+                {
+                    "choice": "None",
+                    "description": "None"
+                }
             ]
+        },
+        "serverUrl": {
+            "displayName": "Server url",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "use-your-server-url-here.com",
+            "description": "The backend server url. You can change its value later if needed."
+        },
+        "normalizedServerUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "serverUrl",
+                "steps": [
+                    {
+                        "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    }
+                ]
+            },
+            "replaces": "use-your-server-url-here.com"
         },
         "pipeline": {
             "displayName": "CI-CD pipeline",
@@ -86,8 +132,8 @@
                     "description": "Azure DevOps pipelines"
                 },
                 {
-                    "choice": "Other",
-                    "description": "Other"
+                    "choice": "None",
+                    "description": "None"
                 }
             ]
         },
@@ -115,22 +161,24 @@
             "displayName": "Add Offline db?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "false"
+            "defaultValue": "false",
+            "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
         },
         "windows": {
             "displayName": "Add Windows project?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "false"
-        },
-        "api": {
-            "displayName": "Add API to Server project?",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "true"
+            "defaultValue": "false",
+            "description": "WPF-based Windows project supporting Windows 7 SP1 and above."
         },
         "appInsights": {
             "displayName": "Add Azure application insights to project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
+        },
+        "appCenter": {
+            "displayName": "Add Visual Studio AppCenter to project?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false"
@@ -275,9 +323,28 @@
                         "src/Boilerplate.Server/Services/ODataOperationFilter.cs",
                         "src/Boilerplate.Server/Services/AppIdentityErrorDescriber.cs",
                         "src/Boilerplate.Server/Services/AppSecureJwtDataFormat.cs",
+                        "src/Boilerplate.Server/Services/ServerJsonContext.cs",
+                        "src/Boilerplate.Server/Services/AppUserConfirmation.cs",
+                        "src/Boilerplate.Server/Services/SmsService.cs",
+                        "src/Boilerplate.Server/Services/EmailService.cs",
+                        "src/Boilerplate.Server/Extensions/SignInManagerExtensions.cs",
+                        "src/Boilerplate.Server/Extensions/UserManagerExtensions.cs",
                         "src/Boilerplate.Server/wwwroot/swagger/**",
                         "src/Boilerplate.Server/AppSettings.cs",
                         "src/Boilerplate.Server/IdentityCertificate.pfx"
+                    ]
+                },
+                {
+                    "condition": "(api != true || captcha != reCaptcha)",
+                    "exclude": [
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaVerificationResponse.cs"
+                    ]
+                },
+                {
+                    "condition": "(captcha != reCaptcha)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
                     ]
                 },
                 {

@@ -2,8 +2,10 @@
 //#if (appInsights == true)
 using BlazorApplicationInsights;
 //#endif
-using Boilerplate.Client.Web.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Boilerplate.Client.Web.Services;
 
 namespace Boilerplate.Client.Web;
 
@@ -27,7 +29,7 @@ public static partial class Program
             apiServerAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), apiServerAddress);
         }
 
-        services.TryAddTransient(sp => new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler")) { BaseAddress = apiServerAddress });
+        services.TryAddSingleton(sp => new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler")) { BaseAddress = apiServerAddress });
 
         //#if (appInsights == true)
         services.AddBlazorApplicationInsights(x =>

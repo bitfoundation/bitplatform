@@ -4,39 +4,42 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 {
+    private const string KEY_FIELD = nameof(BitBreadcrumbItem.Key);
     private const string CLASS_FIELD = nameof(BitBreadcrumbItem.Class);
     private const string HREF_FIELD = nameof(BitBreadcrumbItem.Href);
     private const string IS_SELECTED_FIELD = nameof(BitBreadcrumbItem.IsSelected);
     private const string IS_ENABLED_FIELD = nameof(BitBreadcrumbItem.IsEnabled);
     private const string TEXT_FIELD = nameof(BitBreadcrumbItem.Text);
     private const string STYLE_FIELD = nameof(BitBreadcrumbItem.Style);
+    private const string ONCLICK_FIELD = nameof(BitBreadcrumbItem.OnClick);
 
+    private string _internalKeyField = KEY_FIELD;
     private string _internalClassField = CLASS_FIELD;
     private string _internalHrefField = HREF_FIELD;
     private string _internalIsSelectedField = IS_SELECTED_FIELD;
     private string _internalIsEnabledField = IS_ENABLED_FIELD;
     private string _internalTextField = TEXT_FIELD;
     private string _internalStyleField = STYLE_FIELD;
+    private string _internalOnClickField = ONCLICK_FIELD;
 
-    private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
+    private bool _disposed;
+    private bool _isCalloutOpen;
+    private uint _internalOverflowIndex;
+    private uint _internalMaxDisplayedItems;
+    private List<TItem> _items = new();
     private List<TItem> _internalItems = new();
     private List<TItem> _displayItems = new();
     private List<TItem> _overflowItems = new();
-    private uint _internalOverflowIndex;
-    private uint _internalMaxDisplayedItems;
-    private bool _isCalloutOpen;
-    private bool _disposed;
-
     private string _internalDividerIconName = default!;
+    private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
 
-    private string _wrapperId = default!;
     private string _calloutId = default!;
-    private string _overlayId = default!;
-    private string _overflowDropdownId = default!;
+    private string _overflowAnchorId = default!;
+    private string _scrollContainerId = default!;
 
 
 
-    [Inject] public IJSRuntime _js { get; set; } = default!;
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -156,10 +159,20 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
 
 
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        _isCalloutOpen = false;
+        StateHasChanged();
+    }
+
+
+
     internal void RegisterOptions(BitBreadcrumbOption option)
     {
-        _internalItems.Add((option as TItem)!);
-        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
+        _items.Add((option as TItem)!);
+        _internalItems = [.. _items];
+        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_items.Count : MaxDisplayedItems;
         _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
         SetItemsToShow();
         StateHasChanged();
@@ -167,13 +180,9 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
     internal void UnregisterOptions(BitBreadcrumbOption option)
     {
-        _internalItems.Remove((option as TItem)!);
+        _items.Remove((option as TItem)!);
+        _internalItems = [.. _items];
         SetItemsToShow();
-        StateHasChanged();
-    }
-
-    internal void InternalStateHasChanged()
-    {
         StateHasChanged();
     }
 
@@ -183,10 +192,9 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
     protected override Task OnInitializedAsync()
     {
-        _wrapperId = $"BitBreadcrumb-{UniqueId}-wrapper";
         _calloutId = $"BitBreadcrumb-{UniqueId}-callout";
-        _overlayId = $"BitBreadcrumb-{UniqueId}-overlay";
-        _overflowDropdownId = $"BitBreadcrumb-{UniqueId}-overflow-dropdown";
+        _overflowAnchorId = $"BitBreadcrumb-{UniqueId}-overflow-anchor";
+        _scrollContainerId = $"BitBreadcrumb-{UniqueId}-scroll-container";
 
         _internalClassField = ClassFieldSelector?.GetName() ?? ClassField;
         _internalHrefField = HrefFieldSelector?.GetName() ?? HrefField;
@@ -204,12 +212,17 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
     {
         _internalDividerIconName = Dir == BitDir.Rtl ? "ChevronLeft" : "ChevronRight";
 
-        if (ChildContent is null && Items.Any())
+        if (ChildContent is null)
+        {
+            _items = [.. Items];
+        }
+
+        if (_items.Any())
         {
             bool shouldCallSetItemsToShow = false;
 
-            shouldCallSetItemsToShow = _internalItems.Count != Items.Count || _internalItems.Any(item => Items.Contains(item) is false);
-            _internalItems = Items.ToList();
+            shouldCallSetItemsToShow = _internalItems.Count != _items.Count || _internalItems.Any(item => _items.Contains(item) is false);
+            _internalItems = [.. _items];
 
             shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
             _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
@@ -228,20 +241,25 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
 
 
 
-    private async Task ToggleCallout()
-    {
-        if (IsEnabled is false) return;
-
-        await _js.ToggleOverflowCallout(_dotnetObj, _wrapperId, _overflowDropdownId, _calloutId, _overlayId, _isCalloutOpen);
-        _isCalloutOpen = !_isCalloutOpen;
-    }
-
     private async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false) return;
         if (GetIsEnabled(item) is false) return;
 
         await OnItemClick.InvokeAsync(item);
+
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            breadcrumbItem.OnClick?.Invoke(breadcrumbItem);
+        }
+        else if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            await bitBreadcrumbOption.OnClick.InvokeAsync(bitBreadcrumbOption);
+        }
+        else
+        {
+            item.GetValueFromProperty<Action<TItem>?>(_internalOnClickField)?.Invoke(item);
+        }
     }
 
     private void SetItemsToShow()
@@ -300,6 +318,21 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         }
 
         return string.Join(" ", classes);
+    }
+
+    private string? GetKey(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.Key;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.Key;
+        }
+
+        return item.GetValueFromProperty<string?>(_internalKeyField);
     }
 
     private string GetStyles(TItem item)
@@ -409,10 +442,38 @@ public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
         return item.GetValueFromProperty(_internalIsEnabledField, true);
     }
 
+    private async Task OpenCallout()
+    {
+        _isCalloutOpen = true;
+        await ToggleCallout();
+    }
+
+    private async Task CloseCallout()
+    {
+        _isCalloutOpen = false;
+        await ToggleCallout();
+    }
+
+    private async Task ToggleCallout()
+    {
+        if (IsEnabled is false) return;
+
+        await _js.ToggleCallout(_dotnetObj,
+                                _overflowAnchorId,
+                                _calloutId,
+                                _isCalloutOpen,
+                                BitResponsiveMode.None,
+                                BitDropDirection.TopAndBottom,
+                                Dir is BitDir.Rtl,
+                                _scrollContainerId,
+                                0,
+                                "",
+                                "",
+                                false,
+                                RootElementClass);
+    }
 
 
-    [JSInvokable("CloseCallout")]
-    public void CloseCallout() => _isCalloutOpen = false;
 
     public void Dispose()
     {

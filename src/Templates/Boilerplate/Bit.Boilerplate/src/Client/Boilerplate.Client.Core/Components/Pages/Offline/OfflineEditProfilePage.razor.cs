@@ -12,7 +12,7 @@ public partial class OfflineEditProfilePage
     private bool isSaving;
     private bool isLoading = true;
     private string? editProfileMessage;
-    private BitMessageBarType editProfileMessageType;
+    private BitSeverity editProfileMessageSeverity;
     private UserDto user = new();
     private readonly EditUserDto userToEdit = new();
 
@@ -61,12 +61,12 @@ public partial class OfflineEditProfilePage
             dbContext.Users.Update(user);
             await dbContext.SaveChangesAsync(CurrentCancellationToken);
 
-            editProfileMessageType = BitMessageBarType.Success;
+            editProfileMessageSeverity = BitSeverity.Success;
             editProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
         }
         catch (KnownException e)
         {
-            editProfileMessageType = BitMessageBarType.Error;
+            editProfileMessageSeverity = BitSeverity.Error;
 
             editProfileMessage = e.Message;
         }

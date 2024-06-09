@@ -2,12 +2,9 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (ChildContent is not null)
-{
-    <CascadingValue Value="this" IsFixed="true">
-        @ChildContent
-    </CascadingValue>
-}
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@ChildContent</div>
+</CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -16,17 +13,21 @@
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel">
 
-    <div class="bit-brc-iwp" id="@_wrapperId">
+    <div @onclick="CloseCallout" @onclick:stopPropagation
+         style="display:@(_isCalloutOpen ? "block" : "none")"
+         class="bit-brc-ovl"></div>
+
+    <div class="bit-brc-iwp">
         <ul>
             @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
             {
-                <li>
+                <li @key="GetKey(item)">
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
-                        <button id="@_overflowDropdownId"
+                        <button id="@_overflowAnchorId"
                                 type="button"
                                 class="bit-brc-obt"
-                                aria-label="@OverflowAriaLabel" @onclick="ToggleCallout">
+                                aria-label="@OverflowAriaLabel" @onclick="OpenCallout">
                             <span class="bit-brc-oic">
                                 <i class="bit-icon bit-icon--@OverflowIconName" />
                             </span>
@@ -63,16 +64,14 @@
         </ul>
     </div>
 
-    <div class="bit-brc-ovl" id="@_overlayId" @onclick="ToggleCallout"></div>
-
-    <div class="bit-brc-omw"
-         id="@_calloutId"
+    <div id="@_calloutId"
          tabindex="0"
-         role="listbox">
-        <ul>
+         role="listbox"
+         class="bit-brc-cal">
+        <ul id="@_scrollContainerId" class="bit-brc-scn">
             @foreach (var item in _overflowItems)
             {
-                <li>
+                <li @key="GetKey(item)">
                     @if (GetItemHref(item).HasValue())
                     {
                         <a href="@GetItemHref(item)"

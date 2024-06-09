@@ -1,0 +1,118 @@
+@inherits AppComponentBase
+
+<div>
+    @if (string.IsNullOrEmpty(message) is false)
+    {
+        <BitMessage Class="form-message-bar"
+                    Severity="BitSeverity.Error"
+                    OnDismiss="() => message = null">
+            @message
+        </BitMessage>
+    }
+
+    <BitTypography Variant="BitTypographyVariant.H2">
+        @Localizer[nameof(AppStrings.ChangeEmailTitle)]
+    </BitTypography>
+
+    <br />
+
+    @if (Loading)
+    {
+        <div class="loading-container">
+            <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>
+        </div>
+    }
+    else
+    {
+        if (showConfirmation is false)
+        {
+            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)" class="change-email-form">
+                <AppDataAnnotationsValidator />
+
+                <div class="form-input-container">
+                    <BitLabel>@Localizer[nameof(AppStrings.CurrentEmail)]</BitLabel>
+                    <BitTag Appearance="BitAppearance.Standard" Text="@Email" Style="width:100%;max-width:unset" />
+                </div>
+
+                <div class="form-input-container">
+                    <BitTextField @bind-Value="sendModel.Email"
+                                  Type="BitTextFieldType.Email"
+                                  Label="@Localizer[nameof(AppStrings.NewEmail)]"
+                                  Placeholder="@Localizer[nameof(AppStrings.NewEmailPlaceholder)]" />
+                    <ValidationMessage For="@(() => sendModel.Email)" />
+                </div>
+
+                <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                    @Localizer[nameof(AppStrings.Submit)]
+                </BitButton>
+                <br />
+                <div>
+                    @Localizer[nameof(AppStrings.ConfirmMessageInProfile)]
+                    <BitButton ButtonType="BitButtonType.Button"
+                               ButtonStyle="BitButtonStyle.Text"
+                               OnClick="() => showConfirmation = true">
+                        @Localizer[nameof(AppStrings.Confirm)]
+                    </BitButton>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                @Localizer[nameof(AppStrings.ConfirmEmailSubtitle)]
+                <br />
+                @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
+            </BitTypography>
+            <br />
+            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangeEmail)" class="change-email-form">
+                <AppDataAnnotationsValidator />
+
+                <div class="form-input-container">
+                    <BitTextField @bind-Value="changeModel.Email"
+                                  IsEnabled="isEmailUnavailable"
+                                  Type="BitTextFieldType.Email"
+                                  Label="@Localizer[nameof(AppStrings.Email)]"
+                                  Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                    <ValidationMessage For="@(() => changeModel.Email)" />
+                </div>
+
+                <div class="form-input-container">
+                    <BitTextField @bind-Value="changeModel.Token"
+                                  Type="BitTextFieldType.Number"
+                                  Label="@Localizer[nameof(AppStrings.EmailToken)]"
+                                  Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
+                    <ValidationMessage For="@(() => changeModel.Token)" />
+                </div>
+                <br />
+                <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                    @Localizer[nameof(AppStrings.EmailTokenConfirmButtonText)]
+                </BitButton>
+                <br />
+                <BitButton ButtonType="BitButtonType.Button"
+                           ButtonStyle="BitButtonStyle.Text"
+                           IconName="@BitIconName.Back"
+                           OnClick="GoBack">
+                    @Localizer[nameof(AppStrings.GoBack)]
+                </BitButton>
+            </EditForm>
+            @if (isEmailUnavailable is false)
+            {
+                <br />
+                <br />
+                <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                    @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
+                </BitTypography>
+                <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                    @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
+                </BitTypography>
+                <br />
+                <BitButton IsLoading="isWaiting"
+                           ButtonType="BitButtonType.Button"
+                           ButtonStyle="BitButtonStyle.Standard"
+                           OnClick="WrapHandled(SendToken)">
+                    @Localizer[nameof(AppStrings.ResendEmailTokenButtonText)]
+                </BitButton>
+            }
+        }
+    }
+</div>

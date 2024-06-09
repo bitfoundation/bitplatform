@@ -32,16 +32,24 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(PagedResult<CategoryDto>))]
 [JsonSerializable(typeof(List<CategoryDto>))]
 //#endif
+[JsonSerializable(typeof(IdentityRequestDto))]
 [JsonSerializable(typeof(SignInRequestDto))]
+[JsonSerializable(typeof(SignInResponseDto))]
 [JsonSerializable(typeof(TokenResponseDto))]
 [JsonSerializable(typeof(RefreshRequestDto))]
 [JsonSerializable(typeof(SignUpRequestDto))]
 [JsonSerializable(typeof(EditUserDto))]
 [JsonSerializable(typeof(RestErrorInfo))]
-[JsonSerializable(typeof(SendConfirmationEmailRequestDto))]
+[JsonSerializable(typeof(SendEmailTokenRequestDto))]
+[JsonSerializable(typeof(SendPhoneTokenRequestDto))]
 [JsonSerializable(typeof(ConfirmEmailRequestDto))]
-[JsonSerializable(typeof(SendResetPasswordEmailRequestDto))]
+[JsonSerializable(typeof(ChangeEmailRequestDto))]
+[JsonSerializable(typeof(ConfirmPhoneRequestDto))]
+[JsonSerializable(typeof(ChangePhoneNumberRequestDto))]
+[JsonSerializable(typeof(SendResetPasswordTokenRequestDto))]
 [JsonSerializable(typeof(ResetPasswordRequestDto))]
+[JsonSerializable(typeof(TwoFactorAuthRequestDto))]
+[JsonSerializable(typeof(TwoFactorAuthResponseDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

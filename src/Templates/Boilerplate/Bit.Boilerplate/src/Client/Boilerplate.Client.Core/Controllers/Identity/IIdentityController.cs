@@ -6,23 +6,38 @@ namespace Boilerplate.Client.Core.Controllers.Identity;
 public interface IIdentityController : IAppController
 {
     [HttpPost]
-    Task SignUp(SignUpRequestDto body, CancellationToken cancellationToken = default);
+    Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendConfirmationEmail(SendConfirmationEmailRequestDto body, CancellationToken cancellationToken = default);
+    Task SendConfirmEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task SendResetPasswordEmail(SendResetPasswordEmailRequestDto body, CancellationToken cancellationToken = default);
+    Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task ConfirmEmail(ConfirmEmailRequestDto body);
+    Task SendConfirmPhoneToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task ResetPassword(ResetPasswordRequestDto body, CancellationToken cancellationToken = default);
+    Task ConfirmPhone(ConfirmPhoneRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task<TokenResponseDto> Refresh(RefreshRequestDto body, CancellationToken cancellationToken = default) => default!;
+    Task SendResetPasswordToken(SendResetPasswordTokenRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
-    Task<TokenResponseDto> SignIn(SignInRequestDto body, CancellationToken cancellationToken = default) => default!;
+    Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken = default);
+
+    [HttpPost]
+    Task<TokenResponseDto> Refresh(RefreshRequestDto request, CancellationToken cancellationToken = default) => default!;
+
+    [HttpPost]
+    Task<SignInResponseDto> SignIn(SignInRequestDto request, CancellationToken cancellationToken = default) => default!;
+
+    [HttpPost]
+    Task SendTwoFactorToken(IdentityRequestDto request, CancellationToken cancellationToken);
+
+    [HttpPost("{?returnUrl}")]
+    Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default);
+
+    [HttpGet("{?provider,returnUrl,localHttpPort}")]
+    Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null);
 }

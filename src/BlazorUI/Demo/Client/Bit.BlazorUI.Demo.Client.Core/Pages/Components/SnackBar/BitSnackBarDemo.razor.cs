@@ -290,7 +290,7 @@ private async Task OpenBasicSnackBar()
     <TitleTemplate Context=""title"">
         <div style=""display: flex; flex-direction: row; gap: 10px;"">
             <span>@title</span>
-            <BitProgressIndicator BarHeight=""20"" Style=""width: 40px;"" />
+            <BitProgressBar Height=""20"" Style=""width: 40px;"" Indeterminate />
         </div>
     </TitleTemplate>
 </BitSnackBar>

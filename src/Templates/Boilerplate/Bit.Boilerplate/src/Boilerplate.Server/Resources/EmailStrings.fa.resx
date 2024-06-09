@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
 <root>
-  <!-- 
+    <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -59,96 +60,134 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
             <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
             </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="ConfirmationEmailSubject" xml:space="preserve">
-    <value>Boilerplate - آدرس ایمیل خود را تایید کنید</value>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="ConfirmationEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - آدرس ایمیل خود را تایید کنید</value>
   </data>
-  <data name="ConfirmEmail" xml:space="preserve">
-    <value>تایید ایمیل</value>
+    <data name="EmailConfirmationMessageSubtitle" xml:space="preserve">
+    <value>شما این ایمیل را دریافت می کنید زیرا اخیرا ایمیل {0} را به اکانت Boilerplate خود اختصاص داده اید.</value>
   </data>
-  <data name="CopyLink" xml:space="preserve">
-    <value>یا لینک زیر را به نوار آدرس مرورگر خود کپی کنید:</value>
+    <data name="EmailConfirmationMessageBodyToken" xml:space="preserve">
+    <value>آدرس ایمیل خود را با وارد کردن عدد زیر در برنامه تایید کنید.</value>
   </data>
-  <data name="EmailConfirmationMessageBody" xml:space="preserve">
-    <value>شما این پیام را دریافت می کنید زیرا اخیرا برای یک حساب Boilerplate ثبت نام کرده اید.
-                    آدرس ایمیل خود را با کلیک بر روی دکمه زیر تایید کنید.</value>
+    <data name="EmailConfirmationMessageBodyLink" xml:space="preserve">
+    <value>یا برای تایید این آدرس ایمیل روی لینک زیر کلیک کنید.</value>
   </data>
-  <data name="ResetPasswordEmailSubject" xml:space="preserve">
-    <value>Boilerplate - رمز عبور خود را ریست کنید</value>
+    <data name="ResetPasswordEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - رمز عبور خود را ریست کنید</value>
   </data>
-  <data name="ResetPasswordHello" xml:space="preserve">
+    <data name="ResetPasswordTitle" xml:space="preserve">
     <value>سلام {0}</value>
   </data>
-  <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>کسی برای تغییر رمز عبور شما لینکی درخواست کرده است.</value>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>شخصی برای تغییر رمز عبور شما یک توکن درخواست کرده است.</value>
   </data>
-  <data name="ResetPasswordNote" xml:space="preserve">
-    <value>رمز عبور شما تغییر نخواهد کرد تا زمانی که به لینک بالا دسترسی داشته باشید و یک رمز جدید ایجاد کنید.</value>
+    <data name="ResetPasswordBody" xml:space="preserve">
+    <value>اگر شما درخواست توکن بازنشانی رمزعبور را نداده اید، می توانید این ایمیل را نادیده بگیرید.</value>
   </data>
-  <data name="ResetYourPassword" xml:space="preserve">
+    <data name="ResetPasswordTokenMessage" xml:space="preserve">
+    <value>می توانید کد زیر را کپی کرده و در صفحه بازنشانی رعبور وارد کنید.</value>
+  </data>
+    <data name="ResetPasswordLinkMessage" xml:space="preserve">
+    <value>یا می توانید روی لینک زیر کلیک کنید تا رمز عبور خود را بازنشانی کنید.</value>
+  </data>
+    <data name="ResetYourPassword" xml:space="preserve">
     <value>رمز عبور خود را ریست کنید</value>
   </data>
-  <data name="AppName" xml:space="preserve">
+    <data name="OtpEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - رمز یک‌بار مصرف</value>
+  </data>
+    <data name="OtpTitle" xml:space="preserve">
+    <value>سلام {0}</value>
+  </data>
+    <data name="OtpSubtitle" xml:space="preserve">
+    <value>فردی برای ورود به برنامه رمز یک‌بار مصرف درخواست کرده است</value>
+  </data>
+    <data name="OtpBody" xml:space="preserve">
+    <value>اگر شما آن فرد نیستید، میتوانید این ایمیل را نادیده بگیرید</value>
+  </data>
+    <data name="OtpMessage" xml:space="preserve">
+    <value>شما میتوانید رمز زیر را کپی کرده و در صفحه لاگین استفاده کنید</value>
+  </data>
+    <data name="OtpLinkMessage" xml:space="preserve">
+    <value>یا بر روی لینک زیر کلیک کنید</value>
+  </data>
+    <data name="AppName" xml:space="preserve">
     <value>Boilerplate</value>
   </data>
-  <data name="WelcomeToApp" xml:space="preserve">
+    <data name="WelcomeToApp" xml:space="preserve">
     <value>به Boilerplate خوش آمدید!</value>
+  </data>
+    <data name="TfaTokenEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - توکن 2FA</value>
+  </data>
+    <data name="TfaTokenHello" xml:space="preserve">
+    <value>سلام {0} عزیز</value>
+  </data>
+    <data name="TfaTokenMessage" xml:space="preserve">
+    <value>توکن 2FA جدید شما برای ورود:</value>
+  </data>
+    <data name="CopyTokenNote" xml:space="preserve">
+    <value>این کد را کپی و در صفحه ورود استفاده کنید.</value>
+  </data>
+    <data name="DefaultFromName" xml:space="preserve">
+    <value>برنامه Boilerplate</value>
   </data>
 </root>

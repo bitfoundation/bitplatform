@@ -22,24 +22,16 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbCo
             .HasData([new()
             {
                 Id = 1,
-                UserName= "test@bitplatform.dev",
                 Email = "test@bitplatform.dev",
+                UserName = "test",
+                PhoneNumber = "+31684207362",
+                BirthDate = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                Gender = Gender.Other,
                 Password = "123456",
                 FullName = "Boilerplate test account"
             }]);
 
         base.OnModelCreating(modelBuilder);
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Boilerplate-ClientDb.db");
-
-        optionsBuilder
-            // .UseModel(OfflineDbContextModel.Instance)
-            .UseSqlite($"Data Source={dbPath}");
-
-        base.OnConfiguring(optionsBuilder);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

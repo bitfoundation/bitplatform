@@ -70,7 +70,7 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Boilerplate - Confirm your email address.
+        ///   Looks up a localized string similar to Boilerplate {0} - Confirm your email address.
         /// </summary>
         public static string ConfirmationEmailSubject {
             get {
@@ -79,35 +79,115 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirm email.
+        ///   Looks up a localized string similar to Copy this code and use it in the login page..
         /// </summary>
-        public static string ConfirmEmail {
+        public static string CopyTokenNote {
             get {
-                return ResourceManager.GetString("ConfirmEmail", resourceCulture);
+                return ResourceManager.GetString("CopyTokenNote", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Or, copy the link below to your browser address bar:.
+        ///   Looks up a localized string similar to Boilerplate app.
         /// </summary>
-        public static string CopyLink {
+        public static string DefaultFromName {
             get {
-                return ResourceManager.GetString("CopyLink", resourceCulture);
+                return ResourceManager.GetString("DefaultFromName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You&apos;re receiving this message because recently you have signed up for a Boilerplate account.
-        ///                    Confirm your email address by clicking the button below..
+        ///   Looks up a localized string similar to Or click on the following link to confirm this email address..
         /// </summary>
-        public static string EmailConfirmationMessageBody {
+        public static string EmailConfirmationMessageBodyLink {
             get {
-                return ResourceManager.GetString("EmailConfirmationMessageBody", resourceCulture);
+                return ResourceManager.GetString("EmailConfirmationMessageBodyLink", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Boilerplate - Reset your password.
+        ///   Looks up a localized string similar to Confirm your email address by entering the number below in the app..
+        /// </summary>
+        public static string EmailConfirmationMessageBodyToken {
+            get {
+                return ResourceManager.GetString("EmailConfirmationMessageBodyToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re receiving this email because recently you have registered {0} to your Boilerplate account..
+        /// </summary>
+        public static string EmailConfirmationMessageSubtitle {
+            get {
+                return ResourceManager.GetString("EmailConfirmationMessageSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If you did not request the OTP, you can ignore this email..
+        /// </summary>
+        public static string OtpBody {
+            get {
+                return ResourceManager.GetString("OtpBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Boilerplate {0} - OTP.
+        /// </summary>
+        public static string OtpEmailSubject {
+            get {
+                return ResourceManager.GetString("OtpEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Or you can click on the following link to login..
+        /// </summary>
+        public static string OtpLinkMessage {
+            get {
+                return ResourceManager.GetString("OtpLinkMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can copy the below OTP and enter it in the login page..
+        /// </summary>
+        public static string OtpMessage {
+            get {
+                return ResourceManager.GetString("OtpMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Someone has requested an OTP to login to the app..
+        /// </summary>
+        public static string OtpSubtitle {
+            get {
+                return ResourceManager.GetString("OtpSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hello {0}.
+        /// </summary>
+        public static string OtpTitle {
+            get {
+                return ResourceManager.GetString("OtpTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If you&apos;re not the one requested the reset password, you can ignore this email..
+        /// </summary>
+        public static string ResetPasswordBody {
+            get {
+                return ResourceManager.GetString("ResetPasswordBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Boilerplate {0} - Reset your password.
         /// </summary>
         public static string ResetPasswordEmailSubject {
             get {
@@ -116,29 +196,38 @@ namespace Boilerplate.Server.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Or you can click on the following link to try to reset your password..
+        /// </summary>
+        public static string ResetPasswordLinkMessage {
+            get {
+                return ResourceManager.GetString("ResetPasswordLinkMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Someone has requested a token to change your password..
+        /// </summary>
+        public static string ResetPasswordSubtitle {
+            get {
+                return ResourceManager.GetString("ResetPasswordSubtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hello {0}.
         /// </summary>
-        public static string ResetPasswordHello {
+        public static string ResetPasswordTitle {
             get {
-                return ResourceManager.GetString("ResetPasswordHello", resourceCulture);
+                return ResourceManager.GetString("ResetPasswordTitle", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Someone has requested a link to change your password..
+        ///   Looks up a localized string similar to You can copy the below token and enter it in the reset password page..
         /// </summary>
-        public static string ResetPasswordMessage {
+        public static string ResetPasswordTokenMessage {
             get {
-                return ResourceManager.GetString("ResetPasswordMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Your password won&apos;t change until you access the link above and create a new one..
-        /// </summary>
-        public static string ResetPasswordNote {
-            get {
-                return ResourceManager.GetString("ResetPasswordNote", resourceCulture);
+                return ResourceManager.GetString("ResetPasswordTokenMessage", resourceCulture);
             }
         }
         
@@ -148,6 +237,33 @@ namespace Boilerplate.Server.Resources {
         public static string ResetYourPassword {
             get {
                 return ResourceManager.GetString("ResetYourPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Boilerplate {0} - 2FA token.
+        /// </summary>
+        public static string TfaTokenEmailSubject {
+            get {
+                return ResourceManager.GetString("TfaTokenEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hello dear {0}.
+        /// </summary>
+        public static string TfaTokenHello {
+            get {
+                return ResourceManager.GetString("TfaTokenHello", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Here is your new 2FA token to login:.
+        /// </summary>
+        public static string TfaTokenMessage {
+            get {
+                return ResourceManager.GetString("TfaTokenMessage", resourceCulture);
             }
         }
         

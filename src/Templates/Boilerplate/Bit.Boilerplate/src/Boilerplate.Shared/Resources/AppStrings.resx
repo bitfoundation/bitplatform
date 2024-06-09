@@ -137,6 +137,9 @@
     <data name="RequiredAttribute_ValidationError" xml:space="preserve">
     <value>The {0} field is required.</value>
   </data>
+    <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <value>The {0} field is not a valid phone number.</value>
+  </data>
     <!-- Exceptions -->
     <data name="BadRequestException" xml:space="preserve">
     <value>Invalid request</value>
@@ -187,8 +190,17 @@
     <data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
+    <data name="ProfileTitle" xml:space="preserve">
+    <value>Profile</value>
+  </data>
     <data name="EditProfileTitle" xml:space="preserve">
     <value>Edit profile</value>
+  </data>
+    <data name="ChangeEmailTitle" xml:space="preserve">
+    <value>Change email</value>
+  </data>
+    <data name="ChangePhoneNumberTitle" xml:space="preserve">
+    <value>Change phone number</value>
   </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>There is nothing here.</value>
@@ -207,32 +219,59 @@
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
     <value>Profile updated successfully.</value>
   </data>
+    <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
+  </data>
     <data name="ConfirmNewPassword" xml:space="preserve">
     <value>Confirm New Password</value>
   </data>
     <data name="Email" xml:space="preserve">
     <value>Email</value>
   </data>
+    <data name="CurrentEmail" xml:space="preserve">
+    <value>Current email</value>
+  </data>
+    <data name="NewEmail" xml:space="preserve">
+    <value>New email</value>
+  </data>
+    <data name="NewEmailPlaceholder" xml:space="preserve">
+    <value>Enter new email</value>
+  </data>
+    <data name="PhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+    <data name="CurrentPhoneNumber" xml:space="preserve">
+    <value>Current phone number</value>
+  </data>
+    <data name="NewPhoneNumber" xml:space="preserve">
+    <value>New phone number</value>
+  </data>
+    <data name="NewPhoneNumberPlaceholder" xml:space="preserve">
+    <value>Enter new phone number</value>
+  </data>
+    <data name="GoBack" xml:space="preserve">
+    <value>Back</value>
+  </data>
     <data name="Password" xml:space="preserve">
     <value>Password</value>
+  </data>
+    <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>Enter password</value>
   </data>
     <data name="PasswordChangedSuccessfullyMessage" xml:space="preserve">
     <value>Your password changed successfully.</value>
   </data>
-    <data name="ResendConfirmationLinkMessage" xml:space="preserve">
-    <value>The confirmation link has been re-sent to your email address.</value>
+    <data name="ResendConfirmationEmailTokenMessage" xml:space="preserve">
+    <value>The confirmation token has been re-sent to your email address.</value>
   </data>
-    <data name="ResetPasswordLinkSentMessage" xml:space="preserve">
-    <value>The reset password link has been sent to your email address.</value>
+    <data name="ResetPasswordTokenSentMessage" xml:space="preserve">
+    <value>The reset password token has been sent to your email address.</value>
   </data>
     <data name="UserImageCouldNotBeFound" xml:space="preserve">
     <value>User image could not be found</value>
   </data>
     <data name="Error" xml:space="preserve">
     <value>Error</value>
-  </data>
-    <data name="WaitForResetPasswordEmailResendDelay" xml:space="preserve">
-    <value>You have already requested the reset password email. Try again in {0}</value>
   </data>
     <data name="TermsAccepted" xml:space="preserve">
     <value>Is accept terms?</value>
@@ -246,6 +285,9 @@
     <data name="BirthDate" xml:space="preserve">
     <value>Birthdate</value>
   </data>
+    <data name="UserName" xml:space="preserve">
+    <value>Username</value>
+  </data>
     <data name="Name" xml:space="preserve">
     <value>Name</value>
   </data>
@@ -255,17 +297,23 @@
     <data name="Price" xml:space="preserve">
     <value>Price</value>
   </data>
+    <data name="EitherProvideEmailOrPhoneNumber" xml:space="preserve">
+    <value>Either provide email or phone number.</value>
+  </data>
+    <data name="EitherProvideUserNameOrEmailOrPhoneNumber" xml:space="preserve">
+    <value>Either provide username, email or phone number.</value>
+  </data>
     <data name="YouNeedToSignIn" xml:space="preserve">
     <value>You must be signed in to continue.</value>
   </data>
-    <data name="InvalidUsernameOrPassword" xml:space="preserve">
-    <value>Invalid username or password</value>
-  </data>
-    <data name="WaitForConfirmationEmailResendDelay" xml:space="preserve">
-    <value>You have already requested the confirmation email. Try again in {0}</value>
+    <data name="InvalidUserCredentials" xml:space="preserve">
+    <value>Invalid user credentials</value>
   </data>
     <data name="EmailAlreadyConfirmed" xml:space="preserve">
     <value>Your email is already confirmed.</value>
+  </data>
+    <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
+    <value>Your phone number is already confirmed.</value>
   </data>
     <data name="Title" xml:space="preserve">
     <value>Title</value>
@@ -277,26 +325,100 @@
     <value>Home</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
-      <value>User is locked out. Try again in {0}</value>
-    </data>
-    <data name="UserNameNotFound" xml:space="preserve">
-      <value>User {0} does not exist.</value>
-    </data>
-    <data name="DuplicateEmail" xml:space="preserve">
-      <value>Email '{0}' is already taken.</value>
-    </data>
+    <value>User is locked out. Try again in {0}</value>
+  </data>
+    <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>User is not confirmed.</value>
+  </data>
+    <data name="UserNotFound" xml:space="preserve">
+    <value>User does not exist.</value>
+  </data>
+    <data name="DuplicateEmailOrPhoneNumber" xml:space="preserve">
+    <value>This email or phone number is already taken.</value>
+  </data>
     <data name="Add" xml:space="preserve">
     <value>Add</value>
   </data>
-    <data name="AlreadyHaveAccountMessage" xml:space="preserve">
+    <data name="Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+    <data name="TokenPlaceholder" xml:space="preserve">
+    <value>Enter token</value>
+  </data>
+    <data name="SignInMessageInSignUp" xml:space="preserve">
     <value>Already have an account?</value>
   </data>
-    <data name="ConfirmEmailMessage" xml:space="preserve">
-    <value>We have sent a confirmation link to your email address.
-Please confirm your email by clicking on the link.</value>
+    <data name="ConfirmMessageInSignUp" xml:space="preserve">
+    <value>Want to confirm an account?</value>
   </data>
-    <data name="ConfirmEmailTitle" xml:space="preserve">
-    <value>Confirm Your Email Address</value>
+    <data name="ConfirmMessageInProfile" xml:space="preserve">
+    <value>Already have a token?</value>
+  </data>
+    <data name="ConfirmEmailHeaderText" xml:space="preserve">
+    <value>Email Address</value>
+  </data>
+    <data name="ConfirmEmailSubtitle" xml:space="preserve">
+    <value>We have sent a confirmation token to your email address.</value>
+  </data>
+    <data name="ConfirmTitle" xml:space="preserve">
+    <value>Confirm your account</value>
+  </data>
+    <data name="ConfirmEmailMessage" xml:space="preserve">
+    <value>Please confirm your email by typing the token here.</value>
+  </data>
+    <data name="EmailPlaceholder" xml:space="preserve">
+    <value>Enter email address</value>
+  </data>
+    <data name="EmailToken" xml:space="preserve">
+    <value>Email Token</value>
+  </data>
+    <data name="EmailTokenPlaceholder" xml:space="preserve">
+    <value>Enter email token</value>
+  </data>
+    <data name="EmailTokenConfirmButtonText" xml:space="preserve">
+    <value>Confirm Email Address</value>
+  </data>
+    <data name="EmailConfirmationSuccessTitle" xml:space="preserve">
+    <value>Your email address ({0}) has been confirmed.</value>
+  </data>
+    <data name="EmailConfirmationSuccessMessage" xml:space="preserve">
+    <value>You can now login with your account.</value>
+  </data>
+    <data name="ConfirmPhoneHeaderText" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+    <data name="ConfirmPhoneSubtitle" xml:space="preserve">
+    <value>We have sent a confirmation token to your phone.</value>
+  </data>
+    <data name="ConfirmPhoneMessage" xml:space="preserve">
+    <value>Please confirm your phone number by typing the token here.</value>
+  </data>
+    <data name="PhoneNumberPlaceholder" xml:space="preserve">
+    <value>Enter phone number</value>
+  </data>
+    <data name="PhoneToken" xml:space="preserve">
+    <value>Phone Token</value>
+  </data>
+    <data name="PhoneTokenPlaceholder" xml:space="preserve">
+    <value>Enter phone token</value>
+  </data>
+    <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
+    <value>Confirm Phone Number</value>
+  </data>
+    <data name="NotReceivedConfirmationPhoneMessage" xml:space="preserve">
+    <value>Haven’t you received the token on your phone?</value>
+  </data>
+    <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
+    <value>The confirmation token has been re-sent to your phone.</value>
+  </data>
+    <data name="ResendPhoneTokenButtonText" xml:space="preserve">
+    <value>Resend Phone Token</value>
+  </data>
+    <data name="PhoneConfirmationSuccessTitle" xml:space="preserve">
+    <value>Your phone number ({0}) has been confirmed.</value>
+  </data>
+    <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
+    <value>You can now login with your account.</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Delete Account</value>
@@ -322,11 +444,14 @@ Please confirm your email by clicking on the link.</value>
     <data name="FileUploadFailed" xml:space="preserve">
     <value>An error occurred while uploading file</value>
   </data>
-    <data name="ForgetPasswordMessage" xml:space="preserve">
-    <value>Please enter the email address you have been signed up with so we can send a reset password link to your email address.</value>
+    <data name="ForgotPassword" xml:space="preserve">
+    <value>Forgot password</value>
   </data>
-    <data name="ForgetPasswordTitle" xml:space="preserve">
-    <value>Forget password</value>
+    <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Forgot password</value>
+  </data>
+    <data name="ForgotPasswordMessage" xml:space="preserve">
+    <value>Please enter your email address or phone number so we can send a reset password token to you.</value>
   </data>
     <data name="GenderMale" xml:space="preserve">
     <value>Male</value>
@@ -346,11 +471,14 @@ Please confirm your email by clicking on the link.</value>
     <data name="HomeTitle" xml:space="preserve">
     <value>Boilerplate Home</value>
   </data>
-    <data name="InvalidConfirmationLinkMessage" xml:space="preserve">
-    <value>Looks like the confirmation link either is invalid or has expired.</value>
+    <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
+    <value>Looks like the confirmation token either is invalid or has expired.</value>
   </data>
     <data name="NewPassword" xml:space="preserve">
     <value>New Password</value>
+  </data>
+    <data name="OldPassword" xml:space="preserve">
+    <value>Old Password</value>
   </data>
     <data name="No" xml:space="preserve">
     <value>No</value>
@@ -367,17 +495,59 @@ Please confirm your email by clicking on the link.</value>
     <data name="Remove" xml:space="preserve">
     <value>Remove</value>
   </data>
-    <data name="ResendEmail" xml:space="preserve">
-    <value>Resend email</value>
+    <data name="ResendEmailTokenButtonText" xml:space="preserve">
+    <value>Resend Email Token</value>
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset password</value>
+  </data>
+    <data name="ResetPasswordSubtitle" xml:space="preserve">
+    <value>We have sent a token to your phone or email.</value>
+  </data>
+    <data name="ResetPasswordMessage" xml:space="preserve">
+    <value>Please submit the token together with your new password here.</value>
+  </data>
+    <data name="ResetPasswordButtonText" xml:space="preserve">
+    <value>Set Password</value>
+  </data>
+    <data name="ResetPasswordSuccessTitle" xml:space="preserve">
+    <value>Your password has been reset.</value>
+  </data>
+    <data name="ResetPasswordSuccessBody" xml:space="preserve">
+    <value>You can now login with your password.</value>
+  </data>
+    <data name="ResetPasswordMessageInForgot" xml:space="preserve">
+    <value>Already have a reset password token?</value>
   </data>
     <data name="Save" xml:space="preserve">
     <value>Save</value>
   </data>
     <data name="SignInTitle" xml:space="preserve">
     <value>Sign in</value>
+  </data>
+    <data name="SocialSignedInTitle" xml:space="preserve">
+    <value>Social signed in</value>
+  </data>
+    <data name="SocialSignedInMessageTitle" xml:space="preserve">
+    <value>The social sign-in is done</value>
+  </data>
+    <data name="SocialSignedInMessageBody" xml:space="preserve">
+    <value>You can go back to the application now</value>
+  </data>
+    <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>Sign in with Google</value>
+  </data>
+    <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>Sign in with GitHub</value>
+  </data>
+    <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>Sign in with Twitter (X)</value>
+  </data>
+    <data name="GoogleSignUpButtonText" xml:space="preserve">
+    <value>Sign up with Google</value>
+  </data>
+    <data name="GitHubSignUpButtonText" xml:space="preserve">
+    <value>Sign up with GitHub</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>Sign out</value>
@@ -436,6 +606,9 @@ Please confirm your email by clicking on the link.</value>
     <data name="SignIn" xml:space="preserve">
     <value>Sign in</value>
   </data>
+    <data name="Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>Sign in as different user</value>
   </data>
@@ -450,6 +623,177 @@ Please confirm your email by clicking on the link.</value>
   </data>
     <data name="RememberMe" xml:space="preserve">
     <value>Remember me?</value>
+  </data>
+    <data name="TwoFactorCode" xml:space="preserve">
+    <value>Authenticator code</value>
+  </data>
+    <data name="TwoFactorRecoveryCode" xml:space="preserve">
+    <value>Recovery code</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
+  </data>
+    <data name="TfaResetSharedKeyError" xml:space="preserve">
+    <value>Resetting the 2fa shared key must disable 2fa until a 2fa token based on the new shared key is validated.</value>
+  </data>
+    <data name="TfaEmptyCodeError" xml:space="preserve">
+    <value>No 2fa token was provided by the request. A valid 2fa token is required to enable 2fa.</value>
+  </data>
+    <data name="TfaInvalidCodeError" xml:space="preserve">
+    <value>The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa.</value>
+  </data>
+    <data name="TfaProtectedSignInSubtitle" xml:space="preserve">
+    <value>Your login is protected with an authenticator app.</value>
+  </data>
+    <data name="TfaEnterCodeInSignInMessage" xml:space="preserve">
+    <value>Enter your authenticator code:</value>
+  </data>
+    <data name="TfaEnterRecoveryCodeInSignInMessage" xml:space="preserve">
+    <value>Or enter your recovery code:</value>
+  </data>
+    <data name="TfaAuthenticatorAppVerifiedMessage" xml:space="preserve">
+    <value>Your authenticator app has been verified.</value>
+  </data>
+    <data name="TfaConfigureAutAppTitle" xml:space="preserve">
+    <value>Configure authenticator app</value>
+  </data>
+    <data name="TfaConfigureAutAppSubtitle" xml:space="preserve">
+    <value>To use an authenticator app go through the following steps:</value>
+  </data>
+    <data name="TfaConfigureAutAppStep1" xml:space="preserve">
+    <value>Download a two-factor authenticator app like Google Authenticator for {0} and {1}.</value>
+  </data>
+    <data name="TfaConfigureAutAppStep2" xml:space="preserve">
+    <value>Scan/click the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):</value>
+  </data>
+    <data name="TfaConfigureAutAppStep3" xml:space="preserve">
+    <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
+    <value>Verification Code:</value>
+  </data>
+    <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
+    <value>Enter verification code.</value>
+  </data>
+    <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
+    <value>Verify</value>
+  </data>
+    <data name="TfaRecoveryCodesHeader" xml:space="preserve">
+    <value>Recovery codes</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
+    <value>You have no recovery codes left.</value>
+  </data>
+    <data name="TfaRecoveryCodesZeroLeftSubtitle" xml:space="preserve">
+    <value>You must generate a new set of recovery codes before you can log in with a recovery code.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftTitle" xml:space="preserve">
+    <value>You have 1 recovery code left.</value>
+  </data>
+    <data name="TfaRecoveryCodesOneLeftSubtitle" xml:space="preserve">
+    <value>You can generate a new set of recovery codes.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftTitle" xml:space="preserve">
+    <value>You have {0} recovery codes left.</value>
+  </data>
+    <data name="TfaRecoveryCodesThreeLeftSubtitle" xml:space="preserve">
+    <value>You should generate a new set of recovery codes.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateWraning" xml:space="preserve">
+    <value>Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should reset your authenticator keys in the next tab.</value>
+  </data>
+    <data name="TfaRecoveryCodesGenerateButtonText" xml:space="preserve">
+    <value>Generate Recovery Codes</value>
+  </data>
+    <data name="TfaRecoveryCodesWarningTitle" xml:space="preserve">
+    <value>Put these codes in a safe place.</value>
+  </data>
+    <data name="TfaRecoveryCodesWarning" xml:space="preserve">
+    <value>If you lose your authenticator device and don't have the recovery codes you will lose access to your account.</value>
+  </data>
+    <data name="TfaRecoveryCodesTitle" xml:space="preserve">
+    <value>Recovery codes:</value>
+  </data>
+    <data name="TfaAuthAppHeader" xml:space="preserve">
+    <value>Authenticator app</value>
+  </data>
+    <data name="TfaAuthAppWarningTitle" xml:space="preserve">
+    <value>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</value>
+  </data>
+    <data name="TfaAuthAppWarning" xml:space="preserve">
+    <value>This process disables 2FA until you verify your authenticator app. If you do not complete your authenticator app configuration you may lose access to your account.</value>
+  </data>
+    <data name="TfaAuthAppResetKeyButtonText" xml:space="preserve">
+    <value>Reset authenticator key</value>
+  </data>
+    <data name="TfaDisable2faHeader" xml:space="preserve">
+    <value>Disable 2FA</value>
+  </data>
+    <data name="TfaDisable2faWarningTitle" xml:space="preserve">
+    <value>This action only disables 2FA.</value>
+  </data>
+    <data name="TfaDisable2faWarning" xml:space="preserve">
+    <value>Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should reset your authenticator keys in the previous tab.</value>
+  </data>
+    <data name="TfaDisable2faButtonText" xml:space="preserve">
+    <value>Disable 2FA</value>
+  </data>
+    <data name="TwoFactorToken" xml:space="preserve">
+    <value>2FA Token</value>
+  </data>
+    <data name="TfaTokenSignInTitle" xml:space="preserve">
+    <value>No access to authenticator app?</value>
+  </data>
+    <data name="TfaTokenGenerateButtonText" xml:space="preserve">
+    <value>Generate and Send 2FA Token</value>
+  </data>
+    <data name="TfaTokenSentMessage" xml:space="preserve">
+    <value>The 2FA token has been generated and sent to you.</value>
+  </data>
+    <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested the confirmation email. Try again in {0}</value>
+  </data>
+    <data name="WaitForPhoneNumberTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested the confirmation sms. Try again in {0}</value>
+  </data>
+    <data name="WaitForResetPasswordTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested the reset password token. Try again in {0}</value>
+  </data>
+    <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
+    <value>You have already requested an OTP. Try again in {0}</value>
+  </data>
+    <data name="Otp" xml:space="preserve">
+    <value>OTP</value>
+  </data>
+    <data name="OtpPlaceholder" xml:space="preserve">
+    <value>Enter OTP</value>
+  </data>
+    <data name="OtpSentMessage" xml:space="preserve">
+    <value>An OTP has been generated and sent to you.</value>
+  </data>
+    <data name="SendOtpButtonText" xml:space="preserve">
+    <value>Send OTP and Magic link</value>
+  </data>
+    <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
+    <value>Either provide password or OTP</value>
+  </data>
+    <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested the 2FA token email. Try again in {0}.</value>
+  </data>
+    <data name="ChangePhoneNumberTokenSmsText" xml:space="preserve">
+    <value>{0} is your change phone number token in Boilerplate.</value>
+  </data>
+    <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
+    <value>{0} is your confirm phone number token in Boilerplate.</value>
+  </data>
+    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <value>{0} is your two factor token in Boilerplate.</value>
+  </data>
+    <data name="OtpSmsText" xml:space="preserve">
+    <value>{0} is your OTP in Boilerplate.</value>
+  </data>
+    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <value>{0} is your reset password token in Boilerplate.</value>
   </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
@@ -544,32 +888,32 @@ Please confirm your email by clicking on the link.</value>
     <value>This chart shows the percentage of products in each category.</value>
   </data>
     <data name="Categories" xml:space="preserve">
-  <value>Categories</value>
-</data>
+    <value>Categories</value>
+  </data>
     <data name="ProductCategory" xml:space="preserve">
-  <value>Product category</value>
-</data>
+    <value>Product category</value>
+  </data>
     <data name="Products" xml:space="preserve">
-  <value>Products</value>
-</data>
+    <value>Products</value>
+  </data>
     <data name="ProductCouldNotBeFound" xml:space="preserve">
-  <value>Product entity could not be found</value>
-</data>
+    <value>Product entity could not be found</value>
+  </data>
     <data name="CategoryNotEmpty" xml:space="preserve">
-  <value>This category contain some products, so you can't delete it</value>
-</data>
+    <value>This category contain some products, so you can't delete it</value>
+  </data>
     <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
-  <value>Are you sure you want to delete category {0}</value>
-</data>
+    <value>Are you sure you want to delete category {0}</value>
+  </data>
     <data name="AreYouSureWannaDeleteProduct" xml:space="preserve">
-  <value>Are you sure you want to delete product {0}</value>
-</data>
+    <value>Are you sure you want to delete product {0}</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
-  <value>Delete category</value>
-</data>
+    <value>Delete category</value>
+  </data>
     <data name="DeleteProduct" xml:space="preserve">
-  <value>Delete product</value>
-</data>
+    <value>Delete product</value>
+  </data>
     <data name="CategoryCouldNotBeFound" xml:space="preserve">
     <value>Category entity could not be found</value>
   </data>
@@ -585,5 +929,13 @@ Please confirm your email by clicking on the link.</value>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
+    <!--#if (captcha == "reCaptcha") -->
+    <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
+    <value>Invalid Google reCAPTCHA response.</value>
+  </data>
+    <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
+    <value>You need to pass the Google reCAPTCHA challenge.</value>
+  </data>
+    <!--#endif -->
     <!--#endif -->
 </root>

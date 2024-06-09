@@ -344,7 +344,7 @@ public partial class BitSearchBox
                                 isOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
-                                false,
+                                Dir is BitDir.Rtl,
                                 _scrollContainerId,
                                 0,
                                 string.Empty,
@@ -452,7 +452,7 @@ public partial class BitSearchBox
 
         CurrentValue = _searchItems[_selectedIndex];
         await OnChange.InvokeAsync(CurrentValue);
-        await _js.InvokeVoidAsync("BitSearchBox.moveCursorToEnd", _inputRef);
+        await _js.BitSearchBoxMoveCursorToEnd(_inputRef);
     }
 
     private async Task HandleOnItemClick(string item)

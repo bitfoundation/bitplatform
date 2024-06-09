@@ -5,6 +5,8 @@ public class User : IdentityUser<int>
     [PersonalData]
     public string? FullName { get; set; }
 
+    public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+
     [PersonalData]
     public Gender? Gender { get; set; }
 
@@ -14,9 +16,16 @@ public class User : IdentityUser<int>
     [PersonalData]
     public string? ProfileImageName { get; set; }
 
-    public DateTimeOffset? ConfirmationEmailRequestedOn { get; set; }
+    /// <summary>
+    /// The date and time of the last token request. Ensures the generated token is valid and can only be used once.
+    /// </summary>
+    public DateTimeOffset? EmailTokenRequestedOn { get; set; }
 
-    public DateTimeOffset? ResetPasswordEmailRequestedOn { get; set; }
+    public DateTimeOffset? PhoneNumberTokenRequestedOn { get; set; }
 
-    public string? DisplayName => FullName ?? NormalizedUserName;
+    public DateTimeOffset? ResetPasswordTokenRequestedOn { get; set; }
+
+    public DateTimeOffset? TwoFactorTokenRequestedOn { get; set; }
+
+    public DateTimeOffset? OtpRequestedOn { get; set; }
 }

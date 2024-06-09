@@ -13,7 +13,7 @@ jobs:
     steps:
 
     - name: Checkout source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -26,6 +26,10 @@ jobs:
       
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
+
+    - name: Install Nodejs dependencies
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Bit-CI-release.sln -t:InstallNodejsDependencies -m:1 
 
     - name: MSBuild prerelease
       run: dotnet build src/Bit-CI-release.sln
@@ -41,7 +45,7 @@ jobs:
     steps:
 
     - name: Checkout source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -57,6 +61,10 @@ jobs:
 
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Install Nodejs dependencies
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Bit-CI.sln -t:InstallNodejsDependencies -m:1 
 
     - name: Build
       run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false

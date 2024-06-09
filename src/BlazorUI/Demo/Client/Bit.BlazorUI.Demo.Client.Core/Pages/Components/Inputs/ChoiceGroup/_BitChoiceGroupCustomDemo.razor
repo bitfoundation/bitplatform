@@ -255,7 +255,7 @@
         }
         else
         {
-            <BitMessageBar MessageBarType="BitMessageBarType.Success" IsMultiline="false">@successMessage</BitMessageBar>
+            <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
         }
         <br />
         <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>

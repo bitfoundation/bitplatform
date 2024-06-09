@@ -22,12 +22,12 @@ public partial class _BitDropdownItemDemo
 
     private List<BitDropdownItem<string>> GetDataItems() =>
     [
-        new() { ItemType = BitDropdownItemType.Header, Text = "Items" },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Items", Data = new DropdownItemData { IconName = "BulletedList2" } },
         new() { Text = "Item a", Value = "A", Data = new DropdownItemData { IconName = "Memo" } },
         new() { Text = "Item b", Value = "B", Data = new DropdownItemData { IconName = "Print" } },
         new() { Text = "Item c", Value = "C", Data = new DropdownItemData { IconName = "ShoppingCart" } },
         new() { ItemType = BitDropdownItemType.Divider },
-        new() { ItemType = BitDropdownItemType.Header, Text = "More Items" },
+        new() { ItemType = BitDropdownItemType.Header, Text = "More Items", Data = new DropdownItemData { IconName = "BulletedTreeList" } },
         new() { Text = "Item d", Value = "D", Data = new DropdownItemData { IconName = "Train" } },
         new() { Text = "Item e", Value = "E", Data = new DropdownItemData { IconName = "Repair" } },
         new() { Text = "Item f", Value = "F", Data = new DropdownItemData { IconName = "Running" } }

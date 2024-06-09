@@ -298,23 +298,42 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
         justify-content: flex-start;
     }
 
-    custom-drp.custom-drp-lbl {
+    .custom-drp.custom-drp-lbl {
         color: dodgerblue;
     }
 
-    custom-drp.custom-drp-txt {
+    .custom-drp.custom-drp-txt {
         color: goldenrod;
     }
 
-    custom-drp.custom-drp-ph {
+    .custom-drp.custom-drp-ph {
         color: orangered;
     }
 
-    custom-drp.custom-drp-item {
+    .custom-drp.custom-drp-item {
         width: 100%;
         cursor: pointer;
     }
+
+    .custom-drp.custom-drp-header {
+        width: 100%;
+        padding: 5px 12px;
+        color: #ff4600;
+        font-weight: bold;
+    }
 </style>
+
+<BitDropdown Label=""Header template""
+             Items=""GetDataCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item"">
+    <HeaderTemplate Context=""item"">
+        <div class=""custom-drp custom-drp-header"">
+            <BitIcon IconName=""@((item.Payload as DropdownItemData)?.IconName)"" />
+            <div>@item.Text</div>
+        </div>
+    </HeaderTemplate>
+</BitDropdown>
 
 <BitDropdown Label=""Text & Item templates""
              Items=""GetDataCustoms()""
@@ -396,15 +415,15 @@ public class DropdownItemData
 
 private List<BitDropdownCustom> GetDataCustoms() => new()
 {
-    new() { Type = BitDropdownItemType.Header, Text = ""Items"" },
-    new() { Text = ""Item a"", Value = ""A"", Payload = new DropdownItemData { IconName = ""Memo"" } },
-    new() { Text = ""Item b"", Value = ""B"", Payload = new DropdownItemData { IconName = ""Print"" } },
-    new() { Text = ""Item c"", Value = ""C"", Payload = new DropdownItemData { IconName = ""ShoppingCart"" } },
-    new() { Type = BitDropdownItemType.Divider },
-    new() { Type = BitDropdownItemType.Header, Text = ""More Items"" },
-    new() { Text = ""Item d"", Value = ""D"", Payload = new DropdownItemData { IconName = ""Train"" } },
-    new() { Text = ""Item e"", Value = ""E"", Payload = new DropdownItemData { IconName = ""Repair"" } },
-    new() { Text = ""Item f"", Value = ""F"", Payload = new DropdownItemData { IconName = ""Running"" } }
+    new() { Type = BitDropdownItemType.Header, Text = ""Items"", Payload = new DropdownItemData { IconName = ""BulletedList2"" } },
+        new() { Text = ""Item a"", Value = ""A"", Payload = new DropdownItemData { IconName = ""Memo"" } },
+        new() { Text = ""Item b"", Value = ""B"", Payload = new DropdownItemData { IconName = ""Print"" } },
+        new() { Text = ""Item c"", Value = ""C"", Payload = new DropdownItemData { IconName = ""ShoppingCart"" } },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Type = BitDropdownItemType.Header, Text = ""More Items"", Payload = new DropdownItemData { IconName = ""BulletedTreeList"" } },
+        new() { Text = ""Item d"", Value = ""D"", Payload = new DropdownItemData { IconName = ""Train"" } },
+        new() { Text = ""Item e"", Value = ""E"", Payload = new DropdownItemData { IconName = ""Repair"" } },
+        new() { Text = ""Item f"", Value = ""F"", Payload = new DropdownItemData { IconName = ""Running"" } }
 };
 
 private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new() 

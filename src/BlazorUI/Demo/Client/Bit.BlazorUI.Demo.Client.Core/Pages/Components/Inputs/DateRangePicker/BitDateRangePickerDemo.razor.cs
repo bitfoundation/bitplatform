@@ -350,6 +350,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "StartingValue",
+            Type = "BitDateRangePickerValue?",
+            DefaultValue = "null",
+            Description = "Specifies the date and time of the date and time picker when it is opened without any selected value.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitDateRangePickerClassStyles",
             DefaultValue = "null",
@@ -975,15 +982,19 @@ public partial class BitDateRangePickerDemo
 
 
 
+    private CultureInfo culture = CultureInfo.CurrentUICulture;
+
     private BitDateRangePickerValue? selectedDateRange = new()
     {
         StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
         EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset),
     };
 
-    private CultureInfo culture = CultureInfo.CurrentUICulture;
-
-
+    private BitDateRangePickerValue? startingValue = new()
+    {
+        StartDate = new DateTimeOffset(2020, 12, 4, 10, 12, 0, DateTimeOffset.Now.Offset),
+        EndDate = new DateTimeOffset(2020, 12, 4, 16, 59, 0, DateTimeOffset.Now.Offset),
+    };
 
     private readonly string example1RazorCode = @"
 <BitDateRangePicker Label=""Basic DateRangePicker"" />
@@ -994,7 +1005,14 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker=""true"" />
 <BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
 <BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />
-<BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />";
+<BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />
+<BitDateRangePicker Label=""StartingValue: December 2020, Start Time: 10:12, End Time: 16:59"" ShowTimePicker=""true"" StartingValue=""startingValue"" />";
+    private readonly string example1CsharpCode = @"
+private BitDateRangePickerValue? startingValue = new()
+{
+    StartDate = new DateTimeOffset(2020, 12, 4, 10, 12, 0, DateTimeOffset.Now.Offset),
+    EndDate = new DateTimeOffset(2020, 12, 4, 16, 59, 0, DateTimeOffset.Now.Offset),
+};";
 
     private readonly string example2RazorCode = @"
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />

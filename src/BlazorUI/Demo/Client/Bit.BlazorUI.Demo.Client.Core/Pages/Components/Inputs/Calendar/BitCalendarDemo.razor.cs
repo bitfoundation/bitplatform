@@ -210,6 +210,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "StartingValue",
+            Type = "DateTimeOffset?",
+            DefaultValue = "null",
+            Description = "Specifies the date and time of the calendar when it is showing without any selected value.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitCalendarClassStyles",
             DefaultValue = "null",
@@ -253,6 +260,20 @@ public partial class BitCalendarDemo
             Type = "string",
             DefaultValue = "{0} - {1}, change month",
             Description = "The title of the year range picker's toggle (tooltip)."
+        },
+        new()
+        {
+            Name = "HourStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for calendar's hour.",
+        },
+        new()
+        {
+            Name = "MinuteStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for calendar's minute.",
         }
     };
 
@@ -639,6 +660,7 @@ public partial class BitCalendarDemo
     private bool showMonthPickerAsOverlay;
 
     private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
+    private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);
 
     private string SuccessMessage = string.Empty;
     private BitCalendarValidationModel validationModel = new();
@@ -662,7 +684,10 @@ public partial class BitCalendarDemo
 <BitCalendar />
 <BitCalendar IsEnabled=""false"" />
 <BitCalendar ShowWeekNumbers=""true"" />
-<BitCalendar HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />";
+<BitCalendar HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
+<BitCalendar ShowTimePicker=""true"" StartingValue=""startingValue"" />";
+    private readonly string example1CsharpCode = @"
+private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);";
 
     private readonly string example2RazorCode = @"
 <BitCalendar MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
@@ -883,4 +908,8 @@ private void HandleInvalidSubmit() { }";
 
     private readonly string example10RazorCode = @"
 <BitCalendar Dir=""BitDir.Rtl"" />";
+
+    private readonly string example11RazorCode = @"
+<BitCalendar ShowTimePicker=""true"" HourStep=""2"" />
+<BitCalendar ShowTimePicker=""true"" MinuteStep=""15"" />";
 }

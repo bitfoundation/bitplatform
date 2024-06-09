@@ -55,12 +55,12 @@ public partial class _BitDropdownCustomDemo
 
     private List<BitDropdownCustom> GetDataCustoms() =>
     [
-        new() { Type = BitDropdownItemType.Header, Text = "Items" },
+        new() { Type = BitDropdownItemType.Header, Text = "Items", Payload = new DropdownItemData { IconName = "BulletedList2" } },
         new() { Text = "Item a", Value = "A", Payload = new DropdownItemData { IconName = "Memo" } },
         new() { Text = "Item b", Value = "B", Payload = new DropdownItemData { IconName = "Print" } },
         new() { Text = "Item c", Value = "C", Payload = new DropdownItemData { IconName = "ShoppingCart" } },
         new() { Type = BitDropdownItemType.Divider },
-        new() { Type = BitDropdownItemType.Header, Text = "More Items" },
+        new() { Type = BitDropdownItemType.Header, Text = "More Items", Payload = new DropdownItemData { IconName = "BulletedTreeList" } },
         new() { Text = "Item d", Value = "D", Payload = new DropdownItemData { IconName = "Train" } },
         new() { Text = "Item e", Value = "E", Payload = new DropdownItemData { IconName = "Repair" } },
         new() { Text = "Item f", Value = "F", Payload = new DropdownItemData { IconName = "Running" } }
