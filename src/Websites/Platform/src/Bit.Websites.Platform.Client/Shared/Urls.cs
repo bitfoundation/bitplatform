@@ -20,6 +20,7 @@ public static class Urls
 
     public const string Facebook = "#";
 
+    public const string LowCodeNoCode = "/lowcode-nocode/overview";
     public const string Templates = "/templates/overview";
 
     public const string Bswup = "/bswup/overview";
