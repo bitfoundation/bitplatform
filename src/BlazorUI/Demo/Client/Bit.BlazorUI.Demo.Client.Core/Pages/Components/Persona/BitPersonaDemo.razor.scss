@@ -5,15 +5,3 @@
     margin-top: rem2(40px);
     margin-bottom: rem2(20px);
 }
-
-::deep {
-    .custom-ico {
-        font-size: rem2(14px);
-        margin-right: rem2(5px);
-    }
-
-    .custom-coin {
-        display: block;
-        border-radius: rem2(20px);
-    }
-}
