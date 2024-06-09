@@ -14,19 +14,22 @@
 }
 
 .bit-lyt-hdr {
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    padding: 0.5rem;
+    position: fixed;
 }
 
 .bit-lyt-man {
     width: 100%;
-    display: flex;
     min-height: 100vh;
-    position: relative;
     box-sizing: border-box;
-    justify-content: flex-start;
-    padding-bottom: $footerHeight;
-    background-color: $bit-color-background-primary;
-    padding-top: calc($headerHeight + var(--bit-status-bar-height));
 }
 
 .bit-lyt-ftr {
+    bottom: 0;
+    z-index: 1;
+    width: 100%;
+    padding: 0.5rem;
 }

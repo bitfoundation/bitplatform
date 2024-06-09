@@ -7,6 +7,8 @@ public partial class BitLayout
     /// </summary>
     [Parameter] public RenderFragment? Header { get; set; }
 
+    [Parameter] public int HeaderHeight { get; set; }
+
     /// <summary>
     /// The content of label, It can be Any custom tag or a text
     /// </summary>
@@ -16,12 +18,16 @@ public partial class BitLayout
     /// The content of label, It can be Any custom tag or a text
     /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }
+    
+    [Parameter] public int FooterHeight { get; set; }
+
+    [Parameter] public int StatusBarHeight { get; set; }
 
 
     protected override string RootElementClass => "bit-lyt";
 
     protected override void RegisterCssClasses()
     {
-        
+
     }
 }

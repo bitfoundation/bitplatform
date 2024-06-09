@@ -7,16 +7,16 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    
-     <header class="bit-lyt-hdr">
+
+    <header class="bit-lyt-hdr" style="height:@(HeaderHeight+StatusBarHeight)px;padding-top:calc(0.5rem + @(StatusBarHeight)px)">
         @Header
     </header>
 
-    <main class="bit-lyt-man">
+    <main class="bit-lyt-man" style="padding-top:@(HeaderHeight+StatusBarHeight)px;padding-bottom:@(FooterHeight)px">
         @Main
     </main>
 
-    <footer class="bit-lyt-ftr">
+    <footer class="bit-lyt-ftr" style="height:@(FooterHeight)px">
         @Footer
     </footer>
 </div>
