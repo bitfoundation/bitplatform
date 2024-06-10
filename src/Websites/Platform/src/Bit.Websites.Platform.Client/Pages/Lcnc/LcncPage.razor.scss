@@ -142,12 +142,57 @@
     }
 
     a {
+        margin: 0.5em;
         border: 1px solid;
-        border-radius: 1em;
+        border-radius: 0.5em;
         padding: 0.25em 0.5em;
         text-decoration: none;
-        color: $bit-color-primary-main;
+        color: $bit-color-primary-dark;
         border-color: $bit-color-primary-dark;
-        background-color: rgb(150 150 250 / 0.25);
+        background-color: rgb(150 150 250 / 0.05);
+    }
+}
+
+.benefits-container {
+    display: flex;
+    flex-flow: row wrap;
+
+    span {
+        margin: 0.5em;
+        padding: 0.5em;
+        border: 1px solid;
+        border-radius: 0.25em;
+        border-color: $bit-color-primary-light;
+    }
+}
+
+.comparison-container {
+    display: flex;
+    flex-flow: column;
+
+    span {
+        margin: 0.5em 0;
+        padding: 0.5em;
+        border: 1px solid;
+        border-radius: 0.25em;
+        border-color: $bit-color-primary-light;
+        background-color: rgb(150 150 250 / 0.05);
+    }
+
+    div {
+        margin-bottom: 2em;
+    }
+}
+
+.stats-container {
+    display: flex;
+    flex-flow: row wrap;
+
+    div {
+        margin: 0.5em;
+        padding: 0.5em;
+        border: 1px solid;
+        border-radius: 0.25em;
+        border-color: $bit-color-primary-light;
     }
 }
