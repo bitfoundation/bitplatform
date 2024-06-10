@@ -14,7 +14,6 @@
         <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-        <WasmBuildNative>true</WasmBuildNative>
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
