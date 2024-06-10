@@ -12,7 +12,7 @@
   <!--#if (UseWebAssembly) -->
   <ItemGroup>
     <ProjectReference Include="..\BlazorEmpty.Client\BlazorEmpty.Client.csproj" Condition="'$(UseWebAssembly)' == 'True'" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" Condition="'$(UseWebAssembly)' == 'True'" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.4.24267.6" Condition="'$(UseWebAssembly)' == 'True'" />
   </ItemGroup>
   
   <!--#endif -->
