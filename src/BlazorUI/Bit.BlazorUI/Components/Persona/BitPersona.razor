@@ -29,12 +29,12 @@
             var coinBgColorStyle = GetCoinBgColorStyle();
             var coinStyle = coinWidthStyle + coinBgColorStyle;
 
-            <div style="@coinStyle" class="bit-prs-imc" @onclick="HandleImageClick">
+            <div style="@coinStyle" class="@(CoinTemplate is null ? "bit-prs-imc" : null)" @onclick="HandleImageClick">
                 @if (Unknown)
                 {
                     <i class="bit-icon bit-icon--Help" role="presentation" />
                 }
-                else if (ImageUrl is not null)
+                else if (ImageUrl.HasValue() || CoinTemplate is not null)
                 {
                     if (OnImageClick.HasDelegate)
                     {

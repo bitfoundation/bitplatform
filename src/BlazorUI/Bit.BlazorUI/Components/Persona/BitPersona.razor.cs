@@ -21,7 +21,7 @@ public partial class BitPersona
     /// <summary>
     /// Icon name for the icon button of the custom action.
     /// </summary>
-    [Parameter] public string? ActionIconName { get; set; }
+    [Parameter] public string? ActionIconName { get; set; } = "Edit";
 
     /// <summary>
     /// Optional Custom template for the custom action element.
@@ -29,17 +29,12 @@ public partial class BitPersona
     [Parameter] public RenderFragment? ActionTemplate { get; set; }
 
     /// <summary>
-    /// Whether initials are calculated for phone numbers and number sequences.
-    /// </summary>
-    [Parameter] public bool AllowPhoneInitials { get; set; }
-
-    /// <summary>
     /// Optional custom persona coin size in pixel.
     /// </summary>
     [Parameter] public int? CoinSize { get; set; }
 
     /// <summary>
-    /// Custom persona coin's image template
+    /// Custom persona coin's image template.
     /// </summary>
     [Parameter] public RenderFragment? CoinTemplate { get; set; }
 
@@ -106,7 +101,7 @@ public partial class BitPersona
     [Parameter] public string? OptionalText { get; set; }
 
     /// <summary>
-    /// Custom optional text template
+    /// Custom optional text template.
     /// </summary>
     [Parameter] public RenderFragment? OptionalTextTemplate { get; set; }
 
@@ -131,7 +126,7 @@ public partial class BitPersona
     [Parameter] public string? PrimaryText { get; set; }
 
     /// <summary>
-    /// Custom primary text template
+    /// Custom primary text template.
     /// </summary>
     [Parameter] public RenderFragment? PrimaryTextTemplate { get; set; }
 
@@ -141,7 +136,7 @@ public partial class BitPersona
     [Parameter] public string? SecondaryText { get; set; }
 
     /// <summary>
-    /// Custom secondary text template
+    /// Custom secondary text template.
     /// </summary>
     [Parameter] public RenderFragment? SecondaryTextTemplate { get; set; }
 
@@ -188,7 +183,7 @@ public partial class BitPersona
     [Parameter] public string? TertiaryText { get; set; }
 
     /// <summary>
-    /// Custom tertiary text template
+    /// Custom tertiary text template.
     /// </summary>
     [Parameter] public RenderFragment? TertiaryTextTemplate { get; set; }
 
