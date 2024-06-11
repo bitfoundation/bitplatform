@@ -347,8 +347,8 @@
             height: 14rem;
         }
 
-        @include lt-md {
-            height: 12rem;
+        @include lt-sm {
+            height: 17rem;
         }
     }
 

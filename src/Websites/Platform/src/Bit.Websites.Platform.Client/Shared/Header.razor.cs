@@ -43,7 +43,7 @@ public partial class Header : IDisposable
         isLcncDocRoute = currentUrl.Contains("lowcode-nocode");
         isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
 
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute || isLcncDocRoute;
+        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute /*|| isLcncDocRoute*/;
     }
 
     private void ToggleMenu()
