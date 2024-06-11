@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Shared.Services;
 
@@ -51,8 +51,11 @@ public class CultureInfoManager
             "ی", "د", "س", "چ", "پ", "ج", "ش"
         ];
 
-        cultureInfo.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(cultureInfo, new PersianCalendar());
+        Get_CalendarField(cultureInfo) = new PersianCalendar();
 
         return cultureInfo;
     }
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_calendar")]
+    extern static ref Calendar Get_CalendarField(CultureInfo cultureInfo);
 }
