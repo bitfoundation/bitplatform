@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 #pragma warning disable 219, 612, 618
 #nullable disable
 
-namespace Bit.Besql.Demo.Client.Data.CompiledModel
+namespace Bit.Besql.Demo.Client.Data
 {
     [DbContext(typeof(OfflineDbContext))]
     public partial class OfflineDbContextModel : RuntimeModel
@@ -34,7 +34,7 @@ namespace Bit.Besql.Demo.Client.Data.CompiledModel
             }
 
             model.Customize();
-            _instance = model;
+            _instance = (OfflineDbContextModel)model.FinalizeModel();
         }
 
         private static OfflineDbContextModel _instance;

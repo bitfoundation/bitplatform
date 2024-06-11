@@ -9,17 +9,22 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 #pragma warning disable 219, 612, 618
 #nullable disable
 
-namespace Bit.Besql.Demo.Client.Data.CompiledModel
+namespace Bit.Besql.Demo.Client.Data
 {
     public partial class OfflineDbContextModel
     {
+        private OfflineDbContextModel()
+            : base(skipDetectChanges: false, modelId: new Guid("513623a5-e91d-4cca-a2e9-86a03379d80d"), entityTypeCount: 1)
+        {
+        }
+
         partial void Initialize()
         {
             var weatherForecast = WeatherForecastEntityType.Create(this);
 
             WeatherForecastEntityType.CreateAnnotations(weatherForecast);
 
-            AddAnnotation("ProductVersion", "8.0.0");
+            AddAnnotation("ProductVersion", "9.0.0-preview.4.24267.1");
             AddRuntimeAnnotation("Relational:RelationalModel", CreateRelationalModel());
         }
 
@@ -31,26 +36,26 @@ namespace Bit.Besql.Demo.Client.Data.CompiledModel
 
             var defaultTableMappings = new List<TableMappingBase<ColumnMappingBase>>();
             weatherForecast.SetRuntimeAnnotation("Relational:DefaultMappings", defaultTableMappings);
-            var bitBesqlSampleClientModelWeatherForecastTableBase = new TableBase("Bit.Besql.Demo.Client.Model.WeatherForecast", null, relationalModel);
-            var dateColumnBase = new ColumnBase<ColumnMappingBase>("Date", "INTEGER", bitBesqlSampleClientModelWeatherForecastTableBase);
-            bitBesqlSampleClientModelWeatherForecastTableBase.Columns.Add("Date", dateColumnBase);
-            var idColumnBase = new ColumnBase<ColumnMappingBase>("Id", "INTEGER", bitBesqlSampleClientModelWeatherForecastTableBase);
-            bitBesqlSampleClientModelWeatherForecastTableBase.Columns.Add("Id", idColumnBase);
-            var summaryColumnBase = new ColumnBase<ColumnMappingBase>("Summary", "TEXT", bitBesqlSampleClientModelWeatherForecastTableBase)
+            var bitBesqlDemoClientModelWeatherForecastTableBase = new TableBase("Bit.Besql.Demo.Client.Model.WeatherForecast", null, relationalModel);
+            var dateColumnBase = new ColumnBase<ColumnMappingBase>("Date", "INTEGER", bitBesqlDemoClientModelWeatherForecastTableBase);
+            bitBesqlDemoClientModelWeatherForecastTableBase.Columns.Add("Date", dateColumnBase);
+            var idColumnBase = new ColumnBase<ColumnMappingBase>("Id", "INTEGER", bitBesqlDemoClientModelWeatherForecastTableBase);
+            bitBesqlDemoClientModelWeatherForecastTableBase.Columns.Add("Id", idColumnBase);
+            var summaryColumnBase = new ColumnBase<ColumnMappingBase>("Summary", "TEXT", bitBesqlDemoClientModelWeatherForecastTableBase)
             {
                 IsNullable = true
             };
-            bitBesqlSampleClientModelWeatherForecastTableBase.Columns.Add("Summary", summaryColumnBase);
-            var temperatureCColumnBase = new ColumnBase<ColumnMappingBase>("TemperatureC", "INTEGER", bitBesqlSampleClientModelWeatherForecastTableBase);
-            bitBesqlSampleClientModelWeatherForecastTableBase.Columns.Add("TemperatureC", temperatureCColumnBase);
-            relationalModel.DefaultTables.Add("Bit.Besql.Demo.Client.Model.WeatherForecast", bitBesqlSampleClientModelWeatherForecastTableBase);
-            var bitBesqlSampleClientModelWeatherForecastMappingBase = new TableMappingBase<ColumnMappingBase>(weatherForecast, bitBesqlSampleClientModelWeatherForecastTableBase, true);
-            bitBesqlSampleClientModelWeatherForecastTableBase.AddTypeMapping(bitBesqlSampleClientModelWeatherForecastMappingBase, false);
-            defaultTableMappings.Add(bitBesqlSampleClientModelWeatherForecastMappingBase);
-            RelationalModel.CreateColumnMapping((ColumnBase<ColumnMappingBase>)idColumnBase, weatherForecast.FindProperty("Id")!, bitBesqlSampleClientModelWeatherForecastMappingBase);
-            RelationalModel.CreateColumnMapping((ColumnBase<ColumnMappingBase>)dateColumnBase, weatherForecast.FindProperty("Date")!, bitBesqlSampleClientModelWeatherForecastMappingBase);
-            RelationalModel.CreateColumnMapping((ColumnBase<ColumnMappingBase>)summaryColumnBase, weatherForecast.FindProperty("Summary")!, bitBesqlSampleClientModelWeatherForecastMappingBase);
-            RelationalModel.CreateColumnMapping((ColumnBase<ColumnMappingBase>)temperatureCColumnBase, weatherForecast.FindProperty("TemperatureC")!, bitBesqlSampleClientModelWeatherForecastMappingBase);
+            bitBesqlDemoClientModelWeatherForecastTableBase.Columns.Add("Summary", summaryColumnBase);
+            var temperatureCColumnBase = new ColumnBase<ColumnMappingBase>("TemperatureC", "INTEGER", bitBesqlDemoClientModelWeatherForecastTableBase);
+            bitBesqlDemoClientModelWeatherForecastTableBase.Columns.Add("TemperatureC", temperatureCColumnBase);
+            relationalModel.DefaultTables.Add("Bit.Besql.Demo.Client.Model.WeatherForecast", bitBesqlDemoClientModelWeatherForecastTableBase);
+            var bitBesqlDemoClientModelWeatherForecastMappingBase = new TableMappingBase<ColumnMappingBase>(weatherForecast, bitBesqlDemoClientModelWeatherForecastTableBase, null);
+            bitBesqlDemoClientModelWeatherForecastTableBase.AddTypeMapping(bitBesqlDemoClientModelWeatherForecastMappingBase, false);
+            defaultTableMappings.Add(bitBesqlDemoClientModelWeatherForecastMappingBase);
+            RelationalModel.CreateColumnMapping((ColumnBase<ColumnMappingBase>)idColumnBase, weatherForecast.FindProperty("Id")!, bitBesqlDemoClientModelWeatherForecastMappingBase);
+            RelationalModel.CreateColumnMapping((ColumnBase<ColumnMappingBase>)dateColumnBase, weatherForecast.FindProperty("Date")!, bitBesqlDemoClientModelWeatherForecastMappingBase);
+            RelationalModel.CreateColumnMapping((ColumnBase<ColumnMappingBase>)summaryColumnBase, weatherForecast.FindProperty("Summary")!, bitBesqlDemoClientModelWeatherForecastMappingBase);
+            RelationalModel.CreateColumnMapping((ColumnBase<ColumnMappingBase>)temperatureCColumnBase, weatherForecast.FindProperty("TemperatureC")!, bitBesqlDemoClientModelWeatherForecastMappingBase);
 
             var tableMappings = new List<TableMapping>();
             weatherForecast.SetRuntimeAnnotation("Relational:TableMappings", tableMappings);
@@ -68,11 +73,11 @@ namespace Bit.Besql.Demo.Client.Data.CompiledModel
             weatherForecastsTable.Columns.Add("TemperatureC", temperatureCColumn);
             var pK_WeatherForecasts = new UniqueConstraint("PK_WeatherForecasts", weatherForecastsTable, new[] { idColumn });
             weatherForecastsTable.PrimaryKey = pK_WeatherForecasts;
-            var pK_WeatherForecastsUc = RelationalModel.GetKey(this,
+            var pK_WeatherForecastsKey = RelationalModel.GetKey(this,
                 "Bit.Besql.Demo.Client.Model.WeatherForecast",
                 new[] { "Id" });
-            pK_WeatherForecasts.MappedKeys.Add(pK_WeatherForecastsUc);
-            RelationalModel.GetOrCreateUniqueConstraints(pK_WeatherForecastsUc).Add(pK_WeatherForecasts);
+            pK_WeatherForecasts.MappedKeys.Add(pK_WeatherForecastsKey);
+            RelationalModel.GetOrCreateUniqueConstraints(pK_WeatherForecastsKey).Add(pK_WeatherForecasts);
             weatherForecastsTable.UniqueConstraints.Add("PK_WeatherForecasts", pK_WeatherForecasts);
             var iX_WeatherForecasts_TemperatureC = new TableIndex(
             "IX_WeatherForecasts_TemperatureC", weatherForecastsTable, new[] { temperatureCColumn }, false);
@@ -83,7 +88,7 @@ namespace Bit.Besql.Demo.Client.Data.CompiledModel
             RelationalModel.GetOrCreateTableIndexes(iX_WeatherForecasts_TemperatureCIx).Add(iX_WeatherForecasts_TemperatureC);
             weatherForecastsTable.Indexes.Add("IX_WeatherForecasts_TemperatureC", iX_WeatherForecasts_TemperatureC);
             relationalModel.Tables.Add(("WeatherForecasts", null), weatherForecastsTable);
-            var weatherForecastsTableMapping = new TableMapping(weatherForecast, weatherForecastsTable, true);
+            var weatherForecastsTableMapping = new TableMapping(weatherForecast, weatherForecastsTable, null);
             weatherForecastsTable.AddTypeMapping(weatherForecastsTableMapping, false);
             tableMappings.Add(weatherForecastsTableMapping);
             RelationalModel.CreateColumnMapping(idColumn, weatherForecast.FindProperty("Id")!, weatherForecastsTableMapping);
