@@ -22,6 +22,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IStorageService, BrowserStorageService>();
         services.TryAddSingleton<ILocalHttpServer, NoopLocalHttpServer>();
+        services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
 
         services.TryAddKeyedTransient<DelegatingHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
         services.TryAddTransient<AuthDelegatingHandler>();

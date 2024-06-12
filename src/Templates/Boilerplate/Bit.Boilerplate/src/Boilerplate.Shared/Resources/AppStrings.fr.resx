@@ -327,6 +327,9 @@
     <data name="UserLockedOut" xml:space="preserve">
     <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
   </data>
+    <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>L'utilisateur n'est pas confirmé.</value>
+  </data>
     <data name="UserNotFound" xml:space="preserve">
     <value>L'utilisateur n'existe pas.</value>
   </data>
@@ -522,6 +525,30 @@
     <data name="SignInTitle" xml:space="preserve">
     <value>Se connecter</value>
   </data>
+    <data name="SocialSignedInTitle" xml:space="preserve">
+    <value>Connecté sociale</value>
+  </data>
+    <data name="SocialSignedInMessageTitle" xml:space="preserve">
+    <value>La connexion sociale est terminée</value>
+  </data>
+    <data name="SocialSignedInMessageBody" xml:space="preserve">
+    <value>vous pouvez revenir à l'application maintenant</value>
+  </data>
+    <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>Connectez-vous avec Google</value>
+  </data>
+    <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>Connectez-vous avec GitHub</value>
+  </data>
+    <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>Connectez-vous avec Twitter (X)</value>
+  </data>
+    <data name="GoogleSignUpButtonText" xml:space="preserve">
+    <value>Inscrivez-vous avec Google</value>
+  </data>
+    <data name="GitHubSignUpButtonText" xml:space="preserve">
+    <value>Inscrivez-vous avec GitHub</value>
+  </data>
     <data name="SignOut" xml:space="preserve">
     <value>se déconnecter</value>
   </data>
@@ -634,10 +661,10 @@
     <value>Pour utiliser une application d'authentification, suivez les étapes suivantes:</value>
   </data>
     <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Téléchargez une application d'authentification à deux facteurs comme Microsoft Authenticator pour {0} et {1} ou Google Authenticator pour {2} et {3}.</value>
+    <value>Téléchargez une application d'authentification à deux facteurs comme Google Authenticator pour {0} et {1}.</value>
   </data>
     <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Scannez le code QR ou entrez la clé suivante dans votre application d'authentification à deux facteurs (les espaces et la casse n'ont pas d'importance):</value>
+    <value>Scannez/click le code QR ou entrez la clé suivante dans votre application d'authentification à deux facteurs (les espaces et la casse n'ont pas d'importance):</value>
   </data>
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Une fois que vous avez scanné le code QR ou saisi la clé ci-dessus, votre application d'authentification à deux facteurs vous fournira un code unique. Entrez le code dans la case de confirmation ci-dessous.</value>

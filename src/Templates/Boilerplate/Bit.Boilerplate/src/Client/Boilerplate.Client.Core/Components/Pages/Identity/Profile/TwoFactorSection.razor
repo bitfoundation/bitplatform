@@ -1,21 +1,19 @@
 @inherits AppComponentBase
 
-<div>
-    @if (string.IsNullOrEmpty(message) is false)
-    {
-        <BitMessage Class="form-message-bar tfa-message-bar"
-                    Severity="messageSeverity"
-                    OnDismiss="() => message = null">
-            @message
-        </BitMessage>
-    }
+<div style="width:100%">
+    <div @ref="messageRef" class="form-message-bar">
+        @if (string.IsNullOrEmpty(message) is false)
+        {
+            <BitMessage Multiline Severity="BitSeverity.Error" OnDismiss="() => message = null">@message</BitMessage>
+        }
+    </div>
 
     <BitTypography Variant="BitTypographyVariant.H2" Style="text-align:center">
         @Localizer[nameof(AppStrings.TwoFactorAuthTitle)]
     </BitTypography>
 
     <br />
-    @if (isLoading)
+    @if (isWaiting)
     {
         <div class="loading-container">
             <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>
@@ -33,8 +31,6 @@
                     <li>
                         <p>
                             @(new MarkupString(Localizer[nameof(AppStrings.TfaConfigureAutAppStep1),
-                                "<a href=\"https://go.microsoft.com/fwlink/?Linkid=825072\">Android</a>",
-                                "<a href=\"https://go.microsoft.com/fwlink/?Linkid=825073\">iOS</a>",
                                 "<a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en\">Android</a>",
                                 "<a href=\"https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8\">iOS</a>"]))
                         </p>
@@ -42,9 +38,9 @@
                     <br />
                     <li>
                         @Localizer[nameof(AppStrings.TfaConfigureAutAppStep2)]
-                        <div class="qr-code-container">
+                        <a class="qr-code-container" href="@authenticatorUri">
                             <img src="data:image/png;base64,@qrCode" style="width:256px" />
-                        </div>
+                        </a>
                         <div class="tfa-key-container">
                             <div class="tfa-key">@sharedKey</div>
                             <BitButton OnClick="WrapHandled(CopySharedKeyToClipboard)"
@@ -76,7 +72,7 @@
         }
         else
         {
-            <BitPivot>
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll">
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaRecoveryCodesHeader)]">
                     <div class="tab-item-container">
                         @if (recoveryCodesLeft == 0)

@@ -328,5 +328,11 @@
         "inputFile": "Pages/Butil/Butil18ScreenOrientationPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Lcnc/LcncPage.razor.css",
+        "inputFile": "Pages/Lcnc/LcncPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
     }
 ]

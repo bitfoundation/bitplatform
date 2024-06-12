@@ -32,7 +32,7 @@ jobs:
     - name: Release build todo sample + sqlite database
       run: |
         dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
-        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline none
+        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline none --serverUrl todo.bitplatform.dev
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
         cd TodoBPSqlite/src/TodoBPSqlite.Server/
         dotnet tool restore
@@ -54,8 +54,12 @@ jobs:
 
     - name: Release build admin panel sample + SqlServer database
       run: |
-        dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github
+        dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github --serverUrl adminpanel.bitplatform.dev --appInsights --appCenter
         dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
+
+    - name: Install Nodejs dependencies
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Bit-CI-release.sln -t:InstallNodejsDependencies -m:1 
 
     - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release

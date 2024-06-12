@@ -327,6 +327,9 @@
     <data name="UserLockedOut" xml:space="preserve">
     <value>User is locked out. Try again in {0}</value>
   </data>
+    <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>User is not confirmed.</value>
+  </data>
     <data name="UserNotFound" xml:space="preserve">
     <value>User does not exist.</value>
   </data>
@@ -522,6 +525,30 @@
     <data name="SignInTitle" xml:space="preserve">
     <value>Sign in</value>
   </data>
+    <data name="SocialSignedInTitle" xml:space="preserve">
+    <value>Social signed in</value>
+  </data>
+    <data name="SocialSignedInMessageTitle" xml:space="preserve">
+    <value>The social sign-in is done</value>
+  </data>
+    <data name="SocialSignedInMessageBody" xml:space="preserve">
+    <value>You can go back to the application now</value>
+  </data>
+    <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>Sign in with Google</value>
+  </data>
+    <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>Sign in with GitHub</value>
+  </data>
+    <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>Sign in with Twitter (X)</value>
+  </data>
+    <data name="GoogleSignUpButtonText" xml:space="preserve">
+    <value>Sign up with Google</value>
+  </data>
+    <data name="GitHubSignUpButtonText" xml:space="preserve">
+    <value>Sign up with GitHub</value>
+  </data>
     <data name="SignOut" xml:space="preserve">
     <value>Sign out</value>
   </data>
@@ -634,10 +661,10 @@
     <value>To use an authenticator app go through the following steps:</value>
   </data>
     <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>Download a two-factor authenticator app like Microsoft Authenticator for {0} and {1} or Google Authenticator for {2} and {3}.</value>
+    <value>Download a two-factor authenticator app like Google Authenticator for {0} and {1}.</value>
   </data>
     <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>Scan the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):</value>
+    <value>Scan/click the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):</value>
   </data>
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>

@@ -327,6 +327,9 @@
     <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
   </data>
+    <data name="UserIsNotConfirmed" xml:space="preserve">
+    <value>حساب خود را تایید نکرده اید</value>
+  </data>
     <data name="UserNotFound" xml:space="preserve">
     <value>کاربر وجود ندارد.</value>
   </data>
@@ -522,6 +525,30 @@
     <data name="SignInTitle" xml:space="preserve">
     <value>ورود به برنامه</value>
   </data>
+    <data name="SocialSignedInTitle" xml:space="preserve">
+    <value>ورود سوشال</value>
+  </data>
+    <data name="SocialSignedInMessageTitle" xml:space="preserve">
+    <value>ورود سوشال انجام شد</value>
+  </data>
+    <data name="SocialSignedInMessageBody" xml:space="preserve">
+    <value>حالا میتوانید به برنامه بازگردید</value>
+  </data>
+    <data name="GoogleSignInButtonText" xml:space="preserve">
+    <value>ورود با گوگل</value>
+  </data>
+    <data name="GitHubSignInButtonText" xml:space="preserve">
+    <value>ورود با گیتهاب</value>
+  </data>
+    <data name="TwitterSignInButtonText" xml:space="preserve">
+    <value>ورود با توییتر (X)</value>
+  </data>
+    <data name="GoogleSignUpButtonText" xml:space="preserve">
+    <value>ثبت نام با گوگل</value>
+  </data>
+    <data name="GitHubSignUpButtonText" xml:space="preserve">
+    <value>ثبت نام با گیتهاب</value>
+  </data>
     <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>
   </data>
@@ -634,10 +661,10 @@
     <value>برای استفاده از برنامه احراز هویت مراحل زیر را طی کنید:</value>
   </data>
     <data name="TfaConfigureAutAppStep1" xml:space="preserve">
-    <value>دانلود یک برنامه احراز هویت دو مرحله ای مانند Microsoft Authenticator برای {0} و {1} یا Google Authenticator برای {2} و {3}.</value>
+    <value>دانلود یک برنامه احراز هویت دو مرحله ای مانند Google Authenticator برای {0} و {1}.</value>
   </data>
     <data name="TfaConfigureAutAppStep2" xml:space="preserve">
-    <value>کد QR را اسکن کنید یا کلید زیر را در برنامه احراز هویت دو عاملی خود وارد کنید (فضاها و بدنه مهم نیستند):</value>
+    <value>کد QR را اسکن یا کلیک کنید یا کلید زیر را در برنامه احراز هویت دو عاملی خود وارد کنید (فضاها و بدنه مهم نیستند):</value>
   </data>
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>هنگامی که کد QR را اسکن کردید یا کلید بالا را وارد کردید، برنامه احراز هویت دو عاملی شما یک کد منحصر به فرد را در اختیار شما قرار می دهد. کد را در کادر تایید زیر وارد کنید.</value>

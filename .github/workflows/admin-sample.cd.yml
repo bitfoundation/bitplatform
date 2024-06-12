@@ -35,7 +35,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights --serverUrl adminpanel.bitplatform.dev
        
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
@@ -137,7 +137,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --windows --appInsights
+        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --windows --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
@@ -150,6 +150,10 @@ jobs:
   
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore
+
+    - name: Set app center secret
+      run: (Get-Content AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs
+      shell: pwsh
 
     - name: Publish
       run: |
@@ -167,7 +171,7 @@ jobs:
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
-          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.4-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -194,7 +198,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev
 
     - uses: actions/setup-node@v4
       with:
@@ -214,9 +218,10 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-        
-    - name: Set android universal link
-      run:  sed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android/MainActivity.cs
+
+    - name: Set app center secret
+      run: |
+          sed -i 's/appCenterSecret = null;/appCenterSecret = "ea9b98ea-93a0-48c7-982a-0a72f4ad6d04";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -252,7 +257,7 @@ jobs:
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-    - uses: maxim-lobanov/setup-xcode@v1.6
+    - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
         xcode-version: '15.3'
 
@@ -265,7 +270,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database SqlServer --sample Admin --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
@@ -274,24 +279,18 @@ jobs:
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-        
-    - name: Set iOS universal link
-      run:  brew install gnu-sed && gsed -i 's/bp.bitplatform.dev/adminpanel.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/iOS/Entitlements.plist
+
+    - name: Set app center secret
+      run: |
+          brew install gnu-sed && gsed -i 's/appCenterSecret = null;/appCenterSecret = "0bc0d910-dc84-4887-a3a0-eee6b1b55797";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui
-  
-    - name: Extract iOS code signing certificate from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: './'
-          fileName: 'DistributionCert.p12'
-          encodedString: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
 
     - name: Import Code-Signing Certificates
       uses: apple-actions/import-codesign-certs@v3
       with:
-        p12-filepath: './DistributionCert.p12'
+        p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles

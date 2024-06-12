@@ -1,30 +1,30 @@
 ﻿#if LocalHttpServerEnabled
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Maui.Platform;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Bit.BlazorUI;
+using Microsoft.AspNetCore.Http.Extensions;
+using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Maui.Services;
 
 public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHttpServer
 {
-    private int port;
-    private Task? startTask;
+    private int port = -1;
+    private Task<int>? startTask;
     private WebApplication? localHttpServer;
 
-    public Task Start()
+    public Task<int> Start()
     {
         return startTask ??= StartImplementation();
     }
 
     public int Port => port;
 
-    private async Task StartImplementation()
+    private async Task<int> StartImplementation()
     {
         var builder = WebApplication.CreateEmptyBuilder(options: new()
         {
@@ -46,21 +46,17 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
 
         app.UseStaticFiles(); // Put static files in wwwroot folder of the Client.Maui project.
 
-        app.MapGet("social-login", async (HttpContext context, HtmlRenderer htmlRenderer) =>
+        app.MapGet("sign-in", async (HttpContext context, IConfiguration configuration) =>
         {
-            // await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery());
-            var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var renderedComponent = await htmlRenderer.RenderComponentAsync<BitButton>(ParameterView.FromDictionary(new Dictionary<string, object?>
-                {
-                }));
-                return renderedComponent.ToHtmlString();
-            });
-            context.Response.ContentType = "text/html";
-            await context.Response.WriteAsync(body);
+            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
+
+            var url = $"{configuration.GetApiServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
+            context.Response.Redirect(url);
         });
 
         await app.StartAsync();
+
+        return port;
     }
 
     private int GetAvailableTcpPort()

@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-        <string>applinks:bp.bitplatform.dev</string>
+        <string>applinks:use-your-server-url-here.com</string>
 	</array>
 </dict>
 </plist>

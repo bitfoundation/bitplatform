@@ -22,6 +22,10 @@
     flex-flow: column nowrap;
     background-color: $bit-color-background-primary;
 
+    @include lt-md {
+        padding: 1rem;
+    }
+
     &.profile-panel {
         min-height: rem2(560px);
         box-shadow: $bit-box-shadow-callout;

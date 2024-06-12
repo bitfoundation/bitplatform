@@ -48,6 +48,14 @@ public static partial class MauiProgram
         builder.Logging.AddEventSourceLogger();
 
         //+:cnd:noEmit
+
+        //#if (appCenter == true)
+        if (Microsoft.AppCenter.AppCenter.Configured)
+        {
+            builder.Logging.AddAppCenter(options => { });
+        }
+        //#endif
+
         //#if (appInsights == true)
         builder.Logging.AddApplicationInsights(config =>
         {
@@ -68,6 +76,7 @@ public static partial class MauiProgram
         services.TryAddTransient<IStorageService, MauiStorageService>();
         services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
+        services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
 
 #if LocalHttpServerEnabled
         services.AddSingleton<ILocalHttpServer>(sp => new MauiLocalHttpServer(services));

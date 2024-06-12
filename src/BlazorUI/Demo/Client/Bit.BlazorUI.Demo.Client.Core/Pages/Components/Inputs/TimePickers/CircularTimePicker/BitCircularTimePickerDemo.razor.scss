@@ -2,6 +2,13 @@
 @import '../../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../../Styles/abstracts/_functions.scss';
 
+.example-content {
+    width: 17rem;
+    display: flex;
+    overflow-x: auto;
+    flex-flow: column wrap;
+}
+
 .validation-summary {
     border-left: rem2(5px) solid $Red10;
     background-color: $ErrorBlockRed;
@@ -18,11 +25,38 @@
     .validation-errors {
         margin: rem2(5px);
     }
-}
 
-.example-box {
-    display: flex;
-    gap: rem2(15px);
-    flex-flow: column nowrap;
-    width: fit-content;
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .custom-toolbar {
+        background-color: #ff6a00;
+    }
+
+    .custom-clock-face {
+        background-color: #ff6a00;
+    }
+
+    .custom-clock-number {
+        color: #621402;
+        font-weight: bold;
+    }
+
+    .custom-clock-pin,
+    .custom-clock-pointer,
+    .custom-clock-pointer-thumb,
+    .custom-clock-selected-number {
+        background-color: #fff;
+    }
+
+    .custom-clock-pointer-thumb-minute {
+        border-color: #fff;
+    }
 }

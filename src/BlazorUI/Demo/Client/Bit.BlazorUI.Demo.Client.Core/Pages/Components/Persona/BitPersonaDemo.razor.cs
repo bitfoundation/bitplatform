@@ -2,21 +2,49 @@
 
 public partial class BitPersonaDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
-            Name = "AllowPhoneInitials",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether initials are calculated for phone numbers and number sequences.",
+            Name = "ActionButtonTitle",
+            Type = "string",
+            DefaultValue = "Edit image",
+            Description = "The title of the action button (tooltip).",
+        },
+        new()
+        {
+            Name = "ActionIconName",
+            Type = "string?",
+            DefaultValue = "",
+            Description = "Icon name for the icon button of the custom action.",
+        },
+        new()
+        {
+            Name = "ActionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Optional Custom template for the custom action element.",
         },
         new()
         {
             Name = "CoinSize",
-            Type = "int",
-            DefaultValue = "-1",
+            Type = "int?",
+            DefaultValue = "",
             Description = "Optional custom persona coin size in pixel.",
+        },
+        new()
+        {
+            Name = "CoinTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Custom persona coin's image template.",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The background color when the user's initials are displayed.",
         },
         new()
         {
@@ -24,20 +52,6 @@ public partial class BitPersonaDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to not render persona details, and just render the persona image/initials.",
-        },
-        new()
-        {
-            Name = "IsOutOfOffice",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "This flag can be used to signal the persona is out of office. This will change the way the presence icon looks for statuses that support dual-presence.",
-        },
-        new()
-        {
-            Name = "ImageUrl",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.",
         },
         new()
         {
@@ -55,12 +69,38 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "InitialsColor",
-            Type = "BitPersonaInitialsColor?",
-            LinkType = LinkType.Link,
-            Href = "#bitpersona-initial-color",
+            Name = "ImageOverlayTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Optional Custom template for the image overlay.",
+        },
+        new()
+        {
+            Name = "ImageOverlayText",
+            Type = "string?",
+            DefaultValue = "Edit image",
+            Description = "The user's initials to display in the image area when there is no image.",
+        },
+        new()
+        {
+            Name = "ImageUrl",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "The background color when the user's initials are displayed.",
+            Description = "Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.",
+        },
+        new()
+        {
+            Name = "OnActionClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "null",
+            Description = "Callback for the persona custom action.",
+        },
+        new()
+        {
+            Name = "OnImageClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "null",
+            Description = "Callback for when the image clicked.",
         },
         new()
         {
@@ -71,12 +111,26 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "OptionalTextTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Custom optional text template.",
+        },
+        new()
+        {
             Name = "Presence",
-            Type = "BitPersonaPresenceStatus",
+            Type = "BitPersonaPresence",
             LinkType = LinkType.Link,
             Href = "#precence-status",
-            DefaultValue = "BitPersonaPresenceStatus.None",
+            DefaultValue = "BitPersonaPresence.None",
             Description = "Presence of the person to display - will not display presence if undefined.",
+        },
+        new()
+        {
+            Name = "PresenceIcons",
+            Type = "Dictionary<BitPersonaPresence, string>?",
+            DefaultValue = "null",
+            Description = "The icons to be used for the presence status.",
         },
         new()
         {
@@ -87,10 +141,31 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "PrimaryText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Primary text to display, usually the name of the person.",
+        },
+        new()
+        {
+            Name = "PrimaryTextTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Custom primary text template.",
+        },
+        new()
+        {
             Name = "SecondaryText",
             Type = "string?",
             DefaultValue = "null",
             Description = "Secondary text to display, usually the role of the user.",
+        },
+        new()
+        {
+            Name = "SecondaryTextTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "Custom secondary text template.",
         },
         new()
         {
@@ -101,7 +176,7 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "ShowUnknownPersonaCoin",
+            Name = "Unknown",
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, show the special coin for unknown persona. It has '?' in place of initials, with static font and background colors.",
@@ -117,13 +192,6 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "Text",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Primary text to display, usually the name of the person.",
-        },
-        new()
-        {
             Name = "TertiaryText",
             Type = "string?",
             DefaultValue = "null",
@@ -131,48 +199,21 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "ActionIconName",
-            Type = "string",
-            DefaultValue = "Edit",
-            Description = "Icon name for the icon button of the custom action.",
-        },
-        new()
-        {
-            Name = "OnActionClick",
-            Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "null",
-            Description = "Callback for the persona custom action.",
-        },
-        new()
-        {
-            Name = "ActionFragment",
+            Name = "TertiaryTextTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Optional Custom template for the custom action element.",
-        },
-        new()
-        {
-            Name = "OnImageClick",
-            Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "null",
-            Description = "Callback for when the image clicked.",
-        },
-        new()
-        {
-            Name = "ImageOverlayFragment",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Optional Custom template for the image overlay.",
+            Description = "Custom tertiary text template.",
         }
-    };
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "precence-status",
-            Name = "BitPersonaPresenceStatus",
-            Items = new()
-            {
+            Name = "BitPersonaPresence",
+            Items =
+            [
                 new()
                 {
                     Name = "Away",
@@ -208,322 +249,350 @@ public partial class BitPersonaDemo
                     Name = "Online",
                     Value = "2",
                 },
-            }
-        },
-        new()
-        {
-            Id = "bitpersona-initial-color",
-            Name = "BitPersonaInitialsColor",
-            Items = new()
-            {
-                new()
-                {
-                    Name = "Black",
-                    Value = "Black=11",
-                },
-                new()
-                {
-                    Name = "Blue",
-                    Value = "Blue=1",
-                },
-                new()
-                {
-                    Name = "Burgundy",
-                    Value = "Burgundy=19",
-                },
-                new()
-                {
-                    Name = "CoolGray",
-                    Value = "CoolGray=21",
-                },
-                new()
-                {
-                    Name = "Cyan",
-                    Value = "Cyan=23",
-                },
-                new()
-                {
-                    Name = "DarkBlue",
-                    Value = "DarkBlue=2",
-                },
-                new()
-                {
-                    Name = "DarkGreen",
-                    Value = "DarkGreen=6",
-                },
-                new()
-                {
-                    Name = "DarkRed",
-                    Value = "DarkRed=14",
-                },
-                new()
-                {
-                    Name = "Gold",
-                    Value = "Gold=18",
-                },
-                new()
-                {
-                    Name = "Gray",
-                    Description = "gray is a color that can result in offensive Bitpersona coins with some initials combinations, so it can only be set with overrides.",
-                    Value = "Gray=22",
-                },
-                new()
-                {
-                    Name = "Green",
-                    Value = "Green=5",
-                },
-                new()
-                {
-                    Name = "LightBlue",
-                    Value = "LightBlue=0",
-                },
-                new()
-                {
-                    Name = "LightGreen",
-                    Value = "LightGreen=4",
-                },
-                new()
-                {
-                    Name = "LightPink",
-                    Value = "LightPink=7",
-                },
-                new()
-                {
-                    Name = "LightRed",
-                    Value = "LightRed=17",
-                },
-                new()
-                {
-                    Name = "Magenta",
-                    Value = "Magenta=9",
-                },
-                new()
-                {
-                    Name = "Orange",
-                    Value = "Orange=12",
-                },
-                new()
-                {
-                    Name = "Pink",
-                    Value = "Pink=8",
-                },
-                new()
-                {
-                    Name = "Purple",
-                    Value = "Purple=10",
-                },
-                new()
-                {
-                    Name = "Red",
-                    Value = "Red=13",
-                },
-                new()
-                {
-                    Name = "Rust",
-                    Value = "Rust=24",
-                },
-                new()
-                {
-                    Name = "Teal",
-                    Value = "Teal=3",
-                },
-                new()
-                {
-                    Name = "Transparent",
-                    Description = "Transparent is not intended to be used with typical initials due to accessibility issues. Its primary use is for overflow buttons, so it is considered a reserved color and can only be set with overrides.",
-                    Value = "Transparent=15",
-                },
-                new()
-                {
-                    Name = "Violet",
-                    Value = "Violet=16",
-                },
-                new()
-                {
-                    Name = "WarmGray",
-                    Value = "WarmGray=20",
-                },
-            },
+            ]
         },
         new()
         {
             Id = "bitpersona-size",
             Name = "BitPersonaSize",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
-                    Name = "Size20",
-                    Description = "Renders a 20px BitPersonaCoin.",
-                    Value = "20px",
+                    Name = "Size8",
+                    Description = "Renders a 8px BitPersonaCoin.",
+                    Value = "",
                 },
                 new()
                 {
                     Name = "Size24",
                     Description = "Renders a 24px BitPersonaCoin.",
-                    Value = "24px",
+                    Value = "",
                 },
                 new()
                 {
                     Name = "Size32",
                     Description = "Renders a 32px BitPersonaCoin.",
-                    Value = "32px",
+                    Value = "",
                 },
                 new()
                 {
                     Name = "Size40",
                     Description = "Renders a 40px BitPersonaCoin.",
-                    Value = "40px",
+                    Value = "",
                 },
                 new()
                 {
                     Name = "Size48",
                     Description = "Renders a 48px BitPersonaCoin.",
-                    Value = "48px",
+                    Value = "",
                 },
                 new()
                 {
                     Name = "Size56",
                     Description = "Renders a 56px BitPersonaCoin.",
-                    Value = "56px",
+                    Value = "",
                 },
                 new()
                 {
                     Name = "Size72",
                     Description = "Renders a 72px BitPersonaCoin.",
-                    Value = "72px",
+                    Value = "",
                 },
                 new()
                 {
                     Name = "Size100",
                     Description = "Renders a 100px BitPersonaCoin.",
-                    Value = "100px",
+                    Value = "",
                 },
                 new()
                 {
                     Name = "Size120",
                     Description = "Renders a 120px BitPersonaCoin.",
-                    Value = "120px",
+                    Value = "",
                 }
-            }
+            ]
         },
+    ];
+
+    private int _imageClickCount = 0;
+    private int _actionClickCount = 0;
+    private bool _isDetailsShown = true;
+
+    private Dictionary<BitPersonaPresence, string> _icons = new()
+    {
+        {BitPersonaPresence.Offline, BitIconName.UnavailableOffline},
+        {BitPersonaPresence.Online, BitIconName.SkypeCheck},
+        {BitPersonaPresence.Away, BitIconName.SkypeClock},
+        {BitPersonaPresence.Dnd, BitIconName.SkypeMinus},
+        {BitPersonaPresence.Blocked, BitIconName.BlockedSolid},
+        {BitPersonaPresence.Busy, BitIconName.Blocked2Solid}
     };
 
-
-
     private readonly string example1RazorCode = @"
-<BitCheckbox @bind-Value=""IsDetailsHidden"" 
-             OnClick=""() => IsDetailsHidden = !IsDetailsHidden"">Include BitPersona details</BitCheckbox>
+<BitPersona PrimaryText=""Saleh Khafan"" Size=""BitPersonaSize.Size72"" />
 
-<div>Size 24 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
-            Size=@BitPersonaSize.Size24
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.None
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
+<BitPersona PrimaryText=""Saleh Khafan""
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 32 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
-            Size=@BitPersonaSize.Size32
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Busy
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-
-<div>Size 40 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""
-            Size=@BitPersonaSize.Size40
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Away
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-
-<div>Size 48 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""
-            Size=@BitPersonaSize.Size48
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Blocked
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-
-<div>Size 56 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""
-            Size=@BitPersonaSize.Size56
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Online
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-
-<div>Size 72 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""
-            TertiaryText=""In a meeting""
-            Size=@BitPersonaSize.Size72
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Busy
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-
-<div>Size 100 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""
-            TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm""
-            Size=@BitPersonaSize.Size100
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Offline
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-
-<div>Size 120 BitPersona</div>
-<BitPersona Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""
-            TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm"" /
-            Size=@BitPersonaSize.Size120
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.Dnd
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" >";
-    private readonly string example1CsharpCode = @"
-public bool IsDetailsHidden { get; set; } = true;";
+<BitPersona PrimaryText=""Unknown""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size72""
+            Unknown />";
 
     private readonly string example2RazorCode = @"
-<BitPersona Text=""Annie Lindqvist""
-            SecondaryText=""Software Engineer""
-            TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm"" 
-            Size=@BitPersonaSize.Size120
-            HidePersonaDetails=""!IsDetailsHidden""
-            Presence=@BitPersonaPresenceStatus.None
-            ActionIconName=""@BitIconName.Edit""
-            OnActionClick=""() => ActionClickCount++""
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-<p>ActionClickCount: @ActionClickCount</p>";
-    private readonly string example2CsharpCode = @"
-private int ActionClickCount = 0;";
+<BitPersona PrimaryText=""Saleh Khafan""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size72""
+            Color=""#038387"" />
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            Size=""BitPersonaSize.Size72""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png""
+            OnImageClick=""() => {}""
+            Color=""#750b1c"" />";
 
     private readonly string example3RazorCode = @"
-<BitPersona Text=""Annie Lindqvist""
+<BitCheckbox @bind-Value=""_isDetailsShown"" Label=""Include BitPersona details"" />
+
+<div>Size 8 Persona</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Secondary""
+            Size=""BitPersonaSize.Size8""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Online""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Size 24 Persona</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Secondary""
+            Size=""BitPersonaSize.Size24""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.None""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Size 32 Persona (Busy)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Secondary""
+            Size=@BitPersonaSize.Size32
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Busy""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Size 40 Persona (Away)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size40""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Away""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Size 48 Persona (Blocked)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size48""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Blocked""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Size 56 Persona (Online)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Size=""BitPersonaSize.Size56""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Online""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Size 72 Persona (Busy)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
-            OptionalText=""Available at 4:00pm"" 
-            Size=@BitPersonaSize.Size120
-            Presence=@BitPersonaPresenceStatus.Online
-            HidePersonaDetails=""!IsDetailsHidden""
-            OnImageClick=""() => ImageClickCount++""
-            ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
-<p>ImageClickCount: @ImageClickCount</p>";
-    private readonly string example3CsharpCode = @"
-private int ImageClickCount = 0;";
+            Size=""BitPersonaSize.Size72""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Busy""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-    private readonly string example4RazorCode = @"
-<BitPersona Text=""Annie Lindqvist""
+<div>Size 100 Persona (Offline)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""Off""
+            OptionalText=""Available at 4:00pm""
+            Size=""BitPersonaSize.Size100""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Offline""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Size 120 Persona (Do Not Disturb)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
-            Size=@BitPersonaSize.Size120
-            ImageUrl=""invalid-src"" />";
+            Size=""BitPersonaSize.Size120""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Dnd""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Size 150 Persona (Do Not Disturb)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""In a meeting""
+            OptionalText=""Available at 4:00pm""
+            Size=""BitPersonaSize.Size120""
+            CoinSize=""150""
+            HidePersonaDetails=""!_isDetailsShown""
+            Presence=""BitPersonaPresence.Dnd""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
+    private readonly string example3CsharpCode = @"
+private bool _isDetailsShown = true;";
+
+    private readonly string example4RazorCode = @"
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""In a meeting""
+            OptionalText=""Available at 4:00pm""
+            Size=""BitPersonaSize.Size120""
+            Presence=""BitPersonaPresence.None""
+            OnActionClick=""() => _actionClickCount++""
+            ActionIconName=""@BitIconName.CloudUpload""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+<p>Action Click Count: @_actionClickCount</p>
+
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            TertiaryText=""In a meeting""
+            OptionalText=""Available at 4:00pm""
+            Size=""BitPersonaSize.Size120""
+            Presence=""BitPersonaPresence.Online""
+            OnImageClick=""() => _imageClickCount++""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+<p>Image Click Count: @_imageClickCount</p>";
+    private readonly string example4CsharpCode = @"
+private int _imageClickCount = 0;
+private int _actionClickCount = 0;";
 
     private readonly string example5RazorCode = @"
+<BitPersona PrimaryText=""Saleh Khafan""
+            Size=""BitPersonaSize.Size72""
+            ShowInitialsUntilImageLoads
+            ImageUrl=""invalid-src"" />
+
+<BitPersona Size=""BitPersonaSize.Size72"" PrimaryText=""Saleh Xafan"" />
+
+<BitPersona Size=""BitPersonaSize.Size72"" PrimaryText=""Saleh Khafan"" ImageInitials=""S"" />";
+
+    private readonly string example6RazorCode = @"
+<div>None</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.None""
+            PresenceIcons=""_icons""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Offline</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Offline""
+            PresenceIcons=""_icons""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Online</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Online""
+            PresenceIcons=""_icons""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Away</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Away""
+            PresenceIcons=""_icons""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Do not Disturb (Dnd)</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Dnd""
+            PresenceIcons=""_icons""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Blocked</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Blocked""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<div>Busy</div>
+<BitPersona PrimaryText=""Annie Lindqvist""
+            SecondaryText=""Software Engineer""
+            Presence=""BitPersonaPresence.Busy""
+            PresenceIcons=""_icons""
+            Size=""BitPersonaSize.Size120""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
+    private readonly string example6CsharpCode = @"
+private Dictionary<BitPersonaPresence, string> _icons = new()
+{
+    {BitPersonaPresence.Offline, BitIconName.UnavailableOffline},
+    {BitPersonaPresence.Online, BitIconName.SkypeCheck},
+    {BitPersonaPresence.Away, BitIconName.SkypeClock},
+    {BitPersonaPresence.Dnd, BitIconName.SkypeMinus},
+    {BitPersonaPresence.Blocked, BitIconName.BlockedSolid},
+    {BitPersonaPresence.Busy, BitIconName.Blocked2Solid}
+};";
+
+    private readonly string example7RazorCode = @"
+<style>
+    .custom-ico {
+        font-size: 14px;
+        margin-right: 5px;
+    }
+
+    .custom-coin {
+        display: block;
+        border-radius: 20px;
+    }
+</style>
+
+<BitPersona Size=""BitPersonaSize.Size100"" ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" OnImageClick=""() => {}"">
+    <PrimaryTextTemplate>
+        <BitIcon IconName=""@BitIconName.Contact"" Class=""custom-ico"" />
+        Annie Lindqvist
+    </PrimaryTextTemplate>
+    <SecondaryTextTemplate>
+        <BitIcon IconName=""@BitIconName.Suitcase"" Class=""custom-ico"" />
+        Software Engineer
+    </SecondaryTextTemplate>
+    <TertiaryTextTemplate>
+        <BitIcon IconName=""@BitIconName.JoinOnlineMeeting"" Class=""custom-ico"" />
+        In a meeting
+    </TertiaryTextTemplate>
+    <OptionalTextTemplate>
+        <BitIcon IconName=""@BitIconName.Clock"" Class=""custom-ico"" />
+        Available at 7:00pm
+    </OptionalTextTemplate>
+    <ImageOverlayTemplate>
+        <BitIcon IconName=""@BitIconName.Edit"" Class=""custom-ico"" />
+        Edit image
+    </ImageOverlayTemplate>
+</BitPersona>
+
+
+<BitPersona Size=""BitPersonaSize.Size100"" PrimaryText=""Annie Lindqvist"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"">
+    <CoinTemplate>
+        <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" width=""100px"" height=""100px"" class=""custom-coin"" />
+    </CoinTemplate>
+</BitPersona>";
+
+    private readonly string example8RazorCode = @"
 <BitPersona Dir=""BitDir.Rtl""
-            Text=""صالح یوسف نژاد""
+            PrimaryText=""صالح یوسف نژاد""
             SecondaryText=""مهندس نرم افزار""
             Size=""@BitPersonaSize.Size56"" />";
 }

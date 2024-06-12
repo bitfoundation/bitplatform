@@ -8,19 +8,46 @@
     <EditForm OnValidSubmit="WrapHandled(DoSignIn)" class="form" Model="model">
         <AppDataAnnotationsValidator />
 
-        @if (string.IsNullOrEmpty(message) is false)
-        {
-            <BitMessage Class="form-message-bar"
-                        Severity="@messageSeverity"
-                        OnDismiss="() => message = null">
-                @message
-            </BitMessage>
-        }
+        <div @ref="messageRef" class="form-message-bar">
+            @if (string.IsNullOrEmpty(message) is false)
+            {
+                <BitMessage Multiline Severity="@messageSeverity" OnDismiss="() => message = null">@message</BitMessage>
+            }
+        </div>
 
-        <h1 class="form-title">@Localizer[nameof(AppStrings.SignInTitle)]</h1>
+        <BitTypography Variant="BitTypographyVariant.H4" Gutter>
+            @Localizer[nameof(AppStrings.SignIn)]
+        </BitTypography>
 
         @if (requiresTwoFactor is false)
         {
+            <br /><br />
+            <BitButton Style="width:300px"
+                       IsLoading="isWaiting"
+                       ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(GoogleSignIn)"
+                       ButtonStyle="BitButtonStyle.Standard">
+                @Localizer[AppStrings.GoogleSignInButtonText]
+            </BitButton>
+            <br />
+            <BitButton Style="width:300px"
+                       IsLoading="isWaiting"
+                       ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(GitHubSignIn)"
+                       ButtonStyle="BitButtonStyle.Standard">
+                @Localizer[AppStrings.GitHubSignInButtonText]
+            </BitButton>
+            <br />
+            <BitButton Style="width:300px"
+                       IsLoading="isWaiting"
+                       ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(TwitterSignIn)"
+                       ButtonStyle="BitButtonStyle.Standard">
+                @Localizer[AppStrings.TwitterSignInButtonText]
+            </BitButton>
+            <br /><br />
+            <BitSeparator Style="width:100%">Or</BitSeparator>
+            <br />
             <div class="form-input-container">
                 <BitTextField @bind-Value="model.Email"
                               Type="BitTextFieldType.Email"
@@ -38,23 +65,24 @@
             <div class="form-input-container">
                 <BitTextField @bind-Value="model.Password"
                               CanRevealPassword="true"
-                              AutoComplete="current-password"
                               Type="BitTextFieldType.Password"
                               Label="@Localizer[nameof(AppStrings.Password)]"
+                              AutoComplete="@BitAutoCompleteValue.CurrentPassword"
                               Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
                 <ValidationMessage For="@(() => model.Password)" />
 
                 <BitTextField @bind-Value="model.Otp"
                               CanRevealPassword="true"
-                              AutoComplete="current-password"
                               Type="BitTextFieldType.Password"
                               Label="@Localizer[nameof(AppStrings.Otp)]"
+                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.OtpPlaceholder)]" />
                 <ValidationMessage For="@(() => model.Otp)" />
                 <BitButton IsLoading="isSendingOtp"
                            OnClick="WrapHandled(SendOtp)"
                            Style="padding:0;margin-top:4px"
-                           ButtonType="BitButtonType.Button">
+                           ButtonType="BitButtonType.Button"
+                           ButtonStyle="BitButtonStyle.Standard">
                     @Localizer[nameof(AppStrings.SendOtpButtonText)]
                 </BitButton>
             </div>
@@ -74,12 +102,14 @@
             <div class="form-input-container">
                 <div>@Localizer[nameof(AppStrings.TfaEnterCodeInSignInMessage)]</div>
                 <BitTextField @bind-Value="model.TwoFactorCode"
+                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
             </div>
 
             <div class="form-input-container">
                 <div>@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]</div>
                 <BitTextField @bind-Value="model.TwoFactorRecoveryCode"
+                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
             </div>
 
@@ -93,13 +123,13 @@
                            OnClick="WrapHandled(SendTfaToken)">
                     @Localizer[nameof(AppStrings.TfaTokenGenerateButtonText)]
                 </BitButton>
-                <BitTextField @bind-Value="model.TwoFactorToken"
-                              Style="flex-grow:1"
+                <BitTextField @bind-Value="model.TwoFactorToken" Style="flex-grow:1"
+                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorToken)]" />
             </div>
         }
         <br />
-        <BitButton IsLoading="isSigningIn"
+        <BitButton IsLoading="isWaiting"
                    ButtonStyle="BitButtonStyle.Primary"
                    Title="@Localizer[nameof(AppStrings.SignIn)]"
                    AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"

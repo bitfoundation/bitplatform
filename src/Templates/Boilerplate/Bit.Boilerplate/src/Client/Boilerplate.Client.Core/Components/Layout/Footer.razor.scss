@@ -4,15 +4,20 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 .footer {
+    bottom: 0;
+    z-index: 1;
     width: 100%;
     display: flex;
     padding: 0.5rem;
+    position: fixed;
     align-items: center;
+    height: $footerHeight;
     justify-content: center;
     background-color: $bit-color-background-primary;
 
     .bit-ios & {
         padding-bottom: env(safe-area-inset-bottom);
+        height: calc($footerHeight + env(safe-area-inset-bottom));
     }
 }
 
@@ -20,7 +25,6 @@
     flex-grow: 1;
     text-align: center;
     font-size: rem2(12px);
-    line-height: rem2(20px);
 
     @include sm {
         font-size: rem2(10px);

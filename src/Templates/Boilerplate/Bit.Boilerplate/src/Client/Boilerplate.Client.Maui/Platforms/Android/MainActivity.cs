@@ -10,7 +10,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [IntentFilter([Intent.ActionView],
                         DataSchemes = ["https", "http"],
-                        DataHosts = ["bp.bitplatform.dev"],
+                        DataHosts = ["use-your-server-url-here.com"],
                         // the following app links will be opened in app instead of browser if the app is installed on Android device.
                         DataPaths = ["/"],
                         DataPathPrefixes = [
@@ -38,7 +38,7 @@ public class MainActivity : MauiAppCompatActivity
         var url = Intent?.DataString;
         if (string.IsNullOrWhiteSpace(url) is false)
         {
-            var _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
+            _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
         }
     }
 
@@ -50,7 +50,7 @@ public class MainActivity : MauiAppCompatActivity
         var url = intent.DataString;
         if (action is Intent.ActionView && string.IsNullOrWhiteSpace(url) is false)
         {
-            var _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
+            _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
         }
     }
 }

@@ -54,7 +54,7 @@ public partial class MainLayout : IDisposable
 
     private void SetCurrentDir()
     {
-        var currentCulture = CultureInfo.CurrentCulture;
+        var currentCulture = CultureInfo.CurrentUICulture;
 
         currentDir = currentCulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
     }

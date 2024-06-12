@@ -66,7 +66,7 @@
 .sort-drp-container {
     @media all and (max-width: #{rem2(430px)}) {
         position: absolute;
-        inset-inline-end: rem2(14px);
+        inset-inline-end: 0;
         inset-block-start: rem2(25px);
     }
 }

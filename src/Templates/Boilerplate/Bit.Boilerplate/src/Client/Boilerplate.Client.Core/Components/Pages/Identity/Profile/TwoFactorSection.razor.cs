@@ -5,12 +5,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
 public partial class TwoFactorSection
 {
-    [AutoInject] private Clipboard clipboard = default!;
-    [AutoInject] private IUserController userController = default!;
-
-
     private string? qrCode;
-    private bool isLoading;
+    private bool isWaiting;
     private string? sharedKey;
     private int recoveryCodesLeft;
     private bool isKeyCopiedShown;
@@ -20,9 +16,12 @@ public partial class TwoFactorSection
     private string? verificationCode;
     private bool isTwoFactorAuthEnabled;
 
-
     private string? message;
-    private BitSeverity messageSeverity;
+    private ElementReference messageRef = default!;
+
+
+    [AutoInject] private Clipboard clipboard = default!;
+    [AutoInject] private IUserController userController = default!;
 
 
     protected override async Task OnInitAsync()
@@ -43,6 +42,8 @@ public partial class TwoFactorSection
         var response = await SendTwoFactorAuthRequest(request);
 
         recoveryCodes = response?.RecoveryCodes;
+
+        await messageRef.ScrollIntoView();
     }
 
     private async Task DisableTwoFactorAuth()
@@ -73,7 +74,10 @@ public partial class TwoFactorSection
 
     private async Task<TwoFactorAuthResponseDto?> SendTwoFactorAuthRequest(TwoFactorAuthRequestDto request)
     {
-        isLoading = true;
+        if (isWaiting) return null;
+
+        message = null;
+        isWaiting = true;
 
         try
         {
@@ -90,13 +94,14 @@ public partial class TwoFactorSection
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+
+            await messageRef.ScrollIntoView();
 
             return null;
         }
         finally
         {
-            isLoading = false;
+            isWaiting = false;
         }
     }
 

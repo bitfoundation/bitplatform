@@ -1,6 +1,6 @@
 ﻿@inherits AppComponentBase
 
-<BitModal @bind-IsOpen="IsOpen" IsBlocking="true">
+<BitModal @bind-IsOpen="IsOpen" IsBlocking="true" AutoToggleScroll="false">
     <div class="modal-body">
         <div class="modal-close-btn-container">
             <BitIconButton OnClick="CloseModal" IconName="@BitIconName.ChromeClose" Title="Close" />

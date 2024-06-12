@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.DataProtection;
-using Azure.Communication.Sms;
+using Twilio;
 //#endif
 
 namespace Boilerplate.Server;
@@ -145,7 +145,7 @@ public static partial class Program
         services.TryAddTransient<SmsService>();
         if (appSettings.SmsSettings.Configured)
         {
-            services.TryAddTransient(sp => new SmsClient(appSettings.SmsSettings.ConnectionString));
+            TwilioClient.Init(appSettings.SmsSettings.AccountSid, appSettings.SmsSettings.AuthToken);
         }
 
         //#endif
@@ -229,7 +229,7 @@ public static partial class Program
             .AddErrorDescriber<AppIdentityErrorDescriber>()
             .AddApiEndpoints();
 
-        services.AddAuthentication(options =>
+        var authenticationBuilder = services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
             options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
@@ -271,6 +271,37 @@ public static partial class Program
                 }
             };
         });
+
+        if (string.IsNullOrEmpty(configuration["Authentication:Google:ClientId"]) is false)
+        {
+            authenticationBuilder.AddGoogle(options =>
+            {
+                options.ClientId = configuration["Authentication:Google:ClientId"]!;
+                options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
+
+        if (string.IsNullOrEmpty(configuration["Authentication:GitHub:ClientId"]) is false)
+        {
+            authenticationBuilder.AddGitHub(options =>
+            {
+                options.ClientId = configuration["Authentication:GitHub:ClientId"]!;
+                options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"]!;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
+
+        if (string.IsNullOrEmpty(configuration["Authentication:Twitter:ConsumerKey"]) is false)
+        {
+            authenticationBuilder.AddTwitter(options =>
+            {
+                options.ConsumerKey = configuration["Authentication:Twitter:ConsumerKey"]!;
+                options.ConsumerSecret = configuration["Authentication:Twitter:ConsumerSecret"]!;
+                options.RetrieveUserDetails = true;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
 
         services.AddAuthorization();
     }

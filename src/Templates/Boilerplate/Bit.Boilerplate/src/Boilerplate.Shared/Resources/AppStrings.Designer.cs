@@ -871,11 +871,47 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sign in with GitHub.
+        /// </summary>
+        public static string GitHubSignInButtonText {
+            get {
+                return ResourceManager.GetString("GitHubSignInButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign up with GitHub.
+        /// </summary>
+        public static string GitHubSignUpButtonText {
+            get {
+                return ResourceManager.GetString("GitHubSignUpButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Back.
         /// </summary>
         public static string GoBack {
             get {
                 return ResourceManager.GetString("GoBack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign in with Google.
+        /// </summary>
+        public static string GoogleSignInButtonText {
+            get {
+                return ResourceManager.GetString("GoogleSignInButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign up with Google.
+        /// </summary>
+        public static string GoogleSignUpButtonText {
+            get {
+                return ResourceManager.GetString("GoogleSignUpButtonText", resourceCulture);
             }
         }
         
@@ -1726,6 +1762,33 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You can go back to the application now.
+        /// </summary>
+        public static string SocialSignedInMessageBody {
+            get {
+                return ResourceManager.GetString("SocialSignedInMessageBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The social sign-in is done.
+        /// </summary>
+        public static string SocialSignedInMessageTitle {
+            get {
+                return ResourceManager.GetString("SocialSignedInMessageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Social signed in.
+        /// </summary>
+        public static string SocialSignedInTitle {
+            get {
+                return ResourceManager.GetString("SocialSignedInTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Submit.
         /// </summary>
         public static string Submit {
@@ -1807,7 +1870,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Download a two-factor authenticator app like Microsoft Authenticator for {0} and {1} or Google Authenticator for {2} and {3}..
+        ///   Looks up a localized string similar to Download a two-factor authenticator app like Google Authenticator for {0} and {1}..
         /// </summary>
         public static string TfaConfigureAutAppStep1 {
             get {
@@ -1816,7 +1879,7 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Scan the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):.
+        ///   Looks up a localized string similar to Scan/click the QR Code or enter the following key into your two factor authenticator app (spaces and casing do not matter):.
         /// </summary>
         public static string TfaConfigureAutAppStep2 {
             get {
@@ -2194,6 +2257,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sign in with Twitter (X).
+        /// </summary>
+        public static string TwitterSignInButtonText {
+            get {
+                return ResourceManager.GetString("TwitterSignInButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 2FA.
         /// </summary>
         public static string TwoFactorAuthTitle {
@@ -2298,6 +2370,15 @@ namespace Boilerplate.Shared.Resources {
         public static string UserImageCouldNotBeFound {
             get {
                 return ResourceManager.GetString("UserImageCouldNotBeFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User is not confirmed..
+        /// </summary>
+        public static string UserIsNotConfirmed {
+            get {
+                return ResourceManager.GetString("UserIsNotConfirmed", resourceCulture);
             }
         }
         

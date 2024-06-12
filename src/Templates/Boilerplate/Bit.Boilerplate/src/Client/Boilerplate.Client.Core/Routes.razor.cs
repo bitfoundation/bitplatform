@@ -13,7 +13,8 @@ public partial class Routes
         {
             if (AppRenderMode.MultilingualEnabled)
             {
-                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture"));
+                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
+                                                     CultureInfo.CurrentUICulture.Name); // 2- OS settings
             }
 
             await SetupBodyClasses();
@@ -61,7 +62,7 @@ public partial class Routes
     [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }
     public static NavigationManager? universalLinksNavigationManager;
 
-    public static async Task OpenUniversalLink(string url)
+    public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
     {
         await Task.Run(async () =>
         {
@@ -69,8 +70,8 @@ public partial class Routes
             {
                 await Task.Yield();
             }
-
-            universalLinksNavigationManager.NavigateTo(url);
         });
+
+        universalLinksNavigationManager!.NavigateTo(url, forceLoad, replace);
     }
 }

@@ -5,16 +5,19 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ConfirmPage
 {
-    [AutoInject] private IIdentityController identityController = default!;
-
     private bool isWaiting;
     private bool isEmailConfirmed;
     private bool isPhoneConfirmed;
     private bool showEmailConfirmation;
     private bool showPhoneConfirmation;
-    private string? errorMessage;
     private readonly ConfirmEmailRequestDto emailModel = new();
     private readonly ConfirmPhoneRequestDto phoneModel = new();
+
+    private string? errorMessage;
+    private ElementReference messageRef = default!;
+
+
+    [AutoInject] private IIdentityController identityController = default!;
 
 
     [Parameter, SupplyParameterFromQuery(Name = "email")]
@@ -98,11 +101,6 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            var request = new ConfirmPhoneRequestDto
-            {
-
-            };
-
             await identityController.ConfirmPhone(new() { PhoneNumber = phoneModel.PhoneNumber, Token = phoneModel.Token }, CurrentCancellationToken);
 
             isPhoneConfirmed = true;
@@ -131,6 +129,7 @@ public partial class ConfirmPage
         catch (KnownException e)
         {
             errorMessage = e.Message;
+            await messageRef.ScrollIntoView();
         }
         finally
         {

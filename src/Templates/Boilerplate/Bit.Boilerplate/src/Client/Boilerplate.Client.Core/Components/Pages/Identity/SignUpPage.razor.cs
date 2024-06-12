@@ -6,15 +6,15 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class SignUpPage
 {
-    [AutoInject] private IIdentityController identityController = default!;
-
     private bool isWaiting;
-    private string? signUpErrorMessage;
-    private readonly SignUpRequestDto signUpModel = new()
-    {
-        UserName = Guid.NewGuid().ToString() /* You can also bind the UserName property to an input */
-    };
+    private string? message;
+    private ElementReference messageRef = default!;
+    private readonly SignUpRequestDto signUpModel = new() { UserName = Guid.NewGuid().ToString() };
 
+
+    [AutoInject] private ILocalHttpServer localHttpServer = default!;
+    [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
     private async Task DoSignUp()
     {
@@ -24,7 +24,8 @@ public partial class SignUpPage
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
-            signUpErrorMessage = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+            message = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
+            await messageRef.ScrollIntoView();
             return;
         }
 
@@ -32,7 +33,7 @@ public partial class SignUpPage
         //#endif
 
         isWaiting = true;
-        signUpErrorMessage = null;
+        message = null;
         StateHasChanged();
 
         try
@@ -51,20 +52,61 @@ public partial class SignUpPage
             var confirmUrl = NavigationManager.GetUriWithQueryParameters("confirm", queryParams);
             NavigationManager.NavigateTo(confirmUrl);
         }
-        catch (ResourceValidationException e)
-        {
-            signUpErrorMessage = string.Join(" ", e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
-        }
         catch (KnownException e)
         {
-            signUpErrorMessage = e.Message;
-        }
-        finally
-        {
+            message = e is ResourceValidationException re
+                                    ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
+                                    : e.Message;
+            await messageRef.ScrollIntoView();
+
             //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
             //#endif
+        }
+        finally
+        {
             isWaiting = false;
+        }
+    }
+
+    private async Task GoogleSignUp()
+    {
+        await SocialSignUp("Google");
+    }
+
+    private async Task GitHubSignUp()
+    {
+        await SocialSignUp("GitHub");
+    }
+
+    private async Task SocialSignUp(string provider)
+    {
+        if (isWaiting) return;
+
+        isWaiting = true;
+        message = null;
+
+        try
+        {
+            var port = await localHttpServer.Start();
+
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port);
+
+            await externalNavigationService.NavigateToAsync(redirectUrl);
+        }
+        catch (KnownException e)
+        {
+            isWaiting = false;
+
+            message = e.Message;
+
+            await messageRef.ScrollIntoView();
+        }
+        catch
+        {
+            isWaiting = false;
+
+            throw;
         }
     }
 }

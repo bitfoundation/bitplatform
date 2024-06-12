@@ -7,6 +7,7 @@ public partial class MainLayout : IDisposable
     [AutoInject] private NavigationManager navigationManager = default!;
 
     private bool isDocsRoute;
+    private bool isLcncDocRoute;
     private bool isTemplateDocRoute;
     private bool isBswupDocRoute;
     private bool isBesqlDocRoute;
@@ -14,6 +15,17 @@ public partial class MainLayout : IDisposable
 
     private List<BitNavItem> navItems = [];
 
+
+
+    private readonly List<BitNavItem> lcncNavItems =
+    [
+        new BitNavItem { Text = "Overview", Url = "/lowcode-nocode/overview" },
+        new BitNavItem { Text = "Benefits", Url = "/lowcode-nocode/benefits" },
+        new BitNavItem { Text = "Specs", Url = "/lowcode-nocode/specs" },
+        new BitNavItem { Text = "Customizations", Url = "/lowcode-nocode/customizations" },
+        new BitNavItem { Text = "Comparison", Url = "/lowcode-nocode/comparison" },
+        new BitNavItem { Text = "Stats", Url = "/lowcode-nocode/stats" },
+    ];
 
     private readonly List<BitNavItem> templatesNavItems =
     [
@@ -98,12 +110,14 @@ public partial class MainLayout : IDisposable
         isBswupDocRoute = currentUrl.Contains("bswup");
         isBesqlDocRoute = currentUrl.Contains("besql");
         isButilDocRoute = currentUrl.Contains("butil");
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute;
+        isLcncDocRoute = currentUrl.Contains("lowcode-nocode");
+        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute /*|| isLcncDocRoute*/;
 
         navItems = isTemplateDocRoute ? templatesNavItems
                  : isBswupDocRoute ? bswupNavItems
                  : isBesqlDocRoute ? besqlNavItems
                  : isButilDocRoute ? butilNavItems
+                 //: isLcncDocRoute ? lcncNavItems
                  : [];
     }
 
