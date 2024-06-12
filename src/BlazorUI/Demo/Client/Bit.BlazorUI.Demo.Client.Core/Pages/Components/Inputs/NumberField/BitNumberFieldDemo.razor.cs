@@ -148,12 +148,6 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<TValue>",
-            Description = "Callback for when the number field value change.",
-        },
-        new()
-        {
             Name = "OnFocus",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when focus moves into the input.",

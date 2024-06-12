@@ -384,11 +384,6 @@ public partial class BitDatePicker
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
-    /// The callback for when the value changes in the DatePicker.
-    /// </summary>
-    [Parameter] public EventCallback<DateTimeOffset?> OnChange { get; set; }
-
-    /// <summary>
     /// The text of selected date aria-atomic of the DatePicker.
     /// </summary>
     [Parameter] public string SelectedDateAriaAtomic { get; set; } = "Selected date {0}";
@@ -651,8 +646,11 @@ public partial class BitDatePicker
         if (AllowTextInput is false) return;
 
         var oldValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
+
         CurrentValueAsString = e.Value?.ToString();
+
         var curValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
+
         if (IsOpen && oldValue != curValue)
         {
             CheckCurrentCalendarMatchesCurrentValue();
@@ -662,8 +660,6 @@ public partial class BitDatePicker
                 ChangeYearRanges(_currentYear - 1);
             }
         }
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnClearButtonClick()
@@ -716,8 +712,6 @@ public partial class BitDatePicker
         CurrentValue = new DateTimeOffset(currentDateTime, DateTimeOffset.Now.Offset);
 
         GenerateMonthData(_currentYear, _currentMonth);
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SelectMonth(int month)
@@ -1231,9 +1225,9 @@ public partial class BitDatePicker
         var currentValueYear = Culture.Calendar.GetYear(CurrentValue.Value.LocalDateTime);
         var currentValueMonth = Culture.Calendar.GetMonth(CurrentValue.Value.LocalDateTime);
         var currentValueDay = Culture.Calendar.GetDayOfMonth(CurrentValue.Value.LocalDateTime);
-        CurrentValue = new DateTimeOffset(Culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0), DateTimeOffset.Now.Offset);
 
-        await OnChange.InvokeAsync(CurrentValue);
+        var dateTime = Culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0);
+        CurrentValue = new(dateTime, DateTimeOffset.Now.Offset);
     }
 
     private async Task HandleOnTimeHourFocus()

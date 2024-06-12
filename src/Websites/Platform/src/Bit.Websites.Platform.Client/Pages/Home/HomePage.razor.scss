@@ -334,13 +334,25 @@
 }
 
 .customer-section {
-    ::deep .customer-feedback-carousel {
+    ::deep .customer-carousel {
         width: 100%;
-        height: 20rem;
+        height: 24rem;
         margin: rem2(32px) auto;
+
+        @include lt-xl {
+            height: 22rem;
+        }
+
+        @include lt-lg {
+            height: 14rem;
+        }
+
+        @include lt-sm {
+            height: 17rem;
+        }
     }
 
-    .customer-feedback-card {
+    .customer-card {
         width: 100%;
         height: 100%;
         padding: 2rem;
@@ -364,70 +376,10 @@
         }
     }
 
-    .twitter-icon {
-        cursor: pointer;
-        width: rem2(48px);
-        height: rem2(48px);
-        border-radius: 50%;
-        background-size: rem2(32px);
-        background-position: center;
-        background-repeat: no-repeat;
-        background-image: url('/images/home/twitter-icon.svg');
-    }
-
-    .customer-feedback-txt {
-        width: 100%;
-        flex-grow: 1;
-        font-weight: 400;
-        overflow: hidden;
-        font-size: rem2(20px);
-        text-align-last: left;
-        line-height: rem2(32px);
-        margin-bottom: rem2(14px);
-
-        .highlighted-txt {
-            color: $bit-color-primary-main;
-        }
-
-        @include md {
-            font-size: rem2(18px);
-            line-height: rem2(28px);
-            margin-bottom: rem2(10px);
-        }
-
-        @include sm {
-            font-size: rem2(16px);
-            line-height: rem2(24px);
-            margin-bottom: rem2(8px);
-        }
-    }
-
-    .customer-feedback-name {
-        z-index: 2;
-        font-weight: 700;
-        font-size: rem2(18px);
-        line-height: rem2(32px);
-
-        @include md {
-            font-size: rem2(15px);
-            line-height: rem2(28px);
-        }
-
-        @include sm {
-            font-weight: 600;
-            font-size: rem2(14px);
-            line-height: rem2(28px);
-        }
-    }
-
-    .author-container {
-        display: flex;
-        align-items: center;
-    }
-
-    .customer-image {
-        width: rem2(64px);
-        border-radius: 50%;
-        margin-right: rem2(10px);
+    .customer-link {
+        display: block;
+        margin-bottom: 0.5em;
+        text-decoration: underline;
+        text-underline-offset: 0.25em;
     }
 }

@@ -149,7 +149,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Items=""GetBasicItems()""
              Placeholder=""Select an item""
              TItem=""BitDropdownItem<string>"" TValue=""string""
-             OnChange=""(BitDropdownItem<string>[] items) => changedItem = items.SingleOrDefault()"" />
+             OnValuesChange=""(BitDropdownItem<string>[] items) => changedItem = items.SingleOrDefault()"" />
 <BitLabel>Changed Value: @changedItem?.Value</BitLabel>
             
 <BitDropdown Label=""Multi select""
@@ -157,7 +157,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Items=""GetBasicItems()""
              Placeholder=""Select items""
              TItem=""BitDropdownItem<string>"" TValue=""string""
-             OnChange=""(BitDropdownItem<string>[] items) => changedItems = items"" />
+             OnValuesChange=""(BitDropdownItem<string>[] items) => changedItems = items"" />
 <BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
 
 

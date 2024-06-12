@@ -104,7 +104,7 @@
                              Placeholder="Select an item"
                              NameSelectors="nameSelectors"
                              TItem="BitDropdownCustom" TValue="string"
-                             OnChange="(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()" />
+                             OnValuesChange="(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()" />
                 <BitLabel>Changed Value: @changedItem?.Value</BitLabel>
             </div>
             <div>
@@ -114,7 +114,7 @@
                              Placeholder="Select items"
                              NameSelectors="nameSelectors"
                              TItem="BitDropdownCustom" TValue="string"
-                             OnChange="(BitDropdownCustom[] items) => changedItems = items" />
+                             OnValuesChange="(BitDropdownCustom[] items) => changedItems = items" />
                 <BitLabel>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</BitLabel>
             </div>
         </div>

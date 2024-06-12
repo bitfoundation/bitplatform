@@ -11,15 +11,15 @@
             var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
         }
         <BitPersona Class="persona"
-                    Text="@user.FullName"
-                    ImageUrl="@imageUrl"
-                    Size=@BitPersonaSize.Size48
+                    PrimaryText="@user.FullName"
                     SecondaryText="@user.DisplayName"
-                    Presence="BitPersonaPresenceStatus.Online"
+                    Size=@BitPersonaSize.Size48
+                    Presence="BitPersonaPresence.Online"
+                    ImageUrl="@imageUrl"
                     OnImageClick=GoToProfile>
-            <ImageOverlayFragment>
+            <ImageOverlayTemplate>
                 <span>@Localizer[nameof(AppStrings.Edit)]</span>
-            </ImageOverlayFragment>
+            </ImageOverlayTemplate>
         </BitPersona>
         <br />
         <BitActionButton IconName="@BitIconName.SignOut" OnClick=DoSignOut>

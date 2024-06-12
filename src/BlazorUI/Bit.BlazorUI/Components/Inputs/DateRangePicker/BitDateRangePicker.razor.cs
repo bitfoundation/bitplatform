@@ -445,11 +445,6 @@ public partial class BitDateRangePicker
     [Parameter] public EventCallback OnFocusOut { get; set; }
 
     /// <summary>
-    /// Callback for when the value changes in the DateRangePicker.
-    /// </summary>
-    [Parameter] public EventCallback<BitDateRangePickerValue> OnChange { get; set; }
-
-    /// <summary>
     /// The placeholder text of the DateRangePicker's input.
     /// </summary>
     [Parameter] public string Placeholder { get; set; } = string.Empty;
@@ -753,8 +748,6 @@ public partial class BitDateRangePicker
         if (AllowTextInput is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnClearButtonClick()
@@ -784,12 +777,12 @@ public partial class BitDateRangePicker
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
-        CurrentValue ??= new();
+        var curValue = CurrentValue ?? new();
 
-        if (CurrentValue.StartDate.HasValue && CurrentValue.EndDate.HasValue)
+        if (curValue.StartDate.HasValue && curValue.EndDate.HasValue)
         {
-            CurrentValue.StartDate = null;
-            CurrentValue.EndDate = null;
+            curValue.StartDate = null;
+            curValue.EndDate = null;
         }
 
         var currentDay = _daysOfCurrentMonth[weekIndex, dayIndex];
@@ -810,17 +803,17 @@ public partial class BitDateRangePicker
 
         _currentMonth = selectedMonth;
 
-        var hour = CurrentValue.StartDate.HasValue ? _endTimeHour : _startTimeHour;
-        var minute = CurrentValue.StartDate.HasValue ? _endTimeMinute : _startTimeMinute;
+        var hour = curValue.StartDate.HasValue ? _endTimeHour : _startTimeHour;
+        var minute = curValue.StartDate.HasValue ? _endTimeMinute : _startTimeMinute;
 
         var selectedDate = new DateTimeOffset(Culture.Calendar.ToDateTime(_currentYear, _currentMonth, currentDay, hour, minute, 0, 0), DateTimeOffset.Now.Offset);
-        if (CurrentValue.StartDate.HasValue is false)
+        if (curValue.StartDate.HasValue is false)
         {
-            CurrentValue.StartDate = selectedDate;
+            curValue.StartDate = selectedDate;
         }
         else
         {
-            CurrentValue.EndDate = selectedDate;
+            curValue.EndDate = selectedDate;
             if (AutoClose)
             {
                 IsOpen = false;
@@ -828,34 +821,32 @@ public partial class BitDateRangePicker
             }
         }
 
-        if (CurrentValue.EndDate.HasValue && CurrentValue.StartDate > CurrentValue.EndDate)
+        if (curValue.EndDate.HasValue && curValue.StartDate > curValue.EndDate)
         {
-            if (CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate.Value.Date)
+            if (curValue.StartDate!.Value.Date == curValue.EndDate.Value.Date)
             {
                 (_endTimeHour, _startTimeHour) = (_startTimeHour, _endTimeHour);
                 (_endTimeMinute, _startTimeMinute) = (_startTimeMinute, _endTimeMinute);
             }
 
-            (CurrentValue.EndDate, CurrentValue.StartDate) = (CurrentValue.StartDate, CurrentValue.EndDate);
+            (curValue.EndDate, curValue.StartDate) = (curValue.StartDate, curValue.EndDate);
         }
 
-        if (CurrentValue.EndDate.HasValue && MaxRange.HasValue)
+        if (curValue.EndDate.HasValue && MaxRange.HasValue)
         {
-            var maxDate = new DateTimeOffset(GetMaxEndDate(), CurrentValue.EndDate.Value.Offset);
+            var maxDate = new DateTimeOffset(GetMaxEndDate(), curValue.EndDate.Value.Offset);
 
-            if (maxDate < CurrentValue.EndDate)
+            if (maxDate < curValue.EndDate)
             {
                 _endTimeHour = maxDate.Hour;
                 _endTimeMinute = maxDate.Minute;
-                CurrentValue.EndDate = maxDate;
+                curValue.EndDate = maxDate;
             }
         }
 
-        CurrentValue = new BitDateRangePickerValue { StartDate = CurrentValue.StartDate, EndDate = CurrentValue.EndDate };
+        CurrentValue = new BitDateRangePickerValue { StartDate = curValue.StartDate, EndDate = curValue.EndDate };
 
         GenerateMonthData(_currentYear, _currentMonth);
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private void SelectMonth(int month)
@@ -1549,10 +1540,12 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate.HasValue is false && CurrentValue.EndDate.HasValue is false) return;
 
-        var isEndTimeBiggerInOneDayRange = CurrentValue.StartDate.HasValue && CurrentValue.EndDate.HasValue &&
-            CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate!.Value.Date &&
-            new TimeSpan(_startTimeHour, _startTimeMinute, 0) > new TimeSpan(_endTimeHour, _endTimeMinute, 0);
-        if (isEndTimeBiggerInOneDayRange)
+        var isEndGreaterInOneDayRange = CurrentValue.StartDate.HasValue && 
+                                        CurrentValue.EndDate.HasValue &&
+                                        CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate!.Value.Date &&
+                                        new TimeSpan(_startTimeHour, _startTimeMinute, 0) > new TimeSpan(_endTimeHour, _endTimeMinute, 0);
+
+        if (isEndGreaterInOneDayRange)
         {
             _startTimeHour = _endTimeHour;
             _startTimeMinute = _endTimeMinute;
@@ -1563,8 +1556,6 @@ public partial class BitDateRangePicker
             StartDate = GetDateTimeOffset(CurrentValue.StartDate, _startTimeHour, _startTimeMinute),
             EndDate = GetDateTimeOffset(CurrentValue.EndDate, _endTimeHour, _endTimeMinute)
         };
-
-        _ = OnChange.InvokeAsync(CurrentValue);
     }
 
     private DateTimeOffset? GetDateTimeOffset(DateTimeOffset? date, int hour, int minute)

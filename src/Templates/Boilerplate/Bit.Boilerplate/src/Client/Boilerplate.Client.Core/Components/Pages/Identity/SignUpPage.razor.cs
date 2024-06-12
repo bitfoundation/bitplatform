@@ -102,5 +102,11 @@ public partial class SignUpPage
 
             await messageRef.ScrollIntoView();
         }
+        catch
+        {
+            isWaiting = false;
+
+            throw;
+        }
     }
 }

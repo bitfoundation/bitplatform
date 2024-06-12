@@ -14,6 +14,13 @@
                     <div class="col">
                         <div class="col-header">Products</div>
 
+                        <a class="menu-item @(isLcncDocRoute ? "active" : "")" href="@Urls.LowCodeNoCode">
+                            <div class="menu-item-content">
+                                <div class="item-title">Low-code/<span style="opacity:0.5">No-code</span></div>
+                                <div class="item-desc">(Private alpha)</div>
+                            </div>
+                        </a>
+
                         <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates">
                             <div class="menu-item-content">
                                 <div class="item-title">Boilerplate</div>
@@ -46,16 +53,6 @@
                             <div class="menu-item-content">
                                 <div class="item-title">BlazorUI</div>
                                 <div class="item-desc">Native Blazor UI components</div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col">
-                        <div class="col-header">Services</div>
-
-                        <a class="menu-item menu-item--disabled">
-                            <div class="menu-item-content">
-                                <div class="item-title">Cloud hosting solutions</div>
-                                <div class="item-desc">Coming soon</div>
                             </div>
                         </a>
 
@@ -104,6 +101,13 @@
             <div class="header-menu-popup">
                 <div class="col">
                     <div class="col-header">Products</div>
+
+                    <a class="menu-item @(isLcncDocRoute ? "active" : "")" href="@Urls.LowCodeNoCode" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Low-code/<span style="opacity:0.5">No-code</span></div>
+                            <div class="item-desc">(Private alpha)</div>
+                        </div>
+                    </a>
 
                     <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <div class="menu-item-content">
