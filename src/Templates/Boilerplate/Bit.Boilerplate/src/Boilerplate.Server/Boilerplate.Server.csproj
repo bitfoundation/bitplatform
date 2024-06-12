@@ -8,7 +8,7 @@
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.9.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.4.24267.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.5.24306.11" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
         <PackageReference Include="QRCoder" Version="1.5.1" />
     </ItemGroup>
@@ -22,25 +22,25 @@
     <ItemGroup Condition=" '$(api)' == 'true' OR '$(api)' == '' ">
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.9.1" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0-preview.4.24267.6" />
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.0-preview.4.24267.6" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0-preview.4.24267.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0-preview.5.24306.11" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.0-preview.5.24306.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0-preview.5.24306.11" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0-preview.4.24267.1" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0-preview.4.24267.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0-preview.4.24267.1" />
-        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0-preview.4.24267.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.4.24267.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0-preview.4.24267.1" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.0-preview.4.24267.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0-preview.5.24306.3" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0-preview.5.24306.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0-preview.5.24306.3" />
+        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0-preview.5.24306.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.5.24306.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0-preview.5.24306.3" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.0-preview.5.24306.11" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.Network" Version="8.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0-preview.4.24267.6" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.0-preview.4.24267.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0-preview.5.24306.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.0-preview.5.24306.11" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="3.5.1" />
         <PackageReference Include="Twilio" Version="7.1.1" />

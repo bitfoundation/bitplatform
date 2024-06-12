@@ -35,49 +35,49 @@ jobs:
           encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
 
     - name: Generate CSS/JS files BlazorUI
-      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore -f:net9.0
+      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build BlazorUI
       run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI
       run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Extras
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore -f:net9.0
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build BlazorUI.Extras
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Extras
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Assets
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore -f:net9.0
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build BlazorUI.Assets
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Assets
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files BlazorUI.Icons
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore -f:net9.0
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build BlazorUI.Icons
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Icons
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output . --configuration Release
       
     - name: Generate CSS/JS files Bswup
-      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore -f:net9.0
+      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build Bswup
       run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
 
     - name: Generate CSS/JS files Bup
-      run: dotnet build src/Bup/Bit.Bup/Bit.Bup.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore -f:net9.0
+      run: dotnet build src/Bup/Bit.Bup/Bit.Bup.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build Bup
       run: dotnet build src/Bup/Bit.Bup/Bit.Bup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bup
       run: dotnet pack src/Bup/Bit.Bup/Bit.Bup.csproj --output . --configuration Release
       
     - name: Generate CSS/JS files Butil
-      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore -f:net9.0
+      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net9.0 -c Release
     - name: dotnet build Butil
       run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Butil

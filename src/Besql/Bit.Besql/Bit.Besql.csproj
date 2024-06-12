@@ -19,8 +19,8 @@
         <PackageReference Include="Microsoft.JSInterop" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0"  Condition="'$(TargetFramework)' == 'net8.0'" />
 
-        <PackageReference Include="Microsoft.JSInterop" Version="9.0.0-preview.4.24267.6" Condition="'$(TargetFramework)' == 'net9.0'" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.4.24267.1"  Condition="'$(TargetFramework)' == 'net9.0'" />
+        <PackageReference Include="Microsoft.JSInterop" Version="9.0.0-preview.5.24306.11" Condition="'$(TargetFramework)' == 'net9.0'" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.5.24306.3"  Condition="'$(TargetFramework)' == 'net9.0'" />
     </ItemGroup>
 
     <ItemGroup>

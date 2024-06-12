@@ -9,7 +9,6 @@
         <IsTrimmable>false</IsTrimmable>
         <WarningLevel>0</WarningLevel>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net9.0'">
-            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -24,7 +23,7 @@
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.4.24267.6" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.5.24306.11" />
     </ItemGroup>
 
     <ItemGroup>
@@ -50,14 +49,28 @@
         <Using Include="Microsoft.JSInterop" />
     </ItemGroup>
 
-    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json" Condition="'$(TargetFramework)' == 'net9.0'">
+    <ItemGroup>
+        <TypeScriptFiles Include="**\*.ts" />
+        <ScssFiles Include="**\*.scss" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+        <CallTarget Targets="BuildCss"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/scripts/bit.blazorui.extras.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/bit.blazorui.extras.js --minify --outfile=wwwroot/scripts/bit.blazorui.extras.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.extras.css">
+        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

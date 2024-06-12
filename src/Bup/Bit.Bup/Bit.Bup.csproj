@@ -6,7 +6,6 @@
         <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net9.0'">
-            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -20,7 +19,7 @@
 
     <ItemGroup>
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.4.24267.6" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.5.24306.11" />
     </ItemGroup>
 
     <ItemGroup>
@@ -32,14 +31,34 @@
       <Folder Include="wwwroot\" />
     </ItemGroup>
 
-    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json" Condition="'$(TargetFramework)' == 'net9.0'">
-        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <ItemGroup>
+        <TypeScriptFiles Include="Scripts\*.ts" />
+	    <JavaScriptFiles Include="wwwroot\*.js" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+        <CallTarget Targets="BuildCss"/>
     </Target>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+        <CallTarget Targets="BuildCss"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bup.ts;Scripts/bit-bup.progress.ts" Outputs="wwwroot/bit-bup.js;wwwroot/bit-bup.progress.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bup.js --minify --outfile=wwwroot/bit-bup.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bup.progress.js --minify --outfile=wwwroot/bit-bup.progress.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildCss" Inputs="Styles/bit-bup.progress.css" Outputs="wwwroot/bit-bup.progress.css">
         <Exec Command="node_modules/.bin/esbuild Styles/bit-bup.progress.css --minify --outfile=wwwroot/bit-bup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 

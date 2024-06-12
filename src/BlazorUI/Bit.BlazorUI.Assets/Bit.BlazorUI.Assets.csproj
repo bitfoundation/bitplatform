@@ -7,7 +7,6 @@
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <WarningLevel>0</WarningLevel>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net9.0'">
-            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -23,12 +22,17 @@
         <Watch Remove="*.scss" />
     </ItemGroup>
 
-    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json" Condition="'$(TargetFramework)' == 'net9.0'">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildCss"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.assets.scss:wwwroot/styles/bit.blazorui.assets.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BuildCss" Inputs="Styles/bit.blazorui.assets.scss" Outputs="wwwroot/styles/bit.blazorui.assets.css">
+        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.assets.scss:wwwroot/styles/bit.blazorui.assets.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

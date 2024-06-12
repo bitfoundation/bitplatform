@@ -13,10 +13,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0-preview.4.24266.19" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.0-preview.4.24267.6" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0-preview.4.24266.19" />
-        <PackageReference Include="System.Text.Json" Version="9.0.0-preview.4.24266.19" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.0-preview.5.24306.11" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="System.Text.Json" Version="9.0.0-preview.5.24306.7" />
         <PackageReference Include="Riok.Mapperly" Version="3.5.1" PrivateAssets="all" ExcludeAssets="runtime">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

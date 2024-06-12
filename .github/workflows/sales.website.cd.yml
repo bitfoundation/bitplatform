@@ -31,7 +31,7 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
       
     - name: Generate CSS/JS files
-      run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Client/Bit.Websites.Sales.Client.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
+      run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Client/Bit.Websites.Sales.Client.csproj -t:BeforeBuildTasks --no-restore -c Release
 
     - name: Publish
       run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release --self-contained -r linux-x64 -o server

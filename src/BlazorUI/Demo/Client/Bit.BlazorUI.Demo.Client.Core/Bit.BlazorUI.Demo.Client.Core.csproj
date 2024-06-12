@@ -3,7 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ResolveStaticWebAssetsInputsDependsOn>
-            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -25,9 +24,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0-preview.4.24267.6" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.4.24267.6" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0-preview.4.24266.19" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0-preview.5.24306.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.5.24306.11" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0-preview.5.24306.7" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -66,14 +65,30 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+    <ItemGroup>
+        <ScssFiles Include="Components\**\*.scss" />
+        <ScssFiles Include="Shared\**\*.scss" />
+        <ScssFiles Include="Pages\**\*.scss" />
+        <ScssFiles Include="Styles\app.scss" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+        <CallTarget Targets="BuildCss"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BuildJavaScript" Inputs="Scripts/app.ts" Outputs="wwwroot/scripts/app.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="@(ScssFiles->Replace('.scss', '.css'))">
+        <Exec Command="node_modules/.bin/sass Styles/app.scss:wwwroot/styles/app.css .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

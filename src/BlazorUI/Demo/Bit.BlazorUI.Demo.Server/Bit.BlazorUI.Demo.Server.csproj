@@ -21,7 +21,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
         <PackageReference Include="Riok.Mapperly" Version="3.5.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.4.24267.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.5.24306.11" />
     </ItemGroup>
 
     <ItemGroup>

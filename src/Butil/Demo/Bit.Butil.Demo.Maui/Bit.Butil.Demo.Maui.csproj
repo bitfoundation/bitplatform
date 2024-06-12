@@ -50,10 +50,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0-preview.4.10690" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.0-preview.4.10690" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.0-preview.4.10690" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0-preview.4.24266.19" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0-preview.5.24307.10" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.0-preview.5.24307.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.0-preview.5.24307.10" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0-preview.5.24306.7" />
     </ItemGroup>
 
     <ItemGroup>

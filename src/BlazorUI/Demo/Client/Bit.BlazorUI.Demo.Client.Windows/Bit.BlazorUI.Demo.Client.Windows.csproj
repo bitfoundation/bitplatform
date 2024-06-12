@@ -25,7 +25,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="9.0.0-preview.4.10690" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="9.0.0-preview.5.24307.10" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
         <PackageReference Include="Velopack" Version="0.0.530-g4f25004" />
         

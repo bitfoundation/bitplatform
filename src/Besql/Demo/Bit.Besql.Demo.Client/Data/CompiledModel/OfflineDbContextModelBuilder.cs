@@ -24,7 +24,7 @@ namespace Bit.Besql.Demo.Client.Data
 
             WeatherForecastEntityType.CreateAnnotations(weatherForecast);
 
-            AddAnnotation("ProductVersion", "9.0.0-preview.4.24267.1");
+            AddAnnotation("ProductVersion", "9.0.0-preview.5.24306.3");
             AddRuntimeAnnotation("Relational:RelationalModel", CreateRelationalModel());
         }
 

@@ -25,11 +25,11 @@
 
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.9.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0-preview.4.24266.19" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.4.24266.19" />
-        <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.0-preview.4.24266.19" />
-        <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="9.0.0-preview.4.24266.19" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="9.0.0-preview.4.10690" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="9.0.0-preview.5.24307.10" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
         <PackageReference Include="Velopack" Version="0.0.530-g4f25004" />
         <!--/+:msbuild-conditional:noEmit -->
