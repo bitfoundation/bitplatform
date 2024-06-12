@@ -153,10 +153,6 @@
         <CallTarget Targets="BuildIsolatedScssFiles"/>
     </Target>
 
-    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
-        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
-    </Target>
-
     <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
         <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
