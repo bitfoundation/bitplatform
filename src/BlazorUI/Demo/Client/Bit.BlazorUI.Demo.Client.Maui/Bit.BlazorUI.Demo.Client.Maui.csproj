@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks>net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net9.0-android</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
@@ -12,7 +12,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>bit&#x2004;BlazorUI</ApplicationTitle>
+        <ApplicationTitle>bit BlazorUI</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -117,6 +117,12 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
+      <ProvisioningType>automatic</ProvisioningType>
+      <CodesignKey>Apple Development: Created via API (2T2Z4BLB9M)</CodesignKey>
+      <CodesignProvision>VS: com.bitplatform.BlazorUI.Demo Development</CodesignProvision>
     </PropertyGroup>
 
 </Project>

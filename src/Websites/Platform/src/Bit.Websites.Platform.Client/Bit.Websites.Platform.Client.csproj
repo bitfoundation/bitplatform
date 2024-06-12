@@ -72,7 +72,7 @@
         <TypeScriptFiles Include="**\*.ts" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <CallTarget Targets="InstallNodejsDependencies"/>
         <CallTarget Targets="BuildJavaScript"/>
         <CallTarget Targets="BuildIsolatedScssFiles"/>

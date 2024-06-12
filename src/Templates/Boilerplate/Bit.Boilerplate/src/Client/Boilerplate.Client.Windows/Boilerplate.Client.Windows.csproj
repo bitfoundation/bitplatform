@@ -58,7 +58,7 @@
         <IsolatedScssFiles Include="**\*.razor.scss" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <CallTarget Targets="BuildIsolatedScssFiles"/>
     </Target>
 
