@@ -17,8 +17,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private bool _isUnderlyingTypeNullable;
     private bool _hasInitializedParameters;
     private bool _previousParsingAttemptFailed;
-    private ValidationMessageStore? _parsingValidationMessages;
     private CancellationTokenSource _debounceCts = new();
+    private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
     protected event EventHandler OnValueChanged = default!;
