@@ -6,7 +6,6 @@
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <InvariantGlobalization>true</InvariantGlobalization>
         <ResolveStaticWebAssetsInputsDependsOn>
-            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -66,14 +65,34 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+    <ItemGroup>
+        <IsolatedScssFiles Include="**\*.razor.scss" />
+        <GlobalScssFiles Include="Styles\**\*.scss" />
+        <TypeScriptFiles Include="**\*.ts" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+        <CallTarget Targets="BuildIsolatedScssFiles"/>
+        <CallTarget Targets="BuildGlobalScssFiles"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css  --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot\scripts\app.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
+        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+    <Target Name="BuildGlobalScssFiles" Inputs="@(GlobalScssFiles)" Outputs="wwwroot/styles/app.css">        
+        <Exec Command="node_modules/.bin/sass Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>
