@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <Watch Remove="*.scss" />
+        <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
@@ -31,7 +32,7 @@
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildCss" Inputs="Styles/bit.blazorui.assets.scss" Outputs="wwwroot/styles/bit.blazorui.assets.css">
+    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.assets.css">
         <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.assets.scss:wwwroot/styles/bit.blazorui.assets.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 

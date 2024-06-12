@@ -31,11 +31,6 @@
       <Folder Include="wwwroot\" />
     </ItemGroup>
 
-    <ItemGroup>
-        <TypeScriptFiles Include="Scripts\*.ts" />
-	    <JavaScriptFiles Include="wwwroot\*.js" />
-    </ItemGroup>
-
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
         <CallTarget Targets="InstallNodejsDependencies"/>
         <CallTarget Targets="BuildJavaScript"/>
