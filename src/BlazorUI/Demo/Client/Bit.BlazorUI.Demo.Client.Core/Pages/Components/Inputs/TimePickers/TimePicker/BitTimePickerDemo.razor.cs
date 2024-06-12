@@ -521,6 +521,13 @@ public partial class BitTimePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the close button icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "ShowCloseButton",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the BitTimePicker's close button should be shown or not."
                 }
             }
         }
@@ -737,6 +744,7 @@ private FormValidationTimePickerModel formValidationTimePickerModel = new();";
     private readonly string example14RazorCode = @"
 <BitTimePicker Style=""max-width: 175px""
                IsResponsive=""true""
+               ShowCloseButton=""true""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
 
