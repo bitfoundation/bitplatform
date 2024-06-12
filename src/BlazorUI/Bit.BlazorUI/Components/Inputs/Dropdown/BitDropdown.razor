@@ -85,7 +85,7 @@
 
             @if (Combo)
             {
-                <input @ref="_comboBoxInputRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnChange"
+                <input @ref="_comboBoxInputRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput"
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
@@ -240,7 +240,7 @@
         {
             <div style="@Styles?.ResponsiveComboInputContainer"
                  class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
-                <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnChange"
+                <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput"
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-icb @Classes?.ComboBoxInput"
                        type="text"

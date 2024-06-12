@@ -208,7 +208,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an item""
              NameSelectors=""nameSelectors""
              TItem=""BitDropdownCustom"" TValue=""string""
-             OnChange=""(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()"" />
+             OnValuesChange=""(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()"" />
 <BitLabel>Changed Value: @changedItem?.Value</BitLabel>
 
 <BitDropdown Label=""Multi select""
@@ -217,7 +217,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select items""
              NameSelectors=""nameSelectors""
              TItem=""BitDropdownCustom"" TValue=""string""
-             OnChange=""(BitDropdownCustom[] items) => changedItems = items"" />
+             OnValuesChange=""(BitDropdownCustom[] items) => changedItems = items"" />
 <BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
 
 

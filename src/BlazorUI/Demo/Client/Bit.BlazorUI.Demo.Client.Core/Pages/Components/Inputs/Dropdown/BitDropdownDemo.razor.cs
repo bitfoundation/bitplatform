@@ -220,7 +220,7 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "OnChange",
+            Name = "OnValuesChange",
             Type = "EventCallback<TItem[]>",
             Description = "The callback that called when selected items change.",
         },

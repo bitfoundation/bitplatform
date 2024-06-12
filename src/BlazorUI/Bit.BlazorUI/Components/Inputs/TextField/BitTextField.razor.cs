@@ -178,11 +178,6 @@ public partial class BitTextField
     [Parameter] public int MaxLength { get; set; } = -1;
 
     /// <summary>
-    /// Callback for when the input value changes. This is called on both input and change events. 
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnChange { get; set; }
-
-    /// <summary>
     /// Callback for when focus moves into the input
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
@@ -318,9 +313,9 @@ public partial class BitTextField
         _labelId = $"BitTextField-{UniqueId}-label";
         _descriptionId = $"BitTextField-{UniqueId}-description";
 
-        if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
+        if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
         {
-            CurrentValueAsString = DefaultValue;
+            SetCurrentValueAsString(DefaultValue);
         }
 
         return base.OnInitializedAsync();
@@ -391,7 +386,6 @@ public partial class BitTextField
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)

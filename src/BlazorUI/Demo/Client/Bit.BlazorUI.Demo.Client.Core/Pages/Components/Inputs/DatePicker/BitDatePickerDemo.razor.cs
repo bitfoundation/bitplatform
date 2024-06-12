@@ -258,12 +258,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<DateTimeOffset?>",
-            Description = "The callback for when the value changes in the DatePicker."
-        },
-        new()
-        {
             Name = "Placeholder",
             Type = "string",
             DefaultValue = "string.Empty",

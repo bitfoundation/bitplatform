@@ -162,6 +162,13 @@ public partial class ComponentDemo
     {
         new()
         {
+            Name = "DebounceTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The debounce time in milliseconds.",
+        },
+        new()
+        {
             Name = "DisplayName",
             Type = "string?",
             DefaultValue = "null",
@@ -173,6 +180,20 @@ public partial class ComponentDemo
             Type = "IReadOnlyDictionary<string, object>?",
             DefaultValue = "null",
             Description = "Gets or sets a collection of additional attributes that will be applied to the created element.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<TValue?>",
+            DefaultValue = "",
+            Description = "Callback for when the input value changes.",
+        },
+        new()
+        {
+            Name = "ThrottleTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The throttle time in milliseconds.",
         },
         new()
         {

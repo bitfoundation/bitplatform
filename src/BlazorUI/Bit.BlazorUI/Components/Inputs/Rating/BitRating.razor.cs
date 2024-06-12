@@ -57,11 +57,6 @@ public partial class BitRating
     [Parameter] public int Max { get; set; } = 5;
 
     /// <summary>
-    /// Callback that is called when the rating has changed.
-    /// </summary>
-    [Parameter] public EventCallback<double> OnChange { get; set; }
-
-    /// <summary>
     /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon.
     /// </summary>
     [Parameter] public string SelectedIconName { get; set; } = "FavoriteStarFill";
@@ -86,7 +81,7 @@ public partial class BitRating
     {
         if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            CurrentValue = DefaultValue.Value;
+            InitCurrentValue(DefaultValue.Value);
         }
 
         await base.OnInitializedAsync();
@@ -142,15 +137,11 @@ public partial class BitRating
 
     private async Task HandleOnClick(int index)
     {
-        if (index > Max ||
-            index < (AllowZeroStars ? 0 : 1) ||
-            IsReadOnly is true ||
-            IsEnabled is false ||
-            (ValueHasBeenSet && ValueChanged.HasDelegate is false)) return;
+        if (IsEnabled is false || IsReadOnly is true) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (index > Max || index < (AllowZeroStars ? 0 : 1)) return;
 
         CurrentValue = index;
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     protected override bool TryParseValueFromString(string? value, out double result, [NotNullWhen(false)] out string? validationErrorMessage)

@@ -115,12 +115,6 @@ public partial class BitCheckboxDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<bool>",
-            Description = "Callback that is called when the checked value has changed.",
-        },
-        new()
-        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the checkbox clicked.",
