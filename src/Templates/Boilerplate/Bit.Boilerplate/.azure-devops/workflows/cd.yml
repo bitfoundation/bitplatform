@@ -56,7 +56,7 @@ jobs:
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release'
 
   - task: Bash@3
     displayName: 'Publish'
@@ -174,7 +174,7 @@ jobs:
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release'
 
   - task: Bash@3
     displayName: 'Publish'
@@ -253,8 +253,8 @@ jobs:
       targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
   
   - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
-      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore
+      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release
     failOnStderr: true
     displayName: Generate CSS/JS files
 

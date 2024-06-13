@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Attributes;
 using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.AspNetCore.Components.Forms;
@@ -13,7 +14,8 @@ namespace Boilerplate.Client.Core.Components;
 /// </summary>
 public partial class AppDataAnnotationsValidator : AppComponentBase
 {
-    private static readonly PropertyInfo otherPropertyNamePropertyInfo = typeof(CompareAttribute).GetProperty(nameof(CompareAttribute.OtherPropertyDisplayName))!;
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_OtherPropertyDisplayName")]
+    extern static void SetOtherPropertyDisplayName(CompareAttribute valAttribute, string name);
 
     private bool disposed;
     private ValidationMessageStore validationMessageStore = default!;
@@ -82,7 +84,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
                         {
                             otherPropertyInfoDisplayAttribute.ResourceType ??= resourceType;
                         }
-                        otherPropertyNamePropertyInfo.SetValue(attribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
+                        SetOtherPropertyDisplayName(compareAttribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
                     }
                 }
 
@@ -158,7 +160,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
                             {
                                 otherPropertyInfoDisplayAttribute.ResourceType ??= resourceType;
                             }
-                            otherPropertyNamePropertyInfo.SetValue(attribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
+                            SetOtherPropertyDisplayName(compareAttribute, stringLocalizer.GetString(otherPropertyInfoDisplayAttribute?.Name ?? compareAttribute.OtherProperty).ToString());
                         }
                     }
 

@@ -133,10 +133,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.40" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.40" />
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.40" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.40" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.60" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.60" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.60" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.60" />
         <PackageReference Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
         <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.7" />
         <PackageReference Include="Oscore.Maui.InAppReviews" Version="1.0.0" />
@@ -152,9 +152,17 @@
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
+    <ItemGroup>
+        <IsolatedScssFiles Include="**\*.razor.scss" />
+    </ItemGroup>
+
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
-        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <CallTarget Targets="BuildIsolatedScssFiles" />
+    </Target>
+
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles-&gt;Replace('.scss', '.css'))">
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
 </Project>

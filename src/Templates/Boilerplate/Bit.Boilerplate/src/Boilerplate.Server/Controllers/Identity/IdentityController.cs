@@ -274,7 +274,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             await smsService.SendSms(Localizer[nameof(AppStrings.ResetPasswordTokenSmsText), token], user.PhoneNumber!, cancellationToken);
         }
 
-        await Task.WhenAll(SendEmail(), SendSms());
+        await Task.WhenAll([SendEmail(), SendSms()]);
     }
 
     /// <summary>
@@ -312,7 +312,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             await smsService.SendSms(Localizer[nameof(AppStrings.OtpSmsText), token], user.PhoneNumber!, cancellationToken);
         }
 
-        await Task.WhenAll(SendEmail(), SendSms());
+        await Task.WhenAll([SendEmail(), SendSms()]);
     }
 
     [HttpPost]
@@ -376,7 +376,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             }
         }
 
-        await Task.WhenAll(SendEmail(), SendSms());
+        await Task.WhenAll([SendEmail(), SendSms()]);
     }
 
     [HttpGet]

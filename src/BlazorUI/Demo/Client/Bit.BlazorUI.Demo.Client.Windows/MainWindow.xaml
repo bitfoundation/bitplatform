@@ -6,7 +6,8 @@
         xmlns:blazor="http://schemas.microsoft.com/winfx/2006/xaml/presentation/blazor"
         xmlns:core="clr-namespace:Bit.BlazorUI.Demo.Client.Core;assembly=Bit.BlazorUI.Demo.Client.Core"
         mc:Ignorable="d"
-        Title="Bit.BlazorUI.Demo" Height="450" Width="800">
+        WindowState="Maximized"
+        Title="Bit.BlazorUI.Demo">
     <Grid>
         <blazor:BlazorWebView x:Name="BlazorWebView" x:FieldModifier="public" HostPage="wwwroot\index.html">
             <blazor:BlazorWebView.RootComponents>

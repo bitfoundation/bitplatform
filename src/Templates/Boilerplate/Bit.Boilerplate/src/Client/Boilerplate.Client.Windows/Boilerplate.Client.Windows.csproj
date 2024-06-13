@@ -29,9 +29,9 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.40" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.60" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
-        <PackageReference Include="Velopack" Version="0.0.503-gc69e323" />
+        <PackageReference Include="Velopack" Version="0.0.530-g4f25004" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.5" />
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" Version="5.0.5" />
@@ -54,8 +54,16 @@
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <IsolatedScssFiles Include="**\*.razor.scss" />
+    </ItemGroup>
+
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <CallTarget Targets="BuildIsolatedScssFiles" />
+    </Target>
+
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles-&gt;Replace('.scss', '.css'))">
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
 </Project>

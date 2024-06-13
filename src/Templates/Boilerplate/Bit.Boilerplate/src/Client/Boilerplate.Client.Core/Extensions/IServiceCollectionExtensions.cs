@@ -128,11 +128,11 @@ public static class IServiceCollectionExtensions
     {
         if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
         {
-            services.TryAddSingleton(typeof(TService), typeof(TService));
+            services.TryAddSingleton<TService, TService>();
         }
         else
         {
-            services.TryAddScoped(typeof(TService), typeof(TService));
+            services.TryAddScoped<TService, TService>();
         }
     }
 }
