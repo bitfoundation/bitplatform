@@ -67,8 +67,8 @@
 
 .bit-ctp-ico {
     cursor: pointer;
-    padding-right: 0;
-    padding-left: spacing(1);
+    padding-inline-end: 0;
+    padding-inline-start: spacing(1);
     color: $color-foreground-secondary;
 }
 
@@ -102,8 +102,8 @@
     }
 
     .bit-ctp-ico {
-        padding-left: 0;
-        padding-right: spacing(1);
+        padding-inline-start: 0;
+        padding-inline-end: spacing(1);
     }
 }
 

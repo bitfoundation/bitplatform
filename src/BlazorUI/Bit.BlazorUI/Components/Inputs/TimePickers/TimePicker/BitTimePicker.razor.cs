@@ -267,6 +267,11 @@ public partial class BitTimePicker
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Whether the BitTimePicker's close button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitTimePicker component.
     /// </summary>
     [Parameter] public BitTimePickerClassStyles? Styles { get; set; }
@@ -285,6 +290,7 @@ public partial class BitTimePicker
     /// The format of the time in the time-picker
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
+
 
 
     [JSInvokable("CloseCallout")]
