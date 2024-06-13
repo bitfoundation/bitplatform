@@ -79,8 +79,6 @@ public static partial class MauiProgram
 
         SetupBlazorWebView();
 
-        AppContext.SetSwitch("BlazorWebView.AndroidFireAndForgetAsync", isEnabled: true);
-
         var mauiApp = builder.Build();
 
         return mauiApp;
@@ -153,6 +151,8 @@ public static partial class MauiProgram
             settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
 #endif
         });
+
+        AppContext.SetSwitch("BlazorWebView.AndroidFireAndForgetAsync", isEnabled: true);
     }
 
 #if IOS || MACCATALYST
