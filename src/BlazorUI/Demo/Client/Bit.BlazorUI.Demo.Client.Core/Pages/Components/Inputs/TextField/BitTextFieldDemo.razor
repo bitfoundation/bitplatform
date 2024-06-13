@@ -140,7 +140,7 @@
                 <BitTextField Label="One-way" Value="@oneWayValue" />
                 <BitOtpInput Length="4" Style="margin-top: 5px;" @bind-Value="oneWayValue" />
                 <br />
-                <BitTextField Label="Two-way" @bind-Value="twoWayValue" IsMultiline="true" />
+                <BitTextField Label="Two-way" @bind-Value="twoWayValue" />
                 <BitOtpInput Length="4" Style="margin-top: 5px;" @bind-Value="twoWayValue" />
                 <br />
                 <BitTextField Label="OnChange" OnChange="(v) => onChangeValue = v" />
@@ -230,15 +230,31 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <ExamplePreview>
+            <div dir="rtl">
+                <div class="example-box">
+                    <BitTextField Dir="BitDir.Rtl"
+                                  Placeholder="پست الکترونیکی"
+                                  IconName="@BitIconName.EditMail" />
+                    <br />
+                    <br />
+                    <BitTextField IsUnderlined
+                                  Dir="BitDir.Rtl"
+                                  Label="تقویم"
+                                  IconName="@BitIconName.Calendar" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Debounce & Throttle" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <ExamplePreview>
             <div class="example-box">
-                <BitTextField Dir="BitDir.Rtl"
-                              Placeholder="پست الکترونیکی"
-                              IconName="@BitIconName.EditMail" />
+                <BitTextField Label="Debounce: 300ms" @bind-Value="debounceValue" DebounceTime="300" />
+                <div>Value: @debounceValue</div>
                 <br />
-                <BitTextField IsUnderlined
-                              Dir="BitDir.Rtl"
-                              Label="تقویم"
-                              IconName="@BitIconName.Calendar" />
+                <br />
+                <BitTextField Label="Throttle: 300ms" @bind-Value="throttleValue" ThrottleTime="300" />
+                <div>Value: @throttleValue</div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

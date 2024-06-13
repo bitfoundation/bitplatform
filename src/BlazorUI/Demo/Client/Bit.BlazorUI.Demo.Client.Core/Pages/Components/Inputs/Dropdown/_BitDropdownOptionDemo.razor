@@ -158,7 +158,7 @@
                 <BitDropdown Label="Single select"
                              Placeholder="Select an item"
                              TItem="BitDropdownOption<string>" TValue="string"
-                             OnChange="(BitDropdownOption<string>[] items) => changedItem = items.SingleOrDefault()">
+                             OnValuesChange="(BitDropdownOption<string>[] items) => changedItem = items.SingleOrDefault()">
                     @foreach (var item in basicItems)
                     {
                         <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
@@ -171,7 +171,7 @@
                              IsMultiSelect="true"
                              Placeholder="Select items"
                              TItem="BitDropdownOption<string>" TValue="string"
-                             OnChange="(BitDropdownOption<string>[] items) => changedItems = items">
+                             OnValuesChange="(BitDropdownOption<string>[] items) => changedItems = items">
                     @foreach (var item in basicItems)
                     {
                         <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />

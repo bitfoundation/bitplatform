@@ -108,12 +108,6 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<string?>",
-            Description = "Callback for when the input value changes.",
-        },
-        new()
-        {
             Name = "OnClear",
             Type = "EventCallback",
             Description = "Callback executed when the user clears the search box by either clicking 'X' or hitting escape.",

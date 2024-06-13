@@ -164,12 +164,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<string?>",
-            Description = "Callback for when the input value changes. This is called on both input and change events.",
-        },
-        new()
-        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the input clicked.",
@@ -444,6 +438,9 @@ public partial class BitTextFieldDemo
     private ValidationTextFieldModel validationTextFieldModel = new();
     public bool formIsValidSubmit;
 
+    private string? debounceValue;
+    private string? throttleValue;
+
     private async Task HandleValidSubmit()
     {
         formIsValidSubmit = true;
@@ -533,7 +530,7 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""One-way"" Value=""@oneWayValue"" />
 <BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
 
-<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" IsMultiline=""true"" />
+<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
 
 <BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" />
@@ -665,4 +662,17 @@ private void HandleInvalidSubmit() { }";
               Dir=""BitDir.Rtl""
               Label=""تقویم"" 
               IconName=""@BitIconName.Calendar"" />";
+
+    private readonly string example14RazorCode = @"
+<BitTextField Dir=""BitDir.Rtl""
+              Placeholder=""پست الکترونیکی""
+              IconName=""@BitIconName.EditMail"" />
+
+<BitTextField IsUnderlined 
+              Dir=""BitDir.Rtl""
+              Label=""تقویم"" 
+              IconName=""@BitIconName.Calendar"" />";
+    private readonly string example14CsharpCode = @"
+private string? debounceValue;
+private string? throttleValue;";
 }

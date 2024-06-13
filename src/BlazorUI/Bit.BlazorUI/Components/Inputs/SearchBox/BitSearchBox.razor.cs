@@ -121,11 +121,6 @@ public partial class BitSearchBox
     [Parameter] public string IconName { get; set; } = "Search";
 
     /// <summary>
-    /// Callback for when the input value changes.
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnChange { get; set; }
-
-    /// <summary>
     /// Callback executed when the user presses escape in the search box.
     /// </summary>
     [Parameter] public EventCallback OnEscape { get; set; }
@@ -255,9 +250,9 @@ public partial class BitSearchBox
         _scrollContainerId = $"BitSearchBox-{UniqueId}-scroll-container";
         _inputId = $"BitSearchBox-{UniqueId}-input";
 
-        if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
+        if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
         {
-            CurrentValueAsString = DefaultValue;
+            SetCurrentValueAsString(DefaultValue);
         }
 
         OnValueChanged += HandleOnValueChanged;
@@ -301,8 +296,6 @@ public partial class BitSearchBox
         CurrentValue = e.Value?.ToString();
 
         ThrottleSearch();
-
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
@@ -451,7 +444,7 @@ public partial class BitSearchBox
         }
 
         CurrentValue = _searchItems[_selectedIndex];
-        await OnChange.InvokeAsync(CurrentValue);
+
         await _js.BitSearchBoxMoveCursorToEnd(_inputRef);
     }
 
@@ -463,8 +456,6 @@ public partial class BitSearchBox
         CurrentValue = item;
 
         await CloseCallout();
-
-        await OnChange.InvokeAsync(CurrentValueAsString);
 
         await OnSearch.InvokeAsync(CurrentValueAsString);
 

@@ -98,11 +98,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public EventCallback<TItem> OnClick { get; set; }
 
     /// <summary>
-    /// Callback for when the option has been changed.
-    /// </summary>
-    [Parameter] public EventCallback<BitChangeEventArgs<TValue>> OnChange { get; set; }
-
-    /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
@@ -154,7 +149,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
         if (ValueHasBeenSet is false && DefaultValue is not null && Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
-            CurrentValue = DefaultValue;
+            InitCurrentValue(DefaultValue);
         }
 
         await base.OnInitializedAsync();
@@ -209,10 +204,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        var oldValue = CurrentValue;
         CurrentValue = GetValue(item);
-
-        await OnChange.InvokeAsync(new(oldValue, CurrentValue));
     }
 
     private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;

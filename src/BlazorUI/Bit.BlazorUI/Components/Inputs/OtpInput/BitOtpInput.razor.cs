@@ -35,11 +35,6 @@ public partial class BitOtpInput : IDisposable
     [Parameter] public int Length { get; set; } = 5;
 
     /// <summary>
-    /// Callback for when the OtpInput value changes.
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnChange { get; set; }
-
-    /// <summary>
     /// Callback for when all of the inputs are filled.
     /// </summary>
     [Parameter] public EventCallback<string?> OnFill { get; set; }
@@ -182,7 +177,7 @@ public partial class BitOtpInput : IDisposable
 
         CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
-        await CallOnChange();
+        await CallOnFill();
     }
 
 
@@ -259,7 +254,7 @@ public partial class BitOtpInput : IDisposable
         CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
         await OnInput.InvokeAsync((e, index));
-        await CallOnChange();
+        await CallOnFill();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
@@ -323,10 +318,8 @@ public partial class BitOtpInput : IDisposable
         }
     }
 
-    private async Task CallOnChange()
+    private async Task CallOnFill()
     {
-        await OnChange.InvokeAsync(CurrentValue);
-
         if (Length == CurrentValue?.Length)
         {
             await OnFill.InvokeAsync(CurrentValue);

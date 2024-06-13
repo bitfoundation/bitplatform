@@ -172,12 +172,6 @@ public partial class BitSpinButtonDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<double>",
-            Description = "Callback for when the spin button value change.",
-        },
-        new()
-        {
             Name = "OnDecrement",
             Type = "EventCallback<double>",
             Description = "Callback for when the decrement button or down arrow key is pressed.",

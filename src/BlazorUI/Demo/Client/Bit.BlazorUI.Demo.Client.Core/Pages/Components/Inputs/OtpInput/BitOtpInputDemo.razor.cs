@@ -40,12 +40,6 @@ public partial class BitOtpInputDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<string?>",
-            Description = "Callback for when the OtpInput value changes.",
-        },
-        new()
-        {
             Name = "OnFill",
             Type = "EventCallback<string?>",
             Description = "Callback for when all of the inputs are filled.",

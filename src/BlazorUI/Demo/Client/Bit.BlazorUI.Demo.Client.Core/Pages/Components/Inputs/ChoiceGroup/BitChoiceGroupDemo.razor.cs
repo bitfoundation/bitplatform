@@ -112,12 +112,6 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the option has been changed.",
-        },
-        new()
-        {
             Name = "Options",
             Type = "RenderFragment?",
             DefaultValue = "null",
