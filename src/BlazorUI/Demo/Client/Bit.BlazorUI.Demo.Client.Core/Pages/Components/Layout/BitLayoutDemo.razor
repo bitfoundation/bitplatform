@@ -1,0 +1,53 @@
+﻿@page "/components/layout"
+
+<PageOutlet Url="components/layout"
+            Title="layout"
+            Description="layout component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Layout"
+               ComponentDescription="Layout can be used to create a base UI structure for an application."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div class="container">
+                <BitLayout>
+                    <Header>
+                        <div class="header">
+                            this is header
+                        </div>
+                    </Header>
+                    <Main>
+                        <div class="main">
+                            this is main
+                        </div>
+                    </Main>
+                    <Footer>
+                        <div class="footer">
+                            this is footer
+                        </div>
+                    </Footer>
+                </BitLayout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Classes & Styles" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="container">
+                <BitLayout Classes="@(new() { Header="header", Main="main", Footer="footer" })"
+                           Styles="@(new() { Main="height:500px" })">
+                    <Header>
+                        this is header
+                    </Header>
+                    <Main>
+                        this is main
+                    </Main>
+                    <Footer>
+                        this is footer
+                    </Footer>
+                </BitLayout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
