@@ -151,6 +151,8 @@ public static partial class MauiProgram
             settings.BlockNetworkLoads = settings.BlockNetworkImage = false;
 #endif
         });
+
+        AppContext.SetSwitch("BlazorWebView.AndroidFireAndForgetAsync", isEnabled: true);
     }
 
 #if IOS || MACCATALYST
