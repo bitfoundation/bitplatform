@@ -33,9 +33,12 @@
             <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
         }
 
-        <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+        @if (_extraComponents.Contains(ComponentName) is false)
+        {
+            <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
-        <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+            <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+        }
 
         <ComponentClassesTable Classes="ComponentSubClasses" />
 
