@@ -3,9 +3,11 @@
 .bit-lyt {
     margin: 0;
     padding: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
+    display: flex;
+    min-width: 100%;
+    min-height: 100%;
+    flex-flow: column;
+    position: relative;
     box-sizing: border-box;
 
     &.bit-dis {
@@ -14,22 +16,30 @@
 }
 
 .bit-lyt-hdr {
-    top: 0;
-    z-index: 1;
     width: 100%;
-    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.bit-lyt-fhd {
+    top: 0;
     position: fixed;
+    z-index: $zindex-base;
 }
 
 .bit-lyt-man {
     width: 100%;
-    min-height: 100vh;
+    flex-grow: 1;
+    display: flex;
     box-sizing: border-box;
 }
 
 .bit-lyt-ftr {
-    bottom: 0;
-    z-index: 1;
     width: 100%;
-    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.bit-lyt-fft {
+    bottom: 0;
+    position: fixed;
+    z-index: $zindex-base;
 }

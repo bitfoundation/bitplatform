@@ -306,6 +306,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Layout/BitLayoutDemo.razor.css",
+        "inputFile": "Pages/Components/Layout/BitLayoutDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Link/BitLinkDemo.razor.css",
         "inputFile": "Pages/Components/Link/BitLinkDemo.razor.scss",
         "minify": { "enabled": false },

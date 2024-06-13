@@ -1,0 +1,33 @@
+﻿@import '../../../Styles/abstracts/_colors.scss';
+@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.container {
+    height: 300px;
+    padding: 1rem;
+    overflow: auto;
+    border: 1px solid gray;
+}
+
+::deep {
+    .header {
+        display: flex;
+        padding: 0.5rem;
+        justify-content: center;
+        background-color: $bit-color-background-secondary;
+    }
+
+    .main {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .footer {
+        display: flex;
+        padding: 0.5rem;
+        justify-content: center;
+        background-color: $bit-color-background-secondary;
+    }
+}
