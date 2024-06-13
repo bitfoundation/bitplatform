@@ -18,12 +18,12 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser history features you need to inject the Bit.Butil.History class and use it like this:
-<pre class="code-box">
+<CodeBox>
 @@inject Bit.Butil.History history
 
 @@code {
     await history.GoBack();
-}</pre>
+}</CodeBox>
         </div>
     </section>
 
@@ -36,21 +36,19 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/length" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @getLengthExampleCode
-                            </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitButton OnClick="@GetLength">GetLength</BitButton>
-                            <br />
-                            <br />
-                            <div>History length is: @historyLength</div>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox Code="@getLengthExampleCode" />
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetLength">GetLength</BitButton>
+                        <br />
+                        <br />
+                        <div>History length is: @historyLength</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 
@@ -59,20 +57,18 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @setScrollRestorationExampleCode
-                            </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitCheckbox @bind-Value="isScrollRestorationManual" Label="@(isScrollRestorationManual ? "Manual" : "Auto")" />
-                            <br />
-                            <BitButton OnClick="@SetScrollRestoration">SetScrollRestoration</BitButton>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox Code="@setScrollRestorationExampleCode" />
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitCheckbox @bind-Value="isScrollRestorationManual" Label="@(isScrollRestorationManual ? "Manual" : "Auto")" />
+                        <br />
+                        <BitButton OnClick="@SetScrollRestoration">SetScrollRestoration</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 
@@ -81,44 +77,40 @@
             <br /><br />
 
             <b>GoBack</b>: <br />
-            This asynchronous method goes to the previous page in session history, the same action as when the user clicks the browser's Back button. 
+            This asynchronous method goes to the previous page in session history, the same action as when the user clicks the browser's Back button.
             Calling this method to go back beyond the first page in the session history has no effect and doesn't raise an exception
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/back" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @goBackExampleCode
-                            </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitButton OnClick="@(() => history.GoBack())">GoBack</BitButton>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox Code="@goBackExampleCode" />
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@(() => history.GoBack())">GoBack</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 
             <b>GoForward</b>: <br />
-            This asynchronous method goes to the next page in session history, the same action as when the user clicks the browser's Forward button. 
+            This asynchronous method goes to the next page in session history, the same action as when the user clicks the browser's Forward button.
             Calling this method to go forward beyond the most recent page in the session history has no effect and doesn't raise an exception
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/forward" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @goForwardExampleCode
-                            </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitButton OnClick="@(() => history.GoForward())">GoForward</BitButton>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox Code="@goForwardExampleCode" />
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@(() => history.GoForward())">GoForward</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 
@@ -128,20 +120,18 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/go" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @goExampleCode
-                            </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitSpinButton @bind-Value="delta" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
-                            <br />
-                            <BitButton OnClick="@Go">Go</BitButton>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox Code="@goExampleCode" />
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitSpinButton @bind-Value="delta" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@Go">Go</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 
@@ -150,20 +140,18 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/pushState" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @pushStateExampleCode
-                            </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitTextField @bind-Value="pushStateUrl" Style="max-width: 18.75rem;" />
-                            <br />
-                            <BitButton OnClick="@PushState">PushState</BitButton>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox Code="@pushStateExampleCode" />
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="pushStateUrl" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@PushState">PushState</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 
@@ -172,20 +160,18 @@
             (<a href="https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState" target="_blank">MDN</a>).
             <br /><br />
             <BitAccordion Title="Sample">
-                    <BitPivot>
-                        <BitPivotItem HeaderText="Code">
-                            <pre class="code-box">
-                                @replaceStateExampleCode
-                            </pre>
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Result">
-                            <br />
-                            <BitTextField @bind-Value="replaceStateUrl" Style="max-width: 18.75rem;" />
-                            <br />
-                            <BitButton OnClick="@ReplaceState">ReplaceState</BitButton>
-                            <br />
-                        </BitPivotItem>
-                    </BitPivot>
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox Code="@replaceStateExampleCode" />
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="replaceStateUrl" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@ReplaceState">ReplaceState</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
             </BitAccordion>
             <br /><br />
 

@@ -18,8 +18,7 @@
         <div class="section-card-txt">
             A sample of all configuration available inside of the service worker file is shown here:
 
-<pre class="code-box">
-self.assetsInclude = [/\data.db$/];
+            <CodeBox Code="@(@"self.assetsInclude = [/\data.db$/];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
 self.defaultUrl = '/';
 self.prohibitedUrls = [/\/admin\//];
@@ -27,10 +26,10 @@ self.serverHandledUrls = [/\/api\//];
 self.serverRenderedUrls = [/\/privacy$/];
 self.externalAssets = [
     {
-        "url": "/"
+        ""url"": ""/""
     },
     {
-        "url": "https://www.googletagmanager.com/gtag/js?id=G-G123456789"
+        ""url"": ""https://www.googletagmanager.com/gtag/js?id=G-G123456789""
     }
 ];
 self.assetsUrl = '/service-worker-assets.js';
@@ -45,14 +44,13 @@ self.enableIntegrityCheck = true;
 self.enableDiagnostics = true;
 self.enableFetchDiagnostics = true;
 
-self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');</pre>
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');")" />
 
             <div class="section-card">
                 <b>Note</b>: The most important line here is the last line which is the only mandatory config in this file
                 that imports the Bswup service-worker file:
 
-<pre class="code-box" style="margin-bottom:0">
-self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');</pre>
+                <CodeBox Code="self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');" />
             </div>
 
             These available configurations are explained below:
@@ -86,13 +84,11 @@ self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');</pre>
             <br /><br />
             <b>ignoreDefaultInclude</b>: Ignores the default asset includes array which is provided by the
             Bswup itself which is like this:
-<pre class="code-box">
-[/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/]</pre>
+            <CodeBox Code="[/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.ttf$/, /\.webp$/]" />
 
             <b>ignoreDefaultExclude</b>: Ignores the default asset excludes array which is provided by the Bswup
             itself which is like this:
-<pre class="code-box">
-[/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/]</pre>
+            <CodeBox Code="[/^_content\/Bit\.Bswup\/bit-bswup\.sw\.js$/, /^service-worker\.js$/]" />
 
             <b>Note</b>: Keep in mind that caching service-worker related files will corrupt the update cycle of the service-worker.
             Only the browser should handle these files.

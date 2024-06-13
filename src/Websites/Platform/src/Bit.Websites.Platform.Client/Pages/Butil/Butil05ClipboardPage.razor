@@ -18,12 +18,12 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser Clipboard features you need to inject the Bit.Butil.Clipboard class and use it like this:
-<pre class="code-box">
+<CodeBox>
 @@inject Bit.Butil.Clipboard clipboard
 
 @@code {
     var text = await clipboard.ReadText();
-}</pre>
+}</CodeBox>
         </div>
     </section>
 
@@ -39,7 +39,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">@readTextExampleCode</pre>
+                        <CodeBox Code="@readTextExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -59,7 +59,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">@writeTextExampleCode</pre>
+                        <CodeBox Code="@writeTextExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -78,7 +78,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">@readExampleCode</pre>
+                        <CodeBox Code="@readExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -104,7 +104,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">@writeExampleCode</pre>
+                        <CodeBox Code="@writeExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

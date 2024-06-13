@@ -19,14 +19,14 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser storage features you need to inject the Bit.Butil.Storage class and use it like this:
-<pre class="code-box">
+<CodeBox>
 @@inject Bit.Butil.LocalStorage localStorage
 @@inject Bit.Butil.SessionStorage sessionStorage
 
 @@code {
     await localStorage.SetItem("my-key", "my-value");
     await sessionStorage.SetItem("my-key2", "my-value2");
-}</pre>
+}</CodeBox>
         </div>
     </section>
 
@@ -41,9 +41,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
-                            @getLengthExampleCode
-                            </pre>
+                        <CodeBox Code="@getLengthExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -66,9 +64,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
-                            @getKeyExampleCode
-                            </pre>
+                        <CodeBox Code="@getKeyExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -93,9 +89,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
-                            @getItemExampleCode
-                            </pre>
+                        <CodeBox Code="@getItemExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -123,9 +117,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
-                            @setItemExampleCode
-                            </pre>
+                        <CodeBox Code="@setItemExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -148,9 +140,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
-                            @removeItemExampleCode
-                            </pre>
+                        <CodeBox Code="@removeItemExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -173,9 +163,7 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
-                            @clearItemExampleCode
-                            </pre>
+                        <CodeBox Code="@clearItemExampleCode" />
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

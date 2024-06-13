@@ -18,8 +18,7 @@
         <div class="section-card-txt">
             below you can see a sample bswup events handler function in js:
 
-<pre class="code-box">
-const appEl = document.getElementById('app');
+            <CodeBox Code="@(@"const appEl = document.getElementById('app');
 const bswupEl = document.getElementById('bit-bswup');
 const progressBar = document.getElementById('bit-bswup-progress-bar');
 const reloadButton = document.getElementById('bit-bswup-reload');
@@ -33,7 +32,7 @@ function bitBswupHandler(type, data) {
 
         case BswupMessage.activate: return console.log('new version activated:', data.version);
 
-        case BswupMessage.downloadStarted: 
+        case BswupMessage.downloadStarted:
             appEl.style.display = 'none';
             bswupEl.style.display = 'block';
             return console.log('downloading assets started:', data?.version);
@@ -59,7 +58,7 @@ function bitBswupHandler(type, data) {
             reloadButton.onclick = data.reload;
             return console.log('new update ready.');
     }
-}</pre>
+}")" />
         </div>
     </section>
 

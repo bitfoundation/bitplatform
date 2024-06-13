@@ -48,6 +48,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/CodeBox.razor.css",
+        "inputFile": "Pages/CodeBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/ContactUsPage.razor.css",
         "inputFile": "Pages/ContactUsPage.razor.scss",
         "minify": { "enabled": false },
