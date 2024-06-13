@@ -6,7 +6,6 @@
         <TargetFramework>net8.0</TargetFramework>
         <IsTrimmable>true</IsTrimmable>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net8.0'">
-            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -29,11 +28,20 @@
         <None Include="tsconfig.json" />
     </ItemGroup>
 
-    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+    <ItemGroup>
+        <TypeScriptFiles Include="**\*.ts" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/bit-butil.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>

@@ -31,7 +31,7 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
       
     - name: Generate CSS/JS files
-      run: dotnet build src/Websites/Platform/src/Bit.Websites.Platform.Client/Bit.Websites.Platform.Client.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
+      run: dotnet build src/Websites/Platform/src/Bit.Websites.Platform.Client/Bit.Websites.Platform.Client.csproj -t:BeforeBuildTasks --no-restore -c Release
 
     - name: Publish
       run: dotnet publish src/Websites/Platform/src/Bit.Websites.Platform.Server/Bit.Websites.Platform.Server.csproj -c Release --self-contained -r linux-x64 -o server
@@ -67,7 +67,7 @@ jobs:
           package: .
 
       - name: Purge cache
-        uses: jakejarvis/cloudflare-purge-action@master
+        uses: jakejarvis/cloudflare-purge-action@0.3.0
         env:
           CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}

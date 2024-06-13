@@ -6,7 +6,6 @@
         <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net8.0'">
-            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -33,15 +32,24 @@
       <Folder Include="wwwroot\" />
     </ItemGroup>
 
-    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+        <CallTarget Targets="BuildCss"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
+    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.js --minify --outfile=wwwroot/bit-bswup.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.progress.js --minify --outfile=wwwroot/bit-bswup.progress.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw.js --minify --outfile=wwwroot/bit-bswup.sw.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildCss" Inputs="Styles/bit-bswup.progress.css" Outputs="wwwroot/bit-bswup.progress.css">
         <Exec Command="node_modules/.bin/esbuild Styles/bit-bswup.progress.css --minify --outfile=wwwroot/bit-bswup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
