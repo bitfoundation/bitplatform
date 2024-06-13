@@ -54,6 +54,8 @@ public static class MauiProgram
 
             SetupBlazorWebView();
 
+            AppContext.SetSwitch("BlazorWebView.AndroidFireAndForgetAsync", isEnabled: true);
+
             var mauiApp = builder.Build();
 
             return mauiApp;
