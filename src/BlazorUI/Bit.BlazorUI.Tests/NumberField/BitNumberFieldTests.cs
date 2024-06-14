@@ -477,7 +477,7 @@ public class BitNumberFieldTests : BunitTestContext
 
     [DataTestMethod,
          DataRow("3", null),
-         DataRow(null, "{0} cm"),
+         DataRow(null, "00"),
          DataRow(null, null)
     ]
     public void BitNumberFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string numberFormat)
