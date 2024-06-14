@@ -200,10 +200,9 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow("{0} cm", 0),
-         DataRow("{0} Inch", 24),
-         DataRow("{0} foot", 100),
-         DataRow("{0:0} foot", 1000)
+         DataRow("0", 11),
+         DataRow("C2", 100),
+         DataRow("0:00000", 1363)
     ]
     public void BitNumberFieldShouldHaveNumberFormaWhenItsPropertySet(string numberFormat, int defaultValue)
     {
@@ -215,7 +214,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         var input = component.Find("input");
         var inputValue = input.GetAttribute("value");
-        var expectedValue = string.Format(numberFormat, defaultValue);
+        var expectedValue = defaultValue.ToString(numberFormat);
 
         Assert.AreEqual(expectedValue, inputValue);
     }
@@ -477,16 +476,15 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow("3", null, 0),
-         DataRow(null, "{0} cm", 0),
-         DataRow(null, null, 0)
+         DataRow("3", null),
+         DataRow(null, "{0} cm"),
+         DataRow(null, null)
     ]
-    public void BitNumberFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string numberFormat, int precision)
+    public void BitNumberFieldInputShouldHaveCorrectAriaValueText(string ariaValueText, string numberFormat)
     {
         var component = RenderComponent<BitNumberField<double>>(parameters =>
         {
             parameters.Add(p => p.AriaValueText, ariaValueText);
-            parameters.Add(p => p.Precision, precision);
             if (numberFormat.HasValue())
             {
                 parameters.Add(p => p.NumberFormat, numberFormat);
@@ -494,7 +492,11 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        var expectedResult = ariaValueText.HasValue() ? ariaValueText : numberFormat.HasValue() ? string.Format(numberFormat, Normalize(component.Instance.Value, precision)) : component.Instance.Value.ToString();
+        var expectedResult = ariaValueText.HasValue()
+            ? ariaValueText
+            : numberFormat.HasValue()
+                ? component.Instance.Value.ToString(numberFormat)
+                : component.Instance.Value.ToString();
         Assert.AreEqual(expectedResult, input.GetAttribute("aria-valuetext"));
     }
 
@@ -644,13 +646,13 @@ public class BitNumberFieldTests : BunitTestContext
         var isNumber = double.TryParse(userInput, out var numericValue);
         if (isNumber)
         {
-            expectedResult = Normalize(numericValue, 0);
+            expectedResult = numericValue;
             if (expectedResult > max) expectedResult = max;
             if (expectedResult < min) expectedResult = min;
         }
         else
         {
-            expectedResult = Normalize(defaultValue, 0);
+            expectedResult = defaultValue;
         }
 
         Assert.AreEqual(expectedResult, inputValue);
@@ -682,7 +684,7 @@ public class BitNumberFieldTests : BunitTestContext
         var isNumber = double.TryParse(userInput, out var numericValue);
         if (isNumber)
         {
-            expectedResult = Normalize(numericValue, 1);
+            expectedResult = numericValue;
             if (expectedResult > max) expectedResult = max;
             if (expectedResult < min) expectedResult = min;
         }
@@ -717,8 +719,7 @@ public class BitNumberFieldTests : BunitTestContext
         };
         input.Input(changeArgs);
         var inputValue = component.Instance.Value;
-        var precision = CalculatePrecision(step);
-        var expectedResult = Normalize(int.Parse(userInput), precision);
+        var expectedResult = int.Parse(userInput);
         if (expectedResult > max) expectedResult = max;
         if (expectedResult < min) expectedResult = min;
 
@@ -936,31 +937,6 @@ public class BitNumberFieldTests : BunitTestContext
         }
 
         Assert.AreEqual(!isInvalid, numberField.ClassList.Contains("bit-inv"));
-    }
-
-    private double? Normalize(double? value, int precision) =>
-        value.HasValue ? (double?)Math.Round(value.Value, precision) : null;
-
-    private int CalculatePrecision(int value)
-    {
-        var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
-        if (regex.IsMatch(value.ToString()) is false) return 0;
-
-        var matches = regex.Matches(value.ToString());
-        if (matches.Count == 0) return 0;
-
-        var groups = matches[0].Groups;
-        if (groups[1] != null && groups[1].Length != 0)
-        {
-            return -groups[1].Length;
-        }
-
-        if (groups[2] != null && groups[2].Length != 0)
-        {
-            return groups[2].Length;
-        }
-
-        return 0;
     }
 
     private void HandleValueChanged(int value)

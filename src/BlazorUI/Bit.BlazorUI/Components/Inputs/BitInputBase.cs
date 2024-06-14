@@ -294,7 +294,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             parsingFailed = false;
             CurrentValue = default;
         }
-        else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
+        else if (TryParseValueFromString(value, out var parsedValue, out var parsingErrorMessage))
         {
             parsingFailed = false;
             CurrentValue = parsedValue!;
@@ -307,7 +307,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             if (EditContext is not null)
             {
                 _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
-                _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
+                _parsingValidationMessages.Add(FieldIdentifier, parsingErrorMessage);
 
                 // Since we're not writing to CurrentValue, we'll need to notify about modification from here
                 EditContext.NotifyFieldChanged(FieldIdentifier);
@@ -324,7 +324,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected virtual string? FormatValueAsString(TValue? value) => value?.ToString();
 
-    protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage);
+    protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage);
 
     protected virtual void RegisterFieldIdentifier()
     {
