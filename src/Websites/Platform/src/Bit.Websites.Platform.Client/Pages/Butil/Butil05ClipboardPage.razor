@@ -18,12 +18,12 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser Clipboard features you need to inject the Bit.Butil.Clipboard class and use it like this:
-<pre class="code-box">
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.Clipboard clipboard
 
 @@code {
     var text = await clipboard.ReadText();
-}</pre>
+}</CodeBox>
         </div>
     </section>
 
@@ -39,7 +39,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">@readTextExampleCode</pre>
+                        <CodeBox>
+                            @readTextExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -59,7 +61,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">@writeTextExampleCode</pre>
+                        <CodeBox>
+                            @writeTextExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -78,7 +82,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">@readExampleCode</pre>
+                        <CodeBox>
+                            @readExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -104,7 +110,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">@writeExampleCode</pre>
+                        <CodeBox>
+                            @writeExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

@@ -18,12 +18,12 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser crypto features you need to inject the Bit.Butil.Crypto class and use it like this:
-<pre class="code-box">
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.Crypto crypto
 
 @@code {
     await crypto.Encrypt(...);
-}</pre>
+}</CodeBox>
         </div>
     </section>
 
@@ -38,9 +38,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @encryptExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -63,9 +63,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @decryptExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

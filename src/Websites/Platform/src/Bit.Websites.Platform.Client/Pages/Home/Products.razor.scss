@@ -109,7 +109,7 @@
         padding-right: 2.25rem;
     }
 
-    .code-box {
+    ::deep .code-box-content {
         background-color: $bit-color-background-primary;
     }
 }
@@ -232,8 +232,4 @@
     &:hover {
         transform: translateX(5px);
     }
-}
-
-.code-box {
-    @include CodeBox;
 }
