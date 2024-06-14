@@ -19,9 +19,9 @@
             Since Bswup is taking care of the lifecycle of the application, we need to disable
             the autostart of the Blazor by adding autostart=false to the Blazor script tag:
 
-            <CodeBox Code="@("<script src=\"_framework/blazor.web.js\" autostart=\"false\"></script>")" />
+            <CodeBox>&lt;script src="_framework/blazor.web.js" autostart="false">&lt;/script></CodeBox>
             Or for the standalone template:
-            <CodeBox Code="@("<script src=\"_framework/blazor.webassembly.js\" autostart=\"false\"></script>")" />
+            <CodeBox>&lt;script src="_framework/blazor.webassembly.js" autostart="false">&lt;/script></CodeBox>
         </div>
     </section>
 
@@ -31,12 +31,12 @@
         <div class="section-card-txt">
             The next step is to add and configure the bit Bswup's script tag itself:
 
-        <CodeBox Code="@(@"<script src=""_content/Bit.Bswup/bit-bswup.js""
-        scope=""/""
-        log=""verbose""
-        sw=""service-worker.js""
-        handler=""bitBswupHandler""
-        blazorScript=""_framework/blazor.webassembly.js""></script>")" />
+           <CodeBox>&lt;script src="_content/Bit.Bswup/bit-bswup.js"
+        scope="/"
+        log="verbose"
+        sw="service-worker.js"
+        handler="bitBswupHandler"
+        blazorScript="_framework/blazor.webassembly.js">&lt;/script></CodeBox>
         </div>
 
         <div class="section-card-txt">

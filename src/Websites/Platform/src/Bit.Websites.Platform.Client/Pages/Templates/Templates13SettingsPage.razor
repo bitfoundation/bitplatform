@@ -21,7 +21,7 @@
             bit project templates uses ASP.NET Core Identity + bearer authentication and you can change their settings.
             You can find these settings in the <b>appsettings.json</b> file in the Server project.
         </div>
-        <pre class="code-box">"IdentitySettings": {
+        <CodeBox>"IdentitySettings": {
     "Issuer": "Boilerplate",
     "Audience": "Boilerplate",
     "IdentityCertificatePassword": "P@ssw0rdP@ssw0rd", // It can also be configured using: dotnet user-secrets set "AppSettings:IdentitySettings:IdentityCertificatePassword" "P@ssw0rdP@ssw0rd"
@@ -35,7 +35,7 @@
     "RequireUniqueEmail": "true",
     "ConfirmationEmailResendDelay": "0.00:02:00", // Format: D.HH:mm:ss
     "ResetPasswordEmailResendDelay": "0.00:02:00" // Format: D.HH:mm:ss
-}</pre>
+}</CodeBox>
         <div class="section-card-txt">
             <b>Note</b>: IdentityCertificatePassword referring to the password of the
             <b>IdentityCertificate.pfx</b> file in the Server project.
@@ -44,7 +44,7 @@
             Various methods exist for creating a PFX file. You may choose to follow your preferred approach for generating PFX files.
             Alternatively, you can execute the following command, specifying the desired password and path for your PFX file.
         </div>
-        <pre class="code-box">dotnet dev-certs https --export-path IdentityCertificate.pfx --password P@ssw0rdP@ssw0rd</pre>
+        <CodeBox>dotnet dev-certs https --export-path IdentityCertificate.pfx --password P@ssw0rdP@ssw0rd</CodeBox>
         <b>Note</b>: Replace P@ssw0rdP@ssw0rd with strong password and use that as IdentityCertificatePassword's value in appsettings.json
     </section>
 
@@ -60,14 +60,14 @@
             You can also use any test smtp server such as <a href="https://ethereal.email/" target="_blank">ethereal.email</a> or any production ready smtp server such as
             <a href="https://docs.sendgrid.com/for-developers/sending-email/getting-started-smtp" target="_blank">SendGrid</a>
         </div>
-        <pre class="code-box">"EmailSettings": {
+        <CodeBox>"EmailSettings": {
     "Host": "smtp.ethereal.email",
     "Port": "587",
     "DefaultFromEmail": "alva.schiller52@ethereal.email",
     "DefaultFromName": "Alva Schiller",
     "UserName": "alva.schiller52@ethereal.email",
     "Password": "4PyGY8cDQ8mvu6h7qB"
-}</pre>
+}</CodeBox>
         <div class="section-card-txt">
             <b>Note</b>: You can find email templates used for email confirmation and reset password in the <b>Components</b> directory of the Server project.
         </div>
@@ -79,7 +79,7 @@
             bit project templates save user profile image in <b>Attachments\Profiles</b> directory
             of Environment.SpecialFolder.ApplicationData as default, you can change this path as you need from the <b>appsettings.json</b> file in the Server project.
         </div>
-        <div class="code-box">"UserProfileImagesDir": "Attachments/Profiles/"</div>
+        <CodeBox>"UserProfileImagesDir": "Attachments/Profiles/"</CodeBox>
     </section>
 
     <section class="section-card">
@@ -89,9 +89,9 @@
             Health checks APIs are exposed as an HTTP endpoint. You can change the settings of this feature in the
             <b>appsettings.json</b> file in the Server project.
         </div>
-        <pre class="code-box">"HealthCheckSettings": {
+        <CodeBox>"HealthCheckSettings": {
     "EnableHealthChecks": true
-}</pre>
+}</CodeBox>
         <div class="section-card-txt">
             <b>Note</b>: You can find Health Checks dashboard from <b><a href="http://localhost:5030/healthchecks-ui">http://localhost:5030/healthchecks-ui</a></b> by default.
         </div>

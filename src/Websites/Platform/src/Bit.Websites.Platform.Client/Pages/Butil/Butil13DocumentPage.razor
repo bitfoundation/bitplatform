@@ -18,7 +18,7 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser document features you need to inject the Bit.Butil.Document class and use it like this:
-<CodeBox>
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.Document document
 
 @@code {
@@ -64,7 +64,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <CodeBox Code="@designModeExampleCode" />
+                        <CodeBox>
+                            @designModeExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

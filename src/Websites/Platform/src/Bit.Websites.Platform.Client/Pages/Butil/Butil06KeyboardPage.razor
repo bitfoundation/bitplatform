@@ -18,7 +18,7 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser Keyboard features you need to inject the Bit.Butil.Keyboard class and use it like this:
-<CodeBox>
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.Keyboard keyboard
 
 @@code {
@@ -38,7 +38,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <CodeBox Code="@addExampleCode" />
+                        <CodeBox>
+                            @addExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

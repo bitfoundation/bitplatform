@@ -19,24 +19,24 @@
             The BswupProgress component can be used to implement a customizable update progress easily.
             In order to use this component first add its script tag to the default document of your app:
             <br />
-            <CodeBox Code="@("<script src=\"_content/Bit.Bswup/bit-bswup.progress.js\"></script>")" />
+            <CodeBox>&lt;script src="_content/Bit.Bswup/bit-bswup.progress.js">&lt;/script></CodeBox>
 
             Then you can use it in your app like this:
             <br />
-            <CodeBox Code="@(@"<div>
-    <BswupProgress AppContainer=""#app-container"" AutoReload=false>
-        <div class=""bswup-progress-text"" />
-        <svg class=""bswup-container"">
-            <circle r=""40%"" cx=""50%"" cy=""50%"" />
-            <circle r=""40%"" cx=""50%"" cy=""50%"" />
-        </svg>
-    </BswupProgress>
-    <button id=""bit-bswup-reload"">Update available, Click to Reload</button>
-</div>")" />
+            <CodeBox>&lt;div>
+    &lt;BswupProgress AppContainer="#app-container" AutoReload=false>
+        &lt;div class="bswup-progress-text" />
+        &lt;svg class="bswup-container">
+            &lt;circle r="40%" cx="50%" cy="50%" />
+            &lt;circle r="40%" cx="50%" cy="50%" />
+        &lt;/svg>
+    &lt;/BswupProgress>
+    &lt;button id="bit-bswup-reload">Update available, Click to Reload&lt;/button>
+&lt;/div></CodeBox>
 
             <BitAccordion Title="CSS">
                 <div style="max-height: 300px; overflow: auto;">
-                    <CodeBox Code="@(@"#bit-bswup {
+                    <CodeBox>#bit-bswup {
     top: 2px;
     left: 50%;
     display: none;
@@ -44,7 +44,7 @@
     position: fixed;
     text-align: center;
     transform: translateX(-50%);
-    font-family: ""Segoe UI"", ""Segoe UI Web (West European)"", ""Segoe UI"";
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI";
 }
 
 #bit-bswup .bswup-container {
@@ -87,7 +87,7 @@
     right: 10px;
     display: none;
     position: fixed;
-}")" />
+}</CodeBox>
                 </div>
             </BitAccordion>
             <br /><br />

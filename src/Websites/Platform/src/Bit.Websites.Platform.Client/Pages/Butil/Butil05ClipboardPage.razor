@@ -18,7 +18,7 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser Clipboard features you need to inject the Bit.Butil.Clipboard class and use it like this:
-<CodeBox>
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.Clipboard clipboard
 
 @@code {
@@ -39,7 +39,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <CodeBox Code="@readTextExampleCode" />
+                        <CodeBox>
+                            @readTextExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -59,7 +61,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <CodeBox Code="@writeTextExampleCode" />
+                        <CodeBox>
+                            @writeTextExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -78,7 +82,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <CodeBox Code="@readExampleCode" />
+                        <CodeBox>
+                            @readExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -104,7 +110,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <CodeBox Code="@writeExampleCode" />
+                        <CodeBox>
+                            @writeExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

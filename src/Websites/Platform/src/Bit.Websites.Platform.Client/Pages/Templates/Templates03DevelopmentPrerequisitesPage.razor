@@ -25,21 +25,13 @@
                 </li>
                 <BitAccordion Title=".NET 8 Sdk on Linux">
                     <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                    <div class="code-box">
-                        wget https://download.visualstudio.microsoft.com/download/pr/86497c4f-3dc8-4ee7-9f6a-9e0464059427/293d074c28bbfd9410f4db8e021fa290/dotnet-sdk-8.0.301-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-                        <br />
-                        mkdir -p $HOME/.dotnet
-                        <br />
-                        tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-                        <br />
-                        echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-                        <br />
-                        export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-                        <br />
-                        dotnet dev-certs https --trust
-                        <br />
-                        rm dotnet.tar.gz
-                    </div>
+                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/86497c4f-3dc8-4ee7-9f6a-9e0464059427/293d074c28bbfd9410f4db8e021fa290/dotnet-sdk-8.0.301-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+mkdir -p $HOME/.dotnet
+tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+dotnet dev-certs https --trust
+rm dotnet.tar.gz</CodeBox>
                 </BitAccordion>
                 <br />
                 <li><a href="https://nodejs.org/en/download/" title="Node.js" rel="nofollow">Node.js</a></li>
@@ -48,36 +40,19 @@
                     <div style="margin-bottom:8px">.NET workloads</div>
                     <BitPivot>
                         <BitPivotItem HeaderText="Windows">
-                            <div class="code-box">
-                                dotnet workload install maui
-                                <br />
-                                dotnet workload install wasm-tools wasm-experimental
-                            </div>
+                            <CodeBox>dotnet workload install maui <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
                         </BitPivotItem>
                         <BitPivotItem HeaderText="Linux">
-                            <div class="code-box">
-                                dotnet workload update
-                                <br />
-                                dotnet workload install maui-android
-                                <br />
-                                dotnet workload install wasm-tools wasm-experimental
-                            </div>
+                            <CodeBox>dotnet workload update <br />dotnet workload install maui-android <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
                         </BitPivotItem>
                         <BitPivotItem HeaderText="macOS">
-                            <div class="code-box">
-                                sudo dotnet workload install maui
-                                <br />
-                                sudo dotnet workload install wasm-tools wasm-experimental
-                            </div>
+                            <CodeBox>sudo dotnet workload install maui <br />sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
                         </BitPivotItem>
                     </BitPivot>
                 </li>
                 <li>
                     <div style="margin-bottom:8px">Bit Boilerplate project template</div>
-                    <div class="code-box">
-                        dotnet new install Bit.Boilerplate
-                        <BitIconButton IconName="ArrowUpRight" Style="margin-left:1em;font-size:12px" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" />
-                    </div>
+                    <CodeBox>dotnet new install Bit.Boilerplate <BitIconButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" /></CodeBox>
                 </li>
             </ol>
         </div>
@@ -126,19 +101,12 @@
                 </li>
             </ul>
             <BitAccordion Title="Install extensions commands">
-                <div class="code-box">
-                    code --install-extension ms-dotnettools.csdevkit
-                    <br />
-                    code --install-extension ms-dotnettools.blazorwasm-companion
-                    <br />
-                    code --install-extension glenn2223.live-sass
-                    <br />
-                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-                    <br />
-                    code --install-extension ms-dotnettools.dotnet-maui
-                    <br />
-                    code --install-extension yy0931.vscode-sqlite3-editor
-                </div>
+                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension ms-dotnettools.dotnet-maui
+code --install-extension yy0931.vscode-sqlite3-editor</CodeBox>
             </BitAccordion>
         </div>
     </section>

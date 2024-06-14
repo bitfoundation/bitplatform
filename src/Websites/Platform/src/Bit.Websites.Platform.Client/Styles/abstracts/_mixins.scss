@@ -76,64 +76,6 @@
     }
 }
 
-@mixin CodeBox {
-    width: 100%;
-    display: flex;
-    overflow: auto;
-    font-weight: 400;
-    align-items: center;
-    font-size: rem2(16px);
-    min-height: rem2(48px);
-    line-height: rem2(24px);
-    margin-bottom: rem2(32px);
-    justify-content: flex-start;
-    padding: rem2(12px) rem2(22px);
-    background-color: $bit-color-background-secondary;
-    border-left: rem2(2px) solid $bit-color-primary-main;
-    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-
-    @include md {
-        min-height: rem2(40px);
-        margin-bottom: rem2(24px);
-        padding: rem2(10px) rem2(8px);
-    }
-
-    @include sm {
-        min-height: rem2(32px);
-        margin-bottom: rem2(12px);
-        padding: rem2(6px) rem2(8px);
-    }
-
-    &::-webkit-scrollbar {
-        width: rem2(8px);
-        background-color: $White;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: $White;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #c8c6c4;
-        border-radius: rem2(8px);
-        border: rem2(4px) solid #c8c6c4;
-    }
-
-    &::-webkit-scrollbar-button {
-        display: none;
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-        background-color: $Gray2;
-        border-radius: rem2(8px);
-        border: rem2(4px) solid $Gray2;
-    }
-
-    &::-webkit-scrollbar:horizontal {
-        height: rem2(8px);
-    }
-}
-
 @mixin HighLightText {
     background-color: $B11Color;
     border-radius: rem2(4px);

@@ -18,7 +18,7 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser ScreenOrientation features you need to inject the Bit.Butil.ScreenOrientation class and use it like this:
-<CodeBox>
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.ScreenOrientation screenOrientation
 
 @@code {
@@ -38,7 +38,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <CodeBox Code="@getOrientationTypeExampleCode" />
+                        <CodeBox>
+                            @getOrientationTypeExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -59,7 +61,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <CodeBox Code="@getAngleExampleCode" />
+                        <CodeBox>
+                            @getAngleExampleCode
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

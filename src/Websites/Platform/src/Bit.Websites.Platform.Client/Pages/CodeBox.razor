@@ -1,28 +1,22 @@
 ﻿@inherits AppComponentBase
 
-<div class="code-box">
-    @if (Code is not null)
-    {
-        <BitActionButton Class="@($"copy-btn {(isCodeCopied ? "copied" : string.Empty)}")"
-                         Styles="@(new() { Content = (isCodeCopied ? string.Empty : "margin: unset") })"
-                         Title="@copyCodeMessage"
-                         IconName="@codeIcon"
-                         OnClick="@CopyCodeToClipboard">
-            @if (isCodeCopied)
-            {
-                <span>@copyCodeMessage</span>
-            }
-        </BitActionButton>
-    }
+@if (ChildContent is not null)
+{
+    <div class="code-box">
+        @if (HideCopyButton is false)
+        {
+            <BitActionButton Class="@($"copy-btn {(isCodeCopied ? "copied" : string.Empty)}")"
+                             Styles="@(new() { Content = (isCodeCopied ? string.Empty : "margin: unset") })"
+                             Title="@copyCodeMessage"
+                             IconName="@codeIcon"
+                             OnClick="@CopyCodeToClipboard">
+                @if (isCodeCopied)
+                {
+                    <span>@copyCodeMessage</span>
+                }
+            </BitActionButton>
+        }
 
-    <pre class="code-box-content">
-        @if (ChildContent is not null)
-        {
-            @ChildContent
-        }
-        else if (Code is not null)
-        {
-            @Code
-        }
-    </pre>
-</div>
+        <pre @ref="preElementRefrence" class="code-box-content">@ChildContent</pre>
+    </div>
+}

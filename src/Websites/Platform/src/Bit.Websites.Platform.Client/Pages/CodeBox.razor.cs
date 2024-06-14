@@ -7,19 +7,21 @@ public partial class CodeBox
     private bool isCodeCopied = false;
     private string codeIcon = BitIconName.Copy;
     private string copyCodeMessage = "Copy code";
+    private ElementReference preElementRefrence = default!;
 
 
     [AutoInject] private Clipboard clipboard = default!;
 
 
-    [Parameter] public string? Code { get; set; }
+    [Parameter] public bool HideCopyButton { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
 
 
     private async Task CopyCodeToClipboard()
     {
-        await clipboard.WriteText(Code!);
+        var codeSample = await preElementRefrence.GetInnerText();
+        await clipboard.WriteText(codeSample.Trim());
 
         codeIcon = BitIconName.CheckMark;
         copyCodeMessage = "Code copied!";
