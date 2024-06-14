@@ -20,17 +20,14 @@
 <CodeBox HideCopyButton>
 @@inject Bit.Butil.Element element
 
-...
 &lt;div @@ref="elementRef">Element&lt;/div>
-...
 
 @@code {
     private ElementReference elementRef;
-    ...
+  
     var rect = await element.GetBoundingClientRect(elementRef);
     // or
     var rect = await elementRef.GetBoundingClientRect();
-    ...
 }</CodeBox>
         </div>
     </section>
@@ -571,7 +568,7 @@
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
                         <CodeBox>
-                            @classNameExampleCode
+                            @getClientHeightExampleCode
                         </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">

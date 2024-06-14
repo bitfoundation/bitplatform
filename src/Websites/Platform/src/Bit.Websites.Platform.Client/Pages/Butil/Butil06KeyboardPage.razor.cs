@@ -6,10 +6,9 @@ public partial class Butil06KeyboardPage
 {
     private BitSearchBox searchBox = default!;
 
-
-    protected override async Task OnInitAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
-        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusAsync(), ButilModifiers.Ctrl);
+        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox?.FocusAsync(), ButilModifiers.Ctrl);
     }
 
 
@@ -23,9 +22,9 @@ public partial class Butil06KeyboardPage
 @code {
     private BitSearchBox searchBox = default!;
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnAfterFirstRenderAsync()
     {
-        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox.FocusAsync(), ButilModifiers.Ctrl);
+        await keyboard.Add(ButilKeyCodes.KeyF, () => _ = searchBox?.FocusAsync(), ButilModifiers.Ctrl);
     }
 }";
 }
