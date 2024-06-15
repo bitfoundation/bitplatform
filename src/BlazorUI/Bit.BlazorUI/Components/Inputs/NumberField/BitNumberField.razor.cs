@@ -486,16 +486,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         bool isValid;
         double result;
 
-        var value1 = ConvertToDouble(CurrentValue, 0d)!.Value;
+        var value = ConvertToDouble(CurrentValue, 0d)!.Value;
 
         if (isIncrement)
         {
-            result = value1 + _internalStep;
+            result = value + _internalStep;
             isValid = result <= _internalMax && result >= _internalMin;
         }
         else
         {
-            result = value1 - _internalStep;
+            result = value - _internalStep;
             isValid = result <= _internalMax && result >= _internalMin;
         }
 
@@ -584,10 +584,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
-            var v = ConvertToDouble(result);
-            v = v < _internalMin ? _internalMin : v;
-            v = v > _internalMax ? _internalMax : v;
-            result = ConvertToGeneric(v);
+            var doubleValue = ConvertToDouble(result);
+            doubleValue = doubleValue < _internalMin ? _internalMin : doubleValue;
+            doubleValue = doubleValue > _internalMax ? _internalMax : doubleValue;
+            result = ConvertToGeneric(doubleValue);
             parsingErrorMessage = null;
             return true;
         }
