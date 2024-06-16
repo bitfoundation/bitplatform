@@ -20,6 +20,7 @@ public partial class MessageBoxService
             isRunning = true;
             _ = ProcessQueue();
         }
+
         return tcs.Task;
     }
 
