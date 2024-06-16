@@ -73,6 +73,10 @@
                     "description": "Sqlite"
                 },
                 {
+                    "choice": "PostgreSQL",
+                    "description": "PostgreSQL"
+                },
+                {
                     "choice": "Other",
                     "description": "Other"
                 }

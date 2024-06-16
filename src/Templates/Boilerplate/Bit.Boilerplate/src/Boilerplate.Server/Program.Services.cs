@@ -91,6 +91,11 @@ public static partial class Program
             {
 
             });
+            //#elif (database == "PostgreSQL")
+            options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnectionString"), dbOptions =>
+            {
+
+            });
             //#endif
         });
 
