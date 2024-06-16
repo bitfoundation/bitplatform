@@ -3,7 +3,7 @@ namespace Boilerplate.Server;
 
 public class AppSettings : IValidatableObject
 {
-    public AppIdentityOptions Identity { get; set; } = default!;
+    public IdentitySettings Identity { get; set; } = default!;
 
     public EmailSettings Email { get; set; } = default!;
 
@@ -37,7 +37,7 @@ public class HealthChecksSettings
     public bool EnableHealthChecks { get; set; }
 }
 
-public class AppIdentityOptions : IdentityOptions
+public class IdentitySettings : IdentityOptions
 {
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
