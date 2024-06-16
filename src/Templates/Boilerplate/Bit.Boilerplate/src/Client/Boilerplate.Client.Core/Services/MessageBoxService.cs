@@ -18,27 +18,26 @@ public partial class MessageBoxService
         if (isRunning is false)
         {
             isRunning = true;
-            Task.Run(ProcessQueue);
+            _ = ProcessQueue();
         }
-
         return tcs.Task;
     }
 
-    private void ProcessQueue()
+    private async Task ProcessQueue()
     {
-        while (true)
+        if (queue.IsEmpty)
         {
-            if (queue.IsEmpty)
-            {
-                isRunning = false;
-                break;
-            }
-
-            if (queue.TryDequeue(out var data))
-            {
-                pubSubService.Publish(PubSubMessages.SHOW_MESSAGE, data);
-            }
+            isRunning = false;
+            return;
         }
-    }
 
+        if (queue.TryDequeue(out var data))
+        {
+            pubSubService.Publish(PubSubMessages.SHOW_MESSAGE, data);
+
+            await data.TaskCompletionSource.Task;
+        }
+
+        _ = ProcessQueue();
+    }
 }

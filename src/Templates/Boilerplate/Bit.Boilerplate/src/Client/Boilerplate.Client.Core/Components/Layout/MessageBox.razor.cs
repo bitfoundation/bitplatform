@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class MessageBox
 {
@@ -15,8 +17,6 @@ public partial class MessageBox
         unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
         {
             var data = (MessageBoxData)args!;
-
-            await (tcs?.Task ?? Task.CompletedTask);
 
             tcs = data.TaskCompletionSource;
 
@@ -42,14 +42,12 @@ public partial class MessageBox
     {
         isOpen = false;
         tcs?.SetResult(false);
-        tcs = null;
     }
 
     private async Task OnOkClick()
     {
         isOpen = false;
         tcs?.SetResult(true);
-        tcs = null;
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
