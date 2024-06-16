@@ -8,16 +8,19 @@ public partial class MessageBox
     private Action? unsubscribe;
     private bool disposed = false;
 
-    private TaskCompletionSource<object?>? tcs;
+    private TaskCompletionSource<bool>? tcs;
 
     protected override Task OnInitAsync()
     {
         unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
         {
-            (var message, string title, TaskCompletionSource<object?> tcs) = ((string message, string title, TaskCompletionSource<object?> tcs))args!;
-            await (this.tcs?.Task ?? Task.CompletedTask);
-            this.tcs = tcs;
-            await ShowMessageBox(message, title);
+            var data = (MessageBoxData)args!;
+
+            await (tcs?.Task ?? Task.CompletedTask);
+
+            tcs = data.TaskCompletionSource;
+
+            await ShowMessageBox(data.Message, data.Title);
         });
 
         return base.OnInitAsync();
@@ -38,14 +41,14 @@ public partial class MessageBox
     private async Task OnCloseClick()
     {
         isOpen = false;
-        tcs?.SetResult(null);
+        tcs?.SetResult(false);
         tcs = null;
     }
 
     private async Task OnOkClick()
     {
         isOpen = false;
-        tcs?.SetResult(null);
+        tcs?.SetResult(true);
         tcs = null;
     }
 
@@ -55,8 +58,9 @@ public partial class MessageBox
 
         if (disposed || disposing is false) return;
 
-        tcs?.TrySetResult(null);
+        tcs?.TrySetResult(false);
         tcs = null;
+
         unsubscribe?.Invoke();
 
         disposed = true;
