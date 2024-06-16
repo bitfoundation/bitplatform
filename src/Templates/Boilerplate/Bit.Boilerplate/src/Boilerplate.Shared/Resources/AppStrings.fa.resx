@@ -544,10 +544,13 @@
     <value>ورود با توییتر (X)</value>
   </data>
     <data name="GoogleSignUpButtonText" xml:space="preserve">
-    <value>ثبت نام با گوگل</value>
+    <value>ثبت‌نام با گوگل</value>
   </data>
     <data name="GitHubSignUpButtonText" xml:space="preserve">
-    <value>ثبت نام با گیتهاب</value>
+    <value>ثبت‌نام با گیتهاب</value>
+  </data>
+    <data name="TwitterSignUpButtonText" xml:space="preserve">
+    <value>ثبت‌نام با توییتر (X)</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>

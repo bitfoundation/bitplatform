@@ -2266,6 +2266,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sign up with Twitter (X).
+        /// </summary>
+        public static string TwitterSignUpButtonText {
+            get {
+                return ResourceManager.GetString("TwitterSignUpButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 2FA.
         /// </summary>
         public static string TwoFactorAuthTitle {

@@ -82,7 +82,7 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var resendDelay = (DateTimeOffset.Now - user!.EmailTokenRequestedOn) - AppSettings.IdentitySettings.EmailTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user!.EmailTokenRequestedOn) - AppSettings.IdentityOptions.EmailTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
@@ -126,7 +126,7 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var resendDelay = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) - AppSettings.IdentitySettings.PhoneNumberTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) - AppSettings.IdentityOptions.PhoneNumberTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
@@ -218,7 +218,7 @@ public partial class UserController : AppControllerBase, IUserController
         }
 
         var sharedKey = FormatKey(unformattedKey);
-        var authenticatorUri = GenerateQrCodeUri(user.Email!, unformattedKey);
+        var authenticatorUri = GenerateQrCodeUri(user.DisplayName!, unformattedKey);
 
         var qrCodeBase64 = "";
         var isTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user);
@@ -261,12 +261,12 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     private const string AUTHENTICATOR_URI_FORMAT = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
-    private string GenerateQrCodeUri(string email, string unformattedKey)
+    private string GenerateQrCodeUri(string user, string unformattedKey)
     {
         return string.Format(CultureInfo.InvariantCulture,
         AUTHENTICATOR_URI_FORMAT,
         urlEncoder.Encode("bit platform Boilerplate"),
-                             urlEncoder.Encode(email),
+                             urlEncoder.Encode(user),
                              unformattedKey);
     }
 }

@@ -79,6 +79,11 @@ public partial class SignUpPage
         await SocialSignUp("GitHub");
     }
 
+    private async Task TwitterSignUp()
+    {
+        await SocialSignUp("Twitter");
+    }
+
     private async Task SocialSignUp(string provider)
     {
         if (isWaiting) return;

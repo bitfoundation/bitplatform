@@ -37,7 +37,7 @@ public class AppStack : Stack
         var emailServerUserName = pulumiConfig.Require("email-server-userName");
         var emailServerPassword = pulumiConfig.RequireSecret("email-server-password");
 
-        var identityCertificatePassword = pulumiConfig.RequireSecret("identity-certificate-password");
+        var dataProtectionCertificatePassword = pulumiConfig.RequireSecret("data-protection-certificate-password");
 
         ResourceGroup resourceGroup = new($"app-{stackName}", new ResourceGroupArgs
         {
@@ -111,7 +111,7 @@ public class AppStack : Stack
         string vaultName = $"vault-app-{stackName}";
         string sqlDatabaseConnectionStringSecretName = $"sql-connection-secret";
         string emailServerPasswordSecretName = "email-server-password-secret";
-        string identityCertificatePasswordSecretName = "identity-certificate-password-secret";
+        string dataProtectionCertificatePasswordSecretName = "data-protection-certificate-password-secret";
 
         WebApp webApp = new($"app-service-app-{stackName}", new()
         {
@@ -147,8 +147,8 @@ public class AppStack : Stack
                     },
                     new NameValuePairArgs
                     {
-                        Name = "AppSettings__IdentitySettings__IdentityCertificatePassword",
-                        Value = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={identityCertificatePasswordSecretName})"
+                        Name = "DataProtectionCertificatePassword",
+                        Value = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={dataProtectionCertificatePasswordSecretName})"
                     }
                 },
                 ConnectionStrings = new()
@@ -225,14 +225,14 @@ public class AppStack : Stack
             }
         });
 
-        Secret identityCertificatePasswordSecret = new(identityCertificatePasswordSecretName, new()
+        Secret dataProtectionCertificatePasswordSecret = new(dataProtectionCertificatePasswordSecretName, new()
         {
             ResourceGroupName = resourceGroup.Name,
             VaultName = vault.Name,
-            SecretName = identityCertificatePasswordSecretName,
+            SecretName = dataProtectionCertificatePasswordSecretName,
             Properties = new SecretPropertiesArgs
             {
-                Value = identityCertificatePassword
+                Value = dataProtectionCertificatePassword
             }
         });
 

@@ -25,6 +25,9 @@ public partial class SignInPage
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
 
+    [Parameter, SupplyParameterFromQuery(Name = "userName")]
+    public string? UserNameQueryString { get; set; }
+
     [Parameter, SupplyParameterFromQuery(Name = "email")]
     public string? EmailQueryString { get; set; }
 
@@ -42,22 +45,17 @@ public partial class SignInPage
     {
         await base.OnInitAsync();
 
-        if (string.IsNullOrEmpty(EmailQueryString) is false)
-        {
-            model.Email = EmailQueryString;
-        }
-
-        if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
-        {
-            model.PhoneNumber = PhoneNumberQueryString;
-        }
+        model.UserName = UserNameQueryString;
+        model.Email = EmailQueryString;
+        model.PhoneNumber = PhoneNumberQueryString;
 
         if (string.IsNullOrEmpty(OtpQueryString) is false)
         {
             model.Otp = OtpQueryString;
 
             if (InPrerenderSession is false &&
-                (string.IsNullOrEmpty(model.Email) is false ||
+                (string.IsNullOrEmpty(model.UserName) is false ||
+                 string.IsNullOrEmpty(model.Email) is false ||
                  string.IsNullOrEmpty(model.PhoneNumber) is false))
             {
                 await DoSignIn();

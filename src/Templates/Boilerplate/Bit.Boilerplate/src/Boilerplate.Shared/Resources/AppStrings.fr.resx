@@ -549,6 +549,9 @@
     <data name="GitHubSignUpButtonText" xml:space="preserve">
     <value>Inscrivez-vous avec GitHub</value>
   </data>
+    <data name="TwitterSignUpButtonText" xml:space="preserve">
+    <value>Inscrivez-vous avec Twitter (X)</value>
+  </data>
     <data name="SignOut" xml:space="preserve">
     <value>se déconnecter</value>
   </data>

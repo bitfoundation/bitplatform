@@ -3,7 +3,7 @@ namespace Boilerplate.Server;
 
 public class AppSettings : IValidatableObject
 {
-    public IdentitySettings IdentitySettings { get; set; } = default!;
+    public AppIdentityOptions IdentityOptions { get; set; } = default!;
 
     public EmailSettings EmailSettings { get; set; } = default!;
 
@@ -23,7 +23,7 @@ public class AppSettings : IValidatableObject
     {
         var validationResults = new List<ValidationResult>();
 
-        Validator.TryValidateObject(IdentitySettings, new ValidationContext(IdentitySettings), validationResults, true);
+        Validator.TryValidateObject(IdentityOptions, new ValidationContext(IdentityOptions), validationResults, true);
         Validator.TryValidateObject(EmailSettings, new ValidationContext(EmailSettings), validationResults, true);
         Validator.TryValidateObject(SmsSettings, new ValidationContext(SmsSettings), validationResults, true);
         Validator.TryValidateObject(HealthCheckSettings, new ValidationContext(HealthCheckSettings), validationResults, true);
@@ -37,7 +37,7 @@ public class HealthCheckSettings
     public bool EnableHealthChecks { get; set; }
 }
 
-public class IdentitySettings
+public class AppIdentityOptions : IdentityOptions
 {
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
@@ -47,15 +47,7 @@ public class IdentitySettings
 
     [Required]
     public string Audience { get; set; } = default!;
-
-    [Required]
-    public string IdentityCertificatePassword { get; set; } = default!;
-    public bool PasswordRequireDigit { get; set; }
-    public int PasswordRequiredLength { get; set; }
-    public bool PasswordRequireNonAlphanumeric { get; set; }
-    public bool PasswordRequireUppercase { get; set; }
-    public bool PasswordRequireLowercase { get; set; }
-    public bool RequireUniqueEmail { get; set; }
+    
     /// <summary>
     /// To either confirm and/or change email
     /// </summary>
