@@ -82,7 +82,7 @@ jobs:
           package: .
 
       - name: Purge cache
-        uses: jakejarvis/cloudflare-purge-action@0.3.0
+        uses: jakejarvis/cloudflare-purge-action@0.3
         env:
           CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
