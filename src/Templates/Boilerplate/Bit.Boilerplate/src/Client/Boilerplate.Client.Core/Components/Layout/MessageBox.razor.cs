@@ -1,6 +1,4 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class MessageBox
 {
