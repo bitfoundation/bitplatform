@@ -161,7 +161,7 @@ const createSignInUI = function (swagger, rootDiv) {
     const passwordInput = document.createElement("input");
     passwordInput.placeholder = "123456";
     passwordInput.type = "password";
-    phoneInput.autocomplete = "current-password";
+    passwordInput.autocomplete = "current-password";
     passwordInput.style = "margin-left: 10px; margin-right: 10px;";
     passwordLabel.appendChild(passwordInput);
 
