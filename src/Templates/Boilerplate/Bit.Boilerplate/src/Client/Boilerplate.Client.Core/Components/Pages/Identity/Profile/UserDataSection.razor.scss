@@ -6,10 +6,16 @@
     justify-content: center;
 }
 
-::deep .edit-profile-form {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
+::deep {
+    .edit-profile-form {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+
+    .form-input-container {
+        overflow: hidden;
+    }
 }
