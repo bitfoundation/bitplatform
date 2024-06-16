@@ -33,15 +33,15 @@
             But you can add separate .resx files and use them instead by adding the <b>DtoResourceTypeAttribute</b> on the DTO classes. For example,
             to use a custom .resx file named CustomersManagement.resx for a specific DTO, the attribute used on that DTO should look like this:
         </div>
-        <pre class="code-box">[DtoResourceType(typeof(CustomersManagement)]
+        <CodeBox>[DtoResourceType(typeof(CustomersManagement)]
 public class CustomerDto
 {
     ...
-}</pre>
+}</CodeBox>
         <div class="section-card-txt">
             You can also inject the specific <b>StringLocalizer</b> of this custom .resx file like this:
         </div>
-        <div class="code-box">@("[AutoInject] private IStrignLocalizer<CustomersManagement> _customersManagementLocalizer;")</div>
+        <CodeBox>[AutoInject] private IStrignLocalizer&lt;CustomersManagement> _customersManagementLocalizer;</CodeBox>
         <div class="section-card-txt">
             And use it to access the translations inside that page.
         </div>

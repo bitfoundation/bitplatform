@@ -23,10 +23,15 @@
     @include SectionCardText;
 }
 
-::deep a {
-    color: $bit-color-primary-main;
-}
+::deep {
+    a {
+        color: $bit-color-primary-main;
+    }
 
-.code-box {
-    @include CodeBox;
+    .nuget-link-btn {
+        width: rem2(24px);
+        height: rem2(24px);
+        font-size: rem2(12px);
+        margin-left: rem2(16px);
+    }
 }

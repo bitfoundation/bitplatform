@@ -17,21 +17,18 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser Element features you need to inject the Bit.Butil.Element class and use it like this:
-<pre class="code-box">
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.Element element
 
-...
 &lt;div @@ref="elementRef">Element&lt;/div>
-...
 
 @@code {
     private ElementReference elementRef;
-    ...
+  
     var rect = await element.GetBoundingClientRect(elementRef);
     // or
     var rect = await elementRef.GetBoundingClientRect();
-    ...
-}</pre>
+}</CodeBox>
         </div>
     </section>
 
@@ -46,9 +43,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getAttributeExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -76,9 +73,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getAttributeNamesExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -104,9 +101,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getBoundingClientRectExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -132,9 +129,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @hasAttributeExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -162,9 +159,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @hasAttributesExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -205,9 +202,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @requestPointerLockExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -232,9 +229,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @requestFullScreenExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -257,9 +254,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @matchesExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -288,9 +285,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @scrollExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -329,9 +326,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @scrollByExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -370,9 +367,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @scrollIntoViewExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -421,9 +418,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @removeAttributeExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -448,9 +445,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @setAttributeExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -477,9 +474,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @toggleAttributeExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -506,9 +503,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @accessKeyExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -538,9 +535,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @classNameExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -570,9 +567,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getClientHeightExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -598,9 +595,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getClientLeftExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -626,9 +623,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getClientTopExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -654,9 +651,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getClientWidthExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -682,9 +679,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @idExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -714,9 +711,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @innerHTMLExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -746,9 +743,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @outerHTMLExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -774,9 +771,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getScrollHeightExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -806,9 +803,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getScrollLeftExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -838,9 +835,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getScrollTopExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -870,9 +867,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getScrollWidthExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -902,9 +899,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getTagNameExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -930,9 +927,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @isContentEditableExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -958,9 +955,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @contentEditableExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -997,9 +994,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @dirExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1036,9 +1033,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @enterKeyHintExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1083,9 +1080,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @inertExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1119,9 +1116,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @innerTextExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1151,9 +1148,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @inputModeExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1194,9 +1191,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @tabIndexExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1226,9 +1223,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getOffsetHeightExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1254,9 +1251,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getOffsetLeftExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1282,9 +1279,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getOffsetTopExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1310,9 +1307,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @getOffsetWidthExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
@@ -1338,9 +1335,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @blurExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

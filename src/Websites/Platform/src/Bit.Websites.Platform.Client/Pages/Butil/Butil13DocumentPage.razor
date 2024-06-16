@@ -18,13 +18,13 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
         <div class="section-card-txt">
             To use the browser document features you need to inject the Bit.Butil.Document class and use it like this:
-<pre class="code-box">
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.Document document
 
 @@code {
     await document.AddEventListener(ButilEvents.Click, args => { ... });
     await document.SetTitle("New shinny title");
-}</pre>
+}</CodeBox>
         </div>
     </section>
 
@@ -64,9 +64,9 @@
             <BitAccordion Title="Sample">
                 <BitPivot>
                     <BitPivotItem HeaderText="Code">
-                        <pre class="code-box">
+                        <CodeBox>
                             @designModeExampleCode
-                            </pre>
+                        </CodeBox>
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />

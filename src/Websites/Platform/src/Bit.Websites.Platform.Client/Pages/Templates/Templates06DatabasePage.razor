@@ -32,16 +32,16 @@
         <div class="section-card-txt">
             Set <b>Server</b> as the Startup Project in solution explorer and also set it as the Default Project in <b>Package Manager Console</b> and run the following commands:
         </div>
-        <div class="code-box">Add-Migration InitialMigration -OutputDir Data\Migrations -Context AppDbContext</div>
-        <div class="code-box">Update-Database -Context AppDbContext</div>
+        <CodeBox>Add-Migration InitialMigration -OutputDir Data\Migrations -Context AppDbContext</CodeBox>
+        <CodeBox>Update-Database -Context AppDbContext</CodeBox>
         <br />
         <div class="section-card-txt">
             <b>Note</b>: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
         </div>
         <br />
         <div class="section-card-txt">Or open a terminal in your Server project directory and run followings:</div>
-        <div class="code-box">dotnet ef migrations add InitialMigration --context AppDbContext --output-dir Data/Migrations</div>
-        <div class="code-box">dotnet ef database update --context AppDbContext</div>
+        <CodeBox>dotnet ef migrations add InitialMigration --context AppDbContext --output-dir Data/Migrations</CodeBox>
+        <CodeBox>dotnet ef database update --context AppDbContext</CodeBox>
     </section>
 </div>
 

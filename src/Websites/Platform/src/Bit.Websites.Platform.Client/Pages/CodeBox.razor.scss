@@ -1,0 +1,79 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/bit-css-variables.scss';
+
+.code-box {
+    position: relative;
+}
+
+.code-box-content {
+    width: 100%;
+    display: flex;
+    overflow: auto;
+    font-weight: 400;
+    align-items: center;
+    font-size: rem2(16px);
+    min-height: rem2(48px);
+    line-height: rem2(24px);
+    margin-bottom: rem2(32px);
+    justify-content: flex-start;
+    padding: rem2(12px) rem2(48px) rem2(12px) rem2(16px);
+    background-color: $bit-color-background-secondary;
+    border-left: rem2(2px) solid $bit-color-primary-main;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+    &::-webkit-scrollbar {
+        width: rem2(8px);
+        background-color: $White;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: $White;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: #c8c6c4;
+        border-radius: rem2(8px);
+        border: rem2(4px) solid #c8c6c4;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: $Gray2;
+        border-radius: rem2(8px);
+        border: rem2(4px) solid $Gray2;
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem2(8px);
+    }
+}
+
+::deep .copy-btn {
+    z-index: 1;
+    display: flex;
+    top: rem2(8px);
+    min-width: unset;
+    right: rem2(8px);
+    width: rem2(32px);
+    height: rem2(32px);
+    position: absolute;
+    border-radius: rem2(16px);
+    align-items: center;
+    justify-content: center;
+    transition: width 0.2s ease-in-out;
+    background-color: $bit-color-background-secondary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+
+    &.copied {
+        overflow: hidden;
+        width: rem2(128px);
+        white-space: nowrap;
+        pointer-events: none;
+        background-color: $bit-color-background-primary;
+    }
+}

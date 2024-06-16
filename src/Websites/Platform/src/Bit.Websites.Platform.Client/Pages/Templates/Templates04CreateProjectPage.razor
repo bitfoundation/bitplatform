@@ -19,8 +19,7 @@
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>CLI</BitTypography>
         <div class="section-card-txt">
             Create a new project using dotnet new command:
-<pre class="code-box">
-dotnet new bit-bp</pre>
+            <CodeBox>dotnet new bit-bp</CodeBox>
         </div>
         <div class="section-card-txt">
             <b>Note</b>: bit project templates accept the following parameters:
@@ -42,20 +41,16 @@ dotnet new bit-bp</pre>
         <br />
         <br />
         1- Create a cross-platform AdminPanel app for mobile, desktop and web with Azure DevOps pipelines and a SqlServer database:
-        <pre class="code-box">
-dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin</pre>
+        <CodeBox>dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin</CodeBox>
 
         2- Create a cross-platform Todo app for mobile, desktop and web with GitHub Actions and a SQLite database:
-        <pre class="code-box">
-dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo --serverUrl todo.bitplatform.dev</pre>
+        <CodeBox>dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo --serverUrl todo.bitplatform.dev</CodeBox>
 
         3- Create a mobile, desktop and web app without sample pages, integrating GitHub Actions and a SQL Server database:
-        <pre class="code-box">
-dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --serverUrl app.mycompany.com</pre>
+        <CodeBox>dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --serverUrl app.mycompany.com</CodeBox>
 
         4- Create an offline capable mobile, desktop and web app:
-        <pre class="code-box">
-dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --offlineDb</pre>
+        <CodeBox>dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --offlineDb</CodeBox>
 
         <div class="section-card-txt">
             <b>Note</b>: We recommend to create the project in a path that is not too long without space character in the folder names.
