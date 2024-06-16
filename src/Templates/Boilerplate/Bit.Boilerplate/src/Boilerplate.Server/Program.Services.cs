@@ -77,8 +77,8 @@ public static partial class Program
             options.EnableSensitiveDataLogging(env.IsDevelopment())
                 .EnableDetailedErrors(env.IsDevelopment());
 
-            //#if (database == "SqlServer")
-            options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
+            //#if (database == "Sqlite")
+            options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
             {
 
             });
@@ -86,8 +86,8 @@ public static partial class Program
             //#if (IsInsideProjectTemplate == true)
             return;
             //#endif
-            //#if (database == "Sqlite")
-            options.UseSqlite(configuration.GetConnectionString("SqliteConnectionString"), dbOptions =>
+            //#if (database == "SqlServer")
+            options.UseSqlServer(configuration.GetConnectionString("SqlServerConnectionString"), dbOptions =>
             {
 
             });
