@@ -44,12 +44,6 @@ jobs:
 
     steps:
 
-    - name: Purge cache
-      uses: jakejarvis/cloudflare-purge-action@v0.3.0
-      env:
-        CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
-        CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-
     - name: Checkout source code
       uses: actions/checkout@v4
 
