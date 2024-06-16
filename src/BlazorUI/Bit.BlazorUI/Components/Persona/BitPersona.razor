@@ -7,7 +7,7 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    <div role="presentation" class="bit-prs-cin">
+    <div style="@Styles?.CoinContainer" class="bit-prs-cin @Classes?.CoinContainer" role="presentation">
         @{
             var presentationIcon = GetPresentationIcon();
         }
@@ -16,43 +16,40 @@
         {
             if (Presence is BitPersonaPresence.None)
             {
-                <i class="bit-prs-pic bit-icon bit-icon--@presentationIcon" role="presentation" />
+                <i style="@Styles?.PresentationIcon" class="bit-prs-pic bit-icon bit-icon--@presentationIcon @Classes?.PresentationIcon" role="presentation" />
             }
             else
             {
-                <div title="@PresenceTitle" class="bit-prs-pre @GetPresentationClass()"></div>
+                <div style="@Styles?.Presentation" title="@PresenceTitle" class="bit-prs-pre @GetPresentationClass() @Classes?.Presentation"></div>
             }
         }
         else
         {
-            var coinWidthStyle = GetCoinWidthStyle();
-            var coinBgColorStyle = GetCoinBgColorStyle();
-            var coinStyle = coinWidthStyle + coinBgColorStyle;
 
-            <div style="@coinStyle" class="@(CoinTemplate is null ? "bit-prs-imc" : null)" @onclick="HandleImageClick">
+            <div style="@GetImageContainerStyle()" class="@GetImageContainerClass()" @onclick="HandleImageClick">
                 @if (Unknown)
                 {
-                    <i class="bit-icon bit-icon--Help" role="presentation" />
+                    <i style="@Styles?.UnknownIcon" class="bit-icon bit-icon--Help @Classes?.UnknownIcon" role="presentation" />
                 }
                 else if (ImageUrl.HasValue() || CoinTemplate is not null)
                 {
                     if (OnImageClick.HasDelegate)
                     {
-                        <div style="@coinBgColorStyle" class="bit-prs-imo">
+                        <div style="@GetImageOverlayStyle()" class="bit-prs-imo @Classes?.ImageOverlay">
                             @if (ImageOverlayTemplate is not null)
                             {
                                 @ImageOverlayTemplate
                             }
                             else
                             {
-                                <span>@ImageOverlayText</span>
+                                <span style="@Styles?.ImageOverlayText" class="@Classes?.ImageOverlayText">@ImageOverlayText</span>
                             }
                         </div>
                     }
 
                     if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
                     {
-                        <span>
+                        <span style="@Styles?.Initials" class="@Classes?.Initials">
                             @GetInitials()
                         </span>
                     }
@@ -68,8 +65,8 @@
                             string dimension = GetPersonaImageDimension();
 
                             <img src="@ImageUrl"
-                                 style="display:@(_isLoaded ? "unset": "none")"
-                                 class="bit-prs-img"
+                                 style="display:@(_isLoaded ? "unset": "none");@Styles?.Image"
+                                 class="bit-prs-img @Classes?.Image"
                                  alt="@ImageAlt"
                                  width="@dimension"
                                  height="@dimension"
@@ -92,19 +89,17 @@
                 }
                 else
                 {
-                    <button @onclick="HandleActionClick" type="button" class="bit-prs-abt" title="@ActionButtonTitle">
-                        <span class="bit-prs-icn">
-                            <i class="bit-prs-aic bit-icon bit-icon--@ActionIconName" />
-                        </span>
+                    <button @onclick="HandleActionClick" type="button" style="@Styles?.ActionButton" class="bit-prs-abt @Classes?.ActionButton" title="@ActionButtonTitle">
+                        <i style="@Styles?.ActionButtonIcon" class="bit-prs-aic bit-icon bit-icon--@ActionIconName @Classes?.ActionButtonIcon" />
                     </button>
                 }
             }
             else if (Presence is not BitPersonaPresence.None)
             {
-                <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass()">
+                <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
                     @if (presentationIcon.HasValue())
                     {
-                        <i class="@($"bit-icon bit-icon--{presentationIcon}")" role="presentation" />
+                        <i style="@Styles?.PresentationIcon" class="bit-icon bit-icon--@presentationIcon @Classes?.PresentationIcon" role="presentation" />
                     }
                 </div>
             }
@@ -113,8 +108,8 @@
 
     @if (HidePersonaDetails is false || Size is BitPersonaSize.Size8)
     {
-        <div class="bit-prs-det">
-            <div class="bit-prs-ptx" title="@PrimaryText">
+        <div style="@Styles?.DetailsContainer" class="bit-prs-det @Classes?.DetailsContainer">
+            <div style="@Styles?.PrimaryTextContainer" class="bit-prs-ptx @Classes?.PrimaryTextContainer" title="@PrimaryText">
                 @if (PrimaryTextTemplate is not null)
                 {
                     @PrimaryTextTemplate
@@ -124,7 +119,7 @@
                     @PrimaryText
                 }
             </div>
-            <div class="bit-prs-stx" title="@SecondaryText">
+            <div style="@Styles?.SecondaryTextContainer" class="bit-prs-stx @Classes?.SecondaryTextContainer" title="@SecondaryText">
                 @if (SecondaryTextTemplate is not null)
                 {
                     @SecondaryTextTemplate
@@ -134,7 +129,7 @@
                     @SecondaryText
                 }
             </div>
-            <div class="bit-prs-ttx" title="@TertiaryText">
+            <div style="@Styles?.TertiaryTextContainer" class="bit-prs-ttx @Classes?.TertiaryTextContainer" title="@TertiaryText">
                 @if (TertiaryTextTemplate is not null)
                 {
                     @TertiaryTextTemplate
@@ -144,7 +139,7 @@
                     @TertiaryText
                 }
             </div>
-            <div class="bit-prs-otx" title="@OptionalText">
+            <div style="@Styles?.OptionalTextContainer" class="bit-prs-otx @Classes?.OptionalTextContainer" title="@OptionalText">
                 @if (OptionalTextTemplate is not null)
                 {
                     @OptionalTextTemplate

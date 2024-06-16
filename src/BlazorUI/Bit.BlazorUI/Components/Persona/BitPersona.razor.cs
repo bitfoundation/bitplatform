@@ -29,6 +29,11 @@ public partial class BitPersona
     [Parameter] public RenderFragment? ActionTemplate { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitPersona component.
+    /// </summary>
+    [Parameter] public BitPersonaClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Optional custom persona coin size in pixel.
     /// </summary>
     [Parameter] public int? CoinSize { get; set; }
@@ -177,6 +182,11 @@ public partial class BitPersona
     }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitPersona component.
+    /// </summary>
+    [Parameter] public BitPersonaClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Tertiary text to display, usually the status of the user.
     /// The tertiary text will only be shown when using size72 or size100.
     /// </summary>
@@ -193,6 +203,8 @@ public partial class BitPersona
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Size switch
         {
             BitPersonaSize.Size8 => "bit-prs-s8",
@@ -210,6 +222,11 @@ public partial class BitPersona
         ClassBuilder.Register(() => Unknown && Size is not BitPersonaSize.Size8 ? "bit-prs-unk" : string.Empty);
 
         ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-iac" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     private string? GetPresentationClass()
@@ -231,7 +248,7 @@ public partial class BitPersona
         if (CoinSize is null) return null;
 
         var presentationSize = CoinSize.Value / 3D;
-        return $"width: {presentationSize}px; height: {presentationSize}px;";
+        return $"width:{presentationSize}px;height:{presentationSize}px;{Styles?.Presence?.Trim(';')}";
     }
 
     private string? GetPresentationIcon()
@@ -312,6 +329,27 @@ public partial class BitPersona
             BitPersonaSize.Size100 => "100px",
             BitPersonaSize.Size120 => "120px",
         };
+    }
+
+    private string? GetImageContainerClass()
+    {
+        var klass = $"{(CoinTemplate is null ? "bit-prs-imc" : null)} {Classes?.ImageContainer}".Trim();
+        return klass.HasValue() ? klass : null;
+    }
+
+    private string? GetImageContainerStyle()
+    {
+        var coinWidthStyle = GetCoinWidthStyle();
+        var coinBgColorStyle = GetCoinBgColorStyle();
+        var style = $"{coinWidthStyle}{coinBgColorStyle}{Styles?.ImageContainer?.Trim(';')}";
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetImageOverlayStyle()
+    {
+        var coinBgColorStyle = GetCoinBgColorStyle();
+        var style = $"{coinBgColorStyle}{Styles?.ImageOverlay?.Trim(';')}";
+        return style.HasValue() ? style : null;
     }
 
     private async Task HandleActionClick(MouseEventArgs e)
