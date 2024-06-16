@@ -96,8 +96,8 @@ pulumi config set Boilerplate.Iac:email-server-port
 pulumi config set Boilerplate.Iac:email-server-userName
 pulumi config set Boilerplate.Iac:email-server-password --secret
 
-# Create and provide an identity certificate password
-pulumi config set Boilerplate.Iac:identity-certificate-password --secret
+# Create and provide an data protection certificate password
+pulumi config set Boilerplate.Iac:data-protection-certificate-password --secret
 ```
 
 9- Create azure resources using:

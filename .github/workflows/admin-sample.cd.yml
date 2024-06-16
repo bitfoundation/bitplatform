@@ -88,16 +88,16 @@ jobs:
         with:
           name: server-bundle
 
-      - name: Delete IdentityCertificate.pfx
+      - name: Delete DataProtectionCertificate.pfx
         run: |
-            rm IdentityCertificate.pfx
+            rm DataProtectionCertificate.pfx
 
       - name: Extract identity certificate from env
         uses: timheuer/base64-to-file@v1.2
         with:
             fileDir: './'
-            fileName: 'IdentityCertificate.pfx'
-            encodedString: ${{ secrets.API_IDENTITY_CERTIFICATE_FILE_BASE64 }}
+            fileName: 'DataProtectionCertificate.pfx'
+            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp

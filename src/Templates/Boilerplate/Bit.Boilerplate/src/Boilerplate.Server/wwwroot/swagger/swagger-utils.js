@@ -115,6 +115,7 @@ const createSignInUI = function (swagger, rootDiv) {
 
     const userNameInput = document.createElement("input");
     userNameInput.type = "text";
+    userNameInput.autocomplete = "username";
     userNameInput.placeholder = "test";
     userNameInput.style = "margin-left: 10px; margin-right: 10px;";
     userNameLabel.appendChild(userNameInput);
@@ -129,6 +130,7 @@ const createSignInUI = function (swagger, rootDiv) {
 
     const emailInput = document.createElement("input");
     emailInput.type = "text";
+    emailInput.autocomplete = "email";
     emailInput.placeholder = "test@bitplatform.dev";
     emailInput.style = "margin-left: 10px; margin-right: 10px;";
     emailLabel.appendChild(emailInput);
@@ -143,6 +145,7 @@ const createSignInUI = function (swagger, rootDiv) {
 
     const phoneInput = document.createElement("input");
     phoneInput.type = "text";
+    phoneInput.autocomplete = "tel";
     phoneInput.placeholder = "+31684207362";
     phoneInput.style = "margin-left: 10px; margin-right: 10px;";
     phoneLabel.appendChild(phoneInput);
@@ -158,6 +161,7 @@ const createSignInUI = function (swagger, rootDiv) {
     const passwordInput = document.createElement("input");
     passwordInput.placeholder = "123456";
     passwordInput.type = "password";
+    passwordInput.autocomplete = "current-password";
     passwordInput.style = "margin-left: 10px; margin-right: 10px;";
     passwordLabel.appendChild(passwordInput);
 

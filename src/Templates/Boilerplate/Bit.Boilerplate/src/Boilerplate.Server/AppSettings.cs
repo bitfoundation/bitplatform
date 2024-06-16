@@ -3,13 +3,13 @@ namespace Boilerplate.Server;
 
 public class AppSettings : IValidatableObject
 {
-    public IdentitySettings IdentitySettings { get; set; } = default!;
+    public IdentitySettings Identity { get; set; } = default!;
 
-    public EmailSettings EmailSettings { get; set; } = default!;
+    public EmailSettings Email { get; set; } = default!;
 
-    public SmsSettings SmsSettings { get; set; } = default!;
+    public SmsSettings Sms { get; set; } = default!;
 
-    public HealthCheckSettings HealthCheckSettings { get; set; } = default!;
+    public HealthChecksSettings HealthChecks { get; set; } = default!;
 
     [Required]
     public string UserProfileImagesDir { get; set; } = default!;
@@ -23,21 +23,21 @@ public class AppSettings : IValidatableObject
     {
         var validationResults = new List<ValidationResult>();
 
-        Validator.TryValidateObject(IdentitySettings, new ValidationContext(IdentitySettings), validationResults, true);
-        Validator.TryValidateObject(EmailSettings, new ValidationContext(EmailSettings), validationResults, true);
-        Validator.TryValidateObject(SmsSettings, new ValidationContext(SmsSettings), validationResults, true);
-        Validator.TryValidateObject(HealthCheckSettings, new ValidationContext(HealthCheckSettings), validationResults, true);
+        Validator.TryValidateObject(Identity, new ValidationContext(Identity), validationResults, true);
+        Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
+        Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
+        Validator.TryValidateObject(HealthChecks, new ValidationContext(HealthChecks), validationResults, true);
 
         return validationResults;
     }
 }
 
-public class HealthCheckSettings
+public class HealthChecksSettings
 {
     public bool EnableHealthChecks { get; set; }
 }
 
-public class IdentitySettings
+public class IdentitySettings : IdentityOptions
 {
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
@@ -47,15 +47,7 @@ public class IdentitySettings
 
     [Required]
     public string Audience { get; set; } = default!;
-
-    [Required]
-    public string IdentityCertificatePassword { get; set; } = default!;
-    public bool PasswordRequireDigit { get; set; }
-    public int PasswordRequiredLength { get; set; }
-    public bool PasswordRequireNonAlphanumeric { get; set; }
-    public bool PasswordRequireUppercase { get; set; }
-    public bool PasswordRequireLowercase { get; set; }
-    public bool RequireUniqueEmail { get; set; }
+    
     /// <summary>
     /// To either confirm and/or change email
     /// </summary>

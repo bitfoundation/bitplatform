@@ -34,6 +34,14 @@
                    ButtonStyle="BitButtonStyle.Standard">
             @Localizer[AppStrings.GitHubSignUpButtonText]
         </BitButton>
+        <br />
+        <BitButton Style="width:300px"
+                   IsLoading="isWaiting"
+                   ButtonType="BitButtonType.Button"
+                   OnClick="WrapHandled(TwitterSignUp)"
+                   ButtonStyle="BitButtonStyle.Standard">
+            @Localizer[AppStrings.TwitterSignUpButtonText]
+        </BitButton>
         <br /><br />
         <BitSeparator Style="width:100%">Or</BitSeparator>
         <br />

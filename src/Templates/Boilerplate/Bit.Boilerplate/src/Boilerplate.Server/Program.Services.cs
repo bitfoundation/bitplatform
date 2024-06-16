@@ -32,7 +32,7 @@ public static partial class Program
         services.AddExceptionHandler<ServerExceptionHandler>();
 
         services.AddOptions<ForwardedHeadersOptions>()
-            .Bind(configuration.GetRequiredSection(nameof(ForwardedHeadersOptions)))
+            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -99,6 +99,11 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<IdentityOptions>()
+            .Bind(configuration.GetRequiredSection(nameof(AppSettings)).GetRequiredSection(nameof(AppSettings.Identity)))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.TryAddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
@@ -111,9 +116,9 @@ public static partial class Program
 
         services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
-        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail);
+        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.Email.DefaultFromEmail);
 
-        if (appSettings.EmailSettings.UseLocalFolderForEmails)
+        if (appSettings.Email.UseLocalFolderForEmails)
         {
             var sentEmailsFolderPath = Path.Combine(AppContext.BaseDirectory, "sent-emails");
 
@@ -127,25 +132,25 @@ public static partial class Program
         }
         else
         {
-            if (appSettings.EmailSettings.HasCredential)
+            if (appSettings.Email.HasCredential)
             {
-                fluentEmailServiceBuilder.AddSmtpSender(() => new(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port)
+                fluentEmailServiceBuilder.AddSmtpSender(() => new(appSettings.Email.Host, appSettings.Email.Port)
                 {
-                    Credentials = new NetworkCredential(appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password),
+                    Credentials = new NetworkCredential(appSettings.Email.UserName, appSettings.Email.Password),
                     EnableSsl = true
                 });
             }
             else
             {
-                fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
+                fluentEmailServiceBuilder.AddSmtpSender(appSettings.Email.Host, appSettings.Email.Port);
             }
         }
 
         services.TryAddTransient<EmailService>();
         services.TryAddTransient<SmsService>();
-        if (appSettings.SmsSettings.Configured)
+        if (appSettings.Sms.Configured)
         {
-            TwilioClient.Init(appSettings.SmsSettings.AccountSid, appSettings.SmsSettings.AuthToken);
+            TwilioClient.Init(appSettings.Sms.AccountSid, appSettings.Sms.AuthToken);
         }
 
         //#endif
@@ -198,15 +203,15 @@ public static partial class Program
         var configuration = builder.Configuration;
         var env = builder.Environment;
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
-        var settings = appSettings.IdentitySettings;
+        var identityOptions = appSettings.Identity;
 
-        var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "IdentityCertificate.pfx");
-        var certificate = new X509Certificate2(certificatePath, appSettings.IdentitySettings.IdentityCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
+        var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionCertificate.pfx");
+        var certificate = new X509Certificate2(certificatePath, configuration["DataProtectionCertificatePassword"], OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
         bool isTestCertificate = certificate.Thumbprint is "55140A8C935AB5202949071E5781E6946CD60606"; // The default test certificate is still in use
         if (isTestCertificate && env.IsDevelopment() is false)
         {
-            throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path IdentityCertificate.pfx --password P@ssw0rdP@ssw0rd' command (or your preferred method for generating PFX files) in the server project's folder.");
+            throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path DataProtectionCertificate.pfx --password P@ssw0rdP@ssw0rd' command (or your preferred method for generating PFX files) in the server project's folder.");
         }
 
         services.AddDataProtection()
@@ -215,15 +220,7 @@ public static partial class Program
 
         services.AddTransient<IUserConfirmation<User>, AppUserConfirmation>();
 
-        services.AddIdentity<User, Role>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = true;
-            options.Password.RequireDigit = settings.PasswordRequireDigit;
-            options.Password.RequireLowercase = settings.PasswordRequireLowercase;
-            options.Password.RequireUppercase = settings.PasswordRequireUppercase;
-            options.Password.RequireNonAlphanumeric = settings.PasswordRequireNonAlphanumeric;
-            options.Password.RequiredLength = settings.PasswordRequiredLength;
-        })
+        services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
             .AddErrorDescriber<AppIdentityErrorDescriber>()
@@ -237,8 +234,8 @@ public static partial class Program
         })
         .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
-            options.BearerTokenExpiration = settings.BearerTokenExpiration;
-            options.RefreshTokenExpiration = settings.RefreshTokenExpiration;
+            options.BearerTokenExpiration = identityOptions.BearerTokenExpiration;
+            options.RefreshTokenExpiration = identityOptions.RefreshTokenExpiration;
 
             var validationParameters = new TokenValidationParameters
             {
@@ -252,10 +249,10 @@ public static partial class Program
                 ValidateLifetime = true,
 
                 ValidateAudience = true,
-                ValidAudience = settings.Audience,
+                ValidAudience = identityOptions.Audience,
 
                 ValidateIssuer = true,
-                ValidIssuer = settings.Issuer,
+                ValidIssuer = identityOptions.Issuer,
 
                 AuthenticationType = IdentityConstants.BearerScheme
             };
@@ -353,7 +350,7 @@ public static partial class Program
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        var healthCheckSettings = appSettings.HealthCheckSettings;
+        var healthCheckSettings = appSettings.HealthChecks;
 
         if (healthCheckSettings.EnableHealthChecks is false)
             return;
@@ -369,7 +366,7 @@ public static partial class Program
                 opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024))
             .AddDbContextCheck<AppDbContext>();
 
-        var emailSettings = appSettings.EmailSettings;
+        var emailSettings = appSettings.Email;
 
         if (emailSettings.UseLocalFolderForEmails is false)
         {

@@ -55,8 +55,8 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
         var securityToken = jwtSecurityTokenHandler
             .CreateJwtSecurityToken(new SecurityTokenDescriptor
             {
-                Issuer = appSettings.IdentitySettings.Issuer,
-                Audience = appSettings.IdentitySettings.Audience,
+                Issuer = appSettings.Identity.Issuer,
+                Audience = appSettings.Identity.Audience,
                 IssuedAt = DateTime.UtcNow,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
                 SigningCredentials = new SigningCredentials(validationParameters.IssuerSigningKey, SecurityAlgorithms.RsaSha512),

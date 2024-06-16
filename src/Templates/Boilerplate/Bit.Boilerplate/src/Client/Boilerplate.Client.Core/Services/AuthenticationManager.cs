@@ -34,7 +34,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         await storageService.RemoveItem("access_token");
         await storageService.RemoveItem("refresh_token");
-        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
+        if (AppRenderMode.IsBlazorHybrid is false)
         {
             await cookie.Remove("access_token");
         }
@@ -43,7 +43,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
     public async Task RefreshToken()
     {
-        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
+        if (AppRenderMode.IsBlazorHybrid is false)
         {
             await cookie.Remove("access_token");
         }

@@ -15,11 +15,11 @@ public partial class SmsService
             LogSendSms(logger, messageText, phoneNumber);
         }
 
-        if (appSettings.SmsSettings.Configured is false) return;
+        if (appSettings.Sms.Configured is false) return;
 
         var messageOptions = new CreateMessageOptions(new(phoneNumber))
         {
-            From = new(appSettings.SmsSettings.FromPhoneNumber),
+            From = new(appSettings.Sms.FromPhoneNumber),
             Body = messageText
         };
 

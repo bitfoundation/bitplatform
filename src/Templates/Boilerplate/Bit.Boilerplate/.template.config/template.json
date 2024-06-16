@@ -331,7 +331,7 @@
                         "src/Boilerplate.Server/Extensions/UserManagerExtensions.cs",
                         "src/Boilerplate.Server/wwwroot/swagger/**",
                         "src/Boilerplate.Server/AppSettings.cs",
-                        "src/Boilerplate.Server/IdentityCertificate.pfx"
+                        "src/Boilerplate.Server/DataProtectionCertificate.pfx"
                     ]
                 },
                 {

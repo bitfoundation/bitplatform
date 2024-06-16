@@ -55,7 +55,7 @@
         <Using Include="Microsoft.AspNetCore.OData.Query" />
         <Using Include="Microsoft.AspNetCore.Mvc" />
 
-        <None Update="IdentityCertificate.pfx">
+        <None Update="DataProtectionCertificate.pfx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
         
