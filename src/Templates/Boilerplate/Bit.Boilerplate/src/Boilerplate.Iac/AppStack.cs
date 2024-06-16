@@ -136,13 +136,13 @@ public class AppStack : Stack
                 {
                     new NameValuePairArgs { Name = "ASPNETCORE_ENVIRONMENT", Value = stackName == "test" ? "Test" : "Production" },
                     new NameValuePairArgs { Name = "APPLICATIONINSIGHTS_CONNECTIONSTRING", Value = appInsights.ConnectionString },
-                    new NameValuePairArgs { Name = "AppSettings__EmailSettings__DefaultFromEmail", Value = defaultEmailFrom },
-                    new NameValuePairArgs { Name = "AppSettings__EmailSettings__Host", Value = emailServerHost },
-                    new NameValuePairArgs { Name = "AppSettings__EmailSettings__Port", Value = emailServerPort },
-                    new NameValuePairArgs { Name = "AppSettings__EmailSettings__UserName", Value = emailServerUserName },
+                    new NameValuePairArgs { Name = "AppSettings__Email__DefaultFromEmail", Value = defaultEmailFrom },
+                    new NameValuePairArgs { Name = "AppSettings__Email__Host", Value = emailServerHost },
+                    new NameValuePairArgs { Name = "AppSettings__Email__Port", Value = emailServerPort },
+                    new NameValuePairArgs { Name = "AppSettings__Email__UserName", Value = emailServerUserName },
                     new NameValuePairArgs
                     {
-                        Name = "AppSettings__EmailSettings__Password",
+                        Name = "AppSettings__Email__Password",
                         Value = $"@Microsoft.KeyVault(VaultName={vaultName};SecretName={emailServerPasswordSecretName})"
                     },
                     new NameValuePairArgs

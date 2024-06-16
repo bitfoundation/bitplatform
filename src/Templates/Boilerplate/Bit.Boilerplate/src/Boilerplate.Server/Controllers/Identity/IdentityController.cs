@@ -242,7 +242,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
 
-        var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.IdentityOptions.ResetPasswordTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.Identity.ResetPasswordTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
@@ -289,7 +289,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
 
-        var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.IdentityOptions.OtpRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.Identity.OtpRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
@@ -348,7 +348,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
-        var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.IdentityOptions.TwoFactorTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.Identity.TwoFactorTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForTwoFactorTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
@@ -507,7 +507,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     private async Task SendConfirmEmailToken(User user, CancellationToken cancellationToken)
     {
-        var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.IdentityOptions.EmailTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
@@ -527,7 +527,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     private async Task SendConfirmPhoneToken(User user, CancellationToken cancellationToken)
     {
-        var resendDelay = (DateTimeOffset.Now - user.PhoneNumberTokenRequestedOn) - AppSettings.IdentityOptions.PhoneNumberTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);

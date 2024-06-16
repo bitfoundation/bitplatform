@@ -32,7 +32,7 @@ public static partial class Program
         services.AddExceptionHandler<ServerExceptionHandler>();
 
         services.AddOptions<ForwardedHeadersOptions>()
-            .Bind(configuration.GetRequiredSection(nameof(ForwardedHeadersOptions)))
+            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -100,7 +100,7 @@ public static partial class Program
             .ValidateOnStart();
 
         services.AddOptions<IdentityOptions>()
-            .Bind(configuration.GetRequiredSection(nameof(AppSettings)).GetRequiredSection(nameof(AppSettings.IdentityOptions)))
+            .Bind(configuration.GetRequiredSection(nameof(AppSettings)).GetRequiredSection(nameof(AppSettings.Identity)))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -116,9 +116,9 @@ public static partial class Program
 
         services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
-        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.EmailSettings.DefaultFromEmail);
+        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.Email.DefaultFromEmail);
 
-        if (appSettings.EmailSettings.UseLocalFolderForEmails)
+        if (appSettings.Email.UseLocalFolderForEmails)
         {
             var sentEmailsFolderPath = Path.Combine(AppContext.BaseDirectory, "sent-emails");
 
@@ -132,25 +132,25 @@ public static partial class Program
         }
         else
         {
-            if (appSettings.EmailSettings.HasCredential)
+            if (appSettings.Email.HasCredential)
             {
-                fluentEmailServiceBuilder.AddSmtpSender(() => new(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port)
+                fluentEmailServiceBuilder.AddSmtpSender(() => new(appSettings.Email.Host, appSettings.Email.Port)
                 {
-                    Credentials = new NetworkCredential(appSettings.EmailSettings.UserName, appSettings.EmailSettings.Password),
+                    Credentials = new NetworkCredential(appSettings.Email.UserName, appSettings.Email.Password),
                     EnableSsl = true
                 });
             }
             else
             {
-                fluentEmailServiceBuilder.AddSmtpSender(appSettings.EmailSettings.Host, appSettings.EmailSettings.Port);
+                fluentEmailServiceBuilder.AddSmtpSender(appSettings.Email.Host, appSettings.Email.Port);
             }
         }
 
         services.TryAddTransient<EmailService>();
         services.TryAddTransient<SmsService>();
-        if (appSettings.SmsSettings.Configured)
+        if (appSettings.Sms.Configured)
         {
-            TwilioClient.Init(appSettings.SmsSettings.AccountSid, appSettings.SmsSettings.AuthToken);
+            TwilioClient.Init(appSettings.Sms.AccountSid, appSettings.Sms.AuthToken);
         }
 
         //#endif
@@ -203,7 +203,7 @@ public static partial class Program
         var configuration = builder.Configuration;
         var env = builder.Environment;
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
-        var identityOptions = appSettings.IdentityOptions;
+        var identityOptions = appSettings.Identity;
 
         var certificatePath = Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionCertificate.pfx");
         var certificate = new X509Certificate2(certificatePath, configuration["DataProtectionCertificatePassword"], OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
@@ -350,7 +350,7 @@ public static partial class Program
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        var healthCheckSettings = appSettings.HealthCheckSettings;
+        var healthCheckSettings = appSettings.HealthChecks;
 
         if (healthCheckSettings.EnableHealthChecks is false)
             return;
@@ -366,7 +366,7 @@ public static partial class Program
                 opt.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024))
             .AddDbContextCheck<AppDbContext>();
 
-        var emailSettings = appSettings.EmailSettings;
+        var emailSettings = appSettings.Email;
 
         if (emailSettings.UseLocalFolderForEmails is false)
         {

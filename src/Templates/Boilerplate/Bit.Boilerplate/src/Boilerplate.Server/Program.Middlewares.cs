@@ -111,7 +111,7 @@ public static partial class Program
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        var healthCheckSettings = appSettings.HealthCheckSettings;
+        var healthCheckSettings = appSettings.HealthChecks;
 
         if (healthCheckSettings.EnableHealthChecks)
         {
