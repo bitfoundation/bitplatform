@@ -52,9 +52,9 @@ jobs:
         dotnet new bit-bp --name ApiFalse --database other --sample none --pipeline azure --api false
         dotnet build ApiFalse/ApiFalse.sln -c Release -p:RunAOTCompilation=false
 
-    - name: Release build admin panel sample + SqlServer database
+    - name: Release build admin panel sample + PostgreSQL database
       run: |
-        dotnet new bit-bp --name AdminBPSqlServer --database sqlserver --sample admin --pipeline github --serverUrl adminpanel.bitplatform.dev --appInsights --appCenter
+        dotnet new bit-bp --name AdminBPSqlServer --database PostgreSQL --sample admin --pipeline github --serverUrl adminpanel.bitplatform.dev --appInsights --appCenter
         dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
 
     - name: Run BeforeBuildTasks

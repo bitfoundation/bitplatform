@@ -1,4 +1,5 @@
-﻿using Boilerplate.Server.Models.Identity;
+﻿//+:cnd:noEmit
+using Boilerplate.Server.Models.Identity;
 
 namespace Boilerplate.Server.Data.Configurations.Identity;
 
@@ -6,16 +7,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder
-            .HasIndex(b => b.Email)
-            .HasFilter($"{nameof(User.Email)} IS NOT NULL")
-            .IsUnique();
-
-        builder
-            .HasIndex(b => b.PhoneNumber)
-            .HasFilter($"{nameof(User.PhoneNumber)} IS NOT NULL")
-            .IsUnique();
-
         const string userName = "test";
         const string email = "test@bitplatform.dev";
 
@@ -38,5 +29,31 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
             PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
         }]);
+
+        //#if (database == "Sqlite" || database == "SqlServer")
+        builder
+            .HasIndex(b => b.Email)
+            .HasFilter($"[{nameof(User.Email)}] IS NOT NULL")
+            .IsUnique();
+
+        builder
+            .HasIndex(b => b.PhoneNumber)
+            .HasFilter($"[{nameof(User.PhoneNumber)}] IS NOT NULL")
+            .IsUnique();
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        return;
+        //#endif
+        //#if (database == "PostgreSQL")
+        builder
+            .HasIndex(b => b.Email)
+            .HasFilter($"'{nameof(User.Email)}' IS NOT NULL")
+            .IsUnique();
+
+        builder
+            .HasIndex(b => b.PhoneNumber)
+            .HasFilter($"'{nameof(User.PhoneNumber)}' IS NOT NULL")
+            .IsUnique();
+        //#endif
     }
 }
