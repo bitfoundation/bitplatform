@@ -44,16 +44,9 @@ public partial class BitNumberFieldDemo
             Name = "Classes",
             Type = "BitNumberFieldClassStyles?",
             DefaultValue = "null",
-            LinkType = LinkType.Link,
-            Href = "#numberfield-class-styles",
             Description = "Custom CSS classes for different parts of the BitNumberField.",
-        },
-        new()
-        {
-            Name = "DefaultValue",
-            Type = "TValue?",
-            DefaultValue = "null",
-            Description = "Initial value of the number field.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {
@@ -71,10 +64,10 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "IconName",
-            Type = "string?",
+            Name = "DefaultValue",
+            Type = "TValue?",
             DefaultValue = "null",
-            Description = "Icon name for an icon to display alongside the number field's label.",
+            Description = "Initial value of the number field.",
         },
         new()
         {
@@ -82,6 +75,13 @@ public partial class BitNumberFieldDemo
             Type = "string",
             DefaultValue = "string.Empty",
             Description = "The aria label of the icon for the benefit of screen readers.",
+        },
+        new()
+        {
+            Name = "IconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Icon name for an icon to display alongside the number field's label.",
         },
         new()
         {
@@ -96,13 +96,6 @@ public partial class BitNumberFieldDemo
             Type = "string",
             DefaultValue = "ChevronUpSmall",
             Description = "Custom icon name for the increment button.",
-        },
-        new()
-        {
-            Name = "Required",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
         },
         new()
         {
@@ -142,9 +135,21 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "NumberFormat",
-            Type = "string",
-            DefaultValue = "{0}",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The format of the number in the number field.",
+        },
+        new()
+        {
+            Name = "OnBlur",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when the control loses focus.",
+        },
+        new()
+        {
+            Name = "OnDecrement",
+            Type = "EventCallback<TValue>",
+            Description = "Callback for when the decrement button or down arrow key is pressed.",
         },
         new()
         {
@@ -166,28 +171,16 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "OnBlur",
-            Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when the control loses focus.",
-        },
-        new()
-        {
-            Name = "OnDecrement",
-            Type = "EventCallback<TValue>",
-            Description = "Callback for when the decrement button or down arrow key is pressed.",
-        },
-        new()
-        {
             Name = "OnIncrement",
             Type = "EventCallback<TValue>",
             Description = "Callback for when the increment button or up arrow key is pressed.",
         },
         new()
         {
-            Name = "Precision",
-            Type = "int?",
-            DefaultValue = "null",
-            Description = "How many decimal places the value should be rounded to.",
+            Name = "ParsingErrorMessage",
+            Type = "string",
+            DefaultValue="The {0} field is not valid.",
+            Description = "The message format used for invalid values entered in the input.",
         },
         new()
         {
@@ -212,6 +205,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "Required",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
+        },
+        new()
+        {
             Name = "ShowButtons",
             Type = "bool",
             DefaultValue = "false",
@@ -229,9 +229,9 @@ public partial class BitNumberFieldDemo
             Name = "Styles",
             Type = "BitNumberFieldClassStyles?",
             DefaultValue = "null",
-            LinkType = LinkType.Link,
-            Href = "#numberfield-class-styles",
             Description = "Custom CSS styles for different parts of the BitNumberField.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {
@@ -253,20 +253,13 @@ public partial class BitNumberFieldDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A more descriptive title for the control, visible on its tooltip.",
-        },
-        new()
-        {
-            Name = "ValidationMessage",
-            Type = "string",
-            DefaultValue="The {0} field is not valid.",
-            Description = "The message format used for invalid values entered in the input.",
         }
     ];
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
         {
-            Id = "numberfield-class-styles",
+            Id = "class-styles",
             Title = "BitNumberFieldClassStyles",
             Parameters = new()
             {
@@ -388,6 +381,10 @@ public partial class BitNumberFieldDemo
     ];
 
 
+    private int minValue;
+    private int maxValue;
+    private int minMaxValue;
+
     private double oneWayValue;
     private double twoWayValue;
 
@@ -415,38 +412,39 @@ public partial class BitNumberFieldDemo
 
     private readonly string example1RazorCode = @"
 <BitNumberField Label=""Basic"" TValue=""int"" />
-<BitNumberField Label=""Disabled"" Step=""1"" IsEnabled=""false"" />
-<BitNumberField Label=""Placeholder"" DefaultValue=""1"" Placeholder=""Enter a number..."" />
-<BitNumberField Label=""Step & Buttons"" Step=""1"" ShowButtons=""true"" />
-<BitNumberField Label=""Min & Max"" Step=""1"" Min=""-10"" Max=""10"" />
-<BitNumberField Label=""Required"" TValue=""int"" Required />";
+
+<BitNumberField Label=""Disabled & DefaultValue"" DefaultValue=""1363"" IsEnabled=""false"" />
+
+<BitNumberField Label=""Placeholder"" TValue=""int?"" Placeholder=""Enter a number..."" />
+
+<BitNumberField Label=""Step(5) & Buttons"" Step=""5"" ShowButtons=""true"" />
+
+<BitNumberField Label=""Required"" TValue=""int?"" Required />";
 
     private readonly string example2RazorCode = @"
-<BitNumberField Label=""Label Top"" Step=""1"" />
-<BitNumberField Label=""Label Left"" Step=""1"" LeftLabel />
+<BitNumberField Label=""Label Top"" TValue=""int"" />
+
+<BitNumberField Label=""Label Left"" TValue=""int"" LeftLabel />
 
 <BitNumberField TValue=""int"">
     <LabelTemplate>
         <div style=""display:flex;align-items:center;gap:10px"">
-            <BitLabel Style=""color:green"">This is custom Label</BitLabel>
-            <BitIcon IconName=""@BitIconName.Filter"" Style=""font-size:18px;""/>
+            <BitLabel Style=""color:green;"">This is custom Label</BitLabel>
+            <BitIcon IconName=""@BitIconName.Filter"" Style=""font-size:18px;"" />
         </div>
     </LabelTemplate>
 </BitNumberField>";
 
     private readonly string example3RazorCode = @"
-<BitNumberField Label=""Label & Icon""  Step=""1"" IconName=""@BitIconName.Lightbulb"" />
+<BitNumberField Label=""Label & Icon"" TValue=""int"" 
+                IconName=""@BitIconName.Lightbulb"" />
 
-<BitNumberField Label=""Increment & Decrement Icon""  Step=""1""
-                     ShowButtons=""true""
-                     IncrementIconName=""@BitIconName.LikeSolid""
-                     DecrementIconName=""@BitIconName.DislikeSolid"" />";
+<BitNumberField Label=""Increment & Decrement Icon"" TValue=""int""
+                ShowButtons=""true""
+                IncrementIconName=""@BitIconName.LikeSolid""
+                DecrementIconName=""@BitIconName.DislikeSolid"" />";
 
     private readonly string example4RazorCode = @"
-<BitNumberField Label=""Height"" DefaultValue=""150"" NumberFormat=""{0} cm"" />
-<BitNumberField Label=""Weight"" DefaultValue=""2500"" NumberFormat=""{0,0:N0} kg"" />";
-
-    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         margin-left: 0.5rem;
@@ -484,76 +482,91 @@ public partial class BitNumberFieldDemo
 <BitNumberField Label=""Classed"" DefaultValue=""20"" Class=""custom-class"" />
 
 
-
 <BitNumberField Label=""Styles"" DefaultValue=""1"" IconName=""@BitIconName.Microphone""
-                     Styles=""@(new() { Root = ""background-color: pink;"",
-                                       Icon = ""color: red;"",
-                                       Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
-                                       Input = ""padding: 0.5rem; background-color: goldenrod"" })"" />
+                Styles=""@(new() { Root = ""background-color: pink;"",
+                                  Icon = ""color: red;"",
+                                  Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
+                                  Input = ""padding: 0.5rem; background-color: goldenrod"" })"" />
 
 <BitNumberField Label=""Classes"" DefaultValue=""2""
-                     Classes=""@(new() { Input = ""custom-input"",
-                                        Focused = ""custom-focus"",
-                                        Label = ""custom-label"",
-                                        InputWrapper = ""custom-input-wrapper"" })"" />";
+                Classes=""@(new() { Input = ""custom-input"",
+                                   Focused = ""custom-focus"",
+                                   Label = ""custom-label"",
+                                   InputWrapper = ""custom-input-wrapper"" })"" />";
+
+    private readonly string example5RazorCode = @"
+<BitNumberField Label=""N0"" DefaultValue=""1234567890d"" NumberFormat=""N0"" />
+
+<BitNumberField Label=""C0"" DefaultValue=""150"" NumberFormat=""C0"" />
+
+<BitNumberField Label=""000000"" DefaultValue=""1363"" NumberFormat=""000000"" />";
 
     private readonly string example6RazorCode = @"
+<BitNumberField TValue=""int"" Label=""Prefix"" Prefix=""Distance:"" />
+
+<BitNumberField TValue=""int"" Label=""Suffix"" Suffix=""km"" />
+
+<BitNumberField TValue=""int"" Label=""Prefix & Suffix"" Prefix=""Distance:"" Suffix=""km"" />
+
+<BitNumberField TValue=""int"" Label=""With buttons"" Prefix=""Distance:"" Suffix=""km"" ShowButtons=""true"" />
+
+<BitNumberField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" IsEnabled=""false"" />";
+
+    private readonly string example7RazorCode = @"
 <BitNumberField Label=""One-way"" Value=""oneWayValue"" />
 <BitRating @bind-Value=""oneWayValue"" />
 
 <BitNumberField Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitRating @bind-Value=""twoWayValue"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private double oneWayValue;
 private double twoWayValue;
 ";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
+<BitNumberField Label=""Min = 0"" Min=""0"" @bind-Value=""minValue"" />
+<div>value: [@minValue]</div>
+
+<BitNumberField Label=""Max = 100"" Max=""100"" @bind-Value=""maxValue"" />
+<div>value: [@maxValue]</div>
+
+<BitNumberField Label=""Min & Max (-10, 10)"" Min=""-10"" Max=""10"" @bind-Value=""minMaxValue"" />
+<div>value: [@minMaxValue]</div>";
+    private readonly string example8CsharpCode = @"
+private int minValue;
+private int maxValue;
+private int minMaxValue;";
+
+    private readonly string example9RazorCode = @"
 <BitNumberField Label=""OnIncrement & OnDecrement"" ShowButtons=""true""
-                     OnIncrement=""(double v) => onIncrementCounter++""
-                     OnDecrement=""(double v) => onDecrementCounter++"" />
-<BitLabel>OnIncrement Counter: @onIncrementCounter</BitLabel>
-<BitLabel>OnDecrement Counter: @onDecrementCounter</BitLabel>
+                OnIncrement=""(double v) => onIncrementCounter++""
+                OnDecrement=""(double v) => onDecrementCounter++"" />
+<div>OnIncrement Counter: @onIncrementCounter</div>
+<div>OnDecrement Counter: @onDecrementCounter</div>
 
 <BitNumberField Label=""OnChange"" OnChange=""(double v) => onChangeCounter++"" />
-<BitLabel>OnChange Counter: @onChangeCounter</BitLabel>";
-    private readonly string example7CsharpCode = @"
+<div>OnChange Counter: @onChangeCounter</div>";
+    private readonly string example9CsharpCode = @"
 private int onIncrementCounter;
 private int onDecrementCounter;
 private int onChangeCounter;";
 
-    private readonly string example8RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
-<EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+    private readonly string example10RazorCode = @"
+<EditForm Model=""@validationModel"">
     <DataAnnotationsValidator />
 
-    <BitNumberField Label=""Age"" @bind-Value=""@validationModel.AgeInYears"" />
-    <ValidationMessage For=""@(() => validationModel.AgeInYears)"" />
-
+    <BitNumberField Label=""@($""Age: [{validationModel.Age}]"")"" @bind-Value=""validationModel.Age"" />
+    <ValidationMessage For=""@(() => validationModel.Age)"" />
+    <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class BitNumberFieldValidationModel
 {
     [Required(ErrorMessage = ""Enter an age"")]
     [Range(1, 150, ErrorMessage = ""Nobody is that old"")]
-    public double AgeInYears { get; set; }
+    public int? Age { get; set; }
 }
 
-private BitNumberFieldValidationModel validationModel = new();
-
-private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
-
-    private readonly string example9RazorCode = @"
-<BitNumberField TValue=""int"" Label=""Prefix"" Prefix=""Distance:"" />
-<BitNumberField TValue=""int"" Label=""Suffix"" Suffix=""km"" />
-<BitNumberField TValue=""int"" Label=""Prefix and Suffix"" Prefix=""Distance:"" Suffix=""km"" />
-<BitNumberField TValue=""int"" Label=""Step & Buttons"" Prefix=""Distance:"" Suffix=""km"" Step=""1"" ShowButtons=""true"" />
-<BitNumberField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" IsEnabled=""false"" />";
+private BitNumberFieldValidationModel validationModel = new();";
 }

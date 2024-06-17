@@ -4,5 +4,5 @@ public class BitNumberFieldValidationModel
 {
     [Required(ErrorMessage = "Enter an age")]
     [Range(1, 150, ErrorMessage = "Nobody is that old")]
-    public double AgeInYears { get; set; }
+    public int? Age { get; set; }
 }
