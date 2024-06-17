@@ -22,14 +22,15 @@
 
     <div style="@Styles?.InputWrapper" class="bit-ctp-wrp @Classes?.InputWrapper" id="@_circularTimePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div style="@Styles?.InputContainer" class="bit-ctp-icn @Classes?.InputContainer">
-            <input @attributes="InputHtmlAttributes"
+            <input @ref="InputElement" @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
                    @oninput="@HandleOnChange"
                    @onfocusin="@HandleOnFocusIn"
                    @onfocusout="@HandleOnFocusOut"
                    type="text"
-                   role="combobox"
+                   name="@Name"
                    id="@_inputId"
+                   role="combobox"
                    tabindex="@TabIndex"
                    aria-haspopup="dialog"
                    aria-label="@AriaLabel"

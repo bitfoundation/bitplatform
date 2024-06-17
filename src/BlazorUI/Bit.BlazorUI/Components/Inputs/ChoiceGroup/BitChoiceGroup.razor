@@ -115,7 +115,9 @@
                     }
                 </label>
 
-                <input @attributes="InputHtmlAttributes" @onclick="e => HandleClick(item)" @onchange="e => HandleChange(item)"
+                <input @attributes="InputHtmlAttributes"
+                       @onclick="e => HandleClick(item)"
+                       @onchange="e => HandleChange(item)"
                        hidden
                        type="radio"
                        name="@Name"

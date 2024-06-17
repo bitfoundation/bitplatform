@@ -13,17 +13,22 @@
                 <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
             </div>
         }
-        <input @ref="_inputRef" @attributes="InputHtmlAttributes" @onkeydown="@((k) => HandleOnKeyDown(k))" @onfocusin="HandleInputFocusIn" @onfocusout="HandleInputFocusOut" @oninput="@HandleOnChange"
-               id="@_inputId"
-               style="@Styles?.Input"
-               class="bit-srb-inp @Classes?.Input"
+        <input @ref="InputElement" @attributes="InputHtmlAttributes"
+               @onkeydown="@HandleOnKeyDown"
+               @onfocusout="HandleInputFocusOut"
+               @onfocusin="HandleInputFocusIn"
+               @oninput="@HandleOnChange"
                type="text"
+               name="@Name"
+               id="@_inputId"
                role="searchbox"
                value="@CurrentValue"
+               style="@Styles?.Input"
                aria-label="@AriaLabel"
                placeholder="@Placeholder"
                autocomplete="@Autocomplete"
-               disabled="@(IsEnabled is false)" />
+               disabled="@(IsEnabled is false)"
+               class="bit-srb-inp @Classes?.Input" />
         @if (HideClearButton is false && CurrentValue.HasValue())
         {
             <button @onclick="HandleOnClearButtonClick"

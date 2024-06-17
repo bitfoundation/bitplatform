@@ -85,7 +85,9 @@
 
             @if (Combo)
             {
-                <input @ref="_comboBoxInputRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput"
+                <input @ref="_comboBoxInputRef"
+                       @onkeydown="@HandleOnKeyDown"
+                       @oninput="@HandleOnComboInput"
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"

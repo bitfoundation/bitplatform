@@ -579,7 +579,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         ClassBuilder.Register(() => Styles?.Root);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
@@ -603,7 +603,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         if (IsMultiSelect is false && EqualityComparer<TValue>.Default.Equals(CurrentValue, default) && EqualityComparer<TValue>.Default.Equals(DefaultValue, default) is false)
         {
-            InitCurrentValue(DefaultValue);
+            await SetCurrentValueAsync(DefaultValue);
         }
 
         if (IsMultiSelect && (Values is null || Values.Any() is false) && DefaultValues is not null && DefaultValues.Any())
@@ -613,7 +613,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         UpdateSelectedItemsFromValues();
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     protected override bool TryParseValueFromString(string? value, out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
