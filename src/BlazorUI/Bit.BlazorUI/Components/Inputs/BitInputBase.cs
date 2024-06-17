@@ -5,7 +5,6 @@
 using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Xml.Linq;
 
 namespace Bit.BlazorUI;
 
@@ -27,6 +26,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private BitDebouncer _debouncer = new();
     private BitThrottler _throttler = new();
     private bool _previousParsingAttemptFailed;
+    private ChangeEventArgs _throttleEventArgs;
     private string? _incomingValueBeforeParsing;
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
@@ -247,9 +247,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         get => valueInvalid;
         private set
         {
-            valueInvalid = value;
+            if (valueInvalid == value) return;
 
-            if (valueInvalid is false) return;
+            valueInvalid = value;
 
             ClassBuilder.Reset();
         }
@@ -295,9 +295,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         {
             FieldIdentifier = (FieldIdentifier)Field;
         }
-        else if (ValueExpression is not null)
+        else if (valueExpression is not null)
         {
-            FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            FieldIdentifier = FieldIdentifier.Create(valueExpression);
         }
         else if (ValueChanged.HasDelegate)
         {
@@ -329,7 +329,10 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         // Thread Safety: Force events to be re-associated with the Dispatcher, prior to invocation.
         await InvokeAsync(async () =>
         {
-            await OnChange.InvokeAsync(value);
+            if (IsEnabled)
+            {
+                await OnChange.InvokeAsync(value);
+            }
 
             if (OnValueChanged is not null)
             {
@@ -426,7 +429,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             }
         }
 
-        if (FieldBound && !notifyCalled)
+        if (FieldBound && notifyCalled is false)
         {
             CascadedEditContext?.NotifyFieldChanged(FieldIdentifier);
         }
@@ -457,7 +460,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             await HandleOnChangeAsync(e);
         }
     }
-    private ChangeEventArgs _throttleEventArgs;
 
 
 
@@ -494,7 +496,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         {
             ValueInvalid = false;
 
-            if (!hasAriaInvalidAttribute) return;
+            if (hasAriaInvalidAttribute is false) return;
 
             // No validation errors. Need to remove `aria-invalid` if it was rendered already
 

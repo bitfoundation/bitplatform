@@ -303,7 +303,7 @@ public partial class BitTextField
 
         if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
         {
-            await SetCurrentValueAsync(DefaultValue);
+            await SetCurrentValueAsStringAsync(DefaultValue);
         }
 
         await base.OnInitializedAsync();
