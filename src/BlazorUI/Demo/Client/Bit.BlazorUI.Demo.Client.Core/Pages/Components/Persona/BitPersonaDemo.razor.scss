@@ -1,5 +1,9 @@
 ﻿@import "../../../Styles/abstracts/_functions.scss";
 
+.example-content {
+    max-width: rem2(300px);
+}
+
 .title {
     font-weight: 600;
     margin-top: rem2(40px);
