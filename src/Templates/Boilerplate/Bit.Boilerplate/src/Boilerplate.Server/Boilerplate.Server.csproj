@@ -44,7 +44,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.6" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="3.5.1" />
-        <PackageReference Include="Twilio" Version="7.1.1" />
+        <PackageReference Include="Twilio" Version="7.2.0" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
