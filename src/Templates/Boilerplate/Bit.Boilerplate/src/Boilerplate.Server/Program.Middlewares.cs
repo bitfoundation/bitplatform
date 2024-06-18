@@ -6,11 +6,6 @@ using System.Web;
 using Boilerplate.Client.Core.Services;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Http.Extensions;
-
-//#if (api == true)
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using HealthChecks.UI.Client;
-//#endif
 using Microsoft.Net.Http.Headers;
 
 namespace Boilerplate.Server;
@@ -109,29 +104,10 @@ public static partial class Program
 
         app.MapControllers().RequireAuthorization();
 
-        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
-
-        var healthCheckSettings = appSettings.HealthChecks;
-
-        if (healthCheckSettings.EnableHealthChecks)
-        {
-            app.MapHealthChecks("/healthz", new HealthCheckOptions
-            {
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-            });
-
-            app.MapHealthChecksUI(options =>
-            {
-                options.UseRelativeApiPath =
-                    options.UseRelativeResourcesPath =
-                        options.UseRelativeWebhookPath = false;
-            });
-        }
-
         //#endif
 
         // Handle the rest of requests with blazor
-        var blazorApp = app.MapRazorComponents<Boilerplate.Server.Components.App>()
+        var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());

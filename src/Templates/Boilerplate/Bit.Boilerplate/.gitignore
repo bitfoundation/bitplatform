@@ -227,9 +227,8 @@ profile.arm.json
 /**/*.css
 custom.aprof
 
-/src/Boilerplate.Server/Attachments/**/*.*
+/src/Boilerplate.Server/App_Data/*
 
 /src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js
 
-/src/Boilerplate.Server/*.db*
 .env

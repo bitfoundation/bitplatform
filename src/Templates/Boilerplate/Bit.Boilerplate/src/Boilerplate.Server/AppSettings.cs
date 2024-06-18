@@ -9,8 +9,6 @@ public class AppSettings : IValidatableObject
 
     public SmsSettings Sms { get; set; } = default!;
 
-    public HealthChecksSettings HealthChecks { get; set; } = default!;
-
     [Required]
     public string UserProfileImagesDir { get; set; } = default!;
 
@@ -26,15 +24,9 @@ public class AppSettings : IValidatableObject
         Validator.TryValidateObject(Identity, new ValidationContext(Identity), validationResults, true);
         Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
         Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
-        Validator.TryValidateObject(HealthChecks, new ValidationContext(HealthChecks), validationResults, true);
 
         return validationResults;
     }
-}
-
-public class HealthChecksSettings
-{
-    public bool EnableHealthChecks { get; set; }
 }
 
 public class IdentitySettings : IdentityOptions
@@ -70,7 +62,7 @@ public class EmailSettings
     [Required]
     public string Host { get; set; } = default!;
     /// <summary>
-    /// If true, the web app tries to store emails as .eml file in the bin/Debug/net8.0/sent-emails folder instead of sending them using smtp server (recommended for testing purposes only).
+    /// If true, the web app tries to store emails as .eml file in the App_Data/sent-emails folder instead of sending them using smtp server (recommended for testing purposes only).
     /// </summary>
     public bool UseLocalFolderForEmails => Host is "LocalFolder";
 
