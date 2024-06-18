@@ -1,0 +1,23 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-grd {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing);
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bit-grd-itm {
+    flex-basis: calc((100% / var(--columns) * var(--span)) - var(--spacing));
+
+    $breakpoints: ( 'xs': 0, 'sm': 600px, 'md': 900px, 'lg': 1200px, 'xl': 1920px, 'xxl': 2560px );
+
+    @each $name, $breakpoint in $breakpoints {
+        @media (min-width: $breakpoint) {
+            --#{$name}: var(--span);
+            flex-basis: calc((100% / var(--columns) * var(--#{$name})) - var(--spacing));
+        }
+    }
+}
