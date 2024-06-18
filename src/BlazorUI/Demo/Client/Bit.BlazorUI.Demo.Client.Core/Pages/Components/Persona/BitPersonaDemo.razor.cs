@@ -27,6 +27,15 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitPersonaClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitPersona component.",
+            Href = "#persona-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "CoinSize",
             Type = "int?",
             DefaultValue = "",
@@ -192,6 +201,15 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "Styles",
+            Type = "BitPersonaClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitPersona component.",
+            Href = "#persona-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "TertiaryText",
             Type = "string?",
             DefaultValue = "null",
@@ -314,6 +332,144 @@ public partial class BitPersonaDemo
             ]
         },
     ];
+
+    private readonly List<ComponentSubClass> componentSubClasses = new()
+    {
+        new()
+        {
+            Id = "persona-class-styles",
+            Title = "BitPersonaClassStyles",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitPersona."
+                },
+                new()
+                {
+                    Name = "CoinContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the coin container of the BitPersona."
+                },
+                new()
+                {
+                    Name = "PresentationIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the presentation icon of the BitPersona."
+                },
+                new()
+                {
+                    Name = "Presentation",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the presentation of the BitPersona."
+                },
+                new()
+                {
+                    Name = "ImageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the image container of the BitPersona.."
+                },
+                new()
+                {
+                    Name = "UnknownIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the unknown icon of the BitPersona."
+                },
+                new()
+                {
+                    Name = "ImageOverlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the image overlay of the BitPersona."
+                },
+                new()
+                {
+                    Name = "ImageOverlayText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the image overlay text of the BitPersona."
+                },
+                new()
+                {
+                    Name = "Initials",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the initials of the BitPersona."
+                },
+                new()
+                {
+                    Name = "Image",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the image of the BitPersona."
+                },
+                new()
+                {
+                    Name = "ActionButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the action button of the BitPersona."
+                },
+                new()
+                {
+                    Name = "ActionButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the action button icon of the BitPersona."
+                },
+                new()
+                {
+                    Name = "Presence",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the presence of the BitPersona."
+                },
+                new()
+                {
+                    Name = "DetailsContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the details container of the BitPersona."
+                },
+                new()
+                {
+                    Name = "PrimaryTextContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the primary text container of the BitPersona."
+                },
+                new()
+                {
+                    Name = "SecondaryTextContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the secondary text container of the BitPersona."
+                },
+                new()
+                {
+                    Name = "TertiaryTextContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the tertiary text container of the BitPersona."
+                },
+                new()
+                {
+                    Name = "OptionalTextContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the optional text container of the BitPersona."
+                }
+            ]
+        }
+    };
 
     private int _imageClickCount = 0;
     private int _actionClickCount = 0;
@@ -591,6 +747,45 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
 </BitPersona>";
 
     private readonly string example8RazorCode = @"
+<style>
+    .custom-class {
+        padding: 1rem;
+        box-shadow: #3d3226 0 0 1rem;
+        border-radius: 1rem;
+    }
+
+    .custom-img-container {
+        color: #ff6a00;
+        background-color: #f2cd01;
+    }
+
+    .custom-primary-text {
+        color: #b6ff00;
+        font-weight: bold;
+        font-style: italic;
+    }
+</style>
+
+<BitPersona PrimaryText=""Saleh Khafan""
+            Size=""BitPersonaSize.Size72""
+            Style=""padding: 1rem; background: gray;border-radius: 1rem;"" />
+
+<BitPersona PrimaryText=""Saleh Khafan""
+            Size=""BitPersonaSize.Size72""
+            Class=""custom-class"" />
+
+
+<BitPersona PrimaryText=""Saleh Khafan""
+            Size=""BitPersonaSize.Size72""
+            Styles=""@(new() { ImageContainer = ""color: #b6ff00; background-color: #00ff90;"",
+                              PrimaryTextContainer = ""color: #ea1919; font-weight: bold; font-style: italic;"" })"" />
+
+<BitPersona PrimaryText=""Saleh Khafan""
+            Size=""BitPersonaSize.Size72""
+            Classes=""@(new() { ImageContainer = ""custom-img-container"",
+                               PrimaryTextContainer = ""custom-primary-text"" })"" />";
+
+    private readonly string example9RazorCode = @"
 <BitPersona Dir=""BitDir.Rtl""
             PrimaryText=""صالح یوسف نژاد""
             SecondaryText=""مهندس نرم افزار""

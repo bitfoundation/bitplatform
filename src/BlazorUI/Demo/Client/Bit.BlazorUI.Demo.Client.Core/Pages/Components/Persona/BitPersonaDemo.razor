@@ -7,7 +7,8 @@
 <ComponentDemo ComponentName="Persona"
                ComponentDescription="A Bitpersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status.The complete control includes an individual's avatar (an uploaded image or a composition of the person’s initials on a background color), their name or identification, and online status.The Bitpersona control is used in the PeoplePicker and Facepile controls."
                ComponentParameters="componentParameters"
-               ComponentSubEnums="componentSubEnums">
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
 
 
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
@@ -16,7 +17,7 @@
 
             <br /><br />
 
-            <BitPersona PrimaryText="Saleh Khafan"
+            <BitPersona PrimaryText="Annie Lindqvist"
                         Size="BitPersonaSize.Size72"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -285,7 +286,39 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+        <ExamplePreview>
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="example-content">
+                <BitPersona PrimaryText="Saleh Khafan"
+                            Size="BitPersonaSize.Size72"
+                            Style="padding: 1rem; background: gray;border-radius: 1rem;" />
+
+                <br />
+                <BitPersona PrimaryText="Saleh Khafan"
+                            Size="BitPersonaSize.Size72"
+                            Class="custom-class" />
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <div class="example-content">
+                <BitPersona PrimaryText="Saleh Khafan"
+                            Size="BitPersonaSize.Size72"
+                            Styles="@(new() { ImageContainer = "color: #b6ff00; background-color: #00ff90;",
+                                              PrimaryTextContainer = "color: #ea1919; font-weight: bold; font-style: italic;" })" />
+
+                <br />
+                <BitPersona PrimaryText="Saleh Khafan"
+                            Size="BitPersonaSize.Size72"
+                            Classes="@(new() { ImageContainer = "custom-img-container",
+                                               PrimaryTextContainer = "custom-primary-text" })" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <BitPersona Dir="BitDir.Rtl"
                         PrimaryText="صالح یوسف نژاد"

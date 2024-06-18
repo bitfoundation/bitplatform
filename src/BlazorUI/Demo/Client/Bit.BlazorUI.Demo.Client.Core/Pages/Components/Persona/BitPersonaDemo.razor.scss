@@ -16,4 +16,21 @@
         display: block;
         border-radius: rem2(20px);
     }
+
+    .custom-class {
+        padding: 1rem;
+        box-shadow: #3d3226 0 0 1rem;
+        border-radius: 1rem;
+    }
+
+    .custom-img-container {
+        color: #ff6a00;
+        background-color: #f2cd01;
+    }
+
+    .custom-primary-text {
+        color: #b6ff00;
+        font-weight: bold;
+        font-style: italic;
+    }
 }

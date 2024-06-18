@@ -105,6 +105,7 @@
     left: 50%;
     bottom: 0;
     border: none;
+    display: flex;
     cursor: pointer;
     font-weight: 400;
     width: spacing(4);
@@ -113,10 +114,11 @@
     height: spacing(4);
     position: absolute;
     text-align: center;
-    display: inline-block;
+    align-items: center;
     text-decoration: none;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
+    justify-content: center;
     font-size: spacing(1.75);
     transform: translateX(-50%);
     background-color: transparent;
@@ -127,14 +129,6 @@
             color: $color-action-hover-foreground-primary;
         }
     }
-}
-
-.bit-prs-icn {
-    height: 100%;
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: center;
 }
 
 .bit-prs-aic {
