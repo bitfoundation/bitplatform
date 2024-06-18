@@ -224,117 +224,8 @@ public partial class BitPersonaDemo
         }
     ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums =
+    private readonly List<ComponentSubClass> componentSubClasses =
     [
-        new()
-        {
-            Id = "precence-status",
-            Name = "BitPersonaPresence",
-            Items =
-            [
-                new()
-                {
-                    Name = "Away",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Blocked",
-                    Value = "5",
-                },
-                new()
-                {
-                    Name = "Busy",
-                    Value = "6",
-                },
-                new()
-                {
-                    Name = "Dnd",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "None",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Offline",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Online",
-                    Value = "2",
-                },
-            ]
-        },
-        new()
-        {
-            Id = "bitpersona-size",
-            Name = "BitPersonaSize",
-            Items =
-            [
-                new()
-                {
-                    Name = "Size8",
-                    Description = "Renders a 8px BitPersonaCoin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Size24",
-                    Description = "Renders a 24px BitPersonaCoin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Size32",
-                    Description = "Renders a 32px BitPersonaCoin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Size40",
-                    Description = "Renders a 40px BitPersonaCoin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Size48",
-                    Description = "Renders a 48px BitPersonaCoin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Size56",
-                    Description = "Renders a 56px BitPersonaCoin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Size72",
-                    Description = "Renders a 72px BitPersonaCoin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Size100",
-                    Description = "Renders a 100px BitPersonaCoin.",
-                    Value = "",
-                },
-                new()
-                {
-                    Name = "Size120",
-                    Description = "Renders a 120px BitPersonaCoin.",
-                    Value = "",
-                }
-            ]
-        },
-    ];
-
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
         new()
         {
             Id = "persona-class-styles",
@@ -469,11 +360,120 @@ public partial class BitPersonaDemo
                 }
             ]
         }
-    };
+    ];
 
-    private int _imageClickCount = 0;
-    private int _actionClickCount = 0;
-    private bool _isDetailsShown = true;
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "precence-status",
+            Name = "BitPersonaPresence",
+            Items =
+            [
+                new()
+                {
+                    Name = "Away",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Blocked",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "Busy",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "Dnd",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Offline",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Online",
+                    Value = "2",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "bitpersona-size",
+            Name = "BitPersonaSize",
+            Items =
+            [
+                new()
+                {
+                    Name = "Size8",
+                    Description = "Renders a 8px BitPersonaCoin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Size24",
+                    Description = "Renders a 24px BitPersonaCoin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Size32",
+                    Description = "Renders a 32px BitPersonaCoin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Size40",
+                    Description = "Renders a 40px BitPersonaCoin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Size48",
+                    Description = "Renders a 48px BitPersonaCoin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Size56",
+                    Description = "Renders a 56px BitPersonaCoin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Size72",
+                    Description = "Renders a 72px BitPersonaCoin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Size100",
+                    Description = "Renders a 100px BitPersonaCoin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Size120",
+                    Description = "Renders a 120px BitPersonaCoin.",
+                    Value = "",
+                }
+            ]
+        },
+    ];
+
+    private int imageClickCount = 0;
+    private int actionClickCount = 0;
+    private bool isDetailsShown = true;
 
     private Dictionary<BitPersonaPresence, string> _icons = new()
     {
@@ -510,13 +510,13 @@ public partial class BitPersonaDemo
             Color=""#750b1c"" />";
 
     private readonly string example3RazorCode = @"
-<BitCheckbox @bind-Value=""_isDetailsShown"" Label=""Include BitPersona details"" />
+<BitCheckbox @bind-Value=""isDetailsShown"" Label=""Include BitPersona details"" />
 
 <div>Size 8 Persona</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size8""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Online""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -524,7 +524,7 @@ public partial class BitPersonaDemo
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size24""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.None""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -532,7 +532,7 @@ public partial class BitPersonaDemo
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=@BitPersonaSize.Size32
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Busy""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -540,7 +540,7 @@ public partial class BitPersonaDemo
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size40""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Away""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -548,7 +548,7 @@ public partial class BitPersonaDemo
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size48""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Blocked""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -556,7 +556,7 @@ public partial class BitPersonaDemo
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size56""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Online""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -565,7 +565,7 @@ public partial class BitPersonaDemo
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             Size=""BitPersonaSize.Size72""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Busy""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -575,7 +575,7 @@ public partial class BitPersonaDemo
             TertiaryText=""Off""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size100""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Offline""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -585,7 +585,7 @@ public partial class BitPersonaDemo
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Dnd""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
@@ -596,11 +596,11 @@ public partial class BitPersonaDemo
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
             CoinSize=""150""
-            HidePersonaDetails=""!_isDetailsShown""
+            HidePersonaDetails=""!isDetailsShown""
             Presence=""BitPersonaPresence.Dnd""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
     private readonly string example3CsharpCode = @"
-private bool _isDetailsShown = true;";
+private bool isDetailsShown = true;";
 
     private readonly string example4RazorCode = @"
 <BitPersona PrimaryText=""Annie Lindqvist""
@@ -609,10 +609,10 @@ private bool _isDetailsShown = true;";
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
             Presence=""BitPersonaPresence.None""
-            OnActionClick=""() => _actionClickCount++""
+            OnActionClick=""() => actionClickCount++""
             ActionIconName=""@BitIconName.CloudUpload""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
-<p>Action Click Count: @_actionClickCount</p>
+<p>Action Click Count: @actionClickCount</p>
 
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
@@ -620,12 +620,12 @@ private bool _isDetailsShown = true;";
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
             Presence=""BitPersonaPresence.Online""
-            OnImageClick=""() => _imageClickCount++""
+            OnImageClick=""() => imageClickCount++""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
-<p>Image Click Count: @_imageClickCount</p>";
+<p>Image Click Count: @imageClickCount</p>";
     private readonly string example4CsharpCode = @"
-private int _imageClickCount = 0;
-private int _actionClickCount = 0;";
+private int imageClickCount = 0;
+private int actionClickCount = 0;";
 
     private readonly string example5RazorCode = @"
 <BitPersona PrimaryText=""Saleh Khafan""

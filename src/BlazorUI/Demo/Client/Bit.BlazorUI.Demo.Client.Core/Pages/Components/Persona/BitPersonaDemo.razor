@@ -5,7 +5,7 @@
             Description="persona component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="Persona"
-               ComponentDescription="A Bitpersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status.The complete control includes an individual's avatar (an uploaded image or a composition of the person’s initials on a background color), their name or identification, and online status.The Bitpersona control is used in the PeoplePicker and Facepile controls."
+               ComponentDescription="A BitPersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status.The complete control includes an individual's avatar (an uploaded image or a composition of the person’s initials on a background color), their name or identification, and online status.The BitPersona control is used in the PeoplePicker and Facepile controls."
                ComponentParameters="componentParameters"
                ComponentSubEnums="componentSubEnums"
                ComponentSubClasses="componentSubClasses">
@@ -50,13 +50,13 @@
 
     <ComponentExampleBox Title="Size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
-            <BitCheckbox @bind-Value="_isDetailsShown" Label="Include BitPersona details" />
+            <BitCheckbox @bind-Value="isDetailsShown" Label="Include BitPersona details" />
 
             <div class="title">Size 8 Persona</div>
             <BitPersona PrimaryText="Annie Lindqvist"
                         SecondaryText="Secondary"
                         Size="BitPersonaSize.Size8"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Online"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -64,7 +64,7 @@
             <BitPersona PrimaryText="Annie Lindqvist"
                         SecondaryText="Secondary"
                         Size="BitPersonaSize.Size24"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.None"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -72,7 +72,7 @@
             <BitPersona PrimaryText="Annie Lindqvist"
                         SecondaryText="Secondary"
                         Size=@BitPersonaSize.Size32
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Busy"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -80,7 +80,7 @@
             <BitPersona PrimaryText="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         Size="BitPersonaSize.Size40"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Away"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -88,7 +88,7 @@
             <BitPersona PrimaryText="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         Size="BitPersonaSize.Size48"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Blocked"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -96,7 +96,7 @@
             <BitPersona PrimaryText="Annie Lindqvist"
                         SecondaryText="Software Engineer"
                         Size="BitPersonaSize.Size56"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Online"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -105,7 +105,7 @@
                         SecondaryText="Software Engineer"
                         TertiaryText="In a meeting"
                         Size="BitPersonaSize.Size72"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Busy"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -115,7 +115,7 @@
                         TertiaryText="Off"
                         OptionalText="Available at 4:00pm"
                         Size="BitPersonaSize.Size100"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Offline"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -125,7 +125,7 @@
                         TertiaryText="In a meeting"
                         OptionalText="Available at 4:00pm"
                         Size="BitPersonaSize.Size120"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Dnd"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
 
@@ -136,7 +136,7 @@
                         OptionalText="Available at 4:00pm"
                         Size="BitPersonaSize.Size120"
                         CoinSize="150"
-                        HidePersonaDetails="!_isDetailsShown"
+                        HidePersonaDetails="!isDetailsShown"
                         Presence="BitPersonaPresence.Dnd"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         </ExamplePreview>
@@ -152,10 +152,10 @@
                         OptionalText="Available at 4:00pm"
                         Size="BitPersonaSize.Size120"
                         Presence="BitPersonaPresence.None"
-                        OnActionClick="() => _actionClickCount++"
+                        OnActionClick="() => actionClickCount++"
                         ActionIconName="@BitIconName.CloudUpload"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-            <p>Action Click Count: @_actionClickCount</p>
+            <p>Action Click Count: @actionClickCount</p>
             <br /><br />
 
             <div>Hover over the image to reveal the action</div>
@@ -166,9 +166,9 @@
                         OptionalText="Available at 4:00pm"
                         Size="BitPersonaSize.Size120"
                         Presence="BitPersonaPresence.Online"
-                        OnImageClick="() => _imageClickCount++"
+                        OnImageClick="() => imageClickCount++"
                         ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-            <p>Image Click Count: @_imageClickCount</p>
+            <p>Image Click Count: @imageClickCount</p>
         </ExamplePreview>
     </ComponentExampleBox>
 
