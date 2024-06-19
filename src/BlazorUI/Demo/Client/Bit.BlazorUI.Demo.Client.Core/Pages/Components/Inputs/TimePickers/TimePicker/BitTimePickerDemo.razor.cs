@@ -440,10 +440,10 @@ public partial class BitTimePickerDemo
                 },
                 new()
                 {
-                    Name = "Divider",
+                    Name = "HourMinuteSeparator",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the divider of the BitTimePicker."
+                    Description = "Custom CSS classes/styles for the hour minute separator of the BitTimePicker."
                 },
                 new()
                 {
@@ -609,7 +609,7 @@ public partial class BitTimePickerDemo
 <BitTimePicker Class=""custom-class"" />
 
 <BitTimePicker Styles=""@(new() { Root = ""margin: 1rem; border: 1px solid gold;"",
-                                 Divider = ""color: green;"",
+                                 HourMinuteSeparator = ""color: green;"",
                                  IncreaseHourButton = ""color: red;"",
                                  IncreaseMinuteButton = ""color: red;"",
                                  DecreaseHourButton = ""color: blue;"",

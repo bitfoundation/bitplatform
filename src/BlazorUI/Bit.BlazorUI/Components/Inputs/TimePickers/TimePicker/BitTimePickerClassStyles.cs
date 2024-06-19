@@ -83,9 +83,9 @@ public class BitTimePickerClassStyles
     public string? DecreaseHourIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the divider of the BitTimePicker.
+    /// Custom CSS classes/styles for the hour minute separator of the BitTimePicker.
     /// </summary>
-    public string? Divider { get; set; }
+    public string? HourMinuteSeparator { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the minute input container of the BitTimePicker.
