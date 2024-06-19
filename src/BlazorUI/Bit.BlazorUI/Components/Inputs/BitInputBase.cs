@@ -1,6 +1,6 @@
-﻿// Inspired by both
-// Blazor InputBase class: https://github.com/dotnet/aspnetcore/blob/release/8.0/src/Components/Web/src/Forms/InputBase.cs
-// Fluent Blazor base input class: https://github.com/microsoft/fluentui-blazor/blob/dev/src/Core/Components/Base/FluentInputBase.cs
+﻿// Inspired by
+// 1- Blazor InputBase class: https://github.com/dotnet/aspnetcore/blob/release/8.0/src/Components/Web/src/Forms/InputBase.cs
+// 2- Fluent Blazor base input class: https://github.com/microsoft/fluentui-blazor/blob/dev/src/Core/Components/Base/FluentInputBase.cs
 
 using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
