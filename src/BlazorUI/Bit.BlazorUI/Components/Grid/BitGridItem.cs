@@ -9,7 +9,7 @@ public partial class BitGridItem : BitComponentBase
 
 
     /// <summary>
-    /// The content of the GridItem.
+    /// The content of the Grid item.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 

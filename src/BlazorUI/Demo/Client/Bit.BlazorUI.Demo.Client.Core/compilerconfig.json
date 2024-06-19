@@ -198,6 +198,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Grid/BitGridDemo.razor.css",
+        "inputFile": "Pages/Components/Grid/BitGridDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Icon/BitIconDemo.razor.css",
         "inputFile": "Pages/Components/Icon/BitIconDemo.razor.scss",
         "minify": { "enabled": false },

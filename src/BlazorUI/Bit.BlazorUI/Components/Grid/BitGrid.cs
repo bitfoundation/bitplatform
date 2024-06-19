@@ -17,7 +17,7 @@ public partial class BitGrid : BitComponentBase
 
     private int span = 1;
     private int columns = 12;
-    private string spacing = "0.25rem";
+    private string spacing = "4px";
     private string? verticalSpacing;
     private string? horizontalSpacing;
     private BitGridAlignment verticalAlign = BitGridAlignment.Start;

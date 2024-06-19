@@ -1,0 +1,106 @@
+﻿@page "/components/grid"
+
+<PageOutlet Url="components/grid"
+            Title="Grid"
+            Description="grid component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="Grid"
+                   ComponentDescription="The BitGrid component is a flexible and customizable grid layout, offering responsive columns and alignment flexibility for structured content presentation."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums">
+        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <ExamplePreview>
+                <BitGrid>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        <BitGridItem Class="grid-item">
+                            Grid Item
+                        </BitGridItem>
+                    }
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="Alignment" RazorCode="@example2RazorCode" Id="example2">
+            <ExamplePreview>
+                <div>
+                    <BitGrid Style="height: 136px;" HorizontalAlign="BitGridAlignment.Center" VerticalAlign="BitGridAlignment.Center">
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            <BitGridItem Class="grid-item">
+                                Grid Item
+                            </BitGridItem>
+                        }
+                    </BitGrid>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="Spacings" RazorCode="@example3RazorCode" Id="example3">
+            <ExamplePreview>
+                <BitGrid VerticalSpacing="18px" HorizontalSpacing="10px">
+                    @for (int i = 0; i < 16; i++)
+                    {
+                        <BitGridItem Class="grid-item">
+                            Grid Item
+                        </BitGridItem>
+                    }
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="Columns" RazorCode="@example4RazorCode" Id="example4">
+            <ExamplePreview>
+                <BitGrid Columns="4">
+                    <BitGridItem Class="grid-item" ColumnSpan="4">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" ColumnSpan="2">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" ColumnSpan="2">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item">
+                        Grid Item
+                    </BitGridItem>
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="Breakpoints" RazorCode="@example5RazorCode" Id="example5">
+            <ExamplePreview>
+                <BitGrid Columns="4">
+                    <BitGridItem Class="grid-item" ColumnSpan="4" Md="1">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" Xs="3" Md="2">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" Lg="2">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" ColumnSpan="2" Lg="1" Xs="1">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" ColumnSpan="2" Xs="3">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" Xs="2" Md="3">
+                        Grid Item
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" Xs="2">
+                        Grid Item
+                    </BitGridItem>
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+    </ComponentDemo>
+</div>
