@@ -7,7 +7,7 @@
     "features": {
         "ghcr.io/devcontainers/features/node:1": {}
     },
-    "onCreateCommand": "find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
+    "onCreateCommand": "dotnet dev-certs https --trust && find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {
@@ -17,6 +17,9 @@
         },
         "vscode": {
             "extensions": [
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "kevin-chatham.aspnetcorerazor-html-css-class-completion",
+                "ms-dotnettools.csharp",
                 "glenn2223.live-sass"
             ]
         }
