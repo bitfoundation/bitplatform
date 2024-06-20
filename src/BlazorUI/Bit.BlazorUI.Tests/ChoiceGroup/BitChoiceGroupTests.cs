@@ -218,7 +218,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Visibility, visibility);
         });
 
-        var bitChoiceGroup = component.Find(".bit-chg");
+        var bitChoiceGroup = component.Find($".bit-chg");
 
         switch (visibility)
         {

@@ -137,7 +137,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Class, customClass);
         });
 
-        var breadcrumb = component.Find(".bit-brc");
+        var breadcrumb = component.Find($".bit-brc");
 
         Assert.IsTrue(breadcrumb.ClassList.Contains($"{customClass}"));
     }
@@ -155,7 +155,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Visibility, visibility);
         });
 
-        var breadcrumb = component.Find(".bit-brc");
+        var breadcrumb = component.Find($".bit-brc");
 
         switch (visibility)
         {
