@@ -3,7 +3,7 @@
     "hostRequirements": {
         "cpus": 4
     },
-    "image": "docker pull mcr.microsoft.com/dotnet/sdk:8.0.302-1-jammy",
+    "image": "mcr.microsoft.com/dotnet/sdk:8.0.302-1-jammy",
     "onCreateCommand": "find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
     "waitFor": "onCreateCommand",
     "customizations": {
