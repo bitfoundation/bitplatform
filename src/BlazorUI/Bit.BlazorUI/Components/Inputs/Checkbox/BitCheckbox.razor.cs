@@ -6,7 +6,7 @@ public partial class BitCheckbox : IDisposable
 {
     private bool IndeterminateHasBeenSet;
 
-    private bool leftLabel;
+    private bool reversed;
     private bool indeterminate;
 
     private string _inputId = string.Empty;
@@ -36,21 +36,6 @@ public partial class BitCheckbox : IDisposable
     /// The total size of the parent set (if in a set) for aria-setsize
     /// </summary>
     [Parameter] public int? AriaSetSize { get; set; }
-
-    /// <summary>
-    /// Determines whether the label should be rendered after the checkbox (false) or before it (true).
-    /// </summary>
-    [Parameter]
-    public bool LeftLabel
-    {
-        get => leftLabel;
-        set
-        {
-            if (value == leftLabel) return;
-            leftLabel = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Custom icon for the check mark rendered by the checkbox instead of default check mark icon
@@ -119,6 +104,23 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// Reverses the label and checkbox location.
+    /// </summary>
+    [Parameter]
+    public bool Reversed
+    {
+        get => reversed;
+        set
+        {
+            if (value == reversed) return;
+
+            reversed = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitCheckbox.
     /// </summary>
     [Parameter] public BitCheckboxClassStyles? Styles { get; set; }
@@ -169,7 +171,7 @@ public partial class BitCheckbox : IDisposable
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-chb-ckd" : string.Empty);
 
-        ClassBuilder.Register(() => LeftLabel ? $"bit-chb-end" : string.Empty);
+        ClassBuilder.Register(() => Reversed ? $"bit-chb-end" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

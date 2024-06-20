@@ -55,7 +55,7 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.LeftLabel, leftLabel);
+            parameters.Add(p => p.Reversed, leftLabel);
         });
 
         var checkBox = component.Find(".bit-chb");

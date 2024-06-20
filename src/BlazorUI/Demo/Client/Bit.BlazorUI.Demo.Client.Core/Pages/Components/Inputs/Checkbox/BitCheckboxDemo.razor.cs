@@ -34,13 +34,6 @@ public partial class BitCheckboxDemo
         },
         new()
         {
-            Name = "LeftLabel",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines whether the label should be rendered after the checkbox (false) or before it (true)."
-        },
-        new()
-        {
             Name = "CheckIconName",
             Type = "string",
             DefaultValue = "Accept",
@@ -116,6 +109,13 @@ public partial class BitCheckboxDemo
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the checkbox clicked.",
+        },
+        new()
+        {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the label and checkbox location."
         },
         new()
         {
@@ -225,11 +225,11 @@ public partial class BitCheckboxDemo
 <BitCheckbox Label=""Disabled custom check icon"" CheckIconName=""@BitIconName.WavingHand"" Value=""true"" IsEnabled=""false"" />";
 
     private readonly string example3RazorCode = @"
-<BitCheckbox Label=""LeftLabel"" LeftLabel />
+<BitCheckbox Label=""Reversed"" Reversed />
 
-<BitCheckbox Label=""LeftLabel - Disabled"" LeftLabel IsEnabled=""false"" />
+<BitCheckbox Label=""Reversed - Disabled"" Reversed IsEnabled=""false"" />
 
-<BitCheckbox Label=""LeftLabel - Disable Checked"" LeftLabel IsEnabled=""false"" Value=""true"" />";
+<BitCheckbox Label=""Reversed - Disable Checked"" Reversed IsEnabled=""false"" Value=""true"" />";
 
     private readonly string example4RazorCode = @"
 <style>
