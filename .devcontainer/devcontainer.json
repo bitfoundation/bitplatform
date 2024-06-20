@@ -4,6 +4,9 @@
         "cpus": 4
     },
     "image": "mcr.microsoft.com/dotnet/sdk:8.0.302-1-jammy",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {}
+    },
     "onCreateCommand": "find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
     "waitFor": "onCreateCommand",
     "customizations": {
