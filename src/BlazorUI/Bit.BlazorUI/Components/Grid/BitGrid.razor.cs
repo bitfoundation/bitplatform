@@ -1,6 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Reflection.Emit;
 
-public partial class BitGrid : BitComponentBase
+namespace Bit.BlazorUI;
+
+public partial class BitGrid
 {
     private static readonly Dictionary<BitGridAlignment, string> _AlignmentMap = new()
     {
@@ -161,29 +163,5 @@ public partial class BitGrid : BitComponentBase
 
         StyleBuilder.Register(() => VerticalSpacing.HasValue() ? $"row-gap:{VerticalSpacing}" : string.Empty);
         StyleBuilder.Register(() => HorizontalSpacing.HasValue() ? $"column-gap:{HorizontalSpacing}" : string.Empty);
-    }
-
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var seq = 0;
-        builder.OpenComponent<CascadingValue<BitGrid>>(seq++);
-        builder.AddAttribute(seq++, "Value", this);
-        builder.AddAttribute(seq++, "IsFixed", true);
-        builder.AddAttribute(seq++, "ChildContent", (RenderFragment)((childBuilder) =>
-        {
-            var seqChild = 0;
-            childBuilder.OpenElement(seqChild++, "div");
-            childBuilder.AddMultipleAttributes(seqChild++, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<IEnumerable<KeyValuePair<string, object>>>(HtmlAttributes));
-            childBuilder.AddAttribute(seqChild++, "id", _Id);
-            childBuilder.AddAttribute(seqChild++, "style", StyleBuilder.Value);
-            childBuilder.AddAttribute(seqChild++, "class", ClassBuilder.Value);
-            childBuilder.AddAttribute(seqChild++, "dir", Dir?.ToString().ToLower());
-            childBuilder.AddElementReferenceCapture(seqChild++, v => RootElement = v);
-            childBuilder.AddContent(seqChild++, ChildContent);
-            childBuilder.CloseElement();
-        }));
-        builder.CloseComponent();
-
-        base.BuildRenderTree(builder);
     }
 }

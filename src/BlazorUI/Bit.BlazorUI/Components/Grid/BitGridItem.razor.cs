@@ -1,6 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Reflection.Emit;
 
-public partial class BitGridItem : BitComponentBase
+namespace Bit.BlazorUI;
+
+public partial class BitGridItem
 {
     private int columnSpan = 1;
 
@@ -72,23 +74,5 @@ public partial class BitGridItem : BitComponentBase
         StyleBuilder.Register(() => Xxl.HasValue ? $"--xxl:{Xxl}" : string.Empty);
 
         StyleBuilder.Register(() => $"--span:{ColumnSpan}");
-    }
-
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var seq = 0;
-        builder.OpenElement(seq++, "div");
-        builder.AddMultipleAttributes(seq++, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<IEnumerable<KeyValuePair<string, object>>>(HtmlAttributes));
-        builder.AddAttribute(seq++, "id", _Id);
-        builder.AddAttribute(seq++, "style", StyleBuilder.Value);
-        builder.AddAttribute(seq++, "class", ClassBuilder.Value);
-        builder.AddAttribute(seq++, "dir", Dir?.ToString().ToLower());
-        builder.AddElementReferenceCapture(seq++, v => RootElement = v);
-
-        builder.AddContent(seq++, ChildContent);
-
-        builder.CloseElement();
-
-        base.BuildRenderTree(builder);
     }
 }
