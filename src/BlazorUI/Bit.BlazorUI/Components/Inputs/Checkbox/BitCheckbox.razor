@@ -37,8 +37,9 @@
         }
     </label>
 
-    <input @ref="_checkboxElement" @attributes="InputHtmlAttributes" @onclick="@HandleCheckboxClick"
-           hidden 
+    <input @ref="InputElement" @attributes="InputHtmlAttributes"
+           @onclick="@HandleOnCheckboxClick"
+           hidden
            name="@Name"
            id="@_inputId"
            type="checkbox"

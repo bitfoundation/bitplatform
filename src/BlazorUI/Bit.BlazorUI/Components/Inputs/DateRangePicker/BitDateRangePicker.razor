@@ -21,15 +21,15 @@
     }
     <div style="@Styles?.InputWrapper" class="bit-dtrp-wrp @Classes?.InputWrapper" id="@_dateRangePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div style="@Styles?.InputContainer" class="bit-dtrp-icn @Classes?.InputContainer">
-            <input @ref="_inputRef"
-                   @attributes="InputHtmlAttributes"
+            <input @ref="InputElement" @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
                    @onchange="@HandleOnChange"
                    @onfocusin="@HandleOnFocusIn"
                    @onfocusout="@HandleOnFocusOut"
                    type="text"
-                   role="combobox"
+                   name="@Name"
                    id="@_inputId"
+                   role="combobox"
                    tabindex="@TabIndex"
                    aria-haspopup="dialog"
                    aria-label="@AriaLabel"

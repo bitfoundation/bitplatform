@@ -10,7 +10,6 @@ public partial class BitCheckbox : IDisposable
     private BitCheckboxSide boxSide;
 
     private string _inputId = string.Empty;
-    private ElementReference _checkboxElement;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -92,7 +91,7 @@ public partial class BitCheckbox : IDisposable
         {
             if (value == isIndeterminate) return;
             isIndeterminate = value;
-            _ = _js.SetProperty(_checkboxElement, "indeterminate", value);
+            _ = _js.SetProperty(InputElement, "indeterminate", value);
             ClassBuilder.Reset();
             _ = IsIndeterminateChanged.InvokeAsync(value);
         }
@@ -108,11 +107,6 @@ public partial class BitCheckbox : IDisposable
     /// Used to customize the label for the checkbox.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
-
-    /// <summary>
-    /// Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI
-    /// </summary>
-    [Parameter] public string? Name { get; set; }
 
     /// <summary>
     ///  Callback that is called when the check box is clicked
@@ -147,7 +141,7 @@ public partial class BitCheckbox : IDisposable
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitCheckbox-{UniqueId}-input";
 
@@ -155,7 +149,7 @@ public partial class BitCheckbox : IDisposable
 
         if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            InitCurrentValue(DefaultValue.Value);
+            await SetCurrentValueAsync(DefaultValue.Value);
         }
 
         if (IsIndeterminateHasBeenSet is false && DefaultIsIndeterminate is not null)
@@ -163,14 +157,14 @@ public partial class BitCheckbox : IDisposable
             IsIndeterminate = DefaultIsIndeterminate.Value;
         }
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            _ = _js.SetProperty(_checkboxElement, "indeterminate", IsIndeterminate);
+            _ = _js.SetProperty(InputElement, "indeterminate", IsIndeterminate);
         }
 
         base.OnAfterRender(firstRender);
@@ -191,7 +185,7 @@ public partial class BitCheckbox : IDisposable
 
 
 
-    private async Task HandleCheckboxClick(MouseEventArgs args)
+    private async Task HandleOnCheckboxClick(MouseEventArgs args)
     {
         if (IsEnabled is false) return;
 

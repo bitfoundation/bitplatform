@@ -254,7 +254,7 @@ public class BitTextFieldTests : BunitTestContext
 
         var bitTextField = component.Find(".bit-txt-inp");
 
-        bitTextField.Input("a");
+        bitTextField.Change("a");
 
         Assert.AreEqual(isEnabled ? 1 : 0, currentCount);
     }
@@ -623,6 +623,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(isInvalid, bitTextField.ClassList.Contains("bit-inv"));
 
         var input = component.Find("input");
+
         if (isInvalid)
         {
             input.Change("test@bit.com");

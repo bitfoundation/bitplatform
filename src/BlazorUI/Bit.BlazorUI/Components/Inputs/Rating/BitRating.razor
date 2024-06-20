@@ -46,10 +46,11 @@
         </button>
     }
 
-    <input @attributes="InputHtmlAttributes"
-           type="number"
+    <input @ref="InputElement" @attributes="InputHtmlAttributes"
            max="@Max"
-           min="@(AllowZeroStars ? 0 : 1)"
+           name="@Name"
+           type="number"
+           class="bit-input-hidden"
            value="@CurrentValueAsString"
-           class="bit-input-hidden" />
+           min="@(AllowZeroStars ? 0 : 1)" />
 </div>

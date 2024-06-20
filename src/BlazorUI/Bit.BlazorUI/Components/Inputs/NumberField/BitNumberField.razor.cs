@@ -20,7 +20,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private double _internalStep = 1;
     private readonly string _labelId;
     private readonly string _inputId;
-    private ElementReference _inputRef;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
     private readonly Type _typeOfValue;
@@ -279,18 +278,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
 
 
-    /// <summary>
-    /// The ElementReference to the input element of the BitNumberField.
-    /// </summary>
-    public ElementReference InputElement => _inputRef;
-
-    /// <summary>
-    /// Gives focus to the input element of the BitNumberField.
-    /// </summary>
-    public ValueTask FocusAsync() => _inputRef.FocusAsync();
-
-
-
     protected override string RootElementClass => "bit-nfl";
 
     protected override void RegisterCssClasses()
@@ -313,14 +300,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         if ((ValueHasBeenSet is false || CurrentValue is null) && DefaultValue is not null)
         {
-            InitCurrentValue(DefaultValue);
+            await SetCurrentValueAsync(DefaultValue);
         }
 
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -388,7 +375,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _hasFocus = true;
         ClassBuilder.Reset();
-        await _js.SelectText(_inputRef);
+        await _js.SelectText(InputElement);
         await OnFocusIn.InvokeAsync(e);
     }
 
@@ -407,15 +394,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _hasFocus = true;
         ClassBuilder.Reset();
-        await _js.SelectText(_inputRef);
+        await _js.SelectText(InputElement);
         await OnFocus.InvokeAsync(e);
-    }
-
-    private async Task HandleOnInputChange(ChangeEventArgs e)
-    {
-        var value = e.Value?.ToString();
-
-        CurrentValueAsString = value;
     }
 
     private async Task HandleOnPointerDown(bool isIncrement)

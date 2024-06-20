@@ -22,15 +22,15 @@
 
     <div style="@Styles?.InputWrapper" class="bit-dtp-wrp @Classes?.InputWrapper" id="@_datePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div style="@Styles?.InputContainer" class="bit-dtp-icn @Classes?.InputContainer">
-            <input @ref="_inputRef"
-                   @attributes="InputHtmlAttributes"
+            <input @ref="InputElement" @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
                    @oninput="@HandleOnChange"
                    @onfocusin="@HandleOnFocusIn"
                    @onfocusout="@HandleOnFocusOut"
                    type="text"
-                   role="combobox"
+                   name="@Name"
                    id="@_inputId"
+                   role="combobox"
                    tabindex="@TabIndex"
                    aria-haspopup="dialog"
                    aria-label="@AriaLabel"

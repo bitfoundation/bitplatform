@@ -9,27 +9,28 @@
 
     @if (LabelTemplate is not null)
     {
-        <label id="@_labelId" for="@_textFieldId">
+        <label id="@_labelId" for="@_inputId">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label style="@Styles?.Label" class="bit-tpc-lbl @Classes?.Label" id="@_labelId" for="@_textFieldId">
+        <label style="@Styles?.Label" class="bit-tpc-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
             @Label
         </label>
     }
 
     <div style="@Styles?.InputWrapper" class="bit-tpc-wrp @Classes?.InputWrapper" id="@_timePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
         <div style="@Styles?.InputContainer" class="bit-tpc-icn @Classes?.InputContainer">
-            <input @attributes="InputHtmlAttributes"
+            <input @ref="InputElement" @attributes="InputHtmlAttributes"
                    @onfocus="@HandleOnFocus"
                    @oninput="@HandleOnChange"
                    @onfocusin="@HandleOnFocusIn"
                    @onfocusout="@HandleOnFocusOut"
                    type="text"
+                   name="@Name"
                    role="combobox"
-                   id="@_textFieldId"
+                   id="@_inputId"
                    tabindex="@TabIndex"
                    aria-haspopup="dialog"
                    aria-label="@AriaLabel"
