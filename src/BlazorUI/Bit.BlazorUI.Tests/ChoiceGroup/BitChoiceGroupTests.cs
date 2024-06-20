@@ -218,12 +218,12 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Visibility, visibility);
         });
 
-        var bitChoiceGroup = component.Find($".bit-chg");
+        var bitChoiceGroup = component.Find(".bit-chg");
 
         switch (visibility)
         {
             case BitVisibility.Visible:
-                Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains(""));
+                Assert.IsFalse(bitChoiceGroup.HasAttribute("style"));
                 break;
             case BitVisibility.Hidden:
                 Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("visibility:hidden"));
