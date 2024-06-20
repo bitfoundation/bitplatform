@@ -149,7 +149,7 @@ public partial class BitGrid : BitComponentBase
     {
         StyleBuilder.Register(register =>
         {
-            register($"align-items:{_AlignmentMap[VerticalAlign]}");
+            register($"align-content:{_AlignmentMap[VerticalAlign]}");
             register($"justify-content:{_AlignmentMap[HorizontalAlign]}");
 
             return string.Empty;
