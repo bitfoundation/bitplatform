@@ -176,10 +176,24 @@ public partial class ComponentDemo
         },
         new()
         {
+            Name = "Immediate",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Change the content of the input field when the user write text (based on 'oninput' HTML event).",
+        },
+        new()
+        {
             Name = "InputHtmlAttributes",
             Type = "IReadOnlyDictionary<string, object>?",
             DefaultValue = "null",
             Description = "Gets or sets a collection of additional attributes that will be applied to the created element.",
+        },
+        new()
+        {
+            Name = "Name",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the element. Allows access by name from the associated form.",
         },
         new()
         {

@@ -301,9 +301,9 @@ public partial class BitTextField
         _labelId = $"BitTextField-{UniqueId}-label";
         _descriptionId = $"BitTextField-{UniqueId}-description";
 
-        if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
+        if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            await SetCurrentValueAsStringAsync(DefaultValue);
+            await SetCurrentValueAsStringAsync(DefaultValue, true);
         }
 
         await base.OnInitializedAsync();

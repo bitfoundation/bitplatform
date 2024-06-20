@@ -18,6 +18,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     protected bool IsDisposed;
     protected bool ValueHasBeenSet;
 
+    private TValue? value;
     private bool? valueInvalid;
 
     private bool _parsingFailed;
@@ -26,8 +27,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private BitDebouncer _debouncer = new();
     private BitThrottler _throttler = new();
     private bool _previousParsingAttemptFailed;
-    private ChangeEventArgs _throttleEventArgs;
     private string? _incomingValueBeforeParsing;
+    private ChangeEventArgs _lastThrottleEventArgs = default!;
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
@@ -58,12 +59,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     [Parameter] public string? DisplayName { get; set; }
 
     /// <summary>
-    /// Gets or sets the <see cref="FieldIdentifier"/> that identifies the bound value.
-    /// If set, this parameter takes precedence over <see cref="ValueExpression"/>.
-    /// </summary>
-    [Parameter] public FieldIdentifier? Field { get; set; }
-
-    /// <summary>
     /// Change the content of the input field when the user write text (based on 'oninput' HTML event).
     /// </summary>
     [Parameter] public bool Immediate { get; set; }
@@ -76,7 +71,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// <summary>
     /// Gets or sets the name of the element.
     /// Allows access by name from the associated form.
-    /// ⚠️ This value needs to be set manually for SSR scenarios to work correctly.
     /// </summary>
     [Parameter] public string? Name { get; set; }
 
@@ -96,7 +90,19 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// <example>
     /// @bind-Value="model.PropertyName"
     /// </example>
-    [Parameter] public TValue? Value { get; set; }
+    [Parameter]
+    public TValue? Value
+    {
+        get => value;
+        set
+        {
+            if (EqualityComparer<TValue>.Default.Equals(value, Value)) return;
+
+            this.value = value;
+
+            OnValueChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
 
     /// <summary>
     /// Gets or sets a callback that updates the bound value.
@@ -131,10 +137,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
 
 
-    internal virtual bool FieldBound => Field is not null || ValueExpression is not null || ValueChanged.HasDelegate;
-
-
-
     public override Task SetParametersAsync(ParameterView parameters)
     {
         ValueHasBeenSet = false;
@@ -157,11 +159,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
                 case nameof(DisplayName):
                     DisplayName = (string?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
-                case nameof(Field):
-                    Field = (FieldIdentifier?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -213,7 +210,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             // This is the first run
             // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInitialized to call base.OnInitialized()
 
-            RegisterFieldIdentifier();
+            CreateFieldIdentifier();
 
             _hasInitializedParameters = true;
         }
@@ -264,6 +261,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         get => Value;
         set
         {
+            if (IsEnabled is false) return;
+
             if (EqualityComparer<TValue>.Default.Equals(value, Value)) return;
 
             _parsingFailed = false;
@@ -284,18 +283,14 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
 
 
-    protected virtual void RegisterFieldIdentifier()
+    protected virtual void CreateFieldIdentifier()
     {
-        RegisterFieldIdentifier(ValueExpression, typeof(TValue));
+        CreateFieldIdentifier(ValueExpression, typeof(TValue));
     }
 
-    protected void RegisterFieldIdentifier<TField>(Expression<Func<TField>>? valueExpression, Type valueType)
+    protected void CreateFieldIdentifier<TField>(Expression<Func<TField>>? valueExpression, Type valueType)
     {
-        if (Field is not null)
-        {
-            FieldIdentifier = (FieldIdentifier)Field;
-        }
-        else if (valueExpression is not null)
+        if (valueExpression is not null)
         {
             FieldIdentifier = FieldIdentifier.Create(valueExpression);
         }
@@ -313,46 +308,52 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         _isUnderlyingTypeNullable = Nullable.GetUnderlyingType(valueType) is not null || default(TValue) is null;
     }
 
-    protected async Task SetCurrentValueAsync(TValue? value)
+    protected virtual string? FormatValueAsString(TValue? value) => value?.ToString();
+
+    protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage);
+
+    /// <summary>
+    /// Handler for the OnChange event.
+    /// </summary>
+    /// <param name="e"></param>
+    /// <returns></returns>
+    protected virtual async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        // If we don't do this, then when the user edits from A to B, we'd:
-        // - Do a render that changes back to A
-        // - Then send the updated value to the parent, which sends the B back to this component
-        // - Do another render that changes it to B again
-        // The unnecessary reversion from B to A can cause selection to be lost while typing
-        // A better solution would be somehow forcing the parent component's render to occur first,
-        // but that would involve a complex change in the renderer to keep the render queue sorted
-        // by component depth or similar.
-        Value = value;
+        if (IsEnabled is false) return;
 
+        await SetCurrentValueAsStringAsync(e.Value?.ToString());
+    }
 
-        // Thread Safety: Force events to be re-associated with the Dispatcher, prior to invocation.
-        await InvokeAsync(async () =>
+    /// <summary>
+    /// Handler for the OnInput event, with an optional delay to avoid to raise the <see cref="ValueChanged"/> event too often.
+    /// </summary>
+    /// <param name="e"></param>
+    /// <returns></returns>
+    protected virtual async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        if (Immediate is false) return;
+
+        if (DebounceTime > 0)
         {
-            if (IsEnabled)
-            {
-                await OnChange.InvokeAsync(value);
-            }
-
-            if (OnValueChanged is not null)
-            {
-                OnValueChanged(this, EventArgs.Empty);
-            }
-
-            if (ValueChanged.HasDelegate)
-            {
-                await ValueChanged.InvokeAsync(value);
-            }
-        });
-
-        if (FieldBound)
+            await _debouncer.Do(DebounceTime, async () => await HandleOnStringValueChangeAsync(e));
+        }
+        else if (ThrottleTime > 0)
         {
-            EditContext?.NotifyFieldChanged(FieldIdentifier);
+            _lastThrottleEventArgs = e;
+            await _throttler.Do(ThrottleTime, async () => await HandleOnStringValueChangeAsync(_lastThrottleEventArgs));
+        }
+        else
+        {
+            await HandleOnStringValueChangeAsync(e);
         }
     }
 
-    protected async Task SetCurrentValueAsStringAsync(string? value)
+    protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass = false)
     {
+        if (bypass && IsEnabled is false) return;
+
         _incomingValueBeforeParsing = value;
         _parsingValidationMessages?.Clear();
 
@@ -368,7 +369,15 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         else if (TryParseValueFromString(value, out var parsedValue, out var parsingErrorMessage))
         {
             _parsingFailed = false;
-            await SetCurrentValueAsync(parsedValue);
+
+            if (bypass)
+            {
+                Value = parsedValue;
+            }
+            else
+            {
+                await SetCurrentValueAsync(parsedValue);
+            }
         }
         else
         {
@@ -393,75 +402,21 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         }
     }
 
-    protected virtual string? FormatValueAsString(TValue? value) => value?.ToString();
-
-    protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage);
 
 
 
-    /// <summary>
-    /// Handler for the OnChange event.
-    /// </summary>
-    /// <param name="e"></param>
-    /// <returns></returns>
-    protected virtual async Task HandleOnChangeAsync(ChangeEventArgs e)
+    private async Task SetCurrentValueAsync(TValue? value)
     {
-        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-        var notifyCalled = false;
+        Value = value;
 
-        var isValid = TryParseValueFromString(e.Value?.ToString(), out TValue? result, out var parsingErrorMessage);
+        await ValueChanged.InvokeAsync(value);
 
-        if (isValid)
-        {
-            await SetCurrentValueAsync(result ?? default);
+        EditContext?.NotifyFieldChanged(FieldIdentifier);
 
-            notifyCalled = true;
-        }
-        else
-        {
-            if (FieldBound && CascadedEditContext is not null)
-            {
-                _parsingValidationMessages ??= new ValidationMessageStore(CascadedEditContext);
-
-                _parsingValidationMessages.Clear();
-                _parsingValidationMessages.Add(FieldIdentifier, parsingErrorMessage ?? "Unknown parsing error");
-            }
-        }
-
-        if (FieldBound && notifyCalled is false)
-        {
-            CascadedEditContext?.NotifyFieldChanged(FieldIdentifier);
-        }
+        await OnChange.InvokeAsync(value);
     }
-
-    /// <summary>
-    /// Handler for the OnInput event, with an optional delay to avoid to raise the <see cref="ValueChanged"/> event too often.
-    /// </summary>
-    /// <param name="e"></param>
-    /// <returns></returns>
-    protected virtual async Task HandleOnInputAsync(ChangeEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        if (Immediate is false) return;
-
-        if (DebounceTime > 0)
-        {
-            await _debouncer.Do(DebounceTime, async () => await HandleOnChangeAsync(e));
-        }
-        else if (ThrottleTime > 0)
-        {
-            _throttleEventArgs = e;
-            await _throttler.Do(ThrottleTime, async () => await HandleOnChangeAsync(_throttleEventArgs));
-        }
-        else
-        {
-            await HandleOnChangeAsync(e);
-        }
-    }
-
-
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
     {

@@ -13,7 +13,7 @@
                  DefaultValue="@DefaultValue"
                  @bind-Value="@TestModel.Value"
                  CheckmarkIconAriaLabel="@CheckmarkIconAriaLabel"
-                 BoxSide="@BoxSide"
+                 BoxSide="@LeftLabel"
                  DefaultIsIndeterminate="@DefaultIsIndeterminate"
                  OnClick="HandleOnClick"
                  OnChange="HandleOnChange">
@@ -36,7 +36,7 @@
     [Parameter] public int? AriaSetSize { get; set; }
     [Parameter] public string Name { get; set; }
     [Parameter] public string Title { get; set; }
-    [Parameter] public BitCheckboxSide BoxSide { get; set; }
+    [Parameter] public bool LeftLabel { get; set; }
     [Parameter] public bool? DefaultValue { get; set; }
     [Parameter] public bool? DefaultIsIndeterminate { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }

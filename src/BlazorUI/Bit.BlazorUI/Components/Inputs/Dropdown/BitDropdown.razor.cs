@@ -601,14 +601,19 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        if (IsMultiSelect is false && EqualityComparer<TValue>.Default.Equals(CurrentValue, default) && EqualityComparer<TValue>.Default.Equals(DefaultValue, default) is false)
+        if (IsMultiSelect)
         {
-            await SetCurrentValueAsync(DefaultValue);
+            if (ValuesHasBeenSet is false && DefaultValues is not null)
+            {
+                Values = DefaultValues;
+            }
         }
-
-        if (IsMultiSelect && (Values is null || Values.Any() is false) && DefaultValues is not null && DefaultValues.Any())
+        else
         {
-            Values = DefaultValues;
+            if (ValueHasBeenSet is false && DefaultValue is not null)
+            {
+                Value = DefaultValue;
+            }
         }
 
         UpdateSelectedItemsFromValues();
@@ -619,15 +624,15 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     protected override bool TryParseValueFromString(string? value, out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
-    protected override void RegisterFieldIdentifier()
+    protected override void CreateFieldIdentifier()
     {
         if (IsMultiSelect)
         {
-            RegisterFieldIdentifier(ValuesExpression, typeof(ICollection<TValue?>));
+            CreateFieldIdentifier(ValuesExpression, typeof(ICollection<TValue?>));
         }
         else
         {
-            base.RegisterFieldIdentifier();
+            base.CreateFieldIdentifier();
         }
     }
 
