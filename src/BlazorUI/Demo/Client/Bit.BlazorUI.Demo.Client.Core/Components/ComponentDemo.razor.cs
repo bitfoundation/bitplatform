@@ -158,6 +158,7 @@ public partial class ComponentDemo
         "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
         "SearchBox", "SpinButton", "TextField", "TimePicker", "Toggle"
     ];
+
     private readonly List<ComponentParameter> _inputBaseParameters =
     [
         new()
@@ -215,6 +216,29 @@ public partial class ComponentDemo
             Type = "TValue?",
             DefaultValue = "null",
             Description = "Gets or sets the value of the input. This should be used with two-way binding.",
+        },
+    ];
+
+
+    private readonly List<ComponentParameter> _inputBasePublicMembers =
+    [
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference of the input element.",
+        },
+        new()
+        {
+            Name = "FocusAsync()",
+            Type = "() => ValueTask",
+            Description = "Gives focus to the input element.",
+        },
+        new()
+        {
+            Name = "FocusAsync(bool preventScroll)",
+            Type = "(bool preventScroll) => ValueTask",
+            Description = "Gives focus to the input element.",
         },
     ];
 
