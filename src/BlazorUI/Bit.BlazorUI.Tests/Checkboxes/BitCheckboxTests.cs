@@ -51,16 +51,16 @@ public class BitCheckboxTests : BunitTestContext
         DataRow(false),
         DataRow(true),
     ]
-    public void BitCheckboxLeftLabelTest(bool leftLabel)
+    public void BitCheckboxReversedTest(bool reversed)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.Reversed, leftLabel);
+            parameters.Add(p => p.Reversed, reversed);
         });
 
         var checkBox = component.Find(".bit-chb");
 
-        if (leftLabel)
+        if (reversed)
         {
             Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-end"));
         }
