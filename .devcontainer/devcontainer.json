@@ -8,19 +8,12 @@
         "ghcr.io/devcontainers/features/node:1": {}
     },
     "onCreateCommand": "dotnet dev-certs https --trust && find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
+    "onPostCreateCommand": "dotnet build src/BlazorUI/Bit.BlazorUI.sln -t:BeforeBuildTasks -m:1",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {
             "openFiles": [
                 "CONTRIBUTING.md"
-            ]
-        },
-        "vscode": {
-            "extensions": [
-                "ms-dotnettools.vscode-dotnet-runtime",
-                "kevin-chatham.aspnetcorerazor-html-css-class-completion",
-                "ms-dotnettools.csharp",
-                "glenn2223.live-sass"
             ]
         }
     },
