@@ -189,7 +189,15 @@ public partial class BitGridDemo
 
 
 
-    private string example1RazorCode = @"
+    private double verticalSpacing = 0.5;
+    private double horizontalSpacing = 0.5;
+
+    private BitGridAlignment verticalAlign;
+    private BitGridAlignment horizontalAlign;
+
+
+
+    private readonly string example1RazorCode = @"
 <style>
     .grid-item {
         height: 75px;
@@ -203,62 +211,18 @@ public partial class BitGridDemo
 </style>
 
 
-<BitGrid>
-    @for (int i = 0; i < 7; i++)
+<BitGrid Columns=""4"">
+    @for (int i = 0; i < 8; i++)
     {
+        var item = i + 1;
+
         <BitGridItem Class=""grid-item"">
-            Grid Item
+            Grid Item@(item)
         </BitGridItem>
     }
 </BitGrid>";
 
-    private string example2RazorCode = @"
-<style>
-    .grid-item {
-        height: 75px;
-        padding: 8px;
-        min-width: 58px;
-        text-align: center;
-        border-radius: 2px;
-        align-content: center;
-        border: 1px solid gray;
-    }
-</style>
-
-
-<BitGrid Style=""height: 136px;"" HorizontalAlign=""BitGridAlignment.Center"" VerticalAlign=""BitGridAlignment.Center"">
-    @for (int i = 0; i < 7; i++)
-    {
-        <BitGridItem Class=""grid-item"">
-            Grid Item
-        </BitGridItem>
-    }
-</BitGrid>";
-
-    private string example3RazorCode = @"
-<style>
-    .grid-item {
-        height: 75px;
-        padding: 8px;
-        min-width: 58px;
-        text-align: center;
-        border-radius: 2px;
-        align-content: center;
-        border: 1px solid gray;
-    }
-</style>
-
-
-<BitGrid VerticalSpacing=""18px"" HorizontalSpacing=""10px"">
-    @for (int i = 0; i < 16; i++)
-    {
-        <BitGridItem Class=""grid-item"">
-            Grid Item
-        </BitGridItem>
-    }
-</BitGrid>";
-
-    private string example4RazorCode = @"
+    private readonly string example2RazorCode = @"
 <style>
     .grid-item {
         height: 75px;
@@ -274,29 +238,121 @@ public partial class BitGridDemo
 
 <BitGrid Columns=""4"">
     <BitGridItem Class=""grid-item"" ColumnSpan=""4"">
-        Grid Item
+        Column span 4
     </BitGridItem>
     <BitGridItem Class=""grid-item"" ColumnSpan=""2"">
-        Grid Item
+        Column span 2
     </BitGridItem>
     <BitGridItem Class=""grid-item"" ColumnSpan=""2"">
-        Grid Item
+        Column span 2
     </BitGridItem>
     <BitGridItem Class=""grid-item"">
-        Grid Item
+        Column span 1
     </BitGridItem>
     <BitGridItem Class=""grid-item"">
-        Grid Item
+        Column span 1
     </BitGridItem>
     <BitGridItem Class=""grid-item"">
-        Grid Item
+        Column span 1
     </BitGridItem>
     <BitGridItem Class=""grid-item"">
-        Grid Item
+        Column span 1
     </BitGridItem>
 </BitGrid>";
 
-    private string example5RazorCode = @"
+    private readonly string example3RazorCode = @"
+<style>
+    .grid-item {
+        height: 75px;
+        padding: 8px;
+        min-width: 58px;
+        text-align: center;
+        border-radius: 2px;
+        align-content: center;
+        border: 1px solid gray;
+    }
+</style>
+
+
+<BitChoiceGroup Label=""Horizontal Align""
+                @bind-Value=""horizontalAlign""
+                LayoutFlow=""@BitLayoutFlow.Horizontal""
+                TItem=""BitChoiceGroupOption<BitGridAlignment>"" TValue=""BitGridAlignment"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitGridAlignment.Start"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitGridAlignment.Center"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitGridAlignment.End"" />
+    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitGridAlignment.SpaceBetween"" />
+    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitGridAlignment.SpaceAround"" />
+    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitGridAlignment.SpaceEvenly"" />
+    <BitChoiceGroupOption Text=""Baseline"" Value=""BitGridAlignment.Baseline"" />
+    <BitChoiceGroupOption Text=""Stretch"" Value=""BitGridAlignment.Stretch"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Vertical Align""
+                @bind-Value=""verticalAlign""
+                LayoutFlow=""@BitLayoutFlow.Horizontal""
+                TItem=""BitChoiceGroupOption<BitGridAlignment>"" TValue=""BitGridAlignment"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitGridAlignment.Start"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitGridAlignment.Center"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitGridAlignment.End"" />
+    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitGridAlignment.SpaceBetween"" />
+    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitGridAlignment.SpaceAround"" />
+    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitGridAlignment.SpaceEvenly"" />
+    <BitChoiceGroupOption Text=""Baseline"" Value=""BitGridAlignment.Baseline"" />
+    <BitChoiceGroupOption Text=""Stretch"" Value=""BitGridAlignment.Stretch"" />
+</BitChoiceGroup>
+
+<BitGrid Style=""height: 480px"" Columns=""4"" HorizontalAlign=""horizontalAlign"" VerticalAlign=""verticalAlign"">
+    @for (int i = 0; i < 13; i++)
+    {
+        var item = i + 1;
+        <BitGridItem Class=""grid-item"">
+            Grid Item@(item)
+        </BitGridItem>
+    }
+</BitGrid>";
+    private readonly string example3CsharpCode = @"
+private BitGridAlignment verticalAlign;
+private BitGridAlignment horizontalAlign;
+";
+
+    private readonly string example4RazorCode = @"
+<style>
+    .grid-item {
+        height: 75px;
+        padding: 8px;
+        min-width: 58px;
+        text-align: center;
+        border-radius: 2px;
+        align-content: center;
+        border: 1px solid gray;
+    }
+</style>
+
+
+<BitSlider Label=""Vertical spacing between items"" Max=""5"" ValueFormat=""0.0 rem"" Step=""0.1"" @bind-Value=""@verticalSpacing"" />
+
+<BitSlider Label=""Horizontal spacing between items"" Max=""5"" ValueFormat=""0.0 rem"" Step=""0.1"" @bind-Value=""@horizontalSpacing"" />
+
+<BitGrid Columns=""4""
+         HorizontalAlign=""BitGridAlignment.Center""
+         VerticalSpacing=""@($""{verticalSpacing}rem"")""
+         HorizontalSpacing=""@($""{horizontalSpacing}rem"")"">
+    @for (int i = 0; i < 16; i++)
+    {
+        var item = i + 1;
+
+        <BitGridItem Class=""grid-item"">
+            Grid Item@(item)
+        </BitGridItem>
+    }
+</BitGrid>";
+    private readonly string example4CsharpCode = @"
+private double verticalSpacing = 0.5;
+private double horizontalSpacing = 0.5;
+";
+
+    private readonly string example5RazorCode = @"
 <style>
     .grid-item {
         height: 75px;
@@ -312,25 +368,25 @@ public partial class BitGridDemo
 
 <BitGrid Columns=""4"">
     <BitGridItem Class=""grid-item"" ColumnSpan=""4"" Md=""1"">
-        Grid Item
+        Md = 1
     </BitGridItem>
     <BitGridItem Class=""grid-item"" Xs=""3"" Md=""2"">
-        Grid Item
+        Xs = 3, Md = 2
     </BitGridItem>
     <BitGridItem Class=""grid-item"" Lg=""2"">
-        Grid Item
+        Lg = 2
     </BitGridItem>
-    <BitGridItem Class=""grid-item"" ColumnSpan=""2"" Lg=""1"" Xs=""1"">
-        Grid Item
+    <BitGridItem Class=""grid-item"" ColumnSpan=""2"" Xs=""1"" Lg=""1"">
+        Xs = 1, Lg = 1
     </BitGridItem>
     <BitGridItem Class=""grid-item"" ColumnSpan=""2"" Xs=""3"">
-        Grid Item
+        Xs = 3
     </BitGridItem>
     <BitGridItem Class=""grid-item"" Xs=""2"" Md=""3"">
-        Grid Item
+        Xs = 2, Md = 3
     </BitGridItem>
     <BitGridItem Class=""grid-item"" Xs=""2"">
-        Grid Item
+        Xs = 2
     </BitGridItem>
 </BitGrid>";
 }
