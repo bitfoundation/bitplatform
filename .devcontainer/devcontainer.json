@@ -1,19 +1,16 @@
 {
     "name": "bit platform",
-    "hostRequirements": {
-        "cpus": 4
-    },
-    "image": "mcr.microsoft.com/dotnet/sdk:8.0.302-1-jammy",
-    "features": {
-        "ghcr.io/devcontainers/features/node:1": {}
-    },
-    "onCreateCommand": "dotnet dev-certs https --trust && find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
-    "onPostCreateCommand": "dotnet build src/BlazorUI/Bit.BlazorUI.sln -t:BeforeBuildTasks -m:1",
+    "onCreateCommand": "wget https://download.visualstudio.microsoft.com/download/pr/dd6ee0c0-6287-4fca-85d0-1023fc52444b/874148c23613c594fc8f711fc0330298/dotnet-sdk-8.0.302-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && dotnet dev-certs https --trust &&  find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {
             "openFiles": [
                 "CONTRIBUTING.md"
+            ]
+        },
+        "vscode": {
+            "extensions": [
+                "glenn2223.live-sass"
             ]
         }
     },
