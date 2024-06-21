@@ -59,7 +59,7 @@ public partial class Header : IDisposable
             Urls.Pricing => "Pricing",
             Urls.AboutUs => "About us",
             Urls.ContactUs => "Contact us",
-            _ => "Products & Services",
+            _ => "Products",
         };
     }
 
