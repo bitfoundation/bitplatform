@@ -276,7 +276,7 @@ public partial class BitCheckboxDemo
 <BitButton OnClick=""() => twoWayValue = !twoWayValue"">@(twoWayValue ? ""Remove"" : ""Make"") Checked</BitButton>
 
 
-<BitCheckbox Label=""One-way indeterminate checkbox (Fixed)"" Indeterminate=""true"" />
+<BitCheckbox Label=""One-way indeterminate checkbox (Fixed)"" Indeterminate />
 
 <BitCheckbox Label=""One-way Controlled indeterminate checkbox"" Indeterminate=""oneWayIndeterminate"" />
 <BitButton OnClick=""() => oneWayIndeterminate = !oneWayIndeterminate"">@(oneWayIndeterminate ? ""Remove"" : ""Make"") Indeterminate</BitButton>
