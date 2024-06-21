@@ -24,10 +24,10 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private bool _parsingFailed;
     private bool _isUnderlyingTypeNullable;
     private bool _hasInitializedParameters;
-    private BitDebouncer _debouncer = new();
-    private BitThrottler _throttler = new();
     private bool _previousParsingAttemptFailed;
     private string? _incomingValueBeforeParsing;
+    private readonly BitDebouncer _debouncer = new();
+    private readonly BitThrottler _throttler = new();
     private ChangeEventArgs _lastThrottleEventArgs = default!;
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
