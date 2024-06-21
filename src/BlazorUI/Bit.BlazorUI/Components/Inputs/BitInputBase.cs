@@ -337,12 +337,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
         if (DebounceTime > 0)
         {
-            await _debouncer.Do(DebounceTime, async () => await HandleOnStringValueChangeAsync(e));
+            await _debouncer.Do(DebounceTime, async () => await InvokeAsync(async () => await HandleOnStringValueChangeAsync(e)));
         }
         else if (ThrottleTime > 0)
         {
             _lastThrottleEventArgs = e;
-            await _throttler.Do(ThrottleTime, async () => await HandleOnStringValueChangeAsync(_lastThrottleEventArgs));
+            await _throttler.Do(ThrottleTime, async () => await InvokeAsync(async () => await HandleOnStringValueChangeAsync(_lastThrottleEventArgs)));
         }
         else
         {
