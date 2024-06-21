@@ -16,7 +16,7 @@ public static class Urls
 
     public const string Twitter = "https://twitter.com/bitplatformhq";
 
-    public const string YouTube = "https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog";
+    public const string YouTube = "https://www.youtube.com/@bitplatform";
 
     public const string Facebook = "#";
 

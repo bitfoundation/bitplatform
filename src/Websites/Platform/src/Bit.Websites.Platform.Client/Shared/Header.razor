@@ -9,11 +9,9 @@
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <div class="header-link header-ps-btn @(isDocsRoute ? "header-link--active" : null)">
-                Products & Services
+                Products
                 <div class="header-menu-popup">
                     <div class="col">
-                        <div class="col-header">Products</div>
-
                         <a class="menu-item @(isLcncDocRoute ? "active" : "")" href="@Urls.LowCodeNoCode">
                             <div class="menu-item-content">
                                 <div class="item-title">Low-code/<span style="opacity:0.5">No-code</span></div>
@@ -97,11 +95,9 @@
     <nav class="header-nav">
         <BitIconButton Class="header-nav-close-btn" IconName="@BitIconName.Cancel" OnClick="@WrapHandled(ToggleHeaderMenu)" />
         <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
-            Products & Services
+            Products
             <div class="header-menu-popup">
                 <div class="col">
-                    <div class="col-header">Products</div>
-
                     <a class="menu-item @(isLcncDocRoute ? "active" : "")" href="@Urls.LowCodeNoCode" @onclick=@WrapHandled(ToggleHeaderMenu)>
                         <div class="menu-item-content">
                             <div class="item-title">Low-code/<span style="opacity:0.5">No-code</span></div>
@@ -141,16 +137,6 @@
                         <div class="menu-item-content">
                             <div class="item-title">BlazorUI</div>
                             <div class="item-desc">Native Blazor UI components</div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col">
-                    <div class="col-header">Services</div>
-
-                    <a class="menu-item menu-item--disabled">
-                        <div class="menu-item-content">
-                            <div class="item-title">Cloud hosting solutions</div>
-                            <div class="item-desc">Coming soon</div>
                         </div>
                     </a>
 
