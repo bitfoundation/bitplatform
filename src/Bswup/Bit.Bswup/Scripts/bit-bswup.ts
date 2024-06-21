@@ -1,36 +1,35 @@
-﻿window['bit-bswup version'] = '8.9.0';
+﻿const BitBswup = {} as any;
+BitBswup.version = window['bit-bswup version'] = '8.9.0';
 
 declare const Blazor: any;
 
-class BitBswup {
-    public static async checkForUpdate() {
-        if (!('serviceWorker' in navigator)) {
-            return console.warn('no serviceWorker in navigator');
-        }
-
-        const reg = await navigator.serviceWorker.getRegistration();
-        const result = await reg.update();
-        return result;
+BitBswup.checkForUpdate = async () => {
+    if (!('serviceWorker' in navigator)) {
+        return console.warn('no serviceWorker in navigator');
     }
 
-    public static async forceRefresh() {
-        if (!('serviceWorker' in navigator)) {
-            return console.warn('no serviceWorker in navigator');
-        }
-
-        const cacheKeys = await caches.keys();
-        const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
-        await Promise.all(cachePromises);
-
-        const regs = await navigator.serviceWorker.getRegistrations();
-        const regPromises = regs.map(r => r.unregister());
-        await Promise.all(regPromises);
-
-        window.location.reload();
-    }
+    const reg = await navigator.serviceWorker.getRegistration();
+    const result = await reg.update();
+    return result;
 }
 
-; (function () {
+BitBswup.forceRefresh = async () => {
+    if (!('serviceWorker' in navigator)) {
+        return console.warn('no serviceWorker in navigator');
+    }
+
+    const cacheKeys = await caches.keys();
+    const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
+    await Promise.all(cachePromises);
+
+    const regs = await navigator.serviceWorker.getRegistrations();
+    const regPromises = regs.map(r => r.unregister());
+    await Promise.all(regPromises);
+
+    window.location.reload();
+}
+
+;(function () {
     const bitBswupScript = document.currentScript;
 
     window.addEventListener('DOMContentLoaded', runBswup); // important event!
