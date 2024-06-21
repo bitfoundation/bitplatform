@@ -67,22 +67,8 @@
                     <BitChoiceGroupOption Text="Stretch" Value="BitGridAlignment.Stretch" />
                 </BitChoiceGroup>
                 <br />
-                <BitChoiceGroup Label="Vertical Align"
-                                @bind-Value="verticalAlign"
-                                LayoutFlow="@BitLayoutFlow.Horizontal"
-                                TItem="BitChoiceGroupOption<BitGridAlignment>" TValue="BitGridAlignment">
-                    <BitChoiceGroupOption Text="Start" Value="BitGridAlignment.Start" />
-                    <BitChoiceGroupOption Text="Center" Value="BitGridAlignment.Center" />
-                    <BitChoiceGroupOption Text="End" Value="BitGridAlignment.End" />
-                    <BitChoiceGroupOption Text="SpaceBetween" Value="BitGridAlignment.SpaceBetween" />
-                    <BitChoiceGroupOption Text="SpaceAround" Value="BitGridAlignment.SpaceAround" />
-                    <BitChoiceGroupOption Text="SpaceEvenly" Value="BitGridAlignment.SpaceEvenly" />
-                    <BitChoiceGroupOption Text="Baseline" Value="BitGridAlignment.Baseline" />
-                    <BitChoiceGroupOption Text="Stretch" Value="BitGridAlignment.Stretch" />
-                </BitChoiceGroup>
                 <br />
-                <br />
-                <BitGrid Style="height: 480px" Columns="4" HorizontalAlign="horizontalAlign" VerticalAlign="verticalAlign">
+                <BitGrid Style="height: 480px" Columns="4" HorizontalAlign="horizontalAlign">
                     @for (int i = 0; i < 13; i++)
                     {
                         var item = i + 1;

@@ -50,15 +50,6 @@ public partial class BitGridDemo
         },
         new()
         {
-            Name = "VerticalAlign",
-            Type = "BitGridAlignment",
-            DefaultValue = "BitGridAlignment.Start",
-            Description = "Defines whether to render Grid children vertically.",
-            Href = "#bitGridAlignment-enum",
-            LinkType = LinkType.Link
-        },
-        new()
-        {
             Name = "VerticalSpacing",
             Type = "string?",
             DefaultValue = "null",
@@ -192,7 +183,6 @@ public partial class BitGridDemo
     private double verticalSpacing = 0.5;
     private double horizontalSpacing = 0.5;
 
-    private BitGridAlignment verticalAlign;
     private BitGridAlignment horizontalAlign;
 
 
@@ -288,21 +278,7 @@ public partial class BitGridDemo
     <BitChoiceGroupOption Text=""Stretch"" Value=""BitGridAlignment.Stretch"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""Vertical Align""
-                @bind-Value=""verticalAlign""
-                LayoutFlow=""@BitLayoutFlow.Horizontal""
-                TItem=""BitChoiceGroupOption<BitGridAlignment>"" TValue=""BitGridAlignment"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitGridAlignment.Start"" />
-    <BitChoiceGroupOption Text=""Center"" Value=""BitGridAlignment.Center"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitGridAlignment.End"" />
-    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitGridAlignment.SpaceBetween"" />
-    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitGridAlignment.SpaceAround"" />
-    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitGridAlignment.SpaceEvenly"" />
-    <BitChoiceGroupOption Text=""Baseline"" Value=""BitGridAlignment.Baseline"" />
-    <BitChoiceGroupOption Text=""Stretch"" Value=""BitGridAlignment.Stretch"" />
-</BitChoiceGroup>
-
-<BitGrid Style=""height: 480px"" Columns=""4"" HorizontalAlign=""horizontalAlign"" VerticalAlign=""verticalAlign"">
+<BitGrid Style=""height: 480px"" Columns=""4"" HorizontalAlign=""horizontalAlign"">
     @for (int i = 0; i < 13; i++)
     {
         var item = i + 1;
@@ -312,7 +288,6 @@ public partial class BitGridDemo
     }
 </BitGrid>";
     private readonly string example3CsharpCode = @"
-private BitGridAlignment verticalAlign;
 private BitGridAlignment horizontalAlign;
 ";
 

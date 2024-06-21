@@ -22,7 +22,6 @@ public partial class BitGrid
     private string spacing = "4px";
     private string? verticalSpacing;
     private string? horizontalSpacing;
-    private BitGridAlignment verticalAlign = BitGridAlignment.Start;
     private BitGridAlignment horizontalAlign = BitGridAlignment.Start;
 
 
@@ -113,22 +112,6 @@ public partial class BitGrid
     }
 
     /// <summary>
-    /// Defines whether to render Grid children vertically.
-    /// </summary>
-    [Parameter]
-    public BitGridAlignment VerticalAlign
-    {
-        get => verticalAlign;
-        set
-        {
-            if (verticalAlign == value) return;
-
-            verticalAlign = value;
-            StyleBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Defines the vertical spacing between Grid children.
     /// </summary>
     [Parameter]
@@ -151,7 +134,6 @@ public partial class BitGrid
     {
         StyleBuilder.Register(register =>
         {
-            register($"align-content:{_AlignmentMap[VerticalAlign]}");
             register($"justify-content:{_AlignmentMap[HorizontalAlign]}");
 
             return string.Empty;
