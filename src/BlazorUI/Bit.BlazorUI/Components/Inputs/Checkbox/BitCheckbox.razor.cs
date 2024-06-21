@@ -4,14 +4,18 @@ namespace Bit.BlazorUI;
 
 public partial class BitCheckbox : IDisposable
 {
-    private bool IsIndeterminateHasBeenSet;
+    private bool IndeterminateHasBeenSet;
 
-    private bool isIndeterminate;
-    private BitCheckboxSide boxSide;
+    private bool reversed;
+    private bool indeterminate;
 
     private string _inputId = string.Empty;
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// Detailed description of the checkbox input for the benefit of screen readers
@@ -34,29 +38,14 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public int? AriaSetSize { get; set; }
 
     /// <summary>
-    /// Determines whether the checkbox should be shown before the label (start) or after (end)
-    /// </summary>
-    [Parameter]
-    public BitCheckboxSide BoxSide
-    {
-        get => boxSide;
-        set
-        {
-            if (value == boxSide) return;
-            boxSide = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Custom icon for the check mark rendered by the checkbox instead of default check mark icon
     /// </summary>
-    [Parameter] public string CheckmarkIconName { get; set; } = "Accept";
+    [Parameter] public string CheckIconName { get; set; } = "Accept";
 
     /// <summary>
     /// he aria label of the icon for the benefit of screen readers
     /// </summary>
-    [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
+    [Parameter] public string? CheckIconAriaLabel { get; set; }
 
     /// <summary>
     /// Used to customize the content of checkbox(Label and Box).
@@ -71,7 +60,7 @@ public partial class BitCheckbox : IDisposable
     /// <summary>
     /// Default indeterminate visual state for checkbox
     /// </summary>
-    [Parameter] public bool? DefaultIsIndeterminate { get; set; }
+    [Parameter] public bool? DefaultIndeterminate { get; set; }
 
     /// <summary>
     /// Default checkbox state
@@ -81,22 +70,23 @@ public partial class BitCheckbox : IDisposable
 
     /// <summary>
     /// An indeterminate visual state for checkbox. 
-    /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state
+    /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.
     /// </summary>
     [Parameter]
-    public bool IsIndeterminate
+    public bool Indeterminate
     {
-        get => isIndeterminate;
+        get => indeterminate;
         set
         {
-            if (value == isIndeterminate) return;
-            isIndeterminate = value;
+            if (value == indeterminate) return;
+            indeterminate = value;
             _ = _js.SetProperty(InputElement, "indeterminate", value);
             ClassBuilder.Reset();
-            _ = IsIndeterminateChanged.InvokeAsync(value);
+            _ = IndeterminateChanged.InvokeAsync(value);
         }
     }
-    [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
+
+    [Parameter] public EventCallback<bool> IndeterminateChanged { get; set; }
 
     /// <summary>
     /// Descriptive label for the checkbox.
@@ -114,6 +104,23 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// Reverses the label and checkbox location.
+    /// </summary>
+    [Parameter]
+    public bool Reversed
+    {
+        get => reversed;
+        set
+        {
+            if (value == reversed) return;
+
+            reversed = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitCheckbox.
     /// </summary>
     [Parameter] public BitCheckboxClassStyles? Styles { get; set; }
@@ -125,22 +132,6 @@ public partial class BitCheckbox : IDisposable
 
 
 
-    protected override string RootElementClass => "bit-chb";
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-ind" : string.Empty);
-
-        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-ckd" : string.Empty);
-
-        ClassBuilder.Register(() => BoxSide == BitCheckboxSide.End ? $"{RootElementClass}-end" : string.Empty);
-    }
-    protected override void RegisterCssStyles()
-    {
-        StyleBuilder.Register(() => Styles?.Root);
-    }
-
     protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitCheckbox-{UniqueId}-input";
@@ -149,12 +140,12 @@ public partial class BitCheckbox : IDisposable
 
         if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            await SetCurrentValueAsync(DefaultValue.Value);
+            Value = DefaultValue.Value;
         }
 
-        if (IsIndeterminateHasBeenSet is false && DefaultIsIndeterminate is not null)
+        if (IndeterminateHasBeenSet is false && DefaultIndeterminate is not null)
         {
-            IsIndeterminate = DefaultIsIndeterminate.Value;
+            Indeterminate = DefaultIndeterminate.Value;
         }
 
         await base.OnInitializedAsync();
@@ -164,10 +155,28 @@ public partial class BitCheckbox : IDisposable
     {
         if (firstRender)
         {
-            _ = _js.SetProperty(InputElement, "indeterminate", IsIndeterminate);
+            _ = _js.SetProperty(InputElement, "indeterminate", Indeterminate);
         }
 
         base.OnAfterRender(firstRender);
+    }
+
+    protected override string RootElementClass => "bit-chb";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Indeterminate ? $"bit-chb-ind" : string.Empty);
+
+        ClassBuilder.Register(() => CurrentValue ? $"bit-chb-ckd" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? $"bit-chb-end" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -191,14 +200,14 @@ public partial class BitCheckbox : IDisposable
 
         await OnClick.InvokeAsync(args);
 
-        if (IsIndeterminate)
+        if (Indeterminate)
         {
-            if (IsIndeterminateHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
+            if (IndeterminateHasBeenSet && IndeterminateChanged.HasDelegate is false) return;
 
-            IsIndeterminate = false;
+            Indeterminate = false;
         }
 
-        CurrentValue = !CurrentValue;
+        CurrentValue = CurrentValue is false;
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)

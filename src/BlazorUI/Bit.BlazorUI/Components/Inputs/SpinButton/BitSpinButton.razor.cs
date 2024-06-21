@@ -227,7 +227,7 @@ public partial class BitSpinButton
 
         if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            await SetCurrentValueAsync(DefaultValue.Value);
+            Value = DefaultValue.Value;
         }
 
         await base.OnInitializedAsync();

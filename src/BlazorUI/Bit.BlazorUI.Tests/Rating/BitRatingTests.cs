@@ -124,24 +124,29 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(allowZeroStars is false, bool.Parse(firstButton.GetAttribute("aria-checked")));
     }
 
-    [DataTestMethod,
-        DataRow("HeartFill", "Heart"),
-        DataRow("HeartFill", "Heart"),
-    ]
-    public void BitRatingShouldTakeCustomIcon(string icon, string unselectedIcon)
+    [TestMethod]
+    public void BitRatingShouldTakeCustomIcon()
     {
+        var icon = "HeartFill";
+        var unselectedIcon = "Heart";
         var component = RenderComponent<BitRating>(parameters =>
         {
+            parameters.Add(p => p.DefaultValue, 2);
             parameters.Add(p => p.SelectedIconName, icon);
             parameters.Add(p => p.UnselectedIconName, unselectedIcon);
         });
 
-        var ratingIcon = component.Find(".bit-rtg-btn i");
-        var ratingUnselectedIcon = component.Find(".bit-rtg-btn:nth-child(2) i");
+        var ratingIcon1 = component.Find(".bit-rtg-btn:nth-child(1) i");
+        var ratingIcon2 = component.Find(".bit-rtg-btn:nth-child(2) i");
+        var ratingUnselectedIcon3 = component.Find(".bit-rtg-btn:nth-child(3) i");
+        var ratingUnselectedIcon4 = component.Find(".bit-rtg-btn:nth-child(4) i");
+        var ratingUnselectedIcon5 = component.Find(".bit-rtg-btn:nth-child(5) i");
 
-        //TODO: bypassed - BUnit 2-way bound parameters issue
-        Assert.IsTrue(ratingIcon.ClassList.Contains($"bit-icon--{icon}"));
-        Assert.IsTrue(ratingUnselectedIcon.ClassList.Contains($"bit-icon--{unselectedIcon}"));
+        Assert.IsTrue(ratingIcon1.ClassList.Contains($"bit-icon--{icon}"));
+        Assert.IsTrue(ratingIcon2.ClassList.Contains($"bit-icon--{icon}"));
+        Assert.IsTrue(ratingUnselectedIcon3.ClassList.Contains($"bit-icon--{unselectedIcon}"));
+        Assert.IsTrue(ratingUnselectedIcon4.ClassList.Contains($"bit-icon--{unselectedIcon}"));
+        Assert.IsTrue(ratingUnselectedIcon5.ClassList.Contains($"bit-icon--{unselectedIcon}"));
     }
 
     [Ignore("bypassed - BUnit 2-way bound parameters issue")]

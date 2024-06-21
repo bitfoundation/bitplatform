@@ -142,9 +142,10 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     {
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
 
-        if (ValueHasBeenSet is false && DefaultValue is not null && Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
+        if (ValueHasBeenSet is false && DefaultValue is not null && 
+            Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
-            await SetCurrentValueAsync(DefaultValue);
+            Value = DefaultValue;
         }
 
         await base.OnInitializedAsync();

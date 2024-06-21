@@ -302,9 +302,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override async Task OnInitializedAsync()
     {
-        if ((ValueHasBeenSet is false || CurrentValue is null) && DefaultValue is not null)
+        if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            await SetCurrentValueAsync(DefaultValue);
+            Value = DefaultValue;
         }
 
         await base.OnInitializedAsync();

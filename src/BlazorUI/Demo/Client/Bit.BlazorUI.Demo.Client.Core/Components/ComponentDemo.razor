@@ -31,6 +31,8 @@
         @if (_inputComponents.Contains(ComponentName))
         {
             <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+
+            <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
         }
 
         @if (_extraComponents.Contains(ComponentName) is false)
