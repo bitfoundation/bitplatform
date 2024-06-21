@@ -17,7 +17,9 @@
     @each $name, $breakpoint in $breakpoints {
         @media (min-width: $breakpoint) {
             --#{$name}: var(--span);
-            flex-basis: calc((100% / var(--columns) * var(--#{$name})) - var(--spacing));
+            --columns-#{$name}: var(--columns);
+
+            flex-basis: calc((100% / var(--columns-#{$name}) * var(--#{$name})) - var(--spacing));
         }
     }
 }

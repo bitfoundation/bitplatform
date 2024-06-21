@@ -48,6 +48,36 @@ public partial class BitGrid
     }
 
     /// <summary>
+    /// Number of columns in the extra small breakpoint.
+    /// </summary>
+    [Parameter] public int? ColumnsXs { get; set; }
+
+    /// <summary>
+    ///Number of columns in the small breakpoint.
+    /// </summary>
+    [Parameter] public int? ColumnsSm { get; set; }
+
+    /// <summary>
+    /// Number of columns in the medium breakpoint.
+    /// </summary>
+    [Parameter] public int? ColumnsMd { get; set; }
+
+    /// <summary>
+    /// Number of columns in the large breakpoint.
+    /// </summary>
+    [Parameter] public int? ColumnsLg { get; set; }
+
+    /// <summary>
+    /// Number of columns in the extra large breakpoint.
+    /// </summary>
+    [Parameter] public int? ColumnsXl { get; set; }
+
+    /// <summary>
+    /// Number of columns in the extra extra large breakpoint.
+    /// </summary>
+    [Parameter] public int? ColumnsXxl { get; set; }
+
+    /// <summary>
     /// Defines whether to render Grid children horizontally.
     /// </summary>
     [Parameter]

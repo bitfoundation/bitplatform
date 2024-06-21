@@ -73,6 +73,13 @@ public partial class BitGridItem
         StyleBuilder.Register(() => Xl.HasValue ? $"--xl:{Xl}" : string.Empty);
         StyleBuilder.Register(() => Xxl.HasValue ? $"--xxl:{Xxl}" : string.Empty);
 
+        StyleBuilder.Register(() => Parent!.ColumnsXs.HasValue ? $"--columns-xs:{Parent.ColumnsXs}" : string.Empty);
+        StyleBuilder.Register(() => Parent!.ColumnsSm.HasValue ? $"--columns-sm:{Parent.ColumnsSm}" : string.Empty);
+        StyleBuilder.Register(() => Parent!.ColumnsMd.HasValue ? $"--columns-md:{Parent.ColumnsMd}" : string.Empty);
+        StyleBuilder.Register(() => Parent!.ColumnsLg.HasValue ? $"--columns-lg:{Parent.ColumnsLg}" : string.Empty);
+        StyleBuilder.Register(() => Parent!.ColumnsXl.HasValue ? $"--columns-xl:{Parent.ColumnsXl}" : string.Empty);
+        StyleBuilder.Register(() => Parent!.ColumnsXxl.HasValue ? $"--columns-xxl:{Parent.ColumnsXxl}" : string.Empty);
+
         StyleBuilder.Register(() => $"--span:{ColumnSpan}");
     }
 }
