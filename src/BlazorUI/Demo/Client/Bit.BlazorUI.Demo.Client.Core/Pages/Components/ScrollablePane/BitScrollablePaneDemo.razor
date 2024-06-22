@@ -111,8 +111,8 @@
             <ExamplePreview>
                 <div style="max-width: 19rem;">
                     <BitChoiceGroup Label="Overflow"
+                                    Horizontal
                                     @bind-Value="overflow"
-                                    LayoutFlow="BitLayoutFlow.Horizontal"
                                     TItem="BitChoiceGroupOption<BitOverflow>" TValue="BitOverflow">
                         <BitChoiceGroupOption Text="Auto" Value="BitOverflow.Auto" />
                         <BitChoiceGroupOption Text="Hidden" Value="BitOverflow.Hidden" />
@@ -137,8 +137,8 @@
             <ExamplePreview>
                 <div style="max-width: 19rem;">
                     <BitChoiceGroup Label="Scrollbar gutter"
+                                    Horizontal
                                     @bind-Value="gutter"
-                                    LayoutFlow="BitLayoutFlow.Horizontal"
                                     TItem="BitChoiceGroupOption<BitScrollbarGutter>" TValue="BitScrollbarGutter">
                         <BitChoiceGroupOption Text="Auto" Value="BitScrollbarGutter.Auto" />
                         <BitChoiceGroupOption Text="Stable" Value="BitScrollbarGutter.Stable" />

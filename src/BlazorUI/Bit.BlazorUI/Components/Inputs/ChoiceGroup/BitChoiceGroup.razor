@@ -30,16 +30,16 @@
         }
     </label>
 
-    <div style="@Styles?.Container" class="bit-chg-cnt @GetLayoutFlowClass() @Classes?.Container">
+    <div style="@Styles?.Container" class="bit-chg-cnt@(Horizontal ? " bit-chg-hor" : "") @Classes?.Container">
         @for (var i = 0; i < _items.Count; i++)
         {
             var index = i;
             var item = _items[i];
             SetIndex(item, index);
 
+            var prefix = GetPrefix(item);
             var inputId = GetInputId(item);
             var template = GetTemplate(item);
-            var prefix = GetPrefix(item);
             var isChecked = GetIsCheckedItem(item);
 
             <div style="@GetStyle(item);@Styles?.ItemContainer" class="@GetItemContainerCssClasses(item) @GetClass(item) @Classes?.ItemContainer">
@@ -123,7 +123,7 @@
                        name="@Name"
                        id="@inputId"
                        checked=@isChecked
-                       required="@IsRequired"
+                       required="@Required"
                        aria-label="@GetAriaLabel(item)"
                        value="@GetValue(item)?.ToString()"
                        disabled="@(GetIsEnabled(item) is false)" />

@@ -78,8 +78,8 @@
                  </BitStack>
                  <br />
                  <BitChoiceGroup Label="Direction"
+                                 Horizontal
                                  @bind-Value="direction"
-                                 LayoutFlow="@BitLayoutFlow.Horizontal"
                                  TItem="BitChoiceGroupOption<BitDir>" TValue="BitDir">
                      <BitChoiceGroupOption Text="LTR" Value="BitDir.Ltr" />
                      <BitChoiceGroupOption Text="RTL" Value="BitDir.Rtl" />
@@ -87,8 +87,8 @@
                  </BitChoiceGroup>
                  <br />
                  <BitChoiceGroup Label="Horizontal Align"
+                                 Horizontal
                                  @bind-Value="horizontalAlign"
-                                 LayoutFlow="@BitLayoutFlow.Horizontal"
                                  TItem="BitChoiceGroupOption<BitStackAlignment>" TValue="BitStackAlignment">
                      <BitChoiceGroupOption Text="Start" Value="BitStackAlignment.Start" />
                      <BitChoiceGroupOption Text="Center" Value="BitStackAlignment.Center" />
@@ -101,8 +101,8 @@
                  </BitChoiceGroup>
                  <br />
                  <BitChoiceGroup Label="Vertical Align"
+                                 Horizontal
                                  @bind-Value="verticalAlign"
-                                 LayoutFlow="@BitLayoutFlow.Horizontal"
                                  TItem="BitChoiceGroupOption<BitStackAlignment>" TValue="BitStackAlignment">
                      <BitChoiceGroupOption Text="Start" Value="BitStackAlignment.Start" />
                      <BitChoiceGroupOption Text="Center" Value="BitStackAlignment.Center" />
