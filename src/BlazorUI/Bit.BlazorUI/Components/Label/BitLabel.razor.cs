@@ -2,7 +2,7 @@
 
 public partial class BitLabel
 {
-    private bool isRequired;
+    private bool required;
 
     /// <summary>
     /// The content of label, It can be Any custom tag or a text
@@ -18,12 +18,14 @@ public partial class BitLabel
     /// Whether the associated field is required or not, it shows a star above of it
     /// </summary>
     [Parameter]
-    public bool IsRequired
+    public bool Required
     {
-        get => isRequired;
+        get => required;
         set
         {
-            isRequired = value;
+            if (required == value) return;
+
+            required = value;
             ClassBuilder.Reset();
         }
     }
@@ -33,6 +35,6 @@ public partial class BitLabel
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => Required ? "bit-lbl-req" : string.Empty);
     }
 }
