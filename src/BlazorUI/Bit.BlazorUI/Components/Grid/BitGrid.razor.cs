@@ -1,6 +1,4 @@
-﻿using System.Reflection.Emit;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitGrid
 {
