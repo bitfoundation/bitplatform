@@ -53,9 +53,9 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
-        <CallTarget Targets="InstallNodejsDependencies"/>
-        <CallTarget Targets="BuildJavaScript"/>
-        <CallTarget Targets="BuildCss"/>
+        <CallTarget Targets="InstallNodejsDependencies" />
+        <CallTarget Targets="BuildJavaScript" />
+        <CallTarget Targets="BuildCss" />
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
@@ -83,6 +83,7 @@
         <Content Remove="package*.json" />
         <Content Remove="tsconfig.json" />
         <None Include="package*json" />
+        <ScssFiles Remove="Components\Header\BitHeader.scss" />
         <None Include="tsconfig.json" />
     </ItemGroup>
 
