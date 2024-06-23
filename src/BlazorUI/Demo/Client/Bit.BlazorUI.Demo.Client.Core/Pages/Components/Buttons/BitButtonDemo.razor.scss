@@ -1,0 +1,57 @@
+﻿.buttons-container {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+}
+
+.buttons-container-grid {
+    gap: 0.5rem;
+    display: grid;
+}
+
+.custom-loading {
+    display: flex;
+    gap: 0.3125rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-container {
+    max-width: 20rem;
+}
+
+::deep {
+    .custom-class {
+        color: blueviolet;
+        border-radius: 1rem;
+    }
+
+    .custom-content {
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .validation-message {
+        color: red;
+    }
+
+    .custom-root {
+        min-width: 7.2rem;
+        box-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-container {
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-label {
+        color: goldenrod;
+    }
+
+    .custom-spinner {
+        border-color: aqua;
+        border-top-color: goldenrod;
+    }
+}

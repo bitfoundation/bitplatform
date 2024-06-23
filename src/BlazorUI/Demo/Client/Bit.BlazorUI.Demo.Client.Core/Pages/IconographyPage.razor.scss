@@ -1,0 +1,62 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+.icon-list {
+    width: 100%;
+    display: flex;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: rem2(369px);
+    flex-flow: row wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    &::-webkit-scrollbar {
+        width: rem2(5px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem2(8px);
+        background-color: $bit-color-foreground-secondary;
+    }
+}
+
+.icon-box {
+    cursor: help;
+    display: flex;
+    width: rem2(80px);
+    margin: rem2(10px);
+    overflow: hidden;
+    align-items: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    .icon-name {
+        opacity: 0;
+        font-size: rem2(11px);
+        margin-top: rem2(8px);
+    }
+
+    &:hover {
+        .icon-name {
+            opacity: 1;
+        }
+    }
+}
+
+.empty-list {
+    width: 100%;
+    height: rem2(144px);
+}
+
+::deep {
+    .bit-icon--iconography {
+        font-size: 2.25rem !important;
+    }
+
+    .iconography-search-box {
+        max-width: rem2(300px);
+        margin-bottom: rem2(50px);
+    }
+}

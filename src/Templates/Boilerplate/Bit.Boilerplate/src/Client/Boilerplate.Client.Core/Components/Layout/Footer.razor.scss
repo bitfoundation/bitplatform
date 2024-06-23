@@ -1,0 +1,108 @@
+﻿@import '../../Styles/abstracts/_vars.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.footer {
+    bottom: 0;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    padding: 0.5rem;
+    position: fixed;
+    align-items: center;
+    height: $footerHeight;
+    justify-content: center;
+    background-color: $bit-color-background-primary;
+
+    .bit-ios & {
+        padding-bottom: env(safe-area-inset-bottom);
+        height: calc($footerHeight + env(safe-area-inset-bottom));
+    }
+}
+
+.footer-content {
+    flex-grow: 1;
+    text-align: center;
+    font-size: rem2(12px);
+
+    @include sm {
+        font-size: rem2(10px);
+    }
+}
+
+.footer-social-lnk-grp {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: center;
+}
+
+.social-lnk {
+    width: rem2(32px);
+    height: rem2(32px);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    @include sm {
+        width: rem2(30px);
+        height: rem2(30px);
+    }
+
+    svg path {
+        fill: $bit-color-foreground-secondary;
+    }
+}
+
+.text--red {
+    color: $bit-color-state-required;
+}
+
+::deep {
+    .culture-drp {
+        width: rem2(104px);
+    }
+}
+
+.theme-container {
+    text-align: end;
+    width: rem2(104px);
+}
+
+.toggle-theme-btn {
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    height: rem2(35px);
+    border-radius: 50%;
+    min-width: rem2(35px);
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary-main;
+
+    .icon-container {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+
+        .bit-icon {
+            margin: 0 rem2(4px);
+        }
+    }
+
+    &.dark-theme {
+        .icon-container {
+            padding: 2px 0 0 1px;
+        }
+    }
+}
+
+.theme-dark .light-theme {
+    display: none;
+}
+
+.theme-light .dark-theme {
+    display: none;
+}

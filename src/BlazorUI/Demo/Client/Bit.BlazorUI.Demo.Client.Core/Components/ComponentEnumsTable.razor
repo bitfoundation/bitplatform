@@ -1,0 +1,21 @@
+@foreach (var subEnum in Enums)
+{
+    <div id="@subEnum.Id" class="sec-con">
+        <BitTypography Variant="BitTypographyVariant.H6" Gutter Class="subenum-title"><b>@subEnum.Name</b> enum</BitTypography>
+         <table class="table-view enum-table">
+             <tr class="th-row">
+                 <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Name</BitTypography></th>
+                 <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Value</BitTypography></th>
+                 <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Description</BitTypography></th>
+             </tr>
+             @foreach (var item in subEnum.Items)
+            {
+                <tr class="tdata-row">
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Name</BitTypography></td>
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Value</BitTypography></td>
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Description</BitTypography></td>
+                </tr>
+            }
+        </table>
+    </div>
+}

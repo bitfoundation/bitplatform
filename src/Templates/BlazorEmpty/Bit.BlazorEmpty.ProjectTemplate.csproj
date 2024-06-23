@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+    
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>content</ContentTargetFolders>
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <NoDefaultExcludes>true</NoDefaultExcludes>
+        
+        <!-- Nuget Package-->
+        <PackageId>Bit.BlazorEmpty</PackageId>
+        <PackageType>Template</PackageType>
+        <Title>bit BlazorEmpty</Title>
+        <PackageDescription>A template for creating a BlazorEmpty app based on the bit platform tools</PackageDescription>
+        <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
+        <PackageCopyright>Copyright © bit platform 2024</PackageCopyright>
+        <PackageIcon>bit-icon-512.png</PackageIcon>
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="Bit.BlazorEmpty\**" Exclude="Bit.BlazorEmpty\.vs\**;Bit.BlazorEmpty\**\bin\**\*;Bit.BlazorEmpty\**\obj\**\*; " />
+        <Compile Remove="**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Bit.BlazorEmpty\BlazorEmpty\wwwroot\bit-icon-512.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\..\..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
+</Project>

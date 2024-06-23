@@ -1,0 +1,130 @@
+﻿@page "/butil/clipboard"
+@inherits AppComponentBase
+@inject Bit.Butil.Clipboard clipboard
+
+<PageOutlet Url="butil/clipboard"
+            Title="Clipboard - Butil"
+            Description="Clipboard class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Clipboard</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Clipboard class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser Clipboard features you need to inject the Bit.Butil.Clipboard class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Clipboard clipboard
+
+@@code {
+    var text = await clipboard.ReadText();
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>ReadText</b>: <br />
+            Requests text from the system clipboard, returning a Promise that is fulfilled with
+            a string containing the clipboard's text once it's available
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @readTextExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="ReadText">ReadText</BitButton>
+                        <br /><br />
+                        <div>Clipboard text: "@clipboardText"</div>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>WriteText</b>: <br />
+            Requests text from the system clipboard, returning a Promise that is fulfilled with
+            a string containing the clipboard's text once it's available
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @writeTextExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="newClipboardText" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="WriteText">WriteText</BitButton>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+            <b>Read</b>: <br />
+            Requests arbitrary data (such as images) from the clipboard, returning a Promise that
+            resolves with an array of ClipboardItem objects containing the clipboard's contents
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/read" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @readExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="Read">Read</BitButton>
+                        <br /><br />
+                        @foreach (var item in clipboardItems)
+                        {
+                            <div>Clipboard MimeType: "@item.MimeType"</div>
+                            <div>Clipboard Data: "@System.Text.Encoding.UTF8.GetString(item.Data)"</div>
+                            <br />
+                            <br />
+                        }
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Write</b>: <br />
+            Writes arbitrary data to the system clipboard, returning a Promise
+            that resolves when the operation completes
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @writeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="newText" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="Write">Write</BitButton>
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Crypto" PrevUrl="/butil/crypto" Next="Keyboard" NextUrl="/butil/keyboard" />

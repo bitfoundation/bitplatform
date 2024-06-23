@@ -1,0 +1,24 @@
+﻿<PageTitle>@Title - bit Services</PageTitle>
+
+<HeadContent>
+    <meta name="title" content="@Title - bit Services" />
+    <meta name="description" content="@Description" />
+
+    <meta property="og:url" content="https://bitservices.company/@Url" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="bit Services" />
+    <meta property="og:title" content="@Title - bit Services" />
+    <meta property="og:description" content="@Description" />
+    <meta property="og:image" content="@ImageUrl" />
+
+    <meta name="twitter:title" content="@Title - bit Services" />
+    <meta name="twitter:description" content="@Description" />
+    <meta name="twitter:image" content="@ImageUrl" />
+</HeadContent>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Url { get; set; }
+    [Parameter] public string ImageUrl { get; set; } = "https://bitservices.company/images/og-image.svg";
+}

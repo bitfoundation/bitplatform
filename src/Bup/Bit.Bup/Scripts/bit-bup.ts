@@ -1,4 +1,7 @@
-﻿declare const Blazor: any;
+﻿var BitBup = BitBup || {};
+BitBup.version = window['bit-bup version'] = '8.9.0';
+
+declare const Blazor: any;
 
 ; (function () {
     const bitBupScript = document.currentScript;
@@ -8,7 +11,7 @@
         return;
     }
 
-    window.addEventListener('load', runBup);
+    window.addEventListener('DOMContentLoaded', runBup);
 
 
     function runBup() {
@@ -36,9 +39,7 @@
                 return;
             }
 
-            Blazor.start({
-                loadBootResource: loadBootResource
-            })
+            Blazor.start({ loadBootResource });
         }
 
         function extract(): BupOptions {
@@ -46,6 +47,7 @@
                 log: 'info',
                 handler: (...args: any[]) => { },
                 blazorScript: '_framework/blazor.webassembly.js',
+                integrityCheck: false,
             }
             const optionsAttribute = (bitBupScript.attributes)['options'];
             const optionsName = (optionsAttribute || {}).value || 'bitBup';
@@ -61,6 +63,9 @@
             const blazorScriptAttribute = bitBupScript.attributes['blazorScript'];
             options.blazorScript = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript;
 
+            const integrityCheckAttribute = bitBupScript.attributes['integrityCheck'];
+            options.integrityCheck = ((integrityCheckAttribute && integrityCheckAttribute.value) === 'true') || options.integrityCheck;
+
             if (!options.handler || typeof options.handler !== 'function') {
                 console.warn('BitBup: progress handler not found or is not a function!');
                 options.handler = undefined;
@@ -70,13 +75,15 @@
         }
 
         function loadBootResource(type, name, url, integrity) {
-            if (type === 'dotnetjs') return url; // blazor itself handles this specific resource and needs to have its url
             if (type === 'manifest') return url; // since this is the file containing the resources list lets the blazor itself handle it
+            if (type === 'dotnetjs') return url; // blazor itself handles this specific resource and needs to have its url
 
-            const response = fetch(url, {
-                cache: 'no-cache',
-                integrity: integrity
-            });
+            const resourceUrl = `${url}?v=${integrity}`;
+            const requestInit: RequestInit = options.integrityCheck
+                ? { cache: 'no-store', integrity: integrity, headers: [['cache-control', 'public, max-age=3153600']] }
+                : { cache: 'no-store', headers: [['cache-control', 'public, max-age=3153600']] };
+
+            const response = fetch(resourceUrl, requestInit);
 
             fetchPromises.push(response);
 
@@ -85,13 +92,11 @@
                     handle('start');
                 }
 
+                //if (fetchPromises.length < 10) return;
+
                 const percent = 100 * (++counter) / fetchPromises.length;
 
-                try {
-                    handle('progress', { percent, type, name, url, integrity, index: counter });
-                } catch (e) {
-                    err(e);
-                }
+                handle('progress', { percent, type, name, url, integrity, index: counter });
 
                 if (percent >= 100) {
                     handle('end');
@@ -127,4 +132,5 @@ interface BupOptions {
     log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
     handler(...args: any[]): void
     blazorScript: string
+    integrityCheck: boolean
 }

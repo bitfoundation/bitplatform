@@ -1,0 +1,98 @@
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages
+@inherits AppComponentBase
+
+<div class="hero-section-content">
+    <BitTypography Variant="BitTypographyVariant.H1">bit BlazorUI</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.</BitTypography>
+    <br />
+    <BitButton Href="/getting-started"
+               Size="BitButtonSize.Large"
+               IconName="@BitIconName.ChevronRightSmall"
+               IconPosition="BitButtonIconPosition.End">
+        Get started
+    </BitButton>
+</div>
+<div class="hero-section-content">
+    <div class="hero-section-components @BitCss.Class.Color.Background.Secondary">
+        <div class="hero-section-components-col">
+            <div class="component-box @BitCss.Class.Color.Background.Primary">
+                <BitDropdown Label="Select multiple products"
+                             Items="_productDropdownItems"
+                             IsMultiSelect="true"
+                             Placeholder="Select an option"
+                             Style="width: 326px; margin: 20px 0 20px 0"
+                             TItem="BitDropdownItem<string>" TValue="string" />
+            </div>
+            <div class="component-box @BitCss.Class.Color.Background.Primary">
+                <BitColorPicker ShowPreview="true" @bind-Color="@_selectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
+            </div>
+            <div class="component-box--transparent" style="height: fit-content;">
+                <BitToggle @bind-Value="_isToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
+                <BitToggle @bind-Value="_isToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
+            </div>
+        </div>
+        <div class="hero-section-components-col">
+            <div class="component-box--transparent">
+                <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string"
+                                LayoutFlow="BitLayoutFlow.Horizontal" Label="Select an item" DefaultValue=@("pie")>
+                    <BitChoiceGroupOption Text="Clustered bar chart" Value=@("bar") IconName="@BitIconName.BarChart4" />
+                    <BitChoiceGroupOption Text="Pie chart" Value=@("pie") IconName="@BitIconName.DonutChart" />
+                    <BitChoiceGroupOption Text="Disabeled" IsEnabled="false" Value=@("disabeled_option") IconName="@BitIconName.BarChartVerticalFill" />
+                </BitChoiceGroup>
+            </div>
+            <div class="component-box @BitCss.Class.Color.Background.Primary">
+                <BitSlider Label="Origin from zero"
+                           Min="-5"
+                           Max="5"
+                           Step="1"
+                           DefaultUpperValue="2"
+                           DefaultLowerValue="-3"
+                           IsRanged="true"
+                           IsOriginFromZero="true"
+                           Style="width: 100%" />
+            </div>
+            <div class="component-box @BitCss.Class.Color.Background.Primary">
+                <BitCompoundButton IsEnabled="true"
+                                   SecondaryText="This Button is a compound button"
+                                   Style="margin-right: 10px">
+                    Primary
+                </BitCompoundButton>
+                <BitCompoundButton IsEnabled="true"
+                                   AriaHidden="true"
+                                   SecondaryText="This Button is a compound button"
+                                   ButtonStyle="BitButtonStyle.Standard">
+                    Standard
+                </BitCompoundButton>
+            </div>
+            <BitProgressBar Height="20" Style="margin-bottom: 30px" Indeterminate />
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Links"
+                      DefaultSelectedKey="Overview"
+                      LinkSize="@BitPivotLinkSize.Large"
+                      HeadersOnly="true"
+                      OnItemClick="@(item => _pivotSelectedKey = item.Key)">
+                <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
+                <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>
+                <BitPivotItem HeaderText="Comments" Key="Comments"></BitPivotItem>
+                <BitPivotItem HeaderText="FAQ" Key="FAQ"></BitPivotItem>
+            </BitPivot>
+            <div class="tab-content @(BitCss.Class.Color.Background.Primary)">
+                @if (_pivotSelectedKey == "Overview")
+                {
+                    <div>The is the "Overview" section.</div>
+                }
+                else if (_pivotSelectedKey == "Comments")
+                {
+                    <div>The is the "Comments" section.</div>
+                }
+                else if (_pivotSelectedKey == "Features")
+                {
+                    <div>The is the "Features" section.</div>
+                }
+                else if (_pivotSelectedKey == "FAQ")
+                {
+                    <div>The is the "FAQ" section.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

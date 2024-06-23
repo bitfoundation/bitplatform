@@ -3,8 +3,14 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net8.0'">
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
+        <SignAssembly>True</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,26 +18,53 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.14" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.4" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.0.2">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="BuildBundlerMinifier" Version="3.2.449">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Update="tsconfig.json">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-        </Content>
-        
-        <Content Remove="bundleconfig.json" />
-        <None Include="bundleconfig.json" />
+        <Content Remove="tsconfig.json" />
+        <None Include="tsconfig.json" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+        <CallTarget Targets="BuildCss"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bup.ts;Scripts/bit-bup.progress.ts" Outputs="wwwroot/bit-bup.js;wwwroot/bit-bup.progress.js">
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bup.js --minify --outfile=wwwroot/bit-bup.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bup.progress.js --minify --outfile=wwwroot/bit-bup.progress.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildCss" Inputs="Styles/bit-bup.progress.css" Outputs="wwwroot/bit-bup.progress.css">
+        <Exec Command="node_modules/.bin/esbuild Styles/bit-bup.progress.css --minify --outfile=wwwroot/bit-bup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <ItemGroup>
+        <None Include="..\..\..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <Content Remove="package*.json" />
+        <Content Remove="tsconfig.json" />
+        <None Include="package*json" />
+        <None Include="tsconfig.json" />
+    </ItemGroup>
+
 </Project>

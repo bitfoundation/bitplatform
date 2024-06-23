@@ -1,0 +1,134 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+.box {
+    width: 100%;
+    display: flex;
+    max-width: 100%;
+    flex-flow: column nowrap;
+    scroll-margin: rem2(80px);
+    margin-bottom: rem2(36px);
+    justify-content: flex-start;
+}
+
+.box-header {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    align-items: flex-end;
+    margin-top: rem2(32px);
+    box-sizing: border-box;
+    justify-content: space-between;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+}
+
+.header-btn-group {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+}
+
+.box-content {
+    width: 100%;
+    position: relative;
+    min-height: rem2(70px);
+    box-sizing: border-box;
+}
+
+.example-container {
+    overflow: auto;
+    padding: rem2(24px);
+
+    @include lt-lg {
+        padding: rem2(24px) 0;
+    }
+
+    &::-webkit-scrollbar {
+        width: rem2(6px);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem2(8px);
+    }
+}
+
+::deep {
+    .header-btn {
+        height: 100%;
+        min-height: rem2(40px);
+        border-bottom: none !important;
+        border-radius: rem2(4px) rem2(4px) 0 0;
+        border: rem2(1px) solid $bit-color-border-secondary;
+
+        &.show-code {
+            min-width: rem2(125px);
+            padding: rem2(4px) rem2(12px);
+
+            i {
+                font-size: 1.125rem;
+                margin-right: rem2(8px);
+                color: $bit-color-primary-main;
+            }
+
+            @include lt-lg {
+                width: rem2(42px);
+                min-width: unset;
+                padding: rem2(4px) rem2(20px);
+
+                .show-code-lbl {
+                    display: none;
+                }
+            }
+        }
+
+        &.copy-link {
+            z-index: 1;
+            display: flex;
+            min-width: unset;
+            width: rem2(42px);
+            align-items: center;
+            padding: 0 rem2(20px);
+            justify-content: center;
+            transition: width 0.2s ease-in-out;
+            background-color: $bit-color-background-primary;
+
+            &.copied {
+                overflow: hidden;
+                width: rem2(128px);
+                white-space: nowrap;
+                pointer-events: none;
+                background-color: $bit-color-secondary-dark;
+            }
+        }
+    }
+
+    .copy-btn {
+        z-index: 1;
+        display: flex;
+        top: rem2(16px);
+        min-width: unset;
+        right: rem2(10px);
+        width: rem2(34px);
+        height: rem2(34px);
+        position: absolute;
+        border-radius: rem2(17px);
+        align-items: center;
+        justify-content: center;
+        transition: width 0.2s ease-in-out;
+        background-color: $bit-color-background-secondary;
+        border: rem2(1px) solid $bit-color-border-secondary;    
+
+        &.copied {
+            overflow: hidden;
+            width: rem2(128px);
+            white-space: nowrap;
+            pointer-events: none;
+            background-color: $bit-color-secondary-dark;
+        }
+    }
+}

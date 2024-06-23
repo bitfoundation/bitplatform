@@ -1,4 +1,6 @@
-﻿; (function () {
+﻿window['bit-bup.progress version'] = '8.9.0';
+
+; (function () {
     (window as any).startBupProgress = (showLogs: boolean, showAssets: boolean, appContainerSelector: string, hideApp: boolean, autoHide: boolean) => {
         const appEl = document.querySelector(appContainerSelector) as HTMLElement;
         const bupEl = document.getElementById('bit-bup');
@@ -14,11 +16,16 @@
                     bupEl && (bupEl.style.display = 'block');
                     return showLogs ? console.log('downloading resources started.') : undefined;
                 case 'progress':
+                    hideApp && appEl && (appEl.style.display = 'none');
+                    bupEl && (bupEl.style.display = 'block');
+
                     if (showAssets && assetsEl) {
                         const li = document.createElement('li');
                         li.innerHTML = `${data.index}: <b>[${data.type}] ${data.name}</b>: ${data.url} (${data.integrity})`
                         assetsEl.prepend(li);
                     }
+                    if (data.percent > 100) return;
+
                     const percent = Math.round(data.percent);
                     const perStr = `${percent}%`;
                     bupEl && bupEl.style.setProperty('--bit-bup-percent', perStr)

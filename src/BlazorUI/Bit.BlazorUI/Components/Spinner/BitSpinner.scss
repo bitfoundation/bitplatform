@@ -2,105 +2,91 @@
 
 .bit-spn {
     display: flex;
+    gap: spacing(1);
     justify-content: center;
 
-    .spinner {
-        animation: bit-spn-animation 1.3s linear infinite;
-        animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
-        border: spacing(2) $shape-border-style $color-neutrals-gray60;
-        border-top: spacing(2) $shape-border-style $color-primary-main;
-        border-radius: 50%;
-        border-width: spacing(0.1875);
-    }
-
-    .label {
-        color: $color-primary-main;
-        font-size: spacing(1.5);
-        margin: spacing(0.25) spacing(1);
-        text-align: center;
-    }
-
-    .aria-label {
-        border: 0;
-        height: spacing(0.125);
-        margin: spacing(-0.125);
-        overflow: hidden;
-        padding: 0;
-        position: absolute;
-        width: spacing(0.125);
-    }
-
-    &.top {
-        align-items: center;
-        flex-direction: column-reverse;
-
-        .label {
-            margin: 0 0 spacing(1);
+    @keyframes bit-spn-animation {
+        0% {
+            transform: rotate(0deg);
         }
-    }
 
-    &.bottom {
-        align-items: center;
-        flex-direction: column;
-
-        .label {
-            margin: spacing(1) 0 0;
-        }
-    }
-
-    &.right {
-        align-items: center;
-        flex-direction: row;
-
-        .label {
-            margin: 0 0 0 spacing(1);
-        }
-    }
-
-    &.left {
-        align-items: center;
-        flex-direction: row-reverse;
-
-        .label {
-            margin: 0 spacing(1) 0 0;
-        }
-    }
-
-    &.large {
-        .spinner {
-            height: spacing(3.5);
-            width: spacing(3.5);
-        }
-    }
-
-    &.medium {
-        .spinner {
-            height: spacing(2.5);
-            width: spacing(2.5);
-        }
-    }
-
-    &.small {
-        .spinner {
-            height: spacing(2);
-            width: spacing(2);
-        }
-    }
-
-    &.x-small {
-        .spinner {
-            height: spacing(1.5);
-            width: spacing(1.5);
+        100% {
+            transform: rotate(360deg);
         }
     }
 }
 
-@keyframes bit-spn-animation {
-    0% {
-        transform: rotate(0deg);
-    }
+.bit-spn-snr {
+    border-radius: 50%;
+    animation: bit-spn-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    border-width: spacing(0.1875);
+    border-style: $shape-border-style;
+    border-color: $color-border-secondary;
+    border-top-color: $color-primary-main;
+}
 
-    100% {
-        transform: rotate(360deg);
+.bit-spn-lbl {
+    text-align: center;
+    font-size: spacing(1.5);
+    color: $color-primary-main;
+    margin: spacing(0.25) spacing(1);
+}
+
+.bit-spn-alb {
+    border: 0;
+    padding: 0;
+    overflow: hidden;
+    position: absolute;
+    width: spacing(0.125);
+    height: spacing(0.125);
+    margin: spacing(-0.125);
+}
+
+.bit-spn-xs {
+    .bit-spn-snr {
+        width: spacing(1.5);
+        height: spacing(1.5);
     }
+}
+
+.bit-spn-sm {
+    .bit-spn-snr {
+        width: spacing(2);
+        height: spacing(2);
+    }
+}
+
+.bit-spn-md {
+    .bit-spn-snr {
+        width: spacing(2.5);
+        height: spacing(2.5);
+    }
+}
+
+.bit-spn-lg {
+    .bit-spn-snr {
+        width: spacing(3.5);
+        height: spacing(3.5);
+    }
+}
+
+.bit-spn-top {
+    align-items: center;
+    flex-direction: column-reverse;
+}
+
+.bit-spn-srt {
+    align-items: center;
+    flex-direction: row-reverse;
+}
+
+.bit-spn-end {
+    align-items: center;
+    flex-direction: row;
+}
+
+.bit-spn-btm {
+    align-items: center;
+    flex-direction: column;
 }

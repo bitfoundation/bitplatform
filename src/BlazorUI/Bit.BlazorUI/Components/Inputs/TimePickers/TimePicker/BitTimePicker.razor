@@ -1,0 +1,159 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<TimeSpan?>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @if (LabelTemplate is not null)
+    {
+        <label id="@_labelId" for="@_inputId">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label style="@Styles?.Label" class="bit-tpc-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
+            @Label
+        </label>
+    }
+
+    <div style="@Styles?.InputWrapper" class="bit-tpc-wrp @Classes?.InputWrapper" id="@_timePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+        <div style="@Styles?.InputContainer" class="bit-tpc-icn @Classes?.InputContainer">
+            <input @ref="InputElement" @attributes="InputHtmlAttributes"
+                   @onfocus="@HandleOnFocus"
+                   @oninput="@HandleOnChange"
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
+                   type="text"
+                   name="@Name"
+                   role="combobox"
+                   id="@_inputId"
+                   tabindex="@TabIndex"
+                   aria-haspopup="dialog"
+                   aria-label="@AriaLabel"
+                   placeholder="@Placeholder"
+                   value="@CurrentValueAsString"
+                   disabled=@(IsEnabled is false)
+                   readonly=@(AllowTextInput is false)
+                   aria-expanded="@(IsOpen ? "true" : "false")"
+                   aria-controls="@(IsOpen ? _calloutId : null)"
+                   aria-labelledby="@(Label.HasValue() ? _labelId : null)"
+                   style="@Styles?.Input"
+                   class="bit-tpc-inp@(AllowTextInput ? " bit-tpc-ein" : null) @Classes?.Input" />
+
+            @if (IconTemplate is not null)
+            {
+                @IconTemplate
+            }
+            else
+            {
+                <i style="@Styles?.Icon" class="bit-tpc-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+            }
+        </div>
+    </div>
+
+    <div @onclick="CloseCallout"
+         style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+         class="bit-tpc-ovl @Classes?.Overlay"></div>
+
+    <div style="@Styles?.Callout" class="bit-tpc-cal @Classes?.Callout" id="@_calloutId">
+        <div style="@Styles?.CalloutContainer" class="bit-tpc-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
+            <div style="@Styles?.TimeInputContainer" class="bit-tpc-tic @Classes?.TimeInputContainer">
+                <div style="@Styles?.HourInputContainer" class="bit-tpc-tpr @Classes?.HourInputContainer">
+                    <button @onpointerup="HandleOnPointerUpOrOut"
+                            @onpointerout="HandleOnPointerUpOrOut"
+                            @onpointerdown="() => HandleOnPointerDown(true, true)"
+                            type="button"
+                            style="@Styles?.IncreaseHourButton"
+                            class="bit-tpc-tbt @Classes?.IncreaseHourButton">
+                        <i style="@Styles?.IncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.IncreaseHourIcon" aria-hidden="true" />
+                    </button>
+                    <input @ref="_inputHourRef"
+                           @bind="@_hourView"
+                           @bind:event="oninput"
+                           @onfocus="HandleOnHourFocus"
+                           min="0"
+                           max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
+                           type="number"
+                           inputmode="numeric"
+                           style="@Styles?.HourInput"
+                           class="bit-tpc-tin @Classes?.HourInput"
+                           autocomplete="@BitAutoCompleteValue.NewPassword" />
+                    <button @onpointerup="HandleOnPointerUpOrOut"
+                            @onpointerout="HandleOnPointerUpOrOut"
+                            @onpointerdown="() => HandleOnPointerDown(false, true)"
+                            type="button"
+                            style="@Styles?.DecreaseHourButton"
+                            class="bit-tpc-tbt @Classes?.DecreaseHourButton">
+                        <i style="@Styles?.DecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.DecreaseHourIcon" aria-hidden="true" />
+                    </button>
+                </div>
+                <div style="@Styles?.HourMinuteSeparator" class="bit-tpc-tpr bit-tpc-tdv @Classes?.HourMinuteSeparator">:</div>
+                <div style="@Styles?.MinuteInputContainer" class="bit-tpc-tpr @Classes?.MinuteInputContainer">
+                    <button @onpointerup="HandleOnPointerUpOrOut"
+                            @onpointerout="HandleOnPointerUpOrOut"
+                            @onpointerdown="() => HandleOnPointerDown(true, false)"
+                            type="button"
+                            style="@Styles?.IncreaseMinuteButton"
+                            class="bit-tpc-tbt @Classes?.IncreaseMinuteButton">
+                        <i style="@Styles?.IncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.IncreaseMinuteIcon" aria-hidden="true" />
+                    </button>
+                    <input @ref="_inputMinuteRef"
+                           @bind="@_minuteView"
+                           @bind:event="oninput"
+                           @onfocus="HandleOnMinuteFocus"
+                           min="0"
+                           max="59"
+                           type="number"
+                           inputmode="numeric"
+                           style="@Styles?.MinuteInput"
+                           class="bit-tpc-tin @Classes?.MinuteInput"
+                           autocomplete="@BitAutoCompleteValue.NewPassword" />
+                    <button @onpointerup="HandleOnPointerUpOrOut"
+                            @onpointerout="HandleOnPointerUpOrOut"
+                            @onpointerdown="() => HandleOnPointerDown(false, false)"
+                            type="button"
+                            style="@Styles?.DecreaseMinuteButton"
+                            class="bit-tpc-tbt @Classes?.DecreaseMinuteButton">
+                        <i style="@Styles?.DecreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.DecreaseMinuteIcon" aria-hidden="true" />
+                    </button>
+                </div>
+            </div>
+
+            @if (TimeFormat == BitTimeFormat.TwelveHours)
+            {
+                <div style="@Styles?.AmPmContainer" class="bit-tpc-tpr bit-tpc-am-pm @Classes?.AmPmContainer">
+                    <button @onclick="HandleOnAmClick"
+                            type="button"
+                            style="@Styles?.AmButton"
+                            class="bit-tpc-tbt bit-tpc-bam @(IsAm() is true ? "bit-tpc-bns" : string.Empty) @Classes?.AmButton">
+                        @Culture.DateTimeFormat.AMDesignator
+                    </button>
+
+                    <button @onclick="HandleOnPmClick"
+                            type="button"
+                            style="@Styles?.PmButton"
+                            class="bit-tpc-tbt bit-tpc-bpm @(IsAm() is false ? "bit-tpc-bns" : string.Empty) @Classes?.PmButton">
+                        @Culture.DateTimeFormat.PMDesignator
+                    </button>
+                </div>
+            }
+
+            @if (ShowCloseButton)
+            {
+                <button @onclick="CloseCallout"
+                        type="button"
+                        style="@Styles?.CloseButton"
+                        class="bit-tpc-tbt bit-tpc-cbn @Classes?.CloseButton"
+                        title="@CloseButtonTitle"
+                        aria-label="@CloseButtonTitle">
+                    <i style="@Styles?.CloseButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" aria-hidden="true" />
+                </button>
+            }
+        </div>
+    </div>
+
+</div>

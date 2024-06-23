@@ -2,99 +2,27 @@ var BitButil = BitButil || {};
 
 (function (butil: any) {
     butil.console = {
-        assert, clear, count, countReset, debug, dir, dirxml, error, group, groupCollapsed, groupEnd,
-        info, log, memory, profile, profileEnd, table, time, timeEnd, timeLog, timeStamp, trace, warn
+        assert(...data: any[]) { console.assert(...data) },
+        clear() { console.clear() },
+        count(label?: string) { console.count(label) },
+        countReset(label?: string) { console.countReset(label) },
+        debug(...data: any[]) { console.debug(...data) },
+        dir(item?: any, options?: any) { console.dir(item, options) },
+        dirxml(...data: any[]) { console.dirxml(...data) },
+        error(...data: any[]) { console.error(...data) },
+        group(...data: any[]) { console.group(...data) },
+        groupCollapsed(...data: any[]) { console.groupCollapsed(...data) },
+        groupEnd() { console.groupEnd() },
+        info(...data: any[]) { console.info(...data) },
+        log(...data: any[]) { console.log(...data) },
+        profile(name: string) { (console as any).profile(name) },
+        profileEnd(name: string) { (console as any).profileEnd(name) },
+        table(data?: any, properties?: string[]) { console.table(data, properties) },
+        time(label?: string) { console.time(label) },
+        timeEnd(label?: string) { console.timeEnd(label) },
+        timeLog(...data: any[]) { console.timeLog(...data) },
+        timeStamp(label?: string) { console.timeStamp(label) },
+        trace(...data: any[]) { console.trace(...data) },
+        warn(...data: any[]) { console.warn(...data) }
     };
-
-    function assert(condition?: boolean, ...data: any[]) {
-        console.assert(condition, ...data);
-    }
-
-    function clear() {
-        console.clear();
-    }
-
-    function count(label?: string) {
-        console.count(label);
-    }
-
-    function countReset(label?: string) {
-        console.countReset(label);
-    }
-
-    function debug(...data: any[]) {
-        console.debug(...data);
-    }
-
-    function dir(item?: any, options?: any) {
-        console.dir(item, options);
-    }
-
-    function dirxml(...data: any[]) {
-        console.dirxml(...data);
-    }
-
-    function error(...data: any[]) {
-        console.error(...data);
-    }
-
-    function group(...data: any[]) {
-        console.group(...data);
-    }
-
-    function groupCollapsed(...data: any[]) {
-        console.groupCollapsed(...data);
-    }
-
-    function groupEnd() {
-        console.groupEnd();
-    }
-
-    function info(...data: any[]) {
-        console.info(...data);
-    }
-
-    function log(...data: any[]) {
-        console.log(...data);
-    }
-
-    function memory() {
-        (console as any).memory;
-    }
-
-    function profile() {
-        (console as any).profile();
-    }
-
-    function profileEnd() {
-        (console as any).profileEnd();
-    }
-
-    function table(data?: any, properties?: string[]) {
-        console.table(data, properties);
-    }
-
-    function time(label?: string) {
-        console.time(label);
-    }
-
-    function timeEnd(label?: string) {
-        console.timeEnd(label);
-    }
-
-    function timeLog(label?: string, ...data: any[]) {
-        console.timeLog(label, ...data);
-    }
-
-    function timeStamp(label?: string) {
-        console.timeStamp(label);
-    }
-
-    function trace(...data: any[]) {
-        console.trace(...data);
-    }
-
-    function warn(...data: any[]) {
-        console.warn(...data);
-    }
 }(BitButil));

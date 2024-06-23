@@ -1,0 +1,90 @@
+﻿@page "/overview"
+
+<PageOutlet Url="overview"
+            Title="Overview"
+            Description="overview of the bit blazorui components" />
+
+<section class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Class="title">bit BlazorUI</BitTypography>
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.
+        </BitTypography>
+    </section>
+
+    <div class="card-container">
+        <a class="card input-card" href="/components/button">
+            <div class="card-img buttons"></div>
+            Buttons
+        </a>
+        <a class="card input-card" href="/components/checkbox">
+            <div class="card-img basic-inputs"></div>
+            Basic Inputs
+        </a>
+        <a class="card picker-card" href="/components/calendar">
+            <div class="card-img galleries-pickers"></div>
+            Galleries & Pickers
+        </a>
+        <a class="card list-card" href="/components/basiclist">
+            <div class="card-img items-lists"></div>
+            Items & Lists
+        </a>
+        <a class="card nav-card" href="/components/breadcrumb">
+            <div class="card-img menus-navs"></div>
+            Menus & Navs
+        </a>
+        <a class="card notification-card" href="/components/message">
+            <div class="card-img notification"></div>
+            Message
+        </a>
+        <a class="card progress-card" href="/components/progressbar">
+            <div class="card-img progress"></div>
+            Progress
+        </a>
+        <a class="card surface-card" href="/components/accordion">
+            <div class="card-img surfaces"></div>
+            Surfaces
+        </a>
+    </div>
+
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Project template</BitTypography>
+
+        <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+            You can use our BlazorEmpty (bit-empty) project template to get started quickly with a predefined solution 
+            which is compatible with the new approach introduced in .NET 8.
+        </BitTypography>
+
+        <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+            To use this project template, you first need to install it using the following command:
+        </BitTypography>
+
+        <div class="code-box">dotnet new install Bit.BlazorEmpty</div>
+
+        <br />
+
+        <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+            Then you can create a new project using this command:
+        </BitTypography>
+
+        <div class="code-box">dotnet new bit-empty -n MyBitBlazorEmptyApp</div>
+    </section>
+
+    <section class="page-section">
+        <div class="github-codespaces-section">
+            <div class="github-codespaces-icon"></div>
+            <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Play on GitHub Codespaces</BitTypography>
+        </div>
+        <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+            With GitHub Codespaces, you can access the ultimate online development platform, right in your browser - no downloads or installations required.
+        </BitTypography>
+        <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+            Experience lightning-fast speeds and seamless integration as you dive into the world of bit BlazorUI, and elevate your web development game to new heights.
+        </BitTypography>
+        <br />
+        <BitLink Target="_blank" Href="https://codespaces.new/bitfoundation/bit-blazorui-playground/tree/dev">
+            Open bit BlazorUI playground
+            <BitIcon IconName="@BitIconName.ChevronRight" Style="font-size:12px;font-weight:bold" />
+        </BitLink>
+    </section>
+</section>

@@ -2,26 +2,26 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .lds-ripple {
+    .bit-ldn-Ripple {
         display: inline-block;
         position: relative;
         width: @(Size)px;
         height: @(Size)px;
     }
 
-        .lds-ripple div {
-            position: absolute;
-            border: @(Convert(4))px solid @Color;
+        .bit-ldn-Ripple div {
             opacity: 1;
+            position: absolute;
             border-radius: 50%;
-            animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+            animation: bit-ldn-Ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+            border: @(Convert(4))px solid @(Color ?? "var(--bit-clr-fg-primary)");
         }
 
-            .lds-ripple div:nth-child(2) {
+            .bit-ldn-Ripple div:nth-child(2) {
                 animation-delay: -0.5s;
             }
 
-    @@keyframes lds-ripple {
+    @@keyframes bit-ldn-Ripple {
         0% {
             top: @(Convert(36))px;
             left: @(Convert(36))px;
@@ -55,4 +55,8 @@
         }
     }
 </style>
-<div class="lds-ripple"><div></div><div></div></div>
+
+<div style="@Style" class="bit-ldn-Ripple @Class">
+    <div style="@ChildStyle" class="@ChildClass"></div>
+    <div style="@ChildStyle" class="@ChildClass"></div>
+</div>

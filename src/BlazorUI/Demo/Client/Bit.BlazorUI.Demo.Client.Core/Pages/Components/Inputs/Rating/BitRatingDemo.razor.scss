@@ -1,0 +1,29 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_colors.scss';
+
+.example-box {
+    display: flex;
+    width: fit-content;
+    flex-direction: column;
+}
+
+::deep {
+    .custom-class {
+        padding: 0.5rem;
+        border: 1px solid red;
+        max-width: max-content;
+    }
+
+    .custom-selected {
+        color: blueviolet;
+    }
+
+    .custom-unselected {
+        color: darkorange;
+    }
+
+    .validation-message {
+        color: red;
+    }
+}

@@ -3,27 +3,47 @@
 public class BitNavClassStyles
 {
     /// <summary>
-    /// Custom CSS classes/styles for item.
+    /// Custom CSS classes/styles for the root element of the BitNav.
     /// </summary>
-    public BitClassStylePair? Item { get; set; }
+    public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for selected item.
+    /// Custom CSS classes/styles for the description of the BitNav.
     /// </summary>
-    public BitClassStylePair? SelectedItem { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for item container.
+    /// Custom CSS classes/styles for the item of the BitNav.
     /// </summary>
-    public BitClassStylePair? ItemContainer { get; set; }
+    public string? Item { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for selected item container.
+    /// Custom CSS classes/styles for the selected item of the BitNav.
     /// </summary>
-    public BitClassStylePair? SelectedItemContainer { get; set; }
+    public string? SelectedItem { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for toggle button.
+    /// Custom CSS classes/styles for the item container of the BitNav.
     /// </summary>
-    public BitClassStylePair? ToggleButton { get; set; }
+    public string? ItemContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the item icon of the BitNav.
+    /// </summary>
+    public string? ItemIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the selected item container of the BitNav.
+    /// </summary>
+    public string? SelectedItemContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the toggle button of the BitNav.
+    /// </summary>
+    public string? ToggleButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the separator of the BitNav.
+    /// </summary>
+    public string? Separator { get; set; }
 }

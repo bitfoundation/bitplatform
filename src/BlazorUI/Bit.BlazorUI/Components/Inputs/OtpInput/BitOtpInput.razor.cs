@@ -1,0 +1,343 @@
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
+
+public partial class BitOtpInput : IDisposable
+{
+    private string?[] _inputValues = default!;
+    private ElementReference[] _inputRefs = default!;
+    private DotNetObjectReference<BitOtpInput> _dotnetObj = default!;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// If true, the first input is auto focused.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitOtpInput.
+    /// </summary>
+    [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Type of the inputs.
+    /// </summary>
+    [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
+
+    /// <summary>
+    /// Length of the OTP or number of the inputs.
+    /// </summary>
+    [Parameter] public int Length { get; set; } = 5;
+
+    /// <summary>
+    /// Callback for when all of the inputs are filled.
+    /// </summary>
+    [Parameter] public EventCallback<string?> OnFill { get; set; }
+
+    /// <summary>
+    /// onfocusin event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<(FocusEventArgs Event, int Index)> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// onfocusout event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<(FocusEventArgs Event, int Index)> OnFocusOut { get; set; }
+
+    /// <summary>
+    /// oninput event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<(ChangeEventArgs Event, int Index)> OnInput { get; set; }
+
+    /// <summary>
+    /// onkeydown event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<(KeyboardEventArgs Event, int Index)> OnKeyDown { get; set; }
+
+    /// <summary>
+    /// onpaste event callback for each input.
+    /// </summary>
+    [Parameter] public EventCallback<(ClipboardEventArgs Event, int Index)> OnPaste { get; set; }
+
+    /// <summary>
+    /// Defines whether to render inputs in the opposite direction.
+    /// </summary>
+    [Parameter] public bool Reversed { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitOtpInput.
+    /// </summary>
+    [Parameter] public BitOtpInputClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Defines whether to render inputs vertically.
+    /// </summary>
+    [Parameter] public bool Vertical { get; set; }
+
+
+    /// <summary>
+    /// The ElementReferences to the input elements of the BitOtpInput.
+    /// </summary>
+    public ElementReference[] InputElements => _inputRefs;
+
+    /// <summary>
+    /// Gives focus to a specific input element of the BitOtpInput.
+    /// </summary>
+    public ValueTask FocusAsync(int index = 0) => _inputRefs[index].FocusAsync();
+
+
+
+    protected override string RootElementClass => "bit-otp";
+
+    protected override void OnInitialized()
+    {
+        _inputRefs = new ElementReference[Length];
+
+        _inputValues = new string[Length];
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (CurrentValue is not null && CurrentValue != string.Join(string.Empty, _inputValues))
+        {
+            SetInputsValue(CurrentValue);
+        }
+
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false || IsEnabled is false) return;
+
+        if (AutoFocus)
+        {
+            await _inputRefs[0].FocusAsync();
+        }
+
+        foreach (var inputRef in _inputRefs)
+        {
+            await _js.BitOtpInputSetup(_dotnetObj, inputRef);
+        }
+    }
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Reversed ? $"{RootElementClass}-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => Vertical ? $"{RootElementClass}-vrt" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        result = value;
+        validationErrorMessage = null;
+        return true;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _dotnetObj.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+
+
+    [JSInvokable]
+    public async Task SetPastedData(string pastedValue)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (pastedValue.HasNoValue()) return;
+        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
+
+        SetInputsValue(pastedValue);
+
+        CurrentValueAsString = string.Join(string.Empty, _inputValues);
+
+        await CallOnFill();
+    }
+
+
+
+    private string GetInputType() => InputType switch
+    {
+        BitOtpInputType.Text => "text",
+        BitOtpInputType.Number => "number",
+        BitOtpInputType.Password => "password",
+        _ => string.Empty
+    };
+
+    private string GetInputMode() => InputType switch
+    {
+        BitOtpInputType.Text => "text",
+        BitOtpInputType.Number => "numeric",
+        BitOtpInputType.Password => "text",
+        _ => string.Empty
+    };
+
+    private async Task HandleOnFocusIn(FocusEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await OnFocusIn.InvokeAsync((e, index));
+    }
+
+    private async Task HandleOnFocusOut(FocusEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await OnFocusOut.InvokeAsync((e, index));
+    }
+
+    private async Task HandleOnInput(ChangeEventArgs e, int index)
+    {
+        var oldValue = _inputValues[index];
+        var newValue = e.Value?.ToString()?.Trim() ?? string.Empty;
+
+        _inputValues[index] = string.Empty;
+        await Task.Delay(1); // waiting for input default behavior before setting a new value.
+
+        if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
+        {
+            _inputValues[index] = oldValue;
+        }
+        else if (newValue.HasValue())
+        {
+            var diff = DiffValues(oldValue ?? string.Empty, newValue);
+
+            if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
+            {
+                _inputValues[index] = oldValue;
+            }
+            else
+            {
+                if (diff.Length > 1)
+                {
+                    SetInputsValue(diff);
+                }
+                else
+                {
+                    _inputValues[index] = diff;
+                    int nextIndex = index + 1;
+                    if (nextIndex < Length) await _inputRefs[nextIndex].FocusAsync();
+                }
+            }
+        }
+        else
+        {
+            _inputValues[index] = null;
+        }
+
+        CurrentValueAsString = string.Join(string.Empty, _inputValues);
+
+        await OnInput.InvokeAsync((e, index));
+        await CallOnFill();
+    }
+
+    private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
+    {
+        if (IsEnabled is false || e.Code is null) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        await NavigateInput(e.Code, e.Key, index);
+
+        await OnKeyDown.InvokeAsync((e, index));
+    }
+
+    private async Task HandleOnPaste(ClipboardEventArgs e, int index)
+    {
+        if (IsEnabled is false) return;
+
+        await OnPaste.InvokeAsync((e, index));
+    }
+
+    private async Task NavigateInput(string code, string key, int index)
+    {
+        int nextIndex = Math.Min(index + 1, Length - 1);
+        int previousIndex = Math.Max(index - 1, 0);
+
+        if (code is "Backspace" || key is "Backspace")
+        {
+            await Task.Delay(1);
+            await _inputRefs[previousIndex].FocusAsync();
+            return;
+        }
+
+        if (code is "Delete" || key is "Delete")
+        {
+            await Task.Delay(1);
+            await _inputRefs[nextIndex].FocusAsync();
+            return;
+        }
+
+        var targetIndex = code switch
+        {
+            "ArrowLeft" => Vertical ? index : ((Dir is BitDir.Rtl ^ Reversed) ? nextIndex : previousIndex),
+            "ArrowRight" => Vertical ? index : ((Dir is BitDir.Rtl ^ Reversed) ? previousIndex : nextIndex),
+            "ArrowUp" => Vertical ? (Reversed ? nextIndex : previousIndex) : index,
+            "ArrowDown" => Vertical ? (Reversed ? previousIndex : nextIndex) : index,
+            _ => -1 // For Tab key
+        };
+
+        if (targetIndex is not -1)
+        {
+            await _inputRefs[targetIndex].FocusAsync();
+        }
+    }
+
+    private void SetInputsValue(string value)
+    {
+        var chars = value.Replace(" ", string.Empty, StringComparison.Ordinal).ToCharArray();
+
+        for (int i = 0; i < Length; i++)
+        {
+            _inputValues[i] = chars.Length > i ? chars[i].ToString() : null;
+        }
+    }
+
+    private async Task CallOnFill()
+    {
+        if (Length == CurrentValue?.Length)
+        {
+            await OnFill.InvokeAsync(CurrentValue);
+        }
+    }
+
+    private static string DiffValues(string oldValue, string newValue)
+    {
+        var oldLength = oldValue.Length;
+        var newLength = newValue.Length;
+
+        if (newLength == 1) return newValue;
+        if (newLength < oldLength) return newValue;
+
+        if (newValue[..oldLength] == oldValue) return newValue[oldLength..newLength];
+
+        if (newValue.Substring(newLength - oldLength, oldLength) == oldValue) return newValue[..(newLength - oldLength)];
+
+        return newValue;
+    }
+}

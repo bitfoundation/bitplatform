@@ -1,0 +1,151 @@
+﻿@inherits AppComponentBase
+<div>
+    <BitAccordion Class="@($"accordion{(_boilerplateExpanded ? " expanded" : "")}")" @bind-IsExpanded="_boilerplateExpanded">
+        <HeaderTemplate Context="isExpanded">
+            <div class="header-container">
+                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <div>
+                    <BitTypography Variant="BitTypographyVariant.H4" Class="header-title">Boilerplate</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Class="header-subtitle">Feature-rich .NET project template</BitTypography>
+                </div>
+            </div>
+        </HeaderTemplate>
+        <ChildContent>
+            <div class="content-container">
+                <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                    bit Boilerplate is a Visual studio and .NET project template that enables high-quality, speedy cross-platform development
+                    for PWA/SSR enabled websites and Android, iOS, macOS, Windows apps.
+                </BitTypography>
+                <div class="template-terminal">
+                    <BitIcon IconName="@BitIconName.ChevronRightSmall" /> <span>dotnet</span> <span>new</span> <span>bit-bp</span>
+                    <span>--database</span>
+                    <span class="animation-container"><span class="animated a-2">sqlite&nbsp;&nbsp;&nbsp;</span> <span class="animated a-2 delayed d-2">sqlserver</span></span>
+                    <span>--pipeline</span>
+                    <span class="animation-container"><span class="animated a-3">github</span> <span class="animated a-3 delayed d-3">azure</span></span>
+                    <span>--sample</span>
+                    <span class="animation-container"><span class="animated a-4">admin</span> <span class="animated a-4 delayed d-4">todo</span></span>
+                    <span>--name</span> <span>MyAwesomeProject</span>
+                </div>
+                <a class="template-link" href="@Urls.Templates">
+                    Learn more <span class="template-link-arrow"></span>
+                </a>
+            </div>
+        </ChildContent>
+    </BitAccordion>
+    <br />
+    <BitAccordion Class="@($"accordion{(_butilExpanded ? " expanded" : "")}")" @bind-IsExpanded="_butilExpanded">
+        <HeaderTemplate Context="isExpanded">
+            <div class="header-container">
+                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <div>
+                    <BitTypography Variant="BitTypographyVariant.H4" Class="header-title">Butil</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Class="header-subtitle">
+                        Blazor utilities to use browser JS APIs in C#
+                    </BitTypography>
+                </div>
+            </div>
+        </HeaderTemplate>
+        <ChildContent>
+            <div class="content-container">
+                <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                    bit Butil helps C# developers to access the browser APIs that are only accessible through JavaScript in C#.
+                </BitTypography>
+                <div>
+                    <CodeBox HideCopyButton>@@inject Bit.Butil.Crypto crypto
+
+@@code {
+    var encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+}</CodeBox>
+                </div>
+                <a class="template-link" href="@Urls.Butil">
+                    Learn more <span class="template-link-arrow"></span>
+                </a>
+            </div>
+        </ChildContent>
+    </BitAccordion>
+    <br />
+    <BitAccordion Class="@($"accordion{(_bswupExpanded ? " expanded" : "")}")" @bind-IsExpanded="_bswupExpanded">
+        <HeaderTemplate Context="isExpanded">
+            <div class="header-container">
+                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <div>
+                    <BitTypography Variant="BitTypographyVariant.H4" Class="header-title">Bswup</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Class="header-subtitle">
+                        Blazor PWA on steroids
+                    </BitTypography>
+                </div>
+            </div>
+        </HeaderTemplate>
+        <ChildContent>
+            <div class="content-container">
+                <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                    bit Bswup is a set of tools that assists developers in making the most out of the Service Worker when building apps with Blazor.
+                </BitTypography>
+                <br />
+                <div>
+                    <img src="/images/home/bswup.webp" style="max-width:100%;" />
+                </div>
+                <br />
+                <a class="template-link" href="@Urls.Bswup">
+                    Learn more <span class="template-link-arrow"></span>
+                </a>
+            </div>
+        </ChildContent>
+    </BitAccordion>
+    <br />
+    <BitAccordion Class="@($"accordion{(_besqlExpanded ? " expanded" : "")}")" @bind-IsExpanded="_besqlExpanded">
+        <HeaderTemplate Context="isExpanded">
+            <div class="header-container">
+                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <div>
+                    <BitTypography Variant="BitTypographyVariant.H4" Class="header-title">Besql</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Class="header-subtitle">Blazor Entity Framework Sqlite</BitTypography>
+                </div>
+            </div>
+        </HeaderTemplate>
+        <ChildContent>
+            <div class="content-container">
+                <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                    bit Besql facilitates the use of Entity Framework and sqlite in web browsers with Blazor WebAssembly.
+                </BitTypography>
+                <div>
+                    <CodeBox HideCopyButton>services.AddBesqlDbContextFactory();</CodeBox>
+                </div>
+                <a class="template-link" href="@Urls.Besql">
+                    Learn more <span class="template-link-arrow"></span>
+                </a>
+            </div>
+        </ChildContent>
+    </BitAccordion>
+    <br />
+    <BitAccordion Class="@($"accordion{(_blazoruiExpanded ? " expanded" : "")}")" @bind-IsExpanded="_blazoruiExpanded">
+        <HeaderTemplate Context="isExpanded">
+            <div class="header-container">
+                <BitIcon Class="header-icon" IconName="@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)" />
+                <div>
+                    <BitTypography Variant="BitTypographyVariant.H4" Class="header-title">BlazorUI</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.H5" Class="header-subtitle">Native Blazor UI components</BitTypography>
+                </div>
+            </div>
+        </HeaderTemplate>
+        <ChildContent>
+            <div class="content-container">
+                <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                    bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering),
+                    saving you time and making development enjoyable.
+                </BitTypography>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BitDropdown @@bind-Values="comboValues"
+             Label="Multi select combo box"
+             Placeholder="Select options"
+             Items="comboBoxItems"
+             Combo Chips Dynamic
+             OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></CodeBox>
+                </div>
+                <a class="template-link" href="@Urls.BlazorUI" target="_blank">
+                    Learn more <span class="template-link-arrow"></span>
+                </a>
+            </div>
+        </ChildContent>
+    </BitAccordion>
+</div>

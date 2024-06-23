@@ -1,0 +1,115 @@
+﻿@page "/todo-template/development-prerequisites"
+@page "/admin-panel/development-prerequisites"
+@page "/templates/development-prerequisites"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/development-prerequisites"
+            Title="Development prerequisites - Templates"
+            Description="development prerequisites of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Development prerequisites</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        There are some general requirements and some IDE specific requirements.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>General requirements</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            <ol>
+                <li style="margin-bottom:8px">
+                    .NET Sdk <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.301</a>
+                </li>
+                <BitAccordion Title=".NET 8 Sdk on Linux">
+                    <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
+                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/86497c4f-3dc8-4ee7-9f6a-9e0464059427/293d074c28bbfd9410f4db8e021fa290/dotnet-sdk-8.0.301-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+mkdir -p $HOME/.dotnet
+tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+dotnet dev-certs https --trust
+rm dotnet.tar.gz</CodeBox>
+                </BitAccordion>
+                <br />
+                <li><a href="https://nodejs.org/en/download/" title="Node.js" rel="nofollow">Node.js</a></li>
+                <br />
+                <li>
+                    <div style="margin-bottom:8px">.NET workloads</div>
+                    <BitPivot>
+                        <BitPivotItem HeaderText="Windows">
+                            <CodeBox>dotnet workload install maui <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="Linux">
+                            <CodeBox>dotnet workload update <br />dotnet workload install maui-android <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="macOS">
+                            <CodeBox>sudo dotnet workload install maui <br />sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                        </BitPivotItem>
+                    </BitPivot>
+                </li>
+                <li>
+                    <div style="margin-bottom:8px">Bit Boilerplate project template</div>
+                    <CodeBox>dotnet new install Bit.Boilerplate <BitIconButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" /></CodeBox>
+                </li>
+            </ol>
+        </div>
+        <br />
+        <br />
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>IDE specific requirements</BitTypography>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Visual Studio</BitTypography>
+        <div class="section-card-txt">
+            <ul>
+                <li>
+                    <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.8.0 or higher
+                    <ul dir="auto">
+                        <li>
+                            Workloads:
+                            <ul dir="auto">
+                                <li>ASP.NET and web development</li>
+                                <li>.NET Multi-Platform App UI development</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Extensions:
+                            <ul dir="auto">
+                                <li><a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" title="Web Compiler 2022+" rel="nofollow">Web Compiler 2022+</a> extension</li>
+                                <li><a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" title="SQLite and SQL Server Compact Toolbox" rel="nofollow">SQLite and SQL Server Compact Toolbox</a> extension</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <br />
+        <BitTypography Variant="BitTypographyVariant.H6" Gutter>VS Code</BitTypography>
+        <div class="section-card-txt">
+            <ul>
+                <li>
+                    <a href="https://code.visualstudio.com/#alt-downloads" title="VS Code" rel="nofollow">Visual Studio Code</a> with following extensions:
+                    <ul dir="auto">
+                        <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit" title="C# Dev Kit" rel="nofollow">C# Dev Kit</a></li>
+                        <li><a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" title="Live Sass Compiler" rel="nofollow">Live Sass Compiler</a></li>
+                        <li><a href="https://marketplace.visualstudio.com/items?itemName=kevin-chatham.aspnetcorerazor-html-css-class-completion" title="Razor/Blazor CSS IntelliSense" rel="nofollow">Razor/Blazor CSS IntelliSense</a></li>
+                        <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion" title="BlazorWasmDebugging" rel="nofollow">BlazorWasmDebugging</a></li>
+                        <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui" title=".NET MAUI" rel="nofollow">.NET MAUI</a></li>
+                        <li><a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" title="SQLite3 Editor" rel="nofollow">SQLite3 Editor</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <BitAccordion Title="Install extensions commands">
+                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension ms-dotnettools.dotnet-maui
+code --install-extension yy0931.vscode-sqlite3-editor</CodeBox>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Overview" PrevUrl="/templates/overview" Next="Create project" NextUrl="/templates/create-project" />

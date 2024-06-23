@@ -1,0 +1,91 @@
+﻿@page "/clipboard"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Clipboard clipboard
+
+<PageTitle>Clipboard Samples</PageTitle>
+
+<h1>Clipboard</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Clipboard clipboard
+
+@@code {
+    ...
+    await clipboard.WriteText("new clipboard text");
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking on buttons</h3>
+
+<hr />
+<br />
+
+<button @onclick="ReadText">Read text</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind=@newClipText />
+<br />
+<br />
+<button @onclick="WriteText">Write text</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="Read">Read</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind=@newText />
+<br />
+<br />
+<button @onclick="Write">Write</button>
+
+<br />
+<br />
+
+@code {
+    private string newClipText;
+    private string newText;
+
+    private async Task ReadText()
+    {
+        var text = await clipboard.ReadText();
+        await console.Log("Clipboard.ReadText =", $"\"{text}\"");
+    }
+
+    private async Task WriteText()
+    {
+        await clipboard.WriteText(newClipText ?? string.Empty);
+        await console.Log("Clipboard.WriteText =", $"\"{newClipText}\"");
+    }
+
+    private async Task Read()
+    {
+        var items = await clipboard.Read();
+        foreach (var item in items)
+        {
+            await console.Log("Clipboard.Read=", $"\"{item.MimeType}\",", System.Text.Encoding.UTF8.GetString(item.Data));
+        }
+    }
+
+    public async Task Write()
+    {
+        var data = System.Text.Encoding.UTF8.GetBytes(newText);
+        var item = new ClipboardItem() { MimeType = "text/plain", Data = data };
+        await clipboard.Write([item]);
+        await console.Log("Clipboard.Write=", $"\"{item.MimeType}\",", System.Text.Encoding.UTF8.GetString(item.Data));
+    }
+}

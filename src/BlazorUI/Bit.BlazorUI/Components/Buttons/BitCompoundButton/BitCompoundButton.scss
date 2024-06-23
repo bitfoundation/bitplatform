@@ -1,110 +1,221 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-cmb {
+    cursor: pointer;
+    text-align: start;
+    gap: spacing(1.5);
     position: relative;
     display: inline-flex;
     min-width: spacing(9);
-    box-sizing: border-box;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight-buttons;
     text-decoration: none;
-    text-align: left;
-    cursor: pointer;
+    box-sizing: border-box;
+    padding: spacing(2) spacing(1.5);
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight;
+
+    &.bit-dis {
+        cursor: default;
+        user-select: none;
+        pointer-events: none;
+        -webkit-user-select: none;
+        color: $color-foreground-disabled;
+    }
+}
+
+.bit-cmb-pri {
+    color: var(--bit-cmb-pri-clr);
+    background-color: var(--bit-cmb-bg-clr);
+    border-color: var(--bit-cmb-pri-brd-clr);
+    --bit-cmb-bg-clr: #{$color-primary-main};
+    --bit-cmb-pri-clr: #{$color-primary-text};
+    --bit-cmb-pri-brd-clr: #{$color-primary-main};
+    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-primary};
+    --bit-cmb-pri-active-bg-clr: #{$color-action-active-primary};
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-cmb-pri-hover-bg-clr);
+            background-color: var(--bit-cmb-pri-hover-bg-clr);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-cmb-pri-active-bg-clr);
+        background-color: var(--bit-cmb-pri-active-bg-clr);
+    }
 
     &.bit-dis {
         border-color: $color-border-disabled;
-        background-color: $color-action-disabled;
-        cursor: default;
-        pointer-events: none;
+        background-color: $color-background-disabled;
+    }
+}
 
-        &.bit-cmb-pri {
-            color: $color-neutrals-gray50;
-        }
+.bit-cmb-std {
+    color: var(--bit-cmb-sec-clr);
+    background-color: $color-secondary-main;
+    border-color: var(--bit-cmb-sec-brd-clr);
+    --bit-cmb-sec-clr: #{$color-secondary-text};
+    --bit-cmb-sec-brd-clr: #{$color-secondary-text};
+    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-secondary};
+    --bit-cmb-sec-active-bg-clr: #{$color-action-active-secondary};
 
-        &.bit-cmb-std {
-            color: $color-neutrals-gray90;
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-cmb-sec-hover-bg-clr);
         }
     }
+
+    &:active {
+        background-color: var(--bit-cmb-sec-active-bg-clr);
+    }
+
+    &.bit-dis {
+        border-color: $color-border-disabled;
+    }
+}
+
+.bit-cmb-txt {
+    border-color: transparent;
+    color: var(--bit-cmb-sec-clr);
+    background-color: transparent;
+    --bit-cmb-sec-clr: #{$color-secondary-text};
+    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-secondary};
+    --bit-cmb-sec-active-bg-clr: #{$color-action-active-secondary};
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-cmb-sec-hover-bg-clr);
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-cmb-sec-active-bg-clr);
+    }
+}
+
+.bit-cmb-srt {
+    flex-direction: row;
+}
+
+.bit-cmb-end {
+    flex-direction: row-reverse;
+}
+
+.bit-cmb-icn {
+    font-size: spacing(5);
 }
 
 .bit-cmb-tcn {
     display: block;
-    @extend .no-text-select;
 }
 
 .bit-cmb-prt {
     display: block;
+    font-size: spacing(1.75);
     margin-bottom: spacing(0.625);
 }
 
 .bit-cmb-sct {
     display: block;
     font-weight: 400;
-    line-height: spacing(2.25);
+    font-size: spacing(1.5);
 }
 
-.bit-cmb-pri {
-    color: $color-text-secondary;
-    background: $color-primary-main;
-    border-color: $color-border-primary;
-
-    &:hover {
-        border-color: $color-action-hover-primary;
-        background-color: $color-action-hover-primary;
-    }
-
-    &:active {
-        border-color: $color-action-active-primary;
-        background-color: $color-action-active-primary;
-    }
+.bit-cmb-inf {
+    --bit-cmb-bg-clr: #{$color-state-info-bg};
+    --bit-cmb-pri-clr: #{$color-foreground-primary};
+    --bit-cmb-pri-brd-clr: #{$color-state-info-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-info-bg};
+    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-info-bg};
+    --bit-cmb-sec-clr: #{$color-state-info};
+    --bit-cmb-sec-brd-clr: #{$color-state-info};
+    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-info-bg};
+    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-info-bg};
 }
 
-.bit-cmb-std {
-    color: $color-text-primary;
-    border-color: $color-border-secondary;
-    background-color: $color-secondary-main;
+.bit-cmb-suc {
+    --bit-cmb-bg-clr: #{$color-state-success-bg};
+    --bit-cmb-pri-clr: #{$color-foreground-primary};
+    --bit-cmb-pri-brd-clr: #{$color-state-success-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-success-bg};
+    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-success-bg};
+    --bit-cmb-sec-clr: #{$color-state-success};
+    --bit-cmb-sec-brd-clr: #{$color-state-success};
+    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-success-bg};
+    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-success-bg};
+}
 
-    &:hover {
-        border-color: $color-action-border-hover-secondary;
-        background-color: $color-action-hover-secondary;
-    }
+.bit-cmb-wrn {
+    --bit-cmb-bg-clr: #{$color-state-warning-bg};
+    --bit-cmb-pri-clr: #{$color-foreground-primary};
+    --bit-cmb-pri-brd-clr: #{$color-state-warning-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-warning-bg};
+    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-warning-bg};
+    --bit-cmb-sec-clr: #{$color-state-warning};
+    --bit-cmb-sec-brd-clr: #{$color-state-warning};
+    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-warning-bg};
+    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-warning-bg};
+}
 
-    &:active {
-        border-color: $color-action-border-active-secondary;
-        background-color: $color-action-active-secondary;
-    }
+.bit-cmb-swr {
+    --bit-cmb-bg-clr: #{$color-state-severe-warning-bg};
+    --bit-cmb-pri-clr: #{$color-foreground-primary};
+    --bit-cmb-pri-brd-clr: #{$color-state-severe-warning-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
+    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-severe-warning-bg};
+    --bit-cmb-sec-clr: #{$color-state-severe-warning};
+    --bit-cmb-sec-brd-clr: #{$color-state-severe-warning};
+    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
+    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-severe-warning-bg};
+}
+
+.bit-cmb-err {
+    --bit-cmb-bg-clr: #{$color-state-error-bg};
+    --bit-cmb-pri-clr: #{$color-foreground-primary};
+    --bit-cmb-pri-brd-clr: #{$color-state-error-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-error-bg};
+    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-error-bg};
+    --bit-cmb-sec-clr: #{$color-state-error};
+    --bit-cmb-sec-brd-clr: #{$color-state-error};
+    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-error-bg};
+    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-error-bg};
 }
 
 .bit-cmb-sm {
-    padding: spacing(0.25) spacing(1.25);
-    font-size: spacing(1.5);
-    line-height: spacing(2.75);
+    min-width: spacing(6);
+    min-height: spacing(3);
+    padding: spacing(1.75) spacing(1.25);
 
-    .bit-cmb-sct {
-        font-size: spacing(1);
+    .bit-cmb-prt {
+        font-size: spacing(1.5);
     }
-}
-
-.bit-cmb-md {
-    padding: spacing(0.5) spacing(2);
-    font-size: spacing(1.75);
-    line-height: $typography-line-height-buttons;
 
     .bit-cmb-sct {
         font-size: spacing(1.25);
     }
+
+    .bit-cmb-icn {
+        font-size: spacing(4.25);
+    }
 }
 
 .bit-cmb-lg {
-    padding: spacing(0.75) spacing(2.75);
-    font-size: spacing(2);
-    line-height: spacing(3.75);
+    min-width: spacing(10);
+    min-height: spacing(5);
+    padding: spacing(2.25) spacing(1.75);
+
+    .bit-cmb-prt {
+        font-size: spacing(2.5);
+    }
 
     .bit-cmb-sct {
-        font-size: spacing(1.5);
-        line-height: spacing(2.5);
+        font-size: spacing(2);
+    }
+
+    .bit-cmb-icn {
+        font-size: spacing(6.75);
     }
 }

@@ -25,8 +25,8 @@ public class BitNavTests : BunitTestContext
 
         if (isEnabled is false)
         {
-            var element = component.Find(".item-container");
-            Assert.IsTrue(element.ClassList.Contains("disabled"));
+            var element = component.Find(".bit-nav-ict");
+            Assert.IsTrue(element.ClassList.Contains("bit-nav-dis"));
         }
 
         if (hasUrl)
@@ -102,11 +102,11 @@ public class BitNavTests : BunitTestContext
 
         if (type == BitNavRenderType.Grouped)
         {
-            Assert.IsNotNull(component.Find(".group-chevron-btn"));
+            Assert.IsNotNull(component.Find(".bit-nav-gcb"));
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".group-chevron-btn"));
+            Assert.ThrowsException<ElementNotFoundException>(() => component.Find(".bit-nav-gcb"));
         }
     }
 
@@ -146,7 +146,7 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        var button = componenet.Find(".chevron-btn");
+        var button = componenet.Find(".bit-nav-cbt");
 
         //TODO: bypassed - BUnit or Blazor issue
         //button.Click();
@@ -201,7 +201,7 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        var navLinkItem = componenet.Find(".item");
+        var navLinkItem = componenet.Find(".bit-nav-itm");
 
         if (title is null)
         {
@@ -221,6 +221,6 @@ public class BitNavTests : BunitTestContext
         new BitNavItem { Text = "Pages", Url = "http://msn.com", Target = "_parent" },
         new BitNavItem { Text = "Notebook", Url = "http://msn.com", IsEnabled = false },
         new BitNavItem { Text = "Communication and Media", Url = "http://msn.com", Target = "_top" },
-        new BitNavItem { Text = "News", Title = "News", Url = "http://msn.com", IconName = BitIconName.News, Target = "_self" },
+        new BitNavItem { Text = "News", Title = "News", Url = "http://msn.com", IconName = "News", Target = "_self" },
     };
 }

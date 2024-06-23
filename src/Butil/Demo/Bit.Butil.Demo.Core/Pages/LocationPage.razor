@@ -1,0 +1,282 @@
+﻿@page "/location"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Location location
+
+<PageTitle>Location Samples</PageTitle>
+
+<h1>Location</h1>
+
+<pre style="font-family:Consolas; overflow: auto;">
+@@inject Bit.Butil.Location location
+
+@@code {
+    ...
+    await location.Reload();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and click on buttons</h3>
+
+<hr />
+<br />
+
+<input @bind="newHref" />
+<br />
+<br />
+<button @onclick=SetHref>SetHref</button>
+&nbsp;
+<button @onclick=GetHref>GetHref</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newProtocol" />
+<br />
+<br />
+<button @onclick=SetProtocol>SetProtocol</button>
+&nbsp;
+<button @onclick=GetProtocol>GetProtocol</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newHost" />
+<br />
+<br />
+<button @onclick=SetHost>SetHost</button>
+&nbsp;
+<button @onclick=GetHost>GetHost</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newHostName" />
+<br />
+<br />
+<button @onclick=SetHostName>SetHostName</button>
+&nbsp;
+<button @onclick=GetHostName>GetHostName</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newPort" />
+<br />
+<br />
+<button @onclick=SetPort>SetPort</button>
+&nbsp;
+<button @onclick=GetPort>GetPort</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newPathName" />
+<br />
+<br />
+<button @onclick=SetPathName>SetPathName</button>
+&nbsp;
+<button @onclick=GetPathName>GetPathName</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newSearch" />
+<br />
+<br />
+<button @onclick=SetSearch>SetSearch</button>
+&nbsp;
+<button @onclick=GetSearch>GetSearch</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newHash" />
+<br />
+<br />
+<button @onclick=SetHash>SetHash</button>
+&nbsp;
+<button @onclick=GetHash>GetHash</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=GetOrigin>GetOrigin</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newAssign" />
+<br />
+<br />
+<button @onclick=SetAssign>Assign</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind="newReplace" />
+<br />
+<br />
+<button @onclick=SetReplace>Replace</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="@(() => location.Reload())">Reload</button>
+
+<br />
+<br />
+
+
+@code {
+    private string newHref;
+
+    private string newProtocol;
+
+    private string newHost;
+
+    private string newHostName;
+
+    private string newPort;
+
+    private string newPathName;
+
+    private string newSearch;
+
+    private string newHash;
+
+    private string newAssign;
+
+    private string newReplace;
+
+
+    private async Task SetHref()
+    {
+        await location.SetHref(newHref);
+        await console.Log("location.href =", newHref);
+    }
+
+    private async Task GetHref()
+    {
+        await console.Log("location.href =", await location.GetHref());
+    }
+
+    private async Task SetProtocol()
+    {
+        await location.SetProtocol(newProtocol);
+        await console.Log("location.protocol =", newProtocol);
+    }
+
+    private async Task GetProtocol()
+    {
+        await console.Log("location.protocol =", await location.GetProtocol());
+    }
+
+    private async Task SetHost()
+    {
+        await location.SetHost(newHost);
+        await console.Log("location.host =", newHost);
+    }
+
+    private async Task GetHost()
+    {
+        await console.Log("location.host =", await location.GetHost());
+    }
+
+    private async Task SetHostName()
+    {
+        await location.SetHostname(newHostName);
+        await console.Log("location.hostname =", newHostName);
+    }
+
+    private async Task GetHostName()
+    {
+        await console.Log("location.hostname =", await location.GetHostname());
+    }
+
+    private async Task SetPort()
+    {
+        await location.SetPort(newPort);
+        await console.Log("location.port =", newPort);
+    }
+
+    private async Task GetPort()
+    {
+        await console.Log("location.port =", await location.GetPort());
+    }
+
+    private async Task SetPathName()
+    {
+        await location.SetPathname(newPathName);
+        await console.Log("location.pathname =", newPathName);
+    }
+
+    private async Task GetPathName()
+    {
+        await console.Log("location.pathname =", await location.GetPathname());
+    }
+
+    private async Task SetSearch()
+    {
+        await location.SetSearch(newSearch);
+        await console.Log("location.search =", newSearch);
+    }
+
+    private async Task GetSearch()
+    {
+        await console.Log("location.search =", await location.GetSearch());
+    }
+
+    private async Task SetHash()
+    {
+        await location.SetHash(newHash);
+        await console.Log("location.hash =", newHash);
+    }
+
+    private async Task GetHash()
+    {
+        await console.Log("location.hash =", await location.GetHash());
+    }
+
+    private async Task GetOrigin()
+    {
+        await console.Log("location.origin =", await location.GetOrigin());
+    }
+
+    private async Task SetAssign()
+    {
+        await location.Assign(newAssign);
+        await console.Log("location.assign =", newAssign);
+    }
+
+    private async Task SetReplace()
+    {
+        await location.Replace(newReplace);
+        await console.Log("location.replace =", newReplace);
+    }
+}

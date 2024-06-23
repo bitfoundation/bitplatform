@@ -1,0 +1,225 @@
+﻿@page "/components/searchbox"
+@page "/components/search-box"
+
+<PageOutlet Url="components/searchbox"
+            Title="SearchBox"
+            Description="searchbox component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="SearchBox"
+                   ComponentDescription="A search box (SearchBox) provides an input field for searching content within a site or app to find specific items."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentPublicMembers="componentPublicMembers">
+        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div>
+                        <BitLabel>Basic</BitLabel>
+                        <BitSearchBox Placeholder="Search" />
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>Disabled</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsEnabled="false" />
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="IsUnderlined" RazorCode="@example2RazorCode" Id="example2">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div>
+                        <BitLabel>Basic Underlined SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsUnderlined="true" />
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>Disabled Underlined SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsUnderlined="true" IsEnabled="false" />
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" Id="example3">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div>
+                        <BitLabel>SearchBox with fixed icon</BitLabel>
+                        <BitSearchBox Placeholder="Search" FixedIcon="true" />
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>SearchBox without icon animation</BitLabel>
+                        <BitSearchBox Placeholder="Search" DisableAnimation="true" />
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>SearchBox with custom icon</BitLabel>
+                        <BitSearchBox Placeholder="Search" IconName="@BitIconName.Filter" />
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>SearchBox without icon</BitLabel>
+                        <BitSearchBox Placeholder="Search" HideIcon />
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Search Button" RazorCode="@example4RazorCode" Id="example4">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div>
+                        <BitLabel>Basic SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" ShowSearchButton="true" />
+                    </div>
+                    <div>
+                        <BitLabel>Basic Underlined SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsUnderlined="true" ShowSearchButton="true" />
+                    </div>
+                    <div>
+                        <BitLabel>SearchBox with custom button icon</BitLabel>
+                        <BitSearchBox Placeholder="Search" ShowSearchButton="true" SearchButtonIconName="PageListFilter" />
+                    </div>
+                    <div>
+                        <BitLabel>Disabled Basic SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsEnabled="false" ShowSearchButton="true" />
+                    </div>
+                    <div>
+                        <BitLabel>Disabled Underlined SearchBox</BitLabel>
+                        <BitSearchBox Placeholder="Search" IsUnderlined="true" IsEnabled="false" ShowSearchButton="true" />
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div>
+                        <BitLabel>Component's Style & Class:</BitLabel>
+                        <BitSearchBox Placeholder="Search" Style="background-color: lightskyblue; border-radius: 1rem; margin: 1rem 0" />
+                        <BitSearchBox Placeholder="Search" Class="custom-class" />
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>Styles & Classes:</BitLabel>
+                        <BitSearchBox Placeholder="Search"
+                                      Styles="@(new() { Icon = "color: darkorange;",
+                                                        Input = "padding: 0.5rem; background-color: goldenrod" })" />
+                        <br />
+                        <BitSearchBox Placeholder="Search" DefaultValue="This is default value"
+                                      Classes="@(new() { ClearButtonIcon = "custom-clear",
+                                                         IconWrapper = "custom-search" })" />
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" Id="example6">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div class="visibility-items">Visible: [ <BitSearchBox Visibility="BitVisibility.Visible" Placeholder="Visible SearchBox" /> ]</div>
+                    <div class="visibility-items">Hidden: [ <BitSearchBox Visibility="BitVisibility.Hidden" Placeholder="Hidden SearchBox" />  ]</div>
+                    <div class="visibility-items">Collapsed: [ <BitSearchBox Visibility="BitVisibility.Collapsed" Placeholder="Collapsed SearchBox" />  ]</div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div>
+                        <BitLabel>Two-way Bind</BitLabel>
+                        <BitSearchBox Placeholder="Search" @bind-Value="TwoWaySearchValue" />
+                        <BitTextField Placeholder="Search Value" Style="margin-top: 5px;" @bind-Value="TwoWaySearchValue" />
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>OnChange</BitLabel>
+                        <BitSearchBox Placeholder="Search" OnChange="(s) => OnChangeSearchValue = s" OnClear="() => OnChangeSearchValue = string.Empty" />
+                        <BitLabel>Search Value: @OnChangeSearchValue</BitLabel>
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>OnSearch (Search by Enter)</BitLabel>
+                        <BitSearchBox Placeholder="Search" OnSearch="(s) => OnSearchValue = s" OnClear="() => OnSearchValue = string.Empty" />
+                        <BitLabel>Search Value: @OnSearchValue</BitLabel>
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <ExamplePreview>
+                <div class="example-content">
+                    <EditForm Model="ValidationSearchBoxModel">
+                        <DataAnnotationsValidator />
+                        <BitSearchBox Placeholder="Search" DefaultValue="This is default value" @bind-Value="ValidationSearchBoxModel.Text" />
+                        <ValidationMessage For="() => ValidationSearchBoxModel.Text" />
+                    </EditForm>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Suggest List" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <ExamplePreview>
+                <div class="example-content">
+                    <div>
+                        <BitLabel>Items:</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" @bind-Value="@SearchValue" />
+                        SearchValue: @SearchValue
+                    </div>
+                    <div>
+                        <BitLabel>SuggestFilterFunction (use StartsWith):</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" SuggestFilterFunction="@SearchFunc" @bind-Value="@SearchValueWithSuggestFilterFunction" />
+                        SearchValue: @SearchValueWithSuggestFilterFunction
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>MinSuggestTriggerChars equals 1:</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" MinSuggestTriggerChars="1" @bind-Value="@SearchValueWithMinSearchLength" />
+                        SearchValue: @SearchValueWithMinSearchLength
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>MaxSuggestCount equals 2:</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" MaxSuggestCount="2" @bind-Value="@SearchValueWithMaxSuggestedItems" />
+                        SearchValue: @SearchValueWithMaxSuggestedItems
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>SuggestThrottleTime equals 2 seconds:</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Apple" SuggestItems="GetSuggestedItems()" SuggestThrottleTime="2000" @bind-Value="@SearchValueWithSearchDelay" />
+                        SearchValue: @SearchValueWithSearchDelay
+                    </div>
+                    <br />
+                    <div>
+                        <BitLabel>ItemsProvider:</BitLabel>
+                        <BitSearchBox Placeholder="e.g. Pro"
+                                      SuggestItemProvider="LoadItems"
+                                      @bind-Value="@ItemsProviderSearchValue" />
+                        SearchValue: @ItemsProviderSearchValue
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+            <ExamplePreview>
+                <div class="example-content">
+                    <BitSearchBox Dir="BitDir.Rtl" Placeholder="جستجو" />
+                    <br />
+                    <BitSearchBox IsUnderlined Dir="BitDir.Rtl" Placeholder="جستجو" />
+                    <br />
+                    <BitSearchBox ShowSearchButton
+                                  Dir="BitDir.Rtl"
+                                  Placeholder="جستجو" />
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+    </ComponentDemo>
+</div>

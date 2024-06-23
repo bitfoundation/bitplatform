@@ -1,0 +1,84 @@
+﻿@using Bit.BlazorUI.Demo.Client.Core.Shared
+@using Bit.BlazorUI.Demo.Client.Web.Components
+
+@{
+    var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
+    var renderMode = noPrerender ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.Current;
+}
+
+<!DOCTYPE html>
+<html bit-theme="dark">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="theme-color">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable." />
+    <Link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <HeadOutlet @rendermode=renderMode />
+    <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    @if (AppRenderMode.PwaEnabled)
+    {
+        <Link rel="manifest" href="manifest.json" />
+    }
+</head>
+
+<body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary bit-blazor-web">
+
+    <!-- Google tag (gtag.js) -->
+    <Script async Src="https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"></Script>
+    <Script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-G1ET5L69QF');
+    </Script>
+    <!-- Google tag -->
+    <!-- Microsoft Clarity -->
+    <Script>
+        (function (c, l, a, r, i, t, y) {
+            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+            t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+            y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+        })(window, document, "clarity", "script", "ipec21ezsa");
+    </Script>
+    <!-- Microsoft Clarity -->
+
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.bundle.scp.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia-bit.css" />
+
+    @if (AppRenderMode.PrerenderEnabled is false || noPrerender)
+    {
+        <LoadingComponent />
+    }
+    <Routes @rendermode=renderMode />
+
+    @if (HttpContext.Request.IsCrawlerClient() is false)
+    {
+        @if (AppRenderMode.PwaEnabled)
+        {
+            <Script src="_framework/blazor.web.js" autostart="false"></Script>
+            <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
+            <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+            <AppBswupProgressBar />
+        }
+        else
+        {
+            <Script src="_framework/blazor.web.js"></Script>
+        }
+        <Script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+        <Script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
+    }
+</body>
+
+</html>
+

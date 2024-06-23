@@ -2,44 +2,44 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .blazor-loading-ellipsis {
+    .bit-ldn-Ellipsis {
         display: inline-block;
         position: relative;
         width: @(Size)px;
         height: @(Size)px;
     }
 
-        .blazor-loading-ellipsis div {
+        .bit-ldn-Ellipsis div {
             position: absolute;
+            border-radius: 50%;
             top: @(Convert(33))px;
             width: @(Convert(13))px;
             height: @(Convert(13))px;
-            border-radius: 50%;
-            background: @Color;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
             animation-timing-function: cubic-bezier(0, 1, 1, 0);
         }
 
-            .blazor-loading-ellipsis div:nth-child(1) {
+            .bit-ldn-Ellipsis div:nth-child(1) {
                 left: @(Convert(8))px;
-                animation: blazor-loading-ellipsis1 0.6s infinite;
+                animation: bit-ldn-Ellipsis1 0.6s infinite;
             }
 
-            .blazor-loading-ellipsis div:nth-child(2) {
+            .bit-ldn-Ellipsis div:nth-child(2) {
                 left: @(Convert(8))px;
-                animation: blazor-loading-ellipsis2 0.6s infinite;
+                animation: bit-ldn-Ellipsis2 0.6s infinite;
             }
 
-            .blazor-loading-ellipsis div:nth-child(3) {
+            .bit-ldn-Ellipsis div:nth-child(3) {
                 left: @(Convert(32))px;
-                animation: blazor-loading-ellipsis2 0.6s infinite;
+                animation: bit-ldn-Ellipsis2 0.6s infinite;
             }
 
-            .blazor-loading-ellipsis div:nth-child(4) {
+            .bit-ldn-Ellipsis div:nth-child(4) {
                 left: @(Convert(56))px;
-                animation: blazor-loading-ellipsis3 0.6s infinite;
+                animation: bit-ldn-Ellipsis3 0.6s infinite;
             }
 
-    @@keyframes blazor-loading-ellipsis1 {
+    @@keyframes bit-ldn-Ellipsis1 {
         0% {
             transform: scale(0);
         }
@@ -49,7 +49,7 @@
         }
     }
 
-    @@keyframes blazor-loading-ellipsis3 {
+    @@keyframes bit-ldn-Ellipsis3 {
         0% {
             transform: scale(1);
         }
@@ -59,7 +59,7 @@
         }
     }
 
-    @@keyframes blazor-loading-ellipsis2 {
+    @@keyframes bit-ldn-Ellipsis2 {
         0% {
             transform: translate(0, 0);
         }
@@ -69,4 +69,10 @@
         }
     }
 </style>
-<div class="blazor-loading-ellipsis"><div></div><div></div><div></div><div></div></div>
+
+<div style="@Style" class="bit-ldn-Ellipsis @Class">
+    @for (int i = 0; i < 4; i++)
+    {
+        <div style="@ChildStyle" class="@ChildClass"></div>
+    }
+</div>

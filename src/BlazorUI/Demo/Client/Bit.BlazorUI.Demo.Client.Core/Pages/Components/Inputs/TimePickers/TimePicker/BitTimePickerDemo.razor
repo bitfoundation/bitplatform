@@ -1,0 +1,234 @@
+﻿@page "/components/timepicker"
+@page "/components/time-picker"
+
+<PageOutlet Url="components/timepicker"
+            Title="TimePicker"
+            Description="TimePicker component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="TimePicker"
+               ComponentDescription="Picking a time can be tough without context. A BitTimePicker offers a drop-down control that’s optimized for picking a single time from a clock view where contextual information like the day of the week or fullness of the calendar is important. You can modify the calendar to provide additional context or to limit available times."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Default BitTimePicker" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitTimePicker with 12 hours (AM/PM)" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..."
+                           TimeFormat="BitTimeFormat.TwelveHours" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Disabled BitTimePicker" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <BitTimePicker IsEnabled="false"
+                           Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Disabled BitTimePicker with label" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <BitTimePicker IsEnabled="false"
+                           Style="max-width: 175px"
+                           Label="Start time"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="example-content">
+                <BitTimePicker Style="padding: 1rem; background: purple;" />
+
+                <BitTimePicker Class="custom-class" />
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <div class="example-content">
+                <BitTimePicker Styles="@(new() { Root = "margin: 1rem; border: 1px solid gold;",
+                                                 HourMinuteSeparator = "color: green;",
+                                                 IncreaseHourButton = "color: red;",
+                                                 IncreaseMinuteButton = "color: red;",
+                                                 DecreaseHourButton = "color: blue;",
+                                                 DecreaseMinuteButton = "color: blue;",
+                                                 HourInput = "color: purple;",
+                                                 MinuteInput = "color: purple;" })" />
+
+                <BitTimePicker Classes="@(new() { Root = "custom-root",
+                                                  IncreaseHourButton = "custom-inc-h",
+                                                  IncreaseMinuteButton = "custom-inc-m",
+                                                  DecreaseHourButton = "custom-dec-h",
+                                                  DecreaseMinuteButton = "custom-dec-m" })" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Required BitTimePicker" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-desc">Validation will happen when the <code>Submit</code> button is clicked.</div>
+
+            <EditForm Model="formValidationTimePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                <DataAnnotationsValidator />
+
+                <div class="validation-summary">
+                    <ValidationSummary />
+                </div>
+                <div>
+                    <BitTimePicker @bind-Value="formValidationTimePickerModel.Time"
+                                   AllowTextInput="true"
+                                   Style="max-width: 175px"
+                                   AriaLabel="Select a time"
+                                   Placeholder="Select a time..."
+                                   Label="Time required" />
+                    <ValidationMessage For="@(() => formValidationTimePickerModel.Time)" />
+                </div>
+                <br />
+                <BitButton ButtonType="BitButtonType.Submit">
+                    Submit
+                </BitButton>
+            </EditForm>
+
+            @if (string.IsNullOrEmpty(successMessage) is false)
+            {
+                <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
+            }
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitTimePicker allowing text input" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div class="example-desc">
+                The input field will open the BitTimePicker, and clicking the field again will dismiss the BitTimePicker and
+                allow text input. Please note to use this feature, you must enter the time in the exact <code>TimeFormat</code> provided for the BitTimePicker.
+            </div>
+            <BitTimePicker Style="max-width: 175px"
+                           AllowTextInput="true"
+                           Label="Start time"
+                           AriaLabel="Select a time" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitTimePicker with custom time formatting" RazorCode="@example8RazorCode" Id="example8">
+        <ExamplePreview>
+            <div class="example-desc">
+                Applications can customize how times are formatted and parsed. Formatted times can be ambiguous, so the control will avoid parsing the formatted strings of times selected using the UI when text input is allowed.
+                In this example, we are formatting and parsing times as hh-mm.ss.
+            </div>
+            <BitTimePicker Style="max-width: 175px"
+                           AriaLabel="Select a time."
+                           Placeholder="Select a time..."
+                           ValueFormat="hh-mm.ss" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitTimePicker with a custom label" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <ExamplePreview>
+            <div class="example-desc">
+                In this example, the callout of the BitTimePicker would be opened and closed using an icon button which is customely located in the label.
+                This functionality has been implemented using a public API provided in the BitTimePicker.
+            </div>
+            <BitTimePicker @ref="timePicker"
+                           Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time...">
+                <LabelTemplate>
+                    Custom label <BitIconButton IconName="@BitIconName.AlarmClock" OnClick="OpenCallout"></BitIconButton>
+                </LabelTemplate>
+            </BitTimePicker>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitTimePicker with value two-way binding" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <ExamplePreview>
+            <BitTimePicker @bind-Value="@selectedTime"
+                           Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+            <BitLabel>Selected time: @selectedTime.ToString()</BitLabel>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitTimePicker with custom left-handed icon" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           IconLocation="BitIconLocation.Left"
+                           Placeholder="Select a time...">
+                <IconTemplate>
+                    <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
+                </IconTemplate>
+            </BitTimePicker>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitTimePicker with custom icon name" RazorCode="@example12RazorCode" Id="example12">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           AriaLabel="Select a time"
+                           IconName="@BitIconName.Airplane"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom Invalid Error Message" RazorCode="@example12RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <ExamplePreview>
+            <div class="example-desc">The custom invalid error message will show when an invalid time is entered.</div>
+
+            <EditForm Model="formValidationTimePickerModel">
+                <DataAnnotationsValidator />
+                <div>
+                    <BitTimePicker @bind-Value="formValidationTimePickerModel.Time"
+                                   Style="max-width: 175px"
+                                   AllowTextInput="true"
+                                   InvalidErrorMessage="Invalid Time!!!" />
+                    <ValidationMessage For="@(() => formValidationTimePickerModel.Time)" />
+                </div>
+                <br />
+                <div class="validation-summary">
+                    <ValidationSummary />
+                </div>
+            </EditForm>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Responsive BitTimePicker" RazorCode="@example14RazorCode" Id="example14">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           IsResponsive="true"
+                           ShowCloseButton="true"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Hour/minute step BitTimePicker" RazorCode="@example15RazorCode" Id="example15">
+        <ExamplePreview>
+            <BitTimePicker Style="max-width: 175px"
+                           Label="HourStep = 2"
+                           HourStep="2"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+
+            <br />
+            <BitTimePicker Style="max-width: 175px"
+                           Label="MinuteStep = 15"
+                           MinuteStep="15"
+                           AriaLabel="Select a time"
+                           Placeholder="Select a time..." />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

@@ -30,6 +30,11 @@ public partial class BitModal : IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitModal component.
+    /// </summary>
+    [Parameter] public BitModalClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The CSS selector of the drag element. by default it's the Modal container.
     /// </summary>
     [Parameter] public string? DragElementSelector { get; set; }
@@ -97,6 +102,11 @@ public partial class BitModal : IDisposable
     [Parameter] public string ScrollerSelector { get; set; } = "body";
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitModal component.
+    /// </summary>
+    [Parameter] public BitModalClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// ARIA id for the subtitle of the Modal, if any.
     /// </summary>
     [Parameter] public string? SubtitleAriaId { get; set; }
@@ -109,16 +119,23 @@ public partial class BitModal : IDisposable
 
     protected override string RootElementClass => "bit-mdl";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
+        ClassBuilder.Register(() => Classes?.Root);
 
-        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
+        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
     protected override Task OnInitializedAsync()
     {
-        _containerId = $"BitModal-{UniqueId}-Container";
+        _containerId = $"BitModal-{UniqueId}-container";
 
         return base.OnInitializedAsync();
     }
@@ -135,23 +152,23 @@ public partial class BitModal : IDisposable
         {
             if (IsDraggable)
             {
-                _ = _js.SetupDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
             }
             else
             {
-                _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
             }
         }
         else
         {
-            _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+            _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
         }
 
         _offsetTop = 0;
 
         if (AutoToggleScroll is false) return;
-
-        _offsetTop = await _js.ToggleModalScroll(ScrollerSelector, IsOpen);
+        
+        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
 
         if (AbsolutePosition is false) return;
 
@@ -201,7 +218,7 @@ public partial class BitModal : IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        _ = _js.RemoveDragDrop(_containerId, GetDragElementSelector());
+        _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
 
         _disposed = true;
     }

@@ -1,17 +1,14 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes" @onpointerdown:preventDefault @onpointerup="HandlePointerUp" @onpointermove="HandlePointerMove" @onpointerdown="HandlePointerDown"
+     id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     @onpointermove="HandlePointerMove"
-     @onpointerdown="HandlePointerDown"
-     @onpointerdown:preventDefault
-     @onpointerup="HandlePointerUp">
+     dir="@base.Dir?.ToString().ToLower()">
 
     <div @ref="_swiper"
-         class="swiper"
+         class="bit-swp-cnt"
          style="@_directionStyle">
         <CascadingValue Value="this" IsFixed="true">
             @ChildContent
@@ -20,18 +17,18 @@
 
     @if (ShowNextPrev)
     {
-        <div class="right-btn" @onclick="async() => await Go(true)" style="@_rightButtonStyle" @onpointerdown:stopPropagation>
-            <i class="bit-icon bit-icon--ChevronRight"></i>
+        <div class="bit-swp-rbt" @onclick="async() => await Go(true)" style="@_rightButtonStyle" @onpointerdown:stopPropagation>
+            <i class="bit-icon bit-icon--ChevronRight" />
         </div>
 
-        <div class="left-btn" @onclick="async () => await Go(false)" style="@_leftButtonStyle" @onpointerdown:stopPropagation>
-            <i class="bit-icon bit-icon--ChevronLeft"></i>
+        <div class="bit-swp-lbt" @onclick="async () => await Go(false)" style="@_leftButtonStyle" @onpointerdown:stopPropagation>
+            <i class="bit-icon bit-icon--ChevronLeft" />
         </div>
     }
 
     @*@if (ShowDots)
     {
-    <div class="dots" style="@_directionStyle">
+    <div class="bit-swp-dot" style="@_directionStyle">
     @for (int i = 0; i < _pagesCount; i++)
     {
     int index = i;

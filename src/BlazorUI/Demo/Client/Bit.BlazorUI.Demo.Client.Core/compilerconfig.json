@@ -1,0 +1,500 @@
+﻿[
+    {
+        "outputFile": "Components/ComponentDemo.razor.css",
+        "inputFile": "Components/ComponentDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/ComponentExampleBox.razor.css",
+        "inputFile": "Components/ComponentExampleBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/SideRail.razor.css",
+        "inputFile": "Components/SideRail.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/Footer.razor.css",
+        "inputFile": "Shared/Footer.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/NavMenu.razor.css",
+        "inputFile": "Shared/NavMenu.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/Header.razor.css",
+        "inputFile": "Shared/Header.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/NotFoundComponent.razor.css",
+        "inputFile": "Shared/NotFoundComponent.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/MessageBox.razor.css",
+        "inputFile": "Shared/MessageBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/HomePage.razor.css",
+        "inputFile": "Pages/Home/HomePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/HeroSection.razor.css",
+        "inputFile": "Pages/Home/HeroSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/PopularComponents.razor.css",
+        "inputFile": "Pages/Home/PopularComponents.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/BenefitsSection.razor.css",
+        "inputFile": "Pages/Home/BenefitsSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/ComponentsSection.razor.css",
+        "inputFile": "Pages/Home/ComponentsSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/GettingStartedPage.razor.css",
+        "inputFile": "Pages/GettingStartedPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/IconographyPage.razor.css",
+        "inputFile": "Pages/IconographyPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/OverviewPage.razor.css",
+        "inputFile": "Pages/OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.css",
+        "inputFile": "Pages/Components/Accordion/BitAccordionDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Badge/BitBadgeDemo.razor.css",
+        "inputFile": "Pages/Components/Badge/BitBadgeDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Breadcrumb/BitBreadcrumbDemo.razor.css",
+        "inputFile": "Pages/Components/Breadcrumb/BitBreadcrumbDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/ButtonGroup/BitButtonGroupDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/ButtonGroup/BitButtonGroupDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/MenuButton/BitMenuButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/MenuButton/BitMenuButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitActionButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitCompoundButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitCompoundButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.css",
+        "inputFile": "Pages/Components/Carousel/BitCarouselDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Chart/BitChartDemo.razor.css",
+        "inputFile": "Pages/Components/Chart/BitChartDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.css",
+        "inputFile": "Pages/Components/ColorPicker/BitColorPickerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.css",
+        "inputFile": "Pages/Components/DataGrid/BitDataGridDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Dialog/BitDialogDemo.razor.css",
+        "inputFile": "Pages/Components/Dialog/BitDialogDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Element/BitElementDemo.razor.css",
+        "inputFile": "Pages/Components/Element/BitElementDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/FileUpload/BitFileUploadDemo.razor.css",
+        "inputFile": "Pages/Components/FileUpload/BitFileUploadDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Header/BitHeaderDemo.razor.css",
+        "inputFile": "Pages/Components/Header/BitHeaderDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Icon/BitIconDemo.razor.css",
+        "inputFile": "Pages/Components/Icon/BitIconDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Image/BitImageDemo.razor.css",
+        "inputFile": "Pages/Components/Image/BitImageDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/Checkbox/BitCheckboxDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/Checkbox/BitCheckboxDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/ChoiceGroup/BitChoiceGroupDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/ChoiceGroup/BitChoiceGroupDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/DatePicker/BitDatePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/DatePicker/BitDatePickerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/DateRangePicker/BitDateRangePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/DateRangePicker/BitDateRangePickerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/Dropdown/BitDropdownDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/Dropdown/BitDropdownDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/NumberField/BitNumberFieldDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/NumberField/BitNumberFieldDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/OtpInput/BitOtpInputDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/OtpInput/BitOtpInputDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/Rating/BitRatingDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/Rating/BitRatingDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/SearchBox/BitSearchBoxDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/SearchBox/BitSearchBoxDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/SpinButton/BitSpinButtonDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/SpinButton/BitSpinButtonDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/TextField/BitTextFieldDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/TextField/BitTextFieldDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/TimePickers/CircularTimePicker/BitCircularTimePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/TimePickers/CircularTimePicker/BitCircularTimePickerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/TimePickers/TimePicker/BitTimePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/TimePickers/TimePicker/BitTimePickerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Inputs/Toggle/BitToggleDemo.razor.css",
+        "inputFile": "Pages/Components/Inputs/Toggle/BitToggleDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Label/BitLabelDemo.razor.css",
+        "inputFile": "Pages/Components/Label/BitLabelDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Layout/BitLayoutDemo.razor.css",
+        "inputFile": "Pages/Components/Layout/BitLayoutDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Link/BitLinkDemo.razor.css",
+        "inputFile": "Pages/Components/Link/BitLinkDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Lists/BasicList/BitBasicListDemo.razor.css",
+        "inputFile": "Pages/Components/Lists/BasicList/BitBasicListDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Loading/BitLoadingDemo.razor.css",
+        "inputFile": "Pages/Components/Loading/BitLoadingDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Message/BitMessageDemo.razor.css",
+        "inputFile": "Pages/Components/Message/BitMessageDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Modal/BitModalDemo.razor.css",
+        "inputFile": "Pages/Components/Modal/BitModalDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Nav/BitNavDemo.razor.css",
+        "inputFile": "Pages/Components/Nav/BitNavDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.css",
+        "inputFile": "Pages/Components/Overlay/BitOverlayDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Pagination/BitPaginationDemo.razor.css",
+        "inputFile": "Pages/Components/Pagination/BitPaginationDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Panel/BitPanelDemo.razor.css",
+        "inputFile": "Pages/Components/Panel/BitPanelDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Persona/BitPersonaDemo.razor.css",
+        "inputFile": "Pages/Components/Persona/BitPersonaDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Pivot/BitPivotDemo.razor.css",
+        "inputFile": "Pages/Components/Pivot/BitPivotDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/ProgressBar/BitProgressBarDemo.razor.css",
+        "inputFile": "Pages/Components/ProgressBar/BitProgressBarDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/ScrollablePane/BitScrollablePaneDemo.razor.css",
+        "inputFile": "Pages/Components/ScrollablePane/BitScrollablePaneDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Separator/BitSeparatorDemo.razor.css",
+        "inputFile": "Pages/Components/Separator/BitSeparatorDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Shimmer/BitShimmerDemo.razor.css",
+        "inputFile": "Pages/Components/Shimmer/BitShimmerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Slider/BitSliderDemo.razor.css",
+        "inputFile": "Pages/Components/Slider/BitSliderDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/SnackBar/BitSnackBarDemo.razor.css",
+        "inputFile": "Pages/Components/SnackBar/BitSnackBarDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.css",
+        "inputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Stack/BitStackDemo.razor.css",
+        "inputFile": "Pages/Components/Stack/BitStackDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Sticky/BitStickyDemo.razor.css",
+        "inputFile": "Pages/Components/Sticky/BitStickyDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Swiper/BitSwiperDemo.razor.css",
+        "inputFile": "Pages/Components/Swiper/BitSwiperDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Tag/BitTagDemo.razor.css",
+        "inputFile": "Pages/Components/Tag/BitTagDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Timeline/BitTimelineDemo.razor.css",
+        "inputFile": "Pages/Components/Timeline/BitTimelineDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Tooltip/BitTooltipDemo.razor.css",
+        "inputFile": "Pages/Components/Tooltip/BitTooltipDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Typography/BitTypographyDemo.razor.css",
+        "inputFile": "Pages/Components/Typography/BitTypographyDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/TermsPage.razor.css",
+        "inputFile": "Pages/TermsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/ThemingPage.razor.css",
+        "inputFile": "Pages/ThemingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "wwwroot/styles/app.css",
+        "inputFile": "Styles/app.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    }
+]

@@ -1,0 +1,256 @@
+﻿@page "/navigator"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Navigator navigator
+
+<PageTitle>Navigator Samples</PageTitle>
+
+<h1>Navigator</h1>
+
+<pre style="font-family:Consolas; overflow: auto;">
+@@inject Bit.Butil.Navigator navigator
+
+@@code {
+    ...
+    var userAgent = await navigator.GetUserAgent();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking on buttons</h3>
+
+<hr />
+<br />
+
+
+<button @onclick="@GetDeviceMemory">GetDeviceMemory</button>
+<br />
+<br />
+<div>Device memory is: @deviceMemory</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetHardwareConcurrency">GetHardwareConcurrency</button>
+<br />
+<br />
+<div>Hardware concurrency is: @hardwareConcurrency</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetLanguage">GetLanguage</button>
+<br />
+<br />
+<div>Language: @language</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetLanguages">GetLanguages</button>
+<br />
+<br />
+<div>Languages: @languages</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetMaxTouchPoints">GetMaxTouchPoints</button>
+<br />
+<br />
+<div>Max touch points: @maxTouchPoints</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetIsOnLine">GetIsOnLine</button>
+<br />
+<br />
+<div>Is OnLine: @isOnLine</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetIsPdfViewerEnabled">GetIsPdfViewerEnabled</button>
+<br />
+<br />
+<div>Is Pdf viewer enabled: @isPdfViewerEnabled</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetUserAgent">GetUserAgent</button>
+<br />
+<br />
+<div>User agent: @userAgent</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetIsWebDriver">GetIsWebDriver</button>
+<br />
+<br />
+<div>Is web driver: @isWebDriver</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@GetCanShare">GetCanShare</button>
+<br />
+<br />
+<div>Can share: @canShare</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick="@(() => navigator.ClearAppBadge())">ClearAppBadge</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="@(() => navigator.SendBeacon())">SendBeacon</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="@(() => navigator.SetAppBadge())">SetAppBadge</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind-value="textValue" />
+<br />
+<input @bind-value="titleValue" />
+<br />
+<input @bind-value="urlValue" />
+<br />
+<button @onclick="Share">Share</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="@(() => navigator.Vibrate(sosPattern))">Vibrate</button>
+
+<br />
+<br />
+
+@code {
+    private string deviceMemory;
+
+    private string hardwareConcurrency;
+
+    private string language;
+
+    private string languages;
+
+    private string maxTouchPoints;
+
+    private string isOnLine;
+
+    private string isPdfViewerEnabled;
+
+    private string userAgent;
+
+    private string isWebDriver;
+
+    private string canShare;
+
+    private string textValue;
+    private string titleValue;
+    private string urlValue;
+
+    private int[] sosPattern = [100, 30, 100, 30, 100, 30, 200, 30, 200, 30, 200, 30, 100, 30, 100, 30, 100];
+
+
+    private async Task GetDeviceMemory()
+    {
+        var result = await navigator.GetDeviceMemory();
+        deviceMemory = result.ToString();
+    }
+
+    private async Task GetHardwareConcurrency()
+    {
+        var result = await navigator.GetHardwareConcurrency();
+        hardwareConcurrency = result.ToString();
+    }
+
+    private async Task GetLanguage()
+    {
+        var result = await navigator.GetLanguage();
+        language = result.ToString();
+    }
+
+    private async Task GetLanguages()
+    {
+        var result = await navigator.GetLanguages();
+        languages = string.Join(",", result);
+    }
+
+    private async Task GetMaxTouchPoints()
+    {
+        var result = await navigator.GetMaxTouchPoints();
+        maxTouchPoints = result.ToString();
+    }
+
+    private async Task GetIsOnLine()
+    {
+        var result = await navigator.IsOnLine();
+        isOnLine = result.ToString();
+    }
+
+    private async Task GetIsPdfViewerEnabled()
+    {
+        var result = await navigator.IsPdfViewerEnabled();
+        isPdfViewerEnabled = result.ToString();
+    }
+
+    private async Task GetUserAgent()
+    {
+        var result = await navigator.GetUserAgent();
+        userAgent = result.ToString();
+    }
+
+    private async Task GetCanShare()
+    {
+        var result = await navigator.CanShare();
+        canShare = result.ToString();
+    }
+
+    private async Task GetIsWebDriver()
+    {
+        var result = await navigator.IsWebDriver();
+        isWebDriver = result.ToString();
+    }
+
+    private async Task Share()
+    {
+        var shareData = new ShareData()
+        {
+            Text = textValue,
+            title = titleValue,
+            url = urlValue
+        };
+
+        await navigator.Share(shareData);
+    }
+}

@@ -1,0 +1,46 @@
+﻿@page "/todo-template/cache-mechanism"
+@page "/admin-panel/cache-mechanism"
+@page "/templates/cache-mechanism"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/cache-mechanism"
+            Title="Cache mechanism - Templates"
+            Description="cache mechanism used in the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Cache mechanism</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit project templates provide features in order handle the caching appropriately in different modes.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Pwa or PwaPrerender</BitTypography>
+        <div class="section-card-txt">
+            In Pwa mode, a manifest is generated and all files will be downloaded by Pwa with the help of this manifest.
+            In this case, the Pwa app can work in offline mode, and for example, we can leverage ef-core and SQLite in the browser,
+            which will work offline, and after going online, it can synchronize the generated data with the server if necessary.
+        </div>
+        <div class="section-card-txt">
+            If a file is changed (such as font, photo, etc.), the latest changes will be automatically downloaded.
+        </div>
+        <div class="section-card-txt">
+            <b>Note</b>: that if you do not need a file, be sure to delete it so that it is no longer downloaded by Pwa.
+        </div>
+        <div class="section-card-txt">
+            <b>Note</b>: Pwa and PwaPrerender are our recommendation for production environment.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Spa, SapPrerender and PrerenderOnly</BitTypography>
+        <div class="section-card-txt">
+            In Spa mode, if a js, css, or wasm file gets changed, the new version will be automatically requested by the browser if you use &lt;<b>S</b>cript&gt; and &lt;<b>L</b>ink&gt; instead of &lt;<b>s</b>cript&gt; and &lt;<b>l</b>ink&gt;,
+            but for other file types such as fonts and images,
+            the file name must also be changed to ensure that the client is updated.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Deployment type" PrevUrl="/templates/deployment-type" Next="DevOps" NextUrl="/templates/devops" />

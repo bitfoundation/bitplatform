@@ -1,0 +1,55 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (LabelTemplate is not null)
+    {
+        <label id="@_labelId">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label style="@Styles?.Label" class="bit-prb-lbl @Classes?.Label" id="@_labelId">
+            @Label
+        </label>
+    }
+
+    @if (ShowPercentNumber && Indeterminate is false)
+    {
+        <div style="@Styles?.PercentNumber" class="bit-prb-pct @Classes?.PercentNumber">
+            @string.Format(PercentNumberFormat, Normalize(Percent))
+        </div>
+    }
+
+    <div style="@($"height: {Height}px;") @Styles?.BarContainer" class="bit-prb-bcn @Classes?.BarContainer">
+        <div style="@Styles?.Track" class="bit-prb-trc @Classes?.Track"></div>
+        <div class="bit-prb-bar @(Indeterminate ? "bit-prb-ind" : null) @Classes?.Bar"
+             role="progressbar"
+             aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+             aria-valuetext="@AriaValueText"
+             aria-describedby="@(Description.HasValue() ? _descriptionId : null)"
+             aria-valuemin="@(Indeterminate ? null : 0)"
+             aria-valuemax="@(Indeterminate ? null : 100)"
+             aria-valuenow="@(Indeterminate ? null : Normalize(Percent))"
+             style="@GetProgressBarStyle()">
+        </div>
+    </div>
+
+    @if (DescriptionTemplate is not null)
+    {
+        <div id="@_descriptionId">
+            @DescriptionTemplate
+        </div>
+    }
+    else if (Description.HasValue())
+    {
+        <div style="@Styles?.Description" class="bit-prb-des @Classes?.Description" id="@_descriptionId">
+            @Description
+        </div>
+    }
+</div>

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FC6DE1B2-E533-4824-B521-60755DBCA6A2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{FC6DE1B2-E533-4824-B521-60755DBCA6A2}"
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
 		..\..\.gitignore = ..\..\.gitignore
@@ -14,13 +14,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil", "Bit.Butil\Bit.Butil.csproj", "{9EE18696-8DF0-4206-A675-B887D7D98029}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil.Demo", "Bit.Butil.Demo\Bit.Butil.Demo.csproj", "{5DBDF562-6847-4417-960E-EB3B308B2D4F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{6E7F5732-03A1-4E32-BFE1-415FF2914862}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{28AA18EC-0416-4CA4-B857-636A7A980B8D}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
-		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil.Demo.Maui", "Demo\Bit.Butil.Demo.Maui\Bit.Butil.Demo.Maui.csproj", "{4A451BFD-5C64-40D5-8E56-A61EA56A638F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil.Demo.Core", "Demo\Bit.Butil.Demo.Core\Bit.Butil.Demo.Core.csproj", "{1F4B1589-914F-494A-BA57-3DB0B89B24E1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Butil.Demo.Web", "Demo\Bit.Butil.Demo.Web\Bit.Butil.Demo.Web.csproj", "{76EBB221-2FEE-4B39-B2CF-8362463150D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,16 +32,28 @@ Global
 		{9EE18696-8DF0-4206-A675-B887D7D98029}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EE18696-8DF0-4206-A675-B887D7D98029}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EE18696-8DF0-4206-A675-B887D7D98029}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5DBDF562-6847-4417-960E-EB3B308B2D4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5DBDF562-6847-4417-960E-EB3B308B2D4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5DBDF562-6847-4417-960E-EB3B308B2D4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5DBDF562-6847-4417-960E-EB3B308B2D4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A451BFD-5C64-40D5-8E56-A61EA56A638F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A451BFD-5C64-40D5-8E56-A61EA56A638F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A451BFD-5C64-40D5-8E56-A61EA56A638F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4A451BFD-5C64-40D5-8E56-A61EA56A638F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A451BFD-5C64-40D5-8E56-A61EA56A638F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A451BFD-5C64-40D5-8E56-A61EA56A638F}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{1F4B1589-914F-494A-BA57-3DB0B89B24E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F4B1589-914F-494A-BA57-3DB0B89B24E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F4B1589-914F-494A-BA57-3DB0B89B24E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F4B1589-914F-494A-BA57-3DB0B89B24E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76EBB221-2FEE-4B39-B2CF-8362463150D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76EBB221-2FEE-4B39-B2CF-8362463150D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76EBB221-2FEE-4B39-B2CF-8362463150D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76EBB221-2FEE-4B39-B2CF-8362463150D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{28AA18EC-0416-4CA4-B857-636A7A980B8D} = {FC6DE1B2-E533-4824-B521-60755DBCA6A2}
+		{4A451BFD-5C64-40D5-8E56-A61EA56A638F} = {6E7F5732-03A1-4E32-BFE1-415FF2914862}
+		{1F4B1589-914F-494A-BA57-3DB0B89B24E1} = {6E7F5732-03A1-4E32-BFE1-415FF2914862}
+		{76EBB221-2FEE-4B39-B2CF-8362463150D7} = {6E7F5732-03A1-4E32-BFE1-415FF2914862}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DFA7FAF2-0F3C-46C3-8EEB-1A7E29293B4F}

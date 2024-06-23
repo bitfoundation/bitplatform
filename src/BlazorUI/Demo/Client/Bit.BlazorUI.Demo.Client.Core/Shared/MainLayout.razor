@@ -1,0 +1,23 @@
+﻿@inherits LayoutComponentBase
+
+<div class="status-bar">@_pageTitle - bit BlazorUI</div>
+
+<Header />
+
+<main class="@($"{BitCss.Class.Color.Background.Primary}{(CurrentUrl == "/" ? " full-page" : "")}")">
+    @if (CurrentUrl != "/")
+    {
+        <NavMenu />
+    }
+
+    <div class="site-content">
+        <AppErrorBoundary>
+            @Body
+        </AppErrorBoundary>
+
+    </div>
+</main>
+
+<Footer />
+
+<MessageBox />

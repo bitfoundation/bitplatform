@@ -1,0 +1,90 @@
+﻿@import "../../../Styles/abstracts/_functions.scss";
+@import "../../../Styles/abstracts/_media-queries.scss";
+@import "../../../Styles/abstracts/_bit-css-variables.scss";
+
+.card {
+    display: flex;
+    min-height: rem2(376px);
+    width: calc(50% - 12px);
+    align-items: flex-start;
+    border-radius: rem2(2px);
+    flex-flow: column nowrap;
+    margin-bottom: rem2(24px);
+    justify-content: flex-start;
+    padding: rem2(24px) rem2(16px) rem2(58px);
+    background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+
+    @include md {
+        padding: rem2(24px) rem2(16px) rem2(36px);
+    }
+
+    @include sm {
+        width: 100%;
+        margin-bottom: rem2(16px);
+        padding: rem2(24px) rem2(8px) rem2(32px);
+    }
+}
+
+.card-header {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    padding-bottom: rem2(16px);
+    justify-content: flex-start;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+    @include md {
+        padding-bottom: rem2(12px);
+    }
+}
+
+.title {
+    font-weight: 600;
+    font-size: rem2(18px);
+    line-height: rem2(24px);
+    margin-bottom: rem2(4px);
+
+    @include md {
+        font-size: rem2(16px);
+        line-height: rem2(22px);
+    }
+
+    @include sm {
+        font-size: rem2(14px);
+        line-height: rem2(20px);
+    }
+}
+
+.subtitle {
+    font-weight: 400;
+    font-size: rem2(14px);
+    line-height: rem2(20px);
+
+    @include md {
+        font-size: rem2(12px);
+        line-height: rem2(16px);
+    }
+
+    @include sm {
+        font-size: rem2(10px);
+        line-height: rem2(12px);
+    }
+}
+
+.card-body {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: rem2(32px) rem2(16px) 0;
+
+    @include md {
+        padding: rem2(32px) rem2(8px) 0;
+    }
+
+    @include sm {
+        padding: rem2(32px) rem2(8px) 0;
+    }
+}

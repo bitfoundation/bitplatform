@@ -1,3 +1,4 @@
+// bit version: 8.9.0
 
 self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
@@ -12,12 +13,19 @@ self.externalAssets = [
     {
         "url": "/"
     },
+    {
+        "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
+    }
 ];
 
 self.caseInsensitiveUrl = true;
 
 self.serverHandledUrls = [/\/api\//];
 self.serverRenderedUrls = [/\/privacy$/];
+
+self.noPrerenderQuery = 'no-prerender=true';
+
+self.isPassive = true;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
 

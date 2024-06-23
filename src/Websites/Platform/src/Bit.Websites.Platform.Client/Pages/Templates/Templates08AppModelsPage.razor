@@ -1,0 +1,115 @@
+﻿@page "/todo-template/hosting-models"
+@page "/admin-panel/hosting-models"
+@page "/templates/app-models"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/app-models"
+            Title="Blazor app models - Templates"
+            Description="hosting models of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Blazor app models</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        Blazor seamlessly operates on web browsers using WebAssembly and extends its capabilities to Android, iOS, Windows, and macOS through the .NET runtime, with full access to native platform features and third-party libraries developed in Swift, Objective-C, Kotlin, and Java.
+        <br />
+        Notably, Blazor offers pre-rendering in order to be seo friendly.
+        <br />
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Server</BitTypography>
+        <div class="section-card-txt">
+            With the Blazor Server hosting model, the app is executed on the server from within an ASP.NET Core app. UI updates, event handling,
+            and JavaScript calls are handled over a SignalR connection using the WebSockets protocol.
+            <br />
+            To use to Blazor Server:
+            <br />
+            <ol>
+                <li>Open the file Core/Services/AppRenderMode.cs and change the <b>Current</b> field to <b>BlazorServer</b>.</li>
+                <br />
+                <CodeBox>public static IComponentRenderMode Current => BlazorServer</CodeBox>
+                <li>Set the "Server" project as the startup project.</li>
+                <li>Run the application.</li>
+                <li>When the browser opens, remove "swagger/index.html" from the URL address bar to view the app UI instead of the swagger UI.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor WebAssembly</BitTypography>
+        <div class="section-card-txt">
+            Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies,
+            and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process.
+            <br />
+            To use to Blazor WebAssembly:
+            <br />
+            <ol>
+                <li>Open the file Core/Services/AppRenderMode.cs and change the <b>Current</b> field to <b>BlazorWebAssembly</b>.</li>
+                <br />
+                <CodeBox>public static IComponentRenderMode Current => BlazorWebAssembly</CodeBox>
+                <li>Set the "Server" project as the startup project.</li>
+                <li>Select <i>Boilerplate.Server-BlazorWebAssembly</i> launchSettings profile instead of <i>Boilerplate.Server-Swagger</i></li>
+                <div class="image-container">
+                    <img class="image small" alt="Blazor WASM target" src="/images/templates/blazor-wasm-target.webp" />
+                </div>
+                <li>Run the application.</li>
+                <li>When the browser opens, remove "swagger/index.html" from the URL address bar to view the app UI instead of the swagger UI.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Auto</BitTypography>
+        <div class="section-card-txt">
+            Blazor seamlessly combines Blazor Server and WebAssembly.
+            This approach enhances user interaction initially through Blazor Server, while simultaneously downloading Blazor WebAssembly for subsequent visits, reducing server load.
+            <br />
+            To use to Blazor Auto:
+            <br />
+            <ol>
+                <li>Open the file Core/Services/AppRenderMode.cs and change the <b>Current</b> field to <b>Auto</b>.</li>
+                <br />
+                <CodeBox>public static IComponentRenderMode Current => Auto</CodeBox>
+                <li>Set the "Server" project as the startup project.</li>
+                <li>Select <i>Boilerplate.Server-Swagger</i> launchSettings profile instead of <i>Boilerplate.Server-BlazorWebAssembly</i>.</li>
+                <li>Run the application.</li>
+                <li>When the browser opens, remove "swagger/index.html" from the URL address bar to view the app UI instead of the swagger UI.</li>
+            </ol>
+        </div>
+        <div class="section-card-txt">
+            Note: The provided code employs Blazor Server during development for an optimal debugging experience, while opting for Auto in production due to its superior user experience in most scenarios.
+            <CodeBox>public static IComponentRenderMode Current => <br />BuildConfigurationModeDetector.Current.IsDebug() ? BlazorServer : Auto;</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Maui - Hybrid</BitTypography>
+        <div class="section-card-txt">
+            Blazor can also be used to build native client apps using a hybrid approach. Hybrid apps are native apps that leverage web technologies for their functionality.
+            In a Blazor Hybrid app, Razor components run directly in the native app (not on WebAssembly).
+            <br />
+            Blazor Hybrid is on top of .NET MAUI and has access to all native features of supported platforms (Android, iOS, macOS and Windows)
+            <br />
+            To switch to Blazor Hybrid mode:
+        </div>
+        <ol>
+            <li>Set the "Server" project as the startup project.</li>
+            <li>Select <i>Boilerplate.Server-Swagger</i> launchSettings profile instead of <i>Boilerplate.Server-BlazorWebAssembly</i>.</li>
+            <li>Set "Maui" project as startup project and choose your Android, iOS, Windows, macOS emulator or device</li>
+            <div class="image-container">
+                <img class="image small" alt="Debug target" src="/images/templates/debug-target.webp" />
+            </div>
+            <li>Change <b>ApiServerAddress</b> in <b>Client/Boilerplate.Client.Core/appsettings.json</b> to make sure your Android / iOS device can reach your computer.</li>
+            <li>Right click on the solution file and open Properties</li>
+            <li>Configure multiple-startup project by choosing Server and Maui projects and click on Ok</li>
+            <div class="image-container">
+                <img class="image medium" alt="Multi-startup solution" src="/images/templates/multi-startup.webp" />
+            </div>
+            <li>Run the project</li>
+        </ol>
+    </section>
+</div>
+
+<NavigationButtons Prev="Run" PrevUrl="/templates/run" Next="Deployment type" NextUrl="/templates/deployment-type" />

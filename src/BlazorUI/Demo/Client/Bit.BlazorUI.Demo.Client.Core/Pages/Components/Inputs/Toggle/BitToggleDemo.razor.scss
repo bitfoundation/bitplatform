@@ -1,0 +1,39 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+
+.example-box {
+    max-width: rem2(300px);
+}
+
+::deep {
+    .custom-class {
+        padding: 0.5rem;
+        width: max-content;
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-text {
+        color: lightskyblue;
+        text-shadow: 0 0 0.5rem red;
+    }
+
+    .custom-button {
+        border-radius: 1rem;
+        background-color: darkslategray;
+    }
+
+    .custom-check {
+        .custom-text {
+            color: rebeccapurple;
+        }
+
+        .custom-button {
+            border-radius: 1rem;
+            background-color: red;
+        }
+    }
+
+    .validation-message {
+        color: red;
+    }
+}

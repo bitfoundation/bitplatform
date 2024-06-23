@@ -1,0 +1,31 @@
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.main {
+    flex-grow: 1;
+    display: flex;
+    padding: rem2(10px);
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+}
+
+.title {
+    flex-grow: 1;
+}
+
+.body {
+    flex-grow: 1;
+    display: flex;
+    overflow: auto;
+    max-width: 90vw;
+    white-space: pre;
+    margin: rem2(10px) 0;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+}

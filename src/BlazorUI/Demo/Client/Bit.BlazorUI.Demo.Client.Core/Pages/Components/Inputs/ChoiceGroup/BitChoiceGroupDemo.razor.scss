@@ -1,0 +1,73 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+
+::deep {
+    .example-content {
+        gap: 2rem;
+        display: flex;
+
+        &.column {
+            flex-direction: column;
+        }
+    }
+
+    .custom-class {
+        width: 17rem;
+        padding: 2rem;
+        border-radius: 25%;
+        background-color: red;
+    }
+
+    .custom-item {
+        color: brown;
+    }
+
+    .custom-label {
+        color: red;
+        font-weight: bold;
+        font-size: rem2(18px);
+    }
+
+    .custom-text {
+        color: blue;
+        font-weight: bold;
+        font-size: rem2(16px);
+    }
+
+    .custom-container {
+        display: flex;
+        gap: rem2(10px);
+        cursor: pointer;
+        align-items: center;
+
+        .custom-circle {
+            width: rem2(20px);
+            height: rem2(20px);
+            border: 1px solid;
+            border-radius: rem2(10px);
+        }
+
+        &:hover {
+            .custom-circle {
+                border-top: rem2(5px) solid #C66;
+                border-left: rem2(5px) solid #66C;
+                border-right: rem2(5px) solid #CC6;
+                border-bottom: rem2(5px) solid #6C6;
+            }
+        }
+
+        &.selected {
+            color: #C66;
+
+            .custom-circle {
+                border-top: rem2(10px) solid #C66;
+                border-left: rem2(10px) solid #66C;
+                border-right: rem2(10px) solid #CC6;
+                border-bottom: rem2(10px) solid #6C6;
+            }
+        }
+    }
+
+    .validation-message {
+        color: red;
+    }
+}

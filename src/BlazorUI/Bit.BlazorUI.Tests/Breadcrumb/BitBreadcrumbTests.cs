@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -9,14 +8,14 @@ namespace Bit.BlazorUI.Tests.Breadcrumb;
 public class BitBreadcrumbTests : BunitTestContext
 {
     [DataTestMethod,
-      DataRow(BitIconName.Separator)
+      DataRow("Separator")
     ]
-    public void BitBreadcrumbShouldTakeDividerIcon(BitIconName icon)
+    public void BitBreadcrumbShouldTakeDividerIcon(string icon)
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
-            parameters.Add(p => p.DividerIcon, icon);
+            parameters.Add(p => p.DividerIconName, icon);
         });
 
         var breadcrumbDividerIcon = component.Find(".bit-brc ul i");
@@ -38,7 +37,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-iwp ul li");
 
         if (maxDisplayedItems > 0)
         {
@@ -51,16 +50,16 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(BitIconName.ChevronDown, (uint)2, (uint)0),
-      DataRow(BitIconName.ChevronDown, (uint)3, (uint)1)
+      DataRow("ChevronDown", (uint)2, (uint)0),
+      DataRow("ChevronDown", (uint)3, (uint)1)
     ]
-    public void BitBreadcrumbShouldRespectOverflowChanges(BitIconName icon, uint maxDisplayedItems, uint overflowIndex)
+    public void BitBreadcrumbShouldRespectOverflowChanges(string icon, uint maxDisplayedItems, uint overflowIndex)
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
             parameters.Add(p => p.Items, BitBreadcrumbTests.GetBreadcrumbItems());
             parameters.Add(p => p.OverflowIndex, overflowIndex);
-            parameters.Add(p => p.OverflowIcon, icon);
+            parameters.Add(p => p.OverflowIconName, icon);
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
@@ -68,7 +67,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.IsTrue(breadcrumbOverflowIcon.ClassList.Contains($"bit-icon--{icon}"));
 
-        var breadcrumbElements = component.FindAll(".bit-brc .items-wrapper ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-iwp ul li");
         var overflowItem = breadcrumbElements[(int)overflowIndex];
 
         Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems + 1);
@@ -144,11 +143,11 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(BitComponentVisibility.Visible),
-      DataRow(BitComponentVisibility.Hidden),
-      DataRow(BitComponentVisibility.Collapsed),
+      DataRow(BitVisibility.Visible),
+      DataRow(BitVisibility.Hidden),
+      DataRow(BitVisibility.Collapsed),
     ]
-    public void BitBreadcrumbShouldTakeCustomVisibility(BitComponentVisibility visibility)
+    public void BitBreadcrumbShouldTakeCustomVisibility(BitVisibility visibility)
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
@@ -160,13 +159,13 @@ public class BitBreadcrumbTests : BunitTestContext
 
         switch (visibility)
         {
-            case BitComponentVisibility.Visible:
-                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains(""));
+            case BitVisibility.Visible:
+                Assert.IsFalse(breadcrumb.HasAttribute("style"));
                 break;
-            case BitComponentVisibility.Hidden:
+            case BitVisibility.Hidden:
                 Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("visibility:hidden"));
                 break;
-            case BitComponentVisibility.Collapsed:
+            case BitVisibility.Collapsed:
                 Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("display:none"));
                 break;
         }

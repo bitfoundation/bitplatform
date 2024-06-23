@@ -1,4 +1,4 @@
-﻿using System.Timers;
+﻿using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -24,9 +24,14 @@ public partial class BitSnackBar
     [Parameter] public RenderFragment<string>? BodyTemplate { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitSnackBar.
+    /// </summary>
+    [Parameter] public BitSnackBarClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Dismiss Icon in SnackBar.
     /// </summary>
-    [Parameter] public BitIconName? DismissIconName { get; set; }
+    [Parameter] public string DismissIconName { get; set; } = "Cancel";
 
     /// <summary>
     /// Callback for when the Dismissed.
@@ -48,18 +53,25 @@ public partial class BitSnackBar
     }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitSnackBar.
+    /// </summary>
+    [Parameter] public BitSnackBarClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Used to customize how content inside the Title is rendered. 
     /// </summary>
     [Parameter] public RenderFragment<string>? TitleTemplate { get; set; }
 
 
-    public async Task Show(string title, string? body = "", BitSnackBarType? type = BitSnackBarType.Info)
+    public async Task Show(string title, string? body = "", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)
     {
         var item = new BitSnackBarItem
         {
             Title = title,
             Body = body,
-            Type = type
+            Type = type,
+            CssClass = cssClass,
+            CssStyle = cssStyle
         };
 
         if (AutoDismiss)
@@ -90,20 +102,25 @@ public partial class BitSnackBar
 
     protected override string RootElementClass => "bit-snb";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Position switch
         {
-            BitSnackBarPosition.TopLeft => "top-left",
-            BitSnackBarPosition.TopCenter => "top-center",
-            BitSnackBarPosition.TopRight => "top-right",
-            BitSnackBarPosition.BottomLeft => "bottom-left",
-            BitSnackBarPosition.BottomCenter => "bottom-center",
-            BitSnackBarPosition.BottomRight => "bottom-right",
+            BitSnackBarPosition.TopLeft => $"{RootElementClass}-tlf",
+            BitSnackBarPosition.TopCenter => $"{RootElementClass}-tcn",
+            BitSnackBarPosition.TopRight => $"{RootElementClass}-trt",
+            BitSnackBarPosition.BottomLeft => $"{RootElementClass}-blf",
+            BitSnackBarPosition.BottomCenter => $"{RootElementClass}-bcn",
+            BitSnackBarPosition.BottomRight => $"{RootElementClass}-brt",
             _ => string.Empty
         });
+    }
 
-        base.RegisterComponentClasses();
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
 
@@ -117,13 +134,25 @@ public partial class BitSnackBar
         InvokeAsync(StateHasChanged);
     }
 
-    private static string GetItemClasses(BitSnackBarItem item) => item.Type switch
+    private string GetItemClasses(BitSnackBarItem item)
     {
-        BitSnackBarType.Info => "info",
-        BitSnackBarType.Warning => "warning",
-        BitSnackBarType.Success => "success",
-        BitSnackBarType.Error => "error",
-        BitSnackBarType.SevereWarning => "severe-warning",
-        _ => string.Empty
-    };
+        StringBuilder className = new StringBuilder();
+
+        className.Append(' ').Append(item.Type switch
+        {
+            BitSnackBarType.Info => $"{RootElementClass}-info",
+            BitSnackBarType.Warning => $"{RootElementClass}-warning",
+            BitSnackBarType.Success => $"{RootElementClass}-success",
+            BitSnackBarType.Error => $"{RootElementClass}-error",
+            BitSnackBarType.SevereWarning => $"{RootElementClass}-severe-warning",
+            _ => string.Empty
+        });
+
+        if (item.CssClass?.HasValue() ?? false)
+        {
+            className.Append(' ').Append(item.CssClass);
+        }
+
+        return className.ToString();
+    }
 }

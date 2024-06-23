@@ -1,0 +1,358 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
+
+.page-sec {
+    width: 100%;
+    display: flex;
+    max-width: rem2(1440px);
+    box-sizing: border-box;
+    padding: rem2(40px) rem2(140px);
+    margin: 0 auto;
+
+    @include lg {
+        padding: rem2(32px) rem2(60px);
+    }
+
+    @include sm {
+        padding: rem2(16px);
+    }
+}
+
+.sec-title {
+    font-weight: bold;
+    font-size: rem2(44px);
+    margin-bottom: 1rem;
+    text-align: center;
+
+    @include lg {
+        font-size: rem2(34px);
+    }
+
+    @include md {
+        font-size: rem2(30px);
+    }
+
+    @include sm {
+        font-size: rem2(26px);
+    }
+}
+
+.sec-title-underline {
+    height: rem2(4px);
+    width: rem2(300px);
+    margin-bottom: 2rem;
+    background-color: $Y1;
+
+    @include lg {
+        width: rem2(200px);
+        height: rem2(2px);
+    }
+
+    @include md {
+        width: rem2(180px);
+    }
+
+    @include sm {
+        width: rem2(150px);
+    }
+}
+
+.sec-desc {
+    color: $Gray2;
+    font-size: rem2(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
+
+    @include md {
+        font-size: rem2(18px);
+        line-height: rem2(24px);
+    }
+
+    @include sm {
+        font-size: rem2(16px);
+        line-height: rem2(20px);
+    }
+}
+
+.sec-btn--primary {
+    @include PrimaryButton($IsInNavbar: false);
+}
+
+
+.cases-bg {
+    background-image: url('/images/cases/cases_bg.webp');
+    background-repeat: no-repeat;
+    background-size: cover;
+    /*margin-bottom: rem2(140px);*/
+
+    .cases {
+        padding-top: rem2(180px);
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+
+        .cases-title {
+            font-weight: 800;
+            font-size: rem2(40px);
+            line-height: rem2(52px);
+            color: $B2;
+            margin-bottom: rem2(24px);
+        }
+
+        .cases-bread {
+            font-weight: 400;
+            font-size: rem2(16px);
+            line-height: rem2(24px);
+            color: $Gray2;
+        }
+    }
+
+    .empowering-success {
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding-top: rem2(96px);
+
+        .sec-body {
+            .sec-title {
+                font-weight: 700;
+                font-size: rem2(40px);
+                line-height: rem2(52px);
+                text-align: unset;
+                margin-bottom: rem2(24px);
+
+                @include md {
+                    font-size: rem2(32px);
+                    line-height: rem2(42px);
+                }
+
+                @include sm {
+                    text-align: center;
+                    font-size: rem2(26px);
+                    line-height: rem2(36px);
+                }
+            }
+
+            .sec-desc {
+                font-weight: 400;
+                font-size: rem2(20px);
+                line-height: rem2(32px);
+                text-align: unset;
+                color: $Gray1;
+                max-width: rem2(880px);
+
+                @include md {
+                    font-size: rem2(16px);
+                    line-height: rem2(26px);
+                }
+
+                @include sm {
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+
+.all-cases {
+    display: flex;
+    flex-flow: column nowrap;
+
+    .case {
+        display: flex;
+        margin-bottom: rem2(160px);
+
+        @include md {
+            margin-bottom: rem2(150px);
+            flex-flow: column-reverse;
+        }
+
+        .left-pane {
+            flex-basis: 100%;
+
+            .sec-title {
+                font-size: rem2(30px);
+                text-align: unset;
+            }
+
+            .sec-separator {
+                background-color: $Gray3;
+                width: 80%;
+                height: rem2(2px);
+                margin: 2rem 0;
+            }
+
+            .tags {
+                display: flex;
+                flex-flow: row wrap;
+                gap: 1rem;
+                margin-bottom: rem2(40px);
+
+                .tag {
+                    font-size: rem2(14px);
+                    color: $Gray2;
+                    padding: rem2(8px) rem2(16px) rem2(8px) rem2(36px);
+                    background-color: $B6;
+                    border: 1px solid $B5;
+                    border-radius: 2px;
+                    background-repeat: no-repeat;
+                    background-position: center left rem2(10px);
+                }
+
+                .tag-ai {
+                    background-image: url('/images/cases/all-cases/tag_ai.svg');
+                }
+
+                .tag-web {
+                    background-image: url('/images/cases/all-cases/tag_web.svg');
+                }
+
+                .tag-ui {
+                    background-image: url('/images/cases/all-cases/tag_ui.svg');
+                }
+
+                .tag-sup {
+                    background-image: url('/images/cases/all-cases/tag_sup.svg');
+                }
+
+                .tag-cld {
+                    background-image: url('/images/cases/all-cases/tag_cld.svg');
+                }
+
+                .tag-vr {
+                    background-image: url('/images/cases/all-cases/tag_vr.svg');
+                }
+
+                .tag-vis {
+                    background-image: url('/images/cases/all-cases/tag_vis.svg');
+                }
+
+                .tag-bi {
+                    background-image: url('/images/cases/all-cases/tag_bi.svg');
+                }
+
+                .tag-iot {
+                    background-image: url('/images/cases/all-cases/tag_iot.svg');
+                }
+
+                .tag-mob {
+                    background-image: url('/images/cases/all-cases/tag_mob.svg');
+                }
+            }
+        }
+
+        .right-pane {
+            flex-basis: 100%;
+            display: flex;
+            flex-flow: column;
+            padding-top: 6rem;
+
+            .case-bg {
+                width: 100%;
+                height: rem2(290px);
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: contain;
+                margin-bottom: 5rem;
+
+                @include lg {
+                    margin-bottom: 3rem;
+                }
+
+                @include xs {
+                    margin-bottom: 2rem;
+                    height: rem2(190px);
+                }
+            }
+
+            .specs {
+                display: flex;
+                justify-content: center;
+                gap: 2rem;
+
+                @include lg {
+                    gap: 1rem;
+                }
+
+                @include md {
+                    display: none;
+                }
+
+                .spec {
+                    background: $Gray5;
+                    border: 1px solid $Gray1;
+                    border-radius: rem2(14px);
+                    padding: rem2(16px) rem2(10px);
+                    display: flex;
+                    flex-flow: column;
+                    align-items: center;
+                    width: rem2(130px);
+
+                    @include lg {
+                        width: rem2(120px);
+                        padding: rem2(10px) rem2(6px);
+                    }
+
+                    .spec-title {
+                        font-weight: 700;
+                        font-size: rem2(16px);
+                        color: $Gray1;
+                        margin-bottom: rem2(10px);
+                        background-repeat: no-repeat;
+                        padding-left: rem2(28px);
+                        background-size: contain;
+
+                        @include lg {
+                            font-size: rem2(14px);
+                        }
+                    }
+
+                    .spec-desc {
+                        font-weight: 400;
+                        font-size: rem2(12px);
+                        color: $Gray2;
+
+                        @include lg {
+                            font-size: rem2(10px);
+                        }
+                    }
+
+                    .spec-1 {
+                        background-image: url('images/cases/all-cases/team-members_bg.svg');
+                    }
+
+                    .spec-2 {
+                        background-image: url('images/cases/all-cases/delivery-time_bg.svg');
+                    }
+
+                    .spec-3 {
+                        background-image: url('images/cases/all-cases/delivery-time_bg.svg');
+                    }
+                }
+            }
+        }
+
+
+        &.case-mining {
+            .case-bg {
+                background-image: url('/images/cases/all-cases/mining_case_bg.webp');
+            }
+        }
+
+        &.case-retail {
+            .case-bg {
+                background-image: url('/images/cases/all-cases/retail_case_bg.webp');
+            }
+        }
+
+        &.case-bit {
+            .case-bg {
+                background-image: url('/images/cases/all-cases/bit_case_bg.webp');
+            }
+        }
+    }
+}

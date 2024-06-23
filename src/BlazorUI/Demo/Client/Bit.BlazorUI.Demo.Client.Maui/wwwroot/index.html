@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html bit-theme="dark">
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="theme-color">
+    <title>bit BlazorUI Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" as="image">
+    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Core/images/github-icon-dark.svg" as="image">
+    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Core/images/github-icon-light.svg" as="image">
+
+    <link rel="preload" href="_content/Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-bold.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-light.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-semibold.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-semilight.woff2" as="font" type="font/woff2" crossorigin>
+
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.bundle.scp.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia-bit.css" />
+
+    <style>
+        body {
+            background-color: #0D2960;
+        }
+        
+        body.bit-windows,
+        body.bit-macos,
+        body.bit-ios {
+            background-color: unset;
+        }
+
+        .bit-lds-grid div {
+            background-color: #123456;
+        }
+
+        .bit-lds-wrapper {
+            top: 50%;
+            left: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+        }
+
+        .bit-lds-grid {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            display: inline-block;
+        }
+
+            .bit-lds-grid div {
+                width: 16px;
+                height: 16px;
+                position: absolute;
+                border-radius: 50%;
+                animation: bit-lds-grid 1.2s linear infinite;
+            }
+
+                .bit-lds-grid div:nth-child(1) {
+                    top: 8px;
+                    left: 8px;
+                    animation-delay: 0s;
+                }
+
+                .bit-lds-grid div:nth-child(2) {
+                    top: 8px;
+                    left: 32px;
+                    animation-delay: -0.4s;
+                }
+
+                .bit-lds-grid div:nth-child(3) {
+                    top: 8px;
+                    left: 56px;
+                    animation-delay: -0.8s;
+                }
+
+                .bit-lds-grid div:nth-child(4) {
+                    top: 32px;
+                    left: 8px;
+                    animation-delay: -0.4s;
+                }
+
+                .bit-lds-grid div:nth-child(5) {
+                    top: 32px;
+                    left: 32px;
+                    animation-delay: -0.8s;
+                }
+
+                .bit-lds-grid div:nth-child(6) {
+                    top: 32px;
+                    left: 56px;
+                    animation-delay: -1.2s;
+                }
+
+                .bit-lds-grid div:nth-child(7) {
+                    top: 56px;
+                    left: 8px;
+                    animation-delay: -0.8s;
+                }
+
+                .bit-lds-grid div:nth-child(8) {
+                    top: 56px;
+                    left: 32px;
+                    animation-delay: -1.2s;
+                }
+
+                .bit-lds-grid div:nth-child(9) {
+                    top: 56px;
+                    left: 56px;
+                    animation-delay: -1.6s;
+                }
+
+
+        @keyframes bit-lds-grid {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+
+<body class="bit-blazor-hybrid">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-G1ET5L69QF');
+    </script>
+    <!-- Google tag -->
+    <div id="app-container" class="bit-css-clr-bg-primary bit-css-clr-fg-primary">
+        <div class="bit-lds-wrapper">
+            <div class="bit-lds-grid">
+                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></script>
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
+    <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
+    <script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></script>
+
+</body>
+
+</html>

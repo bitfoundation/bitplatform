@@ -9,10 +9,10 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitActionButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(true, BitIconName.AddFriend, "title"),
-        DataRow(false, BitIconName.AddFriend, "title")
+        DataRow(true, "AddFriend", "title"),
+        DataRow(false, "AddFriend", "title")
     ]
-    public void BitActionButtonTest(bool isEnabled, BitIconName iconName, string title)
+    public void BitActionButtonTest(bool isEnabled, string iconName, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitActionButton>(parameters =>
@@ -35,7 +35,7 @@ public class BitActionButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
-        Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"));
 
         Assert.AreEqual(bitButton.GetAttribute("title"), title);
 
@@ -180,34 +180,5 @@ public class BitActionButtonTests : BunitTestContext
         var bitButton = com.Find(".bit-acb");
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
-    }
-
-    [DataTestMethod,
-        DataRow(BitButtonSize.Small),
-        DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large),
-        DataRow(null),
-    ]
-    public void BitActionButtonSizeTest(BitButtonSize? bitButtonSize)
-    {
-        var component = RenderComponent<BitActionButton>(parameters =>
-        {
-            if (bitButtonSize.HasValue)
-            {
-                parameters.Add(p => p.ButtonSize, bitButtonSize.Value);
-            }
-        });
-
-        var bitActionButton = component.Find(".bit-acb");
-
-        var bitButtonSizeName = bitButtonSize switch
-        {
-            BitButtonSize.Small => "bit-acb-sm",
-            BitButtonSize.Medium => "bit-acb-md",
-            BitButtonSize.Large => "bit-acb-lg",
-            _ => "bit-acb-md",
-        };
-
-        Assert.IsTrue(bitActionButton.ClassList.Contains(bitButtonSizeName));
     }
 }

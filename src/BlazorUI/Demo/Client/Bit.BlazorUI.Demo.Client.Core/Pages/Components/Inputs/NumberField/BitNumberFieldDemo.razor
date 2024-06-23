@@ -1,0 +1,188 @@
+﻿@page "/components/numberfield"
+@page "/components/numerictextfield"
+@page "/components/numeric-text-field"
+
+<PageOutlet Url="components/numberfield"
+            Title="NumberField"
+            Description="numberfield component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="NumberField"
+               ComponentDescription="A NumberField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on. Also, give you the capability to show or hide increment and decrement keys."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
+               ComponentPublicMembers="componentPublicMembers">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNumberField Label="Basic" TValue="int" />
+                <br />
+                <BitNumberField Label="Disabled & DefaultValue" DefaultValue="1363" IsEnabled="false" />
+                <br />
+                <BitNumberField Label="Placeholder" TValue="int?" Placeholder="Enter a number..." />
+                <br />
+                <BitNumberField Label="Step(5) & Buttons" Step="5" ShowButtons="true" />
+                <br />
+                <BitNumberField Label="Required" TValue="int?" Required />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Label" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Label position:</div>
+                <br />
+                <BitNumberField Label="Label Top" TValue="int" />
+                <br />
+                <BitNumberField Label="Label Left" TValue="int" LeftLabel />
+                <br /><br /><br /><br />
+                <div>LabelTemplate:</div>
+                <br />
+                <BitNumberField TValue="int">
+                    <LabelTemplate>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <BitLabel Style="color:green;">This is custom Label</BitLabel>
+                            <BitIcon IconName="@BitIconName.Filter" Style="font-size:18px;" />
+                        </div>
+                    </LabelTemplate>
+                </BitNumberField>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Icons" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNumberField Label="Label & Icon" TValue="int" 
+                                IconName="@BitIconName.Lightbulb" />
+                <br />
+                <BitNumberField Label="Increment & Decrement Icon" TValue="int"
+                                ShowButtons="true"
+                                IncrementIconName="@BitIconName.LikeSolid"
+                                DecrementIconName="@BitIconName.DislikeSolid" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Component's Style & Class:</div>
+                <br />
+                <BitNumberField Label="Styled" DefaultValue="10" Style="background:lightskyblue;border-radius:1rem;padding:0.5rem" />
+                <br />
+                <BitNumberField Label="Classed" DefaultValue="20" Class="custom-class" />
+                <br /><br /><br />
+                <div><b>Styles</b> & <b>Classes</b>:</div>
+                <br />
+                <BitNumberField Label="Styles" DefaultValue="1" IconName="@BitIconName.Microphone"
+                                Styles="@(new() { Root = "background-color: pink;",
+                                                  Icon = "color: red;",
+                                                  Label = "color: blue; font-weight: 900; font-size: 1.25rem;",
+                                                  Input = "padding: 0.5rem; background-color: goldenrod" })" />
+                <br />
+                <BitNumberField Label="Classes" DefaultValue="2"
+                                Classes="@(new() { Input = "custom-input",
+                                                   Focused = "custom-focus",
+                                                   Label = "custom-label",
+                                                   InputWrapper = "custom-input-wrapper" })" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="NumberFormat" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNumberField Label="N0" DefaultValue="1234567890d" NumberFormat="N0" />
+                <br />
+                <BitNumberField Label="C0" DefaultValue="150" NumberFormat="C0" />
+                <br />
+                <BitNumberField Label="000000" DefaultValue="1363" NumberFormat="000000" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Prefix & Suffix" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNumberField TValue="int" Label="Prefix" Prefix="Distance:" />
+                <br />
+                <BitNumberField TValue="int" Label="Suffix" Suffix="km" />
+                <br />
+                <BitNumberField TValue="int" Label="Prefix & Suffix" Prefix="Distance:" Suffix="km" />
+                <br />
+                <BitNumberField TValue="int" Label="With buttons" Prefix="Distance:" Suffix="km" ShowButtons="true" />
+                <br />
+                <BitNumberField TValue="int" Label="Disabled" Prefix="Distance:" Suffix="km" IsEnabled="false" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>
+                    <BitNumberField Label="One-way" Value="oneWayValue" />
+                    <BitRating @bind-Value="oneWayValue" />
+                </div>
+                <br />
+                <div>
+                    <BitNumberField Label="Two-way" @bind-Value="twoWayValue" />
+                    <BitRating @bind-Value="twoWayValue" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Min & Max" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNumberField Label="Min = 0" Min="0" @bind-Value="minValue" />
+                <div>value: [@minValue]</div>
+                <br />
+                <BitNumberField Label="Max = 100" Max="100" @bind-Value="maxValue" />
+                <div>value: [@maxValue]</div>
+                <br />
+                <BitNumberField Label="Min & Max (-10, 10)" Min="-10" Max="10" @bind-Value="minMaxValue" />
+                <div>value: [@minMaxValue]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitNumberField Label="OnIncrement & OnDecrement" ShowButtons="true"
+                                OnIncrement="(double v) => onIncrementCounter++"
+                                OnDecrement="(double v) => onDecrementCounter++" />
+                <div>OnIncrement Counter: @onIncrementCounter</div>
+                <div>OnDecrement Counter: @onDecrementCounter</div>
+                <br />
+                <BitNumberField Label="OnChange" OnChange="(double v) => onChangeCounter++" />
+                <div>OnChange Counter: @onChangeCounter</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <ExamplePreview>
+            <div class="example-box">
+                @if (string.IsNullOrEmpty(SuccessMessage))
+                {
+                    <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
+
+                        <BitNumberField Label="@($"Age: [{validationModel.Age}]")" @bind-Value="validationModel.Age" />
+                        <ValidationMessage For="@(() => validationModel.Age)" />
+                        <br />
+                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessage Severity="BitSeverity.Success">@SuccessMessage</BitMessage>
+                }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

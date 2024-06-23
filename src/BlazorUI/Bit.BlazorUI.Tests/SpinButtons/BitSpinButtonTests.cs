@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -43,10 +44,10 @@ public class BitSpinButtonTests : BunitTestContext
 
     [DataTestMethod,
         DataRow(null, null),
-        DataRow(BitIconName.IncreaseIndentLegacy, null),
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon")
+        DataRow("IncreaseIndentLegacy", null),
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon")
     ]
-    public void BitSpinButtonShouldRenderCorrectIcon(BitIconName? iconName, string iconAriaLabel)
+    public void BitSpinButtonShouldRenderCorrectIcon(string iconName, string iconAriaLabel)
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
@@ -54,10 +55,10 @@ public class BitSpinButtonTests : BunitTestContext
             parameters.Add(p => p.IconAriaLabel, iconAriaLabel);
         });
 
-        if (iconName.HasValue)
+        if (iconName.HasValue())
         {
             var icon = component.FindAll(".bit-icon")[0];
-            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
 
             if (iconAriaLabel is not null) Assert.AreEqual(iconAriaLabel, icon.GetAttribute("aria-label"));
         }
@@ -68,25 +69,25 @@ public class BitSpinButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.IncreaseIndentLegacy, null, true),
-        DataRow(BitIconName.IncreaseIndentLegacy, null, false),
+        DataRow("IncreaseIndentLegacy", null, true),
+        DataRow("IncreaseIndentLegacy", null, false),
 
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", true),
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", false)
     ]
-    public void BitSpinButtonShouldRenderCorrectIncrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
+    public void BitSpinButtonShouldRenderCorrectIncrementButton(string iconName, string iconAriaLabel, bool isEnabled)
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
-            parameters.Add(p => p.IncrementButtonIconName, iconName);
-            parameters.Add(p => p.IncrementButtonAriaLabel, iconAriaLabel);
+            parameters.Add(p => p.IncrementIconName, iconName);
+            parameters.Add(p => p.IncrementAriaLabel, iconAriaLabel);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
         var button = component.Find("button");
         var icon = component.Find("button > span > i");
 
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconName}"));
         Assert.AreEqual(isEnabled is false, button.HasAttribute("disabled"));
         Assert.AreEqual(isEnabled is false, button.HasAttribute("aria-disabled"));
 
@@ -97,25 +98,25 @@ public class BitSpinButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.IncreaseIndentLegacy, null, true),
-        DataRow(BitIconName.IncreaseIndentLegacy, null, false),
+        DataRow("IncreaseIndentLegacy", null, true),
+        DataRow("IncreaseIndentLegacy", null, false),
 
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", true),
-        DataRow(BitIconName.IncreaseIndentLegacy, "BitSpinButtonIcon", false)
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", true),
+        DataRow("IncreaseIndentLegacy", "BitSpinButtonIcon", false)
     ]
-    public void BitSpinButtonShouldRenderCorrectDecrementButton(BitIconName iconName, string iconAriaLabel, bool isEnabled)
+    public void BitSpinButtonShouldRenderCorrectDecrementButton(string iconName, string iconAriaLabel, bool isEnabled)
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
-            parameters.Add(p => p.DecrementButtonIconName, iconName);
-            parameters.Add(p => p.DecrementButtonAriaLabel, iconAriaLabel);
+            parameters.Add(p => p.DecrementIconName, iconName);
+            parameters.Add(p => p.DecrementAriaLabel, iconAriaLabel);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
         var button = component.Find("button:last-child");
         var icon = component.Find("button:last-child > span > i");
 
-        Assert.IsTrue(icon.ToMarkup().Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(icon.ToMarkup().Contains($"bit-icon--{iconName}"));
         Assert.AreEqual(isEnabled is false, button.HasAttribute("disabled"));
         Assert.AreEqual(isEnabled is false, button.HasAttribute("aria-disabled"));
 
@@ -141,25 +142,25 @@ public class BitSpinButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitSpinButtonLabelPosition.Left),
-        DataRow(BitSpinButtonLabelPosition.Top)
+        DataRow(BitLabelPosition.Start),
+        DataRow(BitLabelPosition.Top)
     ]
-    public void BitSpinButtonShouldHaveLabelPositionClassName(BitSpinButtonLabelPosition labelPosition)
+    public void BitSpinButtonShouldHaveLabelPositionClassName(BitLabelPosition labelPosition)
     {
         var component = RenderComponent<BitSpinButton>(parameters =>
         {
             parameters.Add(p => p.LabelPosition, labelPosition);
         });
 
-        var labelPositionClass = labelPosition == BitSpinButtonLabelPosition.Left ? "left" : "top";
+        var labelPositionClass = labelPosition == BitLabelPosition.Start ? "st" : "tp";
 
         var spinButton = component.Find(".bit-spb");
-        Assert.IsTrue(spinButton.ClassList.Contains($"label-{labelPositionClass}"));
+        Assert.IsTrue(spinButton.ClassList.Contains($"bit-spb-l{labelPositionClass}"));
     }
 
     [DataTestMethod,
         DataRow("dir", "ltr"),
-        DataRow("type", "number")
+        DataRow("foo", "bar")
     ]
     public void BitSpinButtonInputShouldHaveHtmlAttributes(string attrKey, string attrValue)
     {
@@ -188,7 +189,7 @@ public class BitSpinButtonTests : BunitTestContext
             parameters.Add(p => p.AriaPositionInSet, ariaPositionInSet);
         });
 
-        var spbWrapper = component.Find(".wrapper");
+        var spbWrapper = component.Find(".bit-spb-cnt");
 
         if (string.IsNullOrEmpty(title) is false)
         {
@@ -264,7 +265,7 @@ public class BitSpinButtonTests : BunitTestContext
         DataRow(4),
         DataRow(12)
     ]
-    public void BitSpinButtonOnIncrementTest(int countOfClicks)
+    public async Task BitSpinButtonOnIncrementTest(int countOfClicks)
     {
         int onIncrementEventCounter = 0;
         var component = RenderComponent<BitSpinButton>(parameters =>
@@ -276,6 +277,7 @@ public class BitSpinButtonTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
+            await Task.Delay(1);
             increaseButton.PointerUp();
         }
 
@@ -286,7 +288,7 @@ public class BitSpinButtonTests : BunitTestContext
        DataRow(4),
        DataRow(12)
     ]
-    public void BitSpinButtonOnDecrementTest(int countOfClicks)
+    public async Task BitSpinButtonOnDecrementTest(int countOfClicks)
     {
         int onDecrementEventCounter = 20;
         var component = RenderComponent<BitSpinButton>(parameters =>
@@ -298,6 +300,7 @@ public class BitSpinButtonTests : BunitTestContext
         for (int i = 0; i < countOfClicks; i++)
         {
             decreaseButton.PointerDown();
+            await Task.Delay(1);
             decreaseButton.PointerUp();
         }
 
@@ -633,7 +636,7 @@ public class BitSpinButtonTests : BunitTestContext
         DataRow(5, 2, 4),
         DataRow(1, 15, 1)
     ]
-    public void BitSpinButtonTwoWayBoundWithCustomHandlerShouldWorkCorrectly(double value, int countOfIncrements, double step)
+    public async Task BitSpinButtonTwoWayBoundWithCustomHandlerShouldWorkCorrectly(double value, int countOfIncrements, double step)
     {
         _bitSpinButtonTwoWayBoundValue = value;
 
@@ -648,6 +651,7 @@ public class BitSpinButtonTests : BunitTestContext
         for (var i = 0; i < countOfIncrements; i++)
         {
             incrementButton.PointerDown();
+            await Task.Delay(1);
         }
 
         var expectedValue = value + (step * countOfIncrements);

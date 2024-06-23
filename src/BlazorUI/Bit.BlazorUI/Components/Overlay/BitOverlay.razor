@@ -1,11 +1,11 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
-     @onclick="CloseOverlay"
+<div @ref="RootElement" @attributes="HtmlAttributes" @onclick="CloseOverlay"
+     id="@_Id"
+     aria-label="@AriaLabel"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
-     aria-label="@AriaLabel">
+     dir="@Dir?.ToString().ToLower()">
     @ChildContent
 </div>

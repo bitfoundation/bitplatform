@@ -1,0 +1,45 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-lyt {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-width: 100%;
+    min-height: 100%;
+    flex-flow: column;
+    position: relative;
+    box-sizing: border-box;
+
+    &.bit-dis {
+        color: $color-foreground-disabled;
+    }
+}
+
+.bit-lyt-hdr {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bit-lyt-fhd {
+    top: 0;
+    position: fixed;
+    z-index: $zindex-base;
+}
+
+.bit-lyt-man {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    box-sizing: border-box;
+}
+
+.bit-lyt-ftr {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bit-lyt-fft {
+    bottom: 0;
+    position: fixed;
+    z-index: $zindex-base;
+}

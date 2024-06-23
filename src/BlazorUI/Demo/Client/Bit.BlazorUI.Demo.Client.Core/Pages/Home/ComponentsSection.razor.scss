@@ -1,0 +1,73 @@
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.list-group {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    margin-top: rem2(25px);
+    align-items: flex-start;
+    justify-content: space-between;
+
+    .list-col {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: rem2(248px);
+        margin-right: rem2(64px);
+
+        &:last-child {
+            margin-right: 0;
+        }
+
+        @include lg {
+            margin-right: rem2(16px);
+        }
+
+        @include md {
+            width: rem2(174px);
+            margin-right: rem2(25px);
+        }
+
+        @include sm {
+            width: 100%;
+            margin-right: 0;
+        }
+    }
+
+    .list {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: 100%;
+        margin-bottom: rem2(24px);
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        @include lg {
+            margin-bottom: rem2(32px);
+        }
+
+        @include md {
+            margin-bottom: rem2(40px);
+        }
+
+        @include sm {
+            margin-bottom: rem2(24px);
+        }
+    }
+
+    ::deep .featured {
+        color: #132f4c;
+        padding: 0 rem2(2px);
+        border-radius: rem2(2px);
+        margin: rem2(3px) rem2(8px);
+        background-color: #fcd077;
+    }
+}

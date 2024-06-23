@@ -1,0 +1,24 @@
+﻿.example-box {
+    gap: 2rem;
+    display: flex;
+    flex-flow: row wrap;
+
+    &.column {
+        flex-direction: column;
+    }
+}
+
+::deep {
+    .custom-class {
+        background-color: tomato;
+        box-shadow: gold 0 0 1rem;
+    }
+
+    .custom-container {
+        border: 1px solid gold;
+    }
+
+    .custom-progress {
+        background-color: gold;
+    }
+}

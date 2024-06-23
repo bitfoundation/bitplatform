@@ -1,0 +1,14 @@
+﻿@inherits AppComponentBase
+
+<div class="component-siderail">
+    <ul class="link-container">
+        @foreach (var item in Items)
+        {
+            <li>
+                <BitLink Class="@(activeItemId == item.Id ? "active" : string.Empty)" 
+                         OnClick="@(() => ScrollToItem(item))">@item.Title
+                </BitLink>
+            </li>
+        }
+    </ul>
+</div>

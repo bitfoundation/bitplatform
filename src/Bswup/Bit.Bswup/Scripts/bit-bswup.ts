@@ -1,9 +1,38 @@
-﻿declare const Blazor: any;
+﻿const BitBswup = {} as any;
+BitBswup.version = window['bit-bswup version'] = '8.9.0';
 
-; (function () {
+declare const Blazor: any;
+
+BitBswup.checkForUpdate = async () => {
+    if (!('serviceWorker' in navigator)) {
+        return console.warn('no serviceWorker in navigator');
+    }
+
+    const reg = await navigator.serviceWorker.getRegistration();
+    const result = await reg.update();
+    return result;
+}
+
+BitBswup.forceRefresh = async () => {
+    if (!('serviceWorker' in navigator)) {
+        return console.warn('no serviceWorker in navigator');
+    }
+
+    const cacheKeys = await caches.keys();
+    const cachePromises = cacheKeys.filter(key => key.startsWith('bit-bswup') || key.startsWith('blazor-resources')).map(key => caches.delete(key));
+    await Promise.all(cachePromises);
+
+    const regs = await navigator.serviceWorker.getRegistrations();
+    const regPromises = regs.map(r => r.unregister());
+    await Promise.all(regPromises);
+
+    window.location.reload();
+}
+
+;(function () {
     const bitBswupScript = document.currentScript;
 
-    window.addEventListener('load', runBswup);
+    window.addEventListener('DOMContentLoaded', runBswup); // important event!
 
     function runBswup() {
         if (!('serviceWorker' in navigator)) {
@@ -16,83 +45,102 @@
 
         startBlazor();
 
-        navigator.serviceWorker.register(options.sw, { scope: options.scope }).then(prepareRegistration);
+        navigator.serviceWorker.register(options.sw, { scope: options.scope, updateViaCache: 'none' }).then(prepareRegistration);
+        navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
         navigator.serviceWorker.addEventListener('message', handleMessage);
-        navigator.serviceWorker.addEventListener('controllerchange', handleController);
 
         let reload: () => void;
+        let blazorStartResolver: (value: unknown) => void;
         function prepareRegistration(reg) {
             reload = () => {
                 if (navigator.serviceWorker.controller) {
                     reg.waiting && reg.waiting.postMessage('SKIP_WAITING');
-                } else {
-                    window.location.reload();
+                    return Promise.resolve();
                 }
+
+                if (reg.active) {
+                    reg.active.postMessage('CLAIM_CLIENTS');
+                    return new Promise((res, _) => blazorStartResolver = res);
+                }
+
+                window.location.reload();
             };
 
             if (reg.waiting) {
+                info('registration waiting:', reg.waiting);
                 if (reg.installing) {
-                    handle('installing', {});
+                    info('registration installing:', reg.installing);
                 } else {
-                    handle('installed');
+                    info('registration is ready:', reg.waiting);
+                    handle(BswupMessage.updateReady, { reload });
                 }
             }
 
             reg.addEventListener('updatefound', function (e) {
                 info('update found', e);
-                handle('updatefound', e);
+                handle(BswupMessage.updateFound, e);
+
                 if (!reg.installing) {
                     warn('no registration.installing found!');
                     return;
                 }
+
                 reg.installing.addEventListener('statechange', function (e) {
                     info('state chnaged', e, 'eventPhase:', e.eventPhase, 'currentTarget.state:', e.currentTarget.state);
-                    handle('statechange', e);
+                    handle(BswupMessage.stateChanged, e);
 
                     if (!reg.waiting) return;
 
                     if (navigator.serviceWorker.controller) {
-                        info('update finished.');
-                        handle('installed', { reload: () => reload() });
+                        info('update finished.'); // not first install
                     } else {
-                        info('initialization finished.');
+                        info('initialization finished.'); // first install
                     }
                 });
             });
         }
 
-        function handleMessage(e) {
-            const message = JSON.parse(e.data);
-            const type = message.type;
-            const data = message.data;
+        function handleControllerChange(e) {
+            info('controller changed.', e);
+        }
 
-            if (type === 'installing') {
-                handle('installing', data);
+        function handleMessage(e) {
+            if (e.data === 'WAITING_SKIPPED') {
+                window.location.reload();
+                return;
+            }
+
+            if (e.data === 'CLIENTS_CLAIMED') {
+                Blazor.start().then(() => {
+                    blazorStartResolver(undefined);
+                    e.source.postMessage('BLAZOR_STARTED');
+                });
+                return;
+            }
+
+            const message = JSON.parse(e.data);
+            const { type, data } = message;
+
+            if (type === 'install') {
+                handle(BswupMessage.downloadStarted, data);
             }
 
             if (type === 'progress') {
-                handle('progress', { ...data, reload: () => reload() });
+                handle(BswupMessage.downloadProgress, data);
+                if (data.percent >= 100) {
+                    const firstInstall = !(navigator.serviceWorker.controller);
+                    handle(BswupMessage.downloadFinished, { reload, firstInstall });
+                }
             }
 
-            if (type === 'installed') {
-                handle('installed', data);
+            if (type === 'bypass') {
+                const firstInstall = data?.firstTime || !(navigator.serviceWorker.controller);
+                handle(BswupMessage.downloadFinished, { reload, firstInstall });
             }
 
             if (type === 'activate') {
-                handle('activate', data);
+                handle(BswupMessage.activate, data);
             }
-        }
-
-        var refreshing = false;
-        function handleController(e) {
-            info('controller changed.', e);
-            handle('controllerchange', e);
-            if (refreshing) {
-                warn('app is already refreshing...');
-                return;
-            }
-            refreshing = true;
-            window.location.reload();
         }
 
         // ============================================================
@@ -117,11 +165,11 @@
 
         function extract(): BswupOptions {
             const defaultoptions = {
-                log: 'info',
-                sw: 'service-worker.js',
                 scope: '/',
-                handler: (...args: any[]) => { },
-                blazorScript: '_framework/blazor.webassembly.js',
+                log: 'none',
+                sw: 'service-worker.js',
+                handlerName: 'bitBswupHandler',
+                blazorScript: '_framework/blazor.web.js',
             }
 
             const optionsAttribute = (bitBswupScript.attributes)['options'];
@@ -138,21 +186,24 @@
             options.scope = (scopeAttribute && scopeAttribute.value) || options.scope;
 
             const handlerAttribute = bitBswupScript.attributes['handler'];
-            const handlerName = (handlerAttribute && handlerAttribute.value) || 'bitBswupHandler';
-            options.handler = (window[handlerName] || options.handler) as (...args: any[]) => void;
+            options.handlerName = (handlerAttribute && handlerAttribute.value) || options.handlerName;
 
             const blazorScriptAttribute = bitBswupScript.attributes['blazorScript'];
             options.blazorScript = (blazorScriptAttribute && blazorScriptAttribute.value) || options.blazorScript;
-
-            if (!options.handler || typeof options.handler !== 'function') {
-                warn('progress handler not found or is not a function!');
-                options.handler = undefined;
-            }
 
             return options;
         }
 
         function handle(...args: any[]) {
+            if (!options.handler) {
+                options.handler = window[options.handlerName];
+
+                if (!options.handler || typeof options.handler !== 'function') {
+                    warn('progress handler not found or is not a function!');
+                    options.handler = () => { };
+                }
+            }
+
             options.handler && options.handler(...args);
         }
 
@@ -160,12 +211,14 @@
         //function info(...texts: string[]) {
         //    console.log(`%cBitBSWUP: ${texts.join('\n')}`, 'color:lightblue');
         //}
+
         function info(...args: any[]) {
             if (options.log === 'none') return;
             console.info(...['BitBswup:', ...args]);
         }
-        function warn(text: string) {
-            console.warn(`BitBswup: ${text}`);
+
+        function warn(...args: any[]) {
+            console.warn(...['BitBswup:', ...args]);
         }
     }
 }());
@@ -174,6 +227,18 @@ interface BswupOptions {
     log: 'none' | 'info' | 'verbose' | 'debug' | 'error'
     sw: string
     scope: string
-    handler(...args: any[]): void
+    handlerName: string
     blazorScript: string
+    handler?(...args: any[]): void
 }
+
+const BswupMessage = {
+    downloadStarted: 'DOWNLOAD_STARTED',
+    downloadProgress: 'DOWNLOAD_PROGRESS',
+    downloadFinished: 'DOWNLOAD_FINISHED',
+    activate: 'ACTIVATE',
+    updateInstalled: 'UPDATE_INSTALLED',
+    updateReady: 'UPDATE_READY',
+    updateFound: 'UPDATE_FOUND',
+    stateChanged: 'STATE_CHANGED'
+};

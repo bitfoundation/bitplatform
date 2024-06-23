@@ -1,0 +1,188 @@
+﻿@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.page-flex-container {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    box-sizing: border-box;
+}
+
+.page-content-container {
+    margin: 0;
+    flex-grow: 0;
+    max-width: 66%;
+    flex-basis: 66%;
+    flex-direction: row;
+    box-sizing: border-box;
+
+    &:last-child {
+        max-width: 34%;
+        flex-basis: 34%;
+        padding-left: rem2(48px);
+    }
+
+    @include lt-xl {
+        flex-grow: 0;
+        max-width: 100%;
+        flex-basis: 100%;
+
+        &:last-child {
+            padding-left: 0;
+            max-width: 100%;
+            flex-basis: 100%;
+            padding-top: rem2(32px);
+        }
+    }
+}
+
+.image-container {
+    position: relative;
+    padding: 50% 0 0 0;
+    margin-bottom: 1rem;
+
+    .template-img {
+        top: 0;
+        width: 100%;
+        height: 100%;
+        color: #f5f5f5;
+        display: block;
+        position: absolute;
+        border-radius: rem2(8px);
+        background-color: #f5f5f5;
+        box-shadow: $bit-box-shadow-callout;
+    }
+
+    .demo-btn-shadow {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        display: flex;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        border-radius: rem2(8px);
+        background-color: rgba(25, 118, 210, 0.6);
+        transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    }
+
+    .demo-btn {
+        border: 0;
+        margin: 0;
+        outline: 0;
+        cursor: pointer;
+        font-weight: 500;
+        line-height: 1.2;
+        position: relative;
+        align-items: center;
+        display: inline-flex;
+        min-width: rem2(64px);
+        font-size: rem2(16px);
+        text-decoration: none;
+        box-sizing: border-box;
+        border-radius: rem2(4px);
+        justify-content: center;
+        padding: rem2(12px) rem2(16px);
+        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        color: $White;
+        background-color: #1976d2;
+
+        &:hover {
+            background-color: #0052cc;
+        }
+    }
+
+    &:hover {
+        .demo-btn-shadow {
+            opacity: 1;
+        }
+    }
+}
+
+.primary-btn {
+    border: 0;
+    outline: 0;
+    width: 100%;
+    cursor: pointer;
+    font-weight: 600;
+    line-height: 1.2;
+    position: relative;
+    align-items: center;
+    font-size: rem2(16px);
+    min-width: rem2(64px);
+    display: inline-flex;
+    text-decoration: none;
+    justify-content: center;
+    border-radius: rem2(4px);
+    margin-bottom: rem2(8px);
+    padding: rem2(12px) rem2(16px);
+    color: $White;
+    background-color: $B6Color;
+
+    &:hover {
+        background-color: #0052cc;
+    }
+}
+
+.secondary-btn {
+    outline: 0;
+    width: 100%;
+    cursor: pointer;
+    font-weight: 600;
+    line-height: 1.2;
+    position: relative;
+    align-items: center;
+    display: inline-flex;
+    font-size: rem2(16px);
+    min-width: rem2(64px);
+    text-decoration: none;
+    box-sizing: border-box;
+    border-radius: rem2(4px);
+    margin-bottom: rem2(8px);
+    justify-content: center;
+    padding: rem2(12px) rem2(16px);
+    border: rem2(1px) solid #bdbdbd;
+    color: #1976d2;
+    background-color: $White;
+
+    &:hover {
+        background-color: #eee;
+    }
+}
+
+.btn-img {
+    width: rem2(18px);
+    height: rem2(18px);
+    margin-right: rem2(8px);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.google-play {
+    background-image: url('/images/templates/google-play.svg');
+}
+
+.apple-store {
+    background-image: url('/images/templates/apple-store.svg');
+}
+
+.nuget {
+    background-image: url('/images/templates/nuget.svg');
+}
+
+.figma {
+    background-image: url('/images/templates/figma.svg');
+}
+
+::deep a {
+    color: $bit-color-primary-main;
+}

@@ -1,0 +1,15 @@
+﻿<LayoutView Layout="@typeof(MainLayout)">
+    <PageTitle>bit platform software development as a service</PageTitle>
+    <Router AppAssembly="@GetType().Assembly"
+            AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Websites.Careers") is true))">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" />
+        </Found>
+        <NotFound>
+            <PageNotFound />
+        </NotFound>
+        <Navigating>
+            <LoadingComponent Color="#FFF" />
+        </Navigating>
+    </Router>
+</LayoutView>

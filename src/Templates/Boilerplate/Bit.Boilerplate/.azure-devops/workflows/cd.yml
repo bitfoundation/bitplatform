@@ -1,0 +1,284 @@
+trigger:
+- main
+
+# https://bitplatform.dev/templates/devops
+
+variables:
+  APP_SERVICE_NAME: 'app-service-bp-test'
+  AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
+  ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
+  DataProtectionCertificatePassword: $(API_DATA_PROTECTION_CERTIFICATE_PASSWORD)
+  ApiServerAddress: 'https://use-your-server-url-here.com/'
+  WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
+
+jobs:
+
+- job: build_api_blazor
+  displayName: 'build api + blazor web'
+
+  pool:
+    vmImage: 'ubuntu-22.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: NodeTool@1
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Install Node.js'
+
+  # - task: Bash@3
+  #   displayName: 'Enable pre rendering'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #         'sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs'
+    
+  - task: Bash@3
+    displayName: 'Install wasm'
+    inputs:
+      targetType: 'inline'
+      script: |
+          'cd src && dotnet workload install wasm-tools wasm-experimental'
+
+  - task: FileTransform@2
+    displayName: Update appsettings.json
+    inputs:
+      fileType: 'json'
+      folderPath: './'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+
+  - task: Bash@3
+    displayName: 'Generate CSS/JS files'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release'
+
+  - task: Bash@3
+    displayName: 'Publish'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -c Release --self-contained -r linux-x64 -o server'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Upload server artifact
+    inputs:
+      targetPath: 'server'
+      artifact: 'server-bundle'
+      publishLocation: 'pipeline'
+
+  - task: Bash@3
+    displayName: 'Build migrations bundle'
+    inputs:
+      targetType: 'inline'
+      script: 'cd src/Boilerplate.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj'
+  
+  - task: PublishPipelineArtifact@1
+    displayName: Upload ef migrations bundle
+    inputs:
+      targetPath: 'src/Boilerplate.Server/efbundle'
+      artifact: 'migrations-bundle'
+      publishLocation: 'pipeline'
+
+- job: deploy_api_blazor
+  dependsOn: build_api_blazor
+  displayName: 'deploy api + blazor'
+
+  pool:
+    vmImage: 'ubuntu-22.04'
+
+  steps:
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Retrieve server bundle
+    inputs:
+      artifact: 'server-bundle'
+      path: ./
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Retrieve migrations bundle
+    inputs:
+      artifact: 'migrations-bundle'
+      path: ./
+
+  - task: FileTransform@2
+    displayName: Update appsettings.json
+    inputs:
+      fileType: 'json'
+      folderPath: './'
+      targetFiles: 'appsettings.json'
+
+  - task: DownloadSecureFile@1
+    displayName: Download .pfx file
+    name: DataProtectionCertificate
+    inputs:
+      secureFile: 'DataProtectionCertificate.pfx'
+          
+  - script: |
+      rm DataProtectionCertificate.pfx
+      cp "$(DataProtectionCertificate.secureFilePath)" "DataProtectionCertificate.pfx"
+    failOnStderr: true
+    displayName: Copy .pfx file
+
+  - task: Bash@3
+    displayName: 'Run migrations'
+    inputs:
+      targetType: 'inline'
+      script: |
+        chmod +x efbundle
+        ./efbundle
+        rm efbundle
+      failOnStderr: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: 'Deploy to App Service'
+    inputs:
+      ConnectionType: 'AzureRM'
+      azureSubscription: '$(AZURE_SUBSCRIPTION)'
+      appType: 'webAppLinux'
+      WebAppName: '$(APP_SERVICE_NAME)'
+      packageForLinux: '.'
+
+#if (windows == true)
+- job: build_blazor_hybrid_windows
+  displayName: 'build blazor hybrid (windows)'
+#endif
+
+  pool:
+    vmImage: 'windows-2022'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: NodeTool@1
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Install Node.js'
+
+  - task: FileTransform@2
+    displayName: Update appsettings.json
+    inputs:
+      fileType: 'json'
+      folderPath: './'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+
+  - task: Bash@3
+    displayName: 'Generate CSS/JS files'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release'
+
+  - task: Bash@3
+    displayName: 'Publish'
+    inputs:
+      targetType: 'inline'
+      script: |
+        cd src\Client\Boilerplate.Client.Windows\
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64
+        ren .\bin\publish-arm64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-arm64.exe
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86
+        ren .\bin\publish-x86\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x86.exe
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
+        ren .\bin\publish-x64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x64.exe
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish
+        del .\bin\publish\Boilerplate.Client.Windows.exe
+        echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
+        echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
+        echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
+        echo A | xcopy .\bin\publish .\publish-result /s /e /h
+        dotnet tool restore
+        dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Upload artifact
+    inputs:
+      targetPath: 'src\Client\Boilerplate.Client.Windows\Releases'
+      artifact: 'win-exe-bundle'
+      publishLocation: 'pipeline'
+
+- job: build_blazor_hybrid_android
+  displayName: 'build blazor hybrid (android)'
+
+  pool:
+    vmImage: 'ubuntu-22.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: NodeTool@1
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Install Node.js'
+
+  - task: Bash@3
+    displayName: 'Install maui'
+    inputs:
+      targetType: 'inline'
+      script: cd src && dotnet workload install maui-android
+
+  - task: Bash@3
+    displayName: 'Install Android Sdk platform tools'
+    inputs:
+      targetType: 'inline'
+      script: '${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"'
+
+  - task: DownloadSecureFile@1
+    displayName: Download Boilerplate keystore file
+    name: AndroidKeyStore
+    inputs:
+      secureFile: 'Boilerplate.keystore'
+
+  - script: |
+      cp $(AndroidKeyStore.secureFilePath) src/Client/Boilerplate.Client.Maui/Boilerplate.keystore
+    failOnStderr: true
+    displayName: Copy keystore to app project folder
+
+  - task: FileTransform@2
+    displayName: Update appsettings.json
+    inputs:
+      fileType: 'json'
+      folderPath: './'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+  
+  - script: |
+      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release
+    failOnStderr: true
+    displayName: Generate CSS/JS files
+
+  - task: Bash@3
+    displayName: 'Build aab'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+
+  - task: Bash@3
+    displayName: 'Build apk'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+
+  - script: |
+      mkdir drop
+      cp ./src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.* drop/
+    failOnStderr: true
+    displayName: Copy apk/aab files to drop folder
+
+  - task: PublishPipelineArtifact@1
+    displayName: Upload artifact
+    inputs:
+      targetPath: 'drop/'
+      artifact: 'android-bundle'
+      publishLocation: 'pipeline'

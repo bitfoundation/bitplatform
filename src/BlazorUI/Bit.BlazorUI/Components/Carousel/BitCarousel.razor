@@ -1,43 +1,45 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
 
     <div @ref="_carousel"
-         class="carousel"
-         style="@_directionStyle"
+         @onpointerup="HandlePointerUp"
+         @onpointerleave="HandlePointerUp"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
          @onpointerdown:preventDefault="true"
-         @onpointerleave="HandlePointerUp"
-         @onpointerup="HandlePointerUp">
+         class="bit-csl-cnt"
+         style="@_directionStyle">
+
         <CascadingValue Value="this" IsFixed="true">
             @ChildContent
         </CascadingValue>
 
         @if (ShowNextPrev)
         {
-        <div class="go-left-btn" @onclick="GoLeft" style="@_goLeftButtonStyle">
-            <i class="bit-icon bit-icon--ChevronRight"></i>
-        </div>
+            <div class="bit-csl-lbt" @onclick="GoLeft" style="@_goLeftButtonStyle">
+                <i class="bit-icon bit-icon--ChevronRight" />
+            </div>
 
-        <div class="go-right-btn" @onclick="GoRight" style="@_goRightButtonStyle">
-            <i class="bit-icon bit-icon--ChevronLeft"></i>
-        </div>
+            <div class="bit-csl-rbt" @onclick="GoRight" style="@_goRightButtonStyle">
+                <i class="bit-icon bit-icon--ChevronLeft" />
+            </div>
         }
     </div>
 
     @if (ShowDots)
     {
-    <div class="dots" style="@_directionStyle">
-        @for (int i = 0; i < _pagesCount; i++)
-        {
-            int index = i;
-            <div class="@(_currentPage == index ? " current" : null)" @onclick="(() => GotoPage(index))"></div>
-        }
-    </div>
+        <div class="bit-csl-dot" style="@_directionStyle">
+            @for (int i = 0; i < _pagesCount; i++)
+            {
+                int index = i;
+                <div class="@(_currentPage == index ? " current" : null)" @onclick="(() => GotoPage(index))"></div>
+            }
+        </div>
     }
 </div>

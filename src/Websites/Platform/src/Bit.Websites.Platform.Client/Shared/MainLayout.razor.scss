@@ -1,0 +1,80 @@
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.main {
+    width: 100%;
+    display: flex;
+    min-height: 100vh;
+    box-sizing: border-box;
+    justify-content: flex-start;
+}
+
+.main--full-page {
+    .site-content {
+        padding: 0;
+        max-width: 100%;
+    }
+}
+
+.site-content {
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    padding-top: rem2(65px);
+    padding-left: rem2(60px);
+    padding-right: rem2(60px);
+    padding-bottom: rem2(65px);
+
+    @include lt-xl {
+        padding-top: rem2(35px);
+        padding-bottom: rem2(35px);
+    }
+
+    @include lg {
+        padding-left: rem2(16px);
+        padding-right: rem2(16px);
+    }
+
+    @include md {
+        padding-left: rem2(30px);
+        padding-right: rem2(30px);
+    }
+
+    @include sm {
+        padding-left: rem2(20px);
+        padding-right: rem2(20px);
+    }
+}
+
+.docs-content {
+    padding: 2.5rem;
+    margin-top: rem2($HeaderHeight);
+    background-color: $bit-color-background-secondary;
+
+    @include lt-lg {
+        margin-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
+
+    @include sm {
+        padding: 1rem;
+    }
+
+    ::deep .page-container {
+        margin: auto;
+        max-width: rem2(1200px);
+    }
+}
+
+::deep {
+    .blue-txt {
+        color: $bit-color-primary-main;
+    }
+
+    code {
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    }
+}

@@ -1,9 +1,0 @@
-﻿@namespace Bit.BlazorUI
-@inherits BitComponentBase
-
-@if (ChildContent is not null)
-{
-    <CascadingValue Value="this" IsFixed="true">
-        @ChildContent
-    </CascadingValue>
-}

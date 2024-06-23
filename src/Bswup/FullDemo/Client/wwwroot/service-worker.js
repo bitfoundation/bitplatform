@@ -1,3 +1,5 @@
+// bit version: 8.9.0
+
 // In development, always fetch from the network and do not enable offline support.
 // This is because caching would make development more difficult (changes would not
 // be reflected on the first load after each change).
@@ -20,11 +22,21 @@ self.externalAssets = [
     {
         "url": "/"
     },
+    {
+        "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
+    }
 ];
 
 self.caseInsensitiveUrl = true;
 
 self.serverHandledUrls = [/\/api\//];
 self.serverRenderedUrls = [/\/privacy$/];
+
+self.noPrerenderQuery = 'no-prerender=true';
+
+self.isPassive = true;
+
+//self.enableDiagnostics = true;
+//self.enableFetchDiagnostics = true;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

@@ -1,79 +1,76 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.ColorPicker;
 
 [TestClass]
 public class BitColorTests
 {
-    [DataTestMethod, DataRow("#5d0914")]
+    [DataTestMethod, DataRow("#5D0914")]
     public void BitColorHexToRgbTest(string color)
     {
-        var bitColor = new BitColor(color);
+        var bitColor = new BitInternalColor(color);
 
-        Assert.AreEqual(93, bitColor.Red);
-        Assert.AreEqual(9, bitColor.Green);
-        Assert.AreEqual(20, bitColor.Blue);
-        Assert.AreEqual(1, bitColor.Alpha);
+        Assert.AreEqual(93, bitColor.R);
+        Assert.AreEqual(9, bitColor.G);
+        Assert.AreEqual(20, bitColor.B);
+        Assert.AreEqual(1, bitColor.A);
     }
 
-    [DataTestMethod, DataRow("#5d0914", 0.6)]
+    [DataTestMethod, DataRow("#5D0914", 0.6)]
     public void BitColorHexToRgbaTest(string color, double alpha)
     {
-        var bitColor = new BitColor(color, alpha);
+        var bitColor = new BitInternalColor(color, alpha);
 
-        Assert.AreEqual(93, bitColor.Red);
-        Assert.AreEqual(9, bitColor.Green);
-        Assert.AreEqual(20, bitColor.Blue);
-        Assert.AreEqual(bitColor.Alpha, alpha);
+        Assert.AreEqual(93, bitColor.R);
+        Assert.AreEqual(9, bitColor.G);
+        Assert.AreEqual(20, bitColor.B);
+        Assert.AreEqual(bitColor.A, alpha);
     }
 
     [DataTestMethod, DataRow("rgb(93,9,20)")]
     public void BitColorRgbToHexTest(string color)
     {
-        var bitColor = new BitColor(color);
+        var bitColor = new BitInternalColor(color);
 
-        Assert.AreEqual("#5d0914", bitColor.Hex);
-        Assert.AreEqual(1, bitColor.Alpha);
+        Assert.AreEqual("#5D0914", bitColor.Hex);
+        Assert.AreEqual(1, bitColor.A);
     }
 
     [DataTestMethod, DataRow("rgb(93,9,20)", 0.6)]
     public void BitColorRgbaToHexTest(string color, double alpha)
     {
-        var bitColor = new BitColor(color, alpha);
+        var bitColor = new BitInternalColor(color, alpha);
 
-        Assert.AreEqual("#5d0914", bitColor.Hex);
-        Assert.AreEqual(alpha, bitColor.Alpha);
+        Assert.AreEqual("#5D0914", bitColor.Hex);
+        Assert.AreEqual(alpha, bitColor.A);
     }
 
-    [DataTestMethod, DataRow(93, 9, 20, 0.6)]
-    public void BitColorSetRgbaTest(int red, int green, int blue, double alpha)
+    [DataTestMethod, DataRow((byte)93, (byte)9, (byte)20, 0.6)]
+    public void BitColorSetRgbaTest(byte red, byte green, byte blue, double alpha)
     {
-        var bitColor = new BitColor();
-        bitColor.SetColorByRgba(red, green, blue, alpha);
+        var bitColor = new BitInternalColor(red, green, blue, alpha);
 
-        Assert.AreEqual("#5d0914", bitColor.Hex);
-        Assert.AreEqual(alpha, bitColor.Alpha);
+        Assert.AreEqual("#5D0914", bitColor.Hex);
+        Assert.AreEqual(alpha, bitColor.A);
     }
 
-    // In computer graphics,  HSV and RGB parameters may be represented by integers from 0 to 255 instead of  real numbers.
-    // In this case, the transformation does not cover every point in the target space, and rounding causes some distortion.
-    // https://psychology.fandom.com/wiki/HSV_color_space
-    [DataTestMethod, DataRow("#5d0914"), DataRow("#5c0914")]
+    [DataTestMethod, DataRow("#5d0914")]
     public void BitColorHexToHsvTest(string color)
     {
-        var bitColor = new BitColor(color);
+        var bitColor = new BitInternalColor(color);
 
-        Assert.AreEqual(352, bitColor.Hsv.Hue);
-        Assert.AreEqual(90, bitColor.Hsv.Saturation);
-        Assert.AreEqual(36, bitColor.Hsv.Value);
-        Assert.AreEqual(1, bitColor.Alpha);
+        Assert.AreEqual(352.14, Math.Round(bitColor.Hsv.Hue, 2));
+        Assert.AreEqual(0.90, Math.Round(bitColor.Hsv.Saturation, 2));
+        Assert.AreEqual(0.36, Math.Round(bitColor.Hsv.Value, 2));
+        Assert.AreEqual(1, bitColor.A);
     }
 
-    [DataTestMethod, DataRow(352, 90, 36, 0.9)]
+    [DataTestMethod, DataRow(352.143, 0.903, 0.365, 0.9)]
     public void BitColorHsvToHexTest(double hue, double saturation, double value, double alpha)
     {
-        var bitColor = new BitColor(hue, saturation, value, alpha);
+        var bitColor = new BitInternalColor(hue, saturation, value, alpha);
 
-        Assert.AreEqual("#5b0914", bitColor.Hex);
+        Assert.AreEqual("#5D0914", bitColor.Hex);
     }
 }

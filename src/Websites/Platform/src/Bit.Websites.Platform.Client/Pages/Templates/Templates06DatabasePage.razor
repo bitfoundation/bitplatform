@@ -1,0 +1,48 @@
+﻿@page "/todo-template/database"
+@page "/admin-panel/database"
+@page "/templates/database"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/database"
+            Title="Database - Templates"
+            Description="how to configure the database of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Database</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        Configure the database to work with the apps built with the bit project templates.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Connection String</BitTypography>
+        <div class="section-card-txt">
+            You can change connection string at <b>appsettings.json</b> file in <b>Server</b> project.
+        </div>
+
+        <div class="section-card-txt">
+            If you have selected 'Other' for the database parameter while building the project, install appropriate EntityFrameworkCore package for your intended database such as PostgreSQL,
+            and then in the <b>Server\Startup\Services.cs</b> file, perform the relevant settings for the related package in the services.AddDbContext section.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Migration</BitTypography>
+        <div class="section-card-txt">
+            Set <b>Server</b> as the Startup Project in solution explorer and also set it as the Default Project in <b>Package Manager Console</b> and run the following commands:
+        </div>
+        <CodeBox>Add-Migration InitialMigration -OutputDir Data\Migrations -Context AppDbContext</CodeBox>
+        <CodeBox>Update-Database -Context AppDbContext</CodeBox>
+        <br />
+        <div class="section-card-txt">
+            <b>Note</b>: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
+        </div>
+        <br />
+        <div class="section-card-txt">Or open a terminal in your Server project directory and run followings:</div>
+        <CodeBox>dotnet ef migrations add InitialMigration --context AppDbContext --output-dir Data/Migrations</CodeBox>
+        <CodeBox>dotnet ef database update --context AppDbContext</CodeBox>
+    </section>
+</div>
+
+<NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" Next="Run" NextUrl="/templates/run" />

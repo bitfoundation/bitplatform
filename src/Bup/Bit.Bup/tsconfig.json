@@ -1,9 +1,9 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "outDir": "wwwroot",
         "allowJs": true,
-        "lib": [ "DOM", "ESNext" ]
+        "lib": [ "DOM", "ESNext" ],
+        "outDir": "wwwroot"
     },
     "include": ["./Scripts/*.ts"]
 }

@@ -3,79 +3,82 @@
 .bit-acd {
     width: 100%;
     display: flex;
-    flex-flow: column nowrap;
     font-weight: 400;
-    font-size: spacing(1.75);
-    font-family: $typography-font-family;
-    color: $color-neutrals-gray160;
-    background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-neutrals-gray30;
-    padding: 0 spacing(1.5);
     box-sizing: border-box;
-    user-select: none;
+    font-size: spacing(1.75);
+    flex-flow: column nowrap;
+    color: $color-foreground-primary;
+    border-radius: $shape-border-radius;
+    font-family: $typography-font-family;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary;
 
     &.bit-dis {
-        background-color: $color-neutrals-gray10;
-        color: $color-neutrals-gray90;
+        color: $color-foreground-disabled;
+        background-color: $color-background-disabled;
 
-        .intro > .description {
-            color: $color-neutrals-gray90;
+        .bit-acd-ttl,
+        .bit-acd-des {
+            color: $color-foreground-disabled;
         }
     }
+}
 
-    .header {
-        display: flex;
-        justify-content: center;
-        margin: spacing(1.5) 0;
-        cursor: pointer;
+.bit-acd-hdr {
+    display: flex;
+    cursor: pointer;
+    text-align: start;
+    align-items: center;
+    padding: spacing(1.5);
+    background-color: transparent;
+    color: $color-foreground-primary;
+}
 
-        .header-icon {
-            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-        }
+.bit-acd-hic {
+    display: flex;
+    align-items: center;
+    margin: 0 spacing(0.625);
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
 
-        &.expanded {
-            .header-icon {
-                transform: rotate(-180deg);
-            }
-        }
-    }
+.bit-acd-wrp {
+    flex-grow: 1;
+    display: flex;
+    gap: spacing(1);
+    flex-wrap: wrap;
+    line-height: 1.5;
+    align-items: center;
+}
 
-    .title-description-wrapper {
-        display: flex;
-        flex-grow: 1;
-        line-height: 1.5;
+.bit-acd-ttl {
+    min-width: 30%;
+    font-weight: 600;
+    font-size: spacing(2);
+}
 
-        .title {
-            font-size: spacing(2);
-            font-weight: 600;
-            width: 30%;
-        }
+.bit-acd-des {
+    color: $color-foreground-secondary;
+}
 
-        .description {
-            color: $color-neutrals-gray130;
-        }
-    }
+.bit-acd-hex {
+    transform: rotate(-180deg);
+}
 
-    .header-icon {
-        display: flex;
-        align-items: center;
-        margin: 0 spacing(0.625);
-    }
+.bit-acd-con {
+    height: auto;
+    overflow: hidden;
+    padding: 0 spacing(1.5);
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
 
-    .content {
-        transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-        overflow: hidden;
-        height: auto;
+.bit-acd-cco {
+    opacity: 0;
+    max-height: 0;
+    margin: spacing(-1.5) 0;
+}
 
-        &.expanded {
-            margin: spacing(1.5) 0;
-            opacity: 1;
-        }
-
-        &.collapsed {
-            margin: spacing(-1.5) 0;
-            max-height: 0;
-            opacity: 0;
-        }
-    }
+.bit-acd-cex {
+    opacity: 1;
+    height: auto;
+    margin: spacing(1.5) 0;
 }

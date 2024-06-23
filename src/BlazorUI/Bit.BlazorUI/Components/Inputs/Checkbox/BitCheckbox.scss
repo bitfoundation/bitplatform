@@ -1,0 +1,191 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-chb {
+    width: fit-content;
+    font-family: $typography-font-family;
+
+    @media (hover: hover) {
+        &:hover {
+            .bit-chb-box {
+                .bit-icon {
+                    opacity: 1;
+                    color: $color-action-hover-foreground-secondary;
+                }
+            }
+        }
+    }
+
+    &.bit-inv {
+        .bit-chb-box {
+            border-color: $color-state-error;
+        }
+
+        &.bit-chb-ckd {
+            .bit-chb-box {
+                background-color: $color-state-error;
+            }
+        }
+
+        &.bit-chb-ind {
+            .bit-chb-box {
+                .bit-icon {
+                    background-color: $color-state-error;
+                }
+            }
+        }
+    }
+
+    &.bit-dis {
+        pointer-events: none;
+
+        .bit-chb-lbl {
+            cursor: default;
+        }
+
+        .bit-chb-txt {
+            color: $color-foreground-disabled;
+        }
+
+        .bit-chb-box {
+            border-color: $color-border-disabled;
+
+            .bit-icon {
+                opacity: 1;
+                color: $color-background-disabled;
+                background-color: $color-background-disabled;
+            }
+        }
+
+        &.bit-chb-ckd {
+            .bit-chb-box {
+                background-color: transparent;
+                border-color: $color-border-disabled;
+
+                .bit-icon {
+                    color: $color-foreground-disabled;
+                }
+            }
+        }
+    }
+}
+
+.bit-chb-box {
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    align-items: center;
+    width: spacing(2.5);
+    height: spacing(2.5);
+    box-sizing: border-box;
+    min-width: spacing(2.5);
+    justify-content: center;
+    transition-duration: 200ms;
+    border-style: $shape-border-style;
+    border-width: $shape-border-width;
+    border-color: $color-border-primary;
+    border-radius: $shape-border-radius;
+    transition-property: background, border, border-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+
+    .bit-icon {
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        transition: 0.1s;
+        align-items: center;
+        justify-content: center;
+        font-size: spacing(1.375);
+    }
+}
+
+.bit-chb-txt {
+    line-height: spacing(2.5);
+}
+
+.bit-chb-lbl {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: spacing(1);
+    cursor: pointer;
+    font-weight: 400;
+    user-select: none;
+    position: relative;
+    align-items: center;
+    font-size: spacing(1.75);
+}
+
+.bit-chb-end {
+    .bit-chb-lbl {
+        justify-content: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .bit-chb-box {
+        margin: 0 0 0 spacing(0.5);
+    }
+
+    .bit-chb-txt {
+        margin: 0 spacing(0.5) 0 0;
+    }
+}
+
+.bit-chb-ckd {
+    .bit-chb-box {
+        border-color: $color-primary-main;
+        background-color: $color-primary-main;
+
+        .bit-icon {
+            opacity: 1;
+            color: $color-primary-text;
+        }
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            .bit-chb-box {
+                border-color: $color-action-hover-primary;
+                background-color: $color-action-hover-primary;
+
+                .bit-icon {
+                    opacity: 1;
+                    color: $color-action-hover-secondary;
+                }
+            }
+        }
+    }
+}
+
+.bit-chb-ind {
+    .bit-chb-box {
+        border-color: $color-primary-main;
+        background-color: $color-background-primary;
+
+        .bit-icon {
+            opacity: 1;
+            width: spacing(1.25);
+            height: spacing(1.25);
+            display: inline-block;
+            border-radius: spacing(0.375);
+            background-color: $color-primary-main;
+
+            &:before {
+                content: '';
+            }
+        }
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            .bit-chb-box {
+                border-color: $color-action-hover-primary;
+                background-color: $color-background-primary;
+
+                .bit-icon {
+                    background-color: $color-action-hover-primary;
+                }
+            }
+        }
+    }
+}

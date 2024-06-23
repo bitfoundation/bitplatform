@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html bit-theme="dark">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="theme-color">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="bit is a platform for .NET developers to easily Code, Build & Deploy their projects across multiple platforms." />
+
+    <!-- Google Tag Manager -->
+    <Script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+            var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+            j.async = true; j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-NFPRLK6B');
+    </Script>
+    <!-- End Google Tag Manager -->
+
+    <Link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <HeadOutlet @rendermode=RenderModeProvider.Current />
+    <Link rel="apple-touch-icon" sizes="512x512" href="images/bit-icon-512.png" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <Link rel="stylesheet" href="styles/app.css" />
+    <Link rel="stylesheet" href="Bit.Websites.Platform.Client.bundle.scp.css" />
+</head>
+
+<body class="@BitCss.Class.Color.Background.Primary @BitCss.Class.Color.Foreground.Primary bit-blazor-web">
+
+    <!-- Microsoft Clarity -->
+    <Script type="text/javascript">
+        (function (c, l, a, r, i, t, y) {
+            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+            t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+            y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+        })(window, document, "clarity", "script", "ip2k0jz1zu");
+    </Script>
+    <!-- Microsoft Clarity -->
+
+    <Routes @rendermode=RenderModeProvider.Current />
+
+    @if (HttpContext.Request.IsCrawlerClient() is false)
+    {
+        <Script src="_framework/blazor.web.js"></Script>
+        <script src="_content/Bit.Butil/bit-butil.js"></script>
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="scripts/app.js"></Script>
+    }
+</body>
+
+</html>
+

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -10,34 +9,18 @@ internal static class ObjectExtensions
         return obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
     }
 
-    internal static BitIconName? GetBitIconNameFromProperty(this object? obj, string propertyName)
+    internal static string? GetBitIconNameFromProperty(this object? obj, string propertyName)
     {
         var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
 
         if (value is null) return null;
 
-        if (value is BitIconName bitIconName)
-            return bitIconName;
+        if (value is string bitIconName) return bitIconName;
 
         return null;
     }
 
-    internal static T? GetValueFromProperty<T>(this object? obj, string propertyName)
-    {
-        var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
-
-        if (value is null)
-        {
-            return default;
-        }
-
-        Type targetType = typeof(T);
-        targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-
-        return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
-    }
-
-    internal static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue)
+    internal static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue = default)
     {
         var value = obj?.GetType().GetProperty(propertyName)?.GetValue(obj);
 
@@ -48,6 +31,18 @@ internal static class ObjectExtensions
 
         Type targetType = typeof(T);
         targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        if (targetType == typeof(object))
+        {
+            return (T)value;
+        }
+
+        if (targetType == typeof(string))
+        {
+            value = value.ToString();
+
+            if (value is null) return defaultValue;
+        }
 
         return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
     }

@@ -1,0 +1,30 @@
+﻿@inherits AppComponentBase
+
+@if (_isNavOpen)
+{
+    <div class="nav-menu-overlay nav-menu--mobile" @onclick="@ToggleMenu"></div>
+}
+<div class="nav-menu @(_isNavOpen is false ? "nav-menu--desktop" : null)">
+    <div class="search-box-container">
+        <BitSearchBox Class="nav-menu-search-box"
+                      Placeholder="Search components"
+                      IconName="@BitIconName.Search"
+                      IsUnderlined="true"
+                      Value="@_searchText"
+                      ValueChanged="@HandleChange"
+                      OnClear="@HandleClear" />
+        @if (_filteredNavItems.Count == 0)
+        {
+            <br />
+            <div>nothing found!</div>
+        }
+    </div>
+    <div class="nav-menu-list">
+        <BitNav Class="side-nav"
+                Items="_filteredNavItems"
+                AriaLabel="bit BlazorUI Nav"
+                OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)">
+        </BitNav>
+        <div style="height:50px"></div>
+    </div>
+</div>

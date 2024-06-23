@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
+        <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
+        <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
+        <HybridGlobalization>true</HybridGlobalization>
+        <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
+        <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Watch Include="..\Bit.BlazorUI.Demo.Client.Core\**\*.razor" />
+        <Watch Include="..\Bit.BlazorUI.Demo.Client.Core\**\*.css" Exclude="node_modules\**\*;**\*.css.map;obj\**\*;bin\**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bit.Bswup" Version="8.9.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="8.9.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
+
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+    </ItemGroup>
+
+</Project>

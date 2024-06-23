@@ -1,0 +1,301 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ExamplePreview>
+        <BitChoiceGroup Label="Basic Customs"
+                        Items="basicCustoms"
+                        DefaultValue="basicCustoms[1].ItemValue"
+                        NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitChoiceGroup Label="Disabled ChoiceGroup"
+                            IsEnabled="false"
+                            Items="basicCustoms"
+                            DefaultValue="@("A")"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+
+            <BitChoiceGroup Label="ChoiceGroup with Disabled Custom"
+                            Items="disabledCustoms"
+                            DefaultValue="@("A")"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     Value = { Selector = i => i.ItemValue },
+                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitChoiceGroup Label="Image Customs"
+                            DefaultValue="@("Bar")"
+                            Items="imageCustoms"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
+                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
+                                                     ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
+                                                     ImageAlt = { Name = nameof(ChoiceModel.ImageDescription) },
+                                                     ImageSize = { Name = nameof(ChoiceModel.ImageSize) },
+                                                     SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})" />
+
+            <BitChoiceGroup Label="Icon Customs"
+                            DefaultValue="@("Day")"
+                            Items="iconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     Value = { Selector = i => i.ItemValue },
+                                                     IconName = { Selector = i => i.IconName },
+                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Horizontal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div class="example-content column">
+            <BitChoiceGroup Label="Basic"
+                            DefaultValue="@("A")"
+                            Items="basicCustoms"
+                            LayoutFlow="BitLayoutFlow.Horizontal"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+
+            <BitChoiceGroup Label="Disabled"
+                            IsEnabled="false"
+                            DefaultValue="@("A")"
+                            Items="basicCustoms"
+                            LayoutFlow="BitLayoutFlow.Horizontal"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
+
+            <BitChoiceGroup Label="Image"
+                            DefaultValue="@("Bar")"
+                            Items="imageCustoms"
+                            LayoutFlow="BitLayoutFlow.Horizontal"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
+                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
+                                                     ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
+                                                     ImageAlt = { Name = nameof(ChoiceModel.ImageDescription) },
+                                                     ImageSize = { Name = nameof(ChoiceModel.ImageSize) },
+                                                     SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})" />
+
+            <BitChoiceGroup Label="Icon"
+                            DefaultValue="@("Day")"
+                            Items="iconCustoms"
+                            LayoutFlow="BitLayoutFlow.Horizontal"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     Value = { Selector = i => i.ItemValue },
+                                                     IconName = { Selector = i => i.IconName },
+                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Styled ChoiceGroup"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            Style="width:200px;height:200px;background-color:#888;padding:1rem;border-radius:1rem;"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+
+            <BitChoiceGroup Label="Classed ChoiceGroup"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            Class="custom-class"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Item's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Items="itemStyleClassCustoms"
+                            DefaultValue="itemStyleClassCustoms[1].ItemValue"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
+                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
+                                                     Class = { Name = nameof(ChoiceModel.Class) },
+                                                     Style = { Name = nameof(ChoiceModel.Style) } })" />
+        </div>
+        <br /><br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Styles"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            Styles="@(new() { Label = "color:tomato",
+                                              ItemIcon = "color:red" ,
+                                              ItemText = "color:yellowgreen;font-size:12px;font-weight:bold" })"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+
+            <BitChoiceGroup Label="Classes"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            Classes="@(new() { Label = "custom-label" , ItemText = "custom-text" })"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="LabelTemplate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ExamplePreview>
+        <BitChoiceGroup Items="basicCustoms"
+                        DefaultValue="@("A")"
+                        NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })">
+            <LabelTemplate>
+                <div class="custom-label">
+                    Custom label <BitIcon IconName="@BitIconName.Filter" />
+                </div>
+            </LabelTemplate>
+        </BitChoiceGroup>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitChoiceGroup Label="One-way" Value="@oneWayValue"
+                                Items="basicCustoms"
+                                NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                <br />
+                <BitTextField @bind-Value="oneWayValue" />
+            </div>
+            <div>
+                <BitChoiceGroup Label="Two-way" @bind-Value="twoWayValue"
+                                Items="basicCustoms"
+                                NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
+                <br />
+                <BitTextField @bind-Value="twoWayValue" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitChoiceGroup Label="ItemPrefixTemplate" Items="basicCustoms" DefaultValue="@string.Empty"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name},
+                                                     Value = { Selector = i => i.ItemValue },
+                                                     Index = nameof(ChoiceModel.Idx) })">
+                <ItemPrefixTemplate Context="item">
+                    @(item.Idx + 1).&nbsp;
+                </ItemPrefixTemplate>
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="ItemLabelTemplate" @bind-Value="itemLabelTemplateValue"
+                            Items="itemTemplateCustoms"
+                            NameSelectors="@(new() { Value = { Selector = i => i.ItemValue } })">
+                <ItemLabelTemplate Context="custom">
+                    <div class="custom-container @(itemLabelTemplateValue == custom.ItemValue ? "selected" : string.Empty)">
+                        <BitIcon IconName="@custom.IconName" />
+                        <span>@custom.Name</span>
+                    </div>
+                </ItemLabelTemplate>
+            </BitChoiceGroup>
+        </div>
+        <br /><br /><br />
+        <div class="example-content">
+            <BitChoiceGroup Label="ItemTemplate" @bind-Value="itemTemplateValue"
+                            Items="itemTemplateCustoms"
+                            NameSelectors="@(new() { Value = { Name = nameof(ChoiceModel.ItemValue) } })">
+                <ItemTemplate Context="custom">
+                    <div class="custom-container @(itemTemplateValue == custom.ItemValue ? "selected" : string.Empty)">
+                        <div class="custom-circle"></div>
+                        <span>@custom.Name</span>
+                    </div>
+                </ItemTemplate>
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="Item's Template" Items="itemTemplateCustoms2" @bind-Value="itemTemplateValue2"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
+                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
+                                                     Template = { Name = nameof(ChoiceModel.Fragment) } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <div style="direction:rtl" class="example-content">
+            <BitChoiceGroup Label="ساده"
+                            Dir="BitDir.Rtl"
+                            DefaultValue="@("A")"
+                            Items="rtlCustoms"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+
+            <BitChoiceGroup Label="غیرفعال"
+                            Dir="BitDir.Rtl"
+                            IsEnabled="false"
+                            DefaultValue="@("A")"
+                            Items="rtlCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ExamplePreview>
+        @if (string.IsNullOrEmpty(successMessage))
+        {
+            <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+                <DataAnnotationsValidator />
+
+                <BitChoiceGroup @bind-Value="validationModel.Value"
+                                Items="basicCustoms"
+                                NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                <ValidationMessage For="@(() => validationModel.Value)" />
+
+                <br />
+
+                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+            </EditForm>
+        }
+        else
+        {
+            <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
+        }
+        <br />
+        <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+@code {
+    private List<ChoiceModel> itemTemplateCustoms2 = default!;
+
+    protected override void OnInitialized()
+    {
+        itemTemplateCustoms2 = new()
+        {
+            new()
+            {
+                Name = "Day",
+                ItemValue = "Day",
+                Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
+        <div class="custom-circle" />
+        <span style="color:red">@item.Name</span>
+    </div>)
+            },
+            new()
+            {
+                Name = "Week",
+                ItemValue = "Week",
+                Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
+        <div class="custom-circle" />
+        <span style="color:green">@item.Name</span>
+    </div>)
+            },
+            new()
+            {
+                Name = "Month",
+                ItemValue = "Month",
+                Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
+        <div class="custom-circle" />
+        <span style="color:blue">@item.Name</span>
+    </div>)
+            }
+        };
+    }
+}

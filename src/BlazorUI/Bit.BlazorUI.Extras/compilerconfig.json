@@ -1,0 +1,11 @@
+﻿[
+    {
+        "outputFile": "Styles/bit.blazorui.extras.css",
+        "inputFile": "Styles/bit.blazorui.extras.scss",
+        "options": {
+            "relativeUrls": false,
+            "sourceMap": false
+        },
+        "minify": { "enabled": false }
+    }
+]

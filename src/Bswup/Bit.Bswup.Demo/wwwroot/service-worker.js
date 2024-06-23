@@ -1,30 +1,14 @@
-// In development, always fetch from the network and do not enable offline support.
-// This is because caching would make development more difficult (changes would not
-// be reflected on the first load after each change).
-//self.addEventListener('fetch', () => { });
+// bit version: 8.9.0
 
-self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
-self.defaultUrl = 'index.html';
-self.prohibitedUrls = [];
-self.assetsUrl = '/service-worker-assets.js';
-
-// more about SRI (Subresource Integrity) here: https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity
-// online tool to generate integrity hash: https://www.srihash.org/   or   https://laysent.github.io/sri-hash-generator/
-// using only js to generate hash: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-self.externalAssets = [
-    //{
-    //    "hash": "sha256-lDAEEaul32OkTANWkZgjgs4sFCsMdLsR5NJxrjVcXdo=",
-    //    "url": "css/app.css"
-    //},
-    {
-        "url": "/"
-    },
-];
-
 self.caseInsensitiveUrl = true;
+self.precachedAssetsInclude = [/favicon\.ico$/, /icon-512\.png$/, /bit-bw-64\.png$/];
 
-self.serverHandledUrls = [/\/api\//];
-self.serverRenderedUrls = [/\/privacy$/];
+self.externalAssets = [
+    {
+        "url": "not-found/script.file.js"
+    }
+];
+self.errorTolerance = 'lax';
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

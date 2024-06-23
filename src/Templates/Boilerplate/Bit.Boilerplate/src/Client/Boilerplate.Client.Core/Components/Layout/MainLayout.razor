@@ -1,0 +1,25 @@
+﻿@inherits LayoutComponentBase
+
+<div class="status-bar">Boilerplate</div>
+
+<CascadingValue Value="currentDir">
+    <div dir="@currentDir?.ToString()" class="layout">
+        <Header OnToggleMenu=ToggleMenuHandler />
+
+        <main>
+            @if (isUserAuthenticated)
+            {
+                <NavMenu @bind-IsMenuOpen=isMenuOpen />
+            }
+            <div class="main-content">
+                <AppErrorBoundary>
+                    @Body
+                </AppErrorBoundary>
+            </div>
+        </main>
+
+        <Footer />
+
+        <MessageBox />
+    </div>
+</CascadingValue>

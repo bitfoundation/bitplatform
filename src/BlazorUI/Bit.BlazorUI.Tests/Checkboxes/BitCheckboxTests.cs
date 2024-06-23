@@ -40,31 +40,33 @@ public class BitCheckboxTests : BunitTestContext
         }
 
         Assert.AreEqual(defaultValue, checkBox.ClassList.Contains("bit-chb-ckd"));
+
         chbCheckbox.Click();
+
         Assert.AreEqual(isEnabled, clicked);
         Assert.AreEqual(isEnabled, changed);
     }
 
     [DataTestMethod,
-        DataRow(BitCheckBoxSide.Start),
-        DataRow(BitCheckBoxSide.End),
+        DataRow(false),
+        DataRow(true),
     ]
-    public void BitCheckboxBoxSideTest(BitCheckBoxSide boxSide)
+    public void BitCheckboxReversedTest(bool reversed)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.BoxSide, boxSide);
+            parameters.Add(p => p.Reversed, reversed);
         });
 
         var checkBox = component.Find(".bit-chb");
 
-        if (boxSide is BitCheckBoxSide.End)
+        if (reversed)
         {
-            Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-se"));
+            Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-end"));
         }
         else
         {
-            Assert.IsFalse(checkBox.ClassList.Contains("bit-chb-se"));
+            Assert.IsFalse(checkBox.ClassList.Contains("bit-chb-end"));
         }
     }
 
@@ -78,7 +80,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsIndeterminate, true);
+            parameters.Add(p => p.DefaultIndeterminate, true);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
@@ -254,19 +256,19 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitIconName.Emoji2),
-        DataRow(BitIconName.MicrosoftFlowLogo),
+        DataRow("Emoji2"),
+        DataRow("MicrosoftFlowLogo"),
     ]
-    public void BitCheckboxCustomCheckmarkIconTest(BitIconName checkmarkIconName)
+    public void BitCheckboxCustomCheckmarkIconTest(string checkmarkIconName)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
+            parameters.Add(p => p.CheckIconName, checkmarkIconName);
         });
 
-        var icon = component.Find(".bit-chb-ctn i.bit-icon");
+        var icon = component.Find(".bit-chb-box i.bit-icon");
 
-        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName.GetName()}"));
+        Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{checkmarkIconName}"));
     }
 
     [DataTestMethod,
@@ -277,10 +279,10 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.CheckmarkIconAriaLabel, ariaLabel);
+            parameters.Add(p => p.CheckIconAriaLabel, ariaLabel);
         });
 
-        var icon = component.Find(".bit-chb-ctn i.bit-icon");
+        var icon = component.Find(".bit-chb-box i.bit-icon");
 
         if (ariaLabel is not null)
         {
@@ -334,8 +336,8 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.IsIndeterminate, true);
-            parameters.Add(p => p.IsIndeterminateChanged, HandleIsIndeterminateChanged);
+            parameters.Add(p => p.Indeterminate, true);
+            parameters.Add(p => p.IndeterminateChanged, HandleIsIndeterminateChanged);
         });
 
         var chb = component.Find("input");

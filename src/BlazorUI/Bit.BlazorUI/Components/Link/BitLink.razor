@@ -7,21 +7,21 @@
     {
         if (Href.StartsWith("#"))
         {
-            <a @ref="RootElement"
-               @attributes="HtmlAttributes"
+            <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="ScrollIntoView" @onclick:preventDefault
+               id="@_Id"
                style="@StyleBuilder.Value"
                class="@ClassBuilder.Value"
-               @onclick="ScrollIntoView"
-               @onclick:preventDefault>
+               dir="@Dir?.ToString().ToLower()">
                 @ChildContent
             </a>
         }
         else
         {
-            <a @ref="RootElement"
-               @attributes="HtmlAttributes"
+            <a @ref="RootElement" @attributes="HtmlAttributes"
+               id="@_Id"
                style="@StyleBuilder.Value"
                class="@ClassBuilder.Value"
+               dir="@Dir?.ToString().ToLower()"
                href="@Href"
                target="@Target">
                 @ChildContent
@@ -30,24 +30,25 @@
     }
     else
     {
-        <a @ref="RootElement"
-           @attributes="HtmlAttributes"
+        <a @ref="RootElement" @attributes="HtmlAttributes"
+           id="@_Id"
            style="@StyleBuilder.Value"
-           class="@ClassBuilder.Value">
+           class="@ClassBuilder.Value"
+           dir="@Dir?.ToString().ToLower()">
             @ChildContent
         </a>
     }
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick"
+            id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
+            dir="@Dir?.ToString().ToLower()"
             type="button"
-            aria-disabled="@(IsEnabled is false)"
             disabled="@(IsEnabled is false)"
-            @onclick="HandleClick">
+            aria-disabled="@(IsEnabled is false)">
         @ChildContent
     </button>
 }

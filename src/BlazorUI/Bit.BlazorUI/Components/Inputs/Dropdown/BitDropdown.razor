@@ -1,0 +1,313 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<TValue>
+@typeparam TItem
+@typeparam TValue
+
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+</CascadingValue>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-owns="@(IsOpen ? _calloutId : null)">
+
+    @if (LabelTemplate is not null)
+    {
+        <label id="@_labelId">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label style="@Styles?.Label" class="bit-drp-lbl @Classes?.Label" id="@_labelId">
+            @Label
+        </label>
+    }
+
+    <div @onclick="HandleOnClick"
+         title="@Title"
+         role="combobox"
+         id="@_dropdownId"
+         style="@Styles?.Container"
+         class="bit-drp-wrp @Classes?.Container"
+         tabindex=@(IsEnabled ? 0 : -1)
+         aria-haspopup="listbox"
+         aria-required="@IsRequired"
+         aria-disabled="@(IsEnabled is false)"
+         aria-expanded=@(IsOpen ? "true" : "false")
+         aria-labelledby="@GetDropdownAriaLabelledby"
+         aria-controls="@(IsOpen ? _calloutId : null)">
+
+        @if (PrefixTemplate is not null)
+        {
+            @PrefixTemplate
+        }
+        else if (Prefix.HasValue())
+        {
+            <span style="@Styles?.PrefixContainer" class="bit-drp-pre @Classes?.PrefixContainer">
+                <span style="@Styles?.Prefix" class="@Classes?.Prefix">
+                    @Prefix
+                </span>
+            </span>
+        }
+
+        <span id="@_dropdownTextContainerId"
+              style="@Styles?.TextContainer"
+              class="bit-drp-tcn @Classes?.TextContainer"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-invalid="false">
+
+            @if (Chips)
+            {
+                @foreach (var item in _selectedItems)
+                {
+                    <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
+                        @GetText(item)
+                        <i style="@Styles?.ChipsRemoveIcon" class="bit-icon bit-icon--Cancel @Classes?.ChipsRemoveIcon" @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation />
+                    </span>
+                }
+            }
+            else if (_selectedItems.Count > 0)
+            {
+                @if (TextTemplate is not null)
+                {
+                    @TextTemplate(this)
+                }
+                else
+                {
+                    @GetText()
+                }
+            }
+
+            @if (Combo)
+            {
+                <input @ref="_comboBoxInputRef"
+                       @onkeydown="@HandleOnKeyDown"
+                       @oninput="@HandleOnComboInput"
+                       style="@Styles?.ComboBoxInput"
+                       class="bit-drp-inp @Classes?.ComboBoxInput"
+                       type="text"
+                       role="combobox"
+                       value="@_searchText"
+                       aria-label="@AriaLabel"
+                       placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
+                       autocomplete="@BitAutoCompleteValue.NewPassword"
+                       disabled="@(IsEnabled is false)" />
+            }
+            else if (_selectedItems.Count == 0)
+            {
+                @if (PlaceholderTemplate is not null)
+                {
+                    @PlaceholderTemplate(this)
+                }
+                else
+                {
+                    @Placeholder
+                }
+            }
+        </span>
+
+        @if (IsEnabled && ShowClearButton && _selectedItems.Count > 0)
+        {
+            <button @onclick="HandleOnClearClick" @onclick:stopPropagation
+                    type="button"
+                    style="@Styles?.ClearButton"
+                    class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
+                <i class="bit-icon bit-icon--Cancel" />
+            </button>
+        }
+
+        <span class="bit-drp-icn">
+            @if (CaretDownTemplate is not null)
+            {
+                @CaretDownTemplate
+            }
+            else
+            {
+                <i aria-hidden="true"
+                   style="@Styles?.CaretDownIcon"
+                   class="bit-icon bit-icon--@CaretDownIconName @Classes?.CaretDownIcon" />
+            }
+        </span>
+
+        @if (SuffixTemplate is not null)
+        {
+            @SuffixTemplate
+        }
+        else if (Suffix.HasValue())
+        {
+            <span style="@Styles?.SuffixContainer" class="bit-drp-suf @Classes?.SuffixContainer">
+                <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                    @Suffix
+                </span>
+            </span>
+        }
+    </div>
+
+    <div @onclick="CloseCallout"
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-drp-ovl @Classes?.Overlay"></div>
+
+    <div id="@_calloutId"
+         tabindex="0"
+         role="listbox"
+         style="@Styles?.Callout"
+         class="bit-drp-cal @Classes?.Callout"
+         aria-labelledby="@_labelId">
+
+        @if (IsResponsive)
+        {
+            <div style="@Styles?.ResponsiveLabelContainer"
+                 class="bit-drp-rlc @Classes?.ResponsiveLabelContainer">
+                @if (LabelTemplate is not null)
+                {
+                    @LabelTemplate
+                }
+                else if (Label.HasValue())
+                {
+                    <label style="@Styles?.ResponsiveLabel"
+                           class="bit-drp-lbl @Classes?.ResponsiveLabel">
+                        @Label
+                    </label>
+                }
+
+                <button @onclick="CloseCallout"
+                        type="button"
+                        title="Close"
+                        aria-label="Close"
+                        aria-hidden="Close"
+                        aria-describedby="Close"
+                        style="@Styles?.ResponsiveCloseButton"
+                        class="bit-drp-cls @Classes?.ResponsiveCloseButton">
+                    <span>
+                        <i style="@Styles?.ResponsiveCloseIcon"
+                           class="bit-icon bit-icon--Cancel @Classes?.ResponsiveCloseIcon" />
+                    </span>
+                </button>
+            </div>
+        }
+
+        @if (CalloutHeaderTemplate is not null)
+        {
+            <div id="@_headerId">@CalloutHeaderTemplate</div>
+        }
+
+        @if (ShowSearchBox && Combo is false)
+        {
+            <div style="@Styles?.SearchBoxContainer"
+                 class="@GetSearchBoxClasses() @Classes?.SearchBoxContainer">
+                <div aria-hidden="true"
+                     style="@Styles?.SearchBoxIconContainer"
+                     class="bit-drp-sic @Classes?.SearchBoxIconContainer">
+                    <i aria-hidden="true"
+                       style="@Styles?.SearchBoxIcon"
+                       class="bit-icon bit-icon--Search @Classes?.SearchBoxIcon" />
+                </div>
+                <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleFilterChange"
+                       type="text"
+                       role="searchbox"
+                       value="@_searchText"
+                       aria-label="Search text"
+                       placeholder="@SearchBoxPlaceholder"
+                       style="@Styles?.SearchBoxInput"
+                       class="bit-drp-sin @Classes?.SearchBoxInput" />
+
+                @if (_searchText.HasValue())
+                {
+                    <div style="@Styles?.SearchBoxClearButtonContainer"
+                         class="bit-drp-sbcc @Classes?.SearchBoxClearButtonContainer">
+                        <button @onclick="HandleSearchBoxOnClear"
+                                type="button"
+                                style="@Styles?.SearchBoxClearButton"
+                                class="bit-drp-sbc @Classes?.SearchBoxClearButton"
+                                aria-hidden="true"
+                                aria-label="Clear text"
+                                disabled="@(_searchText.HasNoValue())">
+                            <span>
+                                <i aria-hidden="true"
+                                   style="@Styles?.SearchBoxClearIcon"
+                                   class="bit-icon bit-icon--Cancel @Classes?.SearchBoxClearIcon" />
+                            </span>
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (Combo && _isResponsiveMode)
+        {
+            <div style="@Styles?.ResponsiveComboInputContainer"
+                 class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
+                <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput"
+                       style="@Styles?.ComboBoxInput"
+                       class="bit-drp-icb @Classes?.ComboBoxInput"
+                       type="text"
+                       role="combobox"
+                       value="@_searchText"
+                       aria-label="@AriaLabel"
+                       placeholder="@Placeholder"
+                       autocomplete="@BitAutoCompleteValue.NewPassword"
+                       disabled="@(IsEnabled is false)" />
+
+                <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
+                        type="button"
+                        style="@Styles?.ResponsiveComboAddButton"
+                        class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
+                    <i class="bit-icon bit-icon--Add" />
+                </button>
+            </div>
+        }
+
+        <div id="@_scrollContainerId"
+             style="@Styles?.ScrollContainer"
+             class="bit-drp-scn @Classes?.ScrollContainer">
+            @if (Virtualize)
+            {
+                if (ItemsProvider is null)
+                {
+                    <Virtualize Items="GetSearchedItems()"
+                                Context="item"
+                                ItemSize="ItemSize"
+                                OverscanCount="OverscanCount"
+                                Placeholder="VirtualizePlaceholder">
+                        <_BitDropdownItem Item="item" Dropdown="this" />
+                    </Virtualize>
+                }
+                else
+                {
+                    <Virtualize @ref="_virtualizeElement"
+                                Context="item"
+                                OverscanCount="OverscanCount"
+                                Placeholder="VirtualizePlaceholder"
+                                ItemsProvider="InternalItemsProvider">
+                        <_BitDropdownItem Item="item" Dropdown="this" />
+                    </Virtualize>
+                }
+            }
+            else
+            {
+                @foreach (var item in GetSearchedItems())
+                {
+                    <_BitDropdownItem Item="item" Dropdown="this" />
+                }
+            }
+        </div>
+
+        @if (CalloutFooterTemplate is not null)
+        {
+            <div id="@_footerId">@CalloutFooterTemplate</div>
+        }
+
+    </div>
+
+    <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple>
+        @foreach (var item in _selectedItems)
+        {
+            <option value="@GetValue(item)" selected>@GetText(item)</option>
+        }
+    </select>
+</div>

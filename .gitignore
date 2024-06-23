@@ -216,13 +216,15 @@ ModelManifest.xml
 # VS Code
 .vscode
 
+# .NET Meteor
+.meteor
+
 # Rider
 .idea
 
-dotnet-tools.json
 profile.arm.json
 
-# Bit Platform
+# bit
 *.map
 _book
 *yarn.lock
@@ -232,41 +234,35 @@ _book
 *.tsbuildinfo
 
 /src/BlazorUI/Bit.BlazorUI/**/*.css
+/src/BlazorUI/Bit.BlazorUI/Scripts/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.js
 /src/BlazorUI/Bit.BlazorUI/wwwroot/**/*.css.gz
 
-/src/BlazorUI/Bit.BlazorUI.Charts/**/*.css
-/src/BlazorUI/Bit.BlazorUI.Charts/wwwroot/**/*.css.gz
-/src/BlazorUI/Bit.BlazorUI.Charts/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Extras/**/*.css
+/src/BlazorUI/Bit.BlazorUI.Extras/Scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Extras/wwwroot/**/*.css.gz
 
+/src/BlazorUI/Bit.BlazorUI.Assets/**/*.css
+/src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/**/*.css.gz
+
+/src/BlazorUI/Bit.BlazorUI.Icons/**/*.css
+/src/BlazorUI/Bit.BlazorUI.Icons/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.Icons/wwwroot/**/*.css.gz
+
+/src/Bup/Bit.Bup/Scripts/**/*.js
 /src/Bup/Bit.Bup/wwwroot/**/*.js
 /src/Bup/Bit.Bup/wwwroot/**/*.css
+
+/src/Bswup/Bit.Bswup/Scripts/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.js
 /src/Bswup/Bit.Bswup/wwwroot/**/*.css
+
+/src/Butil/Bit.Butil/Scripts/**/*.js
 /src/Butil/Bit.Butil/wwwroot/**/*.js
 
-/src/BlazorUI/Demo/Web/**/**/*.css
-/src/BlazorUI/Demo/Web/wwwroot/**/*.js
-/src/BlazorUI/Demo/App/Styles
-/src/BlazorUI/Demo/App/Shared
-/src/BlazorUI/Demo/App/Services
-/src/BlazorUI/Demo/App/Scripts
-/src/BlazorUI/Demo/App/Pages
-/src/BlazorUI/Demo/App/Models
-/src/BlazorUI/Demo/App/Extensions
-/src/BlazorUI/Demo/App/Components
-/src/BlazorUI/Demo/App/wwwroot/styles
-/src/BlazorUI/Demo/App/wwwroot/scripts
-/src/BlazorUI/Demo/App/wwwroot/images
-/src/BlazorUI/Demo/App/wwwroot/fonts
-/src/BlazorUI/Demo/App/tsconfig.json
-/src/BlazorUI/Demo/App/_Imports.razor
-/src/BlazorUI/Demo/App/Main.razor
-/src/BlazorUI/Demo/App/compilerconfig.json.defaults
-/src/BlazorUI/Demo/App/compilerconfig.json
-/src/BlazorUI/Demo/App/appsettings.json
-/src/BlazorUI/Demo/Api/BitFileUploaderFiles
-/src/BlazorUI/Demo/Api/Properties/PublishProfiles/*.*
-/src/BlazorUI/Demo/Api/Properties/ServiceDependencies/*.*
+/src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
+/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js
 
 custom.aprof

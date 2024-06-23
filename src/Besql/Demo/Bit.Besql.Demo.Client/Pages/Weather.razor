@@ -1,0 +1,70 @@
+﻿@page "/weather"
+
+@using Bit.Besql.Demo.Client.Model
+@using Microsoft.EntityFrameworkCore
+@using Bit.Besql.Demo.Client.Data
+
+@inject IDbContextFactory<OfflineDbContext> DbContextFactory
+
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<p>This component demonstrates showing data.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToLocalTime().ToString("G")</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<button class="btn btn-primary" @onclick="AddWeatherForecast">Add weather forecast</button>
+
+@code {
+
+    private List<WeatherForecast>? forecasts;
+
+    private async Task AddWeatherForecast()
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        var forecast = await dbContext.WeatherForecasts.AddAsync(new()
+        {
+            Date = new DateTimeOffset(2024, 1, 4, 10, 10, 10, TimeSpan.Zero),
+            Summary = "Test",
+            TemperatureC = 17
+        });
+        await dbContext.SaveChangesAsync();
+        forecasts!.Add(forecast.Entity);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        forecasts = await dbContext.WeatherForecasts.OrderBy(c => c.Date).ToListAsync();
+
+        await base.OnInitializedAsync();
+    }
+}

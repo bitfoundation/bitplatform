@@ -1,0 +1,67 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-otp {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    box-shadow: none;
+    font-weight: 400;
+    gap: spacing(1.25);
+    position: relative;
+    flex-direction: row;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    font-family: $typography-font-family;
+
+    &.bit-dis {
+        .bit-otp-inp {
+            border-color: $color-border-disabled;
+            background-color: $color-background-disabled;
+        }
+    }
+
+    &.bit-inv {
+        .bit-otp-inp {
+            outline: none;
+            border: spacing(0.25) $shape-border-style $color-state-error;
+        }
+    }
+}
+
+.bit-otp-inp {
+    display: flex;
+    cursor: pointer;
+    text-align: center;
+    align-items: center;
+    width: spacing(3.75);
+    height: spacing(3.75);
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: spacing(1.75);
+    -moz-appearance: textfield;
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none
+    }
+
+    &:focus {
+        outline: none;
+        border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
+
+.bit-otp-vrt {
+    flex-direction: column;
+}
+
+.bit-otp-rvs {
+    flex-direction: row-reverse;
+}
+
+.bit-otp-vrt.bit-otp-rvs {
+    flex-direction: column-reverse;
+}

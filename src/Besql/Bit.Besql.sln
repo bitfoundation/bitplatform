@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34321.82
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql", "Bit.Besql\Bit.Besql.csproj", "{09B2C633-C120-4B89-A3FF-A1F9F76D42C5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{D35063A3-5CB7-4844-BFDF-FA0C997A6AC3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Demo", "Demo\Bit.Besql.Demo\Bit.Besql.Demo.csproj", "{AD10388C-DCDE-4720-864B-DB2BDB61B16A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Besql.Demo.Client", "Demo\Bit.Besql.Demo.Client\Bit.Besql.Demo.Client.csproj", "{BA753236-EB1B-438A-B17C-4D1721E14A91}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{09B2C633-C120-4B89-A3FF-A1F9F76D42C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09B2C633-C120-4B89-A3FF-A1F9F76D42C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09B2C633-C120-4B89-A3FF-A1F9F76D42C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09B2C633-C120-4B89-A3FF-A1F9F76D42C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD10388C-DCDE-4720-864B-DB2BDB61B16A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD10388C-DCDE-4720-864B-DB2BDB61B16A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD10388C-DCDE-4720-864B-DB2BDB61B16A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD10388C-DCDE-4720-864B-DB2BDB61B16A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA753236-EB1B-438A-B17C-4D1721E14A91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA753236-EB1B-438A-B17C-4D1721E14A91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA753236-EB1B-438A-B17C-4D1721E14A91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA753236-EB1B-438A-B17C-4D1721E14A91}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AD10388C-DCDE-4720-864B-DB2BDB61B16A} = {D35063A3-5CB7-4844-BFDF-FA0C997A6AC3}
+		{BA753236-EB1B-438A-B17C-4D1721E14A91} = {D35063A3-5CB7-4844-BFDF-FA0C997A6AC3}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A4474E62-EBBF-4C5C-B256-EDA41E47EDC3}
+	EndGlobalSection
+EndGlobal

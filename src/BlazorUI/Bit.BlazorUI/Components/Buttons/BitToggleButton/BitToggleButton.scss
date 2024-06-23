@@ -1,122 +1,152 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-tgb {
-    position: relative;
-    display: inline-block;
-    min-width: spacing(10);
-    box-sizing: border-box;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight-buttons;
-    text-decoration: none;
-    text-align: center;
     cursor: pointer;
+    position: relative;
+    text-align: center;
+    align-items: center;
+    display: inline-flex;
+    text-decoration: none;
+    min-width: spacing(10);
+    min-height: spacing(4);
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: spacing(1.75);
+    padding: spacing(0.5) spacing(2);
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight;
 
     &.bit-dis {
-        background-color: $color-action-disabled;
-        color: $color-text-disabled;
-        border-color: $color-border-disabled;
         cursor: default;
         pointer-events: none;
+        color: $color-foreground-disabled;
+    }
+}
 
-        .bit-icon {
-            color: $color-neutrals-gray90;
-        }
+.bit-tgb-pri {
+    color: var(--bit-tgb-pri-clr);
+    background-color: var(--bit-tgb-bg-clr);
+    border-color: var(--bit-tgb-pri-brd-clr);
+    --bit-tgb-bg-clr: #{$color-primary-main};
+    --bit-tgb-pri-clr: #{$color-primary-text};
+    --bit-tgb-pri-brd-clr: #{$color-primary-main};
+    --bit-tgb-pri-hover-bg-clr: #{$color-action-hover-primary};
+    --bit-tgb-pri-active-bg-clr: #{$color-action-active-primary};
+    --bit-tgb-chk-bg-clr: #{$color-primary-dark};
+    --bit-tgb-chk-brd-clr: #{$color-primary-dark};
 
-        &.bit-tgb-pri {
-            color: $color-neutrals-gray50;
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-tgb-pri-hover-bg-clr);
+            background-color: var(--bit-tgb-pri-hover-bg-clr);
         }
+    }
+
+    &:active {
+        border-color: var(--bit-tgb-pri-active-bg-clr);
+        background-color: var(--bit-tgb-pri-active-bg-clr);
+    }
+
+    &.bit-dis {
+        border-color: $color-border-disabled;
+        background-color: $color-background-disabled;
+    }
+}
+
+.bit-tgb-std {
+    color: var(--bit-tgb-sec-clr);
+    background-color: $color-secondary-main;
+    border-color: var(--bit-tgb-sec-brd-clr);
+    --bit-tgb-sec-clr: #{$color-secondary-text};
+    --bit-tgb-sec-brd-clr: #{$color-secondary-text};
+    --bit-tgb-sec-hover-bg-clr: #{$color-action-hover-secondary};
+    --bit-tgb-sec-active-bg-clr: #{$color-action-active-secondary};
+    --bit-tgb-chk-bg-clr: #{$color-secondary-dark};
+    --bit-tgb-chk-brd-clr: #{$color-secondary-text};
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-tgb-sec-hover-bg-clr);
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-tgb-sec-active-bg-clr);
+    }
+
+    &.bit-dis {
+        border-color: $color-border-disabled;
+    }
+}
+
+.bit-tgb-txt {
+    border-color: transparent;
+    color: var(--bit-tgb-sec-clr);
+    background-color: transparent;
+    --bit-tgb-sec-clr: #{$color-secondary-text};
+    --bit-tgb-sec-hover-bg-clr: #{$color-action-hover-secondary};
+    --bit-tgb-sec-active-bg-clr: #{$color-action-active-secondary};
+    --bit-tgb-chk-bg-clr: #{$color-secondary-dark};
+    --bit-tgb-chk-brd-clr: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-tgb-sec-hover-bg-clr);
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-tgb-sec-active-bg-clr);
+    }
+}
+
+.bit-tgb-chk {
+    border-color: var(--bit-tgb-chk-brd-clr);
+    background-color: var(--bit-tgb-chk-bg-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-tgb-chk-brd-clr);
+            background-color: var(--bit-tgb-chk-bg-clr);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-tgb-chk-brd-clr);
+        background-color: var(--bit-tgb-chk-bg-clr);
     }
 }
 
 .bit-tgb-con {
     display: flex;
+    align-items: center;
     flex-flow: row nowrap;
     justify-content: center;
-    align-items: center;
 
     .bit-icon {
-        margin: 0 spacing(0.5);
-        text-align: center;
         flex-shrink: 0;
+        text-align: center;
+        margin: 0 spacing(0.5);
     }
 }
 
-.bit-tgb-txt {
+.bit-tgb-btx {
     display: block;
 }
 
-.bit-tgb-std {
-    color: $color-text-primary;
-    border-color: $color-border-secondary;
-    background-color: $color-secondary-main;
-
-    &:hover {
-        background-color: $color-action-hover-secondary;
-        color: $color-neutrals-gray190;
-    }
-
-    &:active {
-        background-color: $color-action-active-secondary;
-        color: $color-neutrals-gray190;
-    }
-
-    &.bit-tgb-chk {
-        background-color: $color-neutrals-gray30;
-        color: $color-neutrals-gray190;
-
-        &:hover {
-            background-color: $color-neutrals-gray30;
-            color: $color-neutrals-black;
-        }
-    }
-}
-
-.bit-tgb-pri {
-    color: $color-text-secondary;
-    border-color: $color-border-primary;
-    background-color: $color-primary-main;
-
-    &:hover {
-        border-color: $color-action-hover-primary;
-        background-color: $color-action-hover-primary;
-    }
-
-    &:active {
-        border-color: $color-action-active-primary;
-        background-color: $color-action-active-primary;
-    }
-
-    &.bit-tgb-chk {
-        background-color: $color-primary-darker;
-
-        &:hover {
-            border-color: $color-border-primary;
-            background-color: $color-action-hover-primary;
-        }
-
-        &:active {
-            border-color: $color-border-primary;
-        }
-    }
-}
-
 .bit-tgb-sm {
-    padding: spacing(0.25) spacing(1.25);
+    min-width: spacing(6);
+    min-height: spacing(3);
     font-size: spacing(1.5);
-    line-height: spacing(2.75);
-}
-
-.bit-tgb-md {
-    padding: spacing(0.5) spacing(2);
-    font-size: spacing(1.75);
-    line-height: $typography-line-height-buttons;
+    padding: spacing(0.3) spacing(1.5);
 }
 
 .bit-tgb-lg {
-    padding: spacing(0.75) spacing(2.75);
+    min-width: spacing(10);
+    min-height: spacing(5);
     font-size: spacing(2);
-    line-height: spacing(3.75);
+    padding: spacing(0.7) spacing(2.5);
 }

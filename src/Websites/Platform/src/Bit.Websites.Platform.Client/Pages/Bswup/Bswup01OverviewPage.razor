@@ -1,0 +1,70 @@
+﻿@page "/bswup/overview"
+@inherits AppComponentBase
+
+<PageOutlet Url="bswup/overview"
+            Title="Overview - Bswup"
+            Description="overview of the bit Bswup" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Bswup</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Service Worker Update Progress utilities</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        bit Bswup is a set of tools that assists developers in making the most out of the
+        Service Worker when building PWAs with Blazor.
+        It utilizes the Service Worker's events to handle Installing and Updating the app
+        as fast and smooth as possible while minimizing the download size.
+        <br />
+        This unique tool harnesses the power of Progressive Web Apps (PWA) within the innovative
+        new structure of dotnet 8. By amalgamating pre-rendering techniques reminiscent of renowned
+        platforms like GitHub, Reddit, and Facebook, Bswup ensures an exceptional user experience.
+    </BitTypography>
+    <br />
+    <div class="section-card-txt">
+        <b>Note</b>: Currently, bit Bswup is the only tool that can enable complete PWA solution for the new Blazor web app
+        project template that introduced in .NET 8 which has different render mode (Auto, Server, WebAssembly).
+    </div>
+    <br />
+    <br />
+    <div class="section-card-txt">
+        You can watch this step by step walkthrough video to see bit Bswup in action:
+    </div>
+    <br />
+    <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/Y4MTtF1XMfM?si=OsH6RnUd8uKOBHU_"
+                width="560" height="315" allowfullscreen title="YouTube video player" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+    </div>
+    <br />
+    <div class="section-card-txt">
+        You can find the sample source-code of the above video
+        <a href="https://github.com/bitfoundation/bitplatform-samples/tree/main/videos/Bit.Bswup" target="_blank">here</a>.
+    </div>
+
+    <br />
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup1.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup2.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup3.webp" class="bswup-img" />
+
+    <br />
+    <br />
+
+    <img src="/images/bswup/bswup4-1.webp" class="bswup-img" />
+    <br />
+    <img src="/images/bswup/bswup4-2.webp" class="bswup-img" />
+
+</div>
+
+<NavigationButtons Next="Install" NextUrl="/bswup/install" />

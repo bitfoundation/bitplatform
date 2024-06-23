@@ -2,38 +2,47 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement"
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
      role="@Role">
 
     @if (EnableVirtualization)
     {
         if (ItemsProvider is null)
         {
-            <Virtualize Items="Items"
-                        Context="item"
-                        ItemSize="@ItemSize"
-                        OverscanCount="@OverscanCount">
-                @RowTemplate(item)
-            </Virtualize>
+            <_BitBasicListVirtualize Items="Items"
+                                     ItemSize="@ItemSize"
+                                     OverscanCount="@OverscanCount"
+                                     EmptyContent="EmptyContent">
+                @RowTemplate(context)
+            </_BitBasicListVirtualize>
         }
         else
         {
-            <Virtualize @ref="_virtualizeElement"
-                        Context="item"
-                        OverscanCount="@OverscanCount"
-                        ItemsProvider="ProvideVirtualizedItems"
-                        Placeholder="VirtualizePlaceholder">
-                @RowTemplate(item)
-            </Virtualize>
+            <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
+                                     OverscanCount="@OverscanCount"
+                                     Placeholder="VirtualizePlaceholder"
+                                     ItemsProvider="ProvideVirtualizedItems"
+                                     EmptyContent="EmptyContent">
+                @RowTemplate(context)
+            </_BitBasicListVirtualize>
         }
     }
     else
     {
-        @foreach (var item in Items)
+        if (Items.Count > 0)
         {
-            @RowTemplate(item)
+            foreach (var item in Items)
+            {
+                @RowTemplate(item)
+            }
+        }
+        else
+        {
+            @EmptyContent
         }
     }
 </div>

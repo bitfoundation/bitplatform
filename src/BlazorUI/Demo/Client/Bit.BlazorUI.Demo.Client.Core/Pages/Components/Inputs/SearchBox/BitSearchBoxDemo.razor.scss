@@ -1,0 +1,42 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_colors.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+
+::deep {
+    .example-content {
+        display: flex;
+        gap: rem2(20px);
+        flex-flow: row wrap;
+        align-items: center;
+        max-width: rem2(304px);
+
+        &.column {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        & > div {
+            width: 100%;
+        }
+    }
+
+    .validation-message {
+        color: $Red20;
+        font-size: rem2(12px);
+    }
+
+    .custom-class {
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-clear {
+        color: blueviolet;
+    }
+
+    .custom-search {
+        margin-right: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: tomato;
+    }
+}

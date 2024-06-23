@@ -13,7 +13,7 @@ public static class FileSizeHumanizer
         {
             float formatedSize = size / (float)OneGigaByte;
             suffix = "GB";
-            return $"{formatedSize:0.00}{suffix}";
+            return FormattableString.Invariant($"{formatedSize:0.00}{suffix}");
         }
 
         if (size > OneMegaByte)
@@ -35,6 +35,6 @@ public static class FileSizeHumanizer
             suffix = " bytes";
         }
 
-        return $"{size}{suffix}";
+        return FormattableString.Invariant($"{size}{suffix}");
     }
 }

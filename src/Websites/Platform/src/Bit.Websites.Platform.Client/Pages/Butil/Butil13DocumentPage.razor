@@ -1,0 +1,114 @@
+﻿@page "/butil/document"
+@inherits AppComponentBase
+@inject Bit.Butil.Document document
+
+<PageOutlet Url="butil/document"
+            Title="Document - Butil"
+            Description="Document class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Document</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Document class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser document features you need to inject the Bit.Butil.Document class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Document document
+
+@@code {
+    await document.AddEventListener(ButilEvents.Click, args => { ... });
+    await document.SetTitle("New shinny title");
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>AddEventListener</b>, <b>RemoveEventListener</b>: <br />
+            Sets up a function that will be called whenever the specified event is delivered to the document
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetCharacterSet</b>: <br />
+            Returns the character set being used by the document
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/characterSet" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetCompatMode</b>: <br />
+            Indicates whether the document is rendered in quirks or strict mode
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/compatMode" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetContentType</b>: <br />
+            Returns the Content-Type from the MIME Header of the current document
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/contentType" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetDocumentURI</b>: <br />
+            Returns the document location as a string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/documentURI" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>SetDesignMode</b>, <b>GetDesignMode</b>: <br />
+            Gets/Sets ability to edit the whole document
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @designModeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitCheckbox @bind-Value="isDesignModeOn" Label="@(isDesignModeOn ? "On" : "Off")" />
+                        <br />
+                        <BitButton OnClick=SetDesignMode>SetDesignMode</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetDir</b>, <b>GetDir</b>: <br />
+            Gets/Sets directionality (Rtl/Ltr) of the document
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/dir" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>SetTitle</b>, <b>GetTitle</b>: <br />
+            Gets/Sets the title of the current document
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/title" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetReferrer</b>: <br />
+            Returns the URI of the page that linked to this page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/referrer" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetUrl</b>: <br />
+            Returns the document location as a string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/URL" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>ExitFullscreen</b>: <br />
+            Stops document's fullscreen element from being displayed fullscreen
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/exitFullscreen" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>ExitPointerLock</b>: <br />
+            Release the pointer lock
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/exitPointerLock" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Window" PrevUrl="/butil/window" Next="Navigator" NextUrl="/butil/navigator" />

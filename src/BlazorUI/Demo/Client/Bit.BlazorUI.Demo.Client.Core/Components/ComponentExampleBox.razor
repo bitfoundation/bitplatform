@@ -1,0 +1,59 @@
+﻿@inherits AppComponentBase
+
+<section class="box" id="@Id">
+    <div class="box-header">
+        <BitTypography Variant="BitTypographyVariant.H5" Class="section-title">@Title</BitTypography>
+        <div class="header-btn-group">
+            <BitToggleButton @bind-IsChecked="showCode"
+                             Class="header-btn show-code"
+                             Classes="@(new() { Text = "show-code-lbl" })"
+                             IconName="@BitIconName.CodeEdit"
+                             ButtonStyle="BitButtonStyle.Standard"
+                             Text="@(showCode ? "Hide code" : "Show code")"
+                             Title="@(showCode ? "Hide code" : "Show code")">
+            </BitToggleButton>
+            <BitActionButton Class="@($"header-btn copy-link {(isLinkCopied ? "copied" : "")}")"
+                             Styles="@(new() { Content = (isLinkCopied ? "" : "margin: unset") })"
+                             Title="@copyLinkMessage"
+                             IconName="@linkIcon"
+                             OnClick="@CopyLinkToClipboard">
+                @if (isLinkCopied)
+                {
+                    <span>@copyLinkMessage</span>
+                }
+            </BitActionButton>
+        </div>
+    </div>
+
+    <div class="box-content">
+        @if (showCode)
+        {
+            <BitActionButton Class="@($"copy-btn {(isCodeCopied ? "copied" : "")}")"
+                             Styles="@(new() { Content = (isCodeCopied ? "" : "margin: unset") })"
+                             Title="@copyCodeMessage"
+                             IconName="@codeIcon"
+                             OnClick="@CopyCodeToClipboard">
+                @if (isCodeCopied)
+                {
+                    <span>@copyCodeMessage</span>
+                }
+            </BitActionButton>
+
+            <pre class="code">
+                <code class="language-cshtml">@RazorCode.Trim()</code>
+
+                @if (CsharpCode.HasValue())
+                {
+                    <code class="language-csharp">
+&#64code {
+     @CsharpCode.Trim().Replace("\n", "\n     ")
+}</code>
+                }
+            </pre>
+        }
+
+        <div class="example-container">
+            @ExamplePreview
+        </div>
+    </div>
+</section>

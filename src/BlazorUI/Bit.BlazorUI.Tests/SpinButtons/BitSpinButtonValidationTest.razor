@@ -16,10 +16,10 @@
                    LabelPosition="@LabelPosition"
                    IconName="@IconName"
                    IconAriaLabel="@IconAriaLabel"
-                   DecrementButtonIconName="@DecrementButtonIconName"
-                   IncrementButtonIconName="@IncrementButtonIconName"
-                   DecrementButtonAriaLabel="@DecrementButtonAriaLabel"
-                   IncrementButtonAriaLabel="@IncrementButtonAriaLabel"
+                   DecrementIconName="@DecrementButtonIconName"
+                   IncrementIconName="@IncrementButtonIconName"
+                   DecrementAriaLabel="@DecrementButtonAriaLabel"
+                   IncrementAriaLabel="@IncrementButtonAriaLabel"
                    Label="@Label"
                    InputHtmlAttributes="@InputHtmlAttributes"
                    Title="@Title"
@@ -38,7 +38,7 @@
 </EditForm>
 
 @code {
-    [Parameter] public BitSpinButtonLabelPosition LabelPosition { get; set; } = BitSpinButtonLabelPosition.Left;
+    [Parameter] public BitLabelPosition LabelPosition { get; set; } = BitLabelPosition.Start;
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
     [Parameter] public int? AriaSetSize { get; set; }
@@ -51,13 +51,13 @@
     [Parameter] public BitSpinButtonTestModel TestModel { get; set; }
     [Parameter] public EventCallback<double> ValueChanged { get; set; }
     [Parameter] public string Suffix { get; set; } = string.Empty;
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string IconName { get; set; }
     [Parameter] public string Label { get; set; } = string.Empty;
     [Parameter] public Dictionary<string, object> InputHtmlAttributes { get; set; } = null;
     [Parameter] public string Title { get; set; }
     [Parameter] public int? Precision { get; set; }
-    [Parameter] public BitIconName DecrementButtonIconName { get; set; }
-    [Parameter] public BitIconName IncrementButtonIconName { get; set; }
+    [Parameter] public string DecrementButtonIconName { get; set; }
+    [Parameter] public string IncrementButtonIconName { get; set; }
     [Parameter] public double DefaultValue { get; set; }
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
     [Parameter] public string DecrementButtonAriaLabel { get; set; }
@@ -88,12 +88,12 @@
         OnFocusEventCounter++;
     }
 
-    private void HandleDecrement(BitSpinButtonChangeValue args)
+    private void HandleDecrement(double args)
     {
         OnDecrementEventCounter--;
     }
 
-    private void HandleIncrement(BitSpinButtonChangeValue args)
+    private void HandleIncrement(double args)
     {
         OnIncrementEventCounter++;
     }

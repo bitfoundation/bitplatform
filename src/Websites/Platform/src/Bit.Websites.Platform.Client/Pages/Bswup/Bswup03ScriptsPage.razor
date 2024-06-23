@@ -1,0 +1,62 @@
+﻿@page "/bswup/scripts"
+@inherits AppComponentBase
+
+<PageOutlet Url="bswup/scripts"
+            Title="Scripts - Bswup"
+            Description="setting required scripts of the bit Bswup" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Scripts</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to setup the bit Bswup's scripts?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor script</BitTypography>
+        <div class="section-card-txt">
+            Since Bswup is taking care of the lifecycle of the application, we need to disable
+            the autostart of the Blazor by adding autostart=false to the Blazor script tag:
+
+            <CodeBox>&lt;script src="_framework/blazor.web.js" autostart="false">&lt;/script></CodeBox>
+            Or for the standalone template:
+            <CodeBox>&lt;script src="_framework/blazor.webassembly.js" autostart="false">&lt;/script></CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Bswup script</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            The next step is to add and configure the bit Bswup's script tag itself:
+
+           <CodeBox>&lt;script src="_content/Bit.Bswup/bit-bswup.js"
+        scope="/"
+        log="verbose"
+        sw="service-worker.js"
+        handler="bitBswupHandler"
+        blazorScript="_framework/blazor.webassembly.js">&lt;/script></CodeBox>
+        </div>
+
+        <div class="section-card-txt">
+            This script tag as shown above, has some options:
+            <br /><br />
+            <b>scope</b>: The scope of the service-worker
+            (<a href="https://developer.chrome.com/docs/workbox/service-worker-lifecycle/#scope" target="_blank">read more</a>).
+            <br /><br />
+            <b>log</b>: The log level of the Bswup logger. available options are: info, verbose, debug, and error (coming soon).
+            <br /><br />
+            <b>sw</b>: The file path of the service-worker file.
+            <br /><br />
+            <b>handler</b>: The name of the handler function for the service-worker events that explained <a href="/bswup/events">here</a>.
+            <br /><br />
+            <b>blazorScript</b>: The file path of the Blazor's js script file.
+        </div>
+        <div class="section-card-txt">
+            <b>Note</b>: You can remove any of these attributes which makes the bit Bswup to use the default values mentioned above.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Install" PrevUrl="/bswup/install" Next="Events" NextUrl="/bswup/events" />

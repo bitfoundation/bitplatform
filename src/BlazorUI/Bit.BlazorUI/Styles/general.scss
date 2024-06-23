@@ -1,6 +1,6 @@
 ﻿@import "functions.scss";
 
-@import "fabric.mdl2.icons.scss";
+@import "fabric.mdl2.bit.blazoui.scss";
 @import "theme-variables.scss";
 @import "components.scss";
 @import "bit-css.scss";
@@ -11,7 +11,7 @@ button {
 }
 
 // Prevent text selection by user
-.bit-nts, .no-text-select {
+.bit-nts {
     user-select: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -20,13 +20,14 @@ button {
 }
 
 .bit-input-hidden {
+    left: 0;
+    bottom: 0;
     opacity: 0;
     width: 0px;
     border: 0px;
     z-index: -1;
     overflow: hidden;
     position: absolute;
-    left: 0;
 }
 
 @keyframes bit-fade-show {
@@ -50,8 +51,6 @@ button {
         pointer-events: auto;
     }
 }
-
-
 
 @keyframes bit-fade-in {
     0% {

@@ -1,0 +1,38 @@
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.container {
+    height: 3rem;
+    display: flex;
+    padding: 1rem 0;
+    align-content: center;
+    justify-content: space-between;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+    border-radius: 0.5rem;
+
+    &:hover {
+        padding: 0.5rem;
+    }
+}
+
+.link {
+    height: 100%;
+    outline: none;
+    display: flex;
+    align-items: center;
+    color: $bit-color-primary-main;
+
+    .right {
+        padding-right: 0.5rem;
+    }
+
+    .left {
+        padding-left: 0.5rem;
+    }
+}

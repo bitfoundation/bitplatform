@@ -1,0 +1,354 @@
+﻿@page "/butil/navigator"
+@inherits AppComponentBase
+@inject Bit.Butil.Navigator navigator
+
+<PageOutlet Url="butil/navigator"
+            Title="Navigator - Butil"
+            Description="Navigator class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Navigator</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Navigator class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser navigator features you need to inject the Bit.Butil.Navigator class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Navigator navigator
+
+@@code {
+    var userAgent = await navigator.GetUserAgent();
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>GetDeviceMemory</b>: <br />
+            Returns the amount of device memory in gigabytes. This value is an approximation given by rounding to the nearest power of 2 and dividing that number by 1024
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/deviceMemory" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getDeviceMemoryExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetDeviceMemory">GetDeviceMemory</BitButton>
+                        <br />
+                        <br />
+                        <div>Device memory is: @deviceMemory</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetHardwareConcurrency</b>: <br />
+            Returns the number of logical processor cores available
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getHardwareConcurrencyExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetHardwareConcurrency">GetHardwareConcurrency</BitButton>
+                        <br />
+                        <br />
+                        <div>Hardware concurrency is: @hardwareConcurrency</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetLanguage</b>: <br />
+            Returns a string representing the preferred language of the user, usually the language of the browser UI. The null value is returned when this is unknown
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getLanguageExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetLanguage">GetLanguage</BitButton>
+                        <br />
+                        <br />
+                        <div>Language: @language</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetLanguages</b>: <br />
+            Returns an array of strings representing the languages known to the user, by order of preference
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/languages" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getLanguagesExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetLanguages">GetLanguages</BitButton>
+                        <br />
+                        <br />
+                        <div>Languages: @languages</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetMaxTouchPoints</b>: <br />
+            Returns the maximum number of simultaneous touch contact points are supported by the current device
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/maxTouchPoints" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getMaxTouchPointsExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetMaxTouchPoints">GetMaxTouchPoints</BitButton>
+                        <br />
+                        <br />
+                        <div>Max touch points: @maxTouchPoints</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>IsOnLine</b>: <br />
+            Returns a boolean value indicating whether the browser is working online
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @isOnLineExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetIsOnLine">GetIsOnLine</BitButton>
+                        <br />
+                        <br />
+                        <div>Is OnLine: @isOnLine</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>IsPdfViewerEnabled</b>: <br />
+            Returns true if the browser can display PDF files inline when navigating to them, and false otherwise
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/pdfViewerEnabled" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @isPdfViewerEnabledExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetIsPdfViewerEnabled">GetIsPdfViewerEnabled</BitButton>
+                        <br />
+                        <br />
+                        <div>Is Pdf viewer enabled: @isPdfViewerEnabled</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetUserAgent</b>: <br />
+            Returns the user agent string for the current browser
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getUserAgentExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetUserAgent">GetUserAgent</BitButton>
+                        <br />
+                        <br />
+                        <div>User agent: @userAgent</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>IsWebDriver</b>: <br />
+            Indicates whether the user agent is controlled by automation
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/webdriver" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>CanShare</b>: <br />
+            Returns true if a call to navigator.Share() would succeed
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @canShareExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetCanShare">GetCanShare</BitButton>
+                        <br />
+                        <br />
+                        <div>Can share: @canShare</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ClearAppBadge</b>: <br />
+            Clears a badge on the current app's icon and returns a Promise that resolves with undefined
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/clearAppBadge" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @clearAppBadgeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@(() => navigator.ClearAppBadge())">ClearAppBadge</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SendBeacon</b>: <br />
+            Used to asynchronously transfer a small amount of data using HTTP from the User Agent to a web server
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @sendBeaconExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@(() => navigator.SendBeacon())">SendBeacon</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetAppBadge</b>: <br />
+            Sets a badge on the icon associated with this app and returns a Promise that resolves with undefined
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/setAppBadge" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @setAppBadgeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@(() => navigator.SetAppBadge())">SetAppBadge</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Share</b>: <br />
+            Invokes the native sharing mechanism of the current platform
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @shareExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="textValue" Label="Text" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitTextField @bind-Value="titleValue" Label="Title" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitTextField @bind-Value="urlValue" Label="Url" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="Share">Share</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Vibrate</b>: <br />
+            Causes vibration on devices with support for it. Does nothing if vibration support isn't available
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @vibrateExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@(() => navigator.Vibrate(sosPattern))">Vibrate</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Document" PrevUrl="/butil/document" Next="Location" NextUrl="/butil/location" />

@@ -1,0 +1,5 @@
+﻿@import '../Styles/abstracts/_bit-css-variables.scss';
+
+pre.code {
+    border: rem2(1px) solid $bit-color-border-primary;
+}

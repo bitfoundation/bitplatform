@@ -1,0 +1,26 @@
+﻿.page {
+    padding: 1rem;
+}
+
+.hero {
+    width: 100%;
+    display: flex;
+    padding-bottom: 7rem;
+    justify-content: center;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+}
+
+    .hero .container {
+        display: flex;
+        padding-top: 7rem;
+        align-items: center;
+        flex-flow: column nowrap;
+    }
+
+.section {
+    padding: 3rem 0rem;
+    text-align: center;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+}

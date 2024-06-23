@@ -1,0 +1,36 @@
+﻿@page "/butil/install"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/install"
+            Title="Install - Butil"
+            Description="installing the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Install bit Butil</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to install the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CLI</BitTypography>
+        <div class="section-card-txt">
+            Open the command line of your choice and run the following command: 
+            <CodeBox>dotnet add package Bit.Butil</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            Open your Visual Studio's Manage NuGet Packages window and install the Bit.Butil package:
+            <br />
+            <br />
+            <img src="/images/butil/install-visualstudio.webp" class="butil-img" />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Overview" PrevUrl="/butil/overview" Next="Setup" NextUrl="/butil/setup" />

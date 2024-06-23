@@ -1,0 +1,12 @@
+{
+    "version": 1,
+    "isRoot": true,
+    "tools": {
+        "vpk": {
+            "version": "0.0.541-gf8f3de0",
+            "commands": [
+                "vpk"
+            ]
+        }
+    }
+}

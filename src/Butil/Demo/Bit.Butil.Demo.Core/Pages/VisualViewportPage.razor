@@ -1,0 +1,122 @@
+﻿@page "/visualViewport"
+@implements IAsyncDisposable
+@inject Bit.Butil.Console console
+@inject Bit.Butil.VisualViewport visualViewport
+
+<PageTitle>VisualViewport Samples</PageTitle>
+
+<h1>VisualViewport</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.VisualViewport visualViewport
+
+@@code {
+    ...
+    var offsetTop = await visualViewport.GetOffsetTop();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking</h3>
+
+<hr />
+<br />
+
+<button @onclick="GetOffsetLeft">GetOffsetLeft</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="GetOffsetTop">GetOffsetTop</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="GetPageLeft">GetPageLeft</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="GetPageTop">GetPageTop</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="GetWidth">GetWidth</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="GetHeight">GetHeight</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="GetScale">GetScale</button>
+
+<br />
+<br />
+
+@code {
+    private async Task GetOffsetLeft()
+    {
+        var offsetLeft = await visualViewport.GetOffsetLeft();
+        await console.Log("OffsetLeft:", offsetLeft);
+    }
+
+    private async Task GetOffsetTop()
+    {
+        var offsetTop = await visualViewport.GetOffsetTop();
+        await console.Log("OffsetTop:", offsetTop);
+    }
+
+    private async Task GetPageLeft()
+    {
+        var pageLeft = await visualViewport.GetPageLeft();
+        await console.Log("PageLeft:", pageLeft);
+    }
+
+    private async Task GetPageTop()
+    {
+        var pageTop = await visualViewport.GetPageTop();
+        await console.Log("PageTop:", pageTop);
+    }
+
+    private async Task GetWidth()
+    {
+        var width = await visualViewport.GetWidth();
+        await console.Log("Width:", width);
+    }
+
+    private async Task GetHeight()
+    {
+        var height = await visualViewport.GetHeight();
+        await console.Log("Height:", height);
+    }
+
+    private async Task GetScale()
+    {
+        var scale = await visualViewport.GetScale();
+        await console.Log("Scale:", scale);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await visualViewport.DisposeAsync();
+    }
+}

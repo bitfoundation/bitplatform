@@ -24,23 +24,23 @@ public partial class BitSpinner
 
     protected override string RootElementClass => "bit-spn";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Size switch
         {
-            BitSpinnerSize.XSmall => "x-small",
-            BitSpinnerSize.Small => "small",
-            BitSpinnerSize.Medium => "medium",
-            BitSpinnerSize.Large => "large",
+            BitSpinnerSize.XSmall => $"{RootElementClass}-xs",
+            BitSpinnerSize.Small => $"{RootElementClass}-sm",
+            BitSpinnerSize.Medium => $"{RootElementClass}-md",
+            BitSpinnerSize.Large => $"{RootElementClass}-lg",
             _ => string.Empty
         });
 
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitLabelPosition.Top => "top",
-            BitLabelPosition.Left => "left",
-            BitLabelPosition.Right => "right",
-            BitLabelPosition.Bottom => "bottom",
+            BitLabelPosition.Top => $"{RootElementClass}-top",
+            BitLabelPosition.Start => $"{RootElementClass}-srt",
+            BitLabelPosition.End => $"{RootElementClass}-end",
+            BitLabelPosition.Bottom => $"{RootElementClass}-btm",
             _ => string.Empty
         });
     }

@@ -1,0 +1,191 @@
+﻿@page "/components/basiclist"
+@page "/components/basic-list"
+
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+
+<PageOutlet Url="components/basiclist"
+            Title="BasicList"
+            Description="Basiclist component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="BasicList"
+               ComponentDescription="BitBasicList provides a base component for rendering large sets of items. It’s agnostic of layout, the tile component used, and selection management."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <div>
+                <div>
+                    Explore the essential use of BitBasicList, displaying a simple list of people.
+                </div>
+                <br />
+                <BitBasicList Items="FewPeople" Style="border: 1px #a19f9d solid; border-radius: 4px;">
+                    <RowTemplate Context="person">
+                        <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                            Name: <strong>@person.FirstName</strong>
+                        </div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Virtualization" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <div>
+                <div>
+                    Experience BasicList with virtualization enabled to efficiently render large lists.
+                </div>
+                <br />
+                <BitBasicList Items="LotsOfPeople"
+                              EnableVirtualization="true"
+                              Style="border: 1px #a19f9d solid; border-radius: 4px;">
+                    <RowTemplate Context="person">
+                        <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                            <img width="100px" height="100px" src="https://picsum.photos/100/100?random=@(person.Id)">
+                            <div style="margin-left:3%; display: inline-block;">
+                                <p>Id: <strong>@person.Id</strong></p>
+                                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                                <p>Job: <strong>@person.Job</strong></p>
+                            </div>
+                        </div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <div>
+                <div>
+                    Empower customization by setting styles and classes, allowing tailored design modifications to suit specific UI requirements.
+                </div>
+                <br />
+                <BitBasicList Items="LotsOfPeople"
+                              Role="list"
+                              Class="custom-class"
+                              EnableVirtualization="true"
+                              Style="border: 1px #a19f9d solid; border-radius: 4px;">
+                    <RowTemplate Context="person">
+                        <div @key="person.Id" class="list-item">
+                            <span>Id: <strong>@person.Id</strong></span>
+                            <span>Full Name: <strong>@person.FirstName</strong></span>
+                            <span>Job: <strong>@person.Job</strong></span>
+                        </div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="OverscanCount" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <div>
+                <div>
+                    Experience BitBasicList with overscan count and virtualization for improved scrolling performance.
+                </div>
+                <br />
+                <BitBasicList Items="LotsOfPeople"
+                              ItemSize="300"
+                              OverscanCount="5"
+                              EnableVirtualization="true"
+                              Style="border: 1px #a19f9d solid; border-radius: 4px;">
+                    <RowTemplate Context="person">
+                        <div @key="person.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;">
+                            <img width="100px" height="100px" src="https://picsum.photos/100/100?random=@(person.Id)">
+                            <div style="margin-left:3%; display: inline-block;">
+                                <p>Id: <strong>@person.Id</strong></p>
+                                <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
+                                <p>Job: <strong>@person.Job</strong></p>
+                            </div>
+                        </div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ItemsProvider" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div>
+                <div>
+                    Utilize BitBasicList with an ItemsProvider for displaying data and custom placeholders.
+                </div>
+                <br />
+                <BitBasicList TItem="ProductDto"
+                              ItemSize="83"
+                              EnableVirtualization="true"
+                              ItemsProvider="@ProductsProvider"
+                              Style="border: 1px #a19f9d solid; border-radius: 4px;">
+                    <RowTemplate Context="product">
+                        <div @key="product.Id" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
+                            <div>Id: <strong>@product.Id</strong></div>
+                            <div>Name: <strong>@product.Name</strong></div>
+                            <div>Price: <strong>@product.Price</strong></div>
+                        </div>
+                    </RowTemplate>
+                    <VirtualizePlaceholder>
+                        <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
+                            <div>Id: <strong>Loading...</strong></div>
+                            <div>Name: <strong>Loading...</strong></div>
+                            <div>Price: <strong>Loading...</strong></div>
+                        </div>
+                    </VirtualizePlaceholder>
+                </BitBasicList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Grouped ItemsProvider" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <ExamplePreview>
+            <div>
+                <div>
+                    See BitBasicList with an ItemsProvider, categorizing and displaying data for products and categories.
+                </div>
+                <br />
+                <BitBasicList TItem="CategoryOrProductDto"
+                              ItemSize="83"
+                              EnableVirtualization="true"
+                              ItemsProvider="@CategoriesAndProductsProvider"
+                              Style="border: 1px #a19f9d solid; border-radius: 4px;">
+                    <RowTemplate Context="catOrProd">
+                        @if (catOrProd.IsProduct)
+                        {
+                            <div @key="@($"{catOrProd.CategoryId}-{catOrProd.ProductId}")" style="border-bottom: 1px #8a8886 solid; padding: 5px 10px; display:flex; flex-flow:row;">
+                                <div style="width:184px;">Name: <strong>@catOrProd.Name</strong></div>
+                                <div>Price: <strong>@catOrProd.Price</strong></div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div @key="catOrProd.CategoryId" style="border-bottom: 1px #8a8886 solid; padding: 5px 20px; background-color: #75737329;">
+                                <div>@catOrProd.Name</div>
+                            </div>
+                        }
+                    </RowTemplate>
+                    <VirtualizePlaceholder>
+                        <div style="border-bottom: 1px #8a8886 solid; padding: 5px 20px;">
+                            Loading...
+                        </div>
+                    </VirtualizePlaceholder>
+                </BitBasicList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <ExamplePreview>
+            <div>
+                <BitBasicList Dir="BitDir.Rtl" Items="FewPeopleRtl" Style="border: 1px #a19f9d solid; border-radius: 4px;">
+                    <RowTemplate Context="person">
+                        <div style="padding: 5px 20px; margin: 10px; background-color: #75737329;">
+                            <p>شناسه: <strong>@person.Id</strong></p>
+                            <p>نام کامل: <strong>@person.FirstName @person.LastName</strong></p>
+                            <p>شغل: <strong>@person.Job</strong></p>
+                        </div>
+                    </RowTemplate>
+                </BitBasicList>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

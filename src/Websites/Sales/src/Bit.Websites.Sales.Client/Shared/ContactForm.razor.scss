@@ -1,0 +1,147 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
+
+.contact-bg {
+    background-color: $Gray5;
+}
+
+.section-container {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: rem2(80px) rem2(140px);
+    box-sizing: border-box;
+
+    @include lg {
+        padding: rem2(60px) rem2(60px);
+    }
+
+    @include sm {
+        padding: rem2(60px) rem2(30px);
+    }
+
+    @include xs {
+        padding: rem2(60px) rem2(30px);
+    }
+
+    .secondary-title {
+        font-weight: 500;
+        font-size: rem2(30px);
+        color: $Gray2;
+        margin-bottom: rem2(24px);
+
+        @include sm {
+            font-size: rem2(24px);
+        }
+    }
+
+    .title {
+        font-size: rem2(44px);
+        font-weight: bold;
+        margin-bottom: 1rem;
+
+        @include sm {
+            font-size: rem2(34px);
+        }
+    }
+
+    .title-underline {
+        background-color: $Y1;
+        width: rem2(240px);
+        height: rem2(4px);
+        margin-bottom: rem2(76px);
+
+        @include sm {
+            width: rem2(180px);
+            height: rem2(2px);
+        }
+    }
+}
+
+::deep .form {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    max-width: rem2(600px);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    .input-row {
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: rem2(50px);
+
+        @include md {
+            flex-flow: column;
+        }
+    }
+
+    .input-container {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .text-area-container {
+        width: 100%;
+        margin-bottom: 2rem;
+
+        @include md {
+            margin-bottom: 4rem;
+        }
+    }
+
+    .text-field, .text-area {
+        width: 100%;
+
+        &.bit-txt {
+            .bit-txt-label {
+                color: $Gray1;
+                font-size: rem2(20px);
+                line-height: rem2(32px);
+
+                @include md {
+                    font-size: rem2(18px);
+                }
+            }
+
+            .bit-txt-field-grp {
+                height: rem2(60px);
+                border-radius: rem2(3px);
+                border-color: $Gray3;
+            }
+
+            .txt-field {
+                font-size: rem2(22px);
+                line-height: 2rem;
+
+                &:focus {
+                    border-color: 1px solid $GrayLightX;
+                }
+            }
+        }
+    }
+
+    .text-area {
+        &.bit-txt {
+            .bit-txt-field-grp {
+                padding: 0.5rem;
+                height: rem2(150px);
+            }
+        }
+    }
+
+    .submit-btn--primary {
+        @include PrimaryButton($IsInNavbar: false);
+    }
+}

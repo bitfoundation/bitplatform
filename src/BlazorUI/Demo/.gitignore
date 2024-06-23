@@ -213,10 +213,12 @@ ModelManifest.xml
 # VS Code
 .vscode
 
+# .NET Meteor
+.meteor
+
 # Rider
 .idea
 
-dotnet-tools.json
 profile.arm.json
 
 # Bit.BlazorUI.Demo
@@ -225,6 +227,8 @@ profile.arm.json
 /**/*.css
 custom.aprof
 
-/Server/Api/Attachments/**/*.*
+/Bit.BlazorUI.Demo.Server/Attachments/**/*.*
 
-/Client/Shared/wwwroot/scripts/app*.js
+/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app*.js
+
+/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.DemoDb.db*

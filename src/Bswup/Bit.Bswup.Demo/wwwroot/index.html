@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Bit Bswup Demo</title>
     <base href="/" />
+    <meta charset="utf-8" />
+    <title>bit Bswup Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <style>
@@ -36,7 +36,7 @@
             font-size: 20px;
         }
 
-        .bit-bswup-description {
+        #bit-bswup-description {
             font-size: 14px;
             margin-bottom: 20px;
         }
@@ -57,7 +57,9 @@
 
         #bit-bswup-reload {
             display: none;
-            margin-bottom: 8px;
+            position: fixed;
+            top: 10px;
+            right: 10px;
         }
 
         #bit-bswup-assets {
@@ -73,67 +75,78 @@
     <div id="bit-bswup">
         <div class="bit-bswup-container">
             <p class="bit-bswup-title">New version is available</p>
-            <p class="bit-bswup-description">Downloading updates, please wait...</p>
+            <p id="bit-bswup-description">Downloading updates, please wait...</p>
             <div class="bit-bswup-progress">
                 <div id="bit-bswup-progress-bar" style="width: 0%"></div>
             </div>
             <p id="bit-bswup-percent">0 %</p>
-            <button id="bit-bswup-reload">Reload</button>
             <ul id="bit-bswup-assets"></ul>
         </div>
     </div>
+    <button id="bit-bswup-reload">Update ready, Click to reload!</button>
 
     <div id="app">Loading...</div>
 
     <script>
-        var appEl = document.getElementById('app');
-        var progressEl = document.getElementById('bit-bswup');
-        var progressBar = document.getElementById('bit-bswup-progress-bar');
-        var percentLabel = document.getElementById('bit-bswup-percent');
-        var reloadButton = document.getElementById('bit-bswup-reload');
-        var assetsUl = document.getElementById('bit-bswup-assets');
+        const appEl = document.getElementById('app');
+        const bswupEl = document.getElementById('bit-bswup');
+        const descriptionLabel = document.getElementById('bit-bswup-description');
+        const progressBar = document.getElementById('bit-bswup-progress-bar');
+        const percentLabel = document.getElementById('bit-bswup-percent');
+        const reloadButton = document.getElementById('bit-bswup-reload');
+        const assetsUl = document.getElementById('bit-bswup-assets');
 
         function bitBswupHandler(type, data) {
             switch (type) {
-                case 'updatefound':
-                    return console.log('new version is downloading...');
-                case 'statechange':
-                    return console.log('new version state has changed to:', data.currentTarget.state);
-                case 'controllerchange':
-                    return console.log('sw controller changed:', data);
-                case 'installing':
+
+                case BswupMessage.updateFound: return console.log('an update found.');
+
+                case BswupMessage.stateChanged: return console.log('state has changed to:', data.currentTarget.state);
+
+                case BswupMessage.activate: return console.log('new version activated:', data.version);
+
+                case BswupMessage.downloadStarted:
                     appEl.style.display = 'none';
-                    progressEl.style.display = 'block';
-                    return console.log('installing new version:', data.version);
-                case 'installed':
-                    console.log('new version installed:', data.version)
-                    //reloadButton.style.display = 'block';
-                    //reloadButton.onclick = data.reload;
-                    // data.reload();
-                    return;
-                case 'progress':
+                    bswupEl.style.display = 'block';
+                    return console.log('downloading assets started:', data?.version);
+
+                case BswupMessage.downloadProgress:
                     const li = document.createElement('li');
                     li.innerHTML = `${data.index}: <b>${data.asset.url}</b>: ${data.asset.hash}`
                     assetsUl.prepend(li);
                     const percent = Math.round(data.percent);
                     progressBar.style.width = `${percent}%`;
                     percentLabel.innerHTML = `${percent} %`;
-                    if (percent >= 100) {
+                    return console.log('asset downloaded:', data);
+
+                case BswupMessage.downloadFinished:
+                    if (data.firstInstall) {
+                        descriptionLabel.textContent = 'Downloading finished, starting Blazor...';
+                        data.reload().then(() => {
+                            appEl.style.display = 'block';
+                            bswupEl.style.display = 'none';
+                        });
+                    } else {
+                        descriptionLabel.textContent = 'Downloading finished, ready to reload.';
                         reloadButton.style.display = 'block';
                         reloadButton.onclick = data.reload;
                     }
-                    return console.log('asset downloaded:', data);
-                case 'activate':
-                    return console.log('new version activated:', data.version);
+                    return console.log('downloading assets finished.');
+
+                case BswupMessage.updateReady:
+                    reloadButton.style.display = 'block';
+                    reloadButton.onclick = data.reload;
+                    return console.log('new update ready.');
             }
         }
     </script>
     <script src="_framework/blazor.webassembly.js" autostart=false></script>
     <script src="_content/Bit.Bswup/bit-bswup.js"
             scope="/"
-            log="verbose"
+            log="none"
             sw="service-worker.js"
-            handler="bitBswupHandler"></script>
+            handler="bitBswupHandler"
+            blazorScript="_framework/blazor.webassembly.js"></script>
 </body>
 
 </html>

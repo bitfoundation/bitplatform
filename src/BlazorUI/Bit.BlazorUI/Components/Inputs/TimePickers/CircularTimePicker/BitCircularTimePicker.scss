@@ -1,0 +1,369 @@
+﻿@import "../../../../Styles/functions.scss";
+
+.bit-ctp {
+    &.bit-dis {
+        .bit-ctp-lbl {
+            color: $color-foreground-disabled;
+        }
+
+        .bit-ctp-icn {
+            cursor: default;
+            pointer-events: none;
+            color: $color-foreground-disabled;
+            background: none $color-background-disabled;
+            border: $shape-border-width $shape-border-style $color-border-disabled;
+
+            .bit-icon {
+                cursor: default;
+                color: $color-foreground-disabled;
+            }
+
+            .bit-ctp-inp {
+                cursor: default;
+                color: $color-foreground-disabled;
+                background: none $color-background-disabled;
+            }
+        }
+    }
+
+    &.bit-inv {
+        .bit-ctp-icn {
+            border-color: $color-state-error;
+        }
+    }
+}
+
+.bit-ctp-lbl {
+    margin: 0;
+    display: block;
+    box-shadow: none;
+    font-weight: 600;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.625) 0;
+    overflow-wrap: break-word;
+    color: $color-foreground-primary;
+}
+
+.bit-ctp-wrp {
+    position: relative;
+}
+
+.bit-ctp-icn {
+    margin: 0;
+    display: flex;
+    cursor: pointer;
+    box-shadow: none;
+    height: spacing(4);
+    position: relative;
+    align-items: center;
+    padding: 0 spacing(1);
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary;
+}
+
+.bit-ctp-ico {
+    cursor: pointer;
+    padding-inline-end: 0;
+    padding-inline-start: spacing(1);
+    color: $color-foreground-secondary;
+}
+
+.bit-ctp-inp {
+    margin: 0;
+    outline: 0;
+    padding: 0;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    cursor: pointer;
+    border-radius: 0;
+    box-shadow: none;
+    font-weight: 400;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    font-size: spacing(1.75);
+    background: none transparent;
+    color: $color-foreground-primary;
+    font-family: $typography-font-family;
+}
+
+.bit-ctp-ein {
+    cursor: default;
+}
+
+.bit-ctp-lic {
+    .bit-ctp-icn {
+        flex-direction: row-reverse;
+    }
+
+    .bit-ctp-ico {
+        padding-inline-start: 0;
+        padding-inline-end: spacing(1);
+    }
+}
+
+.bit-ctp-foc {
+    .bit-ctp-icn::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        inset: spacing(-0.125);
+        border-radius: $shape-border-radius;
+        border: spacing(0.25) $shape-border-style $color-primary-main;
+    }
+}
+
+.bit-ctp-und {
+    .bit-ctp-wrp {
+        display: flex;
+        width: 100%;
+        border-bottom: $shape-border-width $shape-border-style $color-border-primary;
+    }
+
+    .bit-ctp-icn {
+        border: none;
+        flex: 1 1 0px;
+        text-align: left;
+    }
+
+    &.bit-dis {
+        .bit-ctp-wrp {
+            border-bottom-color: $color-border-disabled;
+        }
+    }
+
+    &.bit-ctp-foc {
+        .bit-ctp-icn::after {
+            border: none;
+            border-radius: 0;
+            border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
+        }
+    }
+}
+
+.bit-ctp-nbd {
+    .bit-ctp-icn {
+        border: none;
+    }
+}
+
+.bit-ctp-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    z-index: $zindex-overlay;
+    background-color: transparent;
+}
+
+.bit-ctp-cal {
+    display: none;
+    position: fixed;
+    font-weight: 400;
+    outline: transparent;
+    box-sizing: border-box;
+    z-index: $zindex-callout;
+    font-size: spacing(1.75);
+    box-shadow: $box-shadow-callout;
+    border-radius: $shape-border-radius;
+    font-family: $typography-font-family;
+}
+
+.bit-ctp-cac {
+    outline: none;
+    position: relative;
+    overflow: hidden auto;
+    border-radius: $shape-border-radius;
+    background-color: $color-background-primary;
+}
+
+.bit-ctp-tbr {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    padding: spacing(2) 0;
+    justify-content: center;
+    min-width: spacing(32.5);
+    color: $color-primary-text;
+    background-color: $color-primary-main;
+}
+
+.bit-ctp-txt,
+.bit-ctp-apb {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    line-height: 1;
+    cursor: pointer;
+    font-weight: 400;
+    user-select: none;
+    align-items: center;
+    display: inline-flex;
+    text-decoration: none;
+    vertical-align: middle;
+    font-size: spacing(5.5);
+    justify-content: center;
+    -webkit-appearance: none;
+    background-color: transparent;
+    color: $color-foreground-primary;
+}
+
+.bit-ctp-ina {
+    color: rgba(255,255,255,.54);
+}
+
+.bit-ctp-hmc {
+    display: flex;
+    gap: spacing(0.5);
+    align-items: baseline;
+    justify-content: flex-end;
+}
+
+.bit-ctp-apc {
+    display: flex;
+    margin-left: spacing(2.5);
+    flex-direction: column;
+}
+
+.bit-ctp-apb {
+    font-size: spacing(2.6);
+    min-width: spacing(2);
+    padding-top: spacing(0.5);
+}
+
+.bit-ctp-clk {
+    margin: spacing(2);
+    position: relative;
+    touch-action: none;
+    border-radius: 50%;
+    width: spacing(32.5);
+    height: spacing(32.5);
+    background-color: rgba(0,0,0,.07);
+}
+
+.bit-ctp-pin {
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    border-radius: 50%;
+    width: spacing(0.75);
+    height: spacing(0.75);
+    transform: translate(-50%,-50%);
+    background-color: $color-primary-main;
+}
+
+.bit-ctp-ptr {
+    bottom: 50%;
+    position: absolute;
+    width: spacing(0.25);
+    left: calc(50% - spacing(0.125));
+    transform-origin: center bottom 0;
+    background-color: $color-primary-main;
+}
+
+.bit-ctp-ani {
+    transition: transform 150ms cubic-bezier(0.4,0,0.2,1) 0ms,height 150ms cubic-bezier(0.4,0,0.2,1) 0ms;
+}
+
+.bit-ctp-pth {
+    border: none;
+    position: absolute;
+    width: spacing(3.5);
+    border-radius: 100%;
+    top: spacing(-2.375);
+    height: spacing(3.5);
+    left: spacing(-1.625);
+    background-color: unset;
+}
+
+.bit-ctp-ptm {
+    left: spacing(-0.5);
+    width: spacing(1.25);
+    top: spacing(-1.125);
+    height: spacing(1.25);
+    background: transparent;
+    color: $color-primary-main;
+    border: spacing(0.25) $shape-border-style;
+}
+
+.bit-ctp-num {
+    width: spacing(4);
+    user-select: none;
+    height: spacing(4);
+    position: absolute;
+    border-radius: 50%;
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    transition-duration: 120ms;
+    transition-property: color;
+    bottom: calc(100% - spacing(4));
+    color: $color-foreground-primary;
+    left: calc((100% - spacing(4))/2);
+}
+
+.bit-ctp-sel {
+    color: $color-foreground-primary;
+    background-color: $color-primary-main;
+    z-index: 1;
+}
+
+.bit-ctp-clf {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.bit-ctp-cbn {
+    top: 0;
+    right: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    aspect-ratio: 1;
+    overflow: visible;
+    position: absolute;
+    text-align: center;
+    width: spacing(3.75);
+    max-width: spacing(5);
+    font-size: spacing(1.5);
+    background-color: transparent;
+    color: $color-foreground-primary;
+    border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+
+    &:active {
+        background-color: $color-action-hover-background-primary;
+    }
+}
+
+.bit-ctp-cbi {
+    speak: none;
+    display: inline-block;
+}
+
+.bit-ctp-rsp {
+    .bit-ctp-clk {
+        margin: spacing(2) auto;
+    }
+
+    .bit-ctp-cbn {
+        width: 100%;
+        min-width: spacing(4);
+        max-width: spacing(5);
+        font-size: spacing(2.5);
+    }
+}

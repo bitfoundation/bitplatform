@@ -1,0 +1,36 @@
+﻿@page "/bswup/install"
+@inherits AppComponentBase
+
+<PageOutlet Url="bswup/install"
+            Title="Install - Bswup"
+            Description="installing the bit Bswup" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Install bit Bswup</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to install the bit Bswup?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CLI</BitTypography>
+        <div class="section-card-txt">
+            Open the command line of your choice and run the following command:
+            <CodeBox>dotnet add package Bit.Bswup</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            Open your Visual Studio's Manage NuGet Packages window and install the Bit.Bswup package:
+            <br />
+            <br />
+            <img src="/images/bswup/install-visualstudio.webp" class="bswup-img" />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Overview" PrevUrl="/bswup/overview" Next="Scripts" NextUrl="/bswup/scripts" />

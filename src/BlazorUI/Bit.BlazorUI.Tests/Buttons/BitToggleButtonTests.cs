@@ -7,17 +7,17 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitToggleButtonTests : BunitTestContext
 {
     [DataTestMethod,
-       DataRow(true, true, "Button label", BitIconName.Volume0, "title"),
-       DataRow(true, false, "Button label", BitIconName.Volume1, "title"),
-       DataRow(false, true, "Button label", BitIconName.Volume2, "title"),
-       DataRow(false, false, "Button label", BitIconName.Volume3, "title")
+       DataRow(true, true, "Button label", "Volume0", "title"),
+       DataRow(true, false, "Button label", "Volume1", "title"),
+       DataRow(false, true, "Button label", "Volume2", "title"),
+       DataRow(false, false, "Button label", "Volume3", "title")
     ]
-    public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(bool isChecked, bool isEnabled, string label, BitIconName? iconName, string title)
+    public void BitToggleButtonShouldHaveCorrectLabelAndIconAndTitle(bool isChecked, bool isEnabled, string text, string? iconName, string title)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {
             parameters.Add(p => p.IsChecked, isChecked);
-            parameters.Add(p => p.Label, label);
+            parameters.Add(p => p.Text, text);
             parameters.Add(p => p.IconName, iconName);
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.Title, title);
@@ -36,11 +36,11 @@ public class BitToggleButtonTests : BunitTestContext
             Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-dis"));
         }
 
-        Assert.AreEqual(bitLabelTag.TextContent, label);
+        Assert.AreEqual(bitLabelTag.TextContent, text);
 
         Assert.AreEqual(bitToggleButton.GetAttribute("title"), title);
 
-        Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(bitIconTag.ClassList.Contains($"bit-icon--{iconName}"));
     }
 
     [DataTestMethod,
@@ -182,26 +182,6 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("", true),
-        DataRow("bing.com", true),
-        DataRow("bing.com", false)
-    ]
-    public void BitToggleButtonShouldRenderExpectedElementBasedOnHref(string href, bool isEnabled)
-    {
-        var component = RenderComponent<BitToggleButton>(parameters =>
-        {
-            parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.IsEnabled, isEnabled);
-        });
-
-        var bitToggleButton = component.Find(".bit-tgb");
-        var tagName = bitToggleButton.TagName;
-        var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
-
-        Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
-    }
-
-    [DataTestMethod,
         DataRow(true),
         DataRow(false),
         DataRow(null)
@@ -228,34 +208,5 @@ public class BitToggleButtonTests : BunitTestContext
         {
             Assert.AreNotEqual(defaultIsChecked, isCheckedAfterOnChange);
         }
-    }
-
-    [DataTestMethod,
-        DataRow(BitButtonSize.Small),
-        DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large),
-        DataRow(null)
-    ]
-    public void BitToggleButtonSizeTest(BitButtonSize? size)
-    {
-        var com = RenderComponent<BitToggleButton>(parameters =>
-        {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.ButtonSize, size.Value);
-            }
-        });
-
-        var sizeClass = size switch
-        {
-            BitButtonSize.Small => "bit-tgb-sm",
-            BitButtonSize.Medium => "bit-tgb-md",
-            BitButtonSize.Large => "bit-tgb-lg",
-            _ => "bit-tgb-md",
-        };
-
-        var bitToggleButton = com.Find(".bit-tgb");
-
-        Assert.IsTrue(bitToggleButton.ClassList.Contains(sizeClass));
     }
 }

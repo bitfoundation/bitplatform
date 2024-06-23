@@ -6,15 +6,21 @@ public partial class BitAccordion
     private bool IsExpandedHasBeenSet;
     private bool isExpanded;
 
+
     /// <summary>
-    /// Default value of the IsExpanded.
+    /// Custom CSS classes for different parts of the BitAccordion.
     /// </summary>
-    [Parameter] public bool? DefaultIsExpanded { get; set; }
+    [Parameter] public BitAccordionClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The content of the Accordion.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Default value of the IsExpanded.
+    /// </summary>
+    [Parameter] public bool? DefaultIsExpanded { get; set; }
 
     /// <summary>
     /// A short description in the header of Accordion.
@@ -54,12 +60,31 @@ public partial class BitAccordion
     [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitAccordion.
+    /// </summary>
+    [Parameter] public BitAccordionClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Title in the header of Accordion.
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
 
     protected override string RootElementClass => "bit-acd";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => IsExpanded ? Classes?.Expanded : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => IsExpanded ? Styles?.Expanded : string.Empty);
+    }
 
     protected override async Task OnInitializedAsync()
     {

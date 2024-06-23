@@ -1,0 +1,72 @@
+﻿@page "/templates/samples"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/samples"
+            Title="Samples - Templates"
+            Description="samples of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Boilerplate Samples</BitTypography>
+
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        We published a few apps using our own bit Boilerplate project template in different platforms.
+        <br />
+        Two distinct samples that further explain the features in action are included in the project template:
+    </BitTypography>
+
+    <br />
+    <br />
+    <br />
+
+    <BitTypography Variant="BitTypographyVariant.H4" Gutter>AdminPanel sample</BitTypography>
+    <div class="page-flex-container">
+        <div class="page-content-container">
+            <div class="image-container">
+                <img class="template-img" src="/images/templates/adminpanel.webp" alt="AdminPanel sample" />
+                <a class="demo-btn-shadow" href="@Urls.AdminPanelMultiLingual" target="_blank">
+                    <div class="demo-btn">Demo</div>
+                </a>
+            </div>
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                The AdminPanel sample is a project powered by bit Boilerplate that includes all the necessary parts to create a fully-featured cross-platform admin/management website/app.
+            </BitTypography>
+        </div>
+
+        <div class="page-content-container">
+            <a class="primary-btn" href="@Urls.AdminPanelMultiLingual" target="_blank" title="SPA">SPA demo</a>
+            <a class="secondary-btn" href="@Urls.AdminPanelGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
+            <a class="secondary-btn" href="@Urls.AdminPanelAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>Apple Store</a>
+            <a class="secondary-btn" href="@Urls.BoilerplateNuget" target="_blank" title="Nuget"><span class="btn-img nuget"></span>Nuget</a>
+            <a class="secondary-btn" href="@Urls.AdminPanelFigma" target="_blank" title="Figma"><span class="btn-img figma"></span>Figma</a>
+        </div>
+    </div>
+
+    <br />
+    <br />
+    <br />
+
+    <BitTypography Variant="BitTypographyVariant.H4" Gutter>Todo sample</BitTypography>
+    <div class="page-flex-container">
+        <div class="page-content-container">
+            <div class="image-container">
+                <img class="template-img" src="/images/templates/todotemplate.webp" alt="Todo sample" />
+                <a class="demo-btn-shadow" href="@Urls.TodoTemplatePwaPrerendered" target="_blank">
+                    <div class="demo-btn">Demo</div>
+                </a>
+            </div>
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                The Todo sample is a project powered by Boilerplate that includes work packages and actions that you can apply to various cross-platform projects.
+            </BitTypography>
+        </div>
+
+        <div class="page-content-container">
+            <a class="primary-btn" href="@Urls.TodoTemplatePwaPrerendered" target="_blank" title="Prerendered PWA demo">Prerendered PWA</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateGooglePlay" target="_blank" title="Google Play"><i class="btn-img google-play" />Android</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>Apple Store</a>
+            <a class="secondary-btn" href="@Urls.BoilerplateNuget" target="_blank" title="NuGet"><i class="btn-img nuget" />NuGet</a>
+            <a class="secondary-btn" href="@Urls.TodoTemplateFigma" target="_blank" title="Figma"><i class="btn-img figma" />Figma</a>
+        </div>
+    </div>
+</div>
+
+<NavigationButtons Prev="Overview" PrevUrl="/templates/overview" Next="Development prerequisites" NextUrl="/templates/development-prerequisites" />

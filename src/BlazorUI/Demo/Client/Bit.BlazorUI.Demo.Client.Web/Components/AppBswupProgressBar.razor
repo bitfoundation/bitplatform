@@ -1,0 +1,74 @@
+﻿@using Bit.Bswup
+@using Bit.BlazorUI
+@using Bit.BlazorUI.Demo.Client.Core.Components
+
+@inherits AppComponentBase
+
+<style>
+    #bit-bswup {
+        top: 2px;
+        left: 50%;
+        display: none;
+        position: fixed;
+        z-index: 999999999;
+        text-align: center;
+        transform: translateX(-50%);
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    }
+        #bit-bswup .bswup-container {
+            width: 3rem;
+            height: 3rem;
+            display: block;
+            position: relative;
+        }
+            #bit-bswup .bswup-container circle {
+                fill: none;
+                stroke: #e0e0e0;
+                stroke-width: 0.2rem;
+                transform-origin: 50% 50%;
+                transform: rotate(-90deg);
+            }
+                #bit-bswup .bswup-container circle:last-child {
+                    stroke: #1b6ec2;
+                    transition: stroke-dasharray 0.05s ease-in-out;
+                    stroke-dasharray: calc(3.141 * var(--bit-bswup-percent, 0%) * 0.8), 500%;
+                }
+        #bit-bswup .bswup-progress-text {
+            top: 50%;
+            left: 50%;
+            font-size: 12px;
+            position: absolute;
+            text-align: center;
+            font-weight: normal;
+            transform: translate(-50%, -50%);
+        }
+            #bit-bswup .bswup-progress-text::after {
+                content: var(--bit-bswup-percent-text, "");
+            }
+    /* If you want the update to be applied after the user approves the new Pwa version and not automatically,
+        set AutoReload parameter of BswupProgress to false and uncomment the commented codes in this file: */
+    /*
+        #bit-bswup-reload {
+            top: 38px;
+            left: 50%;
+            display: none;
+            cursor: pointer;
+            position: fixed;
+            padding: 4px 8px;
+            z-index: 999999999;
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+    */
+</style>
+
+<div>
+    <BswupProgress AppContainer="#app-container" HideApp=false AutoReload=true ShowLogs=false>
+        <div class="bswup-progress-text" />
+        <svg class="bswup-container">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+    </BswupProgress>
+    @* <button id="bit-bswup-reload">@Localizer[nameof(AppStrings.Update)]</button> *@
+</div>

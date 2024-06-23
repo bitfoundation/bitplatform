@@ -1,0 +1,216 @@
+﻿@page "/components/stack"
+
+<PageOutlet Url="components/stack"
+            Title="Stack"
+            Description="stack component of the bit BlazorUI components" />
+<div>
+    <ComponentDemo ComponentName="Stack"
+                   ComponentDescription="A Stack is a container-type component that abstracts the implementation of a flexbox in order to define the layout of its children components."
+                   ComponentParameters="componentParameters"
+                   ComponentSubEnums="componentSubEnums">
+        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <ExamplePreview>
+                <div>Default (Vertical)</div>
+                <BitStack Style="background:#71afe5">
+                    <div style="color:black">Item 1</div>
+                    <div style="color:black">Item 2</div>
+                    <div style="color:black">Item 3</div>
+                </BitStack>
+                <br /><br />
+                <div>Horizontal</div>
+                <BitStack Horizontal Style="background:#71afe5">
+                     <div style="color:black">Item 1</div>
+                     <div style="color:black">Item 2</div>
+                     <div style="color:black">Item 3</div>
+                 </BitStack>
+                 <br /><br />
+                 <div>Reversed vertical</div>
+                 <BitStack Reversed Style="background:#71afe5">
+                     <div style="color:black">Item 1</div>
+                     <div style="color:black">Item 2</div>
+                     <div style="color:black">Item 3</div>
+                 </BitStack>
+                 <br /><br />
+                 <div>Reversed horizontal</div>
+                 <BitStack Horizontal Reversed Style="background:#71afe5">
+                     <div style="color:black">Item 1</div>
+                     <div style="color:black">Item 2</div>
+                     <div style="color:black">Item 3</div>
+                 </BitStack>
+             </ExamplePreview>
+         </ComponentExampleBox>
+
+         <ComponentExampleBox Title="Gap" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+             <ExamplePreview>
+                 <BitSlider Label="Gap between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@gap" />
+                 <br />
+                 <BitStack Gap="@($"{gap}rem")" Style="background:#71afe5">
+                     <div class="item">Item 1</div>
+                     <div class="item">Item 2</div>
+                     <div class="item">Item 3</div>
+                 </BitStack>
+             </ExamplePreview>
+         </ComponentExampleBox>
+
+         <ComponentExampleBox Title="Nesting" RazorCode="@example3RazorCode" Id="example3">
+             <ExamplePreview>
+                 <BitStack Horizontal HorizontalAlign="BitStackAlignment.SpaceAround" Style="background:#71afe5">
+                     <div class="item">Item 1</div>
+                     <BitStack>
+                         <div class="item">Item 2-1</div>
+                         <div class="item">Item 2-2</div>
+                         <div class="item">Item 2-3</div>
+                     </BitStack>
+                     <BitStack Horizontal>
+                        <div class="item">Item 3-1</div>
+                        <div class="item">Item 3-2</div>
+                        <div class="item">Item 3-3</div>
+                    </BitStack>
+                </BitStack>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Alignment" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <ExamplePreview>
+                <BitStack Horizontal Wrap Gap="2rem">
+                     <BitToggle @bind-Value="isHorizontal" DefaultText="Horizontal" />
+                     <BitToggle @bind-Value="isReversed" DefaultText="Reversed" />
+                 </BitStack>
+                 <br />
+                 <BitChoiceGroup Label="Direction"
+                                 @bind-Value="direction"
+                                 LayoutFlow="@BitLayoutFlow.Horizontal"
+                                 TItem="BitChoiceGroupOption<BitDir>" TValue="BitDir">
+                     <BitChoiceGroupOption Text="LTR" Value="BitDir.Ltr" />
+                     <BitChoiceGroupOption Text="RTL" Value="BitDir.Rtl" />
+                     <BitChoiceGroupOption Text="Auto" Value="BitDir.Auto" />
+                 </BitChoiceGroup>
+                 <br />
+                 <BitChoiceGroup Label="Horizontal Align"
+                                 @bind-Value="horizontalAlign"
+                                 LayoutFlow="@BitLayoutFlow.Horizontal"
+                                 TItem="BitChoiceGroupOption<BitStackAlignment>" TValue="BitStackAlignment">
+                     <BitChoiceGroupOption Text="Start" Value="BitStackAlignment.Start" />
+                     <BitChoiceGroupOption Text="Center" Value="BitStackAlignment.Center" />
+                     <BitChoiceGroupOption Text="End" Value="BitStackAlignment.End" />
+                     <BitChoiceGroupOption Text="SpaceBetween" Value="BitStackAlignment.SpaceBetween" />
+                     <BitChoiceGroupOption Text="SpaceAround" Value="BitStackAlignment.SpaceAround" />
+                     <BitChoiceGroupOption Text="SpaceEvenly" Value="BitStackAlignment.SpaceEvenly" />
+                     <BitChoiceGroupOption Text="Baseline" Value="BitStackAlignment.Baseline" />
+                     <BitChoiceGroupOption Text="Stretch" Value="BitStackAlignment.Stretch" />
+                 </BitChoiceGroup>
+                 <br />
+                 <BitChoiceGroup Label="Vertical Align"
+                                 @bind-Value="verticalAlign"
+                                 LayoutFlow="@BitLayoutFlow.Horizontal"
+                                 TItem="BitChoiceGroupOption<BitStackAlignment>" TValue="BitStackAlignment">
+                     <BitChoiceGroupOption Text="Start" Value="BitStackAlignment.Start" />
+                     <BitChoiceGroupOption Text="Center" Value="BitStackAlignment.Center" />
+                     <BitChoiceGroupOption Text="End" Value="BitStackAlignment.End" />
+                     <BitChoiceGroupOption Text="SpaceBetween" Value="BitStackAlignment.SpaceBetween" />
+                     <BitChoiceGroupOption Text="SpaceAround" Value="BitStackAlignment.SpaceAround" />
+                     <BitChoiceGroupOption Text="SpaceEvenly" Value="BitStackAlignment.SpaceEvenly" />
+                     <BitChoiceGroupOption Text="Baseline" Value="BitStackAlignment.Baseline" />
+                     <BitChoiceGroupOption Text="Stretch" Value="BitStackAlignment.Stretch" />
+                 </BitChoiceGroup>
+                 <br />
+                 <BitStack Style="background:#71afe5;height:15rem"
+                           Dir="direction"
+                           Reversed="isReversed"
+                           Horizontal="isHorizontal"
+                           VerticalAlign="verticalAlign"
+                           HorizontalAlign="horizontalAlign">
+                     <div class="item">Item 1</div>
+                     <div class="item">Item 2</div>
+                     <div class="item">Item 3</div>
+                 </BitStack>
+             </ExamplePreview>
+         </ComponentExampleBox>
+
+         <ComponentExampleBox Title="Wrap" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+             <ExamplePreview>
+                 <BitSlider Label="Stack height" Min="10" Max="20" Step="0.1" ValueFormat="0.0 rem" @bind-Value="@stackHeight" />
+                 <br />
+                 <BitStack Wrap Style="@($"height:{stackHeight}rem;background:#71afe5")">
+                     @for (int i = 0; i < 20; i++)
+                    {
+                        var index = i;
+                        <div class="item">Item @index</div>
+                    }
+                </BitStack>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Grow" RazorCode="@example6RazorCode" Id="example6">
+            <ExamplePreview>
+                <div>The "Grows" parameter sets flex-grow to 1, while "Grow" accepts customizable values for more flexibility.</div>
+                <br /><br />
+
+                <BitStack Gap="0.5rem" Style="background:#71afe5;height:15rem">
+                    <BitStack Grow="3"
+                              Class="item" Style="width:100%"
+                              VerticalAlign="BitStackAlignment.Center"
+                              HorizontalAlign="BitStackAlignment.Center">
+                        Grow is 3
+                    </BitStack>
+                    <BitStack Grow="2"
+                              Class="item" Style="width:100%"
+                              VerticalAlign="BitStackAlignment.Center"
+                              HorizontalAlign="BitStackAlignment.Center">
+                        Grow is 2
+                    </BitStack>
+                    <BitStack Grow="1"
+                              Class="item" Style="width:100%"
+                              VerticalAlign="BitStackAlignment.Center"
+                              HorizontalAlign="BitStackAlignment.Center">
+                        Grow is 1
+                    </BitStack>
+                </BitStack>
+
+                <br /><br />
+
+                <BitStack Gap="0.5rem" Style="background:#71afe5;height:15rem">
+                    <BitStack Class="item" Style="width:100%"
+                              VerticalAlign="BitStackAlignment.Center"
+                              HorizontalAlign="BitStackAlignment.Center">
+                        Normal
+                    </BitStack>
+                    <BitStack Grows
+                               Class="item" Style="width:100%"
+                               VerticalAlign="BitStackAlignment.Center"
+                               HorizontalAlign="BitStackAlignment.Center">
+                         Grows
+                     </BitStack>
+                     <BitStack Class="item" Style="width:100%"
+                               VerticalAlign="BitStackAlignment.Center"
+                               HorizontalAlign="BitStackAlignment.Center">
+                         Normal
+                     </BitStack>
+                 </BitStack>
+
+                 <br /><br />
+
+                 <BitStack Horizontal
+                           Gap="0.5rem"
+                           Style="background:#71afe5;height:15rem">
+                     <BitStack Class="item" Style="height:100%"
+                               VerticalAlign="BitStackAlignment.Center"
+                               HorizontalAlign="BitStackAlignment.Center">
+                         Normal
+                     </BitStack>
+                     <BitStack Grows
+                               Class="item" Style="height:100%"
+                               VerticalAlign="BitStackAlignment.Center"
+                               HorizontalAlign="BitStackAlignment.Center">
+                         Grows
+                     </BitStack>
+                     <BitStack Class="item" Style="height:100%"
+                               VerticalAlign="BitStackAlignment.Center"
+                               HorizontalAlign="BitStackAlignment.Center">
+                         Normal
+                     </BitStack>
+                 </BitStack>
+             </ExamplePreview>
+         </ComponentExampleBox>
+     </ComponentDemo>
+ </div>

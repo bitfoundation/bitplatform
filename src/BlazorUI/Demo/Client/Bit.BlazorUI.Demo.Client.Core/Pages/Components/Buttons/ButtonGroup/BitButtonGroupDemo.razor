@@ -1,0 +1,30 @@
+﻿@page "/components/buttongroup"
+@page "/components/button-group"
+
+
+<PageOutlet Url="components/button-group"
+            Title="ButtonGroup"
+            Description="ButtonGroup component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="ButtonGroup"
+                   ComponentDescription="The ButtonGroup component can be used to group related buttons."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums"
+                   Notes="The BitButtonGroupGroup is a Multi-API component which can accept the list of Items in 3 different ways: BitButtonGroupGroupItem class, a custom Generic class, and BitButtonGroupGroupOption component.">
+        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivotItem HeaderText="Item">
+                <_BitButtonGroupItemDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Custom">
+                <_BitButtonGroupCustomDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Option">
+                <_BitButtonGroupOptionDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </ComponentDemo>
+</div>

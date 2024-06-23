@@ -43,7 +43,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Items, choiceGroupItems);
         });
 
-        var bitChoiceGroup = component.FindAll(".bit-chgi");
+        var bitChoiceGroup = component.FindAll(".bit-chg-icn");
 
         Assert.AreEqual(bitChoiceGroup.Count, choiceGroupItems.Count);
     }
@@ -73,30 +73,32 @@ public class BitChoiceGroupTests : BunitTestContext
     public void BitChoiceGroupShouldRespectInputClick(bool isEnabled)
     {
         var choiceGroupItems = GetChoiceGroupItems();
+        //var value = choiceGroupItems[1].Value;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
+            //parameters.Bind(p => p.Value, value, v => value = v);
             parameters.Add(p => p.Items, choiceGroupItems);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitChoiceGroupImages = component.FindAll(".bit-chgi", true);
-
-        foreach (var element in bitChoiceGroupImages)
+        var itemContainers = component.FindAll(".bit-chg-icn", true);
+        var index = 0;
+        foreach (var itemContainer in itemContainers)
         {
-            if (isEnabled)
-            {
-                var bitChoiceGroup = component.Find(".bit-chgi");
-                var bitChoiceGroupInput = bitChoiceGroup.GetElementsByTagName("input").First();
-
-                bitChoiceGroupInput.Click();
-
-                // TODO: bypassed - BUnit 2-way bound parameters issue
-                // Assert.IsTrue(element.ClassList.Contains($"bit-chgi-checked"));
+            var item = choiceGroupItems[index++];
+            if (isEnabled is false || item.IsEnabled is false)
+            {                
+                Assert.IsTrue(itemContainer.ClassList.Contains("bit-chg-ids"));
             }
             else
             {
-                Assert.IsTrue(element.ClassList.Contains("bit-chgi-disabled"));
+                Assert.IsFalse(itemContainer.ClassList.Contains("bit-chg-ids"));
+
+                //var input = itemContainer.GetElementsByTagName("input").First();
+                //input.Click();
+                // TODO: bypassed - BUnit 2-way bound parameters issue
+                //Assert.IsTrue(itemContainer.ClassList.Contains($"bit-chg-ich"));
             }
         }
     }
@@ -118,7 +120,7 @@ public class BitChoiceGroupTests : BunitTestContext
             Assert.AreEqual(element.item.GetAttribute("src"), choiceGroupItems[element.index].ImageSrc);
             Assert.AreEqual(element.item.GetAttribute("alt"), choiceGroupItems[element.index].ImageAlt);
 
-            var bitChoiceGroup = component.Find(".bit-chgi");
+            var bitChoiceGroup = component.Find(".bit-chg-icn");
             var bitChoiceGroupInput = bitChoiceGroup.GetElementsByTagName("input").First();
 
             bitChoiceGroupInput.Click();
@@ -169,7 +171,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.AriaLabelledBy, ariaLabelledBy);
         });
 
-        var bitChoiceGroup = component.Find(".bit-chg").FirstElementChild;
+        var bitChoiceGroup = component.Find(".bit-chg");
         Assert.AreEqual(bitChoiceGroup.GetAttribute("aria-labelledby"), ariaLabelledBy);
     }
 
@@ -204,11 +206,11 @@ public class BitChoiceGroupTests : BunitTestContext
     }
 
     [DataTestMethod,
-      DataRow(BitComponentVisibility.Visible),
-      DataRow(BitComponentVisibility.Hidden),
-      DataRow(BitComponentVisibility.Collapsed),
+      DataRow(BitVisibility.Visible),
+      DataRow(BitVisibility.Hidden),
+      DataRow(BitVisibility.Collapsed),
     ]
-    public void BitChoiceGroupShouldTakeCustomVisibility(BitComponentVisibility visibility)
+    public void BitChoiceGroupShouldTakeCustomVisibility(BitVisibility visibility)
     {
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
@@ -220,13 +222,13 @@ public class BitChoiceGroupTests : BunitTestContext
 
         switch (visibility)
         {
-            case BitComponentVisibility.Visible:
-                Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains(""));
+            case BitVisibility.Visible:
+                Assert.IsFalse(bitChoiceGroup.HasAttribute("style"));
                 break;
-            case BitComponentVisibility.Hidden:
+            case BitVisibility.Hidden:
                 Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("visibility:hidden"));
                 break;
-            case BitComponentVisibility.Collapsed:
+            case BitVisibility.Collapsed:
                 Assert.IsTrue(bitChoiceGroup.GetAttribute("style").Contains("display:none"));
                 break;
         }
@@ -239,7 +241,8 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Female",
-                IconName = BitIconName.ContactHeart,
+                Value = "v-female",
+                IconName = "ContactHeart",
                 ImageSrc = "https://bit.com/female_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-female_icon.svg.png",
                 ImageAlt = "female-icon",
@@ -247,7 +250,8 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Male",
-                IconName = BitIconName.FrontCamera,
+                Value = "v-male",
+                IconName = "FrontCamera",
                 ImageSrc = "https://bit.com/male_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-male_icon.svg.png",
                 ImageAlt = "male-icon",
@@ -255,15 +259,18 @@ public class BitChoiceGroupTests : BunitTestContext
             new()
             {
                 Text = "Other",
-                IconName = BitIconName.Group,
+                Value = "v-other",
+                IconName = "Group",
                 ImageSrc = "https://bit.com/other_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-other_icon.svg.png",
                 ImageAlt = "other-icon",
+                IsEnabled = false
             },
             new()
             {
                 Text = "Prefer not to say",
-                IconName = BitIconName.Emoji2,
+                Value = "v-nosay",
+                IconName = "Emoji2",
                 ImageSrc = "https://bit.com/nottosay_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-nottosay_icon.svg.png",
                 ImageAlt = "nottosay-icon",

@@ -1,0 +1,141 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<TValue>
+@typeparam TValue
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (IconName.HasValue() || Label.HasValue() || LabelTemplate is not null)
+    {
+        <div style="@Styles?.LabelContainer" class="bit-nfl-lct @Classes?.LabelContainer">
+            @if (IconName.HasValue())
+            {
+                <i style="@Styles?.Icon"
+                   class="bit-nfl-lic bit-icon bit-icon--@IconName @Classes?.Icon"
+                   aria-hidden="true"
+                   role="@GetIconRole"
+                   aria-label="@IconAriaLabel" />
+            }
+
+            @if (LabelTemplate is not null)
+            {
+                <label id="@_labelId" for="@_inputId">
+                    @LabelTemplate
+                </label>
+            }
+            else if (Label.HasValue())
+            {
+                <label style="@Styles?.Label"
+                       class="bit-nfl-lbl @Classes?.Label"
+                       id="@_labelId"
+                       for="@_inputId">
+                    @Label
+                </label>
+            }
+        </div>
+    }
+
+    <div style="@Styles?.InputWrapper"
+         class="bit-nfl-wrp @Classes?.InputWrapper"
+         title="@Title"
+         aria-label="@AriaLabel"
+         aria-setsize="@AriaSetSize"
+         aria-posinset="@AriaPositionInSet">
+        @if (PrefixTemplate is not null)
+        {
+            @PrefixTemplate
+        }
+        else if (Prefix.HasValue())
+        {
+            <div style="@Styles?.PrefixContainer" class="bit-nfl-pre @Classes?.PrefixContainer">
+                <span style="@Styles?.Prefix" class="@Classes?.Prefix">
+                    @Prefix
+                </span>
+            </div>
+        }
+
+        <input @ref="InputElement" @attributes="@InputHtmlAttributes"
+               @onblur="HandleOnBlur"
+               @onfocus="HandleOnFocus"
+               @onkeydown="HandleOnKeyDown"
+               @onfocusin="HandleOnFocusIn"
+               @onfocusout="HandleOnFocusOut"
+               @onchange="HandleOnStringValueChangeAsync"
+               @oninput="HandleOnStringValueInputAsync"
+               form=""
+               min="@Min"
+               max="@Max"
+               name="@Name"
+               id="@_inputId"
+               autocomplete="off"
+               required="@Required"
+               style="@Styles?.Input"
+               placeholder="@Placeholder"
+               aria-labelledby="@_labelId"
+               value="@CurrentValueAsString"
+               disabled="@(IsEnabled is false)"
+               class="bit-nfl-inp @Classes?.Input"
+               type="@(NumberFormat.HasValue() ? "text" : "number")"
+               aria-valuemin="@Min"
+               aria-valuemax="@Max"
+               aria-valuenow="@GetAriaValueNow"
+               aria-valuetext="@GetAriaValueText"
+               aria-describedby="@AriaDescription"
+               aria-disabled="@(IsEnabled is false)" />
+        @if (ShowButtons)
+        {
+            <span style="@Styles?.ButtonsContainer" class="bit-nfl-act @Classes?.ButtonsContainer">
+                <button @ref="_buttonIncrement"
+                        @onpointerup="HandleOnPointerUpOrOut"
+                        @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointerdown="() => HandleOnPointerDown(true)"
+                        type="button"
+                        tabindex="-1"
+                        date-is-focusable="false"
+                        style="@Styles?.IncrementButton"
+                        class="bit-nfl-aup @Classes?.IncrementButton"
+                        aria-label="@IncrementAriaLabel"
+                        disabled="@(IsEnabled is false)"
+                        aria-disabled="@(IsEnabled is false)">
+                    <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
+                        <i style="@Styles?.IncrementIcon"
+                           class="bit-nfl-bic bit-icon bit-icon--@IncrementIconName @Classes?.IncrementIcon" />
+                    </span>
+                </button>
+
+                <button @ref="_buttonDecrement"
+                        @onpointerup="HandleOnPointerUpOrOut"
+                        @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointerdown="() => HandleOnPointerDown(false)"
+                        type="button"
+                        tabindex="-1"
+                        date-is-focusable="false"
+                        style="@Styles?.DecrementButton"
+                        class="bit-nfl-adn @Classes?.DecrementButton"
+                        disabled="@(IsEnabled is false)"
+                        aria-label="@DecrementAriaLabel"
+                        aria-disabled="@(IsEnabled is false)">
+                    <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
+                        <i style="@Styles?.DecrementIcon"
+                           class="bit-nfl-bic bit-icon bit-icon--@DecrementIconName @Classes?.DecrementIcon" />
+                    </span>
+                </button>
+            </span>
+        }
+
+        @if (SuffixTemplate is not null)
+        {
+            @SuffixTemplate
+        }
+        else if (Suffix.HasValue())
+        {
+            <div style="@Styles?.SuffixContainer" class="bit-nfl-suf @Classes?.SuffixContainer">
+                <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                    @Suffix
+                </span>
+            </div>
+        }
+    </div>
+</div>

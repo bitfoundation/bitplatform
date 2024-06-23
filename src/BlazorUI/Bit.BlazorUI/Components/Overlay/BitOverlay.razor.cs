@@ -1,6 +1,4 @@
-﻿using System.Reflection.Emit;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitOverlay
 {
@@ -64,12 +62,12 @@ public partial class BitOverlay
 
     protected override string RootElementClass => "bit-ovl";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsVisible ? "visible" : "");
-        ClassBuilder.Register(() => AbsolutePosition ? "absolute" : "");
+        ClassBuilder.Register(() => IsVisible ? $"{RootElementClass}-vis" : "");
+        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : "");
 
-        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : "");
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : "");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -84,7 +82,7 @@ public partial class BitOverlay
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverlayScroll(ScrollerSelector, IsVisible);
+        _offsetTop = await _js.BitOverlayToggleScroll(ScrollerSelector, IsVisible);
 
         if (AbsolutePosition is false) return;
 

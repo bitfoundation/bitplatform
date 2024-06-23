@@ -1,0 +1,452 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-chg {
+    display: block;
+    font-weight: 400;
+    font-size: spacing(1.75);
+    font-family: $typography-font-family;
+
+    &.bit-chg-req {
+        .bit-chg-lbl {
+            &::after {
+                content: " *";
+                color: $color-state-required;
+                padding-right: spacing(1.5);
+            }
+        }
+    }
+
+    &.bit-inv {
+        .bit-chg-ilw {
+            color: $color-state-error;
+            border-color: $color-state-error;
+
+            &:before {
+                border-color: $color-state-error;
+            }
+
+            &:after {
+                border-color: $color-state-error;
+                background-color: $color-state-error;
+            }
+
+            @media (hover: hover) {
+                &:hover {
+                    .bit-chg-itx {
+                        color: $color-state-error;
+                    }
+
+                    &:before {
+                        border-color: $color-state-error;
+                    }
+
+                    &:after {
+                        border-color: $color-state-error;
+                        background-color: $color-state-error;
+                    }
+                }
+            }
+        }
+
+        .bit-chg-ilwi {
+            color: $color-state-error;
+            border-color: $color-state-error;
+
+            &:before {
+                border-color: $color-state-error;
+            }
+
+            &:after {
+                border-color: $color-state-error;
+                background-color: $color-state-error;
+            }
+
+            @media (hover: hover) {
+                &:hover {
+                    border-color: $color-state-error;
+
+                    &:before {
+                        opacity: 1;
+                        border-color: $color-state-error;
+                    }
+
+                    &:after {
+                        border-color: $color-state-error;
+                        background-color: $color-state-error;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.bit-chg-lbl {
+    margin: 0;
+    display: block;
+    box-shadow: none;
+    font-weight: 600;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.625) 0;
+    overflow-wrap: break-word;
+    color: $color-foreground-primary;
+}
+
+.bit-chg-cnt {
+    display: flex;
+    flex-flow: column nowrap;
+
+    &.horizontal {
+        flex-flow: row wrap;
+    }
+}
+
+.bit-chg-icn {
+    border: none;
+    display: flex;
+    font-weight: 400;
+    position: relative;
+    align-items: center;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    min-height: spacing(3.25);
+    margin-inline-end: spacing(1);
+    margin-block-start: spacing(1);
+    color: $color-foreground-primary;
+    font-family: $typography-font-family;
+}
+
+.bit-chg-ihi {
+    height: 100%;
+    font-size: 0;
+    width: fit-content;
+    display: inline-flex;
+    padding-inline-start: 0;
+    background-color: $color-background-secondary;
+}
+
+.bit-chg-ilw {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    vertical-align: top;
+    margin-block-start: 0;
+    display: inline-block;
+    min-height: spacing(2.5);
+    padding-inline-start: spacing(3.25);
+
+    &:before {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        width: spacing(2.5);
+        height: spacing(2.5);
+        inset-block-start: 0;
+        inset-inline-start: 0;
+        display: inline-block;
+        box-sizing: border-box;
+        background-color: $color-background-primary;
+        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        border: $shape-border-width $shape-border-style $color-border-primary;
+    }
+
+    &:after {
+        width: 0;
+        height: 0;
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        inset-inline-end: 0;
+        box-sizing: border-box;
+        inset-inline-start: spacing(1.25);
+        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            .bit-chg-itx {
+                color: $color-action-hover-foreground-primary;
+            }
+
+            &:before {
+                border-color: $color-action-hover-border-primary;
+            }
+
+            &:after {
+                width: spacing(1.25);
+                height: spacing(1.25);
+                inset-block-start: spacing(0.625);
+                inset-inline-start: spacing(0.625);
+                transition-property: background-color;
+                background-color: $color-action-hover-foreground-secondary;
+            }
+        }
+    }
+}
+
+.bit-chg-ilwi {
+    margin: 0;
+    display: flex;
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+    position: relative;
+    align-items: center;
+    vertical-align: top;
+    flex-direction: column;
+    box-sizing: content-box;
+    justify-content: center;
+    min-height: spacing(2.5);
+    transition: all 0.2s ease;
+    padding-block-start: spacing(2.75);
+    border: $shape-border-width $shape-border-style transparent;
+
+    &:before {
+        opacity: 0;
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        width: spacing(2.5);
+        height: spacing(2.5);
+        display: inline-block;
+        box-sizing: border-box;
+        inset-inline-start: auto;
+        inset-inline-end: spacing(0.375);
+        inset-block-start: spacing(0.375);
+        background-color: $color-background-primary;
+        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        border: $shape-border-width $shape-border-style $color-border-primary;
+    }
+
+    &:after {
+        width: 0;
+        height: 0;
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        inset-inline-end: 0;
+        box-sizing: border-box;
+        inset-inline-start: spacing(1.25);
+        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary;
+
+            &:before {
+                opacity: 1;
+                border-color: $color-action-hover-border-primary;
+            }
+        }
+    }
+}
+
+.bit-chg-itx {
+    display: inline-block;
+}
+
+.bit-chg-itw {
+    display: block;
+    overflow: hidden;
+    font-weight: 400;
+    height: spacing(4);
+    position: relative;
+    max-width: spacing(8);
+    white-space: pre-wrap;
+    font-size: spacing(1.75);
+    line-height: spacing(1.875);
+    font-family: $typography-font-family;
+    margin: spacing(0.5) spacing(1) spacing(0.25);
+
+    .bit-chg-itx {
+        display: inline-block;
+        padding-inline-start: 0;
+    }
+}
+
+.bit-chg-iic {
+    height: spacing(4);
+    position: relative;
+    display: inline-block;
+    padding: 0 spacing(3.75);
+}
+
+.bit-chg-iiw {
+    transition: opacity 0.2s ease;
+    padding-block-end: spacing(0.25);
+
+    .bit-chg-iim {
+        border-style: none;
+        display: inline-block;
+
+        img {
+            opacity: 1;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    }
+}
+
+.bit-chg-icc {
+    position: relative;
+    display: inline-block;
+    padding: 0 spacing(3.75);
+}
+
+.bit-chg-icw {
+    height: spacing(4);
+    font-size: spacing(4);
+    line-height: spacing(4);
+
+    i {
+        speak: none;
+        display: inline-block;
+    }
+}
+
+.bit-chg-ich {
+    .bit-chg-ilw {
+        border-color: $color-primary-main;
+
+        &:before {
+            border-color: $color-primary-main;
+        }
+
+        &:after {
+            width: spacing(1.25);
+            height: spacing(1.25);
+            inset-block-start: spacing(0.625);
+            inset-inline-start: spacing(0.625);
+            background-color: $color-primary-main;
+            border: spacing(0.625) $shape-border-style $color-primary-main;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                &:before {
+                    border-color: $color-action-hover-primary;
+                }
+
+                &:after {
+                    border-color: $color-action-hover-primary;
+                    background-color: $color-action-hover-primary;
+                }
+            }
+        }
+    }
+
+    .bit-chg-ilwi {
+        border-color: $color-primary-main;
+
+        &:before {
+            opacity: 1;
+            border-color: $color-primary-main;
+        }
+
+        &:after {
+            width: spacing(1.25);
+            height: spacing(1.25);
+            inset-inline-start: auto;
+            inset-inline-end: spacing(1);
+            inset-block-start: spacing(1);
+            background-color: $color-primary-main;
+            border: spacing(0.625) $shape-border-style $color-primary-main;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: $color-action-hover-primary;
+
+                &:before {
+                    opacity: 1;
+                    border-color: $color-action-hover-primary;
+                }
+
+                &:after {
+                    border-color: $color-action-hover-primary;
+                    background-color: $color-action-hover-primary;
+                }
+            }
+        }
+    }
+}
+
+.bit-chg-ids {
+    .bit-chg-ilw {
+        cursor: default;
+        pointer-events: none;
+        color: $color-foreground-disabled;
+
+        &:before {
+            border-color: $color-border-disabled;
+        }
+
+        &:after {
+            border-color: $color-border-disabled;
+        }
+
+        .bit-chg-itx {
+            color: $color-foreground-disabled;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                .bit-chg-itx {
+                    color: $color-border-disabled;
+                }
+
+                &:before, &:after {
+                    border-color: $color-border-disabled;
+                }
+            }
+        }
+    }
+
+    .bit-chg-ilwi {
+        cursor: default;
+        border-color: transparent;
+        color: $color-foreground-disabled;
+
+        &:before {
+            border-color: $color-border-disabled;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: transparent;
+
+                &:before, &:after {
+                    opacity: 0;
+                    border-color: $color-border-disabled;
+                }
+            }
+        }
+    }
+
+    .bit-chg-icw {
+        color: $color-foreground-disabled;
+
+        i {
+            color: $color-foreground-disabled;
+        }
+    }
+
+    &.bit-chg-ich {
+        .bit-chg-ilwi {
+            &:after {
+                background-color: $color-background-disabled;
+                border: spacing(0.625) $shape-border-style $color-border-disabled;
+            }
+
+            @media (hover: hover) {
+                &:hover {
+                    &:before {
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,129 @@
+﻿@import "../../Styles/functions.scss";
+
+.bit-msg {
+    width: 100%;
+    display: flex;
+    font-weight: 400;
+    flex-flow: column;
+    box-sizing: border-box;
+    font-size: spacing(1.5);
+    justify-content: center;
+    border-radius: $shape-border-radius;
+    font-family: $typography-font-family;
+}
+
+.bit-msg-con {
+    width: 100%;
+    display: flex;
+    align-items: start;
+    line-height: normal;
+    padding: 0 spacing(0.5);
+}
+
+.bit-msg-ict {
+    display: flex;
+    margin: spacing(1);
+}
+
+.bit-msg-ico {
+    font-size: spacing(2);
+    color: var(--bit-msg-clr);
+}
+
+.bit-msg-cnc {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-msg-cnx {
+    white-space: normal;
+}
+
+.bit-msg-cnw {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    margin: spacing(1);
+    flex-direction: column;
+}
+
+.bit-msg-cnt {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-msg-mcn {
+    white-space: normal;
+}
+
+.bit-msg-act {
+    display: flex;
+    max-height: spacing(4);
+    justify-content: flex-end;
+}
+
+.bit-msg-mac {
+    margin: 0 spacing(1.5) spacing(1) spacing(1);
+}
+
+.bit-msg-exb,
+.bit-msg-dmb {
+    cursor: pointer;
+    min-width: spacing(4);
+    min-height: spacing(4);
+    background-color: transparent;
+}
+
+.bit-msg-exi,
+.bit-msg-dmi {
+    font-size: spacing(1.25);
+}
+
+.bit-msg-info {
+    --bit-msg-clr: #{$color-state-info};
+    --bit-msg-clr-bg: #{$color-state-info-bg};
+}
+
+.bit-msg-success {
+    --bit-msg-clr: #{$color-state-success};
+    --bit-msg-clr-bg: #{$color-state-success-bg};
+}
+
+.bit-msg-warning {
+    --bit-msg-clr: #{$color-state-warning};
+    --bit-msg-clr-bg: #{$color-state-warning-bg};
+}
+
+.bit-msg-severe-warning {
+    --bit-msg-clr: #{$color-state-severe-warning};
+    --bit-msg-clr-bg: #{$color-state-severe-warning-bg};
+}
+
+.bit-msg-error {
+    --bit-msg-clr: #{$color-state-error};
+    --bit-msg-clr-bg: #{$color-state-error-bg};
+}
+
+.bit-msg-fill {
+    color: $color-foreground-primary;
+    border-color: transparent;
+    background-color: var(--bit-msg-clr-bg);
+}
+
+.bit-msg-outline {
+    color: var(--bit-msg-clr);
+    border-color: var(--bit-msg-clr);
+    background-color: transparent;
+    border-width: $shape-border-width;
+    border-style: $shape-border-style;
+}
+
+.bit-msg-text {
+    color: var(--bit-msg-clr);
+    border-color: transparent;
+    background-color: transparent;
+}

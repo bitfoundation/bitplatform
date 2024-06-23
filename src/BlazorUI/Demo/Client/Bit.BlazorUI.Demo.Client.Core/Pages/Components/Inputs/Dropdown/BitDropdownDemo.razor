@@ -1,0 +1,29 @@
+﻿@page "/components/dropdown"
+
+<PageOutlet Url="components/dropdown"
+            Title="Dropdown"
+            Description="Dropdown component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="Dropdown"
+                   ComponentDescription="A dropdown is a list in which the selected item is always visible while other items are visible on demand by clicking a dropdown button. Dropdowns are typically used for forms."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums"
+                   ComponentPublicMembers="componentPublicMembers"
+                   Notes="The BitDropdown is a Multi-API component which can accept the list of Items in 3 different ways: BitDropdownItem class, a custom Generic class, and BitDropdownOption component.">
+        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivotItem HeaderText="Item">
+                <_BitDropdownItemDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Custom">
+                <_BitDropdownCustomDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Option">
+                <_BitDropdownOptionDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </ComponentDemo>
+</div>

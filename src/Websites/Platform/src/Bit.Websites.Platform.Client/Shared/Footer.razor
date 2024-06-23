@@ -1,0 +1,56 @@
+﻿@inherits AppComponentBase
+
+<footer>
+    <section class="footer-section">
+        <div class="footer-col">
+            <div class="bit-logo"></div>
+            <BitTypography Variant="BitTypographyVariant.Body1">
+                A platform that simplifies the development process through its comprehensive toolset.
+            </BitTypography>
+        </div>
+        <div class="footer-links-container">
+            <div class="footer-col">
+                <div class="footer-col-title">Products</div>
+                <a class="footer-link" href="@Urls.Butil">Butil</a>
+                <a class="footer-link" href="@Urls.Besql">Besql</a>
+                <a class="footer-link" href="@Urls.Bswup">Bswup</a>
+                <a class="footer-link" href="@Urls.BlazorUI">BlazorUI</a>
+                <a class="footer-link" href="@Urls.Templates">Project templates</a>
+            </div>
+
+            <div class="footer-col">
+                <div class="footer-col-title">Community</div>
+                <a class="footer-link" target="_blank" href="@Urls.AboutUs">About us</a>
+                <a class="footer-link" target="_blank" href="@Urls.ContactUs">Contact us</a>
+                <a class="footer-link" target="_blank" href="@Urls.GithubIssues">Issues</a>
+                <a class="footer-link" target="_blank" href="@Urls.GithubOrg">GitHub org</a>
+                <a class="footer-link" target="_blank" href="@Urls.GithubRepo">GitHub repo</a>
+            </div>
+
+            <div class="footer-col">
+                <div class="footer-col-title">Media</div>
+                <a class="footer-link">Blogs (coming soon)</a>
+                <a class="footer-link" target="_blank" href="@Urls.YouTube">Videos (YouTube)</a>
+            </div>
+
+            <button class="go-to-top" onclick="goToTop()">Go to top</button>
+        </div>
+    </section>
+
+    <section class="footer-section">
+        <div class="address-info">
+            <a class="address" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <div class="country">Netherlands</div>
+            <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
+        </div>
+        <div>
+            <div class="social-link-group">
+                <a class="social-link twitter-link" target="_blank" href="@Urls.Twitter"></a>
+                <a class="social-link github-link" target="_blank" href="@Urls.Github"></a>
+                <a class="social-link youtube-link" target="_blank" href="@Urls.YouTube"></a>
+                <a class="social-link linkedin-link" target="_blank" href="@Urls.Linkedin"></a>
+            </div>
+            <div class="copyright-txt">Copyright © 2024 bit platform | All Rights Reserved </div>
+        </div>
+    </section>
+</footer>

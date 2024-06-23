@@ -1,0 +1,87 @@
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 rem2(16px);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.page-section {
+    width: 100%;
+}
+
+.hero-section {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: rem2(144px) 0;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    @include lt-xl {
+        padding: rem2(130px) 0;
+    }
+
+    @include sm {
+        padding: rem2(120px) 0;
+    }
+}
+
+.hero-section-title {
+    font-weight: bold;
+    text-align: center;
+    font-size: rem2(42px);
+    line-height: rem2(62px);
+    margin-bottom: rem2(32px);
+
+    @include lg {
+        font-size: rem2(34px);
+        line-height: rem2(56px);
+        margin-bottom: rem2(24px);
+    }
+
+    @include md {
+        font-size: rem2(26px);
+        line-height: rem2(44px);
+        margin-bottom: rem2(24px);
+    }
+
+    @include sm {
+        font-size: rem2(24px);
+        line-height: rem2(40px);
+        margin-bottom: rem2(16px);
+    }
+}
+
+.hero-section-desc {
+    text-align: center;
+    font-size: rem2(24px);
+    max-width: rem2(1232px);
+    line-height: rem2(40px);
+    margin-bottom: rem2(40px);
+
+    @include lg {
+        font-size: rem2(20px);
+        max-width: rem2(821px);
+        line-height: rem2(32px);
+        margin-bottom: rem2(38px);
+    }
+
+    @include md {
+        font-size: rem2(18px);
+        max-width: rem2(572px);
+        line-height: rem2(28px);
+        margin-bottom: rem2(32px);
+    }
+
+    @include sm {
+        max-width: 100%;
+        font-size: rem2(14px);
+        line-height: rem2(24px);
+        margin-bottom: rem2(32px);
+    }
+}

@@ -1,0 +1,120 @@
+﻿@page "/screen"
+@implements IAsyncDisposable
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Screen screen
+
+<PageTitle>Screen Samples</PageTitle>
+
+<h1>Screen</h1>
+
+<pre style="font-family:Consolas; overflow: auto;">
+@@inject Bit.Butil.Screen screen
+
+@@code {
+    ...
+    var screenWidth = await screen.GetWidth();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and click on buttons</h3>
+
+<hr />
+<br />
+
+<button @onclick=GetAvailableHeight>GetAvailableHeight</button>
+&nbsp;
+<button @onclick=GetAvailableWidth>GetAvailableWidth</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=GetHeight>GetHeight</button>
+&nbsp;
+<button @onclick=GetWidth>GetWidth</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=GetColorDepth>GetColorDepth</button>
+&nbsp;
+<button @onclick=GetPixelDepth>GetPixelDepth</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=GetIsExtended>GetIsExtended</button>
+
+<br />
+<br />
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await screen.AddChange(() => _ = GetScreenDimensions());
+        base.OnInitialized();
+    }
+
+    private async Task GetScreenDimensions()
+    {
+        var width = await screen.GetWidth();
+        var height = await screen.GetHeight();
+        await console.Log("Screen dimensions =", width, "x", height);
+    }
+
+    private async Task GetAvailableHeight()
+    {
+        var availHeight = await screen.GetAvailableHeight();
+        await console.Log("screen.availHeight =", availHeight);
+    }
+
+    private async Task GetAvailableWidth()
+    {
+        var availWidth = await screen.GetAvailableWidth();
+        await console.Log("screen.availWidth =", availWidth);
+    }
+
+    private async Task GetHeight()
+    {
+        var height = await screen.GetHeight();
+        await console.Log("screen.height =", height);
+    }
+
+    private async Task GetWidth()
+    {
+        var width = await screen.GetWidth();
+        await console.Log("screen.height =", width);
+    }
+
+    private async Task GetColorDepth()
+    {
+        var colorDepth = await screen.GetColorDepth();
+        await console.Log("screen.colorDepth =", colorDepth);
+    }
+
+    private async Task GetPixelDepth()
+    {
+        var pixelDepth = await screen.GetPixelDepth();
+        await console.Log("screen.pixelDepth =", pixelDepth);
+    }
+
+    private async Task GetIsExtended()
+    {
+        var isExtended = await screen.IsExtended();
+        await console.Log("screen.pixelDepth =", isExtended);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await screen.DisposeAsync();
+    }
+}

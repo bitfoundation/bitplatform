@@ -1,0 +1,18 @@
+﻿::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: column;
+    }
+
+    .custom-class {
+        padding: 2rem;
+        border-radius:1rem;
+        background-color: blueviolet;
+    }
+
+    .custom-item {
+        color: blueviolet;
+        background-color: goldenrod;
+    }
+}

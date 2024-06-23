@@ -1,0 +1,34 @@
+﻿@page "/butil/setup"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/setup"
+            Title="Setup - Butil"
+            Description="Setting the bit Butil up" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Setup bit Butil</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to install the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Script</BitTypography>
+        <div class="section-card-txt">
+            Add the following script tag to your default document:
+            <CodeBox>&lt;script src="_content/Bit.Butil/bit-butil.js">&lt;/script></CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Service</BitTypography>
+        <div class="section-card-txt">
+            Add the following line to register the bit Butil services:
+            <CodeBox>builder.Services.AddBitButilServices();</CodeBox>
+            Now you can inject its classes to use the bit Butil tools.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Install" PrevUrl="/butil/install" Next="Crypto" NextUrl="/butil/crypto" />

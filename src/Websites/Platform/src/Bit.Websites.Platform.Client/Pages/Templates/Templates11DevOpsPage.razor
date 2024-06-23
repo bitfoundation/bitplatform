@@ -1,0 +1,86 @@
+﻿@page "/todo-template/devops"
+@page "/admin-panel/devops"
+@page "/templates/devops"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/devops"
+            Title="DevOps - Templates"
+            Description="devops of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>DevOps</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit project templates provide features to add support for DevOps using GitHub actions.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CI</BitTypography>
+        <div class="section-card-txt">
+            <b>CI</b> pipeline which is located in <b>.github/workflows/ci.yml</b> ensures that every change that is committed into
+            <b>develop branch</b> won't break project build.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CD</BitTypography>
+        <div class="section-card-txt">
+            <b>CD</b> pipeline located in <b>.github/workflows/cd.yml</b> builds and deploys every change committed in the main branch into production.
+        </div>
+        <div class="section-card-txt">
+            By default, the CD pipeline produces <b>.aab</b> and <b>.apk</b> for android, <b>.ipa</b> for iOS, <b>.exe</b> for Windows and, <b>.pkg</b> for macOS.
+            It also creates a zip folder that contains Server + Blazor (WebAssembly/Server/Auto) required files and an
+            <a href="https://learn.microsoft.com/en-us/ef/core/managing-schemas/migrations/applying?tabs=dotnet-core-cli#bundles" target="_blank">EF core migrations bundle</a>
+            to migrate your database. This pipeline also uploads all of the produced artifacts to the GitHub Actions artifacts.
+        </div>
+        <div class="section-card-txt">
+            You can manually deploy the artifacts into corresponding locations (App Stores, Virtual Private Servers), or you can write more scripts to automate these processes.
+            For example, we've created a deploy phase for Server + Blazor that updates the database using the migrations bundle and optionally deploy artifacts to azure web apps.
+        </div>
+        <div class="section-card-txt">
+            The CD pipeline includes the following variables:
+        </div>
+        <CodeBox>env:
+  API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/api/' # The API backend URL that clients use to connect to the server.
+  APP_SERVICE_NAME: 'app-service-td-test' # Azure Web App name (If you want to deploy your project to the Azure Web App)</CodeBox>
+        <div class="section-card-txt">
+            And it also includes the following <a href="https://docs.github.com/en/rest/actions/secrets" target="_blank">GitHub actions secrets</a>.
+            It's important to mention that since the GitHub Actions secrets does not support storing files,
+            to store secret files (such as pfx files), you need to convert the files' content to base64 and store the encoded result value as secret values.
+        </div>
+        <CodeBox># IdentityCertificate.pfx (See Identity settings section of https://bitplatform.dev/templates/settings)
+API_IDENTITY_CERTIFICATE_FILE_BASE64
+API_IDENTITY_CERTIFICATE_PASSWORD
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+# Database
+DB_CONNECTION_STRING
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+# Azure App Service (Optional)
+AZURE_APP_SERVICE_PUBLISH_PROFILE # https://learn.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=applevel
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+# Android
+ANDROID_RELEASE_KEYSTORE_FILE_BASE64
+ANDROID_RELEASE_SIGNING_PASSWORD
+ANDROID_RELEASE_KEYSTORE_PASSWORD
+APPLICATION_VERSION
+APPLICATION_DISPLAY_VERSION
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+# iOS https://www.andreasnesheim.no/setting-up-ci-for-your-net-maui-ios-app-with-github-actions/
+APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64
+APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD
+APPSTORE_API_KEY_ISSUER_ID
+APPSTORE_API_KEY_ID
+APPSTORE_API_KEY_PRIVATE_KEY
+IOS_CODE_SIGN_PROVISION
+APPLICATION_VERSION
+APPLICATION_DISPLAY_VERSION
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-</CodeBox>
+        <div class="section-card-txt">
+            We have a plan to automate the deployment of <b>.ipa</b> and <b>.aab</b> files to the Apple Store & Google Play in the near future. So stay tuned!
+        </div>
+    </section>
+
+</div>
+
+<NavigationButtons Prev="Cache mechanism" PrevUrl="/templates/cache-mechanism" Next="Platform integration" NextUrl="/templates/platform-integration" />

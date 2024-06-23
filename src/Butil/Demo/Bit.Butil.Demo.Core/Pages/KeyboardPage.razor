@@ -1,0 +1,41 @@
+﻿@page "/keyboard"
+@implements IAsyncDisposable
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Keyboard keyboard
+
+<PageTitle>Keyboard Samples</PageTitle>
+
+<h1>Keyboard</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Keyboard keyboard
+
+@@code {
+    ...
+    await keyboard.Add(ButilKeyCodes.F10, args => { ... }, , ButilModifiers.Alt | ButilModifiers.Ctrl);
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start pressing F5 or Ctrl+Alt+F10</h3>
+
+<hr />
+<br />
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await keyboard.Add(ButilKeyCodes.F5, () => _ = console.Log("F5 is pressed!"));
+        await keyboard.Add(ButilKeyCodes.F10, () => _ = console.Log("Ctrl+Alt+F10 is pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
+
+        base.OnInitialized();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await keyboard.DisposeAsync();
+    }
+}

@@ -3,12 +3,12 @@
 	<PropertyGroup>
 
 		<!-- Info -->
-		<Authors>Bit Platform</Authors>
-		<Company>Bit Platform</Company>
-		<Product>Bit Platform</Product>
+		<Authors>bit platform</Authors>
+		<Company>bit platform</Company>
+		<Product>bit platform</Product>
 		<Title>$(MSBuildProjectName)</Title>
 		<Description>$(MSBuildProjectName)</Description>
-		<Copyright>Copyright © Bit Platform 2023</Copyright>
+		<Copyright>Copyright © bit platform 2024</Copyright>
 
 		<!-- Repo -->
 		<RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
@@ -25,10 +25,10 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
-		<ReleaseVersion>4.9.10</ReleaseVersion>
+		<ReleaseVersion>8.9.0</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-01</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)-pre-01</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
+		<PackageVersion>$(ReleaseVersion)</PackageVersion>
 
 		<!-- Version -->
 		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
@@ -37,32 +37,9 @@
 		<NeutralLanguage>en</NeutralLanguage>
 		<LangVersion>preview</LangVersion>
 		<Nullable>enable</Nullable>
-		<NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605;CA1303;CA1308;CA2007;CA1014;CA2227;BL0007</NoWarn>
+		<NoWarn>$(NoWarn);NU1605;CS1591;NU1701;CA1303;CA1308;CA2007;CA1014;CA2227;BL0007;CA1056;BL0005;CS1998</NoWarn>
 		<!-- https://stackoverflow.com/a/46815541/2720104 -->
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-		<EmbedAllSources>True</EmbedAllSources>
-		<DebugType>portable</DebugType>
-		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-
-		<AnalysisLevel>latest</AnalysisLevel>
-		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
-		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<DebugSymbols>true</DebugSymbols>
-	</PropertyGroup>
-
-	<ItemGroup>
-        <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-	</ItemGroup>
 
 </Project>

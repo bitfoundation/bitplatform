@@ -2,71 +2,72 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement"
-     @attributes="@HtmlAttributes"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     role="group"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     role="group"
+     dir="@Dir?.ToString().ToLower()"
      aria-label="@GetRootElAriaLabel()">
 
     <div @ref="_saturationPickerRef"
-        @onpointerdown="OnSaturationPickerPointerDown"
-         class="rectangle"
-         style=@($"background-color: {_saturationPickerBackgroundRgbCss}")
-         role="slider"
+         @onpointerdown="HandleOnSaturationPickerPointerDown"
          tabindex="0"
-         aria-valuetext="@($"Saturation {_color.Hsv.Saturation} brightness {_color.Hsv.Value}")"
-         aria-valuenow="@(true ? _color.Hsv.Saturation : _color.Hsv.Value)"
+         role="slider"
          aria-valuemin="0"
          aria-valuemax="100"
-         aria-label="Saturation and brightness"
-         aria-describedby="@_colorRectangleDescriptionId">
-        <div class="description" id="@_colorRectangleDescriptionId">Use left and right arrow keys to set saturation. Use up and down arrow keys to set brightness.</div>
-        <div class="light"></div>
-        <div class="dark"></div>
-        <div class="thumb" style=@($"top: {_saturationPickerThumbPosition?.Top}px; left: {_saturationPickerThumbPosition?.Left}px; background-color: {Rgb};")>
-        </div>
+         class="bit-clp-rec"
+         aria-label="Color saturation"
+         style="@_saturationPickerStyle">
+        <div class="bit-clp-light"></div>
+        <div class="bit-clp-dark"></div>
+        <div class="bit-clp-thumb"
+             style=@($"top:{_saturationPickerThumbPosition?.Top}px;left:{_saturationPickerThumbPosition?.Left}px;background-color:{Rgb}")>        </div>
     </div>
 
-    <div class="flex-container">
-        <div class="slider-container">
-            <div class="slider hue-slider">
-                <input @oninput="PickMainColor"
-                       type="range"
-                       role="slider"
-                       tabindex="0"
-                       aria-label="Hue"
+    <div class="bit-clp-cnt">
+        <div class="bit-clp-sct">
+            <div class="bit-clp-sld bit-clp-hsd">
+                <input @oninput="HandleOnHueInput"
                        min="0"
                        max="359"
-                       aria-valuetext="@_hue"
-                       aria-valuenow="@_hue"
+                       type="range"
+                       tabindex="0"
+                       role="slider"
+                       value="@_selectedHue"
+                       class="bit-clp-inp"
+                       aria-label="Hue"
                        aria-valuemin="0"
                        aria-valuemax="359"
-                       value="@_hue"
-                       disabled="@(ColorHasBeenSet && ColorChanged.HasDelegate is false)">
+                       aria-valuenow="@_selectedHue"
+                       aria-valuetext="@_selectedHue">
             </div>
 
             @if (ShowAlphaSlider)
             {
-                <div class="slider alpha-slider" style=@($"background: linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
-                    <input @oninput="PickAlphaColor"
-                           type="range"
-                           role="slider"
-                           tabindex="0"
-                           aria-label="Alpha"
+                <div class="bit-clp-sld bit-clp-asd"
+                     style=@($"background:linear-gradient(to left,{Rgb} 0%, transparent 100%), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2N89erVfwY0ICYmxoguxjgUFKI7GsTH5m4M3w1ChQC1/Ca8i2n1WgAAAABJRU5ErkJggg==);")>
+                    <input @oninput="HandleOnAlphaInput"
+                           step="0.01"
                            min="0"
-                           max="100"
-                           aria-valuetext="@(_color.Alpha * 100)"
-                           aria-valuenow="@(_color.Alpha * 100)"
+                           max="1"
+                           type="range"
+                           tabindex="0"
+                           role="slider"
                            aria-valuemin="0"
-                           aria-valuemax="100"
-                           value="@(_color.Alpha * 100)"
-                           disabled="@(AlphaHasBeenSet && AlphaChanged.HasDelegate is false)">
+                           aria-label="Alpha"
+                           class="bit-clp-inp"
+                           aria-valuemax="1"
+                           value="@_color.A"
+                           aria-valuenow="@_color.A"
+                           aria-valuetext="@_color.A">
                 </div>
             }
         </div>
+
         @if (ShowPreview)
         {
-            <div class="preview-box" style=@($"background: {(ShowAlphaSlider ? _color.Rgba : _color.Rgb)}")></div>
+            <div class="bit-clp-pre" style=@($"background: {_color.Rgba}")></div>
         }
     </div>
 </div>  

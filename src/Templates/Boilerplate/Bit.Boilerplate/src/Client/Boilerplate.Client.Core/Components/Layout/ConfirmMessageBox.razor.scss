@@ -1,0 +1,44 @@
+﻿@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.main-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    padding: rem2(16px) rem2(24px);
+    background-color: $bit-color-background-primary;
+}
+
+.header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    margin-bottom: rem2(20px);
+    justify-content: space-between;
+}
+
+.title {
+    font-weight: 600;
+    font-size: rem2(20px);
+    line-height: rem2(28px);
+}
+
+.body {
+    width: 100%;
+    font-weight: 400;
+    font-size: rem2(14px);
+    line-height: rem2(20px);
+    margin-bottom: rem2(16px);
+}
+
+.btn-group {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+}

@@ -1,0 +1,95 @@
+﻿@page "/components/colorpicker"
+@page "/components/color-picker"
+
+<PageOutlet Url="components/colorpicker"
+            Title="ColorPicker"
+            Description="colorpicker component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="ColorPicker"
+               ComponentDescription="The color picker (ColorPicker) is used to browse through and select colors. By default, it lets people navigate through colors on a color spectrum, or specify a color in either Red-Green-Blue (RGB), or alpha color code; or Hexadecimal textboxes."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div class="example-content">
+                <BitColorPicker />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Alpha & Preview" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-content">
+                <BitColorPicker ShowAlphaSlider="true" ShowPreview="true" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <div>
+                The color type (hex or rgb) of the BitColorPicker automatically matches the initial value of the Color parameter.
+                For example, if the initial value of this parameter is in hex format, the component will return the resulting colors in hex and vice versa.
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <div>RGB:</div>
+                <br />
+                <BitColorPicker @bind-Color="rgbColor" />
+                <div>Color: @rgbColor</div>
+                <br /><br /><br />
+                <div>HEX:</div>
+                <br />
+                <BitColorPicker @bind-Color="hexColor" />
+                <div>Color: @hexColor</div>
+                <br /><br /><br />
+                <div>Two-way binding:</div>
+                <br />
+                <BitColorPicker @bind-Color="twoWayColor" ShowAlphaSlider="true" ShowPreview="true" />
+                <BitTextField Label="Enter Color (Hex or Rgb)" @bind-Value="twoWayColor" Style="width: 200px;" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-content">
+                <div>OnChange:</div>
+                <br />
+                <BitColorPicker OnChange="v => (changedColor, changedAlpha) = v" ShowAlphaSlider="true" />
+                <br />
+                <div>Color: @changedColor</div>
+                <div>Alpha: @changedAlpha</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Public Api" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-content">
+                <BitColorPicker @ref="colorPickerRef" @bind-Color="boundColor" ShowAlphaSlider="true" ShowPreview="true" />
+                <br />
+                <div>Color: @boundColor</div>
+                <div>Hex: @colorPickerRef?.Hex</div>
+                <div>Rgb: @colorPickerRef?.Rgb</div>
+                <div>Rgba: @colorPickerRef?.Rgba</div>
+                <div>Hsv: @colorPickerRef?.Hsv</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Class & Style" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-content">
+                <div>Class</div>
+                <br />
+                <BitColorPicker ShowAlphaSlider="true" Class="custom-color-picker" />
+                <br /><br /><br />
+                <div>Style</div>
+                <br />
+                <BitColorPicker ShowAlphaSlider="true" Style="width:230px;height:150px;" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+</ComponentDemo>

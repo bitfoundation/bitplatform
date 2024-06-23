@@ -1,6 +1,8 @@
 ﻿@using Bit.Bup.Demo.Web
 @using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Components.Web
+@using RenderMode = Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+
 @namespace Bit.Bup.Demo.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
@@ -9,14 +11,13 @@
 <head>
     <base href="~/" />
     <meta charset="utf-8" />
-    <title>Bit Bup Demo</title>
+    <title>bit Bup Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true">
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="css/app.css" asp-append-version="true" />
     <link rel="stylesheet" href="Bit.Bup.Demo.Client.styles.css" asp-append-version="true" />
-    @*<link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.min.css" asp-append-version="true">*@
-    <script src="_content/Bit.Bup/bit-bup.progress.min.js" asp-append-version="true"></script>
+    <script src="_content/Bit.Bup/bit-bup.progress.js" asp-append-version="true"></script>
 </head>
 <body>
 
@@ -25,14 +26,15 @@
     </div>
 
     <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="true"></script>
-    <script src="_content/Bit.Bup/bit-bup.min.js" log="none" handler="bitBupHandler" asp-append-version="true"></script>
+    <script src="_content/Bit.Bup/bit-bup.js" log="none" handler="bitBupHandler" asp-append-version="true"></script>
     
-    <component type="typeof(Bit.Bup.Demo.Client.Shared.BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
-    @*<component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
+    @* <component type="typeof(Bit.Bup.Demo.Client.Shared.BupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" /> *@
+    <link rel="stylesheet" href="_content/Bit.Bup/bit-bup.progress.css" asp-append-version="true">
+    <component type="typeof(Bit.Bup.BupProgress)" render-mode="@RenderMode.Static"
                param-ShowAssets="false"
                param-ShowLogs="false"
                param-AutoHide="true"
                param-HideApp="true"
-               param-AppContainer="@("#app-container")" />*@
+               param-AppContainer="@("#app-container")" />
 </body>
 </html>

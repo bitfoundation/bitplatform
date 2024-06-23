@@ -1,0 +1,28 @@
+﻿@page "/components/nav"
+
+<PageOutlet Url="components/nav"
+            Title="Nav"
+            Description="nav component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="Nav"
+                   ComponentDescription="A navigation pane (Nav) provides links to the main areas of an app or site."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums"
+                   Notes="The BitNav is a Multi-API component which can accept the list of Items in 3 different ways: BitNavItem class, a custom Generic class, and BitNavOption component.">
+        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivotItem HeaderText="Item">
+                <_BitNavItemDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Custom">
+                <_BitNavCustomDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Option">
+                <_BitNavOptionDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </ComponentDemo>
+</div>

@@ -2,63 +2,124 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@if (ChildContent is not null)
-{
-    <CascadingValue Value="this" IsFixed="true">
-        @ChildContent
-    </CascadingValue>
-}
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+</CascadingValue>
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     id="@UniqueId">
-    <div id="@_menuButtonOverlayId" class="bit-mnb-ovl" @onclick="CloseCallout"></div>
-    <button id="@_menuButtonId"
-            type="@ButtonType?.GetValue()"
-            aria-label="@AriaLabel"
-            aria-describedby="@AriaDescription"
-            aria-hidden="@AriaHidden"
+     dir="@Dir?.ToString().ToLower()">
+    <button @onclick="() => HandleOnClick(Sticky ? SelectedItem : null)"
+            type="button"
             tabindex="@(IsEnabled ? 0 : -1)"
-            class="bit-mnb-mbt"
-            @onclick="HandleOnClick">
-        @if (HeaderTemplate is not null)
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            aria-describedby="@AriaDescription"
+            style="@GetStyle(SelectedItem);@Styles?.OperatorButton"
+            class="bit-mnb-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.OperatorButton">
+        @if (Sticky)
         {
-            @HeaderTemplate
+            var template = GetTemplate(SelectedItem);
+            if (template is not null)
+            {
+                @template(SelectedItem)
+            }
+            else if (ItemTemplate is not null)
+            {
+                @ItemTemplate(SelectedItem)
+            }
+            else
+            {
+                var iconName = GetIconName(SelectedItem);
+                @if (iconName.HasValue())
+                {
+                    <i style="@Styles?.OperatorButtonIcon" class="bit-icon bit-icon--@iconName @Classes?.OperatorButtonIcon" />
+                }
+                <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
+                    @GetText(SelectedItem)
+                </span>
+            }
         }
         else
         {
-            @if (IconName.HasValue)
+            @if (HeaderTemplate is not null)
             {
-                <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+                @HeaderTemplate
             }
-            <span class="bit-mnb-txt">@Text</span>
-            <i class="bit-icon bit-icon--ChevronDown"></i>
+            else
+            {
+                @if (IconName.HasValue())
+                {
+                    <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+                }
+
+                @if (Text.HasValue())
+                {
+                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@Text</span>   
+                }
+            }
+        }
+
+        @if (Split is false)
+        {
+            <i style="@Styles?.ChevronDown" class="bit-icon bit-icon--@ChevronDownIcon @Classes?.ChevronDown" />
         }
     </button>
-    <div id="@_menuButtonCalloutId" class="bit-mnb-its" tabindex="@(IsEnabled ? 0 : -1)">
+
+    @if (Split)
+    {
+        <span style="@Styles?.Separator" class="bit-mnb-spb @Classes?.Separator"></span>
+
+        <button @onclick="OpenCallout"
+                type="button"
+                tabindex="@(IsEnabled ? 0 : -1)"
+                style="@Styles?.ChevronDownButton"
+                class="bit-mnb-chb @Classes?.ChevronDownButton">
+            <i style="@Styles?.ChevronDown" class="bit-icon bit-icon--@ChevronDownIcon @Classes?.ChevronDown" />
+        </button>
+    }
+
+    <div @onclick="CloseCallout" @onclick:stopPropagation
+         style="display:@(_isCalloutOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-mnb-ovl @Classes?.Overlay"></div>
+
+    <div id="@_calloutId"
+         style="@Styles?.Callout"
+         class="bit-mnb-cal @Classes?.Callout">
         <ul role="presentation">
             @foreach (TItem item in _items)
             {
-                <li role="presentation">
-                    <button @onclick="() => HandleOnItemClick(item)"
-                            type="@ButtonType?.GetValue()"
+                if (Sticky && item == SelectedItem) continue;
+
+                var template = GetTemplate(item);
+                var isEnabled = GetIsEnabled(item);
+                <li role="presentation" @key="GetKey(item)">
+                    <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
-                            aria-disabled="@GetIsEnabled(item)"
-                            tabindex="@(GetIsEnabled(item) ? 0 : -1)"
-                            class="bit-mnb-itm @(GetIsEnabled(item) ? "" : "bit-dis")">
-                        @if (ItemTemplate is not null)
+                            aria-disabled="@(isEnabled is false)"
+                            type="@_buttonType.GetValue()"
+                            tabindex="@(isEnabled ? 0 : -1)"
+                            style="@GetStyle(item);@Styles?.ItemButton"
+                            class="bit-mnb-itm @(isEnabled ? "" : "bit-dis") @GetClass(item) @Classes?.ItemButton">
+                        @if (template is not null)
+                        {
+                            @template(item)
+                        }
+                        else if (ItemTemplate is not null)
                         {
                             @ItemTemplate(item)
                         }
                         else
                         {
-                            @if (GetIconName(item).HasValue)
+                            var iconName = GetIconName(item);
+                            @if (iconName.HasValue())
                             {
-                                <i class="bit-icon bit-icon--@GetIconName(item).GetName()"></i>
+                                <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
                             }
-                            <span class="bit-mnb-txt">
+                            <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
                                 @GetText(item)
                             </span>
                         }

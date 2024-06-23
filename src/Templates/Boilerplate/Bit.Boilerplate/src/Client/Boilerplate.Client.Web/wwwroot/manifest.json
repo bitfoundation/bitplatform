@@ -1,0 +1,57 @@
+{
+    "dir": "ltr",
+    "lang": "en",
+    "scope": "/",
+    "start_url": "/",
+    "orientation": "any",
+    "id": "bitBoilerplate",
+    "display": "standalone",
+    "theme_color": "#2EA3FF",
+    "related_applications": [],
+    "name": "bit Boilerplate",
+    "background_color": "#0D1117",
+    "short_name": "bit Boilerplate",
+    "prefer_related_applications": false,
+    "display_override": [ "window-controls-overlay" ],
+    "description": "bit Boilerplate is a project template that includes all the necessary parts to create a fully-featured web app.",
+    "features": [
+        "Cross Platform",
+        "fast",
+        "simple"
+    ],
+    "categories": [
+        "utilities"
+    ],
+    "icons": [
+        {
+            "sizes": "512x512",
+            "type": "image/png",
+            "src": "images/icons/bit-icon-512.png"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Terms",
+            "url": "/terms"
+        },
+        //#if (sample == "Todo")
+        {
+            "name": "Todo",
+            "url": "/todo"
+        },
+        //#elif (sample == "AdminPanel")
+        {
+            "name": "Categories",
+            "url": "/categories"
+        },
+        {
+            "name": "Products",
+            "url": "/products"
+        },
+        //#endif
+        {
+            "name": "Profile",
+            "url": "/profile"
+        }
+    ]
+}

@@ -1,0 +1,558 @@
+﻿@page "/butil/console"
+@inherits AppComponentBase
+@inject Bit.Butil.Console console
+
+<PageOutlet Url="butil/console"
+            Title="Console - Butil"
+            Description="Console class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Console</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Console class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser console features you need to inject the Bit.Butil.Console class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Console console
+
+@@code {
+    console.Log("This is a test log:", value);
+    console.Error("This is a test error:", value);
+    console.Assert(condition, "The condition failed!", value);
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>Assert</b>: <br />
+            Log a message and stack trace to console if the first argument is false
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/assert_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @assertExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Assert(false, "This is a test assert:", value))">Assert</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Count</b>: <br />
+            Log the number of times this line has been called with the given label
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/count_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @countExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Count(value))">Count</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>CountReset</b>: <br />
+            Resets the value of the counter with the given label
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/countreset_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @countResetExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.CountReset(value))">CountReset</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Debug</b>: <br />
+            Outputs a message to the console with the log level debug
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/debug_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @debugExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Debug(value))">Debug</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Dir</b>: <br />
+            Displays an interactive listing of the properties of a specified JavaScript object
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/dir_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @dirExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Dir(value))">Dir</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Dirxml</b>: <br />
+            Displays an XML/HTML Element representation of the specified object if possible or the JavaScript Object view if it is not possible
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/dirxml_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @dirxmlExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Dirxml(value))">Dirxml</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Error</b>: <br />
+            Outputs an error message. You may use string substitution and additional arguments with this method
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/error_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @errorExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Error("This is a test error:", value))">Error</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Group</b>: <br />
+            Creates a new inline group, indenting all following output by another level. To move back out a level, call console.groupEnd()
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/group_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @groupExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="CreateGroupLogs">Create group logs</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GroupCollapsed</b>: <br />
+            Creates a new inline group, indenting all following output by another level. However, unlike console.group() this starts with the inline group collapsed requiring the use of a disclosure button to expand it. To move back out a level, call console.groupEnd()
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/groupcollapsed_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @groupExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="CreateGroupLogs">Create group logs</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GroupEnd</b>: <br />
+            Exits the current inline group
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/groupend_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @groupExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="CreateGroupLogs">Create group logs</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Info</b>: <br />
+            Informative logging of information. You may use string substitution and additional arguments with this method
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/info_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @infoExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Info("This is a test info:", value))">Info</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Log</b>: <br />
+            For general output of logging information. You may use string substitution and additional arguments with this method
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/log_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @logExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Log("This is a test log:", value))">Log</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Warn</b>: <br />
+            Outputs a warning message
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/warn_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @warnExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Warn(value))">Warn</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Table</b>: <br />
+            Displays tabular data as a table
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/table_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @tableExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Table(new { Name = "Value", Value = value }))">Table</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Profile</b>: <br />
+            Starts the browser's built-in profiler (for example, the Firefox performance tool). You can specify an optional name for the profile
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/profile_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @profileExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Profile(value))">Profile</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ProfileEnd</b>: <br />
+            Stops the profiler. You can see the resulting profile in the browser's performance tool (for example, the Firefox performance tool)
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/profileend_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @profileEndExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.ProfileEnd(value))">ProfileEnd</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Time</b>: <br />
+            Starts a timer with a name specified as an input parameter. Up to 10,000 simultaneous timers can run on a given page
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/time_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @timeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Time(value))">Time</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>TimeLog</b>: <br />
+            Logs the value of the specified timer to the console
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/timelog_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @timeLogExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.TimeLog(value))">TimeLog</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>TimeEnd</b>: <br />
+            Stops the specified timer and logs the elapsed time in milliseconds since it started
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/timeend_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @timeEndExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.TimeEnd(value))">TimeEnd</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>TimeStamp</b>: <br />
+            Adds a marker to the browser performance tool's timeline
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/timestamp_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @timeStampExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.TimeStamp(value))">TimeStamp</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Trace</b>: <br />
+            Outputs a stack trace
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/trace_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @traceExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Trace(value))">Trace</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Clear</b>: <br />
+            Clear the console
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/console/clear_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @clearExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div>Open the DevTools console and start clicking on the button</div>
+                        <br />
+                        <BitButton OnClick="@(() => console.Clear())">Clear</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Keyboard" PrevUrl="/butil/keyboard" Next="Storage" NextUrl="/butil/storage" />

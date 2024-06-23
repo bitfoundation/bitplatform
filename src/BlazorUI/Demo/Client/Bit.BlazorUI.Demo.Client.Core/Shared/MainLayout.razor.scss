@@ -1,0 +1,216 @@
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+main {
+    width: 100%;
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    padding-top: calc(rem2($HeaderHeight) + var(--bit-status-bar-height));
+
+    &.full-page {
+        .site-content {
+            padding: 0;
+            max-width: 100%;
+            background-color: unset;
+        }
+    }
+
+    .site-content {
+        width: 100%;
+        margin: 0 auto;
+        position: relative;
+        padding: rem2(40px);
+        max-width: calc(100% - $NavMenuWidth);
+        background-color: $bit-color-background-secondary;
+
+        @include md {
+            max-width: 100%;
+            padding: rem2(30px);
+        }
+
+        @include sm {
+            max-width: 100%;
+            padding: rem2(20px);
+        }
+    }
+}
+
+::deep {
+    .page-container {
+        width: 100%;
+        margin: 0 auto;
+        max-width: rem2(1200px);
+    }
+
+    .page-section {
+        width: 100%;
+        padding: rem2(28px);
+        position: relative;
+        box-sizing: border-box;
+        border-radius: rem2(2px);
+        margin-bottom: rem2(28px);
+        box-shadow: $bit-box-shadow-callout;
+        color: $bit-color-foreground-secondary;
+        background-color: $bit-color-background-primary;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .subclass-title,
+    .subenum-title,
+    .subtitle,
+    .title {
+        overflow-wrap: anywhere;
+    }
+
+    .title {
+        margin-bottom: rem2(50px);
+    }
+
+    .subtitle {
+        margin-bottom: rem2(35px);
+        color: $bit-color-foreground-primary;
+    }
+
+    .section-title {
+        bottom: rem2(8px);
+        position: absolute;
+        margin-right: rem2(175px);
+        color: $bit-color-foreground-primary;
+
+        @include lt-lg {
+            overflow-wrap: anywhere;
+            margin-right: rem2(90px);
+        }
+    }
+}
+
+.bit-ios {
+    main {
+        padding-top: calc(rem2($HeaderHeight) + env(safe-area-inset-top));
+    }
+}
+
+::deep .example-desc {
+    margin-bottom: rem2(8px);
+}
+
+::deep pre {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    overflow: auto;
+    direction: ltr;
+    border-top: none;
+    flex-flow: column;
+    position: relative;
+    min-height: rem2(70px);
+    max-height: rem2(464px);
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 24px 80px 24px 24px;
+    border: rem2(1px) solid $bit-color-border-primary;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+
+    &::-webkit-scrollbar {
+        width: rem2(8px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem2(8px);
+        border: rem2(4px) solid #c8c6c4;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        border-radius: rem2(8px);
+        border: rem2(4px) solid $B3Color;
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem2(8);
+    }
+}
+
+::deep code {
+    line-height: 1.5;
+    font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+
+    span {
+        font-family: inherit;
+    }
+}
+
+::deep ::-webkit-scrollbar-thumb {
+    border-radius: 16px;
+    background-color: $bit-color-foreground-secondary;
+}
+
+.status-bar {
+    top: 0;
+    z-index: 12;
+    width: 100%;
+    display: none;
+    position: fixed;
+    overflow: hidden;
+    text-align: center;
+    align-items: center;
+    font-size: rem2(14px);
+    justify-content: center;
+    color: $bit-color-background-primary;
+    background-color: $bit-color-background-primary;
+}
+
+.bit-windows, .bit-macos {
+    .status-bar {
+        display: flex;
+        background-color: transparent;
+        height: var(--bit-status-bar-height);
+        color: $bit-color-foreground-primary;
+    }
+}
+
+.bit-ios .status-bar {
+    display: flex;
+    color: transparent;
+    background-color: transparent;
+    height: env(safe-area-inset-top);
+}
+
+::deep .code-box {
+    width: 100%;
+    display: flex;
+    padding: 1rem;
+    overflow-x: auto;
+    user-select: text;
+    white-space: nowrap;
+    align-items: center;
+    margin: rem2(16px) 0;
+    box-sizing: border-box;
+    -webkit-user-select: text;
+    justify-content: flex-start;
+    background-color: $bit-color-background-secondary;
+    border-left: rem2(4px) solid $bit-color-border-secondary;
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+    &::-webkit-scrollbar {
+        height: rem2(5px);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem2(8px);
+        background-color: $bit-color-border-secondary;
+    }
+}

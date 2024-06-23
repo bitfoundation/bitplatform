@@ -1,0 +1,202 @@
+﻿@page "/butil/screen"
+@inherits AppComponentBase
+@inject Bit.Butil.Screen screen
+
+<PageOutlet Url="butil/screen"
+            Title="Screen - Butil"
+            Description="Screen class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Screen</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Screen class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser screen features you need to inject the Bit.Butil.Screen class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Screen screen
+
+@@code {
+    var screenWidth = await screen.GetWidth();
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>GetAvailableHeight</b>: <br />
+            Specifies the height of the screen, in pixels, minus permanent or semipermanent user interface features displayed by the operating system, such as the Taskbar on Windows
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/availHeight" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getAvailableHeightExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetAvailableHeight">GetAvailableHeight</BitButton>
+                        <br />
+                        <br />
+                        <div>Available height: @availableHeight</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetAvailableWidth</b>: <br />
+            Returns the amount of horizontal space in pixels available to the window
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/availWidth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getAvailableWidthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetAvailableWidth">GetAvailableWidth</BitButton>
+                        <br />
+                        <br />
+                        <div>Available width: @availableWidth</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetColorDepth</b>: <br />
+            Returns the color depth of the screen
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/colorDepth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getColorDepthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetColorDepth">GetColorDepth</BitButton>
+                        <br />
+                        <br />
+                        <div>Color depth: @colorDepth</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetHeight</b>: <br />
+            Returns the height of the screen in pixels
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/height" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getHeightExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetHeight">GetHeight</BitButton>
+                        <br />
+                        <br />
+                        <div>Height: @height</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>IsExtended</b>: <br />
+            Returns true if the user's device has multiple screens, and false if not
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/isExtended" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getIsExtendedExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetIsExtended">GetIsExtended</BitButton>
+                        <br />
+                        <br />
+                        <div>Is extended: @isExtended</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetPixelDepth</b>: <br />
+            Gets the bit depth of the screen
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/pixelDepth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getPixelDepthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetPixelDepth">GetPixelDepth</BitButton>
+                        <br />
+                        <br />
+                        <div>Pixel depth: @pixelDepth</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetWidth</b>: <br />
+            Returns the width of the screen
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/width" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getWidthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetWidth">GetWidth</BitButton>
+                        <br />
+                        <br />
+                        <div>Width: @width</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>AddChange</b>, <b>RemoveChange</b>: <br />
+            Fired on a specific screen when it changes in some way — width or height, available width or height, color depth, or orientation
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen/change_event" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Location" PrevUrl="/butil/location" Next="VisualViewport" NextUrl="/butil/visualViewport" />

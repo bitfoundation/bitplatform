@@ -6,22 +6,31 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A component that wraps the HTML file input element and uploads them.
 /// </summary>
-public partial class BitFileUpload : IAsyncDisposable
+public partial class BitFileUpload : IDisposable
 {
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
-    private DotNetObjectReference<BitFileUpload>? _dotnetObj;
-    private ElementReference inputFileElement;
-    private IJSObjectReference? dropZoneInstance;
-    private long _internalChunkSize = MIN_CHUNK_SIZE;
+
     private long? chunkSize;
-    private string? _inputId;
+
+    private bool _disposed;
+    private ElementReference _inputRef;
+    private long _internalChunkSize = MIN_CHUNK_SIZE;
+    private IJSObjectReference _dropZoneRef = default!;
+    private DotNetObjectReference<BitFileUpload> _dotnetObj = default!;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     [Inject] private HttpClient _httpClient { get; set; } = default!;
 
+
+
+    /// <summary>
+    /// The value of the accept attribute of the input element.
+    /// </summary>
+    [Parameter] public string? Accept { get; set; }
 
     /// <summary>
     /// Filters files by extension.
@@ -39,6 +48,11 @@ public partial class BitFileUpload : IAsyncDisposable
     [Parameter] public bool AutoUploadEnabled { get; set; }
 
     /// <summary>
+    /// Enables or disables the chunked upload feature.
+    /// </summary>
+    [Parameter] public bool ChunkedUploadEnabled { get; set; } = true;
+
+    /// <summary>
     /// The size of each chunk of file upload in bytes.
     /// </summary>
     [Parameter]
@@ -47,6 +61,8 @@ public partial class BitFileUpload : IAsyncDisposable
         get => chunkSize;
         set
         {
+            if (value == chunkSize) return;
+
             chunkSize = value;
 
             if (chunkSize.HasValue is false || AutoChunkSizeEnabled)
@@ -59,6 +75,16 @@ public partial class BitFileUpload : IAsyncDisposable
             }
         }
     }
+
+    /// <summary>
+    /// The message shown for failed file uploads.
+    /// </summary>
+    [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
+
+    /// <summary>
+    /// The message shown for failed file removes.
+    /// </summary>
+    [Parameter] public string FailedRemoveMessage { get; set; } = "File remove failed";
 
     /// <summary>
     /// Enables multi-file select and upload.
@@ -116,6 +142,11 @@ public partial class BitFileUpload : IAsyncDisposable
     [Parameter] public EventCallback<BitFileInfo> OnRemoveFailed { get; set; }
 
     /// <summary>
+    /// Callback for when a file upload is about to start.
+    /// </summary>
+    [Parameter] public EventCallback<BitFileInfo> OnUploading { get; set; }
+
+    /// <summary>
     /// Callback for when a file upload is done.
     /// </summary>
     [Parameter] public EventCallback<BitFileInfo> OnUploadComplete { get; set; }
@@ -138,9 +169,7 @@ public partial class BitFileUpload : IAsyncDisposable
     /// <summary>
     /// URL of the server endpoint removing the files.
     /// </summary>
-#pragma warning disable CA1056 // URI-like properties should not be strings
     [Parameter] public string? RemoveUrl { get; set; }
-#pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
     /// Show/Hide after upload remove button.
@@ -150,12 +179,7 @@ public partial class BitFileUpload : IAsyncDisposable
     /// <summary>
     /// The message shown for successful file uploads.
     /// </summary>
-    [Parameter] public string SuccessfulUploadMessage { get; set; } = "File upload successful";
-
-    /// <summary>
-    /// The message shown for failed file uploads.
-    /// </summary>
-    [Parameter] public string FailedUploadMessage { get; set; } = "File upload failed";
+    [Parameter] public string SuccessfulUploadMessage { get; set; } = "File upload succeed";
 
     /// <summary>
     /// Custom http headers for upload request.
@@ -168,76 +192,42 @@ public partial class BitFileUpload : IAsyncDisposable
     [Parameter] public IReadOnlyDictionary<string, string> UploadRequestQueryStrings { get; set; } = new Dictionary<string, string>();
 
     /// <summary>
-    /// General upload status.
-    /// </summary>
-    public BitFileUploadStatus UploadStatus { get; set; }
-
-    /// <summary>
     /// URL of the server endpoint receiving the files.
     /// </summary>
-#pragma warning disable CA1056 // URI-like properties should not be strings
     [Parameter] public string? UploadUrl { get; set; }
-#pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
-    /// Enables or disables the chunked upload feature.
+    /// Template to render each file info.
     /// </summary>
-    [Parameter] public bool EnableChunkedUpload { get; set; } = true;
+    [Parameter] public RenderFragment<BitFileInfo>? FileViewTemplate { get; set; }
+
+
 
     /// <summary>
     /// All selected files.
     /// </summary>
     public IReadOnlyList<BitFileInfo>? Files { get; private set; }
 
-    protected override string RootElementClass => "bit-upl";
+    /// <summary>
+    /// General upload status.
+    /// </summary>
+    public BitFileUploadStatus UploadStatus { get; private set; }
 
-    protected override Task OnInitializedAsync()
-    {
-        _inputId = $"{UniqueId}FileInput";
+    /// <summary>
+    /// File input id.
+    /// </summary>
+    public string? InputId { get; private set; }
 
-        return base.OnInitializedAsync();
-    }
-
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            dropZoneInstance = await _js.SetupFileUploadDropzone(RootElement, inputFileElement);
-        }
-    }
+    /// <summary>
+    /// Indicates that the FileUpload is in the middle of removing a file.
+    /// </summary>
+    public bool IsRemoving { get; private set; }
 
 
     /// <summary>
-    /// Select file(s) by browse button or drag and drop.
+    /// Starts Uploading the file(s).
     /// </summary>
-    /// <returns></returns>
-    private async Task HandleOnChange()
-    {
-        if (UploadUrl is null) return;
-
-        _dotnetObj?.Dispose();
-
-        _dotnetObj = DotNetObjectReference.Create(this);
-
-        var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
-
-        Files = await _js.InitFileUpload(inputFileElement, _dotnetObj, url, UploadRequestHttpHeaders);
-
-        if (Files is null) return;
-
-        await OnChange.InvokeAsync(Files.ToArray());
-
-        if (AutoUploadEnabled)
-        {
-            await Upload();
-        }
-    }
-
-    /// <summary>
-    /// Uploads the file(s).
-    /// </summary>
-    private async Task Upload(int index = -1)
+    public async Task Upload(BitFileInfo? fileInfo = null, string? uploadUrl = null)
     {
         if (Files is null) return;
 
@@ -246,181 +236,216 @@ public partial class BitFileUpload : IAsyncDisposable
             UploadStatus = BitFileUploadStatus.InProgress;
         }
 
-        await UpdateStatus(BitFileUploadStatus.InProgress, index);
-        if (index >= 0)
+        await UpdateStatus(BitFileUploadStatus.InProgress, fileInfo);
+
+        if (fileInfo is null)
         {
-            await UploadOneFile(index);
+            foreach (var file in Files)
+            {
+                await UploadOneFile(file, uploadUrl);
+            }
         }
         else
         {
-            for (int i = 0; i < Files.Count; i++)
-            {
-                await UploadOneFile(i);
-            }
+            await UploadOneFile(fileInfo, uploadUrl);
         }
-    }
-
-    private async Task UploadOneFile(int index)
-    {
-        if (Files is null || Files[index].Status == BitFileUploadStatus.NotAllowed) return;
-
-        var uploadedSize = Files[index].TotalSizeOfUploaded;
-        if (Files[index].Size != 0 && uploadedSize >= Files[index].Size) return;
-
-        if (MaxSize > 0 && Files[index].Size > MaxSize)
-        {
-            await UpdateStatus(BitFileUploadStatus.NotAllowed, index);
-            return;
-        }
-
-        if (IsFileTypeNotAllowed(Files[index]))
-        {
-            await UpdateStatus(BitFileUploadStatus.NotAllowed, index);
-            return;
-        }
-
-        if (Files[index].RequestToPause)
-        {
-            await PauseUpload(index);
-            return;
-        }
-
-        if (Files[index].RequestToCancel)
-        {
-            await CancelUpload(index);
-            return;
-        }
-
-        long to;
-        long from = 0;
-        if (EnableChunkedUpload)
-        {
-            from = Files[index].TotalSizeOfUploaded;
-            if (Files[index].Size > _internalChunkSize)
-            {
-                to = from + _internalChunkSize;
-            }
-            else
-            {
-                to = Files[index].Size;
-            }
-
-            Files[index].StartTimeUpload = DateTime.UtcNow;
-            Files[index].SizeOfLastChunkUploaded = 0;
-        }
-        else
-        {
-            to = Files[index].Size;
-        }
-
-        await _js.UploadFile(from, to, index);
     }
 
     /// <summary>
     /// Pause upload.
     /// </summary>
-    /// <param name="index">
-    /// -1 => all files | else => specific file
+    /// <param name="fileInfo">
+    /// null => all files | else => specific file
     /// </param>
     /// <returns></returns>
-    public void RequestToPause(int index = -1)
+    public void PauseUpload(BitFileInfo? fileInfo = null)
     {
         if (Files is null) return;
 
-        if (index < 0)
+        if (fileInfo is null)
         {
-            Files.ToList().ForEach(c => c.RequestToPause = true);
+            foreach (var file in Files)
+            {
+                file.PauseUploadRequested = true;
+            }
         }
         else
         {
-            Files[index].RequestToPause = true;
+            fileInfo.PauseUploadRequested = true;
         }
-    }
-
-    private async Task PauseUpload(int index)
-    {
-        if (Files is null) return;
-
-        await _js.PauseFile(index);
-        await UpdateStatus(BitFileUploadStatus.Paused, index);
-        Files[index].RequestToPause = false;
     }
 
     /// <summary>
     /// Cancel upload.
     /// </summary>
-    /// <param name="index">
-    /// -1 => all files | else => specific file
+    /// <param name="fileInfo">
+    /// null => all files | else => specific file
     /// </param>
     /// <returns></returns>
-    public void RequestToCancel(int index = -1)
+    public void CancelUpload(BitFileInfo? fileInfo = null)
     {
         if (Files is null) return;
 
-        if (index < 0)
+        if (fileInfo is null)
         {
-            Files.ToList().ForEach(c => c.RequestToCancel = true);
+            foreach (var file in Files)
+            {
+                file.CancelUploadRequested = true;
+            }
         }
         else
         {
-            Files[index].RequestToCancel = true;
+            fileInfo.CancelUploadRequested = true;
         }
     }
 
     /// <summary>
-    /// Receive upload progress notification from underlying javascript.
+    /// Removes a file by calling the RemoveUrl if the file upload is already started.
     /// </summary>
-    [JSInvokable("HandleUploadProgress")]
-    public async Task HandleUploadProgress(int index, long loaded)
+    /// <param name="fileInfo">
+    /// null => all files | else => specific file
+    /// </param>
+    /// <returns></returns>
+    public async Task RemoveFile(BitFileInfo? fileInfo = null)
     {
-        if (Files is null || Files[index].Status != BitFileUploadStatus.InProgress) return;
+        if (Files is null) return;
+        if (IsRemoving) return;
 
-        Files[index].SizeOfLastChunkUploaded = loaded;
-        await UpdateStatus(BitFileUploadStatus.InProgress, index);
-        StateHasChanged();
-    }
+        IsRemoving = true;
 
-    /// <summary>
-    /// Receive upload finished notification from underlying JavaScript.
-    /// </summary>
-    [JSInvokable("HandleFileUpload")]
-    public async Task HandleFileUpload(int fileIndex, int responseStatus, string responseText)
-    {
-        if (Files is null || UploadStatus == BitFileUploadStatus.Paused) return;
-
-        var file = Files[fileIndex];
-        if (file.Status != BitFileUploadStatus.InProgress) return;
-
-        file.TotalSizeOfUploaded += EnableChunkedUpload ? _internalChunkSize : file.Size;
-        file.SizeOfLastChunkUploaded = 0;
-
-        UpdateChunkSize(fileIndex);
-
-        if (file.TotalSizeOfUploaded < file.Size)
+        if (fileInfo is null)
         {
-            await Upload(index: fileIndex);
+            foreach (var file in Files)
+            {
+                await RemoveOneFile(file);
+            }
         }
         else
         {
-            file.Message = responseText;
-            if (responseStatus is >= 200 and <= 299)
-            {
-                await UpdateStatus(BitFileUploadStatus.Completed, fileIndex);
-            }
-            else if ((responseStatus is 0 && (file.Status is BitFileUploadStatus.Paused or BitFileUploadStatus.Canceled)) is false)
-            {
-                await UpdateStatus(BitFileUploadStatus.Failed, fileIndex);
-            }
-
-            var allFilesUploaded = Files.All(c => c.Status is BitFileUploadStatus.Completed or BitFileUploadStatus.Failed);
-            if (allFilesUploaded)
-            {
-                UploadStatus = BitFileUploadStatus.Completed;
-                await OnAllUploadsComplete.InvokeAsync(Files.ToArray());
-            }
+            await RemoveOneFile(fileInfo);
         }
 
-        StateHasChanged();
+        IsRemoving = false;
+    }
+
+    /// <summary>
+    /// Open a file selection dialog
+    /// </summary>
+    /// <returns></returns>
+    public async Task Browse()
+    {
+        if (IsEnabled is false) return;
+
+        await _js.BitFileUploadBrowse(_inputRef);
+    }
+
+
+
+    protected override string RootElementClass => "bit-upl";
+
+    protected override Task OnInitializedAsync()
+    {
+        InputId = $"FileUpload-{UniqueId}-input";
+
+        _dotnetObj = DotNetObjectReference.Create(this);
+
+        return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _dropZoneRef = await _js.BitFileUploadSetupDragDrop(RootElement, _inputRef);
+    }
+
+
+
+    private async Task HandleOnChange()
+    {
+        var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
+
+        Files = await _js.BitFileUploadReset(UniqueId, _dotnetObj, _inputRef, url, UploadRequestHttpHeaders);
+
+        if (Files is null) return;
+
+        await OnChange.InvokeAsync([.. Files]);
+
+        if (AutoUploadEnabled)
+        {
+            await Upload();
+        }
+    }
+
+    private async Task UploadOneFile(BitFileInfo fileInfo, string? uploadUrl = null)
+    {
+        if (Files is null || fileInfo.Status == BitFileUploadStatus.NotAllowed) return;
+
+        var uploadedSize = fileInfo.TotalUploadedSize;
+        if (fileInfo.Size != 0 && uploadedSize >= fileInfo.Size) return;
+
+        if (MaxSize > 0 && fileInfo.Size > MaxSize)
+        {
+            await UpdateStatus(BitFileUploadStatus.NotAllowed, fileInfo);
+            return;
+        }
+
+        if (IsFileTypeNotAllowed(fileInfo))
+        {
+            await UpdateStatus(BitFileUploadStatus.NotAllowed, fileInfo);
+            return;
+        }
+
+        if (fileInfo.PauseUploadRequested)
+        {
+            await PauseUploadOneFile(fileInfo.Index);
+            return;
+        }
+
+        if (fileInfo.CancelUploadRequested)
+        {
+            await CancelUploadOneFile(fileInfo.Index);
+            return;
+        }
+
+        long to;
+        long from = 0;
+        if (ChunkedUploadEnabled)
+        {
+            from = fileInfo.TotalUploadedSize;
+            if (fileInfo.Size > _internalChunkSize)
+            {
+                to = from + _internalChunkSize;
+            }
+            else
+            {
+                to = fileInfo.Size;
+            }
+
+            fileInfo.StartTimeUpload = DateTime.UtcNow;
+            fileInfo.LastChunkUploadedSize = 0;
+        }
+        else
+        {
+            to = fileInfo.Size;
+        }
+
+        if (from == 0)
+        {
+            await OnUploading.InvokeAsync(fileInfo);
+        }
+
+        await _js.BitFileUploadUpload(UniqueId, from, to, fileInfo.Index, uploadUrl, fileInfo.HttpHeaders);
+    }
+
+    private async Task PauseUploadOneFile(int index)
+    {
+        if (Files is null) return;
+
+        await _js.BitFileUploadPause(UniqueId, index);
+        var file = Files[index];
+        await UpdateStatus(BitFileUploadStatus.Paused, file);
+        file.PauseUploadRequested = false;
     }
 
     private void UpdateChunkSize(int fileIndex)
@@ -445,11 +470,11 @@ public partial class BitFileUpload : IAsyncDisposable
         }
     }
 
-    private async Task UpdateStatus(BitFileUploadStatus uploadStatus, int index)
+    private async Task UpdateStatus(BitFileUploadStatus uploadStatus, BitFileInfo? fileInfo = null)
     {
         if (Files is null) return;
 
-        if (index < 0)
+        if (fileInfo is null)
         {
             UploadStatus = uploadStatus;
 
@@ -463,179 +488,97 @@ public partial class BitFileUpload : IAsyncDisposable
         }
         else
         {
-            if (Files[index].Status != uploadStatus)
+            if (fileInfo.Status != uploadStatus)
             {
-                Files[index].Status = uploadStatus;
-                await OnChange.InvokeAsync(new[] { Files[index] });
+                fileInfo.Status = uploadStatus;
+                await OnChange.InvokeAsync([fileInfo]);
             }
 
             switch (uploadStatus)
             {
                 case BitFileUploadStatus.InProgress:
-                    await OnProgress.InvokeAsync(Files[index]);
+                    await OnProgress.InvokeAsync(fileInfo);
                     break;
 
                 case BitFileUploadStatus.Completed:
-                    await OnUploadComplete.InvokeAsync(Files[index]);
+                    await OnUploadComplete.InvokeAsync(fileInfo);
                     break;
 
                 case BitFileUploadStatus.Failed:
-                    await OnUploadFailed.InvokeAsync(Files[index]);
+                    await OnUploadFailed.InvokeAsync(fileInfo);
                     break;
 
                 case BitFileUploadStatus.Removed:
-                    await OnRemoveComplete.InvokeAsync(Files[index]);
+                    await OnRemoveComplete.InvokeAsync(fileInfo);
                     break;
 
                 case BitFileUploadStatus.RemoveFailed:
-                    await OnRemoveFailed.InvokeAsync(Files[index]);
+                    await OnRemoveFailed.InvokeAsync(fileInfo);
                     break;
             }
         }
     }
 
-    private static string GetFileIcon(string fileName)
+    private async Task CancelUploadOneFile(int index)
     {
-        var fileSections = fileName.Split('.').ToList();
-        var extension = fileSections.Last();
+        if (Files is null) return;
 
-        return extension switch
+        await _js.BitFileUploadPause(UniqueId, index);
+        var file = Files[index];
+        await UpdateStatus(BitFileUploadStatus.Canceled, file);
+        file.CancelUploadRequested = false;
+    }
+
+    private async Task RemoveOneFile(BitFileInfo fileInfo)
+    {
+        if (fileInfo.Status is BitFileUploadStatus.Removed) return;
+
+        if (fileInfo.TotalUploadedSize > 0)
         {
-            "jpg" => "FileImage",
-            "gif" => "FileImage",
-            "png" => "FileImage",
-            "bmp" => "FileImage",
-            "webp" => "FileImage",
-
-            "mp4" => "Video",
-            "mov" => "Video",
-            "wmv" => "Video",
-            "avi" => "Video",
-            "avchd" => "Video",
-            "flv" => "Video",
-            "f4v" => "Video",
-            "swf" => "Video",
-            "mkv" => "Video",
-            "webm" => "Video",
-
-            "zip" => "Zip",
-            "rar" => "Zip",
-
-            "pdf" => "PDF",
-            "txt" => "InsertTextBox",
-
-            _ => string.Empty
-        };
+            await RemoveOneFileFromServer(fileInfo);
+        }
+        else
+        {
+            await UpdateStatus(BitFileUploadStatus.Removed, fileInfo);
+        }
     }
 
-    private async Task CancelUpload(int index)
+    private async Task RemoveOneFileFromServer(BitFileInfo fileInfo)
     {
-        if (Files is null) return;
+        if (RemoveUrl.HasNoValue()) return;
 
-        await _js.PauseFile(index);
-        await UpdateStatus(BitFileUploadStatus.Canceled, index);
-        Files[index].RequestToCancel = false;
-    }
-
-    private async Task RemoveFile(int index)
-    {
-        if (Files is null) return;
-
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            if (index < 0)
+            var url = AddQueryString(RemoveUrl!, "fileName", fileInfo.Name);
+            url = AddQueryString(url, RemoveRequestQueryStrings);
+
+            using var request = new HttpRequestMessage(HttpMethod.Delete, url);
+
+            request.Headers.Add("BIT_FILE_ID", fileInfo.FileId);
+
+            foreach (var header in RemoveRequestHttpHeaders)
             {
-                for (int i = 0; i < Files.Count; i++)
-                {
-                    await RemoveOneFile(i);
-                }
-            }
-            else
-            {
-                await RemoveOneFile(index);
+                request.Headers.Add(header.Key, header.Value);
             }
 
-            await UpdateStatus(BitFileUploadStatus.Removed, index);
+            await _httpClient.SendAsync(request);
+
+            await UpdateStatus(BitFileUploadStatus.Removed, fileInfo);
         }
         catch (Exception ex)
         {
-            Files[index].Message = ex.ToString();
-            await UpdateStatus(BitFileUploadStatus.RemoveFailed, index);
+            fileInfo.Message = ex.ToString();
+            await UpdateStatus(BitFileUploadStatus.RemoveFailed, fileInfo);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
-    private async Task RemoveOneFile(int index)
+    internal bool IsFileTypeNotAllowed(BitFileInfo file)
     {
-        if (Files is null || RemoveUrl.HasNoValue()) return;
+        if (Accept.HasNoValue()) return false;
 
-        var url = AddQueryString(RemoveUrl!, "fileName", Files[index].Name);
-        url = AddQueryString(url, RemoveRequestQueryStrings);
-
-        using var request = new HttpRequestMessage(HttpMethod.Delete, url);
-
-        foreach (var header in RemoveRequestHttpHeaders)
-        {
-            request.Headers.Add(header.Key, header.Value);
-        }
-
-        await _httpClient.SendAsync(request);
-    }
-
-    private string GetFileElClass(BitFileUploadStatus status)
-        => status switch
-        {
-            BitFileUploadStatus.Completed => $"{RootElementClass}-uld",
-            BitFileUploadStatus.Failed or BitFileUploadStatus.NotAllowed => $"{RootElementClass}-fld",
-            BitFileUploadStatus.Paused => $"{RootElementClass}-psd",
-            _ => $"{RootElementClass}-ip",
-        };
-
-    private string GetUploadMessageStr(BitFileInfo file)
-        => file.Status switch
-        {
-            BitFileUploadStatus.Completed => SuccessfulUploadMessage,
-            BitFileUploadStatus.Failed => FailedUploadMessage,
-            BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? NotAllowedExtensionErrorMessage : MaxSizeErrorMessage,
-            _ => string.Empty,
-        };
-
-    private bool IsFileTypeNotAllowed(BitFileInfo file)
-    {
         var fileSections = file.Name.Split('.');
         var extension = $".{fileSections?.Last()}";
         return AllowedExtensions.Count > 0 && AllowedExtensions.All(ext => ext != "*") && AllowedExtensions.All(ext => ext != extension);
-    }
-
-    private static int GetFileUploadPercent(BitFileInfo file)
-    {
-        int uploadedPercent;
-        if (file.TotalSizeOfUploaded >= file.Size)
-        {
-            uploadedPercent = 100;
-        }
-        else
-        {
-            uploadedPercent = (int)((file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded) / (float)file.Size * 100);
-        }
-
-        return uploadedPercent;
-    }
-
-    private static string GetFileUploadSize(BitFileInfo file)
-    {
-        long uploadedSize;
-        if (file.TotalSizeOfUploaded >= file.Size)
-        {
-            uploadedSize = file.Size;
-        }
-        else
-        {
-            uploadedSize = file.TotalSizeOfUploaded + file.SizeOfLastChunkUploaded;
-        }
-
-        return FileSizeHumanizer.Humanize(uploadedSize);
     }
 
     private static string AddQueryString(string uri, string name, string value)
@@ -643,20 +586,22 @@ public partial class BitFileUpload : IAsyncDisposable
         return AddQueryString(uri, new Dictionary<string, string> { { name, value } });
     }
 
-    private static string AddQueryString(string uri, IReadOnlyDictionary<string, string> queryStrings)
+    private static string AddQueryString(string? url, IReadOnlyDictionary<string, string> queryStrings)
     {
+        if (url.HasNoValue()) return string.Empty;
+
         // this method is copied from:
         // https://github.com/aspnet/HttpAbstractions/blob/master/src/Microsoft.AspNetCore.WebUtilities/QueryHelpers.cs
 
-        int anchorIndex = uri.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
-        string uriToBeAppended = uri;
+        int anchorIndex = url.IndexOf('#', StringComparison.InvariantCultureIgnoreCase);
+        string uriToBeAppended = url;
         string? anchorText = null;
 
         // If there is an anchor, then the query string must be inserted before its first occurrence.
         if (anchorIndex != -1)
         {
-            anchorText = uri[anchorIndex..];
-            uriToBeAppended = uri[..anchorIndex];
+            anchorText = url[anchorIndex..];
+            uriToBeAppended = url[..anchorIndex];
         }
 
         var queryIndex = uriToBeAppended.IndexOf('?', StringComparison.InvariantCultureIgnoreCase);
@@ -677,22 +622,89 @@ public partial class BitFileUpload : IAsyncDisposable
         return sb.ToString();
     }
 
-    public async ValueTask DisposeAsync()
+    /// <summary>
+    /// Receive upload progress notification from underlying javascript.
+    /// </summary>
+    [JSInvokable("HandleChunkUploadProgress")]
+    public async Task HandleChunkUploadProgress(int index, long loaded)
     {
-        await DisposeAsync(true);
+        if (Files is null) return;
+
+        var file = Files[index];
+        if (file.Status != BitFileUploadStatus.InProgress) return;
+
+        file.LastChunkUploadedSize = loaded;
+        await UpdateStatus(BitFileUploadStatus.InProgress, file);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Receive upload finished notification from underlying JavaScript.
+    /// </summary>
+    [JSInvokable("HandleChunkUpload")]
+    public async Task HandleChunkUpload(int fileIndex, int responseStatus, string responseText)
+    {
+        if (Files is null || UploadStatus == BitFileUploadStatus.Paused) return;
+
+        var file = Files[fileIndex];
+        if (file.Status != BitFileUploadStatus.InProgress) return;
+
+        file.TotalUploadedSize += ChunkedUploadEnabled ? _internalChunkSize : file.Size;
+        file.LastChunkUploadedSize = 0;
+
+        UpdateChunkSize(fileIndex);
+
+        if (file.TotalUploadedSize < file.Size)
+        {
+            await Upload(file);
+        }
+        else
+        {
+            file.Message = responseText;
+            if (responseStatus is >= 200 and <= 299)
+            {
+                await UpdateStatus(BitFileUploadStatus.Completed, file);
+            }
+            else if ((responseStatus is 0 && (file.Status is BitFileUploadStatus.Paused or BitFileUploadStatus.Canceled)) is false)
+            {
+                await UpdateStatus(BitFileUploadStatus.Failed, file);
+            }
+
+            var allFilesUploaded = Files.All(c => c.Status is BitFileUploadStatus.Completed or BitFileUploadStatus.Failed);
+            if (allFilesUploaded)
+            {
+                UploadStatus = BitFileUploadStatus.Completed;
+                await OnAllUploadsComplete.InvokeAsync(Files.ToArray());
+            }
+        }
+
+        StateHasChanged();
+    }
+
+
+    public void Dispose()
+    {
+        _ = Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual async Task DisposeAsync(bool disposing)
-    {
-        if (disposing is false || _dotnetObj is null) return;
 
-        if (dropZoneInstance != null)
+    private async Task Dispose(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_dropZoneRef is not null)
         {
-            await dropZoneInstance.InvokeVoidAsync("dispose");
-            await dropZoneInstance.DisposeAsync();
+            await _dropZoneRef.InvokeVoidAsync("dispose");
+            await _dropZoneRef.DisposeAsync();
         }
-        _dotnetObj.Dispose();
-        _dotnetObj = null;
+
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+            await _js.BitFileUploadDispose(UniqueId);
+        }
+
+        _disposed = true;
     }
 }

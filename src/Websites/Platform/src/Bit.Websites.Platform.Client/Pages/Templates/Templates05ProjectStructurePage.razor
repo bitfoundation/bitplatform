@@ -1,0 +1,97 @@
+﻿@page "/todo-template/project-structure"
+@page "/admin-panel/project-structure"
+@page "/templates/project-structure"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/project-structure"
+            Title="Project structure - Templates"
+            Description="project structure of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Project structure</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit project templates provide an initial source code structure for all types of applications.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>The Visual Studio Solution</BitTypography>
+        <div class="section-card-txt">
+            The VS solution prepared by the bit project templates has 6 Projects.
+        </div>
+        <div class="image-container">
+            <img class="image" alt="Boilerplate solution" src="/images/templates/project-structure-todo.webp" />
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>.SolutionItems</BitTypography>
+        <div class="section-card-txt">
+            To simplify access to files such as .gitignore, we've added them to visual studio solution folder named .SolutionItems.
+            <br />
+            <br />
+            In <b>src/Directory.Build.props</b> file, there are settings such as enabling or disabling multilingualism,
+            enabling or disabling Pwa, etc.
+            In the subsequent sections of the Documentation, you will become more familiar with this file.
+            <br />
+            <br />
+            In addition, the DevOps CI/CD files, along with the global.json which specifies which version of the dotnet sdk should be installed on your system, are included in this solution folder.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server</BitTypography>
+        <div class="section-card-txt">
+            This project contains server-side codes including Controllers, efcore DbContext, models, asp.net core identity related classes, etc.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Shared</BitTypography>
+        <div class="section-card-txt">
+            This project is shared with both the server and client(Web & Maui projects) sides.
+            <br />
+            It contains resx files, Dto classes, shared services contracts and implementations, etc.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.Core</BitTypography>
+        <div class="section-card-txt">
+            This project includes components and pages made with the help of razor, scss and csharp.
+            These pages and components are shared between maui app (for mobile/desktop) and web projects.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.Web</BitTypography>
+        <div class="section-card-txt">
+            This project contains the necessary code to build web version of the app.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client.Maui</BitTypography>
+        <div class="section-card-txt">
+            This project contains the necessary code to built mobile/desktop versions of the app.
+        </div>
+        <div class="section-card-txt">
+            <b>Note</b>: The Maui project can take a long time to build. To speed up the build process, we recommend unloading the Maui project
+            unless you need to test the mobile or desktop version of the app. Most of the application logic and UI is shared between the Maui project and the Web project.
+            Therefore, we encourage you to develop and test the Web project first, and then test the Maui project.
+            To unload the Maui project, right-click on the Maui project in Solution Explorer, then select Unload Project.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Iac</BitTypography>
+        <div class="section-card-txt">
+            Infrastructure as Code (IaC) is the managing and provisioning of infrastructure through code instead of through manual processes.
+            This project contains the necessary code to provide this feature. You don't have to use either Pulumi or even Azure, Host your project wherever you want!
+        </div>
+    </section>
+
+</div>
+
+<NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" Next="Database" NextUrl="/templates/database" />

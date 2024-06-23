@@ -1,0 +1,48 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @{
+        var headerHeight = HeaderHeight + StatusBarHeight;
+        var headerHeightStyle = $"{(headerHeight > 0 ? $"height:{headerHeight}px;" : "")}";
+        var headerPaddingStyle = $"{(StatusBarHeight > 0 ? $"padding-top:{StatusBarHeight}px;" : "")}";
+        var headerStyles = $"{headerHeightStyle}{headerPaddingStyle}{Styles?.Header}";
+        var headerClasses = $"bit-lyt-hdr{(FixedHeader ? " bit-lyt-fhd" : "")} {Classes?.Header}";
+
+        var mainPaddingTopStyle = $"{(headerHeight > 0 ? $"padding-top:{headerHeight}px;" : "")}";
+        var mainPaddingBottomStyle = $"{(FooterHeight > 0 ? $"padding-bottom:{FooterHeight}px;" : "")}";
+        var mainStyles = $"{mainPaddingTopStyle}{mainPaddingBottomStyle}{Styles?.Main}";
+        var mainClasses = $"bit-lyt-man {Classes?.Main}";
+
+        var footerHeightStyle = $"{(FooterHeight > 0 ? $"height:{FooterHeight}px;" : "")}";
+        var footerStyles = $"{footerHeightStyle}{Styles?.Footer}";
+        var footerClasses = $"bit-lyt-ftr{(FixedFooter ? " bit-lyt-fft" : "")} {Classes?.Footer}";
+    }
+
+    @if (Header is not null)
+    {
+        <header class="@headerClasses" style="@headerStyles">
+            @Header
+        </header>
+    }
+
+    @if (Main is not null)
+    {
+        <main class="@mainClasses" style="@mainStyles">
+            @Main
+        </main>
+    }
+
+    @if (Footer is not null)
+    {
+        <footer class="@footerClasses" style="@footerStyles">
+            @Footer
+        </footer>
+    }
+</div>

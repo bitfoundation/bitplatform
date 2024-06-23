@@ -1,0 +1,51 @@
+﻿@inherits AppComponentBase
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Class="title">@ComponentName</BitTypography>
+    <section id="overview-section" class="page-section">
+        <BitTypography Variant="BitTypographyVariant.Subtitle1">
+            @ComponentDescription
+        </BitTypography>
+    </section>
+    @if (Notes.HasValue())
+    {
+        <section id="notes-section" class="page-section">
+            <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Notes</BitTypography>
+            @Notes
+        </section>
+    }
+    <section id="usage-section" class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Usage</BitTypography>
+        @ChildContent
+    </section>
+    <section id="implementation-section" class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Implementation</BitTypography>
+
+        <ComponentParametersTable Name="@($"Bit{ComponentName}")" Parameters="ComponentParameters" />
+
+        @if (ComponentPublicMembers.Any())
+        {
+            <ComponentParametersTable Name="@($"Bit{ComponentName}")" NameSuffix="public members" Parameters="ComponentPublicMembers" />
+        }
+
+        @if (_inputComponents.Contains(ComponentName))
+        {
+            <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+
+            <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
+        }
+
+        @if (_extraComponents.Contains(ComponentName) is false)
+        {
+            <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+
+            <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+        }
+
+        <ComponentClassesTable Classes="ComponentSubClasses" />
+
+        <ComponentEnumsTable Enums="ComponentSubEnums" />
+
+        <ComponentEnumsTable Enums="_componentBaseSubEnums" />
+    </section>
+</div>

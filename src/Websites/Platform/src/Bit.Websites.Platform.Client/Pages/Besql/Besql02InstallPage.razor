@@ -1,0 +1,36 @@
+﻿@page "/besql/install"
+@inherits AppComponentBase
+
+<PageOutlet Url="besql/install"
+            Title="Install - Besql"
+            Description="installing the bit Besql" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Install bit Besql</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to install the bit Besql?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CLI</BitTypography>
+        <div class="section-card-txt">
+            Open the command line of your choice and run the following command:
+            <CodeBox>dotnet add package Bit.Besql</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            Open your Visual Studio's Manage NuGet Packages window and install the Bit.Besql package:
+            <br />
+            <br />
+            <img src="/images/besql/install-visualstudio.webp" class="besql-img" />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Overview" PrevUrl="/besql/overview" Next="Usage" NextUrl="/besql/usage" />

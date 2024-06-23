@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,7 +26,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         var bitSlider = com.Find(".bit-sld");
-        Assert.IsTrue(bitSlider.ClassList.Contains(isVertical ? "vertical" : "horizontal"));
+        Assert.IsTrue(bitSlider.ClassList.Contains(isVertical ? "bit-sld-vrt" : "bit-sld-hrz"));
     }
 
     [DataTestMethod,
@@ -41,7 +42,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         var bitSlider = com.Find(".bit-sld");
-        Assert.IsTrue(bitSlider.ClassList.Contains($"ranged-{(vertical ? "vertical" : "horizontal")}"));
+        Assert.IsTrue(bitSlider.ClassList.Contains($"bit-sld-rgd-{(vertical ? "vrt" : "hrz")}"));
     }
 
     [DataTestMethod,
@@ -81,63 +82,66 @@ public class BitSliderTests : BunitTestContext
 
         var bitSlider = com.Find(".bit-sld");
 
-        Assert.IsTrue(ranged is false || bitSlider.ClassList.Contains("ranged-horizontal"));
+        Assert.IsTrue(ranged is false || bitSlider.ClassList.Contains("bit-sld-rgd-hrz"));
         Assert.AreEqual(ranged ? 2 : 1, bitSlider.GetElementsByTagName("input").Length);
     }
 
     [DataTestMethod,
-        DataRow(null, 3),
+        DataRow(-1000, 3D),
         DataRow(2, null),
-        DataRow(2, 3),
-        DataRow(null, null)
+        DataRow(2, 3D),
+        DataRow(-1000, null)
     ]
-    public void BitSliderDefaultLowerValueTest(int? lowerValue, int? defaultLowerValue)
+    public void BitSliderDefaultLowerValueTest(double lowerValue, double? defaultLowerValue)
     {
+        var hasLowerValue = lowerValue != -1000;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.LowerValue, lowerValue);
+            if (hasLowerValue) parameters.Add(p => p.LowerValue, lowerValue);
             parameters.Add(p => p.DefaultLowerValue, defaultLowerValue);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.IsRanged, true);
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
-        var expectedValue = lowerValue.HasValue ? lowerValue : defaultLowerValue;
+        var expectedValue = hasLowerValue ? lowerValue : defaultLowerValue;
+
         Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
     [DataTestMethod,
-        DataRow(null, 3),
+        DataRow(-1000, 3D),
         DataRow(2, null),
-        DataRow(2, 3),
-        DataRow(null, null)
+        DataRow(2, 3D),
+        DataRow(-1000, null)
     ]
-    public void BitSliderDefaultUpperValueTest(int? upperValue, int? defaultUpperValue)
+    public void BitSliderDefaultUpperValueTest(double upperValue, double? defaultUpperValue)
     {
+        var hasUpperValue = upperValue != -1000;
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.UpperValue, upperValue);
+            if(hasUpperValue) parameters.Add(p => p.UpperValue, upperValue);
             parameters.Add(p => p.DefaultUpperValue, defaultUpperValue);
             parameters.Add(p => p.ShowValue, true);
             parameters.Add(p => p.IsRanged, true);
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
-        var expectedValue = upperValue.HasValue ? upperValue : defaultUpperValue;
+        var expectedValue = hasUpperValue ? upperValue : defaultUpperValue;
 
         Assert.AreEqual(2, labels.Count);
-        Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), labels.Last().TextContent);
+        Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
     }
 
     [DataTestMethod,
         DataRow(null),
         DataRow(2)
     ]
-    public void BitSliderLowerValueTest(int? lowerValue)
+    public void BitSliderLowerValueTest(double lowerValue)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -147,9 +151,9 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.IsRanged, true);
         });
 
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
-        Assert.AreEqual(lowerValue.GetValueOrDefault().ToString(), label.TextContent);
+        Assert.AreEqual(lowerValue.ToString(), label.TextContent);
     }
 
     [DataTestMethod,
@@ -166,19 +170,17 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         Assert.AreEqual(2, labels.Count);
         Assert.AreEqual(defaultUpperValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
     }
 
     [DataTestMethod,
-        DataRow(null, null),
-        DataRow(2, null),
-        DataRow(null, 6),
-        DataRow(2, 6)
+        DataRow(2, 6),
+        DataRow(0, 10)
     ]
-    public void BitSliderLowerAndUpperValueTest(int? lowerValue, int? upperValue)
+    public void BitSliderLowerAndUpperValueTest(double lowerValue, double upperValue)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -188,11 +190,11 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find labels with valueLabel css class
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         Assert.AreEqual(2, labels.Count);
-        Assert.AreEqual(lowerValue.GetValueOrDefault().ToString(), labels[0].TextContent);
-        Assert.AreEqual(upperValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
+        Assert.AreEqual(lowerValue.ToString(), labels[0].TextContent);
+        Assert.AreEqual(upperValue.ToString(), labels[^1].TextContent);
     }
 
     [DataTestMethod,
@@ -208,7 +210,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
         Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
     }
@@ -227,16 +229,16 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
         Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
     }
 
     [DataTestMethod,
-        DataRow(null),
+        DataRow(5),
         DataRow(2)
     ]
-    public void BitSliderValueTest(int? value)
+    public void BitSliderValueTest(double value)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -245,16 +247,16 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
-        Assert.AreEqual(value.GetValueOrDefault().ToString(), label.TextContent);
+        Assert.AreEqual(value.ToString(), label.TextContent);
     }
 
     [DataTestMethod,
-        DataRow(null),
+        DataRow(5),
         DataRow(2)
     ]
-    public void BitSliderVerticalValueTest(int? value)
+    public void BitSliderVerticalValueTest(double value)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -264,18 +266,18 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Find first label with valueLabel css class
-        var label = com.Find(".value-label");
+        var label = com.Find(".bit-sld-vlb");
 
-        Assert.AreEqual(value.GetValueOrDefault().ToString(), label.TextContent);
+        Assert.AreEqual(value.ToString(), label.TextContent);
     }
 
     [DataTestMethod,
         DataRow(false, null),
         DataRow(true, null),
-        DataRow(false, 2),
-        DataRow(true, 2)
+        DataRow(false, 2D),
+        DataRow(true, 2D)
     ]
-    public void BitSliderStepTest(bool ranged, int? step)
+    public void BitSliderStepTest(bool ranged, double? step)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -287,11 +289,13 @@ public class BitSliderTests : BunitTestContext
         });
 
         var inputs = com.FindAll(".bit-sld input");
+        var expected = (step ?? com.Instance.Step).ToString();
+
         Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
 
         foreach (var input in inputs)
         {
-            Assert.AreEqual(input.GetAttribute("step"), (step ?? com.Instance.Step).ToString());
+            Assert.AreEqual(expected, input.GetAttribute("step"));
         }
     }
 
@@ -331,7 +335,7 @@ public class BitSliderTests : BunitTestContext
 
         // Find all labels with title css class
         // Method 'FindAll' is used because if the component does not have a label, the element will not be rendered. 
-        var labelElements = com.FindAll(".label");
+        var labelElements = com.FindAll(".bit-sld-lbl");
         var labelElement = labelElements.SingleOrDefault();
 
         if (label.HasValue())
@@ -359,7 +363,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ShowValue, showValue);
         });
 
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         if (showValue)
         {
@@ -386,7 +390,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.IsOriginFromZero, originFromZero);
         });
 
-        var spans = com.FindAll(".zero-tick");
+        var spans = com.FindAll(".bit-sld-ztk");
 
         Assert.AreEqual(originFromZero ? 1 : 0, spans.Count);
     }
@@ -406,7 +410,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ValueFormat, valueFormat);
         });
 
-        var labels = com.FindAll(".value-label");
+        var labels = com.FindAll(".bit-sld-vlb");
 
         Assert.AreEqual(ranged ? 2 : 1, labels.Count(l => l.TextContent.Contains('%') == valueFormat.HasValue()));
     }

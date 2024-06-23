@@ -1,12 +1,12 @@
 #bit-bswup {
-    display: none;
-    position: fixed;
-    background: #fff;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     padding: 20px;
+    display: none;
+    position: fixed;
+    z-index: 999999999;
     text-align: center;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
 }
@@ -43,7 +43,9 @@
 
 #bit-bswup-reload {
     display: none;
-    margin-bottom: 8px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
 }
 
 #bit-bswup-assets {

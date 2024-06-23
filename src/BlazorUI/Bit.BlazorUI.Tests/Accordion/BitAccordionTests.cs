@@ -43,9 +43,9 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.ChildContent, text);
         });
 
-        var bitAccordionTitle = com.Find(".title");
-        var bitAccordionDescription = com.Find(".description");
-        var bitAccordionText = com.Find(".content");
+        var bitAccordionTitle = com.Find(".bit-acd-ttl");
+        var bitAccordionDescription = com.Find(".bit-acd-des");
+        var bitAccordionText = com.Find(".bit-acd-con");
 
         Assert.AreEqual(bitAccordionTitle.TextContent, title);
         Assert.AreEqual(bitAccordionDescription.TextContent, description);
@@ -57,13 +57,17 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>();
 
-        var bitAccordionHeader = com.Find(".header");
-        var bitAccordionContent = com.Find(".content");
-        bitAccordionHeader.Click();
+        var root = com.Find(".bit-acd");
+        var header = com.Find(".bit-acd-hdr");
 
-        Assert.IsTrue(bitAccordionHeader.ClassName.Contains("expanded"));
-        Assert.IsTrue(bitAccordionContent.ClassName.Contains("expanded"));
+        var icon = com.Find(".bit-acd-hdr > i");
+        var content = com.Find(".bit-acd-con");
+        header.Click();
+
+        Assert.IsTrue(icon.ClassName.Contains("bit-acd-hex"));
+        Assert.IsTrue(content.ClassName.Contains("bit-acd-cex"));
     }
+
 
     [DataTestMethod,
         DataRow(true),
@@ -76,11 +80,11 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.DefaultIsExpanded, defaultIsExpanded);
         });
 
-        var bitAccordionHeader = com.Find(".header");
-        var bitAccordionContent = com.Find(".content");
+        var header = com.Find(".bit-acd-hdr > i");
+        var content = com.Find(".bit-acd-con");
 
-        Assert.AreEqual(defaultIsExpanded, bitAccordionHeader.ClassName.Contains("expanded"));
-        Assert.AreEqual(defaultIsExpanded, bitAccordionContent.ClassName.Contains("expanded"));
+        Assert.AreEqual(defaultIsExpanded, header.ClassName.Contains("bit-acd-hex"));
+        Assert.AreEqual(defaultIsExpanded, content.ClassName.Contains("bit-acd-cex"));
     }
 
     [DataTestMethod,
@@ -98,7 +102,7 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.OnChange, () => isChanged = isClick);
         });
 
-        var bitAccordionHeader = com.Find(".header");
+        var bitAccordionHeader = com.Find(".bit-acd-hdr");
         bitAccordionHeader.Click();
 
         Assert.AreEqual(isClick, isClicked);
@@ -120,10 +124,10 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.HeaderTemplate, (isExpanded) => isExpanded ? expandedHeaderHtml : collapsedHeaderHtml);
         });
 
-        var bitAccordionHeader = com.Find(".header");
+        var header = com.Find(".bit-acd-hdr");
 
-        Assert.AreEqual(defaultIsExpanded, bitAccordionHeader.ClassName.Contains("expanded"));
-        Assert.AreEqual(defaultIsExpanded, bitAccordionHeader.InnerHtml.Equals(expandedHeaderHtml));
+        Assert.AreEqual(defaultIsExpanded, header.InnerHtml.Equals(expandedHeaderHtml));
+        Assert.AreEqual(!defaultIsExpanded, header.InnerHtml.Equals(collapsedHeaderHtml));
     }
 
     [DataTestMethod]
@@ -136,8 +140,8 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.ChildContent, contentHtml);
         });
 
-        var bitAccordionContent = com.Find(".content");
+        var content = com.Find(".bit-acd-con");
 
-        Assert.IsTrue(bitAccordionContent.InnerHtml.Equals(contentHtml));
+        Assert.IsTrue(content.InnerHtml.Equals(contentHtml));
     }
 }

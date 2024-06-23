@@ -1,0 +1,156 @@
+﻿@inherits AppComponentBase
+
+<header class="main-header">
+    <div class="header-main-container">
+        <div class="header-content-container">
+            @if (isDocsRoute)
+            {
+                <BitIconButton Class="header-menu-btn" IconName="@BitIconName.CollapseMenu" OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
+            }
+            <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
+            <div class="header-link header-ps-btn @(isDocsRoute ? "header-link--active" : null)">
+                Products
+                <div class="header-menu-popup">
+                    <div class="col">
+                        <a class="menu-item @(isLcncDocRoute ? "active" : "")" href="@Urls.LowCodeNoCode">
+                            <div class="menu-item-content">
+                                <div class="item-title">Low-code/<span style="opacity:0.5">No-code</span></div>
+                                <div class="item-desc">(Private alpha)</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates">
+                            <div class="menu-item-content">
+                                <div class="item-title">Boilerplate</div>
+                                <div class="item-desc">Feature-rich .NET project template</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil">
+                            <div class="menu-item-content">
+                                <div class="item-title">Butil</div>
+                                <div class="item-desc">Blazor utils for browser APIs</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup">
+                            <div class="menu-item-content">
+                                <div class="item-title">Bswup</div>
+                                <div class="item-desc">Blazor PWA on steroids</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item @(isBesqlDocRoute ? "active" : "")" href="@Urls.Besql">
+                            <div class="menu-item-content">
+                                <div class="item-title">Besql</div>
+                                <div class="item-desc">Blazor Entity Framework Sqlite</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item" href="@Urls.BlazorUI" target="_blank">
+                            <div class="menu-item-content">
+                                <div class="item-title">BlazorUI</div>
+                                <div class="item-desc">Native Blazor UI components</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item menu-item--disabled">
+                            <div class="menu-item-content">
+                                <div class="item-title">bit Academy</div>
+                                <div class="item-desc">Coming soon</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <a class="header-link @(currentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            <a class="header-link @(currentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
+            <a class="header-link @(currentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+        </div>
+        <div class="right-section">
+            <a class="github-container" target="_blank" aria-label="Github repository" title="Github repository" href="@Urls.GithubRepo">
+                <span class="github-btn"></span>
+            </a>
+
+            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
+                <span class="icon-container"><i class="bit-icon bit-icon--Sunny"></i></span>
+            </button>
+            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light">
+                <span class="icon-container"><i class="bit-icon bit-icon--ClearNight"></i></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="header-second-row">
+        <BitActionButton Class="header-action-button"
+                         IconName="@(isHeaderMenuOpen ? BitIconName.ChevronUp : BitIconName.ChevronDown)"
+                         OnClick="@WrapHandled(ToggleHeaderMenu)">
+            @GetActiveRouteName()
+        </BitActionButton>
+    </div>
+</header>
+
+@if (isHeaderMenuOpen)
+{
+    <nav class="header-nav">
+        <BitIconButton Class="header-nav-close-btn" IconName="@BitIconName.Cancel" OnClick="@WrapHandled(ToggleHeaderMenu)" />
+        <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
+            Products
+            <div class="header-menu-popup">
+                <div class="col">
+                    <a class="menu-item @(isLcncDocRoute ? "active" : "")" href="@Urls.LowCodeNoCode" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Low-code/<span style="opacity:0.5">No-code</span></div>
+                            <div class="item-desc">(Private alpha)</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Boilerplate</div>
+                            <div class="item-desc">Feature-rich project template</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Butil</div>
+                            <div class="item-desc">Blazor utils for browser APIs</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Bswup</div>
+                            <div class="item-desc">Blazor PWA on steroids</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item @(isBesqlDocRoute ? "active" : "")" href="@Urls.Besql" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                        <div class="menu-item-content">
+                            <div class="item-title">Besql</div>
+                            <div class="item-desc">Blazor Entity Framework Sqlite</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item" href="@Urls.BlazorUI" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
+                        <div class="menu-item-content">
+                            <div class="item-title">BlazorUI</div>
+                            <div class="item-desc">Native Blazor UI components</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item menu-item--disabled">
+                        <div class="menu-item-content">
+                            <div class="item-title">bit Academy</div>
+                            <div class="item-desc">Coming soon</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <a class="header-nav-link @(currentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
+        <a class="header-nav-link @(currentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
+        <a class="header-nav-link @(currentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
+    </nav>
+}

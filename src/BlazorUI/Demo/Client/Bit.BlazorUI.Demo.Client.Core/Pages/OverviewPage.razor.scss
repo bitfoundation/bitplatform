@@ -1,0 +1,118 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+.card-container {
+    gap: 10px;
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    margin-bottom: rem2(28px);
+    justify-content: flex-start;
+
+    @include sm {
+        justify-content: center;
+    }
+}
+
+.card {
+    display: flex;
+    cursor: pointer;
+    overflow: hidden;
+    height: rem2(190px);
+    text-align: center;
+    padding: rem2(16px);
+    align-items: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    line-height: rem2(40px);
+    width: calc(25% - 8px);
+    border-radius: rem2(2px);
+    justify-content: center;
+    flex-flow: column nowrap;
+    box-shadow: $bit-box-shadow-callout;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
+
+    @include lg {
+        width: calc((100% / 3) - 8px);
+    }
+
+    @include md {
+        width: calc(50% - 5px);
+    }
+
+    @include sm {
+        width: 100%;
+    }
+}
+
+.card-img {
+    width: rem2(56px);
+    height: rem2(56px);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin-bottom: rem2(8px);
+
+    &.basic {
+        background-image: url('images/icon/input-icon.svg');
+    }
+
+    &.buttons {
+        background-image: url('images/icon/input-icon.svg');
+    }
+
+    &.basic-inputs {
+        background-image: url('images/icon/input-icon.svg');
+    }
+
+    &.galleries-pickers {
+        background-image: url('images/icon/pickers-icon.svg');
+    }
+
+    &.items-lists {
+        background-image: url('images/icon/lists-icon.svg');
+    }
+
+    &.menus-navs {
+        background-image: url('images/icon/navs-icon.svg');
+    }
+
+    &.notification {
+        background-image: url('images/icon/notifications-icon.svg');
+    }
+
+    &.progress {
+        background-image: url('images/icon/progrss-icon.svg');
+    }
+
+    &.surfaces {
+        background-image: url('images/icon/surfaces-icon.svg');
+    }
+}
+
+.github-codespaces-section {
+    display: flex;
+    align-items: flex-start;
+
+    .github-codespaces-icon {
+        width: rem2(35px);
+        height: rem2(35px);
+        min-width: rem2(35px);
+        margin-right: rem2(12px);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-position-y: rem2(3px);
+    }
+}
+
+.bit-theme-dark .github-codespaces-icon {
+    background-image: url('images/github-icon-dark.svg');
+}
+
+.bit-theme-light .github-codespaces-icon {
+    background-image: url('images/github-icon-light.svg');
+}

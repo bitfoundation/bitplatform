@@ -1,0 +1,223 @@
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+footer {
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    background-color: $bit-color-background-primary;
+}
+
+.footer-section {
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+    max-width: rem2(1200px);
+    padding: rem2(40px) rem2(20px) rem2(80px);
+
+    &:first-child {
+        display: grid;
+        gap: rem2(40px);
+        align-items: center;
+        grid-auto-columns: 1fr;
+        grid-template-rows: auto;
+        justify-content: space-between;
+        grid-template-columns: 1fr 1fr;
+
+        @include lg {
+            grid-template-columns: 1fr 1.75fr;
+        }
+
+        @include sm {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &:last-child {
+        display: flex;
+        align-items: center;
+        padding: rem2(40px) rem2(20px);
+        justify-content: space-between;
+        border-top: rem2(1px) solid $bit-color-border-secondary;
+
+        @include sm {
+            align-items: center;
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+        }
+    }
+
+    @include md {
+        padding-left: rem2(30px);
+        padding-right: rem2(30px);
+    }
+}
+
+.footer-col {
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.footer-links-container {
+    gap: 20px;
+    height: 100%;
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.go-to-top {
+    bottom: 0;
+    cursor: pointer;
+    right: rem2(2px);
+    position: absolute;
+    padding: rem2(8px) rem2(12px);
+    background-color: $bit-color-background-secondary;
+
+    &:hover {
+        background-color: $bit-color-action-hover-background-secondary;
+    }
+}
+
+.address-info {
+    gap: 3px;
+    display: flex;
+    flex-flow: column nowrap;
+
+    @include sm {
+        margin-bottom: rem2(30px);
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .address, .tel, .country {
+        padding-left: rem2(20px);
+        background-repeat: no-repeat;
+        background-position-y: rem2(4px);
+    }
+
+    .address, .tel {
+        color: $bit-color-primary-main;
+
+        &:hover {
+            color: $bit-color-action-hover-primary;
+        }
+    }
+
+    .address {
+        background-image: url('/images/footer/location-icon.svg');
+    }
+
+    .country {
+        line-height: 2;
+    }
+
+    .tel {
+        background-image: url('/images/footer/tel-icon.svg');
+    }
+}
+
+.bit-logo {
+    width: rem2(32px);
+    height: rem2(27px);
+    background-size: contain;
+    margin-bottom: rem2(20px);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('/images/bit-blue-icon.svg');
+}
+
+.footer-col-title {
+    margin: 0;
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-size: rem2(14px);
+}
+
+.footer-link {
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: rem2(14px);
+    text-decoration: none;
+    margin-top: rem2(10px);
+    color: $bit-color-primary-main;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.copyright-txt {
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: rem2(14px);
+    margin-top: rem2(16px);
+}
+
+.social-link-group {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: center;
+
+    @include sm {
+        margin-bottom: rem2(8px);
+    }
+}
+
+.social-link {
+    cursor: pointer;
+    width: rem2(32px);
+    height: rem2(32px);
+    margin: 0 rem2(10);
+    border-radius: 50%;
+    background-color: #a19f9d;
+    background-size: rem2(18px);
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.twitter-link {
+    background-image: url('/images/footer/twitter-icon.svg');
+
+    &:hover {
+        background-color: black;
+    }
+}
+
+.github-link {
+    background-image: url('/images/footer/github-icon.svg');
+
+    &:hover {
+        background-color: #333;
+    }
+}
+
+.youtube-link {
+    background-image: url('/images/footer/youtube-icon.svg');
+
+    &:hover {
+        background-color: #FF0000;
+    }
+}
+
+.linkedin-link {
+    background-image: url('/images/footer/linkedin-icon.svg');
+
+    &:hover {
+        background-color: #0077B5;
+    }
+}

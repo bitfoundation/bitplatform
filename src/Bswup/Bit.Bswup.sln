@@ -14,12 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup", "Bit.Bswup\Bit.Bswup.csproj", "{738D3506-72C5-409D-A4D0-8AA0A146CCDC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{4E161D50-92DD-4C12-B284-E1EB62406F15}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\.github\workflows\nuget.org.yml = ..\..\.github\workflows\nuget.org.yml
-		..\..\.github\workflows\Prerelease.nuget.org.yml = ..\..\.github\workflows\Prerelease.nuget.org.yml
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.Demo", "Bit.Bswup.Demo\Bit.Bswup.Demo.csproj", "{2595C9A4-F41F-449C-AA46-39026984DEC6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FullDemo", "FullDemo", "{264F406E-4839-4FC0-997B-325DFF0049E9}"
@@ -27,6 +21,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.Demo.Client", "FullDemo\Client\Bit.Bswup.Demo.Client.csproj", "{CFA3E562-B1A2-448F-B75E-0B63E7C257AB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Bswup.Demo.Server", "FullDemo\Server\Bit.Bswup.Demo.Server.csproj", "{15F2F591-2A49-43F5-A01A-6FDF22F32825}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewDemo", "NewDemo", "{A72A5350-6791-4DEA-A088-D38EAF9CD240}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Bswup.NewDemo", "Bit.Bswup.NewDemo\Bit.Bswup.NewDemo\Bit.Bswup.NewDemo.csproj", "{0132185E-3D40-441D-90F9-99ED65069B6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Bswup.NewDemo.Client", "Bit.Bswup.NewDemo\Bit.Bswup.NewDemo.Client\Bit.Bswup.NewDemo.Client.csproj", "{8294088B-6FC6-4A07-B905-D89D2A807FDB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,14 +50,23 @@ Global
 		{15F2F591-2A49-43F5-A01A-6FDF22F32825}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15F2F591-2A49-43F5-A01A-6FDF22F32825}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15F2F591-2A49-43F5-A01A-6FDF22F32825}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0132185E-3D40-441D-90F9-99ED65069B6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0132185E-3D40-441D-90F9-99ED65069B6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0132185E-3D40-441D-90F9-99ED65069B6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0132185E-3D40-441D-90F9-99ED65069B6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8294088B-6FC6-4A07-B905-D89D2A807FDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8294088B-6FC6-4A07-B905-D89D2A807FDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8294088B-6FC6-4A07-B905-D89D2A807FDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8294088B-6FC6-4A07-B905-D89D2A807FDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{4E161D50-92DD-4C12-B284-E1EB62406F15} = {2983E1DE-C69B-4355-A832-A13D3346AD3A}
 		{CFA3E562-B1A2-448F-B75E-0B63E7C257AB} = {264F406E-4839-4FC0-997B-325DFF0049E9}
 		{15F2F591-2A49-43F5-A01A-6FDF22F32825} = {264F406E-4839-4FC0-997B-325DFF0049E9}
+		{0132185E-3D40-441D-90F9-99ED65069B6D} = {A72A5350-6791-4DEA-A088-D38EAF9CD240}
+		{8294088B-6FC6-4A07-B905-D89D2A807FDB} = {A72A5350-6791-4DEA-A088-D38EAF9CD240}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5A288AF8-225C-409E-AC91-ECD57E712204}

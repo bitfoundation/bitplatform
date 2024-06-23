@@ -1,0 +1,291 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.page-sec {
+    width: 100%;
+    display: flex;
+    max-width: rem2(1440px);
+    box-sizing: border-box;
+    padding: rem2(40px) rem2(140px);
+    margin: 0 auto;
+
+    @include lg {
+        padding: rem2(32px) rem2(60px);
+    }
+
+    @include sm {
+        padding: rem2(16px);
+    }
+}
+
+.sec-title {
+    font-weight: bold;
+    font-size: rem2(44px);
+    margin-bottom: 1rem;
+    text-align: center;
+
+    @include lg {
+        font-size: rem2(34px);
+    }
+
+    @include md {
+        font-size: rem2(30px);
+    }
+
+    @include sm {
+        font-size: rem2(26px);
+    }
+}
+
+.sec-title-underline {
+    background-color: $Y1;
+    width: rem2(240px);
+    height: rem2(4px);
+    margin-bottom: 2rem;
+
+    @include lg {
+        width: rem2(200px);
+        height: rem2(2px);
+    }
+
+    @include md {
+        width: rem2(180px);
+    }
+
+    @include sm {
+        width: rem2(150px);
+    }
+}
+
+.sec-desc {
+    color: $Gray2;
+    font-size: rem2(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
+
+    @include md {
+        font-size: rem2(18px);
+        line-height: rem2(24px);
+    }
+
+    @include sm {
+        font-size: rem2(16px);
+        line-height: rem2(20px);
+    }
+}
+
+.services-bg {
+    background-image: url('/images/services/services_bg.webp');
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-bottom: rem2(140px);
+
+    .services {
+        padding-top: rem2(180px);
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+
+        .services-title {
+            font-weight: 800;
+            font-size: rem2(40px);
+            line-height: rem2(52px);
+            color: $B2;
+            margin-bottom: rem2(24px);
+        }
+
+        .services-bread {
+            font-weight: 400;
+            font-size: rem2(16px);
+            line-height: rem2(24px);
+            color: $Gray2;
+        }
+    }
+
+    .outsource-your-concerns {
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding-top: rem2(96px);
+
+        .sec-body {
+            .sec-title {
+                font-weight: 700;
+                font-size: rem2(40px);
+                line-height: rem2(52px);
+                text-align: unset;
+                margin-bottom: rem2(24px);
+
+                @include md {
+                    font-size: rem2(32px);
+                    line-height: rem2(42px);
+                }
+
+                @include sm {
+                    text-align: center;
+                    font-size: rem2(26px);
+                    line-height: rem2(36px);
+                }
+            }
+
+            .sec-desc {
+                font-weight: 400;
+                font-size: rem2(20px);
+                line-height: rem2(32px);
+                text-align: unset;
+                color: $Gray1;
+                max-width: rem2(880px);
+
+                @include md {
+                    font-size: rem2(16px);
+                    line-height: rem2(26px);
+                }
+
+                @include sm {
+                    text-align: center;
+                }
+            }
+        }
+    }
+}
+
+.outsourcing {
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 4rem;
+    position: relative;
+
+    .sec-title {
+        color: $B1;
+        margin-bottom: rem2(32px);
+    }
+
+    .sec-desc {
+        max-width: rem2(900px);
+    }
+
+    .sec-content {
+        display: flex;
+        gap: 2rem;
+
+        .steps-bg-1 {
+            z-index: -1;
+            position: absolute;
+            top: 0;
+            left: rem2(-170px);
+            width: rem2(500px);
+            height: rem2(1000px);
+            background-image: url('/images/services/outsourcing/outsourcing_bg_1.svg');
+            background-size: rem2(100px);
+            background-repeat: no-repeat;
+            background-position: top 5rem left;
+
+            @include lg {
+                display: none;
+            }
+        }
+
+        .steps-bg-2 {
+            flex-basis: 100%;
+            max-width: rem2(500px);
+            height: rem2(1000px);
+            top: 0;
+            position: sticky;
+            background-image: url('/images/services/outsourcing/outsourcing_bg_2.webp');
+            background-position: top 2rem right;
+            background-size: contain;
+            background-repeat: no-repeat;
+            margin-right: rem2(-140px);
+
+            @include lg {
+                margin-right: rem2(-60px);
+            }
+
+            @include md {
+                max-width: rem2(420px);
+                height: rem2(890px);
+                flex-basis: 60%;
+            }
+
+            @include sm {
+                display: none;
+            }
+        }
+
+        .steps-container {
+            flex-basis: 100%;
+
+            .step {
+                background-position-y: rem2(5px);
+                background-repeat: no-repeat;
+                margin-bottom: 3rem;
+
+                .step-title {
+                    font-weight: 700;
+                    font-size: rem2(30px);
+                    padding-bottom: 1rem;
+
+                    @include md {
+                        font-size: rem2(24px);
+                    }
+
+                    @include sm {
+                        font-size: rem2(22px);
+                    }
+                }
+
+                .step-desc {
+                    font-weight: 400;
+                    font-size: rem2(18px);
+                    line-height: rem2(28px);
+                    color: $Gray1;
+
+                    @include md {
+                        font-size: rem2(15px);
+                        line-height: rem2(20px);
+                    }
+
+                    @include sm {
+                    }
+
+                    a {
+                        color: $B3;
+                        line-height: 3rem;
+                    }
+                }
+            }
+        }
+
+        .solutions-container {
+            padding-top: 2rem;
+            padding-left: 2rem;
+
+            @include xs {
+                padding-left: unset;
+            }
+
+            ::deep {
+                .tags {
+                    display: flex;
+                    flex-flow: row wrap;
+                    gap: 1rem;
+                    margin-top: rem2(10px);
+
+                    .tag {
+                        font-size: rem2(14px);
+                        color: $Gray2;
+                        padding: rem2(4px) rem2(10px);
+                        background-color: $B6;
+                        border: 1px solid $B5;
+                        border-radius: 2px;
+                        background-repeat: no-repeat;
+                        background-position: center left rem2(10px);
+                    }
+                }
+            }
+        }
+    }
+}

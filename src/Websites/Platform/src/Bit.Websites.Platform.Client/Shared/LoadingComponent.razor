@@ -1,0 +1,98 @@
+﻿<style>
+    .bit-lds-grid div {
+        background-color: @Color;
+    }
+
+    .bit-lds-wrapper {
+        top: 50%;
+        left: 50%;
+        position: absolute;
+        transform: translate(-50%, -50%);
+    }
+
+    .bit-lds-grid {
+        width: 80px;
+        height: 80px;
+        position: relative;
+        display: inline-block;
+    }
+
+        .bit-lds-grid div {
+            width: 16px;
+            height: 16px;
+            position: absolute;
+            border-radius: 50%;
+            animation: bit-lds-grid 1.2s linear infinite;
+        }
+
+            .bit-lds-grid div:nth-child(1) {
+                top: 8px;
+                left: 8px;
+                animation-delay: 0s;
+            }
+
+            .bit-lds-grid div:nth-child(2) {
+                top: 8px;
+                left: 32px;
+                animation-delay: -0.4s;
+            }
+
+            .bit-lds-grid div:nth-child(3) {
+                top: 8px;
+                left: 56px;
+                animation-delay: -0.8s;
+            }
+
+            .bit-lds-grid div:nth-child(4) {
+                top: 32px;
+                left: 8px;
+                animation-delay: -0.4s;
+            }
+
+            .bit-lds-grid div:nth-child(5) {
+                top: 32px;
+                left: 32px;
+                animation-delay: -0.8s;
+            }
+
+            .bit-lds-grid div:nth-child(6) {
+                top: 32px;
+                left: 56px;
+                animation-delay: -1.2s;
+            }
+
+            .bit-lds-grid div:nth-child(7) {
+                top: 56px;
+                left: 8px;
+                animation-delay: -0.8s;
+            }
+
+            .bit-lds-grid div:nth-child(8) {
+                top: 56px;
+                left: 32px;
+                animation-delay: -1.2s;
+            }
+
+            .bit-lds-grid div:nth-child(9) {
+                top: 56px;
+                left: 56px;
+                animation-delay: -1.6s;
+            }
+
+
+    @@keyframes bit-lds-grid {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+</style>
+
+<div class="bit-lds-wrapper">
+    <div class="bit-lds-grid">
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+    </div>
+</div>

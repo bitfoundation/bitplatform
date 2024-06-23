@@ -1,0 +1,364 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "bit platform",
+    "classifications": [
+        "ASP.NET Core",
+        "Blazor",
+        "MAUI"
+    ],
+    "tags": {
+        "language": "C#",
+        "type": "solution"
+    },
+    "identity": "Bit.Boilerplate",
+    "name": "bit Boilerplate",
+    "shortName": "bit-bp",
+    "sourceName": "Boilerplate",
+    "preferNameDirectory": true,
+    "symbols": {
+        //Guid generator for App Id
+        "ApplicationIdGuid": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF256",
+            "parameters": {
+                "defaultFormat": "D" //Guid format 
+            },
+            "onlyIf": [
+                {
+                    "after": "<ApplicationIdGuid>"
+                }
+            ]
+        },
+        "UserSecretsId": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF256",
+            "parameters": {
+                "defaultFormat": "D" //Guid format 
+            },
+            "onlyIf": [
+                {
+                    "after": "<UserSecretsId>"
+                }
+            ]
+        },
+        "SeedDataProductCreatedOn": {
+            "type": "generated",
+            "generator": "now",
+            "replaces": "2022-07-12",
+            "parameters": {
+                "format": "yyyy-MM-dd"
+            }
+        },
+        "api": {
+            "displayName": "Add API to Server project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "If you're not using your custom API backend, Boilerplate offers one pre-configured with ASP.NET Core Identity, EF Core, and more."
+        },
+        "database": {
+            "displayName": "Backend database",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "SqlServer",
+            "choices": [
+                {
+                    "choice": "SqlServer",
+                    "description": "Sql Server"
+                },
+                {
+                    "choice": "Sqlite",
+                    "description": "Sqlite"
+                },
+                {
+                    "choice": "PostgreSQL",
+                    "description": "PostgreSQL"
+                },
+                {
+                    "choice": "Other",
+                    "description": "Other"
+                }
+            ],
+            "description": "Boilerplate's API uses EF Core. You can use SQL Server, SQLite, or any other EF Core provider."
+        },
+        "captcha": {
+            "displayName": "Captcha",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "reCaptcha",
+            "choices": [
+                {
+                    "choice": "reCaptcha",
+                    "description": "Google reCaptcha"
+                },
+                {
+                    "choice": "None",
+                    "description": "None"
+                }
+            ]
+        },
+        "serverUrl": {
+            "displayName": "Server url",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "use-your-server-url-here.com",
+            "description": "The backend server url. You can change its value later if needed."
+        },
+        "normalizedServerUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "serverUrl",
+                "steps": [
+                    {
+                        "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    }
+                ]
+            },
+            "replaces": "use-your-server-url-here.com"
+        },
+        "pipeline": {
+            "displayName": "CI-CD pipeline",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "GitHub",
+            "choices": [
+                {
+                    "choice": "GitHub",
+                    "description": "GitHub actions"
+                },
+                {
+                    "choice": "Azure",
+                    "description": "Azure DevOps pipelines"
+                },
+                {
+                    "choice": "None",
+                    "description": "None"
+                }
+            ]
+        },
+        "sample": {
+            "displayName": "Sample",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "None",
+            "choices": [
+                {
+                    "choice": "Admin",
+                    "description": "Admin Panel"
+                },
+                {
+                    "choice": "Todo",
+                    "description": "Todo app"
+                },
+                {
+                    "choice": "None",
+                    "description": "None"
+                }
+            ]
+        },
+        "offlineDb": {
+            "displayName": "Add Offline db?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
+        },
+        "windows": {
+            "displayName": "Add Windows project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "WPF-based Windows project supporting Windows 7 SP1 and above."
+        },
+        "appInsights": {
+            "displayName": "Add Azure application insights to project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
+        },
+        "appCenter": {
+            "displayName": "Add Visual Studio AppCenter to project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
+        },
+        "nameToLower": {
+            "type": "generated",
+            "generator": "casing",
+            "parameters": {
+                "source": "name",
+                "toLower": true
+            }
+        },
+        "nameToAppId": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "nameToLower",
+                "steps": [
+                    {
+                        "regex": "[^a-z0-9_\\.]",
+                        "replacement": ""
+                    }
+                ]
+            }
+        },
+        "defaultAppId": {
+            "type": "generated",
+            "generator": "join",
+            "parameters": {
+                "symbols": [
+                    {
+                        "type": "const",
+                        "value": "com.companyname."
+                    },
+                    {
+                        "type": "ref",
+                        "value": "nameToAppId"
+                    }
+                ]
+            },
+            "replaces": "com.bitplatform.template"
+        }
+    },
+    "postActions": [],
+    "primaryOutputs": [
+        { "path": "Boilerplate.sln" }
+    ],
+    "sources": [
+        {
+            "modifiers": [
+                {
+                    "copyOnly": [
+                        "global.json",
+                        "**.Web/Pages/Home.razor",
+                        "**/*.svg",
+                        "**/*.png"
+                    ],
+                    "exclude": [
+                        ".vs/**",
+                        "**/[Bb]in/**",
+                        "**/[Oo]bj/**",
+                        ".template.config/**",
+                        "**/*.filelist",
+                        "**/*.user",
+                        "**/*.lock.json",
+                        "**/.git/**",
+                        "**/*.nuspec",
+                        "src/Boilerplate.Server/Data/Migrations/**",
+                        "src/Boilerplate.Server/*.db*"
+                    ]
+                },
+                {
+                    "condition": "(pipeline != GitHub)",
+                    "exclude": [
+                        ".github/**"
+                    ]
+                },
+                {
+                    "condition": "(pipeline != Azure)",
+                    "exclude": [
+                        ".azure-devops/**"
+                    ]
+                },
+                {
+                    "condition": "(sample != Admin)",
+                    "exclude": [
+                        "src/Boilerplate.Shared/Dtos/Categories/**",
+                        "src/Boilerplate.Shared/Dtos/Dashboard/**",
+                        "src/Boilerplate.Shared/Dtos/Products/**",
+                        "src/Boilerplate.Server/Controllers/Categories/**",
+                        "src/Boilerplate.Server/Controllers/Products/**",
+                        "src/Boilerplate.Server/Controllers/Dashboard/**",
+                        "src/Boilerplate.Server/Data/Configurations/Category/**",
+                        "src/Boilerplate.Server/Data/Configurations/Product/**",
+                        "src/Boilerplate.Server/Mappers/CategoriesMapper.cs",
+                        "src/Boilerplate.Server/Mappers/ProductsMapper.cs",
+                        "src/Boilerplate.Server/Models/Categories/**",
+                        "src/Boilerplate.Server/Models/Products/**",
+                        "src/Client/Boilerplate.Client.Core/Controllers/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Controllers/Products/**",
+                        "src/Client/Boilerplate.Client.Core/Controllers/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
+                    ]
+                },
+                {
+                    "condition": "(sample != Todo)",
+                    "exclude": [
+                        "src/Boilerplate.Shared/Dtos/Todo/**",
+                        "src/Boilerplate.Server/Controllers/Todo/**",
+                        "src/Boilerplate.Server/Mappers/TodoMapper.cs",
+                        "src/Boilerplate.Server/Models/Todo/**",
+                        "src/Client/Boilerplate.Client.Core/Controllers/Todo/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"
+                    ]
+                },
+                {
+                    "condition": "(offlineDb != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Data/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Offline/**"
+                    ]
+                },
+                {
+                    "condition": "(windows != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Windows/**"
+                    ]
+                },
+                {
+                    "condition": "(api != true)",
+                    "exclude": [
+                        "src/Boilerplate.Server/.config/**",
+                        "src/Boilerplate.Server/Components/*Template.razor",
+                        "src/Boilerplate.Server/Controllers/**",
+                        "src/Boilerplate.Server/Data/**",
+                        "src/Boilerplate.Server/Mappers/**",
+                        "src/Boilerplate.Server/Models/**",
+                        "src/Boilerplate.Server/Resources/**",
+                        "src/Boilerplate.Server/Services/ODataOperationFilter.cs",
+                        "src/Boilerplate.Server/Services/AppIdentityErrorDescriber.cs",
+                        "src/Boilerplate.Server/Services/AppSecureJwtDataFormat.cs",
+                        "src/Boilerplate.Server/Services/ServerJsonContext.cs",
+                        "src/Boilerplate.Server/Services/AppUserConfirmation.cs",
+                        "src/Boilerplate.Server/Services/SmsService.cs",
+                        "src/Boilerplate.Server/Services/EmailService.cs",
+                        "src/Boilerplate.Server/Extensions/SignInManagerExtensions.cs",
+                        "src/Boilerplate.Server/Extensions/UserManagerExtensions.cs",
+                        "src/Boilerplate.Server/wwwroot/swagger/**",
+                        "src/Boilerplate.Server/AppSettings.cs",
+                        "src/Boilerplate.Server/DataProtectionCertificate.pfx"
+                    ]
+                },
+                {
+                    "condition": "(api != true || captcha != reCaptcha)",
+                    "exclude": [
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaVerificationResponse.cs"
+                    ]
+                },
+                {
+                    "condition": "(captcha != reCaptcha)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
+                    ]
+                },
+                {
+                    "condition": "(appInsights != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Maui/Services/MauiTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Windows/Services/WindowsTelemetryInitializer.cs"
+                    ]
+                }
+            ]
+        }
+    ]
+}

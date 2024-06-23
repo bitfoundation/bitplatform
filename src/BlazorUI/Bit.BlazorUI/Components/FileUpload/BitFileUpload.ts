@@ -1,146 +1,163 @@
-﻿interface IFiles { name: string; size: number, type: string }
+﻿namespace BitBlazorUI {
+    export class FileUpload {
+        private static _fileUploaders: BitFileUploader[] = [];
 
-class BitFileUpload {
-    static bitFileUploaders: BitFileUploader[];
-    static headers: Record<string, string>;
+        public static reset(
+            id: string,
+            dotnetReference: DotNetObject,
+            inputElement: HTMLInputElement,
+            uploadEndpointUrl: string,
+            headers: Record<string, string>) {
 
-    static setupDropzone(dropZoneElement: HTMLElement, inputFile: HTMLInputElement) {
+            FileUpload._fileUploaders = FileUpload._fileUploaders.filter(u => u.id !== id);
 
-        function onDragHover(e: DragEvent) {
-            e.preventDefault();
+            const files = Array.from(inputElement.files!).map((file, index) => ({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                fileId: Utils.uuidv4(),
+                index
+            }));
+
+            files.forEach((f, index) => {
+                const h = { ...headers, ...{ 'BIT_FILE_ID': f.fileId } };
+                const uploader = new BitFileUploader(id, dotnetReference, inputElement, uploadEndpointUrl, h, index);
+                FileUpload._fileUploaders.push(uploader);
+            });
+
+            return files;
         }
 
-        function onDragLeave(e: DragEvent) {
-            e.preventDefault();
-        }
+        public static upload(id: string, from: number, to: number, index: number, uploadUrl: string, headers: Record<string, string> = {}): void {
+            const uploaders = FileUpload._fileUploaders.filter(u => u.id === id);
 
-        function onDrop(e: DragEvent) {
-            e.preventDefault();
-            inputFile.files = e.dataTransfer!.files;
-            const event = new Event('change', { bubbles: true });
-            inputFile.dispatchEvent(event);
-        }
-
-        function onPaste(e: ClipboardEvent) {
-            inputFile.files = e.clipboardData!.files;
-            const event = new Event('change', { bubbles: true });
-            inputFile.dispatchEvent(event);
-        }
-
-        dropZoneElement.addEventListener("dragenter", onDragHover);
-        dropZoneElement.addEventListener("dragover", onDragHover);
-        dropZoneElement.addEventListener("dragleave", onDragLeave);
-        dropZoneElement.addEventListener("drop", onDrop);
-        dropZoneElement.addEventListener('paste', onPaste);
-
-        return {
-            dispose: () => {
-                dropZoneElement.removeEventListener('dragenter', onDragHover);
-                dropZoneElement.removeEventListener('dragover', onDragHover);
-                dropZoneElement.removeEventListener('dragleave', onDragLeave);
-                dropZoneElement.removeEventListener("drop", onDrop);
-                dropZoneElement.removeEventListener('paste', onPaste);
+            if (index === -1) {
+                uploaders.forEach(u => u.upload(from, to, uploadUrl, headers));
+            } else {
+                const uploader = uploaders.filter(u => u.index === index)[0];
+                uploader.upload(from, to, uploadUrl, headers);
             }
         }
 
-    }
+        public static pause(id: string, index: number): void {
+            const uploaders = FileUpload._fileUploaders.filter(u => u.id === id);
 
-    static init(inputElement: HTMLInputElement,
-        dotnetReference: DotNetObject,
-        uploadEndpointUrl: string,
-        headers: Record<string, string>): IFiles[] {
-
-        let filesArray: IFiles[] = Array.from<IFiles>(inputElement.files!).map(file => ({
-            name: file.name,
-            size: file.size,
-            type: file.type
-        }));
-
-        this.bitFileUploaders = [];
-        this.headers = headers;
-
-        filesArray.forEach((_, index) => {
-            const headers = { ...this.headers, ...{ 'BIT_FILE_ID': Bit.uuidv4() } };
-            let uploader: BitFileUploader = new BitFileUploader(dotnetReference, uploadEndpointUrl, inputElement, index, headers);
-            this.bitFileUploaders.push(uploader);
-        });
-
-        return filesArray;
-    }
-
-    static upload(from: number, to: number, index: number): void {
-        if (index === -1) {
-            this.bitFileUploaders.forEach(bitFileUpload => {
-                bitFileUpload.upload(from, to);
-            });
-        } else {
-            const uploader = this.bitFileUploaders.filter(f => f.index === index)[0];
-            uploader.upload(from, to);
-        }
-    }
-
-    static pause(index: number): void {
-        if (index === -1) {
-            this.bitFileUploaders.forEach(uploader => {
+            if (index === -1) {
+                uploaders.forEach(u => u.pause());
+            } else {
+                const uploader = uploaders.filter(u => u.index === index)[0];
                 uploader.pause();
-            });
-        } else {
-            const uploader = this.bitFileUploaders.filter(u => u.index === index)[0];
-            uploader.pause();
+            }
+        }
+
+        public static setupDragDrop(dropZoneElement: HTMLElement, inputFile: HTMLInputElement) {
+
+            function onDragHover(e: DragEvent) {
+                e.preventDefault();
+            }
+
+            function onDragLeave(e: DragEvent) {
+                e.preventDefault();
+            }
+
+            function onDrop(e: DragEvent) {
+                e.preventDefault();
+                inputFile.files = e.dataTransfer!.files;
+                const event = new Event('change', { bubbles: true });
+                inputFile.dispatchEvent(event);
+            }
+
+            function onPaste(e: ClipboardEvent) {
+                inputFile.files = e.clipboardData!.files;
+                const event = new Event('change', { bubbles: true });
+                inputFile.dispatchEvent(event);
+            }
+
+            dropZoneElement.addEventListener("dragenter", onDragHover);
+            dropZoneElement.addEventListener("dragover", onDragHover);
+            dropZoneElement.addEventListener("dragleave", onDragLeave);
+            dropZoneElement.addEventListener("drop", onDrop);
+            dropZoneElement.addEventListener('paste', onPaste);
+
+            return {
+                dispose: () => {
+                    dropZoneElement.removeEventListener('dragenter', onDragHover);
+                    dropZoneElement.removeEventListener('dragover', onDragHover);
+                    dropZoneElement.removeEventListener('dragleave', onDragLeave);
+                    dropZoneElement.removeEventListener("drop", onDrop);
+                    dropZoneElement.removeEventListener('paste', onPaste);
+                }
+            }
+
+        }
+
+        public static browse(inputFile: HTMLInputElement) {
+            inputFile.click();
+        }
+
+        public static dispose(id: string) {
+            FileUpload._fileUploaders = FileUpload._fileUploaders.filter(u => u.id !== id);
         }
     }
-}
 
-class BitFileUploader {
-    dotnetReference: DotNetObject;
-    uploadEndpointUrl: string;
-    inputElement: HTMLInputElement;
-    index: number;
-    headers: Record<string, string>;
-    xhr: XMLHttpRequest = new XMLHttpRequest();
+    class BitFileUploader {
+        id: string;
+        dotnetReference: DotNetObject;
+        inputElement: HTMLInputElement;
+        uploadUrl: string;
+        headers: Record<string, string>;
+        index: number;
 
-    constructor(dotnetReference: DotNetObject, uploadEndpointUrl: string, inputElement: HTMLInputElement, index: number, headers: Record<string, string>) {
-        this.dotnetReference = dotnetReference;
-        this.uploadEndpointUrl = uploadEndpointUrl;
-        this.inputElement = inputElement;
-        this.index = index;
-        this.headers = headers;
+        private xhr: XMLHttpRequest = new XMLHttpRequest();
 
-        if (index < 0) return;
+        constructor(id: string, dotnetReference: DotNetObject, inputElement: HTMLInputElement, uploadEndpointUrl: string, headers: Record<string, string>, index: number) {
+            this.id = id;
+            this.dotnetReference = dotnetReference;
+            this.inputElement = inputElement;
+            this.uploadUrl = uploadEndpointUrl;
+            this.headers = headers;
+            this.index = index;
 
-        this.xhr.upload.onprogress = function (e: ProgressEvent) {
-            if (e.lengthComputable) {
-                dotnetReference.invokeMethodAsync("HandleUploadProgress", index, e.loaded);
-            }
-        };
+            if (index < 0) return;
 
-        const me = this;
-        this.xhr.onreadystatechange = function (event) {
-            if (me.xhr.readyState === 4) {
-                dotnetReference.invokeMethodAsync("HandleFileUpload", index, me.xhr.status, me.xhr.responseText);
-            }
-        };
-    }
+            this.xhr.upload.onprogress = function (e: ProgressEvent) {
+                if (e.lengthComputable) {
+                    dotnetReference.invokeMethodAsync("HandleChunkUploadProgress", index, e.loaded);
+                }
+            };
 
-    upload(from: number, to: number): void {
-        const files = this.inputElement.files;
-        if (files === null) return;
+            const me = this;
+            this.xhr.onreadystatechange = function (event) {
+                if (me.xhr.readyState === 4) {
+                    dotnetReference.invokeMethodAsync("HandleChunkUpload", index, me.xhr.status, me.xhr.responseText);
+                }
+            };
+        }
 
-        const file = files[this.index];
-        const data: FormData = new FormData();
-        const chunk = file.slice(from, to);
-        data.append('file', chunk, file.name);
+        upload(from: number, to: number, uploadUrl: string, headers: Record<string, string>): void {
+            const files = this.inputElement.files;
+            if (files === null) return;
 
-        this.xhr.open('POST', this.uploadEndpointUrl, true);
+            const file = files[this.index];
+            const data: FormData = new FormData();
+            const chunk = file.slice(from, to);
+            data.append('file', chunk, file.name);
 
-        Object.keys(this.headers).forEach(h => {
-            this.xhr.setRequestHeader(h, this.headers[h]);
-        });
+            this.xhr.open('POST', uploadUrl ? uploadUrl : this.uploadUrl, true);
 
-        this.xhr.send(data);
-    }
+            Object.keys(this.headers).forEach(h => {
+                this.xhr.setRequestHeader(h, this.headers[h]);
+            });
 
-    pause(): void {
-        this.xhr.abort();
+            Object.keys(headers).forEach(h => {
+                this.xhr.setRequestHeader(h, headers[h]);
+            });
+
+            this.xhr.send(data);
+        }
+
+        pause(): void {
+            this.xhr.abort();
+        }
     }
 }

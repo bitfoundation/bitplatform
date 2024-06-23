@@ -17,34 +17,34 @@ public class BitColorPickerTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitColorPickerMustRespectUiChange(bool visibility)
+    public void BitColorPickerMustRespectUiChange(bool show)
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.ShowAlphaSlider, visibility);
-            parameters.Add(p => p.ShowPreview, visibility);
+            parameters.Add(p => p.ShowPreview, show);
+            parameters.Add(p => p.ShowAlphaSlider, show);
             parameters.Add(p => p.Color, "rgb(255,255,255)");
         });
 
-        if (visibility)
+        if (show)
         {
-            var slider = com.Find(".alpha-slider");
+            var slider = com.Find(".bit-clp-asd");
             Assert.IsNotNull(slider);
 
-            var previewBox = com.Find(".preview-box");
+            var previewBox = com.Find(".bit-clp-pre");
             Assert.IsNotNull(previewBox);
         }
         else
         {
-            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".alpha-slider"));
-            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".preview-box"));
+            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".bit-clp-asd"));
+            Assert.ThrowsException<ElementNotFoundException>(() => com.Find(".bit-clp-pre"));
         }
     }
 
     [DataTestMethod,
-        DataRow("#fc5603", "#fc5603", "rgb(252,86,3)", 1),
-        DataRow("rgba(3,98,252,0.3)", "#0362fc", "rgb(3,98,252)", 0.3),
-        DataRow("rgb(252,3,240)", "#fc03f0", "rgb(252,3,240)", 1)
+        DataRow("#FC5603", "#FC5603", "rgb(252,86,3)", 1),
+        DataRow("rgba(3,98,252,0.3)", "#0362FC", "rgb(3,98,252)", 0.3),
+        DataRow("rgb(252,3,240)", "#FC03F0", "rgb(252,3,240)", 1)
     ]
     public void BitColorPickerMustRespectValueChange(string color, string hex, string rgb, double alpha)
     {

@@ -26,13 +26,13 @@ public class DateTimeOffsetInsteadOfDateTimeCodeFixProvider : CodeFixProvider
 
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-        Diagnostic diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics.First();
 
-        SyntaxNode node = root.FindNode(context.Span);
+        var node = root.FindNode(context.Span);
 
-        if (node is IdentifierNameSyntax == false)
+        if (node is IdentifierNameSyntax is false)
             return;
 
         context.RegisterCodeFix(CodeAction.Create(title: Title, createChangedDocument: c => ReplaceDateTimeWithDateTimeOffsetAsync(context.Document, node, c), equivalenceKey: Title), diagnostic);
@@ -40,15 +40,15 @@ public class DateTimeOffsetInsteadOfDateTimeCodeFixProvider : CodeFixProvider
 
     private async Task<Document> ReplaceDateTimeWithDateTimeOffsetAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
     {
-        SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-        IdentifierNameSyntax convertedNode = (IdentifierNameSyntax)node;
+        var convertedNode = (IdentifierNameSyntax)node;
 
-        IdentifierNameSyntax? newNode = convertedNode?.WithIdentifier(SyntaxFactory.ParseToken("DateTimeOffset")).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
+        var newNode = convertedNode?.WithIdentifier(SyntaxFactory.ParseToken("DateTimeOffset")).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
 
-        SyntaxNode newRoot = root.ReplaceNode(node, newNode);
+        var newRoot = root.ReplaceNode(node, newNode);
 
-        Document newDocument = document.WithSyntaxRoot(newRoot);
+        var newDocument = document.WithSyntaxRoot(newRoot);
 
         return newDocument;
     }

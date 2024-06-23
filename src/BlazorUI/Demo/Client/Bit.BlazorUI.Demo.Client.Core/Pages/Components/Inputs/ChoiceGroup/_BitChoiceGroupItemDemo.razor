@@ -1,0 +1,220 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ExamplePreview>
+        <BitChoiceGroup Label="Basic Items" Items="basicItems" DefaultValue="basicItems[1].Value" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitChoiceGroup Label="Disabled ChoiceGroup"
+                            IsEnabled="false"
+                            Items="basicItems"
+                            DefaultValue="@("A")" />
+
+            <BitChoiceGroup Label="ChoiceGroup with Disabled Item"
+                            Items="disabledItems"
+                            DefaultValue="@("A")" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitChoiceGroup Label="Image Items" Items="imageItems" DefaultValue="@("Bar")" />
+            <BitChoiceGroup Label="Icon Items" Items="iconItems" DefaultValue="@("Day")" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Horizontal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div class="example-content column">
+            <BitChoiceGroup Label="Basic" Items="basicItems" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal" />
+            <BitChoiceGroup Label="Disabled" Items="basicItems" IsEnabled="false" DefaultValue="@("A")" LayoutFlow="BitLayoutFlow.Horizontal" />
+            <BitChoiceGroup Label="Image" Items="imageItems" DefaultValue="@("Bar")" LayoutFlow="BitLayoutFlow.Horizontal" />
+            <BitChoiceGroup Label="Icon" Items="iconItems" DefaultValue="@("Day")" LayoutFlow="BitLayoutFlow.Horizontal" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Styled ChoiceGroup"
+                            Items="basicItems"
+                            DefaultValue="basicItems[1].Value"
+                            Style="width:200px;height:200px;background-color:#888;padding:1rem;border-radius:1rem;" />
+
+            <BitChoiceGroup Label="Classed ChoiceGroup"
+                            Items="basicItems"
+                            DefaultValue="basicItems[1].Value"
+                            Class="custom-class" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Item's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Items="itemStyleClassItems"
+                            DefaultValue="itemStyleClassItems[1].Value" />
+        </div>
+        <br /><br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Styles"
+                            Items="basicItems"
+                            DefaultValue="basicItems[1].Value"
+                            Styles="@(new() { Label = "color:tomato",
+                                              ItemIcon = "color:red" ,
+                                              ItemText = "color:yellowgreen;font-size:12px;font-weight:bold" })" />
+
+            <BitChoiceGroup Label="Classes"
+                            Items="basicItems"
+                            DefaultValue="basicItems[1].Value"
+                            Classes="@(new() { Label = "custom-label" , ItemText = "custom-text" })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="LabelTemplate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitChoiceGroup Items="basicItems" DefaultValue="@("A")">
+                <LabelTemplate>
+                    <div class="custom-label">
+                        Custom label <BitIcon IconName="@BitIconName.Filter" />
+                    </div>
+                </LabelTemplate>
+            </BitChoiceGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div class="example-content">
+            <div>
+                <BitChoiceGroup Label="One-way" Items="basicItems" Value="@oneWayValue" />
+                <br />
+                <BitTextField @bind-Value="oneWayValue" />
+            </div>
+
+            <div>
+                <BitChoiceGroup Label="Two-way" Items="basicItems" @bind-Value="twoWayValue" />
+                <br />
+                <BitTextField @bind-Value="twoWayValue" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div class="example-content">
+            <BitChoiceGroup Label="ItemPrefixTemplate" Items="basicItems" DefaultValue="@string.Empty">
+                <ItemPrefixTemplate Context="item">
+                    @(item.Index + 1).&nbsp;
+                </ItemPrefixTemplate>
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="ItemLabelTemplate" Items="itemTemplateItems" @bind-Value="itemLabelTemplateValue">
+                <ItemLabelTemplate Context="item">
+                    <div class="custom-container @(itemLabelTemplateValue == item.Value ? "selected" : string.Empty)">
+                        <BitIcon IconName="@item.IconName" />
+                        <span>@item.Text</span>
+                    </div>
+                </ItemLabelTemplate>
+            </BitChoiceGroup>
+        </div>
+        <br /><br /><br />
+        <div class="example-content">
+            <BitChoiceGroup Label="ItemTemplate" Items="itemTemplateItems" @bind-Value="itemTemplateValue">
+                <ItemTemplate Context="item">
+                    <div class="custom-container @(itemTemplateValue == item.Value ? "selected" : string.Empty)">
+                        <div class="custom-circle"></div>
+                        <span>@item.Text</span>
+                    </div>
+                </ItemTemplate>
+            </BitChoiceGroup>
+
+            <BitChoiceGroup Label="Item's Template"
+                            Items="itemTemplateItems2"
+                            @bind-Value="itemTemplateValue2" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <div style="direction:rtl" class="example-content">
+            <BitChoiceGroup Label="ساده" Items="rtlItems" DefaultValue="@("A")" Dir="BitDir.Rtl" />
+            <BitChoiceGroup Label="غیرفعال" Items="rtlItems" IsEnabled="false" DefaultValue="@("A")" Dir="BitDir.Rtl" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ExamplePreview>
+        @if (string.IsNullOrEmpty(successMessage))
+        {
+            <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+                <DataAnnotationsValidator />
+
+                <BitChoiceGroup Items="basicItems" @bind-Value="validationModel.Value" />
+                <ValidationMessage For="@(() => validationModel.Value)" />
+
+                <br />
+
+                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+            </EditForm>
+        }
+        else
+        {
+            <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
+        }
+        <br />
+        <BitButton ButtonStyle="BitButtonStyle.Standard" OnClick="() => { validationModel = new(); successMessage=string.Empty; }">Reset</BitButton>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+@code {
+    private List<BitChoiceGroupItem<string>> itemTemplateItems2 = default!;
+
+    protected override void OnInitialized()
+    {
+        itemTemplateItems2 = new()
+        {
+            new()
+            {
+                Text = "Day",
+                Value = "Day",
+                Template = (item => @<div class="custom-container @(itemTemplateValue2 == item.Value ? "selected" : "")">
+        <div class="custom-circle" />
+        <span style="color:red">@item.Text</span>
+    </div>)
+            },
+            new()
+            {
+                Text = "Week",
+                Value = "Week",
+                Template = (item => @<div class="custom-container @(itemTemplateValue2 == item.Value ? "selected" : "")">
+        <div class="custom-circle" />
+        <span style="color:green">@item.Text</span>
+    </div>)
+            },
+            new()
+            {
+                Text = "Month",
+                Value = "Month",
+                Template = (item => @<div class="custom-container @(itemTemplateValue2 == item.Value ? "selected" : "")">
+        <div class="custom-circle" />
+        <span style="color:blue">@item.Text</span>
+    </div>)
+            }
+        };
+    }
+}

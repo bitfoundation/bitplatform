@@ -3,7 +3,11 @@
 #if DEBUG
 if (OperatingSystem.IsWindows())
 {
-    builder.WebHost.UseUrls("https://localhost:5001", "http://localhost:5000", "https://*:5001", "http://*:5000");
+    builder.WebHost.UseUrls("https://localhost:5021", "http://localhost:5020", "https://*:5021", "http://*:5020");
+}
+else
+{
+    builder.WebHost.UseUrls("https://localhost:5021", "http://localhost:5020");
 }
 #endif
 

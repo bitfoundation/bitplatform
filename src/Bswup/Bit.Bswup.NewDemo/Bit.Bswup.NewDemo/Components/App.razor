@@ -1,0 +1,38 @@
+﻿@code {
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+}
+
+@{
+    var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
+    var renderMode = new InteractiveWebAssemblyRenderMode(!noPrerender);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="Bit.Bswup.NewDemo.styles.css" />
+    <HeadOutlet @rendermode="@renderMode" />
+</head>
+
+<body>
+    <h1>111</h1>
+    <Routes @rendermode="@renderMode" />
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.js"
+            scope="/"
+            log="none"
+            sw="service-worker.js"
+            handler="bitBswupHandler"
+            blazorScript="_framework/blazor.web.js"></script>
+
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
+    <DemoBswupProgressBar />
+</body>
+
+</html>

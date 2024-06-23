@@ -13,12 +13,13 @@ public class ElementClassBuilder : ElementAttributeBuilder
 public abstract class ElementAttributeBuilder
 {
     private bool _dirty = true;
-    private string _value = string.Empty;
+    private string? _value;
     private List<Func<string?>> _registrars = new();
+    private List<Func<Action<string?>, string?>> _actionedRegistrars = new();
 
     protected abstract char Separator { get; }
 
-    public string Value
+    public string? Value
     {
         get
         {
@@ -36,6 +37,12 @@ public abstract class ElementAttributeBuilder
         return this;
     }
 
+    public ElementAttributeBuilder Register(Func<Action<string?>, string?> actionedRegistrar)
+    {
+        _actionedRegistrars.Add(actionedRegistrar);
+        return this;
+    }
+
     public void Reset()
     {
         _dirty = true;
@@ -43,7 +50,14 @@ public abstract class ElementAttributeBuilder
 
     private void Build()
     {
-        _value = string.Join(Separator, _registrars.Select(g => g()).Where(s => s.HasValue()));
+        var values = new List<string?>();
+
+        var values1 = _registrars.Select(r => r());
+        var values2 = _actionedRegistrars.Select(ar => ar(values.Add)).ToArray();
+
+        var value = string.Join(Separator, values.Concat(values1).Concat(values2).Where(s => s.HasValue()));
+
+        _value = value.HasValue() ? value : null;
         _dirty = false;
     }
 }

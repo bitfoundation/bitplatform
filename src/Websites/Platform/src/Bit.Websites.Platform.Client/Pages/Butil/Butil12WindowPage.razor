@@ -1,0 +1,350 @@
+﻿@page "/butil/window"
+@inherits AppComponentBase
+@inject Bit.Butil.Window window
+
+<PageOutlet Url="butil/window"
+            Title="Window - Butil"
+            Description="Window class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Window</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Window class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser window features you need to inject the Bit.Butil.Window class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Window window
+
+@@code {
+    await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
+    await window.Alert("Alert from C#");
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            <b>AddBeforeUnload</b>, <b>RemoveBeforeUnload</b>: <br />
+            The beforeunload event is fired when the current window,
+            contained document, and associated resources are about to be unloaded. The main use case for this event is to
+            trigger a browser-generated confirmation dialog that asks users to confirm if they really want to leave the page
+            when they try to close or reload it, or navigate somewhere else. This is intended to help prevent loss of unsaved data
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>AddEventListener</b>, <b>RemoveEventListener</b>: <br />
+            Sets up a function that will be called whenever the specified event is delivered to the window
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetInnerHeight</b>: <br />
+            Gets the height of the content area of the browser window in px including, if rendered, the horizontal scrollbar
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/innerHeight" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getInnerHeightExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick=GetInnerHeight>GetInnerHeight</BitButton>
+                        <br />
+                        <br />
+                        <div>InnerHeight is: @innerHeight</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetInnerWidth</b>: <br />
+            Gets the width of the content area of the browser window in px including, if rendered, the vertical scrollbar
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getInnerWidthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick=GetInnerWidth>GetInnerWidth</BitButton>
+                        <br />
+                        <br />
+                        <div>InnerWidth is: @innerWidth</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>IsSecureContext</b>: <br />
+            Returns a boolean indicating whether the current context is secure (true) or not (false)
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/isSecureContext" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetLocationBar</b>: <br />
+            Returns the locationbar object. For privacy and interoperability reasons, the value of the visible property is now false if this Window is a popup, and true otherwise
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/locationbar" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>SetName</b>, <b>GetName</b>: <br />
+            Gets/Sets the name of the window's browsing context
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/name" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetOrigin</b>: <br />
+            Returns the global object's origin, serialized as a string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/origin" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getOriginExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick=GetOrigin>GetOrigin</BitButton>
+                        <br />
+                        <br />
+                        <div>Origin is: @origin</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetOuterHeight</b>: <br />
+            Gets the height of the outside of the browser window in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/outerHeight" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getOuterHeightExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick=GetOuterHeight>GetOuterHeight</BitButton>
+                        <br />
+                        <br />
+                        <div>OuterHeight is: @outerHeight</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetOuterWidth</b>: <br />
+            Gets the width of the outside of the browser window in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/outerWidth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getOuterWidthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick=GetOuterWidth>GetOuterWidth</BitButton>
+                        <br />
+                        <br />
+                        <div>OuterWidth is: @outerWidth</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetScreenX</b>: <br />
+            Returns the horizontal distance in px from the left border of the user's browser viewport to the left side of the screen
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/screenX" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetScreenY</b>: <br />
+            Returns the vertical distance in px from the top border of the user's browser viewport to the top side of the screen
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/screenY" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetScrollX</b>: <br />
+            Returns the number of pixels that the document has already been scrolled horizontally
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollX" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetScrollY</b>: <br />
+            Returns the number of pixels that the document has already been scrolled vertically
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollY" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Btoa</b>: <br />
+            Creates a base-64 encoded ASCII string from a string of binary data
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/btoa" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @btoaExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="btoaValue" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick=EncodeData>EncodeData</BitButton>
+                        <br />
+                        <br />
+                        <div>Encoded data is: @btoaText</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Atob</b>: <br />
+            Decodes a string of data which has been encoded using base-64 encoding
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/atob" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @atobExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="atobValue" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick=DecodeData>DecodeData</BitButton>
+                        <br />
+                        <br />
+                        <div>Decoded text is: @atobText</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Alert</b>: <br />
+            Displays an alert dialog
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/alert" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @alertExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@(() => window.Alert("Alert from C#"))">ShowAlert</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Blur</b>: <br />
+            Sets focus away from the window
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/blur" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Close</b>: <br />
+            Closes the current window
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/close" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Confirm</b>: <br />
+            Displays a dialog with a message that the user needs to respond to
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @confirmExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@(() => window.Confirm("Confirm from C#"))">ShowConfirm</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Find</b>: <br />
+            Searches for a given string in a window
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/find" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Focus</b>: <br />
+            Sets focus on the current window
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/focus" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>GetSelection</b>: <br />
+            Returns the selection text representing the selected item(s)
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>MatchMedia</b>: <br />
+            Returns a MediaQueryList object representing the specified media query string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Open</b>: <br />
+            Opens a new window
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Print</b>: <br />
+            Opens the Print Dialog to print the current document
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/print" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Prompt</b>: <br />
+            Returns the text entered by the user in a prompt dialog
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/prompt" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Scroll</b>: <br />
+            Scrolls the window to a particular place in the document
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scroll" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>ScrollBy</b>: <br />
+            Scrolls the document in the window by the given amount
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollBy" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>Stop</b>: <br />
+            This method stops window loading
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/stop" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Element" PrevUrl="/butil/element" Next="Document" NextUrl="/butil/document" />

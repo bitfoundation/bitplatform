@@ -1,0 +1,187 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.page-container {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
+}
+
+.search-box-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: rem2(8px) rem2(14px) rem2(24px);
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+}
+
+.todo-content {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    padding-top: 1rem;
+    position: relative;
+    max-width: rem2(608px);
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.main-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: rem2(28px);
+    line-height: rem2(36px);
+    margin-bottom: rem2(20px);
+}
+
+.add-todo-container {
+    width: 100%;
+    display: flex;
+    gap: rem2(16px);
+    align-items: center;
+    flex-flow: row nowrap;
+    margin-bottom: rem2(24px);
+    justify-content: flex-start;
+}
+
+.todo-list-container {
+    width: 100%;
+}
+
+.filter-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+}
+
+.sort-drp-container {
+    @media all and (max-width: #{rem2(430px)}) {
+        position: absolute;
+        inset-inline-end: 0;
+        inset-block-start: rem2(25px);
+    }
+}
+
+.todo-list--empty-state {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
+}
+
+.todo-list {
+    width: 100%;
+    display: flex;
+    height: rem2(322px);
+    align-items: center;
+    margin-top: rem2(4px);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+}
+
+.todo-item {
+    width: 100%;
+    display: flex;
+    padding: rem2(16px);
+    align-items: center;
+    flex-flow: row nowrap;
+    min-height: rem2(80px);
+    min-width: fit-content;
+    justify-content: space-between;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+    &:nth-last-child(-n + 2) {
+        border-bottom: none;
+    }
+
+    &.edit-mode {
+        gap: rem2(16px);
+
+        @media all and (max-width: #{rem2(430px)}) {
+            flex-flow: column;
+
+            ::deep .todo-input {
+                width: 100%;
+            }
+        }
+    }
+}
+
+.todo-info {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-flow: column nowrap;
+
+    &.done ::deep .bit-chb-txt {
+        text-decoration: line-through;
+    }
+}
+
+.todo-item-date {
+    white-space: nowrap;
+    font-size: rem2(11px);
+    line-height: rem2(20px);
+    margin-block-start: rem2(4px);
+    margin-inline-start: rem2(28px);
+    color: $bit-color-foreground-secondary;
+}
+
+.todo-btn-group {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+}
+
+.todo-list-spinner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::deep {
+    .add-todo-input {
+        flex-grow: 1;
+    }
+
+    .add-todo-button {
+        line-height: 1;
+        min-width: rem2(70px);
+        min-height: rem2(32px);
+    }
+
+    .sort-todo-drp {
+        width: rem2(136px);
+        height: rem2(32px);
+
+        .sort-todo-icn {
+            color: $bit-color-primary-main;
+        }
+
+        .bit-drp-iwp .bit-drp-rsp-lbl-ctn {
+            margin-top: calc(var(--bit-status-bar-height) - rem2(24px));
+
+            @supports (-webkit-touch-callout: none) {
+                margin-top: calc(env(safe-area-inset-top) - rem2(24px));
+            }
+        }
+    }
+
+    .todo-input {
+        flex-grow: 1;
+    }
+}

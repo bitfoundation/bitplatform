@@ -1,0 +1,29 @@
+﻿@page "/components/timeline"
+
+
+<PageOutlet Url="components/timeline"
+            Title="Timeline"
+            Description="Timeline component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="Timeline"
+                   ComponentDescription="The Timeline component organizes and displays events or data chronologically in a linear fashion, often featuring points or segments representing individual items with associated details or actions."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums"
+                   Notes="The BitTimeline is a Multi-API component which can accept the list of Items in 3 different ways: BitTimelineItem class, a custom Generic class, and BitTimelineOption component.">
+        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivotItem HeaderText="Item">
+                <_BitTimelineItemDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Custom">
+                <_BitTimelineCustomDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Option">
+                <_BitTimelineOptionDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </ComponentDemo>
+</div>

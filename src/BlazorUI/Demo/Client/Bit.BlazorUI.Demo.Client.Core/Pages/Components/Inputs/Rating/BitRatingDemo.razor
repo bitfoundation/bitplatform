@@ -1,0 +1,167 @@
+﻿@page "/components/rating"
+
+<PageOutlet Url="components/rating"
+            Title="Rating"
+            Description="rating component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Rating"
+               ComponentDescription="Ratings show people’s opinions of a product, helping others make more informed purchasing decisions. People can also rate products they’ve purchased."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Basic:</div>
+                <BitRating />
+
+                <br />
+
+                <div>Disabled:</div>
+                <BitRating IsEnabled="false" DefaultValue="2" />
+
+                <br />
+
+                <div>ReadOnly:</div>
+                <BitRating IsReadOnly="true" DefaultValue="3.5" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <div style="display:flex;align-items:center">Visible: [ <BitRating Visibility="BitVisibility.Visible" /> ]</div>
+                <div style="display:flex;align-items:center">Hidden: [ <BitRating Visibility="BitVisibility.Hidden" /> ]</div>
+                <div style="display:flex;align-items:center">Collapsed: [ <BitRating Visibility="BitVisibility.Collapsed" /> ]</div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Component's Style & Class:</div>
+                <BitRating Style="background-color: #888; border-radius: 1rem; margin: 1rem 0" />
+                <BitRating Class="custom-class" />
+
+                <br /><br />
+
+                <div>Styles & Classes:</div>
+                <BitRating Styles="@(new() { IconContainer = "background-color: tomato; border-radius: 0.5rem",
+                                             Button = "padding: 0.5rem; background-color: goldenrod" })" />
+                <BitRating Classes="@(new() { SelectedIcon = "custom-selected",
+                                              UnselectedIcon = "custom-unselected" })" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Max value" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Max is 6</div>
+                <BitRating Max="6" />
+
+                <br />
+
+                <div style="width: 200px;">
+                    <div>Max is 100</div>
+                    <BitRating Max="100" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Icons" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Heart:</div>
+                <BitRating SelectedIconName="@BitIconName.HeartFill" UnselectedIconName="@BitIconName.Heart" />
+
+                <br />
+
+                <div>Checkbox:</div>
+                <BitRating SelectedIconName="@BitIconName.CheckboxCompositeReversed" UnselectedIconName="@BitIconName.Checkbox" />
+
+                <br />
+
+                <div>Like:</div>
+                <BitRating SelectedIconName="@BitIconName.LikeSolid" UnselectedIconName="@BitIconName.Dislike" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Small:</div>
+                <BitRating Size="BitRatingSize.Small" />
+
+                <br />
+
+                <div>Medium:</div>
+                <BitRating Size="BitRatingSize.Medium" />
+
+                <br />
+
+                <div>Large:</div>
+                <BitRating Size="BitRatingSize.Large" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>One-way:</div>
+                <BitRating AllowZeroStars="true" Value="oneWayBinding" />
+                <BitToggleButton OnChange="v => oneWayBinding = v ? 5 : 0" Text="@(oneWayBinding == 5 ? "Unstar All" : "Star All")" />
+
+                <br />
+
+                <div>Two-way:</div>
+                <BitRating @bind-Value="twoWayBinding" />
+                <BitSpinButton @bind-Value="twoWayBinding" />
+
+                <br />
+
+                <div>OnChange:</div>
+                <BitRating DefaultValue="2" OnChange="v => onChangeValue = v" />
+                <BitLabel>Changed Value: @onChangeValue</BitLabel>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ExamplePreview>
+            <div class="example-box">
+                @if (string.IsNullOrEmpty(SuccessMessage))
+                {
+                    <EditForm Model="ValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+
+                        <DataAnnotationsValidator />
+
+                        <BitRating AllowZeroStars="true" @bind-Value="ValidationModel.Value" />
+                        <ValidationMessage For="@(() => ValidationModel.Value)" />
+
+                        <br />
+
+                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessage Severity="BitSeverity.Success">@SuccessMessage</BitMessage>
+                }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitRating Dir="BitDir.Rtl" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

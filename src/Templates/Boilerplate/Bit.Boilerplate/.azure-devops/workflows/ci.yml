@@ -1,0 +1,29 @@
+trigger:
+- develop
+
+# https://bitplatform.dev/templates/devops
+
+jobs:
+- job: build
+  displayName: 'CI build'
+
+  pool:
+    vmImage: 'ubuntu-22.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Setup .NET'
+    inputs:
+      useGlobalJson: true
+      workingDirectory: 'src'
+
+  - task: NodeTool@1
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Install Node.js'
+  
+  - task: Bash@3
+    displayName: 'Build'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet build Boilerplate.sln -c Release'

@@ -1,72 +1,39 @@
-﻿class BitColorPicker {
-    static listOfAbortControllers: BitAbortController[] = [];
-
-    static registerOnWindowPointerUpEvent(dotnetHelper: DotNetObject, callback: string): string {
-        const controller = new BitAbortController();
-
-        const listenerOptions = new BitEventListenerOptions();
-        listenerOptions.signal = controller.abortController.signal;
-
-        document.addEventListener('pointerup', e => {
-            const eventArgs = BitColorPicker.toPointerEventArgsMapper(e);
-            dotnetHelper.invokeMethodAsync(callback, eventArgs);
-        }, listenerOptions);
-
-        BitColorPicker.listOfAbortControllers.push(controller)
-
-        return controller.id;
+﻿namespace BitBlazorUI {
+    class BitController {
+        id: string = BitBlazorUI.Utils.uuidv4();
+        controller = new AbortController();
+        dotnetObj: DotNetObject | undefined;
     }
 
-    static registerOnWindowPointerMoveEvent(dotnetHelper: DotNetObject, callback: string): string {
-        const controller = new BitAbortController();
+    export class ColorPicker {
+        private static _bitControllers: BitController[] = [];
 
-        const listenerOptions = new BitEventListenerOptions();
-        listenerOptions.signal = controller.abortController.signal;
+        public static registerEvent(event: string, dotnetObj: DotNetObject, methodName: string): string {
+            const bitController = new BitController();
+            bitController.dotnetObj = dotnetObj;
 
-        document.addEventListener('pointermove', e => {
-            const eventArgs = BitColorPicker.toPointerEventArgsMapper(e);
-            dotnetHelper.invokeMethodAsync(callback, eventArgs);
-        }, listenerOptions);
+            document.addEventListener(event, e => {
+                dotnetObj.invokeMethodAsync(methodName, ColorPicker.extractArgs(e as MouseEvent));
+            }, { signal: bitController.controller.signal });
 
-        BitColorPicker.listOfAbortControllers.push(controller)
+            ColorPicker._bitControllers.push(bitController);
 
-        return controller.id;
-    }
+            return bitController.id;
+        }
 
-    static toPointerEventArgsMapper(e: MouseEvent): object {
-        return {
-            altKey: e.altKey,
-            button: e.button,
-            buttons: e.buttons,
-            clientX: e.clientX,
-            clientY: e.clientY,
-            ctrlKey: e.ctrlKey,
-            detail: e.detail,
-            metaKey: e.metaKey,
-            offsetX: e.offsetX,
-            offsetY: e.offsetY,
-            screenY: e.screenY,
-            screenX: e.screenX,
-            shiftKey: e.shiftKey,
-            type: e.type
-        };
-    }
+        public static abort(id: string, dispose: boolean): void {
+            const bitController = ColorPicker._bitControllers.find(bc => bc.id == id);
+            bitController?.controller.abort();
 
-    static abortProcedure(id: string): void {
-        const aborController = BitColorPicker.listOfAbortControllers.find(ac => ac.id == id)?.abortController;
+            if (dispose) {
+                bitController?.dotnetObj?.dispose();
+            }
 
-        if (aborController) {
-            aborController.abort();
+            ColorPicker._bitControllers = ColorPicker._bitControllers.filter(bc => bc.id != id);
+        }
+
+        private static extractArgs(e: MouseEvent): object {
+            return { ClientX: e.clientX, ClientY: e.clientY };
         }
     }
-}
-
-class BitEventListenerOptions implements EventListenerOptions {
-    capture?: boolean;
-    signal?: AbortSignal;
-}
-
-class BitAbortController {
-    id: string = Date.now().toString();
-    abortController = new AbortController();
 }

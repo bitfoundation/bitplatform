@@ -1,0 +1,55 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<bool>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    <label title="@Title"
+           for="@_inputId"
+           style="@Styles?.Container"
+           class="bit-chb-lbl @Classes?.Container">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            <div style="@Styles?.Box" class="bit-chb-box @Classes?.Box">
+                <i aria-hidden="true"
+                   aria-label="@CheckIconAriaLabel"
+                   style="@Styles?.Icon"
+                   class="bit-icon bit-icon--@CheckIconName @Classes?.Icon" />
+            </div>
+
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else if (Label.HasValue())
+            {
+                <span style="@Styles?.Label" class="bit-chb-txt bit-nts @Classes?.Label">
+                    @Label
+                </span>
+            }
+        }
+    </label>
+
+    <input @ref="InputElement" @attributes="InputHtmlAttributes"
+           @onclick="@HandleOnCheckboxClick"
+           hidden
+           name="@Name"
+           id="@_inputId"
+           type="checkbox"
+           value="@CurrentValue"
+           checked="@CurrentValue"
+           disabled="@(IsEnabled is false)"
+           aria-label="@AriaLabel"
+           aria-setsize="@AriaSetSize"
+           aria-labelledby="@AriaLabelledby"
+           aria-posinset="@AriaPositionInSet"
+           aria-describedby="@AriaDescription"
+           aria-disabled="@(IsEnabled is false)" />
+</div>

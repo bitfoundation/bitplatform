@@ -1,23 +1,15 @@
+// bit version: 8.9.0
 
-self.assetsInclude = [];
 self.assetsExclude = [/\.scp\.css$/, /weather\.json$/];
-self.defaultUrl = "index.html";
-self.prohibitedUrls = [];
-self.assetsUrl = '/service-worker-assets.js';
-self.externalAssets = [
-    //{
-    //    "hash": "sha256-lDAEEaul32OkTANWkZgjgs4sFCsMdLsR5NJxrjVcXdo=",
-    //    "url": "css/app.css"
-    //},
-    {
-        "url": "/"
-    },
-];
-
 self.caseInsensitiveUrl = true;
+self.precachedAssetsInclude = [/favicon\.ico$/, /icon-512\.png$/, /bit-bw-64\.png$/];
 
-self.serverHandledUrls = [/\/api\//];
-self.serverRenderedUrls = [/\/privacy$/];
+//self.externalAssets = [
+//    {
+//        "url": "not-found/script.file.js"
+//    }
+//];
+//self.errorTolerance = 'lax';
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
 

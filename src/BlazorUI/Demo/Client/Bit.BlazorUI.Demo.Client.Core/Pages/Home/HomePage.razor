@@ -1,0 +1,43 @@
+﻿@page "/"
+@namespace Bit.BlazorUI.Demo.Client.Core.Pages
+
+<PageOutlet Url=""
+            Title="Home"
+            Description="home page of the bit blazorui components" />
+
+<div class="homepage-container">
+    <section class="homepage-section hero-section">
+        <div class="homepage-section-content">
+            <HeroSection />
+        </div>
+    </section>
+
+    <section class="homepage-section popular-components-section">
+        <div class="homepage-section-content">
+            <PopularComponents />
+        </div>
+    </section>
+
+    <section class="homepage-section benefit-section">
+        <div class="homepage-section-content">
+            <BenefitsSection />
+        </div>
+    </section>
+
+    <section class="homepage-section component-list-section">
+        <div class="homepage-section-content">
+            <ComponentsSection />
+        </div>
+    </section>
+
+    <section class="homepage-section contribution-section">
+        <div class="homepage-section-content">
+            <BitTypography Variant="BitTypographyVariant.H3" Gutter>Open Source contribution</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Body1" Gutter Style="max-width: 700px">Backed by a professional dedicated development team and an active community, you are well supported to work out all challenges. Since all open source components are on GitHub, you can follow the production flow of the components.  Feel free to report bugs, fork the repo, and submit pull request.</BitTypography>
+            <a class="section-btn" target="_blank" href="https://github.com/bitfoundation/bitplatform">
+                <span class="github-icon"></span>
+                GitHub
+            </a>
+        </div>
+    </section>
+</div>

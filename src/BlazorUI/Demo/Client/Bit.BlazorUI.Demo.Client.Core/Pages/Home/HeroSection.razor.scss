@@ -1,0 +1,84 @@
+@import '../../Styles/abstracts/_vars.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.hero-section-content {
+    width: 50%;
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+
+    @include lt-lg {
+        width: 100%;
+        align-items: center;
+        padding: rem2(80px) 0;
+        justify-content: center;
+
+        &:last-child {
+            display: none;
+        }
+    }
+
+    .hero-section-components {
+        display: flex;
+        overflow: hidden;
+        position: relative;
+        padding: rem2(30px);
+        flex-flow: row nowrap;
+        box-sizing: border-box;
+        min-width: rem2(2000px);
+        min-height: rem2(500px);
+        margin-left: rem2(20px);
+        transition: max-height 0.3s;
+        border-bottom-left-radius: rem2(2px);
+        height: calc(100vh - #{$HeaderHeight});
+
+        @include gt-md {
+            max-height: rem2(700px);
+        }
+    }
+
+    .hero-section-components-col {
+        width: rem2(380px);
+
+        &:last-child {
+            margin-left: rem2(20px);
+        }
+
+        .component-box {
+            display: flex;
+            overflow: hidden;
+            width: rem2(360px);
+            padding: rem2(10px);
+            color: rgb(61, 71, 82);
+            justify-content: center;
+            border-radius: rem2(2px);
+            margin-bottom: rem2(40px);
+            box-shadow: $bit-box-shadow-callout;
+            transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        }
+
+        .component-box--transparent {
+            display: flex;
+            justify-content: flex-start;
+            width: rem2(360px);
+            margin-bottom: rem2(40px);
+        }
+
+        .tab-content {
+            display: flex;
+            overflow: hidden;
+            width: rem2(360px);
+            height: rem2(200px);
+            padding: rem2(10px);
+            margin-top: rem2(8px);
+            border-radius: rem2(2px);
+            margin-bottom: rem2(40px);
+            justify-content: flex-start;
+            transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        }
+    }
+}

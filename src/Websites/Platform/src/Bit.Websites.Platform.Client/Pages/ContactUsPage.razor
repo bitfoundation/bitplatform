@@ -1,0 +1,62 @@
+﻿@page "/contact-us"
+@inherits AppComponentBase
+
+<PageOutlet Url="contact-us"
+            Title="Contact"
+            Description="contact the bit platform" />
+
+<div class="page-container">
+    <section class="page-section">
+        <div class="page-section-content">
+            <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="page-title">Contact us</BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+                Email: <a href="mailto:info@bitplatform.dev" target="_blank" rel="noopener noreferrer">info@bitplatform.dev</a>
+            </BitTypography>
+            <br />
+            <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+                Let's talk about your project.
+                <br />
+                Send us an email and we will get back to you.
+            </BitTypography>
+
+            <br /><br />
+
+            <div class="contact-container">
+                <EditForm Model="contactUsModel" OnValidSubmit="WrapHandled(SendMessage)" class="form" novalidate>
+                    <DataAnnotationsValidator />
+
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+                        Have any feedbacks?
+
+                    </BitTypography>
+
+                    <BitTextField @bind-Value="@contactUsModel.Email"
+                                  Label="Email"
+                                  Class="contact-text-field"
+                                  Placeholder="Enter your email address" />
+                    <ValidationMessage For="() => contactUsModel.Email" />
+
+                    <BitTextField @bind-Value="@contactUsModel.Message"
+                                  Label="Message"
+                                  IsRequired=true
+                                  IsMultiline=true
+                                  Class="contact-text-field"
+                                  Placeholder="Enter your message" />
+                    <ValidationMessage For="() => contactUsModel.Message" />
+
+                    <div style="display:flex;justify-content:center">
+                        <div style="flex-grow:1">
+                            <BitButton IsLoading="isSending"
+                                       ButtonType="BitButtonType.Submit">Send</BitButton>
+                        </div>
+
+                        <BitIconButton IconName="@BitIconName.Reset" Title="Reset form"
+                                       ButtonType="BitButtonType.Button"
+                                       OnClick="() => contactUsModel = new()">Reset</BitIconButton>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </section>
+</div>

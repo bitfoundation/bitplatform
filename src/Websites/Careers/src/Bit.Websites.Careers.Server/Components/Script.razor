@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@inject IFileVersionProvider _fileVersionProvider
+@inject IHttpContextAccessor _httpContextAccessor;
+
+@code {
+    [Parameter] public bool AppendVersion { get; set; } = true;
+    [Parameter] public string? Src { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
+
+    private string? src;
+
+    protected override void OnInitialized()
+    {
+        src = (Src is not null && AppendVersion) ? _fileVersionProvider.AddFileVersionToPath(_httpContextAccessor.HttpContext!.Request.PathBase, Src) : Src;
+    }
+}
+
+@if (src is not null)
+{
+    <script src="@src" @attributes="AdditionalAttributes"></script>
+}
+else
+{
+    <script @attributes="AdditionalAttributes">
+        @ChildContent
+    </script>
+}

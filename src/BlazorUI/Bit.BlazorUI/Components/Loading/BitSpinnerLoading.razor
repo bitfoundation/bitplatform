@@ -2,92 +2,91 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .blazor-loading-spinner {
-        color: official;
+    .bit-ldn-Spinner {
         display: inline-block;
         position: relative;
         width: @(Size)px;
         height: @(Size)px;
     }
 
-        .blazor-loading-spinner div {
+        .bit-ldn-Spinner div {
             transform-origin: @(Convert(40))px @(Convert(40))px;
-            animation: blazor-loading-spinner 1.2s linear infinite;
+            animation: bit-ldn-Spinner 1.2s linear infinite;
         }
 
-            .blazor-loading-spinner div:after {
+            .bit-ldn-Spinner div:after {
                 content: " ";
                 display: block;
                 position: absolute;
+                border-radius: 20%;
                 top: @(Convert(3))px;
                 left: @(Convert(37))px;
                 width: @(Convert(6))px;
                 height: @(Convert(18))px;
-                border-radius: 20%;
-                background: @Color;
+                background: @(Color ?? "var(--bit-clr-fg-primary)");
             }
 
-            .blazor-loading-spinner div:nth-child(1) {
+            .bit-ldn-Spinner div:nth-child(1) {
                 transform: rotate(0deg);
                 animation-delay: -1.1s;
             }
 
-            .blazor-loading-spinner div:nth-child(2) {
+            .bit-ldn-Spinner div:nth-child(2) {
                 transform: rotate(30deg);
                 animation-delay: -1s;
             }
 
-            .blazor-loading-spinner div:nth-child(3) {
+            .bit-ldn-Spinner div:nth-child(3) {
                 transform: rotate(60deg);
                 animation-delay: -0.9s;
             }
 
-            .blazor-loading-spinner div:nth-child(4) {
+            .bit-ldn-Spinner div:nth-child(4) {
                 transform: rotate(90deg);
                 animation-delay: -0.8s;
             }
 
-            .blazor-loading-spinner div:nth-child(5) {
+            .bit-ldn-Spinner div:nth-child(5) {
                 transform: rotate(120deg);
                 animation-delay: -0.7s;
             }
 
-            .blazor-loading-spinner div:nth-child(6) {
+            .bit-ldn-Spinner div:nth-child(6) {
                 transform: rotate(150deg);
                 animation-delay: -0.6s;
             }
 
-            .blazor-loading-spinner div:nth-child(7) {
+            .bit-ldn-Spinner div:nth-child(7) {
                 transform: rotate(180deg);
                 animation-delay: -0.5s;
             }
 
-            .blazor-loading-spinner div:nth-child(8) {
+            .bit-ldn-Spinner div:nth-child(8) {
                 transform: rotate(210deg);
                 animation-delay: -0.4s;
             }
 
-            .blazor-loading-spinner div:nth-child(9) {
+            .bit-ldn-Spinner div:nth-child(9) {
                 transform: rotate(240deg);
                 animation-delay: -0.3s;
             }
 
-            .blazor-loading-spinner div:nth-child(10) {
+            .bit-ldn-Spinner div:nth-child(10) {
                 transform: rotate(270deg);
                 animation-delay: -0.2s;
             }
 
-            .blazor-loading-spinner div:nth-child(11) {
+            .bit-ldn-Spinner div:nth-child(11) {
                 transform: rotate(300deg);
                 animation-delay: -0.1s;
             }
 
-            .blazor-loading-spinner div:nth-child(12) {
+            .bit-ldn-Spinner div:nth-child(12) {
                 transform: rotate(330deg);
                 animation-delay: 0s;
             }
 
-    @@keyframes blazor-loading-spinner {
+    @@keyframes bit-ldn-Spinner {
         0% {
             opacity: 1;
         }
@@ -97,4 +96,10 @@
         }
     }
 </style>
-<div class="blazor-loading-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+
+<div style="@Style" class="bit-ldn-Spinner @Class">
+    @for (int i = 0; i < 12; i++)
+    {
+        <div style="@ChildStyle" class="@ChildClass"></div>
+    }
+</div>

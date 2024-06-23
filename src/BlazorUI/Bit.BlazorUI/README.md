@@ -1,23 +1,23 @@
-﻿### Bit BlazorUI is a native high performance components for Blazor
+﻿### bit BlazorUI is a native high performance components for Blazor
 [![NuGet Version](https://img.shields.io/nuget/v/Bit.Client.Web.BlazorUI.svg?style=flat)](https://www.nuget.org/packages/Bit.BlazorUI/) ![Nuget](https://img.shields.io/nuget/dt/Bit.Client.Web.BlazorUI.svg)
 
-Bit BlazorUI is a set of native and high performance Blazor UI controls. This is implemented in C# and this does not depend on or wrap existing JavaScript frameworks or libraries.
+bit BlazorUI is a set of native and high performance Blazor UI controls. This is implemented in C# and this does not depend on or wrap existing JavaScript frameworks or libraries.
 
-**Why choose Bit Blazor Components?**
-- Bit components are free
-- Bit components are open source
-- Bit components have a high performance
-- Bit components are Blazor native components
-- Bit components are supported in both **server-side** and **client-side** (WASM) Blazor
+**Why choose bit BlazorUI Components?**
+- bit BlazorUI components are free
+- bit BlazorUI components are open source
+- bit BlazorUI components have a high performance
+- bit BlazorUI components are Blazor native components
+- bit BlazorUI components are supported in both **server-side** and **client-side** (WASM) Blazor
 
-To use the Bit components, please follow these steps:
+To use the bit BlazorUI components, please follow these steps:
 
 1. Install the `Bit.BlazorUI` nuget package
 2. In the default document (`_Host.cshtml`, `index.html` or `_Layout.cshtml`), add the `Bit.BlazorUI` style reference in the head section.
 
 ```html
 
-<link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.min.css" />
+<link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
 
 ```
 
@@ -25,7 +25,7 @@ To use the Bit components, please follow these steps:
 
 ```html
 
-<script src="_content/Bit.BlazorUI/scripts/bit.blazorui.min.js"></script>
+<script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
 
 ```
 

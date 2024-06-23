@@ -98,12 +98,22 @@ namespace {classNamespace}
         foreach (ISymbol member in members)
         {
             if (member is IFieldSymbol fieldSymbol)
+            {
+                var isNullable = fieldSymbol.NullableAnnotation is NullableAnnotation.Annotated;
+                var nullValue = isNullable ? " = null" : string.Empty;
+
                 stringBuilder.Append(
-                    $@"{'\n'}{"\t\t\t"}{fieldSymbol.Type} autoInjected{AutoInjectHelper.FormatMemberName(fieldSymbol.Name)},");
+                    $@"{'\n'}{"\t\t\t"}{fieldSymbol.Type} autoInjected{AutoInjectHelper.FormatMemberName(fieldSymbol.Name)} {nullValue},");
+            }
 
             if (member is IPropertySymbol propertySymbol)
+            {
+                var isNullable = propertySymbol.NullableAnnotation is NullableAnnotation.Annotated;
+                var nullValue = isNullable ? " = null" : string.Empty;
+
                 stringBuilder.Append(
-                    $@"{'\n'}{"\t\t\t"}{propertySymbol.Type} autoInjected{AutoInjectHelper.FormatMemberName(propertySymbol.Name)},");
+                    $@"{'\n'}{"\t\t\t"}{propertySymbol.Type} autoInjected{AutoInjectHelper.FormatMemberName(propertySymbol.Name)} {nullValue},");
+            }
         }
 
         stringBuilder.Length--;

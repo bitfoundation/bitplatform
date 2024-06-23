@@ -1,0 +1,54 @@
+﻿@page "/todo-template/multilingualism"
+@page "/admin-panel/multilingualism"
+@page "/templates/multilingualism"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/multilingualism"
+            Title="Multilingualism - Templates"
+            Description="multilingualism of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Multilingualism</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit project templates provide features in order add support for Multilingualism.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>How?</BitTypography>
+        <div class="section-card-txt">
+            To activate the Multilingual feature of the app, set the <b>EnableMultilingual</b> to true in the <b>src/Directory.Build.props</b> file.
+        </div>
+        <div class="section-card-txt">
+            To add a new Culture, add it to the list of SupportedCultures in the <b>CultureInfoManager</b> class and add the corresponding translations
+            in a new AppStrings.[culture-name].resx file named based on the new culture's name (e.g AppStrings.fr.resx for French).
+        </div>
+        <div class="section-card-txt">
+            You also can customize the details of each culture in the <b>CreateCultureInfo</b> method, and the implementations of the bit platform templates
+            will apply these changes in all of the supported platforms: Web, Android, iOS, macOS, Windows and even in Pre-Rendering.
+        </div>
+        <div class="section-card-txt">
+            The required translations of the DTO's Validation Annotations will come from the values inside the AppStrings.resx file by default.
+            But you can add separate .resx files and use them instead by adding the <b>DtoResourceTypeAttribute</b> on the DTO classes. For example,
+            to use a custom .resx file named CustomersManagement.resx for a specific DTO, the attribute used on that DTO should look like this:
+        </div>
+        <CodeBox>[DtoResourceType(typeof(CustomersManagement)]
+public class CustomerDto
+{
+    ...
+}</CodeBox>
+        <div class="section-card-txt">
+            You can also inject the specific <b>StringLocalizer</b> of this custom .resx file like this:
+        </div>
+        <CodeBox>[AutoInject] private IStrignLocalizer&lt;CustomersManagement> _customersManagementLocalizer;</CodeBox>
+        <div class="section-card-txt">
+            And use it to access the translations inside that page.
+        </div>
+        <div class="section-card-txt">
+            Note: We'd recommend installing <a href="https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager" target="_blank">ResxManager extension</a> for Visual Studio.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Exception handling" PrevUrl="/templates/exception-handling" />

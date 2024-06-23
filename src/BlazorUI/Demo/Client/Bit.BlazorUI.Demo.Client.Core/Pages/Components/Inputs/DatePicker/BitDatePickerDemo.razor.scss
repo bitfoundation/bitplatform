@@ -1,0 +1,108 @@
+﻿@import '../../../../Styles/abstracts/_colors.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
+
+.example-content {
+    width: 17rem;
+    display: flex;
+    overflow-x: auto;
+    flex-flow: column wrap;
+}
+
+.day-cell {
+    width: 28px;
+    height: 28px;
+    position: relative;
+}
+
+.weekend-cell {
+    color: red;
+}
+
+.badge {
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    position: absolute;
+    border-radius: 50%;
+    background-color: red;
+}
+
+.year-suffix {
+    position: absolute;
+    bottom: 10px;
+    right: -12px;
+    height: 12px;
+    color: gray;
+    font-size: 8px;
+}
+
+::deep {
+    .validation-message {
+        color: red;
+    }
+
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+        background-color: #211e1b;
+    }
+
+    .custom-day-picker {
+        border: 1px solid #e9981e;
+        background-color: #211e1b;
+        border-end-start-radius: 0.5rem;
+        border-start-start-radius: 0.5rem;
+    }
+
+    .custom-day-month,
+    .custom-next-month,
+    .custom-prev-month {
+        color: white;
+    }
+
+    .custom-day {
+        color: #e9981e;
+        margin: 0.15rem;
+        border-radius: 50%;
+        border: 1px solid #e9981e;
+    }
+
+    .custom-today-day {
+        color: #211e1b;
+        background-color: #e9981e;
+    }
+
+    .custom-week-header {
+        color: white;
+        margin: 0.15rem;
+    }
+
+    .custom-day-header {
+        height: 2rem;
+        color: white;
+        margin: 0.15rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9981e;
+    }
+
+    .custom-year-picker {
+        border: 1px solid #211e1b;
+        background-color: #e9981e;
+        border-end-end-radius: 0.5rem;
+        border-start-end-radius: 0.5rem;
+    }
+
+    .custom-increase-btn {
+        background-color: #48900f;
+    }
+
+    .custom-decrease-btn {
+        background-color: #c70505;
+    }
+}

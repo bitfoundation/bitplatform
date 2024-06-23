@@ -1,0 +1,105 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<string?>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <div class="bit-srb-cnt @Classes?.InputContainer" style="@Styles?.InputContainer">
+        @if (HideIcon is false)
+        {
+            <div style="@Styles?.IconWrapper" class="bit-srb-iwp @Classes?.IconWrapper" aria-hidden="true">
+                <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+            </div>
+        }
+        <input @ref="InputElement" @attributes="InputHtmlAttributes"
+               @onkeydown="@HandleOnKeyDown"
+               @onfocusout="HandleInputFocusOut"
+               @onfocusin="HandleInputFocusIn"
+               @oninput="@HandleOnChange"
+               type="text"
+               name="@Name"
+               id="@_inputId"
+               role="searchbox"
+               value="@CurrentValue"
+               style="@Styles?.Input"
+               aria-label="@AriaLabel"
+               placeholder="@Placeholder"
+               autocomplete="@Autocomplete"
+               disabled="@(IsEnabled is false)"
+               class="bit-srb-inp @Classes?.Input" />
+        @if (HideClearButton is false && CurrentValue.HasValue())
+        {
+            <button @onclick="HandleOnClearButtonClick"
+                    style="@Styles?.ClearButton"
+                    class="bit-srb-cbt @Classes?.ClearButton"
+                    type="button"
+                    aria-hidden="true"
+                    aria-label="Clear text"
+                    disabled="@(CurrentValue.HasNoValue())">
+                <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+            </button>
+        }
+    </div>
+    @if (ShowSearchButton)
+    {
+        <button @onclick="HandleOnSearchButtonClick"
+                style="@Styles?.SearchButton"
+                class="bit-srb-sbn @Classes?.SearchButton"
+                type="button"
+                aria-hidden="true"
+                aria-label="Search text">
+            <i style="@Styles?.SearchButtonIcon" class="bit-icon bit-icon--@SearchButtonIconName @Classes?.SearchButtonIcon" aria-hidden="true" />
+        </button>
+    }
+
+    @if ((SuggestItems?.Any() ?? false) || SuggestItemProvider is not null)
+    {
+        <div @onclick="CloseCallout"
+             style="display:@(isOpen ? "block" : "none");@Styles?.Overlay"
+             class="bit-srb-ovl @Classes?.Overlay"></div>
+
+        <div id="@_calloutId"
+             tabindex="0"
+             role="listbox"
+             style="@Styles?.Callout"
+             class="bit-srb-cal @Classes?.Callout">
+
+            <div id="@_scrollContainerId"
+                 style="@Styles?.ScrollContainer"
+                 class="bit-srb-scn @Classes?.ScrollContainer">
+                @foreach (var text in _searchItems)
+                {
+                    var isSelected = GetIsSelected(text);
+                    <div style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
+                        <button @onclick="()=> HandleOnItemClick(text)"
+                                type="button"
+                                role="option"
+                                title="@text"
+                                tabindex="0"
+                                style="@Styles?.SuggestItemButton"
+                                class="bit-srb-itm@(isSelected ? " bit-srb-sel" : "") @Classes?.SuggestItemButton"
+                                aria-label="@text"
+                                aria-setsize="@GetTotalItems()"
+                                aria-selected="@(isSelected ? "true" : "false")"
+                                aria-posinset="@GetItemPosInSet(text)">
+                            @if (SuggestItemTemplate is not null)
+                            {
+                                @SuggestItemTemplate(text)
+                            }
+                            else
+                            {
+                                <span class="@Classes?.SuggestItemText"
+                                      style="@Styles?.SuggestItemText">
+                                    @text
+                                </span>
+                            }
+                        </button>
+                    </div>
+                }
+            </div>
+
+        </div>
+    }
+</div>

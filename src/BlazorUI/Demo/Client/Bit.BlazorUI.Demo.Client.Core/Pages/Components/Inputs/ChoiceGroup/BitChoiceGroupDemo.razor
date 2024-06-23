@@ -1,0 +1,28 @@
+﻿@page "/components/choicegroup"
+@page "/components/choice-group"
+
+<PageOutlet Url="components/choicegroup"
+            Title="ChoiceGroup"
+            Description="ChoiceGroup component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="ChoiceGroup"
+                   ComponentDescription="ChoiceGroup let people select a single option from two or more choices."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   Notes="The BitChoiceGroup is a Multi-API component which can accept the list of Items in 3 different ways: BitChoiceGroupItem class, a custom Generic class, and BitChoiceGroupOption component.">
+        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivotItem HeaderText="Item">
+                <_BitChoiceGroupItemDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Custom">
+                <_BitChoiceGroupCustomDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Option">
+                <_BitChoiceGroupOptionDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </ComponentDemo>
+</div>

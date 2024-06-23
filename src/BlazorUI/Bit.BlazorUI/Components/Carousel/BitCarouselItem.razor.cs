@@ -64,7 +64,7 @@ public partial class BitCarouselItem
 
     protected override string RootElementClass => "bit-crsi";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         StyleBuilder.Register(() => internalStyle);
         StyleBuilder.Register(() => internalTransformStyle);

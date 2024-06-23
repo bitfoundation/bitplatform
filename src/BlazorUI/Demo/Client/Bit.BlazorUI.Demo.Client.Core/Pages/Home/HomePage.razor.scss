@@ -1,0 +1,162 @@
+﻿@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.homepage-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.homepage-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.homepage-section-content {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: rem2(1200px);
+    box-sizing: border-box;
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+
+    @include md {
+        padding-left: rem2(30px);
+        padding-right: rem2(30px);
+    }
+}
+
+.hero-section {
+    overflow: hidden;
+
+    .homepage-section-content {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+    }
+}
+
+.popular-components-section {
+    margin-top: rem2(100px);
+    padding-top: rem2(80px);
+    padding-bottom: rem2(80px);
+
+    @include md {
+        margin-top: rem2(60px);
+        padding-top: rem2(60px);
+        padding-bottom: rem2(60px);
+    }
+
+    @include sm {
+        margin-top: rem2(40px);
+        padding-top: rem2(40px);
+        padding-bottom: rem2(40px);
+    }
+}
+
+.benefit-section {
+    padding-top: rem2(80px);
+    padding-bottom: rem2(80px);
+
+    @include md {
+        padding-top: rem2(60px);
+        padding-bottom: rem2(60px);
+    }
+
+    @include sm {
+        padding-top: rem2(40px);
+        padding-bottom: rem2(40px);
+    }
+}
+
+.component-list-section {
+    padding-top: rem2(60px);
+    padding-bottom: rem2(60px);
+    background-color: $bit-color-background-secondary;
+
+    @include md {
+        margin-top: rem2(60px);
+        padding-top: rem2(60px);
+        padding-bottom: rem2(60px);
+    }
+
+    @include sm {
+        margin-top: rem2(40px);
+        padding-top: rem2(40px);
+        padding-bottom: rem2(40px);
+    }
+
+    @include sm {
+        margin-bottom: rem2(20px);
+    }
+
+    .homepage-section-content {
+        display: flex;
+        flex-flow: column nowrap;
+    }
+}
+
+.contribution-section {
+    padding-top: rem2(80px);
+    padding-bottom: rem2(80px);
+
+    @include md {
+        padding-top: rem2(60px);
+        padding-bottom: rem2(60px);
+    }
+
+    @include sm {
+        padding-top: rem2(40px);
+        padding-bottom: rem2(40px);
+    }
+
+    .homepage-section-content {
+        display: flex;
+        align-items: flex-start;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+
+    .section-btn {
+        color: $White;
+        cursor: pointer;
+        box-shadow: none;
+        font-weight: 700;
+        user-select: none;
+        letter-spacing: 0;
+        line-height: 1.3125;
+        display: inline-flex;
+        font-size: rem2(16px);
+        text-decoration: none;
+        -ms-user-select: none;
+        -moz-user-select: none;
+        border-radius: rem2(2px);
+        justify-content: center;
+        -webkit-user-select: none;
+        background-color: $B2Color;
+        padding: rem2(14px) rem2(16px);
+        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+
+        @include sm {
+            width: 100%;
+        }
+
+        .github-icon {
+            width: rem2(22px);
+            height: rem2(22px);
+            display: inline-block;
+            margin-right: rem2(8px);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url('images/icon/github-blue-icon.svg');
+        }
+    }
+}

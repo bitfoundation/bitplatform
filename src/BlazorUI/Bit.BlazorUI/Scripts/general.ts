@@ -1,24 +1,24 @@
-﻿interface DotNetObject {
+﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '8.9.0';
+
+interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
     invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
+    dispose(): void;
 }
 
-//window.addEventListener('load', e => {
-//    Bit.init();
-//})
+window.addEventListener('scroll', (e: Event) => {
+    const currentCallout = BitBlazorUI.Callouts.current;
+    if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && currentCallout.responsiveMode) return;
 
-window.addEventListener('scroll', (e: any) => {
-    const minimumWidthForDropDownNormalOpen = 640;
-    if ((Bit.currentDropDownCalloutId && window.innerWidth < minimumWidthForDropDownNormalOpen && Bit.currentDropDownCalloutResponsiveModeIsEnabled) ||
-        (e.target.id && Bit.currentDropDownCalloutId === e.target.id)) return;
+    const target = e.target as HTMLElement;
+    if (target?.id && target.id == currentCallout.scrollContainerId) return;
 
-    Bit.closeCurrentCalloutIfExists("", "", null);
+    BitBlazorUI.Callouts.replaceCurrent();
 }, true);
 
 window.addEventListener('resize', (e: any) => {
-    const isMobile = window.screen.width < 640;
-    const resizeTriggeredByKeyboardOpen = document?.activeElement?.getAttribute('type') === 'text';
-    if (isMobile && resizeTriggeredByKeyboardOpen) return;
+    const resizeTriggeredByOpenningKeyboard = document?.activeElement?.getAttribute('type') === 'text';
+    if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && resizeTriggeredByOpenningKeyboard) return;
 
-    Bit.closeCurrentCalloutIfExists("", "", null);
+    BitBlazorUI.Callouts.replaceCurrent();
 }, true);

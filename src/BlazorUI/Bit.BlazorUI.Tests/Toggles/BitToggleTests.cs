@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Toggles;
@@ -22,35 +23,22 @@ public class BitToggleTests : BunitTestContext
 
         var bitToggle = com.Find(".bit-tgl");
 
-        var isEnabledClass = isEnabled ? "enabled" : "disabled";
-        var isCheckedClass = value ? "checked" : "unchecked";
-
-        Assert.IsTrue(bitToggle.ClassList.Contains($"{isEnabledClass}-{isCheckedClass}"));
-    }
-
-    [DataTestMethod,
-        DataRow("", ""),
-        DataRow("", null),
-        DataRow(null, ""),
-        DataRow(null, null),
-        DataRow("On", "Off"),
-        DataRow("On", ""),
-        DataRow("On", null),
-        DataRow("", "Off"),
-        DataRow(null, "Off")
-    ]
-    public void BitToggleWithoutOnOffTextShouldHaveClassName(string onText, string offText)
-    {
-        var com = RenderComponent<BitToggle>(parameters =>
+        if (isEnabled)
         {
-            parameters.Add(p => p.OnText, onText);
-            parameters.Add(p => p.OffText, offText);
-        });
-        var bitToggle = com.Find(".bit-tgl");
-
-        if (onText.HasNoValue() || offText.HasNoValue())
+            Assert.IsFalse(bitToggle.ClassList.Contains("bit-dis"));
+        }
+        else
         {
-            Assert.IsTrue(bitToggle.ClassList.Contains("noonoff"));
+            Assert.IsTrue(bitToggle.ClassList.Contains("bit-dis"));
+        }
+
+        if (value)
+        {
+            Assert.IsTrue(bitToggle.ClassList.Contains("bit-tgl-chk"));
+        }
+        else
+        {
+            Assert.IsFalse(bitToggle.ClassList.Contains("bit-tgl-chk"));
         }
     }
 
@@ -68,7 +56,7 @@ public class BitToggleTests : BunitTestContext
 
         if (isInlineLabel)
         {
-            Assert.IsTrue(bitToggle.ClassList.Contains("inline"));
+            Assert.IsTrue(bitToggle.ClassList.Contains("bit-tgl-inl"));
         }
     }
 
@@ -80,15 +68,20 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
 
-        var bitToggleButton = com.Find(".bit-tgl button");
+        var bitToggleButton = com.Find("button");
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-label"), ariaLabel);
     }
 
     [DataTestMethod,
         DataRow(true, "on", "off", "This is the first defaultText", "This is the first label"),
-        DataRow(false, "off", "on", "This is the second defaultText", "This is the second label"),
-        DataRow(true, "on", "on", "This is the Third defaultText", "This is the Third label"),
-        DataRow(false, "off", "off", "This is the fourth defaultText", "This is the fourth label")
+        DataRow(false, "on", "off", "This is the second defaultText", "This is the second label"),
+        DataRow(true, "on", "off", null, "This is the Third label"),
+        DataRow(false, "on", "off", "This is the fourth defaultText", null),
+        DataRow(false, "on", "off", null, null),
+        DataRow(false, null, "off", "This is the fourth defaultText", "This is the fourth label"),
+        DataRow(false, "on", null, "This is the fourth defaultText", "This is the fourth label"),
+        DataRow(false, null, null, "This is the fourth defaultText", "This is the fourth label"),
+        DataRow(false, null, null, null, null),
     ]
     public void BitToggleAriaLabelledbyTest(bool value, string onText, string offText, string defaultText, string label)
     {
@@ -102,12 +95,9 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitToggleButton = com.Find("button");
-
-
-        var labelId = bitToggleButton.Id.Replace("Button", "Label");
-
-        var stateTextId = bitToggleButton.Id.Replace("Button", "StateText");
+        var button = com.Find("button");
+        var labelId = button.Id.Replace("button", "label");
+        var stateTextId = button.Id.Replace("button", "state-text");
 
         var ariaLabelledById = string.Empty;
         var stateText = (value ? onText : offText) ?? defaultText ?? string.Empty;
@@ -122,7 +112,7 @@ public class BitToggleTests : BunitTestContext
             ariaLabelledById = ariaLabelledById.HasValue() ? $"{labelId} {stateTextId}" : stateTextId;
         }
 
-        Assert.AreEqual(bitToggleButton.GetAttribute("aria-labelledby"), ariaLabelledById);
+        Assert.AreEqual(button.GetAttribute("aria-labelledby"), ariaLabelledById);
     }
 
     [DataTestMethod,
@@ -141,16 +131,23 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(bitToggleButton.GetAttribute("aria-checked"), ariaChecked);
     }
 
-    [DataTestMethod, DataRow("Switch")]
+    [DataTestMethod,
+        DataRow(null),
+        DataRow("Foo"),
+        DataRow("Bar")
+        ]
     public void BitToggleRoleTest(string role)
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.Role, role);
+            if (role is not null)
+            {
+                parameters.Add(p => p.Role, role);
+            }
         });
 
         var bitToggleButton = com.Find("button");
-        Assert.AreEqual(bitToggleButton.GetAttribute("role"), role);
+        Assert.AreEqual(bitToggleButton.GetAttribute("role"), role ?? "switch");
     }
 
     [DataTestMethod, DataRow("This is label")]

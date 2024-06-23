@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+    
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>content</ContentTargetFolders>
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <NoDefaultExcludes>true</NoDefaultExcludes>
+        
+        <!-- Nuget Package-->
+        <PackageId>Bit.Boilerplate</PackageId>
+        <PackageType>Template</PackageType>
+        <Title>bit Boilerplate</Title>
+        <PackageDescription>A template for creating a full featured app base on the bit platform</PackageDescription>
+        <PackageTags>bit;c#;asp;template;web;blazor;ef;api;rest;maui;</PackageTags>
+        <PackageCopyright>Copyright © bit platform 2024</PackageCopyright>
+        <PackageIcon>bit-icon-512.png</PackageIcon>
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="Bit.Boilerplate\**" Exclude="Bit.Boilerplate\.vs\**;Bit.Boilerplate\**\bin\**\*;Bit.Boilerplate\**\obj\**\*; " />
+        <Compile Remove="**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Bit.Boilerplate\src\Client\Boilerplate.Client.Web\wwwroot\images\icons\bit-icon-512.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\..\..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
+</Project>

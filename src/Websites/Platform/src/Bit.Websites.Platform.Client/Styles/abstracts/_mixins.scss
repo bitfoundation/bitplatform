@@ -1,0 +1,97 @@
+﻿@import '_vars.scss';
+@import '_colors.scss';
+@import '_functions.scss';
+@import '_media-queries.scss';
+@import '../bit-css-variables.scss';
+
+@mixin PageContainer {
+    width: 100%;
+}
+
+@mixin PageMainTitle {
+    margin: 0;
+    margin-bottom: rem2(52px);
+    padding: 0;
+    font-size: rem2(36px);
+    font-weight: 800;
+    line-height: 1;
+    color: #0a1929;
+
+    @include lt-lg {
+        margin-bottom: rem2(28px);
+    }
+}
+
+@mixin PageDescription {
+    width: 100%;
+    margin-bottom: rem2(32px);
+    font-size: rem2(16px);
+    font-weight: 400;
+    line-height: rem2(32px);
+    color: #2E2E2E;
+}
+
+@mixin SectionCard {
+    width: 100%;
+    overflow: auto;
+    position: relative;
+    padding: rem2(28px);
+    word-wrap: break-word;
+    border-radius: rem2(4px);
+    margin-bottom: rem2(28px);
+    background-clip: padding-box;
+    box-shadow: $bit-box-shadow-callout;
+    background-color: $bit-color-background-primary;
+}
+
+@mixin SectionCardTitle {
+    padding: 0;
+    margin-bottom: rem2(20px);
+    font-weight: 700;
+    font-size: rem2(24px);
+    line-height: 1;
+    color: #1a2027;
+}
+
+@mixin SectionCardText {
+    font-weight: 400;
+    font-size: rem2(16px);
+    line-height: rem2(24px);
+    margin-bottom: rem2(24px);
+
+    @include md {
+        font-size: rem2(16px);
+        line-height: rem2(30px);
+        margin-bottom: rem2(16px);
+    }
+
+    @include sm {
+        font-size: rem2(15px);
+        line-height: rem2(28px);
+        margin-bottom: rem2(12px);
+
+        ul {
+            padding-left: rem2(16px);
+        }
+    }
+}
+
+@mixin HighLightText {
+    background-color: $B11Color;
+    border-radius: rem2(4px);
+    padding: rem2(4px);
+    margin: rem2(2px) 0;
+    word-break: break-word;
+}
+
+@mixin ImageContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+@mixin Image {
+    width: 85%;
+    height: 85%;
+    margin: rem2(25px) 0;
+}

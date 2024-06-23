@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitTypography : BitComponentBase
 {
-    public static Dictionary<BitTypographyVariant, string> VariantMapping = new()
+    protected static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
     {
         { BitTypographyVariant.Body1, "p" },
         { BitTypographyVariant.Body2, "p" },
@@ -22,6 +22,11 @@ public partial class BitTypography : BitComponentBase
         { BitTypographyVariant.Subtitle2, "h6" },
     };
 
+    private BitTypographyVariant variant = BitTypographyVariant.Subtitle1;
+    private bool gutter;
+    private bool noWrap;
+
+    
     /// <summary>
     /// The content of the Typography.
     /// </summary>
@@ -35,24 +40,53 @@ public partial class BitTypography : BitComponentBase
     /// <summary>
     /// If true, the text will have a bottom margin.
     /// </summary>
-    [Parameter] public bool Gutter { get; set; }
+    [Parameter]
+    public bool Gutter
+    {
+        get => gutter;
+        set
+        {
+            if (gutter == value) return;
+            gutter = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// If true, the text will not wrap, but instead will truncate with a text overflow ellipsis.
     /// Note that text overflow can only happen with block or inline-block level elements(the element needs to have a width in order to overflow).
     /// </summary>
-    [Parameter] public bool NoWrap { get; set; }
+    [Parameter]
+    public bool NoWrap
+    {
+        get => noWrap;
+        set
+        {
+            if (noWrap == value) return;
+            noWrap = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The variant of the Typography.
     /// </summary>
-    [Parameter] public BitTypographyVariant Variant { get; set; } = BitTypographyVariant.Subtitle1;
-
+    [Parameter]
+    public BitTypographyVariant Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+            variant = value;
+            ClassBuilder.Reset();
+        }
+    }
 
 
     protected override string RootElementClass => "bit-tpg";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => $"bit-tpg-{Variant.ToString().ToLower(CultureInfo.InvariantCulture)}")
                     .Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty)
@@ -69,8 +103,10 @@ public partial class BitTypography : BitComponentBase
         var seq = 0;
         builder.OpenElement(seq++, Component ?? VariantMapping[Variant]);
         builder.AddMultipleAttributes(seq++, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<IEnumerable<KeyValuePair<string, object>>>(HtmlAttributes));
+        builder.AddAttribute(seq++, "id", _Id);
         builder.AddAttribute(seq++, "style", StyleBuilder.Value);
         builder.AddAttribute(seq++, "class", ClassBuilder.Value);
+        builder.AddAttribute(seq++, "dir", Dir?.ToString().ToLower());
         builder.AddElementReferenceCapture(seq++, v => RootElement = v);
 
         builder.AddContent(seq++, ChildContent);

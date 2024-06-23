@@ -1,0 +1,134 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<TValue>
+@typeparam TItem
+@typeparam TValue
+
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+</CascadingValue>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     role="radiogroup"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@AriaLabel"
+     aria-labelledby="@GetAriaLabelledBy()">
+
+    <label id="@_labelId"
+           disabled="@(IsEnabled is false)"
+           style="@Styles?.LabelContainer"
+           class="@Classes?.LabelContainer">
+        @if (LabelTemplate is not null)
+        {
+            @LabelTemplate
+        }
+        else if (Label.HasValue())
+        {
+            <span style="@Styles?.Label" class="bit-chg-lbl @Classes?.Label">@Label</span>
+        }
+    </label>
+
+    <div style="@Styles?.Container" class="bit-chg-cnt @GetLayoutFlowClass() @Classes?.Container">
+        @for (var i = 0; i < _items.Count; i++)
+        {
+            var index = i;
+            var item = _items[i];
+            SetIndex(item, index);
+
+            var inputId = GetInputId(item);
+            var template = GetTemplate(item);
+            var prefix = GetPrefix(item);
+            var isChecked = GetIsCheckedItem(item);
+
+            <div style="@GetStyle(item);@Styles?.ItemContainer" class="@GetItemContainerCssClasses(item) @GetClass(item) @Classes?.ItemContainer">
+                <label for="@inputId" style="@Styles?.ItemLabel" class="@Classes?.ItemLabel">
+                    @if (template is not null)
+                    {
+                        @template(item)
+                    }
+                    else if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        @if (prefix is not null)
+                        {
+                            <span style="@Styles?.ItemPrefix" class="@Classes?.ItemPrefix">@prefix</span>
+                        }
+                        else if (ItemPrefixTemplate is not null)
+                        {
+                            @ItemPrefixTemplate(item)
+                        }
+
+                        <div style="@Styles?.ItemLabelWrapper" class="@GetItemLabelWrapperCssClasses(item) @Classes?.ItemLabelWrapper">
+                            @if (ItemLabelTemplate is not null)
+                            {
+                                @ItemLabelTemplate(item)
+                            }
+                            else
+                            {
+                                var imageSrc = GetImageSrc(item);
+                                var imageSize = GetImageSize(item);
+
+                                @if (imageSrc.HasValue())
+                                {
+                                    <div style="@Styles?.ItemImageContainer" class="bit-chg-iic @Classes?.ItemImageContainer">
+                                        <div style="@Styles?.ItemImageWrapper" class="bit-chg-iiw @Classes?.ItemImageWrapper">
+                                            <div style="@(FormattableString.Invariant($"width:{imageSize.Width}px; height:{imageSize.Height}px;")) @Styles?.ItemImageDiv"
+                                                 class="bit-chg-iim @Classes?.ItemImageDiv">
+                                                <img src="@(isChecked ? GetSelectedImageSrc(item) : imageSrc)"
+                                                     alt="@GetImageAlt(item)"
+                                                     style="@Styles?.ItemImage"
+                                                     class="@Classes?.ItemImage">
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <div style="@Styles?.ItemIconContainer" class="bit-chg-icc @Classes?.ItemIconContainer">
+                                        <div style="@Styles?.ItemIconWrapper" class="bit-chg-icw @Classes?.ItemIconWrapper">
+                                            <i aria-hidden="true"
+                                               style="@Styles?.ItemIcon"
+                                               class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (imageSrc.HasValue() || iconName.HasValue())
+                                {
+                                    <div style="@Styles?.ItemTextWrapper" class="bit-chg-itw @Classes?.ItemTextWrapper">
+                                        <span style="@Styles?.ItemText" class="bit-chg-itx @Classes?.ItemText">@GetText(item)</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span style="@Styles?.ItemText" class="bit-chg-itx @Classes?.ItemText">@GetText(item)</span>
+                                }
+                            }
+                        </div>
+                    }
+                </label>
+
+                <input @attributes="InputHtmlAttributes"
+                       @onclick="e => HandleClick(item)"
+                       @onchange="e => HandleChange(item)"
+                       hidden
+                       type="radio"
+                       name="@Name"
+                       id="@inputId"
+                       checked=@isChecked
+                       required="@IsRequired"
+                       aria-label="@GetAriaLabel(item)"
+                       value="@GetValue(item)?.ToString()"
+                       disabled="@(GetIsEnabled(item) is false)" />
+            </div>
+        }
+    </div>
+
+</div>

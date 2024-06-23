@@ -1,160 +1,251 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-mnb {
+    display: flex;
+    width: fit-content;
     position: relative;
-    display: inline-flex;
-    min-width: spacing(10);
-    box-sizing: border-box;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight-buttons;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
     outline: transparent;
-    -webkit-font-smoothing: antialiased;
-    border-radius: $shape-border-radius;
+    min-height: spacing(4);
+    box-sizing: border-box;
+    font-size: spacing(1.75);
     border-width: $shape-border-width;
     border-style: $shape-border-style;
+    border-radius: $shape-border-radius;
+    font-family: $typography-font-family;
+    font-weight: $typography-font-weight;
 
-    &.bit-dis {
-        color: $color-text-disabled;
-        background-color: $color-action-disabled;
-        border-color: $color-border-disabled;
+    &.bit-dis,
+    .bit-mnb-opb.bit-dis {
         cursor: default;
         pointer-events: none;
-    }
+        color: $color-foreground-disabled;
 
-    &.bit-mnb-std {
-        color: $color-text-primary;
-        border-color: $color-border-secondary;
-        background-color: $color-secondary-main;
-
-        &:hover {
-            border-color: $color-action-border-hover-secondary;
-            background-color: $color-action-hover-secondary;
-        }
-
-        &:active, &.bit-mnb-omn {
-            border-color: $color-action-border-active-secondary;
-            background-color: $color-action-active-secondary;
+        .bit-mnb-spb {
+            background-color: $color-foreground-disabled;
         }
     }
+}
 
-    &.bit-mnb-pri {
-        color: $color-text-secondary;
-        border-color: $color-border-primary;
+.bit-mnb-pri {
+    color: $color-primary-text;
+    border-color: $color-primary-main;
+    background-color: $color-primary-main;
+
+    .bit-mnb-opb,
+    .bit-mnb-chb {
+        border-color: $color-primary-main;
         background-color: $color-primary-main;
 
-        &:hover {
-            border-color: $color-action-hover-primary;
-            background-color: $color-action-hover-primary;
+        @media (hover: hover) {
+            &:hover {
+                border-color: $color-action-hover-primary;
+                background-color: $color-action-hover-primary;
+            }
         }
 
-        &:active, &.bit-mnb-omn {
+        &:active {
             border-color: $color-action-active-primary;
             background-color: $color-action-active-primary;
         }
     }
 
-    &.bit-mnb-sm {
-        padding: spacing(0.25) spacing(1.25);
-        font-size: spacing(1.5);
-        line-height: spacing(2.75);
+    &.bit-mnb-omn {
+        .bit-mnb-chb {
+            border-color: $color-action-active-primary;
+            background-color: $color-action-active-primary;
+        }
     }
 
-    &.bit-mnb-md {
-        padding: spacing(0.5) spacing(2);
-        font-size: spacing(1.75);
-        line-height: $typography-line-height-buttons;
+    .bit-mnb-spb {
+        background-color: $color-primary-text;
     }
 
-    &.bit-mnb-lg {
-        padding: spacing(0.75) spacing(2.75);
-        font-size: spacing(2);
-        line-height: spacing(3.75);
+    &.bit-dis,
+    &.bit-dis .bit-mnb-opb {
+        border-color: $color-border-disabled;
+        background-color: $color-background-disabled;
+    }
+}
+
+.bit-mnb-std {
+    color: $color-secondary-text;
+    border-color: $color-border-primary;
+    background-color: $color-secondary-main;
+
+    .bit-mnb-opb,
+    .bit-mnb-chb {
+        border-color: $color-border-primary;
+        background-color: $color-secondary-main;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color-action-hover-secondary;
+            }
+        }
+
+        &:active {
+            background-color: $color-action-active-secondary;
+        }
     }
 
     &.bit-mnb-omn {
-        .bit-mnb-its {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translate3d(0, 0, 0);
+        .bit-mnb-chb {
+            background-color: $color-action-active-secondary;
         }
     }
-}
 
-.bit-mnb-mbt {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: transparent;
-    width: 100%;
-    cursor: inherit;
-    pointer-events: inherit;
-    color: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    line-height: inherit;
-    gap: spacing(1);
-    padding: 0;
-}
+    .bit-mnb-spb {
+        background-color: $color-secondary-text;
+    }
 
-.bit-mnb-ovl {
-    display: none;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 999;
-    background-color: transparent;
+    &.bit-dis,
+    &.bit-dis .bit-mnb-opb {
+        border-color: $color-border-disabled;
+    }
 }
 
 .bit-mnb-txt {
-    vertical-align: middle;
-    display: inline-block;
-    flex-grow: 1;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+    border-color: transparent;
+    color: $color-secondary-text;
+    background-color: $color-secondary-main;
 
-.bit-mnb-its {
-    display: none;
-    position: fixed;
-    min-width: spacing(22.5);
-    background-color: $color-neutrals-white;
-    box-sizing: border-box;
-    border-radius: 0 0 spacing(0.25) spacing(0.25);
-    box-shadow: rgba(0, 0, 0, 0.13) 0 spacing(0.4) spacing(0.9) 0, rgba(0, 0, 0, 0.11) 0 spacing(0.075) spacing(0.225) 0;
-    z-index: 1001;
-    overflow: hidden auto;
-    -webkit-font-smoothing: antialiased;
-    opacity: 0;
-    transform: translate3d(0, spacing(-1.25), 0);
-    pointer-events: none;
-    transition: opacity 100ms, transform 300ms, pointer-events 300ms;
+    .bit-mnb-opb,
+    .bit-mnb-chb {
+        border-color: transparent;
+        background-color: $color-secondary-main;
 
-    ul {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-        width: 100%;
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color-action-hover-secondary;
+            }
+        }
+
+        &:active {
+            background-color: $color-action-active-secondary;
+        }
+    }
+
+    &.bit-mnb-omn {
+        .bit-mnb-chb {
+            background-color: $color-action-active-secondary;
+        }
+    }
+
+    .bit-mnb-spb {
+        background-color: $color-secondary-text;
     }
 }
 
-.bit-mnb-itm {
-    display: flex;
-    background-color: transparent;
-    width: 100%;
-    align-items: center;
-    text-align: left;
-    cursor: pointer;
+.bit-mnb-cds {
     border: none;
-    color: $color-text-primary;
+    border-color: unset;
+    background-color: unset;
+
+    .bit-mnb-chb {
+        border-width: $shape-border-width;
+        border-style: $shape-border-style;
+        border-radius: $shape-border-radius;
+        border-left: none;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .bit-mnb-spb {
+        display: none;
+    }
+}
+
+.bit-mnb-spb {
+    margin: auto 0;
+    height: spacing(2);
+    width: spacing(0.125);
+}
+
+.bit-mnb-opb,
+.bit-mnb-chb {
+    display: flex;
+    color: inherit;
     gap: spacing(1);
-    line-height: inherit;
+    cursor: pointer;
+    font-size: inherit;
+    align-items: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: inherit;
+}
+
+.bit-mnb-opb {
+    flex-grow: 1;
+    padding: spacing(0.5) spacing(2);
+}
+
+.bit-mnb-chb {
+    width: spacing(4);
+    font-size: spacing(1.5);
+}
+
+.bit-mnb-cal {
+    opacity: 0;
+    display: none;
+    position: fixed;
+    overflow: hidden auto;
+    min-width: max-content;
+    box-sizing: border-box;
+    z-index: $zindex-callout;
+    box-shadow: $box-shadow-callout;
+    transition: opacity 100ms, transform 300ms;
+    background-color: $color-background-primary;
+    transform: translate3d(0, spacing(-1.25), 0);
+    border-radius: 0 0 spacing(0.25) spacing(0.25);
+
+    ul {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        list-style-type: none;
+    }
+}
+
+.bit-mnb-omn {
+    .bit-mnb-cal {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.bit-mnb-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    z-index: $zindex-overlay;
+    background-color: transparent;
+}
+
+.bit-mnb-btx {
+    flex-grow: 1;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+    text-overflow: ellipsis;
+}
+
+.bit-mnb-itm {
+    width: 100%;
+    border: none;
+    display: flex;
+    gap: spacing(1);
+    cursor: pointer;
+    text-align: start;
     font-size: inherit;
     padding: spacing(1);
+    align-items: center;
+    line-height: inherit;
+    background-color: transparent;
+    color: $color-foreground-primary;
 
     .bit-icon {
         color: $color-primary-main;
@@ -162,19 +253,18 @@
 
     &.bit-dis {
         cursor: default;
-        color: $color-text-disabled;
+        pointer-events: none;
+        color: $color-foreground-disabled;
 
         .bit-icon {
-            color: $color-text-disabled;
-        }
-
-        &:hover {
-            background-color: transparent;
+            color: $color-foreground-disabled;
         }
     }
 
-    &:hover {
-        background-color: $color-action-hover-secondary;
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-secondary;
+        }
     }
 
     &:active {

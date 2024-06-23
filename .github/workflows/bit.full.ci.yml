@@ -1,0 +1,90 @@
+name: bit platform full CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: build and test
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install Bit.Boilerplate from local source
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
+
+    - name: Release build todo sample + sqlite database
+      run: |
+        dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
+        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline none --serverUrl todo.bitplatform.dev
+        ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+        cd TodoBPSqlite/src/TodoBPSqlite.Server/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
+        cd ../../../
+        dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
+        dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Web/TodoBPSqlite.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true
+
+    - name: Release build empty sample + offline db + Win exe + No reCaptcha
+      run: |
+        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --windows --captcha none
+        dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false
+
+    - name: Release build empty sample without api
+      run: |
+        dotnet new bit-bp --name ApiFalse --database other --sample none --pipeline azure --api false
+        dotnet build ApiFalse/ApiFalse.sln -c Release -p:RunAOTCompilation=false
+
+    - name: Release build admin panel sample + PostgreSQL database
+      run: |
+        dotnet new bit-bp --name AdminBPSqlServer --database PostgreSQL --sample admin --pipeline github --serverUrl adminpanel.bitplatform.dev --appInsights --appCenter
+        dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
+
+    - name: Run BeforeBuildTasks
+      continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
+      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
+
+    - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
+      run: dotnet build src/Bit-CI-release.sln -c Release
+
+    - name: Release build careers, platform, sales websites
+      run: |
+        dotnet build -c Release src/Websites/Platform/Bit.Websites.Platform.sln
+        dotnet build -c Release src/Websites/Careers/Bit.Websites.Careers.sln
+        dotnet build -c Release src/Websites/Sales/Bit.Websites.Sales.sln
+
+    - name: Run bit blazor ui tests
+      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -c Release
+
+    - name: Release build bit blazor ui demo
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -c Release -p:RunAOTCompilation=false
+
+    - name: Create projects from BlazorEmpty project template with different parameters
+      run: |
+        cd src/Templates/BlazorEmpty && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
+        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
+        dotnet new bit-empty --name SsrPerPage --interactivity None
+
+    - name: Release build blazor empty based projects
+      run: |
+        dotnet build AutoGlobal/AutoGlobal.sln -c Release
+        dotnet build SsrPerPage/SsrPerPage.csproj -c Release

@@ -1,5 +1,4 @@
 ﻿using System.IO.Compression;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.ResponseCompression;
 
 namespace Bit.Bswup.Demo.Server.Startup;
@@ -13,6 +12,8 @@ public static class Services
         services.AddCors();
 
         services.AddControllers();
+
+        services.AddHttpContextAccessor();
 
         services.AddResponseCompression(opts =>
         {

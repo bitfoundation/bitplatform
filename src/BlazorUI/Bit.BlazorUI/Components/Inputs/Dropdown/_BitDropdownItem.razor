@@ -1,0 +1,102 @@
+@namespace Bit.BlazorUI
+@typeparam TItem
+@typeparam TValue
+
+@{
+    var itemType = Dropdown.GetItemType(Item);
+    var id = Dropdown.GetId(Item);
+    var text = Dropdown.GetText(Item);
+    var isHidden = Dropdown.GetIsHidden(Item);
+    var isEnabled = Dropdown.GetIsEnabled(Item);
+    var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
+}
+
+<div style="@Dropdown.GetStyle(Item)" class="@Dropdown.GetClass(Item)">
+    @if (itemType == BitDropdownItemType.Header)
+    {
+        @if (Dropdown.HeaderTemplate is not null)
+        {
+            @Dropdown.HeaderTemplate(Item)
+        }
+        else
+        {
+            <div id="@id"
+                 style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemHeader"
+                 class="bit-drp-ihd @Dropdown.Classes?.ItemHeader">
+                @text
+            </div>
+        }
+    }
+    else if (itemType == BitDropdownItemType.Normal)
+    {
+        @if (Dropdown.IsMultiSelect)
+        {
+            <div style="@(isHidden ? "display: none" : "") @Dropdown.Styles?.ItemWrapper"
+                 class="@Dropdown.GetItemWrapperCssClasses(Item) @Dropdown.Classes?.ItemWrapper">
+                <button @onclick="@(() => Dropdown.HandleOnItemClick(Item))"
+                        id="@id"
+                        type="button"
+                        role="option"
+                        style="@Dropdown.Styles?.ItemButton"
+                        class="bit-drp-mcn @Dropdown.Classes?.ItemButton">
+                    <div style="@Dropdown.Styles?.ItemCheckBox"
+                         class="bit-drp-chb @Dropdown.Classes?.ItemCheckBox">
+                        <i aria-hidden="true"
+                           aria-label="@text"
+                           style="@Dropdown.Styles?.ItemCheckIcon"
+                           class="bit-drp-chm bit-icon bit-icon--Accept @Dropdown.Classes?.ItemCheckIcon" />
+                    </div>
+
+                    @if (Dropdown.ItemTemplate is not null)
+                    {
+                        @Dropdown.ItemTemplate(Item)
+                    }
+                    else
+                    {
+                        <span style="@Dropdown.Styles?.ItemText"
+                              class="bit-drp-itx @Dropdown.Classes?.ItemText">
+                            @text
+                        </span>
+                    }
+                </button>
+            </div>
+        }
+        else
+        {
+            <button @onclick="()=> Dropdown.HandleOnItemClick(Item)"
+                    id="@id"
+                    type="button"
+                    role="option"
+                    title="@Dropdown.GetTitle(Item)"
+                    disabled=@(isEnabled is false)
+                    tabindex="@(isEnabled ? 0 : -1)"
+                    style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemButton"
+                    class="bit-drp-itm@(isSelected ? " bit-drp-sel" : "") @Dropdown.Classes?.ItemButton"
+                    aria-label="@Dropdown.GetAriaLabel(Item)"
+                    aria-setsize="@Dropdown.GetTotalItems()"
+                    aria-disabled="@(isEnabled is false)"
+                    aria-selected="@(isSelected ? "true" : "false")"
+                    aria-posinset="@Dropdown.GetItemPosInSet(Item)">
+                @if (Dropdown.ItemTemplate is not null)
+                {
+                    @Dropdown.ItemTemplate(Item)
+                }
+                else
+                {
+                    <span style="@Dropdown.Styles?.ItemText"
+                          class="@Dropdown.Classes?.ItemText">
+                        @text
+                    </span>
+                }
+            </button>
+        }
+    }
+    else if (itemType == BitDropdownItemType.Divider)
+    {
+        <div id="@id"
+             role="separator"
+             style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemDivider"
+             class="bit-drp-sep @Dropdown.Classes?.ItemDivider">
+        </div>
+    }
+</div>

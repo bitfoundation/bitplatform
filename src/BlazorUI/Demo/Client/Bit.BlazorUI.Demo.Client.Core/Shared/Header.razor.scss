@@ -1,0 +1,152 @@
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+.header {
+    top: 0;
+    width: 100%;
+    z-index: 11;
+    position: fixed;
+    backdrop-filter: blur(20px);
+    box-shadow: $bit-box-shadow-1;
+    -webkit-backdrop-filter: blur(20px);
+    padding-top: var(--bit-status-bar-height);
+    transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.bit-ios {
+    .header {
+        padding-top: env(safe-area-inset-top);
+    }
+}
+
+.header--full-page {
+    .container {
+        max-width: rem2(1200px);
+    }
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    min-height: rem2($HeaderHeight);
+    justify-content: space-between;
+
+    @include lt-lg {
+        padding-left: rem2(10px);
+        padding-right: rem2(10px);
+    }
+}
+
+.content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.logo {
+    cursor: pointer;
+    width: rem2(50px);
+    height: rem2(50px);
+    margin-right: rem2(30px);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('images/bit-logo.svg');
+
+    @include lt-lg {
+        margin: 0 rem2(10px);
+    }
+}
+
+.link {
+    height: 100%;
+    cursor: pointer;
+    line-height: 1.5;
+    padding-bottom: 0;
+    padding: rem2(10px);
+    font-size: rem2(16px);
+    text-decoration: none;
+    box-sizing: border-box;
+    color: $bit-color-foreground-secondary;
+}
+
+.link--active {
+    font-weight: 600;
+    color: $bit-color-primary-main;
+}
+
+.right-section {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.github-btn {
+    cursor: pointer;
+    width: rem2(40px);
+    height: rem2(40px);
+    border-radius: 50%;
+}
+
+.bit-theme-dark .github-btn {
+    background-image: url('images/github-icon-dark.svg');
+}
+
+.bit-theme-light .github-btn {
+    background-image: url('images/github-icon-light.svg');
+}
+
+.toggle-theme-btn {
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    height: rem2(35px);
+    min-width: rem2(35px);
+    border-radius: 50%;
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary-main;
+
+    .icon-container {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+
+        .bit-icon {
+            margin: 0 rem2(4px);
+        }
+    }
+
+    &.dark-theme {
+        .icon-container {
+            padding: 2px 0px 0 1px;
+        }
+    }
+}
+
+.bit-theme-dark .light-theme {
+    display: none;
+}
+
+.bit-theme-light .dark-theme {
+    display: none;
+}
+
+::deep {
+    .menu-btn {
+        @include gt-md {
+            display: none;
+        }
+    }
+}

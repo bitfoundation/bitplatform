@@ -1,0 +1,69 @@
+﻿@page "/crypto"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Crypto crypto
+
+<PageTitle>Crypto Samples</PageTitle>
+
+<h1>Crypto</h1>
+
+<pre style="font-family:Consolas; overflow: auto;">
+@@inject Bit.Butil.Crypto crypto
+
+@@code {
+    ...
+    await crypto.Encrypt(...);
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking</h3>
+
+<hr />
+<br />
+
+<input @bind="@inputText" />
+<br />
+<br />
+<button @onclick="Encrypt">Encrypt</button>
+<br />
+<br />
+<br />
+<input @bind="@outputText" />
+<br />
+<br />
+<button @onclick="Decrypt">Decrypt</button>
+
+@code {
+    private string inputText;
+    private byte[] iv = new byte[16];
+    private byte[] key = new byte[16];
+    private byte[] encryptedBytes;
+    private string outputText;
+
+    protected override void OnInitialized()
+    {
+        System.Security.Cryptography.RandomNumberGenerator.Fill(iv);
+        System.Security.Cryptography.RandomNumberGenerator.Fill(key);
+    }
+
+    private async Task Encrypt()
+    {
+        await console.Log("Start encrypting...");
+        var textAsUtf8Bytes = System.Text.Encoding.UTF8.GetBytes(inputText);
+        encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+        await console.Log("Encrypted bytes:", encryptedBytes);
+        await console.Log("Encrypted text:", BitConverter.ToString(encryptedBytes));
+    }
+
+    private async Task Decrypt()
+    {
+        await console.Log("Start decrypting...");
+        var decryptedBytes = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, encryptedBytes, iv: iv);
+        await console.Log("Decrypted bytes:", decryptedBytes);
+        outputText = System.Text.Encoding.UTF8.GetString(decryptedBytes);
+        await console.Log("Decrypted text:", outputText);
+    }
+}

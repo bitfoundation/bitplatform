@@ -1,0 +1,38 @@
+@inherits AppComponentBase
+
+<PageTitle>@Title - bit BlazorUI</PageTitle>
+
+<HeadContent>
+    <meta name="title" content="@Title - bit BlazorUI" />
+    <meta name="description" content="@Description" />
+
+    <meta property="og:url" content="https://blazorui.bitplatform.dev/@Url" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="bit BlazorUI" />
+    <meta property="og:title" content="@Title - bit BlazorUI" />
+    <meta property="og:description" content="@Description" />
+    <meta property="og:image" content="@ImageUrl" />
+
+    <meta name="twitter:title" content="@Title - bit BlazorUI" />
+    <meta name="twitter:description" content="@Description" />
+    <meta name="twitter:image" content="@ImageUrl" />
+</HeadContent>
+
+@code {
+    private string? title;
+
+    [Parameter]
+    public string? Title
+    {
+        get => title;
+        set
+        {
+            title = value;
+            PubSubService.Publish(PubSubMessages.PAGE_TITLE_CHANGED, title);
+        }
+    }
+
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Url { get; set; }
+    [Parameter] public string ImageUrl { get; set; } = "https://blazorui.bitplatform.dev/images/og-image.svg";
+}

@@ -1,0 +1,50 @@
+﻿@code {
+    [Inject] public IStringLocalizer<AppStrings> Localizer { get; set; } = default!;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
+    <title>@Localizer[nameof(AppStrings.SocialSignedInTitle)]</title>
+    <style>
+        html, body, main {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        main {
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        div {
+            margin-bottom: 1rem;
+        }
+
+        @@media (prefers-color-scheme: dark) {
+            body {
+                color: #e8e8e8;
+                background: #161b22;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div>
+            <h1>@Localizer[nameof(AppStrings.SocialSignedInMessageTitle)]</h1>
+        </div>
+        <div>
+            <h3>@Localizer[nameof(AppStrings.SocialSignedInMessageBody)]</h3>
+        </div>
+    </main>
+</body>
+
+</html>

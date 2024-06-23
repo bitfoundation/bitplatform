@@ -1,0 +1,31 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_colors.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+
+
+.example-box {
+    display: flex;
+    max-width: rem2(300px);
+    flex-direction: column;
+}
+
+::deep {
+    .custom-class {
+        padding: 1rem;
+        background: darkblue;
+        border-radius: 0.5rem;
+    }
+
+    .custom-input {
+        color: darkcyan;
+        font-size: 18px;
+    }
+
+    .custom-wrapper {
+        background-color: darkorchid;
+    }
+
+    .validation-message {
+        color: red;
+    }
+}

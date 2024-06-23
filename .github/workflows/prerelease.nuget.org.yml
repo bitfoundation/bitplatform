@@ -9,101 +9,98 @@ on:
 jobs:
   build-publish:
     name: build & publish
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v2
-      
-    - name: Setup .NET 6.0.x
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
+      uses: actions/checkout@v4
 
-    - name: Setup .NET 7.0.x
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 7.0.x
-        include-prerelease: true
-        
-    - name: Setup .NET 8.0.x
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 8.0.x
-        include-prerelease: true
+        global-json-file: src/global.json
 
-    - name: dotnet restore BlazorUI
-      run: dotnet restore src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj
-    - name: dotnet msbuild BlazorUI (1)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet msbuild BlazorUI (2)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Delete AssemblyOriginatorKeyFile.snk
+      run: |
+        rm src/AssemblyOriginatorKeyFile.snk
+
+    - name: Extract strong sign certificate from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './src/'
+          fileName: 'AssemblyOriginatorKeyFile.snk'
+          encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
+
+    - name: Generate CSS/JS files BlazorUI
+      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net8.0 -c Release
+    - name: dotnet build BlazorUI
+      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI
       run: dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output . --configuration Release
+
+    - name: Generate CSS/JS files BlazorUI.Extras
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:BeforeBuildTasks --no-restore -f:net8.0 -c Release
+    - name: dotnet build BlazorUI.Extras
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.Extras
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output . --configuration Release
+
+    - name: Generate CSS/JS files BlazorUI.Assets
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net8.0 -c Release
+    - name: dotnet build BlazorUI.Assets
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.Assets
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj --output . --configuration Release
+
+    - name: Generate CSS/JS files BlazorUI.Icons
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:BeforeBuildTasks --no-restore -f:net8.0 -c Release
+    - name: dotnet build BlazorUI.Icons
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.Icons
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output . --configuration Release
       
-    - name: dotnet restore BlazorUI.Charts
-      run: dotnet restore src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj
-    - name: dotnet msbuild BlazorUI.Charts (1)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet msbuild BlazorUI.Charts (2)
-      run: dotnet msbuild src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet pack BlazorUI.Charts
-      run: dotnet pack src/BlazorUI/Bit.BlazorUI.Charts/Bit.BlazorUI.Charts.csproj --output . --configuration Release
-      
-    - name: dotnet restore Bswup
-      run: dotnet restore src/Bswup/Bit.Bswup/Bit.Bswup.csproj
-    - name: dotnet msbuild Bswup (1)
-      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet msbuild Bswup (2)
-      run: dotnet msbuild src/Bswup/Bit.Bswup/Bit.Bswup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: Generate CSS/JS files Bswup
+      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -t:BeforeBuildTasks --no-restore -f:net8.0 -c Release
+    - name: dotnet build Bswup
+      run: dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bswup
       run: dotnet pack src/Bswup/Bit.Bswup/Bit.Bswup.csproj --output . --configuration Release
 
-    - name: dotnet restore Bup
-      run: dotnet restore src/Bup/Bit.Bup/Bit.Bup.csproj
-    - name: dotnet msbuild Bup (1)
-      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet msbuild Bup (2)
-      run: dotnet msbuild src/Bup/Bit.Bup/Bit.Bup.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: Generate CSS/JS files Bup
+      run: dotnet build src/Bup/Bit.Bup/Bit.Bup.csproj -t:BeforeBuildTasks --no-restore -f:net8.0 -c Release
+    - name: dotnet build Bup
+      run: dotnet build src/Bup/Bit.Bup/Bit.Bup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bup
       run: dotnet pack src/Bup/Bit.Bup/Bit.Bup.csproj --output . --configuration Release
       
-    - name: dotnet restore Butil
-      run: dotnet restore src/Butil/Bit.Butil/Bit.Butil.csproj
-    - name: dotnet msbuild Butil (1)
-      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
-    - name: dotnet msbuild Butil (2)
-      run: dotnet msbuild src/Butil/Bit.Butil/Bit.Butil.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false -m:1
+    - name: Generate CSS/JS files Butil
+      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -t:BeforeBuildTasks --no-restore -f:net8.0 -c Release
+    - name: dotnet build Butil
+      run: dotnet build src/Butil/Bit.Butil/Bit.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Butil
       run: dotnet pack src/Butil/Bit.Butil/Bit.Butil.csproj --output . --configuration Release
             
-    - name: dotnet restore CodeAnalyzers
-      run: dotnet restore src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj
-    - name: dotnet msbuild CodeAnalyzers
-      run: dotnet msbuild src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
+    - name: dotnet build Besql
+      run: dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Besql
+      run: dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output . --configuration Release
+
+    - name: dotnet build CodeAnalyzers
+      run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack CodeAnalyzer
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
-      
-    - name: dotnet restore SourceGenerators
-      run: dotnet restore src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj
-    - name: dotnet msbuild SourceGenerators
-      run: dotnet msbuild src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj /P:Configuration=Release /p:GeneratePackageOnBuild=false
-    - name: dotnet pack SourceGenerators
-      run: dotnet pack src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --output . --configuration Release
 
-    - name: dotnet pack TodoTemplate
-      run: dotnet pack src/Templates/TodoTemplate/Bit.TodoTemplate.ProjectTemplate.csproj --output . --configuration Release
+    - name: build SourceGenerators nupkg file
+      run: dotnet build src/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release
 
-    - name: dotnet pack AdminPanel
-      run: dotnet pack src/Templates/AdminPanel/Bit.AdminPanel.ProjectTemplate.csproj --output . --configuration Release
+    - name: dotnet pack Boilerplate
+      run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output . --configuration Release
 
-    - name: dotnet pack BlazorServer
-      run: dotnet pack src/Templates/BlazorServer/Bit.BlazorServer.ProjectTemplate.csproj --output . --configuration Release
+    - name: dotnet pack BlazorEmpty
+      run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
 
-    - name: dotnet pack BlazorWasm
-      run: dotnet pack src/Templates/BlazorWasm/Bit.BlazorWasm.ProjectTemplate.csproj --output . --configuration Release
-
-    - name: dotnet pack BlazorDual
-      run: dotnet pack src/Templates/BlazorDual/Bit.BlazorDual.ProjectTemplate.csproj --output . --configuration Release
-      
     - name: dotnet nuget push
-      run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate
+      run: dotnet nuget push **/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_ORG_API_KEY}} --skip-duplicate

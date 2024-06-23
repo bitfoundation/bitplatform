@@ -3,37 +3,38 @@
 
 @if (Href.HasValue() && IsEnabled)
 {
-    <a @ref="RootElement"
-       @attributes="HtmlAttributes"
-       style="@StyleBuilder.Value"
-       class="@ClassBuilder.Value"
-       aria-label="@AriaLabel"
-       aria-describedby="@AriaDescription"
-       aria-hidden="@AriaHidden"
+    <a @ref="RootElement" @attributes="HtmlAttributes"
+       id="@_Id"
+       href="@Href"
        title="@Title"
        target="@Target"
-       href="@Href"
-       tabindex="@_tabIndex">
-        <span class="bit-icb-ict">
-            <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+       tabindex="@_tabIndex"
+       aria-label="@AriaLabel"
+       aria-hidden="@AriaHidden"
+       style="@StyleBuilder.Value"
+       class="@ClassBuilder.Value"
+       dir="@Dir?.ToString().ToLower()"
+       aria-describedby="@AriaDescription">
+        <span style="@Styles?.Container" class="bit-icb-ict @Classes?.Container">
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
         </span>
     </a>
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
-            style="@StyleBuilder.Value"
-            class="@ClassBuilder.Value"
-            type="@ButtonType?.GetValue()"
-            aria-label="@AriaLabel"
-            aria-describedby="@AriaDescription"
-            aria-hidden="@AriaHidden"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+            id="@_Id"
             title="@Title"
             tabindex="@_tabIndex"
-            @onclick="HandleOnClick">
-        <span class="bit-icb-ict">
-            <i class="bit-icon bit-icon--@IconName.GetName()"></i>
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
+            type="@_buttonType.GetValue()"
+            dir="@Dir?.ToString().ToLower()"
+            aria-describedby="@AriaDescription">
+        <span style="@Styles?.Container" class="bit-icb-ict @Classes?.Container">
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
         </span>
     </button>
 }

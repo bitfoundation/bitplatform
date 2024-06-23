@@ -1,0 +1,33 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     @onfocusin="@HandleFocusIn"
+     @onfocusout="@HandleFocusOut"
+     @onpointerup="@HandlePointerUp"
+     @onpointerenter="@HandlePointerEnter"
+     @onpointerleave="@HandlePointerLeave"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @(Anchor ?? ChildContent)
+
+    <div style="@Styles?.TooltipWrapper" class="bit-ttp-wrp @GetTooltipClasses() @Classes?.TooltipWrapper">
+        <div style="@Styles?.Tooltip" class="bit-ttp-ctn @Classes?.Tooltip">
+            @if (Template is not null)
+            {
+                @Template
+            }
+            else
+            {
+                @Text
+            }
+        </div>
+        @if (HideArrow is false)
+        {
+            <div style="@Styles?.Arrow" class="bit-ttp-arw @Classes?.Arrow"></div>
+        }
+    </div>
+</div>

@@ -12,12 +12,12 @@ public partial class BitSlider
     private bool isRanged;
     private bool isReadOnly;
     private bool isVertical;
-    private double? lowerValue;
-    private double? upperValue;
-    private double? value;
+    private double lowerValue;
+    private double upperValue;
+    private double value;
 
-    private double? _firstInputValue;
-    private double? _secondInputValue;
+    private double _firstInputValue;
+    private double _secondInputValue;
     private string? _styleProgress;
     private string? _styleContainer;
     private int _inputHeight;
@@ -36,6 +36,11 @@ public partial class BitSlider
     ///  This should be used when the Slider number value is not accurately represented by a number
     /// </summary>
     [Parameter] public Func<double, string>? AriaValueText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitSlider.
+    /// </summary>
+    [Parameter] public BitSliderClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The default lower value of the ranged Slider.
@@ -77,7 +82,7 @@ public partial class BitSlider
     /// Whether to render the Slider as readonly
     /// </summary>
     [Parameter]
-    public bool IsReadonly
+    public bool IsReadOnly
     {
         get => isReadOnly;
         set
@@ -114,7 +119,7 @@ public partial class BitSlider
     /// The lower value of the ranged Slider.
     /// </summary>
     [Parameter]
-    public double? LowerValue
+    public double LowerValue
     {
         get => lowerValue;
         set
@@ -122,12 +127,15 @@ public partial class BitSlider
             if (value == lowerValue) return;
 
             lowerValue = value;
-            SetInputValueOnRanged(lower: value);
+
+            SetInputValueOnRanged(value, UpperValue);
+            
             FillSlider();
+            
             _ = LowerValueChanged.InvokeAsync(value);
         }
     }
-    [Parameter] public EventCallback<double?> LowerValueChanged { get; set; }
+    [Parameter] public EventCallback<double> LowerValueChanged { get; set; }
 
     /// <summary>
     /// The min value of the Slider
@@ -153,8 +161,8 @@ public partial class BitSlider
         get => new() { Lower = lowerValue, Upper = upperValue };
         set
         {
-            if (value?.Lower == lowerValue && value?.Upper == upperValue) return;
-            if (value is null || (value.Lower.HasValue is false && lowerValue.HasValue) || (value.Upper.HasValue is false && upperValue.HasValue)) return;
+            if (value is null) return;
+            if (value.Lower == lowerValue && value.Upper == upperValue) return;
 
             lowerValue = value.Lower;
             upperValue = value.Upper;
@@ -173,9 +181,7 @@ public partial class BitSlider
     /// <summary>
     /// Additional parameter for the Slider box
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [Parameter] public Dictionary<string, object>? SliderBoxHtmlAttributes { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// The difference between the two adjacent values of the Slider
@@ -183,10 +189,15 @@ public partial class BitSlider
     [Parameter] public double Step { get; set; } = 1;
 
     /// <summary>
+    /// Custom CSS styles for different parts of the BitSlider.
+    /// </summary>
+    [Parameter] public BitSliderClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// The upper value of the ranged Slider.
     /// </summary>
     [Parameter]
-    public double? UpperValue
+    public double UpperValue
     {
         get => upperValue;
         set
@@ -194,18 +205,21 @@ public partial class BitSlider
             if (value == upperValue) return;
 
             upperValue = value;
-            SetInputValueOnRanged(upper: value);
+
+            SetInputValueOnRanged(LowerValue, value);
+
             FillSlider();
+
             _ = UpperValueChanged.InvokeAsync(value);
         }
     }
-    [Parameter] public EventCallback<double?> UpperValueChanged { get; set; }
+    [Parameter] public EventCallback<double> UpperValueChanged { get; set; }
 
     /// <summary>
     /// The value of the Slider
     /// </summary>
     [Parameter]
-    public double? Value
+    public double Value
     {
         get => value;
         set
@@ -217,7 +231,7 @@ public partial class BitSlider
             _ = ValueChanged.InvokeAsync(value);
         }
     }
-    [Parameter] public EventCallback<double?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
 
     /// <summary>
     /// Custom formatter for the Slider value
@@ -227,25 +241,32 @@ public partial class BitSlider
 
     protected override string RootElementClass => "bit-sld";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsReadonly ? "readonly" : string.Empty);
+        ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => $"{(IsRanged ? "ranged-" : null)}{(IsVertical ? "vertical" : "horizontal")}");
+        ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
+
+        ClassBuilder.Register(() => $"{RootElementClass}-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnInitialized()
     {
-        _sliderBoxId = $"Slider-{UniqueId}";
-        _minInputId = $"{_sliderBoxId}-input-min";
-        _maxInputId = $"{_sliderBoxId}-input-max";
+        _sliderBoxId = $"BitSlider-{UniqueId}-box";
+        _minInputId = $"BitSlider-{UniqueId}-min-input";
+        _maxInputId = $"BitSlider-{UniqueId}-max-input";
 
-        if (LowerValue.HasValue is false && DefaultLowerValue.HasValue)
+        if (LowerValueHasBeenSet is false && DefaultLowerValue.HasValue)
         {
             LowerValue = DefaultLowerValue.Value;
         }
 
-        if (UpperValue.HasValue is false && DefaultUpperValue.HasValue)
+        if (UpperValueHasBeenSet is false && DefaultUpperValue.HasValue)
         {
             UpperValue = DefaultUpperValue.Value;
         }
@@ -254,9 +275,9 @@ public partial class BitSlider
         {
             SetInputValueOnRanged(LowerValue, UpperValue);
         }
-        else if (Value.HasValue is false)
+        else if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            Value = DefaultValue.GetValueOrDefault(Min);
+            Value = DefaultValue.Value;
         }
 
         if (IsVertical is false)
@@ -344,10 +365,10 @@ public partial class BitSlider
     {
         if (IsRanged)
         {
-            _styleProgress = $"--l: {_firstInputValue}; --h: {_secondInputValue}; --min: {Min}; --max: {Max}";
+            _styleProgress = FormattableString.Invariant($"--l: {_firstInputValue}; --h: {_secondInputValue}; --min: {Min}; --max: {Max}");
             if (IsVertical)
             {
-                _styleContainer = $"width: {_inputHeight}px; height: {_inputHeight}px;";
+                _styleContainer = FormattableString.Invariant($"width: {_inputHeight}px; height: {_inputHeight}px;");
                 StateHasChanged();
             }
         }
@@ -355,22 +376,18 @@ public partial class BitSlider
         {
             if (IsVertical)
             {
-                _styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max}; width: {_inputHeight}px; transform: rotate(270deg) translateX(-{(_inputHeight - 12)}px);";
+                _styleProgress = FormattableString.Invariant($"--value: {Value}; --min: {Min}; --max: {Max}; width: {_inputHeight}px; transform: rotate(270deg) translateX(-{(_inputHeight - 12)}px);");
                 StateHasChanged();
             }
             else
             {
-                _styleProgress = $"--value: {Value}; --min: {Min}; --max: {Max};";
+                _styleProgress = FormattableString.Invariant($"--value: {Value}; --min: {Min}; --max: {Max};");
             }
         }
     }
 
-    private void SetInputValueOnRanged(double? lower = null, double? upper = null)
+    private void SetInputValueOnRanged(double lower, double upper)
     {
-        var defaultValue = Min > 0 || Max < 0 ? Min : 0;
-        lower = lower.GetValueOrDefault(LowerValue ?? defaultValue);
-        upper = upper.GetValueOrDefault(UpperValue ?? defaultValue);
-
         if (upper > lower)
         {
             _firstInputValue = lower;
@@ -383,17 +400,11 @@ public partial class BitSlider
         }
     }
 
-    private string? GetValueDisplay(double? value)
+    private string? GetDisplayValue(double value)
     {
         if (ValueFormat.HasNoValue()) return $"{value}";
 
-        if (ValueFormat!.Contains('p', StringComparison.CurrentCultureIgnoreCase))
-        {
-            int digitCount = $"{(Max - 1)}".Length;
-            return (value.GetValueOrDefault() / Math.Pow(10, digitCount)).ToString(ValueFormat, CultureInfo.InvariantCulture);
-        }
-
-        return value.GetValueOrDefault().ToString(ValueFormat, CultureInfo.InvariantCulture);
+        return value.ToString(ValueFormat, CultureInfo.InvariantCulture);
     }
 
     private string GetAriaValueText(double value) => AriaValueText != null ? AriaValueText(value) : value.ToString(CultureInfo.InvariantCulture);

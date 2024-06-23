@@ -1,0 +1,168 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1CustomItemRazorCode" CsharpCode="@example1CustomItemCsharpCode" Id="example1">
+    <ExamplePreview>
+        <div class="example-box">
+            <BitNav Items="CustomBitPlatformNavMenu"
+                    NameSelectors="@(new() { IconName =  { Name = nameof(BitPlatformMenu.Icon) },
+                                                             ChildItems =  { Name = nameof(BitPlatformMenu.Links) },
+                                                             Description =  { Name = nameof(BitPlatformMenu.Comment) } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Grouped" RazorCode="@example2CustomItemRazorCode" CsharpCode="@example2CustomItemCsharpCode" Id="example2">
+    <ExamplePreview>
+        <div class="example-box">
+            <BitNav Items="CustomCarNavMenu"
+                    RenderType="BitNavRenderType.Grouped"
+                    NameSelectors="@(new() { Text =  { Name = nameof(CarMenu.Name) },
+                                                             Url =  { Name = nameof(CarMenu.PageUrl) },
+                                                             Target =  { Name = nameof(CarMenu.UrlTarget) },
+                                                             Title =  { Name = nameof(CarMenu.Tooltip) },
+                                                             IsExpanded =  { Name = nameof(CarMenu.IsExpandedParent) },
+                                                             CollapseAriaLabel =  { Name = nameof(CarMenu.CollapsedAriaLabel) },
+                                                             ExpandAriaLabel =  { Name = nameof(CarMenu.ExpandedAriaLabel) },
+                                                             ChildItems =  { Name = nameof(CarMenu.Links) },
+                                                             Description =  { Name = nameof(CarMenu.Comment) } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Manual Mode" RazorCode="@example3CustomItemRazorCode" CsharpCode="@example3CustomItemCsharpCode" Id="example3">
+    <ExamplePreview>
+        <div class="example-box">
+            <div>
+                <BitLabel>Basic</BitLabel>
+                <BitNav Items="CustomFoodNavMenu"
+                        Mode="BitNavMode.Manual"
+                        DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
+                        NameSelectors="@(new() { Text =  { Selector = item => item.Name },
+                                                                 IconName =  { Selector = item => item.Icon },
+                                                                 ChildItems =  { Selector = item => item.Childs },
+                                                                 Description =  { Selector = item => item.Comment } })" />
+            </div>
+
+            <br />
+            <br />
+            <br />
+
+            <div class="margin-top">
+                <BitLabel>Two-Way Bind</BitLabel>
+
+                <BitNav @bind-SelectedItem="CustomSelectedFood"
+                        Items="CustomFoodNavMenu"
+                        Mode="BitNavMode.Manual"
+                        DefaultSelectedItem="CustomFoodNavMenu[0].Childs[2]"
+                        NameSelectors="@(new() { Text =  { Selector = item => item.Name },
+                                                                 IconName =  { Selector = item => item.Icon },
+                                                                 ChildItems =  { Selector = item => item.Childs },
+                                                                 Description =  { Selector = item => item.Comment } })"
+                        OnSelectItem="(FoodMenu item) => CustomSelectedFoodName = FoodMenuDropdownItems.Single(i => i.Text == item.Name).Text" />
+
+                <BitDropdown @bind-Value="CustomSelectedFoodName"
+                             Label="Select Item"
+                             Items="FoodMenuDropdownItems"
+                             OnSelectItem="(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).Single(i => i.Name == item.Value)" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Custom Templates" RazorCode="@example4CustomItemRazorCode" CsharpCode="@example4CustomItemCsharpCode" Id="example4">
+    <ExamplePreview>
+        <div class="example-box">
+            <div>
+                <BitLabel>Header Template (Grouped)</BitLabel>
+                <BitNav Items="CustomCarNavMenu"
+                        RenderType="BitNavRenderType.Grouped"
+                        NameSelectors="@(new() { Text =  { Name = nameof(CarMenu.Name) },
+                                                                 Url =  { Name = nameof(CarMenu.PageUrl) },
+                                                                 Target =  { Name = nameof(CarMenu.UrlTarget) },
+                                                                 Title =  { Name = nameof(CarMenu.Tooltip) },
+                                                                 IsExpanded =  { Name = nameof(CarMenu.IsExpandedParent) },
+                                                                 CollapseAriaLabel =  { Name = nameof(CarMenu.CollapsedAriaLabel) },
+                                                                 ExpandAriaLabel =  { Name = nameof(CarMenu.ExpandedAriaLabel) },
+                                                                 ChildItems =  { Name = nameof(CarMenu.Links) },
+                                                                 Description =  { Name = nameof(CarMenu.Comment) } })">
+                    <HeaderTemplate Context="item">
+                        <div class="nav-custom-header">
+                            <BitIcon IconName="@BitIconName.FavoriteStarFill" />
+                            <span>@item.Name</span>
+                        </div>
+                    </HeaderTemplate>
+                </BitNav>
+            </div>
+
+            <br />
+            <br />
+            <br />
+
+            <div class="margin-top">
+                <BitLabel>Item Template</BitLabel>
+                <BitNav Items="CustomFoodNavMenu"
+                        Mode="BitNavMode.Manual"
+                        NameSelectors="@(new() { Text =  { Selector = item => item.Name },
+                                                                 IconName =  { Selector = item => item.Icon },
+                                                                 ChildItems =  { Selector = item => item.Childs },
+                                                                 Description =  { Selector = item => item.Comment } })">
+                    <ItemTemplate Context="item">
+                        <div class="nav-custom-item">
+                            <BitCheckbox />
+                            <BitIcon IconName="@item.Icon" />
+                            <span>@item.Name</span>
+                        </div>
+                    </ItemTemplate>
+                </BitNav>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Events" RazorCode="@example5CustomItemRazorCode" CsharpCode="@example5CustomItemCsharpCode" Id="example5">
+    <ExamplePreview>
+        <div class="events-example-box">
+            <BitNav Items="CustomFoodNavMenu"
+                    Mode="BitNavMode.Manual"
+                    OnItemClick="(FoodMenu item) => CustomClickedItem = item"
+                    OnSelectItem="(FoodMenu item) => CustomSelectedItem = item"
+                    OnItemToggle="(FoodMenu item) => CustomToggledItem = item"
+                    NameSelectors="@(new() { Text =  { Selector = item => item.Name },
+                                                             IconName =  { Selector = item => item.Icon },
+                                                             ChildItems =  { Selector = item => item.Childs },
+                                                             Description =  { Selector = item => item.Comment } })" />
+            <div class="flex">
+                <span>Clicked Item: <b>@CustomClickedItem?.Name</b></span>
+                <span>Selected Item: <b>@CustomSelectedItem?.Name</b></span>
+                <span>Toggled Item: <b>@(CustomToggledItem is null ? "N/A" : $"{CustomToggledItem.Name} ({(CustomToggledItem.IsExpanded ? "Expanded" : "Collapsed")})")</b></span>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Custom Styles" RazorCode="@example6CustomItemRazorCode" CsharpCode="@example6CustomItemCsharpCode" Id="example6">
+    <ExamplePreview>
+        <div class="example-box">
+            <BitNav Items="CustomCustomStyleNavMenu"
+                    NameSelectors="@(new() { IconName =  { Name = nameof(BitPlatformMenu.Icon) },
+                                                             ChildItems =  { Name = nameof(BitPlatformMenu.Links) },
+                                                             Description =  { Name = nameof(BitPlatformMenu.Comment) } })"
+                    Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
+                                                      ToggleButton = "color: cyan;",
+                                                      Item = "color: red;",
+                                                      ItemIcon = "color: gold; margin-right: 15px;" })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example7CustomItemRazorCode" CsharpCode="@example7CustomItemCsharpCode" Id="example7">
+    <ExamplePreview>
+        <div dir="rtl">
+            <div class="example-box">
+                <BitNav Dir="BitDir.Rtl"
+                        Items="CustomRtlBitPlatformNavMenu"
+                        NameSelectors="@(new() { IconName =  { Name = nameof(BitPlatformMenu.Icon) },
+                                                       ChildItems =  { Name = nameof(BitPlatformMenu.Links) },
+                                                       Description =  { Name = nameof(BitPlatformMenu.Comment) } })" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

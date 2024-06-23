@@ -1,0 +1,46 @@
+﻿@page "/todo-template"
+@page "/admin-panel"
+@page "/templates"
+@page "/todo-template/overview"
+@page "/admin-panel/overview"
+@page "/templates/overview"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/overview"
+            Title="Overview - Templates"
+            Description="overview of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>bit Boilerplate</BitTypography>
+
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        If our efforts in providing modern tooling have piqued your interest, dive into the Bit Boilerplate project template.
+        <br />
+        Experience all of our tools along with additional features such as ASP.NET Core Identity integration,
+        multilingualism, and other cool features that empowers you to develop unified Web, Android, iOS, Windows,
+        and macOS apps from a single codebase, while providing seamless integration with native platform features
+        and third-party Java, Kotlin, Swift, Objective-C, and JavaScript libraries.
+        <br /><br />
+        bit Boilerplate is a feature-rich project template for both Visual studio and the .NET CLI.
+        It comes with a lot of features right out of the box that are required for a real world application.
+        <br /><br />
+        Watch our YouTube playlist to get more familiar with bit Boilerplate project template
+        <a href="https://www.youtube.com/watch?v=ReS5mHLOa3Q&list=PLKG2Zun6HtHjn9PjM7w0IsTc40PTZD4hj&ab_channel=bitplatform" target="_blank">
+            here
+        </a>:
+    </BitTypography>
+
+    <br /><br />
+
+    <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/ReS5mHLOa3Q?si=8Z5gI7H3I2PuDPPB"
+                width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+        </iframe>
+    </div>
+
+    <br />
+
+</div>
+
+<NavigationButtons Next="Samples" NextUrl="/templates/samples" />

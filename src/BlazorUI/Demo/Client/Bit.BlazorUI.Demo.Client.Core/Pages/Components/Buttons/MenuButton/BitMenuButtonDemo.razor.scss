@@ -1,0 +1,43 @@
+﻿::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        margin-bottom: 30px;
+
+        &.column {
+            flex-flow: column wrap;
+            align-items: flex-start;
+        }
+    }
+
+    .clicked-item {
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .item-template-box {
+        width: 100%;
+        display: flex;
+    }
+
+    .custom-class {
+        color: aqua;
+        overflow: hidden;
+        border-radius: 1rem;
+    }
+
+    .custom-item {
+        color: aqua;
+        background-color: darkgoldenrod;
+    }
+
+    .custom-icon {
+        color: red;
+    }
+
+    .custom-text {
+        color: aqua;
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "devDependencies": {
+        "esbuild": "0.21.5",
+        "sass": "1.77.5",
+        "typescript": "5.4.5"
+    }
+}

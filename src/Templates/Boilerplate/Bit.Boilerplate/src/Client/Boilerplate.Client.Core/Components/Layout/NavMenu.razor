@@ -1,0 +1,36 @@
+﻿@inherits AppComponentBase;
+
+@if (IsMenuOpen)
+{
+    <div class="menu-overlay" @onclick=CloseMenu></div>
+}
+
+<section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
+    <div class="top-container">
+        @{
+            var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
+        }
+        <BitPersona Class="persona"
+                    PrimaryText="@user.FullName"
+                    SecondaryText="@user.DisplayName"
+                    Size=@BitPersonaSize.Size48
+                    Presence="BitPersonaPresence.Online"
+                    ImageUrl="@imageUrl"
+                    OnImageClick=GoToProfile>
+            <ImageOverlayTemplate>
+                <span>@Localizer[nameof(AppStrings.Edit)]</span>
+            </ImageOverlayTemplate>
+        </BitPersona>
+        <br />
+        <BitActionButton IconName="@BitIconName.SignOut" OnClick=DoSignOut>
+            @Localizer[nameof(AppStrings.SignOut)]
+        </BitActionButton>
+    </div>
+    <BitNav Items="navItems"
+            AriaLabel="NavMenu"
+            DefaultSelectedItem="navItems[0]"
+            OnItemClick="(BitNavItem item) => HandleNavItemClick(item)">
+    </BitNav>
+</section>
+
+<SignOutConfirmModal @bind-IsOpen=isSignOutModalOpen></SignOutConfirmModal>

@@ -2,39 +2,39 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .blazor-loading-ring {
+    .bit-ldn-Ring {
         display: inline-block;
         position: relative;
         width: @(Size)px;
         height: @(Size)px;
     }
 
-        .blazor-loading-ring div {
-            box-sizing: border-box;
+        .bit-ldn-Ring div {
             display: block;
             position: absolute;
+            border-radius: 50%;
+            box-sizing: border-box;
+            margin: @(Convert(8))px;
             width: @(Convert(64))px;
             height: @(Convert(64))px;
-            margin: @(Convert(8))px;
-            border: @(Convert(8))px solid @Color;
-            border-radius: 50%;
-            animation: blazor-loading-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            border-color: @Color transparent transparent transparent;
+            animation: bit-ldn-Ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border: @(Convert(8))px solid @(Color ?? "var(--bit-clr-fg-primary)");
+            border-color: @(Color ?? "var(--bit-clr-fg-primary)") transparent transparent transparent;
         }
 
-            .blazor-loading-ring div:nth-child(1) {
+            .bit-ldn-Ring div:nth-child(1) {
                 animation-delay: -0.45s;
             }
 
-            .blazor-loading-ring div:nth-child(2) {
+            .bit-ldn-Ring div:nth-child(2) {
                 animation-delay: -0.3s;
             }
 
-            .blazor-loading-ring div:nth-child(3) {
+            .bit-ldn-Ring div:nth-child(3) {
                 animation-delay: -0.15s;
             }
 
-    @@keyframes blazor-loading-ring {
+    @@keyframes bit-ldn-Ring {
         0% {
             transform: rotate(0deg);
         }
@@ -44,4 +44,10 @@
         }
     }
 </style>
-<div class="blazor-loading-ring"><div></div><div></div><div></div><div></div></div>
+
+<div style="@Style" class="bit-ldn-Ring @Class">
+    @for (int i = 0; i < 4; i++)
+    {
+        <div style="@ChildStyle" class="@ChildClass"></div>
+    }
+</div>

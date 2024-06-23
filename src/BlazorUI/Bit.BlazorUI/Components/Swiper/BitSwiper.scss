@@ -4,81 +4,91 @@
     margin: auto;
     overflow: hidden;
     position: relative;
-    touch-action: none;
+    touch-action: pan-y;
+}
 
-    .swiper {
-        width: 100%;
-        height: 100%;
-        cursor: grab;
-        display: flex;
-        user-select: none;
-        transform: translateX(0);
-        transition-duration: 300ms;
-        transition-timing-function: ease-out;
-        transition-property: transform, -webkit-transform;
-    }
+.bit-swpi {
+    flex-shrink: 0;
+}
 
-    .right-btn,
-    .left-btn {
-        font-size: spacing(3);
-        cursor: pointer;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 10%;
-        padding: 0;
-        color: $color-neutrals-white;
-        text-align: center;
-        background: 0 0;
-        border: 0;
-        opacity: .5;
-        transition: opacity .15s ease;
+.bit-swp-cnt {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    display: flex;
+    user-select: none;
+    transform: translateX(0);
+    transition-duration: 300ms;
+    transition-timing-function: ease-out;
+    transition-property: transform, -webkit-transform;
+}
 
+.bit-swp-rbt,
+.bit-swp-lbt {
+    top: 0;
+    bottom: 0;
+    border: 0;
+    width: 10%;
+    padding: 0;
+    z-index: 1;
+    opacity: .5;
+    display: flex;
+    cursor: pointer;
+    background: 0 0;
+    position: absolute;
+    text-align: center;
+    align-items: center;
+    font-size: spacing(3);
+    justify-content: center;
+    transition: opacity .15s ease;
+    color: $color-foreground-primary;
+
+    @media (hover: hover) {
         &:hover {
-            color: $color-neutrals-white;
-            text-decoration: none;
             outline: 0;
             opacity: .9;
+            text-decoration: none;
+            color: $color-action-hover-foreground-primary;
         }
     }
+}
 
-    .right-btn {
-        right: 0;
-    }
+.bit-swp-rbt {
+    right: 0;
+}
 
-    .left-btn {
-        left: 0;
-    }
+.bit-swp-lbt {
+    left: 0;
+}
 
-    .dots {
-        text-align: center;
-        margin-top: spacing(1.25);
+.bit-swp-dot {
+    text-align: center;
+    margin-top: spacing(1.25);
 
-        > div {
-            cursor: pointer;
-            height: spacing(1.25);
-            width: spacing(1.25);
-            margin: 0 spacing(0.5);
-            background-color: $color-neutrals-gray120;
-            border-radius: 50%;
-            display: inline-block;
-            transition: background-color 0.6s ease;
+    > div {
+        cursor: pointer;
+        border-radius: 50%;
+        width: spacing(1.25);
+        height: spacing(1.25);
+        display: inline-block;
+        margin: 0 spacing(0.5);
+        transition: background-color 0.6s ease;
+        background-color: $color-background-secondary;
 
+        @media (hover: hover) {
             &:hover {
-                background-color: $color-neutrals-gray160;
-            }
-
-            &.current, &.current:hover {
-                background-color: $color-primary-main;
+                background-color: $color-action-hover-background-secondary;
             }
         }
-    }
 
-    .bit-swpi {
-        flex-shrink: 0;
+        &.current {
+            background-color: $color-primary-main;
+
+            @media (hover: hover) {
+                &:hover {
+                    background-color: $color-action-hover-primary;
+                }
+            }
+        }
     }
 }

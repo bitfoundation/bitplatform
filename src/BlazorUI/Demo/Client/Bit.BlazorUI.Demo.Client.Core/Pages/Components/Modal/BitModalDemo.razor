@@ -1,0 +1,427 @@
+﻿@page "/components/modal"
+
+<PageOutlet Url="components/modal"
+            Title="Modal"
+            Description="modal component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Modal"
+               ComponentDescription="Modals are temporary pop-ups that take focus from the page or app and require people to interact with them. Unlike a dialog box (Dialog), a modal should be used for hosting lengthy content, such as privacy statements or license agreements, or for asking people to perform complex or multiple actions, such as changing settings."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <div>
+                <BitButton OnClick=@(() => IsOpen = true)>Open Modal</BitButton>
+                <BitModal @bind-IsOpen="IsOpen">
+                    <div class="modal-header">
+                        <span>Lorem Ipsum</span>
+                        <BitIconButton OnClick=@(() => IsOpen = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                        <p>
+                            Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus
+                            faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a
+                            magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia,
+                            nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare,
+                            rhoncus odio eu, pharetra tellus. Nunc sed velit mi.
+                        </p>
+                        <p>
+                            Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel
+                            consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis
+                            et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor
+                            finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend
+                            mollis. Curabitur ultricies leo ac metus venenatis elementum.
+                        </p>
+                    </div>
+                </BitModal>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Advanced options" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-desc">BitModal has some advanced options to be customized .</div>
+            <div class="btn-container">
+                <BitButton OnClick=@(() => IsOpen1 = true)>Open Modal (IsBlocking = true)</BitButton>
+                <BitButton OnClick=@(() => IsOpen2 = true)>Open Modal (AutoToggleScroll = false)</BitButton>
+            </div>
+            <div>
+                <BitModal @bind-IsOpen="IsOpen1" IsBlocking="true">
+                    <div class="modal-header">
+                        <span>IsBlocking = true</span>
+                        <BitIconButton OnClick=@(()=> IsOpen1 = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+                <BitModal @bind-IsOpen="IsOpen2" AutoToggleScroll="false">
+                    <div class="modal-header">
+                        <span>AutoToggleScroll = false</span>
+                        <BitIconButton OnClick=@(()=> IsOpen2 = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Absolute positioning" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <div class="example-desc">BitModal has an abosolute position option to further customize it's location.</div>
+
+            <div class="btn-container">
+                <BitButton OnClick=@(() => IsOpen3 = true)>Open Modal (AbsolutePosition = true)</BitButton>
+                <BitButton OnClick=@(() => IsOpen4 = true)>Open Modal (ScrollerSelector)</BitButton>
+            </div>
+
+            <div class="relative-container">
+                <BitModal @bind-IsOpen="IsOpen3" AbsolutePosition="true" AutoToggleScroll="false" IsModeless="true">
+                    <div class="modal-header">
+                        <span>AbsolutePosition=true & IsModeless=true</span>
+                        <BitIconButton OnClick=@(()=> IsOpen3 = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+
+                <BitModal @bind-IsOpen="IsOpen4" AbsolutePosition="true" ScrollerSelector=".relative-container">
+                    <div class="modal-header">
+                        <span>ScrollerSelector</span>
+                        <BitIconButton OnClick=@(()=> IsOpen4 = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitModal with position" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-desc">To set the modal position on the page you can use the Position parameter.</div>
+            <div>
+                <div class="position-btn">
+                    <div>
+                        <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.TopLeft)">Top Left</BitButton>
+                        <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.TopRight)">Top Right</BitButton>
+                    </div>
+                    <div>
+                        <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.BottomLeft)">Bottom Left</BitButton>
+                        <BitButton OnClick="() => OpenModalInPosition(BitModalPosition.BottomRight)">Bottom Right</BitButton>
+                    </div>
+                </div>
+                <BitModal @bind-IsOpen="IsOpenInPosition" Position="position">
+                    <div class="modal-header">
+                        <span>Modal positioning</span>
+                        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    </div>
+                </BitModal>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Draggable" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div>
+                <BitToggle Label="Is Draggable?" @bind-Value="IsDraggable" />
+                <br />
+                <BitButton OnClick="() => IsOpen5 = true">Open Modal</BitButton>
+                <BitModal @bind-IsOpen="IsOpen5" IsDraggable="IsDraggable">
+                    <div class="modal-header">
+                        <span>Draggble Modal</span>
+                        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+                <br />
+                <br />
+                <br />
+                <hr style="border-color:white" />
+                <br />
+                <br />
+                <div class="example-desc">Using custom drag element.</div>
+                <BitButton OnClick="() => IsOpen6 = true">Open Modal</BitButton>
+                <BitModal @bind-IsOpen="IsOpen6" IsDraggable="true" DragElementSelector=".modal-header-drag">
+                    <div class="modal-header modal-header-drag">
+                        <span>Draggble Modal with custom drag element</span>
+                        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <ExamplePreview>
+            <div>
+                <div>Component's Style & Class:</div>
+                <br />
+                <div class="btn-container">
+                    <BitButton OnClick="() => IsOpen7 = true">Open styled modal</BitButton>
+                    <BitButton OnClick="() => IsOpen8 = true">Open classed modal</BitButton>
+                </div>
+                <br /><br /><br />
+                <div><b>Styles</b> & <b>Classes</b>:</div>
+                <br />
+                <div class="btn-container">
+                    <BitButton OnClick="() => IsOpen9 = true">Open modal styles</BitButton>
+                    <BitButton OnClick="() => IsOpen10 = true">Open modal classes</BitButton>
+                </div>
+
+                <BitModal @bind-IsOpen="IsOpen7" Style="box-shadow: inset 0px 0px 1.5rem 1.5rem palevioletred;">
+                    <div class="modal-header">
+                        <span>Styled modal</span>
+                        <BitIconButton OnClick="@(() => IsOpen7 = false)" IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+
+                <BitModal @bind-IsOpen="IsOpen8" Class="custom-class">
+                    <div class="modal-header">
+                        <span>Classed modal</span>
+                        <BitIconButton OnClick="@(() => IsOpen8 = false)" IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+
+                <BitModal @bind-IsOpen="IsOpen9" Styles="@(new() { Overlay = "background-color: #4776f433;", Content = "box-shadow: 0 0 1rem tomato;" })">
+                    <div class="modal-header">
+                        <span>Modal styles</span>
+                        <BitIconButton OnClick="@(() => IsOpen9 = false)" IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+
+                <BitModal @bind-IsOpen="IsOpen10" Classes="@(new() { Container = "custom-container", Overlay = "custom-overlay", Content = "custom-content" })">
+                    <div class="modal-header">
+                        <span>Modal classes</span>
+                        <BitIconButton OnClick="@(() => IsOpen10 = false)" IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitModal>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Basic" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example1+7">
+        <ExamplePreview>
+            <div>
+                <BitButton Dir="BitDir.Rtl" OnClick=@(() => IsOpen11 = true)>باز کردن مُدال</BitButton>
+                <BitModal Dir="BitDir.Rtl" @bind-IsOpen="IsOpen11">
+                    <div class="modal-header">
+                        <span>لورم ایپسوم</span>
+                        <BitIconButton OnClick=@(() => IsOpen11 = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                        </p>
+                        <p>
+                            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                        </p>
+                        <p>
+                            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                        </p>
+                    </div>
+                </BitModal>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
+
+@code {
+    private bool IsOpen = false;
+
+    private bool IsOpen1 = false;
+    private bool IsOpen2 = false;
+
+    private bool IsOpen3 = false;
+    private bool IsOpen4 = false;
+
+    private bool IsOpenInPosition = false;
+    private BitModalPosition position;
+    private bool IsDraggable = false;
+
+    private bool IsOpen5 = false;
+    private bool IsOpen6 = false;
+
+    private bool IsOpen7 = false;
+    private bool IsOpen8 = false;
+    private bool IsOpen9 = false;
+    private bool IsOpen10 = false;
+
+    private bool IsOpen11 = false;
+
+    private void OpenModalInPosition(BitModalPosition positionValue)
+    {
+        IsOpenInPosition = true;
+        position = positionValue;
+    }
+}

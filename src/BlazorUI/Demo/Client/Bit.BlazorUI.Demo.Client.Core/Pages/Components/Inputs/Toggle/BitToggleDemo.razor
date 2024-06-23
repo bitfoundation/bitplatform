@@ -1,0 +1,121 @@
+﻿@page "/components/toggle"
+
+<PageOutlet Url="components/toggle"
+            Title="Toggle"
+            Description="toggle component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Toggle"
+               ComponentDescription="A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”. Choosing an option should produce an immediate result."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitToggle Label="Basic" />
+                <br />
+                <BitToggle Label="Disabled" IsEnabled="false" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Texts" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitToggle Label="DefaultText" DefaultText="This is a good toggle!" />
+                <br /><br />
+                <BitToggle Label="OnText & OffText" OnText="Toggle is On" OffText="Toggle is Off" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Label" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>IsInlineLabel:</div>
+                <br />
+                <BitToggle Label="This is an inline label" IsInlineLabel="true" />
+                <br /><br /><br /><br />
+                <div>LabelTemplate:</div>
+                <br />
+                <BitToggle>
+                    <LabelTemplate>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <BitLabel Style="color:green">This is custom Label</BitLabel>
+                            <BitIcon IconName="@BitIconName.Filter" />
+                        </div>
+                    </LabelTemplate>
+                </BitToggle>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitToggle Label="One-way" Value="oneWayValue" />
+                <br />
+                <BitToggleButton @bind-IsChecked="oneWayValue" OnText="On" OffText="Off" />
+                <br /><br /><br /><br />
+                <BitToggle Label="Two-way" @bind-Value="twoWayValue" />
+                <br />
+                <BitToggleButton @bind-IsChecked="twoWayValue" OnText="On" OffText="Off" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Component's Style & Class:</div>
+                <br />
+                <BitToggle Label="Styled" Style="width:fit-content;background:forestgreen;border-radius:1rem;padding:1rem" />
+                <br />
+                <BitToggle Label="Classed" Class="custom-class" />
+                <br /><br /><br />
+                <div>Styles & Classes:</div>
+                <br />
+                <BitToggle Label="Styles"
+                           Styles="@(new() { Root = "width:fit-content;background:pink;padding:1rem",
+                                             Thumb = "background:darkorange",
+                                             Button = "border-radius:0.5rem 0 0.5rem 0",
+                                             Label = "color:blue;font-weight:900;font-size:1.25rem" } )" />
+                <br />
+                <BitToggle Label="Classes"
+                           DefaultText="GooGooLi"
+                           Classes="@(new() { Text = "custom-text",
+                                              Button = "custom-button",
+                                              Checked = "custom-check" } )" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <ExamplePreview>
+            <div>
+                @if (string.IsNullOrEmpty(SuccessMessage))
+                {
+                    <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
+
+                        <BitToggle Label="Terms and conditions" DefaultText="I agree." @bind-Value="validationModel.TermsAgreement" />
+                        <ValidationMessage For="@(() => validationModel.TermsAgreement)" />
+
+                        <br />
+
+                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessage Severity="BitSeverity.Success">@SuccessMessage</BitMessage>
+                }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <BitToggle Dir="BitDir.Rtl" OnText="روشن" OffText="خاموش" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

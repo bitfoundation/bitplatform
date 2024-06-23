@@ -1,0 +1,58 @@
+﻿@page "/butil/keyboard"
+@inherits AppComponentBase
+@inject Bit.Butil.Keyboard keyboard
+
+<PageOutlet Url="butil/keyboard"
+            Title="Keyboard - Butil"
+            Description="Keyboard class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Keyboard</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Keyboard class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser Keyboard features you need to inject the Bit.Butil.Keyboard class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Keyboard keyboard
+
+@@code {
+    await keyboard.Add(ButilKeyCodes.F10, args => { ... }, , ButilModifiers.Alt | ButilModifiers.Ctrl);
+    await keyboard.Remove(ButilKeyCodes.F10, handler);
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>Add</b>, <b>Remove</b>: <br />
+            Adds/Removes a handler to a keyboard key combination.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @addExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div>Press Ctrl+F to focus on search box</div>
+                        <br />
+                        <BitSearchBox @ref="searchBox" Style="max-width: 18.75rem;" />
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Clipboard" PrevUrl="/butil/clipboard" Next="Console" NextUrl="/butil/console" />

@@ -2,95 +2,95 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .blazor-loading-dots-ring {
+    .bit-ldn-DotsRing {
         display: inline-block;
         position: relative;
         width: @(Size)px;
         height: @(Size)px;
     }
 
-        .blazor-loading-dots-ring div {
+        .bit-ldn-DotsRing div {
             position: absolute;
+            border-radius: 50%;
             width: @(Convert(6))px;
             height: @(Convert(6))px;
-            background: @Color;
-            border-radius: 50%;
-            animation: blazor-loading-dots-ring 1.2s linear infinite;
+            animation: bit-ldn-DotsRing 1.2s linear infinite;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
         }
 
-            .blazor-loading-dots-ring div:nth-child(1) {
+            .bit-ldn-DotsRing div:nth-child(1) {
                 animation-delay: 0s;
                 top: @(Convert(37))px;
                 left: @(Convert(66))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(2) {
+            .bit-ldn-DotsRing div:nth-child(2) {
                 animation-delay: -0.1s;
                 top: @(Convert(22))px;
                 left: @(Convert(62))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(3) {
+            .bit-ldn-DotsRing div:nth-child(3) {
                 animation-delay: -0.2s;
                 top: @(Convert(11))px;
                 left: @(Convert(52))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(4) {
+            .bit-ldn-DotsRing div:nth-child(4) {
                 animation-delay: -0.3s;
                 top: @(Convert(7))px;
                 left: @(Convert(37))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(5) {
+            .bit-ldn-DotsRing div:nth-child(5) {
                 animation-delay: -0.4s;
                 top: @(Convert(11))px;
                 left: @(Convert(22))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(6) {
+            .bit-ldn-DotsRing div:nth-child(6) {
                 animation-delay: -0.5s;
                 top: @(Convert(22))px;
                 left: @(Convert(11))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(7) {
+            .bit-ldn-DotsRing div:nth-child(7) {
                 animation-delay: -0.6s;
                 top: @(Convert(37))px;
                 left: @(Convert(7))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(8) {
+            .bit-ldn-DotsRing div:nth-child(8) {
                 animation-delay: -0.7s;
                 top: @(Convert(52))px;
                 left: @(Convert(11))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(9) {
+            .bit-ldn-DotsRing div:nth-child(9) {
                 animation-delay: -0.8s;
                 top: @(Convert(62))px;
                 left: @(Convert(22))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(10) {
+            .bit-ldn-DotsRing div:nth-child(10) {
                 animation-delay: -0.9s;
                 top: @(Convert(66))px;
                 left: @(Convert(37))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(11) {
+            .bit-ldn-DotsRing div:nth-child(11) {
                 animation-delay: -1s;
                 top: @(Convert(62))px;
                 left: @(Convert(52))px;
             }
 
-            .blazor-loading-dots-ring div:nth-child(12) {
+            .bit-ldn-DotsRing div:nth-child(12) {
                 animation-delay: -1.1s;
                 top: @(Convert(52))px;
                 left: @(Convert(62))px;
             }
 
-    @@keyframes blazor-loading-dots-ring {
+    @@keyframes bit-ldn-DotsRing {
         0%, 20%, 80%, 100% {
             transform: scale(1);
         }
@@ -100,4 +100,10 @@
         }
     }
 </style>
-<div class="blazor-loading-dots-ring"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+
+<div style="@Style" class="bit-ldn-DotsRing @Class">
+    @for (int i = 0; i < 12; i++)
+    {
+        <div style="@ChildStyle" class="@ChildClass"></div>
+    }
+</div>

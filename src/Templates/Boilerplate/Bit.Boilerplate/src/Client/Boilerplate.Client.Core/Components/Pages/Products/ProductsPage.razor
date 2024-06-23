@@ -1,0 +1,45 @@
+﻿@page "/products"
+@using Boilerplate.Shared.Dtos.Products
+@inherits AppComponentBase
+
+<PageTitle>@Localizer[nameof(AppStrings.ProductsPageTitle)]</PageTitle>
+
+<div class="page-container">
+    @if (isLoading)
+    {
+        <div class="loading-contianer">
+            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+        </div>
+    }
+
+    <div class="page-row">
+        <h1 class="page-title">@Localizer[nameof(AppStrings.Products)]</h1>
+        <BitButton OnClick="WrapHandled(CreateProduct)">@Localizer[nameof(AppStrings.AddProduct)]</BitButton>
+    </div>
+
+    <div class="grid">
+        <div class="grid-container">
+            <BitDataGrid @ref="dataGrid" ItemsProvider="productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="pagination">
+                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="p => p!.Id" Sortable="true" Class="id-col"
+                                           Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" />
+                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]" Property="p => p!.Name" Sortable="true" Class="column1">
+                    <ColumnOptions>
+                        <BitSearchBox @bind-Value="ProductNameFilter"
+                                      Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
+                                      InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                    </ColumnOptions>
+                </BitDataGridPropertyColumn>
+                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="p => p!.CategoryName" Sortable="true" Align="BitDataGridAlign.Left" />
+                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Price)]" Property="p => p!.Price" Sortable="true" Align="BitDataGridAlign.Left" />
+                <BitDataGridTemplateColumn Title="@Localizer[(nameof(AppStrings.Action))]" Align="BitDataGridAlign.Center" Context="product">
+                    <BitIconButton IconName="@BitIconName.Edit" OnClick="() => EditProduct(product!)" Title="@Localizer[(nameof(AppStrings.Edit))]" />
+                    <BitIconButton IconName="@BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(product!))" Title="@Localizer[(nameof(AppStrings.Delete))]" />
+                </BitDataGridTemplateColumn>
+            </BitDataGrid>
+        </div>
+        <BitDataGridPaginator Value="pagination" />
+    </div>
+</div>
+
+<AddOrEditProductModal @ref="modal" OnSave="WrapHandled(RefreshData)" />
+<ConfirmMessageBox @ref=confirmMessageBox />

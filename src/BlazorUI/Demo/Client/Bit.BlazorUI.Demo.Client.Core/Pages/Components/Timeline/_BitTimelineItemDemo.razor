@@ -1,0 +1,275 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ExamplePreview>
+        <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
+        <br /><br />
+        <div>Vertical (default)</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Items="basicItems1" />
+        </div>
+        <br /><br />
+        <div>Horizontal</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Items="basicItems1" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Appearance" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div>The Timeline has three appearances: Primary (default), Standard, and Text.</div>
+        <br /><br />
+        <div>Primary (default)</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Items="disabledItems1" />
+        </div>
+        <br /><br />
+        <div>Standard</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Appearance="BitAppearance.Standard" Items="disabledItems2" />
+        </div>
+        <br /><br />
+        <div>Text</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Appearance="BitAppearance.Text" Items="disabledItems3" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ExamplePreview>
+        <div>Each item in the Timeline can have an icon.</div>
+        <br /><br />
+        <div>Primary (default)</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Items="iconItems" />
+        </div>
+        <br /><br />
+        <div>Standard</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Items="iconItems" Appearance="BitAppearance.Standard" />
+        </div>
+        <br /><br />
+        <div>Text</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Items="iconItems" Appearance="BitAppearance.Text" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Reversed" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div>Each item in the Timeline can be revesed and be on the opposite side.</div>
+        <br /><br />
+        <div>Vertical (default)</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Items="reversedItems" />
+        </div>
+        <br /><br />
+        <div>Horizontal</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Items="reversedItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Here are some examples of customizing the Timeline content.</div>
+        <br /><br />
+        <div>Vertical (default)</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Items="templateItems" />
+        </div>
+        <br /><br />
+        <div>Horizontal</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Items="templateItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ExamplePreview>
+        <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
+        <br /><br />
+        <div>Info</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Color="BitColor.Info" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.Info" Appearance="BitAppearance.Standard" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.Info" Appearance="BitAppearance.Text" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div>Success</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Color="BitColor.Success" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.Success" Appearance="BitAppearance.Standard" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.Success" Appearance="BitAppearance.Text" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div>Warning</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Color="BitColor.Warning" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.Warning" Appearance="BitAppearance.Standard" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.Warning" Appearance="BitAppearance.Text" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div>SevereWarning</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Color="BitColor.SevereWarning" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.SevereWarning" Appearance="BitAppearance.Standard" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.SevereWarning" Appearance="BitAppearance.Text" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div>Error</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Color="BitColor.Error" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.Error" Appearance="BitAppearance.Standard" Items="iconItems" />
+            <BitTimeline Horizontal Color="BitColor.Error" Appearance="BitAppearance.Text" Items="iconItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div>Different sizes for Timelines to meet design needs, ensuring flexibility within your application.</div>
+        <br /><br />
+        <div>Small</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Size="BitTimelineSize.Small" Items="iconItems" />
+            <BitTimeline Horizontal Size="BitTimelineSize.Small" Appearance="BitAppearance.Standard" Items="iconItems" />
+            <BitTimeline Horizontal Size="BitTimelineSize.Small" Appearance="BitAppearance.Text" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div>Medium</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Size="BitTimelineSize.Medium" Items="iconItems" />
+            <BitTimeline Horizontal Size="BitTimelineSize.Medium" Appearance="BitAppearance.Standard" Items="iconItems" />
+            <BitTimeline Horizontal Size="BitTimelineSize.Medium" Appearance="BitAppearance.Text" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div>Large</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Size="BitTimelineSize.Large" Items="iconItems" />
+            <BitTimeline Horizontal Size="BitTimelineSize.Large" Appearance="BitAppearance.Standard" Items="iconItems" />
+            <BitTimeline Horizontal Size="BitTimelineSize.Large" Appearance="BitAppearance.Text" Items="iconItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+        <br /><br />
+        <div>Component's style & class:</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Style="background-color: tomato; box-shadow: red 0 0 1rem;" Items="basicItems" />
+            <BitTimeline Horizontal Class="custom-class" Items="basicItems" />
+        </div>
+        <br /><br />
+        <div>Item's style & class:</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Items="styleClassItems" />
+        </div>
+        <br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Items="iconItems"
+                         Styles="@(new() { Icon = "color: red;",
+                                           PrimaryText = "color: aqua; font-size: 1.5rem;",
+                                           Dot = "background-color: dodgerblue;" })" />
+            <BitTimeline Items="iconItems"
+                         Appearance="BitAppearance.Standard"
+                         Classes="@(new() { Icon = "custom-icon",
+                                            Divider = "custom-divider",
+                                            PrimaryText = "custom-text" })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <div>Vertical (default)</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Dir="BitDir.Rtl" Items="basicRtlItems" />
+        </div>
+        <br /><br />
+        <div>Horizontal</div>
+        <br />
+        <div class="example-content">
+            <BitTimeline Horizontal Dir="BitDir.Rtl" Items="basicRtlItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+
+@code {
+    private List<BitTimelineItem> templateItems = new()
+    {
+        new() 
+        { 
+            PrimaryContent = (item => @<BitPersona PrimaryText="Annie Lindqvist"
+                                                   Size="@BitPersonaSize.Size32"
+                                                   Presence="@BitPersonaPresence.Online"
+                                                   ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png" />),
+
+            DotTemplate = (item => @<div class="dot-template"><BitRingLoading Size = "30" /></div>),
+
+            SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
+                                             <BitIcon IconName="Accept" Style="color: limegreen;" />
+                                             <BitLabel>Software Engineer</BitLabel>
+                                         </div>) 
+        },
+        new() 
+        { 
+            PrimaryContent = (item => @<BitPersona PrimaryText="Saleh Khafan"
+                                                   Size="@BitPersonaSize.Size32"
+                                                   Presence="@BitPersonaPresence.Online"/>),
+
+            DotTemplate = (item => @<div class="dot-template"><BitSpinnerLoading Size="30" /></div>),
+
+            SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
+                                             <BitIcon IconName="Accept" Style="color: limegreen;" />
+                                             <BitLabel>Co-Founder & CTO</BitLabel>
+                                         </div>),
+            Reversed = true
+        },
+        new() 
+        { 
+            PrimaryContent = (item => @<BitPersona PrimaryText="Ted Randall"
+                                                   Size="@BitPersonaSize.Size32"
+                                                   Presence="@BitPersonaPresence.Online"
+                                                   ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png" />),
+
+            DotTemplate = (item => @<div class="dot-template"><BitRollerLoading Size="30" /></div>),
+
+            SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
+                                             <BitIcon IconName="Accept" Style="color: limegreen;" />
+                                             <BitLabel>Project Manager</BitLabel>
+                                         </div>) 
+        },
+    };
+}

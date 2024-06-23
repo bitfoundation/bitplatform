@@ -1,7 +1,6 @@
 name: Sales Website CD
 
 env:
-  WEB_APP_DEPLOYMENT_TYPE: 'SSR'
   APP_SERVICE_NAME: 'bitservices'
 
 on:
@@ -14,66 +13,61 @@ permissions:
 
 jobs:
 
-  build_blazor_api_wasm:
-    name: build blazor api + web assembly
-    runs-on: windows-latest
+  build_api_blazor:
+    name: build api + blazor web
+    runs-on: ubuntu-22.04
 
     steps:
     
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Websites/Sales/global.json
-
-    - name: Switch to blazor web assembly
-      shell: pwsh
-      run: (Get-Content src/Websites/Sales/Bit.Websites.Sales/Web/Bit.Websites.Sales.Web.csproj) -replace 'Microsoft.NET.Sdk.Web', 'Microsoft.NET.Sdk.BlazorWebAssembly' | Set-Content src/Websites/Sales/Bit.Websites.Sales/Web/Bit.Websites.Sales.Web.csproj
-
-    - name: Restore workloads
-      run: dotnet workload restore src/Websites/Sales/Bit.Websites.Sales/Web/Bit.Websites.Sales.Web.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}"
-
-    - name: Update appsettings.json api server address
-      uses: microsoft/variable-substitution@v1 
-      with:
-        files: 'src/Websites/Sales/Bit.Websites.Sales/Web/appsettings.json'
-      env:
-        ApiServerAddress: 'api/'
+        global-json-file: src/global.json
+        
+    - name: Install wasm
+      run:  cd src && dotnet workload install wasm-tools wasm-experimental
       
-    - name: Build (To generate CSS/JS files)
-      run: dotnet build src/Websites/Sales/Bit.Websites.Sales/Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release
+    - name: Generate CSS/JS files
+      run: dotnet build src/Websites/Sales/src/Bit.Websites.Sales.Client/Bit.Websites.Sales.Client.csproj -t:BeforeBuildTasks --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish src/Websites/Sales/Bit.Websites.Sales/Api/Bit.Websites.Sales.Api.csproj -p:BlazorMode=BlazorWebAssembly -p:WebAppDeploymentType="${{ env.WEB_APP_DEPLOYMENT_TYPE }}" -p:Configuration=Release --self-contained -r linux-x64 -o api-web
+      run: dotnet publish src/Websites/Sales/src/Bit.Websites.Sales.Server/Bit.Websites.Sales.Server.csproj -c Release --self-contained -r linux-x64 -o server
 
-    - name: Upload api-web artifact
-      uses: actions/upload-artifact@v3
+    - name: Upload server artifact
+      uses: actions/upload-artifact@v4
       with:
-        name: api-web-bundle
-        path: api-web
+        name: server-bundle
+        path: server
 
-  deploy_blazor_api_wasm:
-    name: deploy blazor api + web assembly
-    needs: build_blazor_api_wasm
-    runs-on: ubuntu-latest
+  deploy_api_blazor:
+    name: deploy api + blazor
+    needs: build_api_blazor
+    runs-on: ubuntu-22.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
 
-      - name: Retrieve api-web bundle
-        uses: actions/download-artifact@v2
+      - name: Retrieve server bundle
+        uses: actions/download-artifact@v4
         with:
-          name: api-web-bundle
+          name: server-bundle
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.APP_SERVICE_NAME }}
           slot-name: 'production'
           publish-profile: ${{ secrets.BITSERVICES_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
           package: .
+
+      - name: Purge cache
+        uses: jakejarvis/cloudflare-purge-action@v0.3.0
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.BITSERVICES_COMPANY_CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}

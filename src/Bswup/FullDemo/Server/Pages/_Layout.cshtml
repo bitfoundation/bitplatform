@@ -2,39 +2,43 @@
 @namespace Bit.Bswup.Demo.Web.Pages
 
 @using Bit.Bswup.Demo.Web
-@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Components.Web
+@using RenderMode = Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bit Bswup Demo</title>
     <base href="~/" />
-    <link rel="icon" href="~/favicon.ico" type="image/x-icon" asp-append-version="true">
+    <meta charset="utf-8" />
+    <title>bit Bswup Full Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="Bit.Bswup.Demo.Client.styles.css" asp-append-version="true" />
-    @*<link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.min.css" asp-append-version="true">*@
-    <script src="_content/Bit.Bswup/bit-bswup.progress.min.js" asp-append-version="true"></script>
 </head>
-<body>
+<body style="background:black; color:white">
 
     <div id="app-container">
         @RenderBody()
     </div>
-
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"></script>
     <script src="_framework/blazor.webassembly.js" autostart="false" asp-append-version="true"></script>
     <script src="_content/Bit.Bswup/bit-bswup.js" asp-append-version="true"
             scope="/"
             log="none"
             sw="service-worker.js"
-            handler="bitBswupHandler"></script>
+            handler="bitBswupHandler"
+            blazorScript="_framework/blazor.webassembly.js"></script>
 
-    <component type="typeof(Bit.Bswup.Demo.Client.Shared.DemoBswupProgressBar)" render-mode="@RenderMode.WebAssemblyPrerendered" />
-    @*<component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
-                param-AutoReload="true"
-                param-ShowAssets="false"
-                param-ShowLogs="true"
-                param-AppContainer="@("#app-container")" />*@
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js" asp-append-version="true"></script>
+    <component type="typeof(Bit.Bswup.Demo.Client.Shared.DemoBswupProgressBar)" render-mode="@RenderMode.Static" />
+
+    @* <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css">
+    <component type="typeof(Bit.Bswup.BswupProgress)" render-mode="@RenderMode.Static"
+               param-AutoReload=false
+               param-HideApp=true
+               param-ShowAssets=true
+               param-ShowLogs=false
+               param-AppContainer=@("#app-container") /> *@
 </body>
 </html>

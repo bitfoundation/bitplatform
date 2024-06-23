@@ -22,7 +22,7 @@ public partial class BitSwiper : IDisposable
     private string _rightButtonStyle = string.Empty;
 
     private string _resizeObserverId = string.Empty;
-    private DotNetObjectReference<BitSwiper>? _dotnetObjectReference = default!;
+    private DotNetObjectReference<BitSwiper>? _dotnetObjRef = default!;
 
     private ElementReference _swiper = default!;
     private System.Timers.Timer _autoPlayTimer = default!;
@@ -71,11 +71,6 @@ public partial class BitSwiper : IDisposable
     /// </summary>
     [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
-    /// <summary>
-    /// Sets the direction of the scrolling (the default value is LeftToRight).
-    /// </summary>
-    [Parameter] public BitDirection Direction { get; set; } = BitDirection.LeftToRight;
-
 
 
     public async Task GoPrev() => await Go(false);
@@ -101,7 +96,7 @@ public partial class BitSwiper : IDisposable
 
     protected override async Task OnParametersSetAsync()
     {
-        _directionStyle = Direction == BitDirection.RightToLeft ? "direction:rtl" : "";
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
 
         await base.OnParametersSetAsync();
     }
@@ -124,10 +119,10 @@ public partial class BitSwiper : IDisposable
             //    _autoPlayTimer.Start();
             //}
 
-            _dotnetObjectReference = DotNetObjectReference.Create(this);
-            _resizeObserverId = await _js.RegisterResizeObserver(RootElement, _dotnetObjectReference, "OnRootResize");
+            _dotnetObjRef = DotNetObjectReference.Create(this);
+            _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
 
-            await _js.RegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
+            await _js.BitSwiperRegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
 
             SetNavigationButtonsVisibility(_translateX);
         }
@@ -160,7 +155,7 @@ public partial class BitSwiper : IDisposable
         var swipeSpeed = distance / time;
 
         var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
-        await _js.SetStyle(_swiper, "transitionDuration", $"{transitionTime}ms");
+        await _js.SetStyle(_swiper, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
 
         var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
         await Swipe(x);
@@ -172,8 +167,8 @@ public partial class BitSwiper : IDisposable
 
     private void SetNavigationButtonsVisibility(double translateX)
     {
-        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Direction == BitDirection.LeftToRight ? -_swiperEffectiveWidth : 0)) ? "display:none" : "";
-        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Direction == BitDirection.LeftToRight ? 0 : _swiperEffectiveWidth)) ? "display:none" : "";
+        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_swiperEffectiveWidth)) ? "display:none" : "";
+        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _swiperEffectiveWidth : 0)) ? "display:none" : "";
 
         StateHasChanged();
     }
@@ -234,25 +229,25 @@ public partial class BitSwiper : IDisposable
     {
         if (_rootWidth > _swiperWidth || IsEnabled is false) return;
 
-        if (Direction == BitDirection.LeftToRight)
-        {
-            if (x > 0) x = 0;
-            if (x < -_swiperEffectiveWidth) x = -_swiperEffectiveWidth;
-        }
-        else
+        if (Dir == BitDir.Rtl)
         {
             if (x < 0) x = 0;
             if (x > _swiperEffectiveWidth) x = _swiperEffectiveWidth;
         }
+        else
+        {
+            if (x > 0) x = 0;
+            if (x < -_swiperEffectiveWidth) x = -_swiperEffectiveWidth;
+        }
 
-        await _js.SetStyle(_swiper, "transform", $"translateX({NumUtils.ToInvariantString(x)}px)");
+        await _js.SetStyle(_swiper, "transform", FormattableString.Invariant($"translateX({x}px)"));
 
         SetNavigationButtonsVisibility(x);
     }
 
     private async Task GetDimensions()
     {
-        var dimensions = await _js.GetDimensions(RootElement, _swiper);
+        var dimensions = await _js.BitSwiperGetDimensions(RootElement, _swiper);
         _rootWidth = dimensions?.RootWidth ?? 0;
         _swiperWidth = dimensions?.SwiperWidth ?? 0;
         _swiperEffectiveWidth = dimensions?.EffectiveSwiperWidth ?? 0;
@@ -276,10 +271,10 @@ public partial class BitSwiper : IDisposable
             _autoPlayTimer.Dispose();
         }
 
-        if (_dotnetObjectReference is not null)
+        if (_dotnetObjRef is not null)
         {
-            _dotnetObjectReference.Dispose();
-            _ = _js.UnregisterResizeObserver(RootElement, _resizeObserverId);
+            _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
+            //_dotnetObjRef.Dispose();
         }
 
         _disposed = true;

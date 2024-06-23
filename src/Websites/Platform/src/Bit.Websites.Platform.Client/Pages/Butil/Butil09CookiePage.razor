@@ -1,0 +1,136 @@
+﻿@page "/butil/cookie"
+@inherits AppComponentBase
+@inject Bit.Butil.Cookie cookie
+
+<PageOutlet Url="butil/cookie"
+            Title="Cookie - Butil"
+            Description="Cookie class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Cookie</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Cookie class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser cookie features you need to inject the Bit.Butil.Cookie class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Cookie cookie
+
+@@code {
+    await cookie.Remove("cookie-name");
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>Set</b>, <b>Get</b>: <br />
+            Gets/Sets a cookie by providing the cookie name
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getSetExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="newCookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitTextField @bind-Value="newCookieValue" Label="Cookie value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@SetCookie">Set</BitButton>
+                        <br />
+                        <br />
+                        <br />
+                        <BitTextField @bind-Value="getCookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@GetCookie">Get</BitButton>
+                        <br />
+                        <br />
+                        <div>Cookie value: @getCookieValue</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetAll</b>: <br />
+            Gets all cookies registered on the current document.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getAllExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetAllCookies">GetAll</BitButton>
+                        <br />
+                        <br />
+                        <div>Cookies: @getAllCookieValues</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetValue</b>: <br />
+            Returns the cookie value by providing its name.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getValueExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="getValueCookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@GetValue">GetValue</BitButton>
+                        <br />
+                        <br />
+                        <div>Cookie value: @getValueCookieValue</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Remove</b>: <br />
+            Removes a cookie by providing the its name.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @removeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="removeCookieName" Label="Cookie name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@RemoveCookie">Remove</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Storage" PrevUrl="/butil/storage" Next="History" NextUrl="/butil/history" />

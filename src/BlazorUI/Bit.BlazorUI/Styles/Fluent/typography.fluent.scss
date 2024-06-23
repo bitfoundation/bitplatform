@@ -6,30 +6,27 @@
 :root[bit-theme="fluent-dark"] {
     // main
     --bit-tpg-font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-    --bit-tpg-font-weight: 500;
+    --bit-tpg-font-weight: 600;
     --bit-tpg-line-height: 1.75rem;
-    --bit-tpg-font-weight-btns: 500;
-    --bit-tpg-line-height-btns: 1.625rem;
-    --bit-tpg-font-family-icons: "Fabric MDL2 Assets";
     --bit-tpg-gutter-size: 0.35em;
     // body1
     --bit-tpg-body1-margin: 0;
     --bit-tpg-body1-font-weight: 400;
     --bit-tpg-body1-font-size: 1rem;
     --bit-tpg-body1-line-height: 1.5;
-    --bit-tpg-body1-letter-spacing: 0.00938rem;
+    --bit-tpg-body1-letter-spacing: 0.00938em;
     // body2
     --bit-tpg-body2-margin: 0;
     --bit-tpg-body2-font-weight: 400;
     --bit-tpg-body2-font-size: 0.875rem;
     --bit-tpg-body2-line-height: 1.43;
-    --bit-tpg-body2-letter-spacing: 0.01071rem;
+    --bit-tpg-body2-letter-spacing: 0.01071em;
     // button
     --bit-tpg-button-margin: 0;
     --bit-tpg-button-font-weight: 500;
     --bit-tpg-button-font-size: 0.875rem;
     --bit-tpg-button-line-height: 1.75;
-    --bit-tpg-button-letter-spacing: 0.02857rem;
+    --bit-tpg-button-letter-spacing: 0.02857em;
     --bit-tpg-button-text-transform: uppercase;
     --bit-tpg-button-display: block;
     // caption
@@ -37,19 +34,19 @@
     --bit-tpg-caption-font-weight: 400;
     --bit-tpg-caption-font-size: 0.75rem;
     --bit-tpg-caption-line-height: 1.66;
-    --bit-tpg-caption-letter-spacing: 0.03333rem;
+    --bit-tpg-caption-letter-spacing: 0.03333em;
     // h1
     --bit-tpg-h1-margin: 0;
     --bit-tpg-h1-font-weight: 300;
     --bit-tpg-h1-font-size: 6rem;
     --bit-tpg-h1-line-height: 1.167;
-    --bit-tpg-h1-letter-spacing: -0.01562rem;
+    --bit-tpg-h1-letter-spacing: -0.01562em;
     // h2
     --bit-tpg-h2-margin: 0;
     --bit-tpg-h2-font-weight: 300;
     --bit-tpg-h2-font-size: 3.75rem;
     --bit-tpg-h2-line-height: 1.2;
-    --bit-tpg-h2-letter-spacing: -0.00833rem;
+    --bit-tpg-h2-letter-spacing: -0.00833em;
     // h3
     --bit-tpg-h3-margin: 0;
     --bit-tpg-h3-font-weight: 400;
@@ -61,7 +58,7 @@
     --bit-tpg-h4-font-weight: 400;
     --bit-tpg-h4-font-size: 2.125rem;
     --bit-tpg-h4-line-height: 1.235;
-    --bit-tpg-h4-letter-spacing: 0.00735rem;
+    --bit-tpg-h4-letter-spacing: 0.00735em;
     // h5
     --bit-tpg-h5-margin: 0;
     --bit-tpg-h5-font-weight: 400;
@@ -73,7 +70,7 @@
     --bit-tpg-h6-font-weight: 500;
     --bit-tpg-h6-font-size: 1.125rem;
     --bit-tpg-h6-line-height: 1.6;
-    --bit-tpg-h6-letter-spacing: 0.0075rem;
+    --bit-tpg-h6-letter-spacing: 0.0075em;
     // inherit
     --bit-tpg-inherit-margin: 0;
     --bit-tpg-inherit-font-family: inherit;
@@ -86,7 +83,7 @@
     --bit-tpg-overline-font-weight: 400;
     --bit-tpg-overline-font-size: 0.75rem;
     --bit-tpg-overline-line-height: 2.66;
-    --bit-tpg-overline-letter-spacing: 0.08333rem;
+    --bit-tpg-overline-letter-spacing: 0.08333em;
     --bit-tpg-overline-text-transform: uppercase;
     --bit-tpg-overline-display: block;
     // subtitle1
@@ -94,11 +91,11 @@
     --bit-tpg-subtitle1-font-weight: 400;
     --bit-tpg-subtitle1-font-size: 1rem;
     --bit-tpg-subtitle1-line-height: 1.75;
-    --bit-tpg-subtitle1-letter-spacing: 0.00938rem;
+    --bit-tpg-subtitle1-letter-spacing: 0.00938em;
     // subtitle2
     --bit-tpg-subtitle2-margin: 0;
     --bit-tpg-subtitle2-font-weight: 500;
     --bit-tpg-subtitle2-font-size: 0.875rem;
     --bit-tpg-subtitle2-line-height: 1.57;
-    --bit-tpg-subtitle2-letter-spacing: 0.00714rem;
+    --bit-tpg-subtitle2-letter-spacing: 0.00714em;
 }

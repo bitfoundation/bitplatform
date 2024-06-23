@@ -1,0 +1,337 @@
+﻿@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+
+.main-header {
+    top: 0;
+    width: 100%;
+    z-index: 11;
+    position: fixed;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding-top: var(--bit-status-bar-height);
+}
+
+.main-header--full-page {
+    .header-main-container {
+        /*max-width: rem2(1200px);*/
+    }
+}
+
+.header-main-container {
+    width: 100%;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    justify-content: space-between;
+    min-height: rem2($HeaderHeight);
+
+    @include md {
+        padding-left: rem2(30px);
+        padding-right: rem2(30px);
+    }
+
+    @include lt-lg {
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+        ::deep .header-link {
+            display: none;
+        }
+    }
+}
+
+.header-content-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.header-logo {
+    cursor: pointer;
+    width: rem2(50px);
+    height: rem2(50px);
+    margin-right: rem2(20px);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('/images/bit-blue-icon.svg');
+}
+
+.header-link {
+    height: 100%;
+    cursor: pointer;
+    line-height: 1.5;
+    font-size: rem2(18px);
+    text-decoration: none;
+    box-sizing: border-box;
+    padding: rem2(10px) rem2(16px);
+    color: $bit-color-foreground-secondary;
+
+    &:hover {
+        color: $bit-color-action-hover-foreground-secondary;
+    }
+}
+
+.header-link--active {
+    color: $bit-color-primary-main;
+
+    &:hover {
+        color: $bit-color-primary-main;
+    }
+}
+
+.right-section {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.github-container {
+    display: flex;
+    align-items: center;
+}
+
+.github-btn {
+    cursor: pointer;
+    width: rem2(40px);
+    height: rem2(40px);
+    border-radius: 50%;
+    margin-left: rem2(5px);
+}
+
+.bit-theme-dark .github-btn {
+    background-image: url('images/github-icon-dark.svg');
+}
+
+.bit-theme-light .github-btn {
+    background-image: url('images/github-icon-light.svg');
+}
+
+.toggle-theme-btn {
+    padding: 0;
+    border: none;
+    display: none;
+    cursor: pointer;
+    height: rem2(35px);
+    border-radius: 50%;
+    min-width: rem2(35px);
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary-main;
+
+    .icon-container {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+
+        .bit-icon {
+            margin: 0 rem2(4px);
+        }
+    }
+
+    &.dark-theme {
+        .icon-container {
+            padding: 2px 0px 0 1px;
+        }
+    }
+}
+
+.bit-theme-dark .dark-theme {
+    display: unset;
+}
+
+.bit-theme-light .light-theme {
+    display: unset;
+}
+
+.header-second-row {
+    width: 100%;
+    display: none;
+    align-items: center;
+    flex-flow: row nowrap;
+    backdrop-filter: none;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    height: rem2($HeaderSecondRowHeight);
+
+    @include lt-lg {
+        display: flex;
+    }
+}
+
+.header-nav {
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    display: flex;
+    position: fixed;
+    padding: rem2(20px);
+    box-sizing: border-box;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    background-color: $bit-color-background-primary;
+    top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    height: calc(100vh - #{rem2(calc($HeaderHeight + $HeaderSecondRowHeight))});
+}
+
+.header-nav-link {
+    width: 100%;
+    line-height: 1.5;
+    padding: rem2(16px) 0;
+    font-size: rem2(14px);
+    text-decoration: none;
+    margin-bottom: rem2(16px);
+    color: $bit-color-foreground-secondary;
+}
+
+.header-nav-link--active {
+    color: $bit-color-primary-main;
+}
+
+::deep {
+    .header-nav-close-btn {
+        z-index: 2;
+        top: rem2(10px);
+        right: rem2(10px);
+        width: rem2(44px);
+        height: rem2(44px);
+        position: absolute;
+        color: $bit-color-primary-main;
+    }
+
+    .header-action-button {
+        &.bit-acb {
+            height: 100%;
+            flex-grow: 1;
+        }
+    }
+
+    .header-menu-btn {
+        border-radius: 50%;
+        min-width: rem2(30px);
+        max-width: rem2(30px);
+        min-height: rem2(30px);
+        max-height: rem2(30px);
+        margin-right: rem2(16px);
+
+        @include gt-md {
+            display: none;
+        }
+    }
+}
+
+.header-menu-popup {
+    display: none;
+    z-index: 1302;
+    top: rem2(44px);
+    cursor: default;
+    position: absolute;
+    flex-flow: row nowrap;
+    border-radius: rem2(4px);
+    padding: rem2(8px) rem2(16px);
+    border: 1px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-secondary;
+
+    @include sm {
+        padding: 0;
+        overflow: auto;
+        max-height: 25rem;
+        flex-flow: column nowrap;
+    }
+
+    ::-webkit-scrollbar {
+        width: 7px;
+        -webkit-appearance: none;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        background-color: rgba(0, 0, 0, .5);
+        box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+    }
+
+    .col {
+        padding: rem2(8px) 0;
+    }
+
+    .col-header {
+        font-weight: 700;
+        font-size: rem2(16px);
+        color: $bit-color-primary-main;
+        padding: rem2(8px) rem2(16px) rem2(20px);
+    }
+
+
+    .menu-item {
+        display: flex;
+        cursor: pointer;
+        align-items: center;
+        flex-flow: row nowrap;
+        border-radius: rem2(4px);
+        justify-content: flex-start;
+        padding: rem2(8px) rem2(16px);
+        transition: background-color 150ms cubic-bezier(.4,0,.2,1) 0ms;
+
+        &:hover {
+            background-color: $bit-color-action-hover-background-primary;
+        }
+
+        &.active {
+            .item-title {
+                color: $bit-color-primary-main;
+            }
+        }
+    }
+
+    .item-title {
+        font-weight: 600;
+        white-space: nowrap;
+        font-size: rem2(16px);
+        color: $bit-color-foreground-primary;
+    }
+
+    .item-desc {
+        font-weight: 600;
+        white-space: nowrap;
+        font-size: rem2(14px);
+        color: $bit-color-foreground-secondary;
+    }
+
+    .menu-item--disabled {
+        cursor: default;
+
+        .item-title,
+        .item-desc {
+            color: $bit-color-foreground-disabled;
+        }
+
+        &:hover {
+            background-color: transparent;
+
+            .menu-item-icon {
+                border-color: $B11Color;
+            }
+        }
+    }
+}
+
+.header-ps-btn {
+    position: relative;
+    cursor: pointer;
+
+    &:hover {
+        .header-menu-popup {
+            display: flex;
+        }
+    }
+}

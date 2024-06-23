@@ -1,0 +1,29 @@
+﻿@page "/components/menubutton"
+@page "/components/menu-button"
+
+<PageOutlet Url="components/menubutton"
+            Title="MenuButton"
+            Description="MenuButton component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="MenuButton"
+                   ComponentDescription="A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums"
+                   Notes="The BitMenuButton is a Multi-API component which can accept the list of Items in 3 different ways: BitMenuButtonItem class, a custom Generic class, and BitMenuButtonOption component.">
+        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivotItem HeaderText="Item">
+                <_BitMenuButtonItemDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Custom">
+                <_BitMenuButtonCustomDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Option">
+                <_BitMenuButtonOptionDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </ComponentDemo>
+</div>

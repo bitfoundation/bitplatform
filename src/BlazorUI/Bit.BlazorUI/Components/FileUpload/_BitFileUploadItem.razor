@@ -1,0 +1,65 @@
+﻿@namespace Bit.BlazorUI
+
+@{
+    var fileUploadPercent = GetFileUploadPercent(Item);
+}
+
+@if (Item.Status != BitFileUploadStatus.Removed)
+{
+    <div class="bit-upl-itm @GetFileElClass(Item.Status)">
+        <div class="bit-upl-fic">
+            <div title="@Item.Name" class="bit-upl-fnc">
+                <div class="bit-upl-fn">@Item.Name</div>
+            </div>
+            <div class="bit-upl-fsc">
+                <span class="bit-upl-fs">@($"{GetFileUploadSize(Item)}/{FileSizeHumanizer.Humanize(Item.Size)}")</span>
+                <span class="bit-upl-pct">@fileUploadPercent%</span>
+            </div>
+            @if (Item.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
+            {
+                <div class="bit-upl-pbc">
+                    <div class="bit-upl-pbr" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
+                </div>
+            }
+            else
+            {
+                <div class="bit-upl-us">@GetUploadMessage(Item)</div>
+            }
+        </div>
+        @if (Item.Status is BitFileUploadStatus.Pending or BitFileUploadStatus.Paused)
+        {
+            <div class="bit-upl-usi" @onclick="() => FileUpload.Upload(Item)">
+                <i title="upload" class="bit-icon bit-icon--Play" aria-hidden="true" />
+            </div>
+        }
+
+        @if (Item.Status == BitFileUploadStatus.InProgress)
+        {
+            <div class="bit-upl-usi" @onclick="() => FileUpload.PauseUpload(Item)">
+                <i title="pause" class="bit-icon bit-icon--Pause" aria-hidden="true" />
+            </div>
+        }
+
+        @if (Item.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Paused)
+        {
+            <div class="bit-upl-usi" @onclick="() => FileUpload.CancelUpload(Item)">
+                <i title="cancel" class="bit-icon bit-icon--Cancel" aria-hidden="true" />
+            </div>
+        }
+        else if (FileUpload.ShowRemoveButton)
+        {
+            @if (FileUpload.IsRemoving)
+            {
+                <div class="bit-upl-ldg">
+                    <div class="bit-upl-spn"></div>
+                </div>
+            }
+            else
+            {
+                <div class="bit-upl-usi" @onclick="() => FileUpload.RemoveFile(Item)">
+                    <i title="remove" class="bit-icon bit-icon--Delete" aria-hidden="true" />
+                </div>
+            }
+        }
+    </div>
+}

@@ -6,22 +6,22 @@
 }
 
 <style>
-    .blazor-loading-circle {
+    .bit-ldn-Circle {
         display: inline-block;
         transform: translateZ(1px);
     }
 
-        .blazor-loading-circle > div {
+        .bit-ldn-Circle > div {
             display: inline-block;
             width: @(Size)px;
             height: @(Size)px;
             margin: @(Convert(8))px;
             border-radius: 50%;
-            background: @Color;
-            animation: blazor-loading-circle 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
+            animation: bit-ldn-Circle 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
         }
 
-    @@keyframes blazor-loading-circle {
+    @@keyframes bit-ldn-Circle {
         0%, 100% {
             animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5);
         }
@@ -40,4 +40,7 @@
         }
     }
 </style>
-<div class="blazor-loading-circle"><div></div></div>
+
+<div style="@Style" class="bit-ldn-Circle @Class">
+    <div style="@ChildStyle" class="@ChildClass"></div>
+</div>

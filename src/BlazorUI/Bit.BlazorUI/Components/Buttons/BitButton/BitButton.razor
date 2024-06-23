@@ -3,33 +3,66 @@
 
 @if (Href.HasValue() && IsEnabled)
 {
-    <a @ref="RootElement"
-       @attributes="HtmlAttributes"
+    <a @ref="RootElement" @attributes="HtmlAttributes"
+       id="@_Id"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
-       aria-label="@AriaLabel"
-       aria-describedby="@AriaDescription"
-       aria-hidden="@AriaHidden"
+       dir="@Dir?.ToString().ToLower()"
+       href="@Href"
        title="@Title"
        target="@Target"
-       href="@Href"
-       tabindex="@_tabIndex">
-        @ChildContent
+       tabindex="@_tabIndex"
+       aria-label="@AriaLabel"
+       aria-hidden="@AriaHidden"
+       aria-describedby="@AriaDescription">
+        @if (IconName.HasValue())
+        {
+            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+        }
+
+        @(Content ?? ChildContent)
     </a>
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+            id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
-            aria-label="@AriaLabel"
-            aria-describedby="@AriaDescription"
-            aria-hidden="@AriaHidden"
-            tabindex="@_tabIndex"
-            type="@ButtonType?.GetValue()"
+            dir="@Dir?.ToString().ToLower()"
+            type="@_buttonType.GetValue()"
             title="@Title"
-            @onclick="HandleOnClick">
-        @ChildContent
+            tabindex="@_tabIndex"
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            aria-describedby="@AriaDescription">
+        @if (IsLoading)
+        {
+            if (LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                <div style="@Styles?.LoadingContainer" class="bit-btn-ldg @GetLabelPositionClass() @Classes?.LoadingContainer">
+                    <div style="@Styles?.Spinner" class="bit-btn-spn @Classes?.Spinner"></div>
+                    @if (LoadingLabel.HasValue())
+                    {
+                        <div style="@Styles?.LoadingLabel" class="bit-btn-lbl @Classes?.LoadingLabel">
+                            @LoadingLabel
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            @if (IconName.HasValue())
+            {
+                <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+            }
+
+            @(Content ?? ChildContent)
+        }
     </button>
 }

@@ -1,0 +1,107 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+
+        <Content Remove="appsettings.json" />
+        <EmbeddedResource Include="appsettings.json" />
+
+        <PackageReference Include="Bit.BlazorUI" Version="8.9.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.9.0" />
+        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.9.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="8.9.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6" />
+
+        <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Collections.Concurrent" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="Bit.BlazorUI" />
+        <Using Include="Bit.Websites.Sales.Client.Shared" />
+        <Using Include="Bit.Websites.Sales.Client.Services.Contracts" />
+        <Using Include="Bit.Websites.Sales.Client.Services" />
+        <Using Include="Bit.Websites.Sales.Shared" />
+
+        <Watch Remove="*.scss" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Websites.Sales.Shared\Bit.Websites.Sales.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="**\*.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
+        </Compile>
+        <EmbeddedResource Update="**\*.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <IsolatedScssFiles Include="**\*.razor.scss" />
+        <GlobalScssFiles Include="Styles\**\*.scss" />
+        <TypeScriptFiles Include="**\*.ts" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <CallTarget Targets="InstallNodejsDependencies"/>
+        <CallTarget Targets="BuildJavaScript"/>
+        <CallTarget Targets="BuildIsolatedScssFiles"/>
+        <CallTarget Targets="BuildGlobalScssFiles"/>
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot\scripts\app.js">
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
+        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+    <Target Name="BuildGlobalScssFiles" Inputs="@(GlobalScssFiles)" Outputs="wwwroot/styles/app.css">
+        <Exec Command="node_modules/.bin/sass Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+    <ItemGroup>
+        <Content Remove="package*.json" />
+        <Content Remove="tsconfig.json" />
+        <None Include="package*json" />
+        <None Include="tsconfig.json" />
+    </ItemGroup>
+
+</Project>

@@ -2,102 +2,102 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .blazor-loading-roller {
+    .bit-ldn-Roller {
         display: inline-block;
         position: relative;
         width: @(Size)px;
         height: @(Size)px;
     }
 
-        .blazor-loading-roller div {
-            animation: blazor-loading-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        .bit-ldn-Roller div {
+            animation: bit-ldn-Roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
             transform-origin: @(Convert(40))px @(Convert(40))px;
         }
 
-            .blazor-loading-roller div:after {
+            .bit-ldn-Roller div:after {
                 content: " ";
                 display: block;
                 position: absolute;
                 width: @(Convert(7))px;
                 height: @(Convert(7))px;
                 border-radius: 50%;
-                background: @Color;
+                background: @(Color ?? "var(--bit-clr-fg-primary)");
                 margin: -@(Convert(4))px 0 0 -@(Convert(4))px;
             }
 
-            .blazor-loading-roller div:nth-child(1) {
+            .bit-ldn-Roller div:nth-child(1) {
                 animation-delay: -0.036s;
             }
 
-                .blazor-loading-roller div:nth-child(1):after {
+                .bit-ldn-Roller div:nth-child(1):after {
                     top: @(Convert(63))px;
                     left: @(Convert(63))px;
                 }
 
-            .blazor-loading-roller div:nth-child(2) {
+            .bit-ldn-Roller div:nth-child(2) {
                 animation-delay: -0.072s;
             }
 
-                .blazor-loading-roller div:nth-child(2):after {
+                .bit-ldn-Roller div:nth-child(2):after {
                     top: @(Convert(68))px;
                     left: @(Convert(56))px;
                 }
 
-            .blazor-loading-roller div:nth-child(3) {
+            .bit-ldn-Roller div:nth-child(3) {
                 animation-delay: -0.108s;
             }
 
-                .blazor-loading-roller div:nth-child(3):after {
+                .bit-ldn-Roller div:nth-child(3):after {
                     top: @(Convert(71))px;
                     left: @(Convert(48))px;
                 }
 
-            .blazor-loading-roller div:nth-child(4) {
+            .bit-ldn-Roller div:nth-child(4) {
                 animation-delay: -0.144s;
             }
 
-                .blazor-loading-roller div:nth-child(4):after {
+                .bit-ldn-Roller div:nth-child(4):after {
                     top: @(Convert(72))px;
                     left: @(Convert(40))px;
                 }
 
-            .blazor-loading-roller div:nth-child(5) {
+            .bit-ldn-Roller div:nth-child(5) {
                 animation-delay: -0.18s;
             }
 
-                .blazor-loading-roller div:nth-child(5):after {
+                .bit-ldn-Roller div:nth-child(5):after {
                     top: @(Convert(71))px;
                     left: @(Convert(32))px;
                 }
 
-            .blazor-loading-roller div:nth-child(6) {
+            .bit-ldn-Roller div:nth-child(6) {
                 animation-delay: -0.216s;
             }
 
-                .blazor-loading-roller div:nth-child(6):after {
+                .bit-ldn-Roller div:nth-child(6):after {
                     top: @(Convert(68))px;
                     left: @(Convert(24))px;
                 }
 
-            .blazor-loading-roller div:nth-child(7) {
+            .bit-ldn-Roller div:nth-child(7) {
                 animation-delay: -0.252s;
             }
 
-                .blazor-loading-roller div:nth-child(7):after {
+                .bit-ldn-Roller div:nth-child(7):after {
                     top: @(Convert(63))px;
                     left: @(Convert(17))px;
                 }
 
-            .blazor-loading-roller div:nth-child(8) {
+            .bit-ldn-Roller div:nth-child(8) {
                 animation-delay: -0.288s;
             }
 
-                .blazor-loading-roller div:nth-child(8):after {
+                .bit-ldn-Roller div:nth-child(8):after {
                     top: @(Convert(56))px;
                     left: @(Convert(12))px;
                 }
 
-    @@keyframes blazor-loading-roller {
+    @@keyframes bit-ldn-Roller {
         0% {
             transform: rotate(0deg);
         }
@@ -107,4 +107,10 @@
         }
     }
 </style>
-<div class="blazor-loading-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+
+<div style="@Style" class="bit-ldn-Roller @Class">
+    @for (int i = 0; i < 8; i++)
+    {
+        <div style="@ChildStyle" class="@ChildClass"></div>
+    }
+</div>

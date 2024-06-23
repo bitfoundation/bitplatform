@@ -1,4 +1,12 @@
-﻿@*<div>
+﻿<script>
+    function demoHandler(message, data) {
+        switch (message) {
+            // case BswupMessage.updateFound: return console.log('a new update found!!!');
+        }
+    }
+</script>
+
+@*<div>
     <BswupProgress>
         <div class="bswup-container">
             <div class="bswup-title">Loading...</div>
@@ -10,11 +18,12 @@
 </div>*@
 
 <div>
-    <BswupProgress HideApp=true AppContainer="#app-container">
+    <BswupProgress AppContainer="#app-container" HideApp=false AutoReload=false ShowLogs=false Handler="demoHandler">
         <div class="bswup-progress-text" />
         <svg class="bswup-container">
             <circle r="40%" cx="50%" cy="50%" />
             <circle r="40%" cx="50%" cy="50%" />
         </svg>
     </BswupProgress>
+    <button id="bit-bswup-reload">Update available, Click to Reload</button>
 </div>

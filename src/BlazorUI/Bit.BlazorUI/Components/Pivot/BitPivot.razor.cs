@@ -18,6 +18,11 @@ public partial class BitPivot
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitPivot component.
+    /// </summary>
+    [Parameter] public BitPivotClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Default selected key for the pivot
     /// </summary>
     [Parameter] public string? DefaultSelectedKey { get; set; }
@@ -113,34 +118,46 @@ public partial class BitPivot
 
     [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitPivot component.
+    /// </summary>
+    [Parameter] public BitPivotClassStyles? Styles { get; set; }
+
     protected override string RootElementClass => "bit-pvt";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => LinkSize switch
         {
-            BitPivotLinkSize.Large => "large",
-            BitPivotLinkSize.Normal => "normal",
+            BitPivotLinkSize.Large => "bit-pvt-large",
+            BitPivotLinkSize.Normal => "bit-pvt-normal",
             _ => string.Empty
         }).Register(() => LinkFormat switch
         {
-            BitPivotLinkFormat.Links => "links",
-            BitPivotLinkFormat.Tabs => "tabs",
+            BitPivotLinkFormat.Links => "bit-pvt-links",
+            BitPivotLinkFormat.Tabs => "bit-pvt-tabs",
             _ => string.Empty
         }).Register(() => OverflowBehavior switch
         {
-            BitPivotOverflowBehavior.Menu => "menu",
-            BitPivotOverflowBehavior.Scroll => "scroll",
-            BitPivotOverflowBehavior.None => "none",
+            BitPivotOverflowBehavior.Menu => "bit-pvt-menu",
+            BitPivotOverflowBehavior.Scroll => "bit-pvt-scroll",
+            BitPivotOverflowBehavior.None => "bit-pvt-none",
             _ => string.Empty
         }).Register(() => Position switch
         {
-            BitPivotPosition.Top => "position-top",
-            BitPivotPosition.Bottom => "position-bottom",
-            BitPivotPosition.Left => "position-left",
-            BitPivotPosition.Right => "position-right",
+            BitPivotPosition.Top => "bit-pvt-top",
+            BitPivotPosition.Bottom => "bit-pvt-bottom",
+            BitPivotPosition.Left => "bit-pvt-left",
+            BitPivotPosition.Right => "bit-pvt-right",
             _ => string.Empty
         });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override Task OnInitializedAsync()
@@ -217,8 +234,8 @@ public partial class BitPivot
     {
         return _selectedItem?.Visibility switch
         {
-            BitComponentVisibility.Collapsed => "visibility:hidden",
-            BitComponentVisibility.Hidden => "display:none",
+            BitVisibility.Collapsed => "visibility:hidden",
+            BitVisibility.Hidden => "display:none",
             _ => string.Empty
         };
     }

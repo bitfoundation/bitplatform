@@ -1,0 +1,22 @@
+﻿@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.section-card {
+    @include SectionCard;
+}
+
+.section-card-txt {
+    @include SectionCardText;
+}
+
+.bswup-img {
+    width: 100%;
+    max-width: rem2(900px);
+    border: 1px solid gray;
+}

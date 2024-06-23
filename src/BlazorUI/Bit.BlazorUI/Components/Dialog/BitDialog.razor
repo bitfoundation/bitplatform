@@ -1,0 +1,89 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (IsOpen)
+{
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+
+        <div role=@(_isAlertRole ? "alertdialog": "dialog")
+             aria-modal="@((IsModeless is false).ToString())"
+             aria-labelledby="@TitleAriaId"
+             aria-describedby="@SubtitleAriaId"
+             style="outline:none;">
+
+            <div class="bit-dlg-doc @GetPositionClass()" role="document">
+                @if (IsModeless is false)
+                {
+                    <div style="@Styles?.Overlay" class="bit-dlg-ovl @Classes?.Overlay" aria-hidden="true" @onclick="HandleOnOverlayClick" />
+                }
+                <div id="@_containerId" style="@Styles?.Container" class="bit-dlg-ctn @Classes?.Container">
+                    @if (Title.HasValue() || ShowCloseButton)
+                    {
+                        <div style="@Styles?.Header" class="bit-dlg-hdr @Classes?.Header">
+                            @if (Title.HasValue())
+                            {
+                                <div style="@Styles?.Title" class="bit-dlg-ttl @Classes?.Title">@Title</div>
+                            }
+
+                            @if (ShowCloseButton)
+                            {
+                                <button @onclick="HandleOnCloseClick"
+                                        class="bit-dlg-cls"
+                                        type="button"
+                                        aria-label="Close"
+                                        aria-describedby="Close"
+                                        aria-hidden="Close"
+                                        title="Close">
+                                    <span>
+                                        <i class="bit-icon bit-icon--Cancel" />
+                                    </span>
+                                </button>
+                            }
+                        </div>
+                    }
+                    <div style="@Styles?.Body" class="bit-dlg-scr-cnt @Classes?.Body">
+                        @if (Message.HasValue())
+                        {
+                            <div style="@Styles?.Message" class="bit-dlg-msg @Classes?.Message">@Message</div>
+                        }
+
+                        @(Body ?? ChildContent)
+
+                        @if (ShowOkButton || ShowCancelButton)
+                        {
+                            <div style="@Styles?.ButtonsContainer" class="bit-dlg-bct @Classes?.ButtonsContainer">
+                                @if (ShowOkButton)
+                                {
+                                    <button style="@Styles?.OkButton"
+                                            class="bit-dlg-pri @Classes?.OkButton"
+                                            @onclick="HandleOnOkClick">
+                                        @OkText
+                                    </button>
+                                }
+
+                                @if (ShowCancelButton)
+                                {
+                                    <button style="@Styles?.CancelButton"
+                                            class="bit-dlg-std @Classes?.CancelButton"
+                                            @onclick="HandleOnCancelClick">
+                                        @CancelText
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                    @if (FooterTemplate is not null)
+                    {
+                        @FooterTemplate
+                    }
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+}

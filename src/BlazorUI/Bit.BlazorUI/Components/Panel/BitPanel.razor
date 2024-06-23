@@ -1,0 +1,57 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (IsOpen)
+{
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()"
+         role="dialog"
+         aria-modal="@((IsModeless is false).ToString())"
+         aria-labelledby="@TitleAriaId"
+         aria-describedby="@SubtitleAriaId">
+        @if (IsModeless is false)
+        {
+            <div style="@Styles?.Overlay" class="bit-pnl-ovl @Classes?.Overlay" aria-hidden="true" @onclick="OnOverlayClicked" />
+        }
+        <div id="@_containerId" style="@GetPanelSizeStyle() @Styles?.Container" class="bit-pnl-cnt @GetPositionClass() @Classes?.Container">
+            <div style="@Styles?.Header" class="bit-pnl-hcn @Classes?.Header">
+                @if (HeaderTemplate is not null)
+                {
+                    @HeaderTemplate
+                }
+                else if (HeaderText.HasValue())
+                {
+                    <label style="@Styles?.HeaderText" class="bit-pnl-ttl @Classes?.HeaderText">@HeaderText</label>
+                }
+
+                @if (ShowCloseButton)
+                {
+                    <button @onclick="OnCloseButtonClicked"
+                            style="@Styles?.CloseButton"
+                            class="bit-pnl-cls @Classes?.CloseButton"
+                            type="button"
+                            title="Close"
+                            aria-label="Close"
+                            aria-hidden="Close"
+                            aria-describedby="Close">
+                        <i style="@Styles?.CloseIcon" class="bit-icon bit-icon--Cancel @Classes?.CloseIcon" />
+                    </button>
+                }
+            </div>
+
+            <div style="@Styles?.Body" class="bit-pnl-bdy @Classes?.Body">
+                @ChildContent
+            </div>
+
+            @if (FooterTemplate is not null)
+            {
+                <div style="@Styles?.Footer" class="bit-pnl-fcn @Classes?.Footer">
+                    @FooterTemplate
+                </div>
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,200 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-spb {
+    display: flex;
+    font-weight: 400;
+    align-items: center;
+    font-size: spacing(5);
+    column-gap: spacing(1.25);
+    font-family: $typography-font-family;
+
+    &.bit-dis {
+        .bit-spb-lct {
+            color: $color-foreground-disabled;
+        }
+
+        .bit-spb-lbl {
+            color: $color-foreground-disabled;
+        }
+
+        .bit-spb-cnt {
+            cursor: default;
+            color: $color-foreground-disabled;
+            border: none $color-border-disabled;
+            background: none $color-background-disabled;
+        }
+
+        .bit-spb-inp {
+            cursor: default;
+            color: $color-foreground-disabled;
+            border: none $color-border-disabled;
+            background: none $color-background-disabled;
+        }
+
+        .bit-spb-btn,
+        .bit-spb-sbn {
+            cursor: default;
+            pointer-events: none;
+            color: $color-foreground-disabled;
+            background: $color-background-disabled;
+            border: $shape-border-width $shape-border-style $color-border-disabled;
+        }
+    }
+
+    &.bit-inv {
+        .bit-spb-cnt {
+            border-color: $color-state-error;
+        }
+    }
+}
+
+.bit-spb-lct {
+    height: spacing(4);
+    align-items: center;
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+
+    .bit-spb-lbl {
+        box-shadow: none;
+        font-weight: 600;
+        white-space: nowrap;
+        box-sizing: border-box;
+        font-size: spacing(1.75);
+        padding: spacing(.0625) 0;
+        line-height: spacing(2.5);
+        color: $color-foreground-primary;
+    }
+}
+
+.bit-spb-lic {
+    font-size: spacing(2.5);
+    padding: 0 spacing(.0625);
+}
+
+.bit-spb-cnt {
+    width: 100%;
+    display: flex;
+    height: spacing(4);
+    position: relative;
+    box-sizing: border-box;
+    border-radius: $shape-border-radius;
+    border: $shape-border-width $shape-border-style $color-border-primary;
+}
+
+.bit-spb-hdi {
+    width: max-content;
+}
+
+.bit-spb-inp {
+    margin: 0;
+    outline: 0;
+    width: 100%;
+    height: 100%;
+    flex: 1 1 0%;
+    cursor: text;
+    display: block;
+    overflow: hidden;
+    box-shadow: none;
+    user-select: text;
+    border-style: none;
+    white-space: nowrap;
+    font-family: inherit;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    font-size: spacing(1.75);
+    color: $color-foreground-primary;
+    padding: 0 spacing(1) 0 spacing(1.125);
+    background-color: $color-background-primary;
+    border-radius: $shape-border-radius 0 0 $shape-border-radius;
+}
+
+.bit-spb-cin {
+    text-align: center;
+}
+
+.bit-spb-opr {
+    display: flex;
+    flex-direction: column;
+
+    &:first-child {
+        border-radius: 0 $shape-border-radius 0 0;
+    }
+
+    &:nth-child(2) {
+        border-radius: 0 0 $shape-border-radius 0;
+    }
+}
+
+.bit-spb-btn,
+.bit-spb-sbn {
+    padding: 0;
+    border: none;
+    outline: none;
+    display: block;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    text-align: center;
+    width: spacing(2.875);
+    text-decoration: none;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    background-color: transparent;
+    color: $color-foreground-primary;
+    border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-foreground-primary;
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+}
+
+.bit-spb-btn {
+    height: 50%;
+}
+
+.bit-spb-sbn {
+    width: spacing(4);
+}
+
+.bit-spb-iwp {
+    height: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-spb-ico {
+    margin: 0;
+    width: 100%;
+    flex-shrink: 0;
+    height: spacing(2);
+    font-size: spacing(1);
+    line-height: spacing(2);
+}
+
+.bit-spn-sbi {
+    font-size: spacing(1.5);
+}
+
+.bit-spb-ltp {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.bit-spb-lbt {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+}
+
+.bit-spb-lst {
+    flex-direction: row;
+}
+
+.bit-spb-led {
+    flex-direction: row-reverse;
+}

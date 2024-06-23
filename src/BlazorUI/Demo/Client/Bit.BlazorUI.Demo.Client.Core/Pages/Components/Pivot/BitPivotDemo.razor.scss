@@ -1,0 +1,31 @@
+﻿.subtitle {
+    padding: 20px 0 10px 0;
+}
+
+.box {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+}
+
+::deep {
+    .custom-class {
+        margin: 1rem;
+        padding-left: 0.25rem;
+        box-shadow: 0 0 1rem lightskyblue;
+    }
+
+    .custom-selected-item {
+        background-color: goldenrod;
+    }
+
+    .custom-header {
+        overflow: hidden;
+        border-radius: 1rem;
+        border: 1px solid gray;
+    }
+
+    .custom-content-view {
+        margin-top: 1rem;
+        background-color: deepskyblue;
+    }
+}

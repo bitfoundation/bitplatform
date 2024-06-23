@@ -1,0 +1,41 @@
+﻿@page "/besql/usage"
+@inherits AppComponentBase
+
+<PageOutlet Url="besql/usage"
+            Title="Usage - Besql"
+            Description="usage of the bit Besql" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Using bit Besql</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the bit Besql?
+    </BitTypography>
+    <br />
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Script</BitTypography>
+        <div class="section-card-txt">
+            To get started, simply after installing bit Besql, add the following script tag to your default document:
+            <CodeBox>&lt;script src="_content/Bit.Besql/bit-besql.js">&lt;/script></CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Services</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            Register bit Besql services using its specific IServiceCollection extension method as follows:
+            <CodeBox>services.AddBesqlDbContextFactory();</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            The usage of bit Besql is the same as the usage of EFCore's Sqlite provider with IDbContextFactory.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Overview" PrevUrl="/besql/overview" />

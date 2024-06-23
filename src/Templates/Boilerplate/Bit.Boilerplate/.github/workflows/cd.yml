@@ -1,0 +1,295 @@
+name: Boilerplate CD
+
+# https://bitplatform.dev/templates/dev-ops
+
+env:
+  API_SERVER_ADDRESS: 'https://use-your-server-url-here.com/'
+  APP_SERVICE_NAME: 'app-service-bp-test'
+  IOS_CODE_SIGN_PROVISION: 'Boilerplate'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+
+  build_api_blazor:
+    name: build api + blazor web
+    runs-on: ubuntu-22.04
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    # - name: Enable pre rendering
+    #   run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
+        
+    - name: Update appsettings.json api server address
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
+    - name: Install wasm
+      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+      
+    - name: Generate CSS/JS files
+      run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+
+    - name: Publish
+      run: dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+
+    - name: Build migrations bundle
+      run: |
+        cd src/Boilerplate.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj
+
+    - name: Upload ef migrations bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: migrations-bundle
+        path: src/Boilerplate.Server/efbundle
+
+    - name: Upload server artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-bundle
+        path: ${{env.DOTNET_ROOT}}/server
+
+  deploy_api_blazor:
+    name: deploy api + blazor
+    needs: build_api_blazor
+    runs-on: ubuntu-22.04
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+
+      - name: Retrieve server bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: server-bundle
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: migrations-bundle
+
+      - name: Update appsettings.json
+        uses: devops-actions/variable-substitution@v1.2 
+        with:
+          files: 'appsettings.json'
+        env:
+          ConnectionStrings_SqlServerConnectionString: ${{ secrets.DB_CONNECTION_STRING }}
+          DataProtectionCertificatePassword: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_PASSWORD }}
+
+      - name: Delete DataProtectionCertificate.pfx
+        run: |
+            rm DataProtectionCertificate.pfx
+
+      - name: Extract data protection certificate from env
+        uses: timheuer/base64-to-file@v1.2
+        with:
+            fileDir: './'
+            fileName: 'DataProtectionCertificate.pfx'
+            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+
+      - name: Run migrations
+        run: |
+            chmod +x efbundle
+            ./efbundle
+            rm efbundle
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_SERVICE_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .
+
+#if (windows == true)
+  build_blazor_hybrid_windows:
+    name: build blazor hybrid (windows)
+    runs-on: windows-2022
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+  
+    - name: Update appsettings.json api server address
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
+  
+    - name: Generate CSS/JS files
+      run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+
+    - name: Publish
+      run: |
+          cd src\Client\Boilerplate.Client.Windows\
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64
+          ren .\bin\publish-arm64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-arm64.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86
+          ren .\bin\publish-x86\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x86.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
+          ren .\bin\publish-x64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x64.exe
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish
+          del .\bin\publish\Boilerplate.Client.Windows.exe
+          echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish .\publish-result /s /e /h
+          dotnet tool restore
+          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
+  
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: win-exe-bundle
+        path: src\Client\Boilerplate.Client.Windows\Releases
+#endif
+  
+  build_blazor_hybrid_android:
+    name: build blazor hybrid (android)
+    runs-on: ubuntu-22.04
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@v4
+     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+  
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './src/Client/Boilerplate.Client.Maui/'
+          fileName: 'Boilerplate.keystore'
+          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+  
+    - name: Update appsettings.json api server address
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
+    - name: Install maui
+      run: cd src && dotnet workload install maui-android
+
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+  
+    - name: Generate CSS/JS files
+      run: |
+          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+          dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release
+  
+    - name: Build aab
+      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
+  
+    - name: Build apk
+      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
+  
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-bundle
+        path: src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.*
+
+  build_blazor_hybrid_iOS:
+    name: build blazor hybrid (iOS-macOS)
+    runs-on: macos-14
+  
+    steps:
+     
+    - name: Checkout source code
+      uses: actions/checkout@v4
+     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - uses: maxim-lobanov/setup-xcode@v1.6.0
+      with:
+        xcode-version: '15.4'
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+  
+    - name: Update appsettings.json api server address
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+
+    - name: Install maui
+      run: cd src && dotnet workload install maui
+
+    - name: Import Code-Signing Certificates
+      uses: apple-actions/import-codesign-certs@v3
+      with:
+        p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
+        p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+
+    - name: Download Apple Provisioning Profiles
+      uses: Apple-Actions/download-provisioning-profiles@v3
+      with:
+        bundle-id: 'com.bitplatform.template'
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+
+    - name: Generate CSS/JS files
+      run: |
+          dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+          dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release
+  
+    - name: Build ipa
+      run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: iOS-bundle
+        path: src/Client/Boilerplate.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa

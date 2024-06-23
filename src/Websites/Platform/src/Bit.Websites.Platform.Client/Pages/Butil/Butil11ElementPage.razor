@@ -1,0 +1,1362 @@
+﻿@page "/butil/element"
+@inherits AppComponentBase
+
+<PageOutlet Url="butil/element"
+            Title="Element - Butil"
+            Description="Element class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Element</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the Element class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser Element features you need to inject the Bit.Butil.Element class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Element element
+
+&lt;div @@ref="elementRef">Element&lt;/div>
+
+@@code {
+    private ElementReference elementRef;
+  
+    var rect = await element.GetBoundingClientRect(elementRef);
+    // or
+    var rect = await elementRef.GetBoundingClientRect();
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>GetAttribute</b>: <br />
+            Retrieves the value of the named attribute from the current node and returns it as a string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getAttributeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getAttributeElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="attributeName" Label="Attribute name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="GetAttribute">GetAttribute</BitButton>
+                        <br />
+                        <br />
+                        <div>Attribute: @currentAttribute</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetAttributeNames</b>: <br />
+            Returns an array of attribute names from the current element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttributeNames" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getAttributeNamesExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getAttributeNamesElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetAttributeNames">GetAttributeNames</BitButton>
+                        <br />
+                        <br />
+                        <div>Attribute names: @currentAttributeNames</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetBoundingClientRect</b>: <br />
+            Returns the size of an element and its position relative to the viewport
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getBoundingClientRectExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getBoundingClientRectElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetBoundingClientRect">GetBoundingClientRect</BitButton>
+                        <br />
+                        <br />
+                        <div>Bounding client rect: @currentBoundingClientRect</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>HasAttribute</b>: <br />
+            Returns a boolean value indicating if the element has the specified attribute or not
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @hasAttributeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="hasAttributeElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="hasAttributeName" Label="Attribute name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="GetHasAttribute">GetHasAttribute</BitButton>
+                        <br />
+                        <br />
+                        <div>Has attribute: @hasAttribute</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>HasAttributes</b>: <br />
+            Returns a boolean value indicating if the element has one or more HTML attributes present
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttributes" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @hasAttributesExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="hasAttributesElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetHasAttributes">GetHasAttributes</BitButton>
+                        <br />
+                        <br />
+                        <div>Has attributes: @hasAttributes</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetPointerCapture</b>: <br />
+            Designates a specific element as the capture target of future pointer events
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>HasPointerCapture</b>: <br />
+            Indicates whether the element on which it is invoked has pointer capture for the pointer identified by the given pointer ID
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/hasPointerCapture" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>ReleasePointerCapture</b>: <br />
+            Releases (stops) pointer capture that was previously set for a specific pointer event
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/releasePointerCapture" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>RequestPointerLock</b>: <br />
+            Allows to asynchronously ask for the pointer to be locked on the given element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/requestPointerLock" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @requestPointerLockExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="requestPointerLockElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="@(() => requestPointerLockElementRef.RequestPointerLock())">
+                            RequestPointerLock
+                        </BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>RequestFullScreen</b>: <br />
+            Asynchronously asks the browser to make the element fullscreen
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @requestFullScreenExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="requestFullScreenElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="RequestFullScreen">RequestFullScreen </BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Matches</b>: <br />
+            Returns a boolean value indicating whether or not the element would be selected by the specified selector string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/matches" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @matchesExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="matchesElementRef"
+                             id="target"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="selector" Label="Selector" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="Matches">Matches</BitButton>
+                        <br />
+                        <br />
+                        <div>Matches: @matches</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Scroll</b>: <br />
+            Scrolls to a particular set of coordinates inside a given element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scroll" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @scrollExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="scrollElementRef"
+                             style="max-width:6rem;
+                                        max-height:6rem;
+                                        color: white;
+                                        overflow: auto;
+                                        background: dodgerblue;">
+                            <div style="height: 10rem; width: 10rem;">Element</div>
+                        </div>
+                        <br />
+                        <BitSpinButton @bind-Value="scrollY" Label="Scroll Y" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitSpinButton @bind-Value="scrollX" Label="Scroll X" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitChoiceGroup @bind-Value="scrollBehavior"
+                                        Label="Scroll behavior"
+                                        TItem="BitChoiceGroupOption<ScrollBehavior>" TValue="ScrollBehavior">
+                            <BitChoiceGroupOption Text="Auto" Value="ScrollBehavior.Auto" />
+                            <BitChoiceGroupOption Text="Instant" Value="ScrollBehavior.Instant" />
+                            <BitChoiceGroupOption Text="Smooth" Value="ScrollBehavior.Smooth" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitButton OnClick="Scroll">Scroll</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ScrollBy</b>: <br />
+            Scrolls an element by the given amount
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollBy" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @scrollByExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="scrollByElementRef"
+                             style="max-width:6rem;
+                                        max-height:6rem;
+                                        color: white;
+                                        overflow: auto;
+                                        background: dodgerblue;">
+                            <div style="height: 10rem; width: 10rem;">Element</div>
+                        </div>
+                        <br />
+                        <BitSpinButton @bind-Value="scrollByY" Label="ScrollBy Y" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitSpinButton @bind-Value="scrollByX" Label="ScrollBy X" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitChoiceGroup @bind-Value="scrollByBehavior"
+                                        Label="ScrollBy behavior"
+                                        TItem="BitChoiceGroupOption<ScrollBehavior>" TValue="ScrollBehavior">
+                            <BitChoiceGroupOption Text="Auto" Value="ScrollBehavior.Auto" />
+                            <BitChoiceGroupOption Text="Instant" Value="ScrollBehavior.Instant" />
+                            <BitChoiceGroupOption Text="Smooth" Value="ScrollBehavior.Smooth" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitButton OnClick="ScrollBy">ScrollBy</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ScrollIntoView</b>: <br />
+            Scrolls the page until the element gets into the view
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @scrollIntoViewExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="scrollIntoViewElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitChoiceGroup @bind-Value="inlineScrollPosition"
+                                        Label="Inline scroll position"
+                                        TItem="BitChoiceGroupOption<ScrollLogicalPosition>" TValue="ScrollLogicalPosition">
+                            <BitChoiceGroupOption Text="Start" Value="ScrollLogicalPosition.Start" />
+                            <BitChoiceGroupOption Text="Center" Value="ScrollLogicalPosition.Center" />
+                            <BitChoiceGroupOption Text="End" Value="ScrollLogicalPosition.End" />
+                            <BitChoiceGroupOption Text="Nearest" Value="ScrollLogicalPosition.Nearest" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitChoiceGroup @bind-Value="blockScrollPosition"
+                                        Label="Block scroll position"
+                                        TItem="BitChoiceGroupOption<ScrollLogicalPosition>" TValue="ScrollLogicalPosition">
+                            <BitChoiceGroupOption Text="Start" Value="ScrollLogicalPosition.Start" />
+                            <BitChoiceGroupOption Text="Center" Value="ScrollLogicalPosition.Center" />
+                            <BitChoiceGroupOption Text="End" Value="ScrollLogicalPosition.End" />
+                            <BitChoiceGroupOption Text="Nearest" Value="ScrollLogicalPosition.Nearest" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitChoiceGroup @bind-Value="scrollIntoViewBehavior"
+                                        Label="ScrollIntoView behavior"
+                                        TItem="BitChoiceGroupOption<ScrollBehavior>" TValue="ScrollBehavior">
+                            <BitChoiceGroupOption Text="Auto" Value="ScrollBehavior.Auto" />
+                            <BitChoiceGroupOption Text="Instant" Value="ScrollBehavior.Instant" />
+                            <BitChoiceGroupOption Text="Smooth" Value="ScrollBehavior.Smooth" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitButton OnClick="ScrollIntoView">ScrollIntoView</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>RemoveAttribute</b>: <br />
+            Removes the named attribute from the current node
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/removeAttribute" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @removeAttributeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="removeAttributeElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="removeAttributeName" Label="Attribute name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="RemoveAttribute">RemoveAttribute</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetAttribute</b>: <br />
+            Sets the value of a named attribute of the current node
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @setAttributeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="setAttributeElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="setAttributeName" Label="Attribute name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitTextField @bind-Value="setAttributeValue" Label="Attribute value" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="SetAttribute">SetAttribute</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>ToggleAttribute</b>: <br />
+            Toggles a boolean attribute, removing it if it is present and adding it if it is not present, on the specified element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @toggleAttributeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="toggleAttributeElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="toggleAttributeName" Label="Attribute name" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitCheckbox @bind-Value="toggleAttributeForce" Label="Force" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="ToggleAttribute">ToggleAttribute</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetAccessKey</b>, <b>GetAccessKey</b>: <br />
+            Gets/Sets a string representing the access key assigned to the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/accessKey" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @accessKeyExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="accessKeyElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="newAccessKey" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="SetAccessKey">SetAccessKey</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetAccessKey">GetAccessKey</BitButton>
+                        <br />
+                        <br />
+                        <div>Access key: @currentAccessKey</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetClassName</b>, <b>GetClassName</b>: <br />
+            Gets/Sets a string representing the class of the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/className" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @classNameExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="classNameElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="newClassName" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="SetClassName">SetClassName</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetClassName">GetClassName</BitButton>
+                        <br />
+                        <br />
+                        <div>ClassName: @currentClassName</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetClientHeight</b>: <br />
+            Returns a number representing the inner height of the element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientHeight" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getClientHeightExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getClientHeightElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetClientHeight">GetClientHeight</BitButton>
+                        <br />
+                        <br />
+                        <div>ClientHeight: @currentClientHeight</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetClientLeft</b>: <br />
+            Returns a number representing the width of the left border of the element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getClientLeftExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getClientLeftElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetClientLeft">GetClientLeft</BitButton>
+                        <br />
+                        <br />
+                        <div>ClientLeft: @currentClientLeft</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetClientTop</b>: <br />
+            Returns a number representing the width of the top border of the element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getClientTopExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getClientTopElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetClientTop">GetClientTop</BitButton>
+                        <br />
+                        <br />
+                        <div>ClientTop: @currentClientTop</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetClientWidth</b>: <br />
+            Returns a number representing the inner width of the element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getClientWidthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getClientWidthElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetClientWidth">GetClientWidth</BitButton>
+                        <br />
+                        <br />
+                        <div>ClientWidth: @currentClientWidth</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetId</b>, <b>GetId</b>: <br />
+            Gets/Sets a string representing the id of the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @idExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="idElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="newId" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="SetId">SetId</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetId">GetId</BitButton>
+                        <br />
+                        <br />
+                        <div>Id: @currentId</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetInnerHTML</b>, <b>GetInnerHTML</b>: <br />
+            Gets/Sets a string representing the markup of the element's content
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @innerHTMLExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="innerHTMLElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="newInnerHTML" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="SetInnerHTML">SetInnerHTML</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetInnerHTML">GetInnerHTML</BitButton>
+                        <br />
+                        <br />
+                        <div>InnerHTML: @currentInnerHTML</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetOuterHtml</b>, <b>GetOuterHtml</b>: <br />
+            Gets/Sets a string representing the markup of the element including its content. When used as a setter, replaces the element with nodes parsed from the given string
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @outerHTMLExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="outerHTMLElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetOuterHTML">GetOuterHTML</BitButton>
+                        <br />
+                        <br />
+                        <div>OuterHTML: @currentOuterHTML</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetScrollHeight</b>: <br />
+            Returns a number representing the scroll view height of an element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getScrollHeightExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getScrollHeightElementRef"
+                             style="max-width:6rem;
+                                        max-height:6rem;
+                                        color: white;
+                                        overflow: auto;
+                                        background: dodgerblue;">
+                            <div style="height: 10rem; width: 10rem;">Element</div>
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetScrollHeight">GetScrollHeight</BitButton>
+                        <br />
+                        <br />
+                        <div>ScrollHeight: @currentScrollHeight</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetScrollLeft</b>: <br />
+            A number representing the left scroll offset of the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getScrollLeftExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getScrollLeftElementRef"
+                             style="max-width:6rem;
+                                        max-height:6rem;
+                                        color: white;
+                                        overflow: auto;
+                                        background: dodgerblue;">
+                            <div style="height: 10rem; width: 10rem;">Element</div>
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetScrollLeft">GetScrollLeft</BitButton>
+                        <br />
+                        <br />
+                        <div>ScrollLeft: @currentScrollLeft</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetScrollTop</b>: <br />
+            A number representing number of pixels the top of the element is scrolled vertically
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getScrollTopExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getScrollTopElementRef"
+                             style="max-width:6rem;
+                                        max-height:6rem;
+                                        color: white;
+                                        overflow: auto;
+                                        background: dodgerblue;">
+                            <div style="height: 10rem; width: 10rem;">Element</div>
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetScrollTop">GetScrollTop</BitButton>
+                        <br />
+                        <br />
+                        <div>ScrollTop: @currentScrollTop</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetScrollWidth</b>: <br />
+            Returns a number representing the scroll view width of the element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getScrollWidthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getScrollWidthElementRef"
+                             style="max-width:6rem;
+                                        max-height:6rem;
+                                        color: white;
+                                        overflow: auto;
+                                        background: dodgerblue;">
+                            <div style="height: 10rem; width: 10rem;">Element</div>
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetScrollWidth">GetScrollWidth</BitButton>
+                        <br />
+                        <br />
+                        <div>ScrollWidth: @currentScrollWidth</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetTagName</b>: <br />
+            Returns a string with the name of the tag for the given element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getTagNameExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getTagNameElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetTagName">GetTagName</BitButton>
+                        <br />
+                        <br />
+                        <div>TagName: @currentTagName</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>IsContentEditable</b>: <br />
+            Returns a boolean value indicating whether or not the content of the element can be edited
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/isContentEditable" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @isContentEditableExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="isContentEditableElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetIsContentEditable">GetIsContentEditable</BitButton>
+                        <br />
+                        <br />
+                        <div>Is content editable: @isContentEditable</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetContentEditable</b>, <b>GetContentEditable</b>: <br />
+            Gets/Sets the contentEditable property, which specifies whether or not the element is editable
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/contentEditable" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @contentEditableExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="contentEditableElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitChoiceGroup @bind-Value="newContentEditable"
+                                        Label="Content editable"
+                                        TItem="BitChoiceGroupOption<ContentEditable>" TValue="ContentEditable">
+                            <BitChoiceGroupOption Text="Inherit" Value="ContentEditable.Inherit" />
+                            <BitChoiceGroupOption Text="True" Value="ContentEditable.True" />
+                            <BitChoiceGroupOption Text="False" Value="ContentEditable.False" />
+                            <BitChoiceGroupOption Text="PlainTextOnly" Value="ContentEditable.PlainTextOnly" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitButton OnClick="SetContentEditable">SetContentEditable</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetContentEditable">GetContentEditable</BitButton>
+                        <br />
+                        <br />
+                        <div>ContentEditable: @currentContentEditable</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetDir</b>, <b>GetDir</b>: <br />
+            Gets/Sets the text writing directionality of the content of the current element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dir" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @dirExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="dirElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitChoiceGroup @bind-Value="newDir"
+                                        Label="Element direction"
+                                        TItem="BitChoiceGroupOption<ElementDir>" TValue="ElementDir">
+                            <BitChoiceGroupOption Text="NotSet" Value="ElementDir.NotSet" />
+                            <BitChoiceGroupOption Text="Ltr" Value="ElementDir.Ltr" />
+                            <BitChoiceGroupOption Text="Rtl" Value="ElementDir.Rtl" />
+                            <BitChoiceGroupOption Text="Auto" Value="ElementDir.Auto" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitButton OnClick="SetDir">SetDir</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetDir">GetDir</BitButton>
+                        <br />
+                        <br />
+                        <div>Dir: @currentDir</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetEnterKeyHint</b>, <b>GetEnterKeyHint</b>: <br />
+            Gets/Sets the enterKeyHint property, which is an enumerated property defining what action label (or icon) to present for the enter key on virtual keyboards
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/enterKeyHint" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @enterKeyHintExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <input @ref="enterKeyHintElementRef" placeholder="Element"
+                               style="width:6rem; height:6rem; background: dodgerblue;" />
+                        <br />
+                        <br />
+                        <BitChoiceGroup @bind-Value="newEnterKeyHint"
+                                        Label="Enter key hint"
+                                        TItem="BitChoiceGroupOption<EnterKeyHint>" TValue="EnterKeyHint">
+                            <BitChoiceGroupOption Text="NotSet" Value="EnterKeyHint.NotSet" />
+                            <BitChoiceGroupOption Text="Enter" Value="EnterKeyHint.Enter" />
+                            <BitChoiceGroupOption Text="Done" Value="EnterKeyHint.Done" />
+                            <BitChoiceGroupOption Text="Go" Value="EnterKeyHint.Go" />
+                            <BitChoiceGroupOption Text="Next" Value="EnterKeyHint.Next" />
+                            <BitChoiceGroupOption Text="Previous" Value="EnterKeyHint.Previous" />
+                            <BitChoiceGroupOption Text="Search" Value="EnterKeyHint.Search" />
+                            <BitChoiceGroupOption Text="Send" Value="EnterKeyHint.Send" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitButton OnClick="SetEnterKeyHint">SetEnterKeyHint</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetEnterKeyHint">GetEnterKeyHint</BitButton>
+                        <br />
+                        <br />
+                        <div>EnterKeyHint: @currentEnterKeyHint</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetHidden</b>, <b>GetHidden</b>: <br />
+            Gets/Sets the hidden property, which reflects the value of the element's hidden attribute
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/hidden" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>SetInert</b>, <b>GetInert</b>: <br />
+            Gets/Sets the inert property, which reflects the value of the element's inert attribute. It is a boolean value that, when present, makes the browser "ignore" user input events for the element, including focus events and events from assistive technologies
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inert" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @inertExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="inertElementRef"
+                             style="max-width:6rem;
+                                        max-height:6rem;
+                                        color: white;
+                                        overflow: auto;
+                                        background: dodgerblue;">
+                            <div style="height: 10rem; width: 10rem;">Element</div>
+                        </div>
+                        <br />
+                        <BitCheckbox @bind-Value="newInert" Label="Inert" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="SetInert">SetInert</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetInert">GetInert</BitButton>
+                        <br />
+                        <br />
+                        <div>Inert: @currentInert</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetInnerText</b>, <b>GetInnerText</b>: <br />
+            Gets/Sets the innerText property, which represents the rendered text content of a node and its descendants
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/innerText" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @innerTextExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="innerTextElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitTextField @bind-Value="newInnerText" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="SetInnerText">SetInnerText</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetInnerText">GetInnerText</BitButton>
+                        <br />
+                        <br />
+                        <div>InnerText: @currentInnerText</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetInputMode</b>, <b>GetInputMode</b>: <br />
+            Gets/Sets the inputMode property, which reflects the value of the element's inputmode attribute
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inputMode" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @inputModeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <input @ref="inputModeElementRef" placeholder="Element"
+                               style="width:6rem; height:6rem; background: dodgerblue;" />
+                        <br />
+                        <br />
+                        <BitChoiceGroup @bind-Value="newInputMode"
+                                        Label="Enter key hint"
+                                        TItem="BitChoiceGroupOption<InputMode>" TValue="InputMode">
+                            <BitChoiceGroupOption Text="NotSet" Value="InputMode.NotSet" />
+                            <BitChoiceGroupOption Text="Decimal" Value="InputMode.Decimal" />
+                            <BitChoiceGroupOption Text="Email" Value="InputMode.Email" />
+                            <BitChoiceGroupOption Text="None" Value="InputMode.None" />
+                            <BitChoiceGroupOption Text="Numeric" Value="InputMode.Numeric" />
+                            <BitChoiceGroupOption Text="Search" Value="InputMode.Search" />
+                            <BitChoiceGroupOption Text="Tel" Value="InputMode.Tel" />
+                            <BitChoiceGroupOption Text="Text" Value="InputMode.Text" />
+                            <BitChoiceGroupOption Text="Url" Value="InputMode.Url" />
+                        </BitChoiceGroup>
+                        <br />
+                        <BitButton OnClick="SetInputMode">SetInputMode</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetInputMode">GetInputMode</BitButton>
+                        <br />
+                        <br />
+                        <div>InputMode: @currentInputMode</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetTabIndex</b>, <b>GetTabIndex</b>: <br />
+            Gets/Sets a number representing the position of the element in the tabbing order
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/tabIndex" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @tabIndexExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="tabIndexElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitSpinButton @bind-Value="newTabIndex" Mode="BitSpinButtonMode.Inline" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="SetTabIndex">SetTabIndex</BitButton>
+                        &nbsp;
+                        <BitButton OnClick="GetTabIndex">GetTabIndex</BitButton>
+                        <br />
+                        <br />
+                        <div>TabIndex: @currentTabIndex</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetOffsetHeight</b>: <br />
+            Returns the height of an element, including vertical padding and borders in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetHeight" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getOffsetHeightExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getOffsetHeightElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetOffsetHeight">GetOffsetHeight</BitButton>
+                        <br />
+                        <br />
+                        <div>OffsetHeight: @currentOffsetHeight</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetOffsetLeft</b>: <br />
+            Returns the number of pixels that the upper left corner of the current element is offset to the left within the offsetParent node
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetLeft" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getOffsetLeftExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getOffsetLeftElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetOffsetLeft">GetOffsetLeft</BitButton>
+                        <br />
+                        <br />
+                        <div>OffsetLeft: @currentOffsetLeft</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetOffsetTop</b>: <br />
+            Returns the distance from the outer border of the current element (including its margin) to the top padding edge of the offsetParent, the closest positioned ancestor element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getOffsetTopExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getOffsetTopElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetOffsetTop">GetOffsetTop</BitButton>
+                        <br />
+                        <br />
+                        <div>OffsetTop: @currentOffsetTop</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetOffsetWidth</b>: <br />
+            The layout width of an element in px
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetWidth" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getOffsetWidthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <div @ref="getOffsetWidthElementRef"
+                             style="width:6rem; height:6rem; background: dodgerblue;">
+                            Element
+                        </div>
+                        <br />
+                        <BitButton OnClick="GetOffsetWidth">GetOffsetWidth</BitButton>
+                        <br />
+                        <br />
+                        <div>OffsetWidth: @currentOffsetWidth</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Blur</b>: <br />
+            Removes keyboard focus from the currently focused element
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/blur" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @blurExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <input @ref="blurElementRef" placeholder="Element"
+                               style="width:6rem; height:6rem; background: dodgerblue;" />
+                        <br />
+                        <br />
+                        <BitButton OnClick="@(() => blurElementRef.Blur())">Blur</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Remove</b>: <br />
+            Removes the element from the children list of its parent
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/CharacterData/remove" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="History" PrevUrl="/butil/history" Next="Window" NextUrl="/butil/window" />

@@ -51,7 +51,7 @@ public partial class BitSwiperItem
 
     protected override string RootElementClass => "bit-swpi";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
         StyleBuilder.Register(() => internalStyle);
         StyleBuilder.Register(() => internalTransformStyle);

@@ -1,0 +1,49 @@
+﻿@font-face {
+    font-style: normal;
+    font-display: swap;
+    font-weight: normal;
+    font-family: 'Fabric MDL2 bit BlazorUI';
+    src: url('../fonts/FabMDL2.4.66.bit.BlazorUI.woff2') format("woff2");
+}
+
+
+.bit-icon {
+    font-style: normal;
+    font-weight: normal;
+    display: inline-block;
+    font-family: 'Fabric MDL2 bit BlazorUI' !important;
+}
+
+.bit-icon--Accept:before { content: "\E8FB"; }
+.bit-icon--Add:before { content: "\E710"; }
+.bit-icon--Blocked2:before { content: "\ECE4"; }
+.bit-icon--CalendarMirrored:before { content: "\ED28"; }
+.bit-icon--Cancel:before { content: "\E711"; }
+.bit-icon--ChevronDown:before { content: "\E70D"; }
+.bit-icon--ChevronDownSmall:before { content: "\E96E"; }
+.bit-icon--ChevronLeft:before { content: "\E76B"; }
+.bit-icon--ChevronLeftEnd6:before { content: "\F371"; }
+.bit-icon--ChevronLeftSmall:before { content: "\E96F"; }
+.bit-icon--ChevronRight:before { content: "\E76C"; }
+.bit-icon--ChevronUpSmall:before { content: "\E96D"; }
+.bit-icon--ChromeBackMirrored:before { content: "\EA47"; }
+.bit-icon--Clock:before { content: "\E917"; }
+.bit-icon--Completed:before { content: "\E930"; }
+.bit-icon--Delete:before { content: "\E74D"; }
+.bit-icon--DoubleChevronDown:before { content: "\EE04"; }
+.bit-icon--DoubleChevronUp:before { content: "\EDBD"; }
+.bit-icon--Down:before { content: "\E74B"; }
+.bit-icon--ErrorBadge:before { content: "\EA39"; }
+.bit-icon--FavoriteStar:before { content: "\E734"; }
+.bit-icon--FavoriteStarFill:before { content: "\E735"; }
+.bit-icon--GotoToday:before { content: "\E8D1"; }
+.bit-icon--Hide3:before { content: "\F6AC"; }
+.bit-icon--Info:before { content: "\E946"; }
+.bit-icon--More:before { content: "\E712"; }
+.bit-icon--Pause:before { content: "\E769"; }
+.bit-icon--Play:before { content: "\E768"; }
+.bit-icon--Search:before { content: "\E721"; }
+.bit-icon--Sort:before { content: "\E8CB"; }
+.bit-icon--Up:before { content: "\E74A"; }
+.bit-icon--View:before { content: "\E890"; }
+.bit-icon--Warning:before { content: "\E7BA"; }

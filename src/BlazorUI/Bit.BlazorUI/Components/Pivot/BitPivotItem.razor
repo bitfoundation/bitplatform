@@ -1,35 +1,37 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<button @ref="RootElement"
-        @attributes="HtmlAttributes"
-        id="@Parent?.GetPivotItemId(this)"
+<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+        role="tab"
+        type="button"
+        name="@HeaderText"
+        aria-label="@AriaLabel"
+        data-content="@HeaderText"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
-        type="button"
-        role="tab"
-        aria-selected="@(IsSelected ? "true": "false")"
-        aria-label="@AriaLabel"
-        name="@HeaderText"
-        data-content="@HeaderText"
+        id="@Parent?.GetPivotItemId(this)"
         tabindex="@Parent?.GetPivotItemTabIndex(this)"
-        @onclick="HandleOnClick">
-    <span>
-        @if (@IconName.HasValue) {
-            <span>
-                <i class="bit-icon bit-icon--@(IconName.Value.GetName())"></i>
+        aria-selected="@(IsSelected ? "true": "false")">
+    <span style="@Parent?.Styles?.HeaderItemContent" class="@Parent?.Classes?.HeaderItemContent">
+        @if (@IconName.HasValue())
+        {
+            <span style="@Parent?.Styles?.HeaderIconContainer" class="@Parent?.Classes?.HeaderIconContainer">
+                <i style="@Parent?.Styles?.HeaderIcon" class="bit-icon bit-icon--@IconName @Parent?.Classes?.HeaderIcon" />
             </span>
         }
 
-        @if (Header is not null) {
+        @if (Header is not null)
+        {
             @Header
         }
-        else if (HeaderText.HasValue()) {
-            <span>@HeaderText</span>
+        else if (HeaderText.HasValue())
+        {
+            <span style="@Parent?.Styles?.HeaderText" class="@Parent?.Classes?.HeaderText">@HeaderText</span>
         }
 
-        @if (ItemCount is not null) {
-            <span>(@ItemCount)</span>
+        @if (ItemCount is not null)
+        {
+            <span style="@Parent?.Styles?.HeaderItemCount" class="@Parent?.Classes?.HeaderItemCount">(@ItemCount)</span>
         }
     </span>
 </button>

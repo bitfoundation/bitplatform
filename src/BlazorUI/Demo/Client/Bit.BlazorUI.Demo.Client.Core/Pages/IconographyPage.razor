@@ -1,0 +1,46 @@
+﻿@page "/iconography"
+
+<PageOutlet Url="iconography"
+            Title="Iconography"
+            Description="iconography of the bit blazorui components" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Class="title">Iconography</BitTypography>
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            bit BlazorUI has traditionally used a custom font for its iconography. This font is part of the MDL2 design system and contains glyphs that you can scale, color, and style in any way.
+        </BitTypography>
+    </section>
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.Body1">
+            <b>Note:</b> To use these Icons, you need to add the <b>Bit.BlazorUI.Icons</b> nuget package to your project as described in the Optional steps of the <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitTypography>
+    </section>
+    <section class="page-section">
+        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Available icons</BitTypography>
+        <BitSearchBox Class="iconography-search-box"
+                      Placeholder="Search icons"
+                      IconName="@BitIconName.Search"
+                      Value="@searchText"
+                      ValueChanged="@HandleChange"
+                      OnClear="@HandleClear" />
+        <div class="icon-list">
+            @if (filteredIcons.Count == 0)
+            {
+                <div class="empty-list">
+                    <BitTypography Variant="BitTypographyVariant.H4">No result</BitTypography>
+                </div>
+            }
+            else
+            {
+                foreach (var icon in filteredIcons)
+                {
+                    <div class="icon-box">
+                        <i class="bit-icon bit-icon--iconography bit-icon--@icon"></i>
+                        <span class="icon-name">@icon</span>
+                    </div>
+                }
+            }
+        </div>
+    </section>
+</div>

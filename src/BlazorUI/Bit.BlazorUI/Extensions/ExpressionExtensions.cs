@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace Bit.BlazorUI;
 
@@ -7,9 +6,7 @@ internal static class ExpressionExtensions
 {
     internal static string GetName<TSource, TResult>(this Expression<Func<TSource, TResult>> action)
     {
-        if (action is null)
-            throw new ArgumentNullException(nameof(action));
-
+        ArgumentNullException.ThrowIfNull(action);
 
         return GetNameFromMemberExpression(action.Body);
     }

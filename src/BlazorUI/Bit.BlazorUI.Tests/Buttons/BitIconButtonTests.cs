@@ -9,12 +9,12 @@ namespace Bit.BlazorUI.Tests.Buttons;
 public class BitIconButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(true, BitIconName.Emoji2, null),
-        DataRow(false, BitIconName.Emoji2, null),
-        DataRow(true, BitIconName.Emoji2, "I'm Happy"),
-        DataRow(false, BitIconName.Emoji2, "I'm Happy")
+        DataRow(true, "Emoji2", null),
+        DataRow(false, "Emoji2", null),
+        DataRow(true, "Emoji2", "I'm Happy"),
+        DataRow(false, "Emoji2", "I'm Happy")
     ]
-    public void BitIconButtonTest(bool isEnabled, BitIconName iconName, string title)
+    public void BitIconButtonTest(bool isEnabled, string iconName, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitIconButton>(parameters =>
@@ -37,7 +37,7 @@ public class BitIconButtonTests : BunitTestContext
         }
 
         var bitIconITag = com.Find(".bit-icb > span.bit-icb-ict > i.bit-icon");
-        Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName.GetName()}"));
+        Assert.IsTrue(bitIconITag.ClassList.Contains($"bit-icon--{iconName}"));
 
         if (title.HasValue())
         {
@@ -138,34 +138,6 @@ public class BitIconButtonTests : BunitTestContext
         var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
 
         Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
-    }
-
-    [DataTestMethod,
-        DataRow(BitButtonSize.Small),
-        DataRow(BitButtonSize.Medium),
-        DataRow(BitButtonSize.Large),
-        DataRow(null)
-    ]
-    public void BitIconButtonSizeTest(BitButtonSize? size)
-    {
-        var com = RenderComponent<BitIconButton>(parameters =>
-        {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.ButtonSize, size.Value);
-            }
-        });
-
-        var bitIconButton = com.Find(".bit-icb");
-        var sizeClass = size switch
-        {
-            BitButtonSize.Small => "bit-icb-sm",
-            BitButtonSize.Medium or null => "bit-icb-md",
-            BitButtonSize.Large => "bit-icb-lg",
-            _ => throw new NotSupportedException()
-        };
-
-        Assert.IsTrue(bitIconButton.ClassList.Contains(sizeClass));
     }
 
     [DataTestMethod,

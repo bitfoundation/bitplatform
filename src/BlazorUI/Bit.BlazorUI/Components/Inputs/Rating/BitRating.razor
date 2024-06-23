@@ -1,0 +1,56 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<double>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@AriaLabel"
+     aria-readonly="@IsReadOnly"
+     role=@(IsReadOnly ? null : "radiogroup")>
+
+    @for (int item = 1; item <= Max; item++)
+    {
+        var index = item;
+        var percentage = GetPercentage(index);
+
+        <button @onclick="() => HandleOnClick(index)"
+                type="button"
+                role="radio"
+                style="@Styles?.Button"
+                aria-hidden="@IsReadOnly"
+                class="bit-rtg-btn @Classes?.Button"
+                aria-checked="@(index == CurrentValue)"
+                data-is-current="@(index == CurrentValue)"
+                disabled=@(IsEnabled is false || IsReadOnly)
+                tabindex=@(index == CurrentValue ? "0" : "-1")>
+
+            @if (AriaLabelFormat.HasValue())
+            {
+                <span class="bit-rtg-alb">
+                    @string.Format(AriaLabelFormat!, index, Max)
+                </span>
+            }
+
+            <div class="bit-rtg-ict @Classes?.IconContainer" style="@Styles?.IconContainer">
+                <i aria-hidden="true"
+                   style="@Styles?.UnselectedIcon"
+                   class="bit-rtg-iem bit-icon bit-icon--@(percentage == 100 ? SelectedIconName : UnselectedIconName) @Classes?.UnselectedIcon">
+                </i>
+                <i aria-hidden="true"
+                   style=@(FormattableString.Invariant($"width:{percentage}%; {Styles?.SelectedIcon}"))
+                   class="bit-rtg-ifl bit-icon bit-icon--@(percentage > 0 ? SelectedIconName : UnselectedIconName) @Classes?.SelectedIcon">
+                </i>
+            </div>
+        </button>
+    }
+
+    <input @ref="InputElement" @attributes="InputHtmlAttributes"
+           max="@Max"
+           name="@Name"
+           type="number"
+           class="bit-input-hidden"
+           value="@CurrentValueAsString"
+           min="@(AllowZeroStars ? 0 : 1)" />
+</div>

@@ -1,0 +1,139 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.page-container {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.loading-contianer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    margin-bottom: rem2(24px);
+    justify-content: space-between;
+}
+
+.page-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: rem2(20px);
+    line-height: rem2(28px);
+
+    @include sm {
+        font-size: rem2(18px);
+        line-height: rem2(24px);
+    }
+}
+
+.grid-container {
+    overflow: auto;
+}
+
+.grid {
+    width: 100%;
+    display: inline-flex;
+    flex-direction: column;
+    border-radius: rem2(2px);
+    border: rem2(1px) solid $bit-color-border-secondary;
+
+    ::deep {
+        .id-col {
+            width: 90px;
+        }
+
+        .bitdatagrid th .col-options-button {
+            cursor: help;
+        }
+    }
+}
+
+::deep table {
+    min-width: 100%;
+    border-spacing: 0;
+}
+
+::deep thead {
+    height: rem2(43px);
+    background-color: $bit-color-background-primary;
+}
+
+::deep tr {
+    height: rem2(43px);
+}
+
+::deep th {
+    font-weight: 600;
+    padding: 0 rem2(12px);
+    font-size: rem2(14px);
+    line-height: rem2(20px);
+}
+
+::deep td {
+    font-weight: 400;
+    white-space: nowrap;
+    font-size: rem2(12px);
+    line-height: rem2(16px);
+    border-top: rem2(1px) solid $bit-color-border-secondary;
+}
+
+::deep tr td:first-child {
+    font-size: rem2(14px);
+    line-height: rem2(20px);
+    padding-inline-start: rem2(12px);
+}
+
+::deep .col-options-button {
+    &:hover {
+        background-color: transparent;
+    }
+}
+
+::deep .col-title {
+    &:hover {
+        background-color: transparent !important;
+    }
+}
+
+::deep .product-search-box {
+    width: 100%;
+    max-width: rem2(300px);
+    margin-bottom: rem2(24px);
+}
+
+::deep th:nth-child(2) .col-options-button {
+    cursor: pointer;
+    background-image: none;
+
+    &:before {
+        content: "\E721";
+        font-style: normal;
+        font-weight: normal;
+        display: inline-block;
+        font-family: 'Fabric MDL2';
+    }
+}
+
+::deep .bitdatagrid-paginator {
+    margin-top: 0;
+    overflow: auto;
+    padding: 0 rem2(12px);
+    font-size: rem2(14px);
+    min-height: rem2(43px);
+    border-top: rem2(1px) solid $bit-color-border-secondary;
+}

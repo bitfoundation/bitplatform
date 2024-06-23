@@ -1,0 +1,39 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .custom-item {
+        color: red;
+        margin: 2px 5px;
+        border-radius: 2px;
+        background: limegreen;
+
+        &:hover {
+            background: greenyellow;
+        }
+    }
+
+    .custom-selected-item {
+        color: red;
+        margin: 2px 5px;
+        border-radius: 2px;
+        background: mediumspringgreen;
+
+        &:hover {
+            background: greenyellow;
+        }
+    }
+}
+
+.example-box {
+    gap: 20px;
+    display: flex;
+    flex-direction: column;
+
+    .operators {
+        gap: 5px;
+        display: flex;
+        max-width: 300px;
+        flex-flow: column nowrap;
+    }
+}

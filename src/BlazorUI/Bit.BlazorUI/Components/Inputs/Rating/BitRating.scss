@@ -1,0 +1,119 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-rtg {
+    font-weight: 400;
+    font-size: spacing(1.75);
+    font-family: $typography-font-family;
+
+    &.bit-dis {
+        .bit-rtg-btn {
+            opacity: 0.65;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .bit-rtg-iem, .bit-rtg-ifl {
+            color: $color-foreground-disabled;
+        }
+    }
+
+    &.bit-inv {
+        .bit-rtg-iem, .bit-rtg-ifl {
+            color: $color-state-error;
+        }
+    }
+}
+
+.bit-rtg-btn {
+    margin: 0;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    outline: transparent;
+    box-sizing: content-box;
+    background-color: transparent;
+    padding: spacing(1) spacing(0.25);
+}
+
+.bit-rtg-rdl {
+    .bit-rtg-btn {
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+.bit-rtg-sm {
+    .bit-rtg-btn {
+        height: spacing(1);
+        font-size: spacing(1);
+        line-height: spacing(1);
+    }
+}
+
+.bit-rtg-md {
+    .bit-rtg-btn {
+        height: spacing(2);
+        font-size: spacing(2);
+        line-height: spacing(2);
+    }
+}
+
+.bit-rtg-lg {
+    .bit-rtg-btn {
+        height: spacing(3);
+        font-size: spacing(3);
+        line-height: spacing(3);
+    }
+}
+
+.bit-rtg-alb {
+    border: 0;
+    padding: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: spacing(0.125);
+    height: spacing(0.125);
+    margin: spacing(-0.125);
+}
+
+.bit-rtg-ict {
+    height: inherit;
+    position: relative;
+    display: inline-block;
+}
+
+.bit-rtg-iem {
+    speak: none;
+    width: 100%;
+    font-style: normal;
+    font-weight: normal;
+    display: inline-block;
+    color: $color-foreground-primary;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-primary-main;
+        }
+    }
+}
+
+.bit-rtg-ifl {
+    top: 0;
+    left: 0;
+    speak: none;
+    overflow: hidden;
+    position: absolute;
+    font-style: normal;
+    text-align: center;
+    font-weight: normal;
+    display: inline-block;
+    vertical-align: middle;
+    color: $color-foreground-primary;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-primary-main;
+        }
+    }
+}

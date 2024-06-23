@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.SearchBoxes;
@@ -13,7 +14,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.Placeholder, componentPlaceholder));
 
-        var input = component.Find(".input");
+        var input = component.Find(".bit-srb-inp");
         var inputPlaceholder = input.GetAttribute("placeholder");
 
         Assert.AreEqual(componentPlaceholder, inputPlaceholder);
@@ -27,7 +28,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.Value, value));
 
-        var input = component.Find(".input");
+        var input = component.Find(".bit-srb-inp");
         var inputValue = input.GetAttribute("value");
 
         Assert.AreEqual(value, inputValue);
@@ -42,7 +43,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var searchBox = component.Find(".bit-srb");
 
-        Assert.AreEqual(disableAnimation, searchBox.ClassList.Contains("no-animation"));
+        Assert.AreEqual(disableAnimation, searchBox.ClassList.Contains("bit-srb-nan"));
     }
 
     [DataTestMethod,
@@ -54,7 +55,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var searchBox = component.Find(".bit-srb");
 
-        Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("underlined"));
+        Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("bit-srb-und"));
     }
 
     [DataTestMethod,
@@ -63,7 +64,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var com = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.AriaLabel, ariaLabel));
 
-        var bitSearchBox = com.Find(".input");
+        var bitSearchBox = com.Find(".bit-srb-inp");
 
         Assert.IsTrue(bitSearchBox.GetAttribute("aria-label").Equals(ariaLabel));
     }
@@ -77,11 +78,11 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
-            parameters.Add(p => p.Value, value);
+            parameters.Bind(p => p.Value, value, v => value = v);
             parameters.Add(p => p.DefaultValue, defaultValue);
         });
 
-        var input = component.Find(".input");
+        var input = component.Find(".bit-srb-inp");
         var actualValue = string.IsNullOrEmpty(value) ? defaultValue : value;
 
         Assert.AreEqual(input.GetAttribute("value"), actualValue);
@@ -101,7 +102,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var bitSearchBox = component.Find(".bit-srb");
 
-        Assert.AreEqual(fixedIcon, bitSearchBox.ClassList.Contains("fixed-icon-has-value"));
+        Assert.AreEqual(fixedIcon, bitSearchBox.ClassList.Contains("bit-srb-fic-hvl"));
     }
 
     [Ignore("bypassed - BUnit oninput event issue")]
@@ -118,7 +119,7 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.OnChange, () => currentCount++);
         });
 
-        var input = component.Find(".input");
+        var input = component.Find(".bit-srb-inp");
 
         //TODO: bypassed - BUnit oninput event issue
         input.KeyDown("a");
@@ -138,7 +139,7 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, true);
         });
 
-        var input = component.Find(".input");
+        var input = component.Find(".bit-srb-inp");
 
         if (autoComplete.HasValue())
         {
@@ -173,7 +174,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
         Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
 
-        var input = component.Find("input.input");
+        var input = component.Find("input.bit-srb-inp");
         if (isValid)
         {
             input.Input("bit.com");

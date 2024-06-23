@@ -1,0 +1,122 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0-android;net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net8.0-android</TargetFrameworks>
+        <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+        <!-- <TargetFrameworks>$(TargetFrameworks);net8.0-tizen</TargetFrameworks> -->
+        <OutputType>Exe</OutputType>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <EnableDefaultCssItems>false</EnableDefaultCssItems>
+
+        <!-- Display name -->
+        <ApplicationTitle>bit&#x2004;BlazorUI</ApplicationTitle>
+
+        <!-- App Identifier -->
+        <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
+        <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF258</ApplicationIdGuid>
+
+        <!-- Versions -->
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+
+        <!-- Required for C# Hot Reload -->
+        <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+
+        <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+        <EnableLLVM>true</EnableLLVM>
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm</RuntimeIdentifiers>
+        <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
+        <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
+        <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
+        <EnableSGenConc>True</EnableSGenConc>
+        <MtouchInterpreter>all</MtouchInterpreter>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+        <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
+        <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
+        <!-- dotnet add package Mono.AotProfiler.Android -->
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net8.0-android -p:UseInterpreter=false -->
+        <!-- dotnet build -t:FinishAotProfiling -f net8.0-android -->
+        <!-- dotnet remove package Mono.AotProfiler.Android -->
+    </ItemGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <BundleResource Include="Platforms\iOS\PrivacyInfo.xcprivacy" LogicalName="PrivacyInfo.xcprivacy" />
+    </ItemGroup>
+
+    <ItemGroup>
+
+        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
+
+    </ItemGroup>
+
+    <ItemGroup>
+
+        <!-- App icon for all platforms -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0065EF" />
+
+        <!-- Customize App icon for Android -->
+        <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Update="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68" />
+
+        <!-- Splash Screen -->
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D2960" BaseSize="128,128" />
+
+        <!-- Images -->
+        <MauiImage Include="Resources\Images\*" />
+
+        <!-- Fonts -->
+        <MauiFont Include="Resources\Fonts\*" />
+
+        <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.5" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.9.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <Content Remove="Properties\launchSettings.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.60" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.60" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.60" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.60" />
+    </ItemGroup>
+
+    <!-- Build Properties must be defined within these property groups to ensure successful publishing
+       to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
+        <UseHardenedRuntime>true</UseHardenedRuntime>
+    </PropertyGroup>
+
+</Project>

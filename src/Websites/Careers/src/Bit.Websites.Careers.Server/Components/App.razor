@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html bit-theme="light">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="theme-color">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="The Bit.Websites.Careers is built with ASP.NET Core, Identity, Web API, and EF Core for the server-side, and Blazor for the client-side. It allows you to build a multi-mode Web applications from a single codebase." />
+    <Link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <HeadOutlet @rendermode=RenderModeProvider.Current />
+    <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <Link rel="stylesheet" href="styles/app.css" />
+    <Link rel="stylesheet" href="Bit.Websites.Careers.Client.bundle.scp.css" />
+</head>
+
+<body class="bit-blazor-web">
+
+    <Routes @rendermode=RenderModeProvider.Current />
+
+    @if (HttpContext.Request.IsCrawlerClient() is false)
+    {
+        <Script src="_framework/blazor.web.js"></Script>
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="scripts/app.js"></Script>
+    }
+</body>
+
+</html>
+

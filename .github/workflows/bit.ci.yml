@@ -1,4 +1,4 @@
-name: Bit Platform CI
+name: bit platform CI
 on:
   workflow_dispatch:
   pull_request:
@@ -8,33 +8,31 @@ jobs:
   build-release:
     if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
     name: build and test for release
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
+
     steps:
+
     - name: Checkout source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Setup .NET 6.0.x
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 6.0.x
+        global-json-file: src/global.json
 
-    - name: Setup .NET 7.0.x
-      uses: actions/setup-dotnet@v1
+    - uses: actions/setup-node@v4
       with:
-        dotnet-version: 7.0.x
-        include-prerelease: true
-
-    - name: Setup .NET 8.0.x
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 8.0.x
-        include-prerelease: true
+        node-version: 20
       
-    - name: Restore prerelease
-      run: dotnet restore src/Bit-CI-release.sln
+    - name: Install wasm and maui
+      run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
+
+    - name: Run BeforeBuildTasks
+      continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
+      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
 
     - name: MSBuild prerelease
-      run: dotnet msbuild src/Bit-CI-release.sln -m:1
+      run: dotnet build src/Bit-CI-release.sln
 
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
@@ -42,33 +40,34 @@ jobs:
   build:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build and test
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
+
     steps:
+
     - name: Checkout source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Setup .NET 6.0.x
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 6.0.x
+        global-json-file: src/global.json
 
-    - name: Setup .NET 7.0.x
-      uses: actions/setup-dotnet@v1
+    - uses: actions/setup-node@v4
       with:
-        dotnet-version: 7.0.x
-        include-prerelease: true
-        
-    - name: Setup .NET 8.0.x
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 8.0.x
-        include-prerelease: true
+        node-version: 20
 
-    - name: Restore
-      run: dotnet restore src/Bit-CI.sln
+    - name: Install wasm and maui
+      run:  cd src && dotnet workload install maui-android wasm-tools wasm-experimental
 
-    - name: MSBuild
-      run: dotnet msbuild src/Bit-CI.sln -m:1
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+    - name: Run BeforeBuildTasks
+      continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
+      run: dotnet build src/Bit-CI.sln -t:BeforeBuildTasks -m:1 
+
+    - name: Build
+      run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false
       
     - name: Test
       run: dotnet test --no-build --verbosity normal src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj

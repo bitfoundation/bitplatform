@@ -1,0 +1,344 @@
+﻿[
+    {
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/Footer.razor.css",
+        "inputFile": "Shared/Footer.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/Header.razor.css",
+        "inputFile": "Shared/Header.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/MessageBox.razor.css",
+        "inputFile": "Shared/MessageBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/NavigationButtons.razor.css",
+        "inputFile": "Shared/NavigationButtons.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/NavMenu.razor.css",
+        "inputFile": "Shared/NavMenu.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AboutUsPage.razor.css",
+        "inputFile": "Pages/AboutUsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/CodeBox.razor.css",
+        "inputFile": "Pages/CodeBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/ContactUsPage.razor.css",
+        "inputFile": "Pages/ContactUsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/HomePage.razor.css",
+        "inputFile": "Pages/Home/HomePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Home/Products.razor.css",
+        "inputFile": "Pages/Home/Products.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/NotFoundPage.razor.css",
+        "inputFile": "Pages/NotFoundPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/PricingPage.razor.css",
+        "inputFile": "Pages/PricingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates01OverviewPage.razor.css",
+        "inputFile": "Pages/Templates/Templates01OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates02SamplesPage.razor.css",
+        "inputFile": "Pages/Templates/Templates02SamplesPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates03DevelopmentPrerequisitesPage.razor.css",
+        "inputFile": "Pages/Templates/Templates03DevelopmentPrerequisitesPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates04CreateProjectPage.razor.css",
+        "inputFile": "Pages/Templates/Templates04CreateProjectPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates05ProjectStructurePage.razor.css",
+        "inputFile": "Pages/Templates/Templates05ProjectStructurePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates06DatabasePage.razor.css",
+        "inputFile": "Pages/Templates/Templates06DatabasePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates07RunPage.razor.css",
+        "inputFile": "Pages/Templates/Templates07RunPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates08AppModelsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates08AppModelsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates09DeploymentTypePage.razor.css",
+        "inputFile": "Pages/Templates/Templates09DeploymentTypePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates10CacheMechanismPage.razor.css",
+        "inputFile": "Pages/Templates/Templates10CacheMechanismPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates11DevOpsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates11DevOpsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates12PlatformIntegrationPage.razor.css",
+        "inputFile": "Pages/Templates/Templates12PlatformIntegrationPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates13SettingsPage.razor.css",
+        "inputFile": "Pages/Templates/Templates13SettingsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates14ExceptionHandlingPage.razor.css",
+        "inputFile": "Pages/Templates/Templates14ExceptionHandlingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Templates/Templates15MultilingualismPage.razor.css",
+        "inputFile": "Pages/Templates/Templates15MultilingualismPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup01OverviewPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup01OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup02InstallPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup02InstallPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup03ScriptsPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup03ScriptsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup04EventsPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup04EventsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup05ServiceWorkerPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup05ServiceWorkerPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Bswup/Bswup06ProgressPage.razor.css",
+        "inputFile": "Pages/Bswup/Bswup06ProgressPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Besql/Besql01OverviewPage.razor.css",
+        "inputFile": "Pages/Besql/Besql01OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Besql/Besql02InstallPage.razor.css",
+        "inputFile": "Pages/Besql/Besql02InstallPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Besql/Besql03UsagePage.razor.css",
+        "inputFile": "Pages/Besql/Besql03UsagePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil01OverviewPage.razor.css",
+        "inputFile": "Pages/Butil/Butil01OverviewPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil02InstallPage.razor.css",
+        "inputFile": "Pages/Butil/Butil02InstallPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil03SetupPage.razor.css",
+        "inputFile": "Pages/Butil/Butil03SetupPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil04CryptoPage.razor.css",
+        "inputFile": "Pages/Butil/Butil04CryptoPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil05ClipboardPage.razor.css",
+        "inputFile": "Pages/Butil/Butil05ClipboardPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil06KeyboardPage.razor.css",
+        "inputFile": "Pages/Butil/Butil06KeyboardPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil07ConsolePage.razor.css",
+        "inputFile": "Pages/Butil/Butil07ConsolePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil08StoragePage.razor.css",
+        "inputFile": "Pages/Butil/Butil08StoragePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil09CookiePage.razor.css",
+        "inputFile": "Pages/Butil/Butil09CookiePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil10HistoryPage.razor.css",
+        "inputFile": "Pages/Butil/Butil10HistoryPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil11ElementPage.razor.css",
+        "inputFile": "Pages/Butil/Butil11ElementPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil12WindowPage.razor.css",
+        "inputFile": "Pages/Butil/Butil12WindowPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil13DocumentPage.razor.css",
+        "inputFile": "Pages/Butil/Butil13DocumentPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil14NavigatorPage.razor.css",
+        "inputFile": "Pages/Butil/Butil14NavigatorPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil15LocationPage.razor.css",
+        "inputFile": "Pages/Butil/Butil15LocationPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil16ScreenPage.razor.css",
+        "inputFile": "Pages/Butil/Butil16ScreenPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil17VisualViewportPage.razor.css",
+        "inputFile": "Pages/Butil/Butil17VisualViewportPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil18ScreenOrientationPage.razor.css",
+        "inputFile": "Pages/Butil/Butil18ScreenOrientationPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Lcnc/LcncPage.razor.css",
+        "inputFile": "Pages/Lcnc/LcncPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    }
+]

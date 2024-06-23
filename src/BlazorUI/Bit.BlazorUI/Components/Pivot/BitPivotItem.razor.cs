@@ -31,7 +31,7 @@ public partial class BitPivotItem : IDisposable
     /// <summary>
     /// The icon name for the icon shown next to the pivot link.
     /// </summary>
-    [Parameter] public BitIconName? IconName { get; set; }
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Defines an optional item count displayed in parentheses just after the link text.
@@ -65,11 +65,20 @@ public partial class BitPivotItem : IDisposable
     [CascadingParameter] private BitPivot? Parent { get; set; }
 
 
-    protected override string RootElementClass => "bit-pvi";
+    protected override string RootElementClass => "bit-pvti";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsSelected ? "selected" : string.Empty);
+        ClassBuilder.Register(() => Parent?.Classes?.HeaderItem);
+
+        ClassBuilder.Register(() => IsSelected ? $"bit-pvti-sel {Parent?.Classes?.SelectedItem}" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Parent?.Styles?.HeaderItem);
+
+        StyleBuilder.Register(() => IsSelected ? Parent?.Styles?.SelectedItem : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -89,7 +98,7 @@ public partial class BitPivotItem : IDisposable
         Parent?.Refresh();
     }
 
-    protected override void OnComponentVisibilityChanged(BitComponentVisibility visibility)
+    protected override void OnVisibilityChanged(BitVisibility visibility)
     {
         Parent?.Refresh();
     }

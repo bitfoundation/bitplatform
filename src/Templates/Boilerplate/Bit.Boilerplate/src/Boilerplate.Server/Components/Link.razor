@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@inject IFileVersionProvider _fileVersionProvider
+@inject IHttpContextAccessor _httpContextAccessor;
+
+@code {
+    [Parameter] public bool AppendVersion { get; set; } = true;
+    [Parameter] public required string Href { get; set; } = "";
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; } = default!;
+
+    private string href = "";
+
+    protected override void OnInitialized()
+    {
+        href = AppendVersion ? _fileVersionProvider.AddFileVersionToPath(_httpContextAccessor.HttpContext!.Request.PathBase, Href) : Href;
+    }
+}
+
+<link href="@href" @attributes="AdditionalAttributes" />

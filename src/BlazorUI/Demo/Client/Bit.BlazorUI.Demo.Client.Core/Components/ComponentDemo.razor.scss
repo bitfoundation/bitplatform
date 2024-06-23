@@ -1,0 +1,116 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .sec-con {
+        scroll-margin: 80px;
+    }
+
+    .table-view {
+        width: 100%;
+        overflow: auto;
+        max-height: 30rem;
+        border-spacing: 0;
+        display: inline-grid;
+        box-sizing: border-box;
+        margin-bottom: rem2(64px);
+    }
+
+    .th-row {
+        top: 0;
+        width: 100%;
+        display: flex;
+        position: sticky;
+        min-height: rem2(42px);
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-primary;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    .tdata-row {
+        width: 100%;
+        display: flex;
+        min-width: max-content;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+        &:last-child {
+            border: none;
+        }
+    }
+
+    .th-cell {
+        display: flex;
+        min-height: 100%;
+        font-weight: 600;
+        text-align: left;
+        overflow: hidden;
+        padding: rem2(12px);
+        align-items: center;
+        font-size: rem2(14px);
+        box-sizing: border-box;
+        text-overflow: ellipsis;
+        justify-content: flex-start;
+        background-color: transparent;
+
+        &:last-child {
+            border: none;
+        }
+    }
+
+    .td-cell {
+        display: flex;
+        text-align: left;
+        overflow: hidden;
+        padding: rem2(12px);
+        text-overflow: clip;
+        white-space: normal;
+        font-size: rem2(11px);
+        box-sizing: border-box;
+        word-break: break-word;
+        align-items: flex-start;
+        justify-content: flex-start;
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+        &:last-child {
+            border: none;
+        }
+    }
+
+    .params-table {
+        .th-cell,
+        .td-cell {
+            &:nth-child(1) {
+                width: 12rem;
+            }
+
+            &:nth-child(2) {
+                width: 12rem;
+            }
+
+            &:nth-child(3) {
+                width: 10rem;
+            }
+
+            &:nth-child(4) {
+            }
+        }
+    }
+
+    .enum-table {
+        .th-cell,
+        .td-cell {
+            &:nth-child(1) {
+                width: 12rem;
+            }
+
+            &:nth-child(2) {
+                width: 5rem;
+            }
+
+            &:nth-child(3) {
+            }
+        }
+    }
+}

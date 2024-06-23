@@ -2,7 +2,7 @@
 @inherits BitLoadingComponentBase
 
 <style>
-    .blazor-loading-heart {
+    .bit-ldn-Heart {
         display: inline-block;
         position: relative;
         width: @(Size)px;
@@ -11,37 +11,37 @@
         transform-origin: @(Convert(40))px @(Convert(40))px;
     }
 
-        .blazor-loading-heart div {
+        .bit-ldn-Heart div {
+            position: absolute;
             top: @(Convert(32))px;
             left: @(Convert(32))px;
-            position: absolute;
             width: @(Convert(32))px;
             height: @(Convert(32))px;
-            background: @Color;
-            animation: blazor-loading-heart 1.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            background: @(Color ?? "var(--bit-clr-fg-primary)");
+            animation: bit-ldn-Heart 1.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
         }
 
-            .blazor-loading-heart div:after,
-            .blazor-loading-heart div:before {
+            .bit-ldn-Heart div:after,
+            .bit-ldn-Heart div:before {
                 content: " ";
-                position: absolute;
                 display: block;
+                position: absolute;
                 width: @(Convert(32))px;
                 height: @(Convert(32))px;
-                background: @Color;
+                background: @(Color ?? "var(--bit-clr-fg-primary)");
             }
 
-            .blazor-loading-heart div:before {
+            .bit-ldn-Heart div:before {
                 left: -@(Convert(24))px;
                 border-radius: 50% 0 0 50%;
             }
 
-            .blazor-loading-heart div:after {
+            .bit-ldn-Heart div:after {
                 top: -@(Convert(24))px;
                 border-radius: 50% 50% 0 0;
             }
 
-    @@keyframes blazor-loading-heart {
+    @@keyframes bit-ldn-Heart {
         0% {
             transform: scale(0.95);
         }
@@ -67,4 +67,7 @@
         }
     }
 </style>
-<div class="blazor-loading-heart"><div></div></div>
+
+<div style="@Style" class="bit-ldn-Heart @Class">
+    <div style="@ChildStyle" class="@ChildClass"></div>
+</div>

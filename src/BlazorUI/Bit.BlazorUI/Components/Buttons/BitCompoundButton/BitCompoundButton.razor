@@ -3,58 +3,65 @@
 
 @if (Href.HasValue() && IsEnabled)
 {
-    <a @ref="RootElement"
-       @attributes="HtmlAttributes"
+    <a @ref="RootElement" @attributes="HtmlAttributes"
+       id="@_Id"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
-       aria-label="@AriaLabel"
-       aria-describedby="@AriaDescription"
-       aria-hidden="@AriaHidden"
+       dir="@Dir?.ToString().ToLower()"
        href="@Href"
-       target="@Target"
        title="@Title"
-       tabindex="@_tabIndex">
-        <span class="bit-cmb-tcn">
-            @if (Text.HasValue())
+       target="@Target"
+       tabindex="@_tabIndex"
+       aria-label="@AriaLabel"
+       aria-hidden="@AriaHidden"
+       aria-describedby="@AriaDescription">
+        @if (IconName.HasValue())
+        {
+            <i style="@Styles?.Icon" class="bit-cmb-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+        }
+        <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
+            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">
+                @(PrimaryTemplate ?? ChildContent)
+            </span>
+            @if (SecondaryTemplate is not null)
             {
-                <span class="bit-cmb-prt">
-                    @Text
-                </span>
+                @SecondaryTemplate
             }
-            @if (SecondaryText.HasValue())
+            else
             {
-                <span class="bit-cmb-sct">
-                    @SecondaryText
-                </span>
+                <span style="@Styles?.Secondary" class="bit-cmb-sct @Classes?.Secondary">@SecondaryText</span>
             }
         </span>
     </a>
 }
 else
 {
-    <button @ref="RootElement"
-            @attributes="HtmlAttributes"
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+            id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
-            aria-label="@AriaLabel"
-            aria-describedby="@AriaDescription"
-            aria-hidden="@AriaHidden"
-            tabindex="@_tabIndex"
-            type="@ButtonType?.GetValue()"
+            dir="@Dir?.ToString().ToLower()"
+            type="@_buttonType.GetValue()"
             title="@Title"
-            @onclick="HandleOnClick">
-        <span class="bit-cmb-tcn">
-            @if (Text.HasValue())
+            tabindex="@_tabIndex"
+            aria-label="@AriaLabel"
+            aria-hidden="@AriaHidden"
+            aria-describedby="@AriaDescription">
+        @if (IconName.HasValue())
+        {
+            <i style="@Styles?.Icon" class="bit-cmb-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+        }
+        <span style="@Styles?.Container" class="bit-cmb-tcn @Classes?.Container">
+            <span style="@Styles?.Primary" class="bit-cmb-prt @Classes?.Primary">
+                @(PrimaryTemplate ?? ChildContent)
+            </span>
+            @if (SecondaryTemplate is not null)
             {
-                <span class="bit-cmb-prt">
-                    @Text
-                </span>
+                @SecondaryTemplate
             }
-            @if (SecondaryText.HasValue())
+            else
             {
-                <span class="bit-cmb-sct">
-                    @SecondaryText
-                </span>
+                <span style="@Styles?.Secondary" class="bit-cmb-sct @Classes?.Secondary">@SecondaryText</span>
             }
         </span>
     </button>

@@ -1,0 +1,88 @@
+﻿@page "/bswup/events"
+@inherits AppComponentBase
+
+<PageOutlet Url="bswup/events"
+            Title="Events - Bswup"
+            Description="handling events of the bit Bswup" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Events</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        bit Bswup calls the handler js function and pass the event arguments to it for each of its event.
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Bswup Handler function</BitTypography>
+        <div class="section-card-txt">
+            below you can see a sample bswup events handler function in js:
+
+            <CodeBox>const appEl = document.getElementById('app');
+const bswupEl = document.getElementById('bit-bswup');
+const progressBar = document.getElementById('bit-bswup-progress-bar');
+const reloadButton = document.getElementById('bit-bswup-reload');
+
+function bitBswupHandler(type, data) {
+    switch (type)
+    {
+        case BswupMessage.updateFound: return console.log('an update found.');
+
+        case BswupMessage.stateChanged: return console.log('state has changed to:', data.currentTarget.state);
+
+        case BswupMessage.activate: return console.log('new version activated:', data.version);
+
+        case BswupMessage.downloadStarted:
+            appEl.style.display = 'none';
+            bswupEl.style.display = 'block';
+            return console.log('downloading assets started:', data?.version);
+
+        case BswupMessage.downloadProgress:
+            progressBar.style.width = `${percent}%`;
+            return console.log('asset downloaded:', data);
+
+        case BswupMessage.downloadFinished:
+            if (data.firstInstall) {
+                data.reload().then(() => {
+                    appEl.style.display = 'block';
+                    bswupEl.style.display = 'none';
+                });
+            } else {
+                reloadButton.style.display = 'block';
+                reloadButton.onclick = data.reload;
+            }
+            return console.log('downloading assets finished.');
+
+        case BswupMessage.updateReady:
+            reloadButton.style.display = 'block';
+            reloadButton.onclick = data.reload;
+            return console.log('new update ready.');
+    }
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Bswup Events</BitTypography>
+        <br />
+        <div class="section-card-txt">
+            All the bit Bswup events are as follows:
+            <br /><br />
+            <b>updateFound</b>: when a new update for the app is found by the bit Bswup's Service Worker.
+            <br /><br />
+            <b>stateChanged</b>: when the state of the Service Worker is changed.
+            <br /><br />
+            <b>activate</b>: when a new version of the Service Worker is activated.
+            <br /><br />
+            <b>downloadStarted</b>: when download of the new version of the app started.
+            <br /><br />
+            <b>downloadProgress</b>: the progress of downloading the new version of the app.
+            <br /><br />
+            <b>downloadFinished</b>: when the download of the new version of the app finished.
+            <br /><br />
+            <b>updateReady</b>: when the new version of the app is ready to apply.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Scripts" PrevUrl="/bswup/scripts" Next="Service Worker" NextUrl="/bswup/service-worker" />

@@ -1,0 +1,22 @@
+﻿@page "/dashboard"
+@inherits AppComponentBase
+
+@if (isLoadingAssemblies)
+{
+    <BitRingLoading />
+}
+else
+{
+    <div class="page-container">
+        <OverallStatsWidget />
+
+        <div class="page-row">
+            <ProductsCountPerCategoryWidget />
+            <ProductsPercentageWidget />
+        </div>
+
+        <div class="page-row">
+            <ProductsSalesWidget />
+        </div>
+    </div>
+}

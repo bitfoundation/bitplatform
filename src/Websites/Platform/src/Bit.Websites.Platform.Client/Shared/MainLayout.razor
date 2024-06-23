@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+
+<Header />
+
+<div class="main @(isDocsRoute ? null : "main--full-page")">
+    @if (isDocsRoute)
+    {
+        <NavMenu NavItems="navItems" />
+    }
+
+    <div class="site-content @(isDocsRoute ? "docs-content" : "")">
+        <AppErrorBoundary>
+            @Body
+        </AppErrorBoundary>
+    </div>
+</div>
+
+<Footer />
+
+
+<MessageBox />

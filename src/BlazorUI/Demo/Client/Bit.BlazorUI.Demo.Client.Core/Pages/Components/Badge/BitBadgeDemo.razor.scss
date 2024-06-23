@@ -1,0 +1,40 @@
+﻿.badges-container {
+    gap: 3rem;
+    display: flex;
+    padding: 1rem;
+    flex-flow: row wrap;
+    align-items: center;
+    max-width: max-content;
+}
+
+::deep {
+    .custom-class {
+        border-radius: 1rem;
+        box-shadow: aqua 0 0 0.5rem;
+
+        div {
+            padding: 0.5rem;
+            color: blueviolet;
+        }
+    }
+
+    .custom-root {
+        margin-left: 2rem;
+        text-shadow: aqua 0 0 0.5rem;
+    }
+
+    .custom-wrapper {
+        padding: 1.25rem;
+    }
+
+    .custom-badge {
+        border-end-end-radius: 0.5rem;
+        border-start-end-radius: unset;
+        border-end-start-radius: unset;
+        border-start-start-radius: 0.5rem;
+    }
+
+    .custom-icon {
+        color: dodgerblue;
+    }
+}

@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+        <UseWindowsForms>true</UseWindowsForms>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <RootNamespace>Bit.BlazorUI.Demo.Client.Windows</RootNamespace>
+        <StartupObject>Bit.BlazorUI.Demo.Client.Windows.Program</StartupObject>
+        <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
+        <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
+        
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bit.SourceGenerators" Version="8.9.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.60" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
+        <PackageReference Include="Velopack" Version="0.0.541-gf8f3de0" />
+        
+        <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        
+        <Content Include=".config\dotnet-tools.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
+    </ItemGroup>
+
+</Project>

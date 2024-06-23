@@ -1,0 +1,32 @@
+﻿@page "/counter"
+
+<PageTitle>Counter</PageTitle>
+
+<style>
+    .image {
+        width: 64px;
+        height: 64px;
+        background-size: cover;
+        background-position: center;
+        background-image: url('bit-bw-64.png');
+    }
+</style>
+
+<div>Counter</div>
+
+<br />
+
+<a href="/">Home</a>
+
+<br />
+<br />
+
+<div class="image"></div>
+
+<hr />
+
+<button @onclick="() => count++">Count: @count</button>
+
+@code {
+    int count;
+}

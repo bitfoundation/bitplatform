@@ -1,0 +1,49 @@
+﻿@inherits AppComponentBase
+
+<div class="contact-bg">
+    <section class="section-container" id="contactus">
+        <div class="secondary-title">START</div>
+        <div class="title">Free Consultation</div>
+        <div class="title-underline"></div>
+
+        <EditForm class="form" Model="contactUs" OnValidSubmit="WrapHandled(DoSubmit)">
+            @if (string.IsNullOrWhiteSpace(successMessage) is false)
+            {
+                <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
+            }
+            else if (string.IsNullOrWhiteSpace(errorMessage) is false)
+            {
+                <BitMessage Severity="BitSeverity.Error">@errorMessage</BitMessage>
+            }
+
+            <DataAnnotationsValidator />
+
+            <ValidationSummary style="color:red" />
+
+            <div class="input-row">
+                <div class="input-container">
+                    <BitTextField Label="Email *" @bind-Value="contactUs.Email" Class="text-field" />
+                    @*<ValidationMessage For="() => _contactUs.Email" />*@
+                </div>
+                @* <div class="input-container">
+                <BitTextField Label="Name *" @bind-Value="_contactUs.Name" Class="text-field" />
+                <ValidationMessage For="() => _contactUs.Name" />
+                </div> *@
+            </div>
+
+            <div class="text-area-container">
+                <BitTextField Label="Tell us about your project" @bind-Value="contactUs.Information" IsMultiline="true" Rows="3" Class="text-area" />
+            </div>
+
+            <BitButton IsLoading="isLoading"
+                       Title="Send"
+                       AriaLabel="Send"
+                       Class="submit-btn--primary"
+                       ButtonStyle="BitButtonStyle.Primary"
+                       ButtonType="BitButtonType.Submit">
+                Send
+            </BitButton>
+        </EditForm>
+
+    </section>
+</div>

@@ -1,0 +1,104 @@
+﻿[
+    {
+        "outputFile": "Pages/CasesPage.razor.css",
+        "inputFile": "Pages/CasesPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/ProcessAccordion.razor.css",
+        "inputFile": "Pages/ProcessAccordion.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/AboutPage.razor.css",
+        "inputFile": "Pages/AboutPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/CasesPage.razor.css",
+        "inputFile": "Pages/CasesPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/HomePage.razor.css",
+        "inputFile": "Pages/HomePage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/ServicesPage.razor.css",
+        "inputFile": "Pages/ServicesPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/ShowCaseDetailPage.razor.css",
+        "inputFile": "Components/ShowCaseDetailPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/YourTeamPage.razor.css",
+        "inputFile": "Shared/YourTeamPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/ContactForm.razor.css",
+        "inputFile": "Shared/ContactForm.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/Footer.razor.css",
+        "inputFile": "Shared/Footer.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/Header.razor.css",
+        "inputFile": "Shared/Header.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/LoadingComponent.razor.css",
+        "inputFile": "Shared/LoadingComponent.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/MainLayout.razor.css",
+        "inputFile": "Shared/MainLayout.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/MessageBox.razor.css",
+        "inputFile": "Components/MessageBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/PageNotFound.razor.css",
+        "inputFile": "Components/PageNotFound.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "wwwroot/styles/app.css",
+        "inputFile": "Styles/app.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    }
+]

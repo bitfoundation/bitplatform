@@ -1,29 +1,52 @@
-﻿using System.Globalization;
-using System.Text.RegularExpressions;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitPersona
 {
-    private readonly Regex MULTIPLE_WHITESPACES_REGEX = new(@"\s+");
-    //private readonly Regex PHONE_NUMBER_REGEX = new(@"^\d+[\d\s]*(:?ext|x|)\s*\d+$");
-    private readonly Regex UNWANTED_CHARS_REGEX = new(@"\([^)]*\)|[\0-\u001F\!-/:-@\[-`\{-\u00BF\u0250-\u036F\uD800-\uFFFF]");
-    private readonly Regex UNSUPPORTED_TEXT_REGEX = new(@"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uAC00-\uD7AF\uD7B0-\uD7FF\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]|[\uD840-\uD869][\uDC00-\uDED6]");
-
-    private const int PRESENCE_MAX_SIZE = 40;
-    private const int COIN_SIZE_PRESENCE_SCALE_FACTOR = 3;
-
-    private string? size;
+    private bool unknown;
     private string? imageUrl;
+    private BitPersonaSize size = BitPersonaSize.Size48;
+
+
 
     private bool _isLoaded;
     private bool _hasError;
-    private bool _renderIcon;
-    private string? _iconStyle = string.Empty;
-    private string? _presenceStyle = string.Empty;
-    private string _internalInitials = string.Empty;
-    private string? _presenceFontSize = string.Empty;
-    private string? _presenceHeightWidth = string.Empty;
+
+
+
+    /// <summary>
+    /// The title of the action button (tooltip).
+    /// </summary>
+    [Parameter] public string ActionButtonTitle { get; set; } = "Edit image";
+
+    /// <summary>
+    /// Icon name for the icon button of the custom action.
+    /// </summary>
+    [Parameter] public string? ActionIconName { get; set; } = "Edit";
+
+    /// <summary>
+    /// Optional Custom template for the custom action element.
+    /// </summary>
+    [Parameter] public RenderFragment? ActionTemplate { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the BitPersona component.
+    /// </summary>
+    [Parameter] public BitPersonaClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Optional custom persona coin size in pixel.
+    /// </summary>
+    [Parameter] public int? CoinSize { get; set; }
+
+    /// <summary>
+    /// Custom persona coin's image template.
+    /// </summary>
+    [Parameter] public RenderFragment? CoinTemplate { get; set; }
+
+    /// <summary>
+    /// The background color when the user's initials are displayed.
+    /// </summary>
+    [Parameter] public string? Color { get; set; }
 
     /// <summary>
     /// Whether to not render persona details, and just render the persona image/initials.
@@ -31,25 +54,29 @@ public partial class BitPersona
     [Parameter] public bool HidePersonaDetails { get; set; }
 
     /// <summary>
-    /// This flag can be used to signal the persona is out of office. This will change the way the presence icon looks for statuses that support dual-presence.
+    /// Alt text for the image to use. default is empty string.
     /// </summary>
-    [Parameter] public bool IsOutOfOffice { get; set; }
+    [Parameter] public string? ImageAlt { get; set; }
 
     /// <summary>
-    /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
+    /// The user's initials to display in the image area when there is no image.
     /// </summary>
-    [Parameter] public bool ShowInitialsUntilImageLoads { get; set; }
+    [Parameter] public string? ImageInitials { get; set; }
 
     /// <summary>
-    /// Optional custom persona coin size in pixel.
+    /// Optional Custom template for the image overlay.
     /// </summary>
-    [Parameter] public int CoinSize { get; set; } = -1;
+    [Parameter] public RenderFragment? ImageOverlayTemplate { get; set; }
+
+    /// <summary>
+    /// The text of the image overlay.
+    /// </summary>
+    [Parameter] public string ImageOverlayText { get; set; } = "Edit image";
 
     /// <summary>
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
     [Parameter]
-#pragma warning disable CA1056 // URI-like properties should not be strings
     public string? ImageUrl
     {
         get => imageUrl;
@@ -61,7 +88,37 @@ public partial class BitPersona
             _hasError = false;
         }
     }
-#pragma warning restore CA1056 // URI-like properties should not be strings
+
+    /// <summary>
+    /// Callback for the persona custom action.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnActionClick { get; set; }
+
+    /// <summary>
+    /// Callback for when the image clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnImageClick { get; set; }
+
+    /// <summary>
+    /// Optional text to display, usually a custom message set.
+    /// The optional text will only be shown when using size100.
+    /// </summary>
+    [Parameter] public string? OptionalText { get; set; }
+
+    /// <summary>
+    /// Custom optional text template.
+    /// </summary>
+    [Parameter] public RenderFragment? OptionalTextTemplate { get; set; }
+
+    /// <summary>
+    /// Presence of the person to display - will not display presence if undefined.
+    /// </summary>
+    [Parameter] public BitPersonaPresence Presence { get; set; } = BitPersonaPresence.None;
+
+    /// <summary>
+    /// The icons to be used for the presence status.
+    /// </summary>
+    [Parameter] public Dictionary<BitPersonaPresence, string>? PresenceIcons { get; set; }
 
     /// <summary>
     /// Presence title to be shown as a tooltip on hover over the presence icon.
@@ -69,10 +126,50 @@ public partial class BitPersona
     [Parameter] public string? PresenceTitle { get; set; }
 
     /// <summary>
+    /// Primary text to display, usually the name of the person.
+    /// </summary>
+    [Parameter] public string? PrimaryText { get; set; }
+
+    /// <summary>
+    /// Custom primary text template.
+    /// </summary>
+    [Parameter] public RenderFragment? PrimaryTextTemplate { get; set; }
+
+    /// <summary>
+    /// Secondary text to display, usually the role of the user.
+    /// </summary>
+    [Parameter] public string? SecondaryText { get; set; }
+
+    /// <summary>
+    /// Custom secondary text template.
+    /// </summary>
+    [Parameter] public RenderFragment? SecondaryTextTemplate { get; set; }
+
+    /// <summary>
+    /// If true renders the initials while the image is loading. This only applies when an imageUrl is provided.
+    /// </summary>
+    [Parameter] public bool ShowInitialsUntilImageLoads { get; set; }
+
+    /// <summary>
+    /// If true, show the special coin for unknown persona. 
+    /// It has '?' in place of initials, with static font and background colors.
+    /// </summary>
+    [Parameter] public bool Unknown
+    {
+        get => unknown; set
+        {
+            if (unknown == value) return;
+
+            unknown = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// Decides the size of the control.
     /// </summary>
     [Parameter]
-    public string? Size
+    public BitPersonaSize Size
     {
         get => size;
         set
@@ -85,29 +182,9 @@ public partial class BitPersona
     }
 
     /// <summary>
-    /// Alt text for the image to use. default is empty string.
+    /// Custom CSS styles for different parts of the BitPersona component.
     /// </summary>
-    [Parameter] public string? ImageAlt { get; set; }
-
-    /// <summary>
-    /// The background color when the user's initials are displayed.
-    /// </summary>
-    [Parameter] public BitPersonaInitialsColor? InitialsColor { get; set; }
-
-    /// <summary>
-    /// The user's initials to display in the image area when there is no image.
-    /// </summary>
-    [Parameter] public string? ImageInitials { get; set; }
-
-    /// <summary>
-    /// Primary text to display, usually the name of the person.
-    /// </summary>
-    [Parameter] public string? Text { get; set; }
-
-    /// <summary>
-    /// Secondary text to display, usually the role of the user.
-    /// </summary>
-    [Parameter] public string? SecondaryText { get; set; }
+    [Parameter] public BitPersonaClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Tertiary text to display, usually the status of the user.
@@ -116,134 +193,163 @@ public partial class BitPersona
     [Parameter] public string? TertiaryText { get; set; }
 
     /// <summary>
-    /// Optional text to display, usually a custom message set.
-    /// The optional text will only be shown when using size100.
+    /// Custom tertiary text template.
     /// </summary>
-    [Parameter] public string? OptionalText { get; set; }
-
-    /// <summary>
-    /// If true, show the special coin for unknown persona. 
-    /// It has '?' in place of initials, with static font and background colors.
-    /// </summary>
-    [Parameter] public bool ShowUnknownPersonaCoin { get; set; }
-
-    /// <summary>
-    /// Presence of the person to display - will not display presence if undefined.
-    /// </summary>
-    [Parameter] public BitPersonaPresenceStatus Presence { get; set; } = BitPersonaPresenceStatus.None;
-
-    /// <summary>
-    /// Whether initials are calculated for phone numbers and number sequences.
-    /// </summary>
-    [Parameter] public bool AllowPhoneInitials { get; set; }
-
-    /// <summary>
-    /// Icon name for the icon button of the custom action.
-    /// </summary>
-    [Parameter] public BitIconName ActionIconName { get; set; } = BitIconName.Edit;
-
-    /// <summary>
-    /// Callback for the persona custom action.
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnActionClick { get; set; }
-
-    /// <summary>
-    /// Optional Custom template for the custom action element.
-    /// </summary>
-    [Parameter] public RenderFragment? ActionFragment { get; set; }
-
-    /// <summary>
-    /// Callback for when the image clicked.
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnImageClick { get; set; }
-
-    /// <summary>
-    /// Optional Custom template for the image overlay.
-    /// </summary>
-    [Parameter] public RenderFragment? ImageOverlayFragment { get; set; }
+    [Parameter] public RenderFragment? TertiaryTextTemplate { get; set; }
 
 
-    protected override Task OnParametersSetAsync()
-    {
-        if (CoinSize != -1)
-        {
-            _presenceHeightWidth = CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR < PRESENCE_MAX_SIZE
-                ? CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR + "px"
-                : PRESENCE_MAX_SIZE + "px";
-
-            _presenceFontSize = CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR < PRESENCE_MAX_SIZE
-                ? CoinSize / COIN_SIZE_PRESENCE_SCALE_FACTOR + "px"
-                : PRESENCE_MAX_SIZE + "px";
-        }
-
-        _renderIcon = (Size != BitPersonaSize.Size20 && Size != BitPersonaSize.Size24 && Size != BitPersonaSize.Size32) && (CoinSize == -1 || CoinSize > 32);
-
-        _internalInitials = ImageInitials ?? GetInitials();
-
-        return base.OnParametersSetAsync();
-    }
 
     protected override string RootElementClass => "bit-prs";
 
-    protected override void RegisterComponentClasses()
+    protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => Size.HasValue() ? $"size-{Size}" : string.Empty);
+        ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => OnImageClick.HasDelegate ? "img-act" : string.Empty);
+        ClassBuilder.Register(() => Size switch
+        {
+            BitPersonaSize.Size8 => "bit-prs-s8",
+            BitPersonaSize.Size24 => "bit-prs-s24",
+            BitPersonaSize.Size32 => "bit-prs-s32",
+            BitPersonaSize.Size40 => "bit-prs-s40",
+            BitPersonaSize.Size48 => "bit-prs-s48",
+            BitPersonaSize.Size56 => "bit-prs-s56",
+            BitPersonaSize.Size72 => "bit-prs-s72",
+            BitPersonaSize.Size100 => "bit-prs-s100",
+            BitPersonaSize.Size120 => "bit-prs-s120",
+            _ => string.Empty
+        });
 
-        ClassBuilder.Register(() => Presence is not BitPersonaPresenceStatus.None ? Presence.ToString() : string.Empty);
+        ClassBuilder.Register(() => Unknown && Size is not BitPersonaSize.Size8 ? "bit-prs-unk" : string.Empty);
+
+        ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-iac" : string.Empty);
     }
 
-    private string DetermineIcon()
+    protected override void RegisterCssStyles()
     {
-        if (Presence == BitPersonaPresenceStatus.None) return string.Empty;
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
+    private string? GetPresentationClass()
+    {
         return Presence switch
         {
-            BitPersonaPresenceStatus.Online => "presence_available",
-            BitPersonaPresenceStatus.Busy => "presence_busy",
-            BitPersonaPresenceStatus.Away => IsOutOfOffice ? "presence_oof" : "presence_away",
-            BitPersonaPresenceStatus.DND => "presence_dnd",
-            BitPersonaPresenceStatus.Offline => IsOutOfOffice ? "presence_oof" : "presence_offline",
-            _ => "presence_unknown",
+            BitPersonaPresence.Offline => "bit-prs-off",
+            BitPersonaPresence.Online => "bit-prs-onl",
+            BitPersonaPresence.Away => "bit-prs-awy",
+            BitPersonaPresence.Dnd => "bit-prs-dnd",
+            BitPersonaPresence.Blocked => "bit-prs-blk",
+            BitPersonaPresence.Busy => "bit-prs-bsy",
+            _ => null
         };
     }
 
-    private string GetCoinBackgroundColor()
+    private string? GetPresentationStyle()
     {
-        return InitialsColor is not null ? BitPersonaColorUtils.GetPersonaColorHexCode(InitialsColor.Value) : BitPersonaColorUtils.GetPersonaColorHexCode(BitPersonaColorUtils.GetInitialsColorFromName(Text));
+        if (CoinSize is null) return null;
+
+        var presentationSize = CoinSize.Value / 3D;
+        return $"width:{presentationSize}px;height:{presentationSize}px;{Styles?.Presence?.Trim(';')}";
     }
 
-
-    protected string GetInitials()
+    private string? GetPresentationIcon()
     {
-        if (string.IsNullOrWhiteSpace(Text)) return "";
+        if (Size is BitPersonaSize.Size8 or BitPersonaSize.Size24 or BitPersonaSize.Size32) return null;
 
-        var text = Text.Trim();
-        text = UNWANTED_CHARS_REGEX.Replace(text, "");
-        text = MULTIPLE_WHITESPACES_REGEX.Replace(text, " ");
+        if (PresenceIcons?.ContainsKey(Presence) ?? false)
+        {
+            return PresenceIcons[Presence];
+        }
 
-        if (UNSUPPORTED_TEXT_REGEX.IsMatch(text)) return "";
-        //if (AllowPhoneInitials && PHONE_NUMBER_REGEX.IsMatch(text) is false) return "";
+        return null;
+    }
 
+    private string? GetCoinBgColorStyle()
+    {
+        if (Size is BitPersonaSize.Size8) return null;
+        if (Color.HasNoValue()) return null;
+
+        return $"background-color:{Color};";
+    }
+
+    private string? GetCoinWidthStyle()
+    {
+        if (Size is BitPersonaSize.Size8) return null;
+        if (CoinSize is null) return null;
+
+        return $"width:{CoinSize.Value}px;";
+    }
+
+    private string GetInitials()
+    {
+        if (ImageInitials.HasValue()) return ImageInitials!;
+
+        if (PrimaryText.HasNoValue()) return string.Empty;
+
+        var text = PrimaryText!.Trim();
         var splits = text.Split(' ');
 
+        string initials = string.Empty;
         if (splits.Length == 2)
         {
-            return $"{splits[0][0]}{splits[1][0]}";
+            initials = $"{splits[0][0]}{splits[1][0]}";
         }
-
-        if (splits.Length == 3)
+        else if (splits.Length == 3)
         {
-            return $"{splits[0][0]}{splits[2][0]}";
+            initials = $"{splits[0][0]}{splits[2][0]}";
         }
-
-        if (splits.Length != 0)
+        else if (splits.Length != 0)
         {
-            return $"{splits[0][0]}";
+            initials = $"{splits[0][0]}";
         }
 
-        return string.Empty;
+        if (Dir == BitDir.Rtl && initials.Length > 1)
+        {
+            return $"{initials[1]}{initials[0]}";
+        }
+
+        return initials;
+    }
+
+    private string GetPersonaImageDimension()
+    {
+        if (CoinSize.HasValue)
+        {
+            return $"{CoinSize.Value}px";
+        }
+
+        return Size switch
+        {
+            BitPersonaSize.Size8 => "8px",
+            BitPersonaSize.Size24 => "24px",
+            BitPersonaSize.Size32 => "32px",
+            BitPersonaSize.Size40 => "40px",
+            BitPersonaSize.Size48 => "48px",
+            BitPersonaSize.Size56 => "56px",
+            BitPersonaSize.Size72 => "72px",
+            BitPersonaSize.Size100 => "100px",
+            BitPersonaSize.Size120 => "120px",
+        };
+    }
+
+    private string? GetImageContainerClass()
+    {
+        var klass = $"{(CoinTemplate is null ? "bit-prs-imc" : null)} {Classes?.ImageContainer}".Trim();
+        return klass.HasValue() ? klass : null;
+    }
+
+    private string? GetImageContainerStyle()
+    {
+        var coinWidthStyle = GetCoinWidthStyle();
+        var coinBgColorStyle = GetCoinBgColorStyle();
+        var style = $"{coinWidthStyle}{coinBgColorStyle}{Styles?.ImageContainer?.Trim(';')}";
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetImageOverlayStyle()
+    {
+        var coinBgColorStyle = GetCoinBgColorStyle();
+        var style = $"{coinBgColorStyle}{Styles?.ImageOverlay?.Trim(';')}";
+        return style.HasValue() ? style : null;
     }
 
     private async Task HandleActionClick(MouseEventArgs e)

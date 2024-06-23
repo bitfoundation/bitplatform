@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html bit-theme="light">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="theme-color">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="bit is a digital innovation company with software development at its core. We help out our customers innovate with designing and building their digital products efficiently with our Agile mindset and lean processes." />
+    <Link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <HeadOutlet @rendermode=RenderModeProvider.Current />
+    <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI";
+            -webkit-text-size-adjust: none;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body, #app-container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+    </style>
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <Link rel="stylesheet" href="styles/app.css" />
+    <Link rel="stylesheet" href="Bit.Websites.Sales.Client.bundle.scp.css" />
+</head>
+
+<body class="bit-blazor-web">
+
+    <Routes @rendermode=RenderModeProvider.Current />
+
+    @if (HttpContext.Request.IsCrawlerClient() is false)
+    {
+        <Script src="_framework/blazor.web.js"></Script>
+        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+        <Script src="scripts/app.js"></Script>
+    }
+</body>
+
+</html>
+

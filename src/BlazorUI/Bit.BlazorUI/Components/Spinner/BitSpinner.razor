@@ -1,22 +1,23 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
      class="@ClassBuilder.Value"
-     style="@StyleBuilder.Value">
+     style="@StyleBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
 
-    <div class="spinner"></div>
+    <div class="bit-spn-snr"></div>
 
     @if (Label.HasValue())
     {
-        <div class="label">@Label</div>
+        <div class="bit-spn-lbl">@Label</div>
     }
 
     @if (AriaLabel.HasValue())
     {
         <div role="status" aria-live="@AriaLive">
-            <div class="aria-label">@AriaLabel</div>
+            <div class="bit-spn-alb">@AriaLabel</div>
         </div>
     }
 </div>

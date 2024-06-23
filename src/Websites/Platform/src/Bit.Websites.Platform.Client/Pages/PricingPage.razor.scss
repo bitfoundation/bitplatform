@@ -1,0 +1,165 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.page-container {
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    box-sizing: border-box;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    padding-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
+}
+
+.page-section {
+    width: 100%;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+}
+
+.page-section-content {
+    width: 100%;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    max-width: rem2(1200px);
+    box-sizing: border-box;
+    padding-top: rem2(80px);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    flex-flow: column nowrap;
+    padding-bottom: rem2(80px);
+}
+
+.main-section {
+}
+
+.mid-section {
+    background: $bit-color-background-secondary;
+
+    .mid-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-flow: column nowrap;
+    }
+}
+
+.plans-section {
+    margin-bottom: 5rem;
+
+    .plan-card-list {
+        display: flex;
+        gap: rem2(40px);
+        flex-flow: row wrap;
+        justify-content: center;
+        width: calc(100% + 20px);
+    }
+
+    .plan-card {
+        display: flex;
+        width: rem2(432px);
+        min-height: rem2(564px);
+        border-radius: rem2(4px);
+        flex-flow: column nowrap;
+        box-shadow: $bit-box-shadow-callout;
+    }
+
+    .plan-card-header {
+        display: flex;
+        height: rem2(80px);
+        align-items: center;
+        padding-left: rem2(20px);
+        justify-content: flex-start;
+        background-color: $bit-color-background-secondary;
+    }
+
+    .plan-card-body {
+        flex-grow: 1;
+        display: flex;
+        padding: rem2(20px);
+        flex-direction: column;
+    }
+
+    .plan-card-title {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: rem2(12px) 0 rem2(16px) 0;
+        border-bottom: 1px solid $bit-color-border-secondary;
+    }
+
+    .plan-card-desc {
+        gap: 1rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding-top: rem2(24px);
+    }
+
+    .plan-card-item {
+        gap: 1rem;
+        display: flex;
+        text-align: left;
+        align-items: baseline;
+    }
+}
+
+.modal-message-container {
+    text-align: center;
+    padding: rem2(48px) rem2(32px);
+}
+
+::deep {
+    .grey-txt {
+        display: inline;
+        color: $bit-color-foreground-secondary;
+    }
+
+    .modal-container {
+        min-width: rem2(550px);
+
+        @include sm {
+            min-width: calc(100% - 32px);
+        }
+    }
+
+    .form {
+        padding: 3rem;
+        text-align: center;
+    }
+
+    .modal-text-field {
+        text-align: left;
+        margin-bottom: rem2(24px);
+    }
+
+    .validation-message {
+        text-align: left;
+        font-size: rem2(12px);
+        margin-top: rem2(-20px);
+        color: $bit-color-state-error;
+    }
+
+    .close-btn {
+        top: rem2(16px);
+        right: rem2(16px);
+        position: absolute;
+    }
+
+    .plan-card-button {
+        display: flex;
+        height: rem2(40px);
+        align-items: center;
+        justify-content: center;
+    }
+}

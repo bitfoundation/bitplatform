@@ -1,0 +1,235 @@
+@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+::deep .accordion {
+    border: none;
+
+    .bit-acd-hdr,
+    .bit-acd-con {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .bit-acd-hdr {
+        padding-top: 0;
+    }
+
+    &.expanded {
+        background-color: $bit-color-background-secondary;
+    }
+}
+
+.header-container {
+    flex-grow: 1;
+    display: flex;
+    padding: 1rem;
+    align-items: flex-start;
+
+    &:hover {
+        background-color: $bit-color-background-secondary;
+    }
+
+    ::deep {
+        .header-icon {
+            font-size: 1.25rem;
+            margin-top: 0.8rem;
+            margin-right: 0.625rem;
+
+            @include lt-lg {
+                font-size: 1rem;
+                margin-top: 1rem;
+            }
+
+            @include lt-md {
+                font-size: 0.75rem;
+                margin-top: 0.6rem;
+            }
+
+            @include lt-sm {
+                font-size: 0.6rem;
+                margin-top: 0.35rem;
+            }
+        }
+
+        .header-title, .header-subtitle {
+            color: $bit-color-foreground-secondary;
+        }
+
+        .header-title {
+            margin-bottom: 1rem;
+
+            @include lt-lg {
+                font-size: 2rem;
+            }
+
+            @include lt-md {
+                font-size: 1.25rem;
+                margin-bottom: 0.5rem;
+            }
+
+            @include lt-sm {
+                font-size: 1rem;
+                margin-bottom: 0.25rem;
+            }
+        }
+
+        .header-subtitle {
+            @include lt-lg {
+                font-size: 1.25rem;
+            }
+
+            @include lt-md {
+                font-size: 1rem;
+            }
+
+            @include lt-sm {
+                font-size: 0.75rem;
+            }
+        }
+    }
+}
+
+.content-container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+
+    @include lt-lg {
+        padding-left: 2.75rem;
+        padding-right: 2.75rem;
+    }
+
+    @include lt-md {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+
+    @include lt-sm {
+        padding-left: 2.25rem;
+        padding-right: 2.25rem;
+    }
+
+    ::deep .code-box-content {
+        background-color: $bit-color-background-primary;
+    }
+}
+
+.template-terminal {
+    display: flex;
+    padding: 2rem;
+    color: #f0f0f0;
+    gap: rem2(12px);
+    flex-wrap: wrap;
+    align-items: center;
+    margin: rem2(25px) 0;
+    border-radius: rem2(4px);
+    background-color: $bit-color-background-primary;
+
+    @include lt-md {
+        padding: 1.5rem;
+    }
+
+    span {
+        white-space: nowrap;
+        font-size: rem2(18px);
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+        @include lt-md {
+            font-size: rem2(14px);
+        }
+    }
+
+    .animation-container {
+        display: flex;
+        position: relative;
+
+        * {
+        }
+    }
+
+    .animated {
+        animation-name: terminal-animation;
+        animation-iteration-count: infinite;
+        animation-timing-function: cubic-bezier(0, 1, 0, 1);
+    }
+
+    .delayed {
+        left: 0;
+        position: absolute;
+    }
+
+    .a-1 {
+        animation-duration: 8s;
+    }
+
+    .d-1 {
+        animation-delay: 4s;
+    }
+
+    .a-2 {
+        animation-duration: 6s;
+    }
+
+    .d-2 {
+        animation-delay: 3s;
+    }
+
+    .a-3 {
+        animation-duration: 12s;
+    }
+
+    .d-3 {
+        animation-delay: 6s;
+    }
+
+    .a-4 {
+        animation-duration: 10s;
+    }
+
+    .d-4 {
+        animation-delay: 5s;
+    }
+
+    @keyframes terminal-animation {
+        0%, 100% {
+            opacity: 1;
+            transform: translateY(0px);
+        }
+
+        48% {
+            opacity: 0;
+            transform: translateY(-15px);
+        }
+
+        52% {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+    }
+}
+
+.template-link {
+    display: flex;
+    cursor: pointer;
+    font-weight: 700;
+    align-items: center;
+    font-size: rem2(14px);
+    flex-flow: row nowrap;
+    line-height: rem2(32px);
+    transition: all 0.2s linear;
+    color: $bit-color-primary-main;
+
+    .template-link-arrow {
+        width: rem2(16px);
+        height: rem2(16px);
+        margin-left: rem2(8px);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-image: url('/images/arrow-right-blue-icon.svg');
+    }
+
+    &:hover {
+        transform: translateX(5px);
+    }
+}

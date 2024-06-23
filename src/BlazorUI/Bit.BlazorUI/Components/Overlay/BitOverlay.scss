@@ -1,16 +1,16 @@
 ﻿
 .bit-ovl {
-    display: none;
+    inset: 0;
     width: 100%;
     height: 100%;
+    display: none;
     position: fixed;
-    inset: 0;
+}
 
-    &.visible {
-        display: flex;
-    }
+.bit-ovl-vis {
+    display: flex;
+}
 
-    &.absolute {
-        position: absolute;
-    }
+.bit-ovl-abs {
+    position: absolute;
 }

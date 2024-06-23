@@ -1,0 +1,16 @@
+﻿@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    @include PageContainer;
+    display: flex;
+    flex-flow: column;
+}
+
+.video-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}

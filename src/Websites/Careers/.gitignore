@@ -213,15 +213,23 @@ ModelManifest.xml
 # VS Code
 .vscode
 
+# .NET Meteor
+.meteor
+
 # Rider
 .idea
 
-dotnet-tools.json
 profile.arm.json
 
 # Bit.Websites.Careers
 *.map
 *Resource.designer.cs
 /**/*.css
+custom.aprof
 
-/Bit.Websites.Careers/Web/wwwroot/scripts/app*.js
+/src/Bit.Websites.Careers.Server/Attachments/**/*.*
+
+/src/Bit.Websites.Careers.Client/Scripts/app*.js
+/src/Bit.Websites.Careers.Client/wwwroot/scripts/app*.js
+
+/src/Bit.Websites.Careers.Server/Bit.Websites.CareersDb.db*

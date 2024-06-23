@@ -1,0 +1,166 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-tgl {
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: $typography-font-family;
+
+    &.bit-dis {
+        .bit-tgl-lbl {
+            color: $color-foreground-disabled;
+        }
+
+        .bit-tgl-btn {
+            cursor: default;
+            background: $color-background-disabled;
+            border: $shape-border-width $shape-border-style $color-border-disabled;
+
+            @media (hover: hover) {
+                &:hover {
+                    .bit-tgl-sta {
+                        background-color: $color-foreground-disabled;
+                    }
+                }
+            }
+        }
+
+        .bit-tgl-sta {
+            background-color: $color-foreground-disabled;
+        }
+
+        &.bit-tgl-chk {
+            .bit-tgl-btn {
+                justify-content: flex-end;
+                background: $color-background-disabled;
+                border: $shape-border-width $shape-border-style transparent;
+            }
+
+            .bit-tgl-sta {
+                background-color: $color-background-disabled;
+            }
+        }
+    }
+
+    &.bit-inv {
+        .bit-tgl-btn {
+            border-color: $color-state-error;
+        }
+
+        .bit-tgl-stx {
+            color: $color-state-error;
+        }
+
+        &.bit-tgl-chk {
+            .bit-tgl-btn {
+                background-color: $color-state-error;
+
+                @media (hover: hover) {
+                    &:hover {
+                        background-color: $color-state-error;
+                    }
+                }
+            }
+
+            .bit-tgl-stx {
+                color: $color-state-error;
+            }
+        }
+    }
+}
+
+.bit-tgl-lbl {
+    margin: 0;
+    box-shadow: none;
+    font-weight: 600;
+    display: inline-block;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.625) 0;
+    overflow-wrap: break-word;
+    color: $color-foreground-primary;
+}
+
+.bit-tgl-cnt {
+    display: flex;
+    position: relative;
+    align-items: center;
+}
+
+.bit-tgl-btn {
+    display: flex;
+    cursor: pointer;
+    width: spacing(5);
+    position: relative;
+    align-items: center;
+    outline: transparent;
+    height: spacing(2.5);
+    min-width: spacing(5);
+    box-sizing: border-box;
+    font-size: spacing(2.5);
+    padding: 0 spacing(0.375);
+    border-radius: spacing(1.25);
+    transition: all 0.1s ease 0s;
+    background: $color-background-primary;
+    border: $shape-border-width $shape-border-style $color-border-primary;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $color-action-hover-border-primary;
+
+            .bit-tgl-sta {
+                background-color: $color-action-hover-foreground-secondary;
+            }
+        }
+    }
+}
+
+.bit-tgl-sta {
+    display: block;
+    border-radius: 50%;
+    width: spacing(1.5);
+    height: spacing(1.5);
+    box-sizing: border-box;
+    transition: all 0.1s ease 0s;
+    background-color: $color-foreground-secondary;
+    border: spacing(0.75) $shape-border-style transparent;
+}
+
+.bit-tgl-stx {
+    padding: 0;
+    font-weight: 400;
+    user-select: none;
+    margin: 0 spacing(1);
+}
+
+.bit-tgl-chk {
+    .bit-tgl-btn {
+        cursor: pointer;
+        justify-content: flex-end;
+        background: $color-primary-main;
+        border: $shape-border-width $shape-border-style transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: transparent;
+                background-color: $color-action-hover-primary;
+
+                .bit-tgl-sta {
+                    background-color: $color-primary-text;
+                }
+            }
+        }
+    }
+
+    .bit-tgl-sta {
+        background-color: $color-primary-text;
+    }
+}
+
+.bit-tgl-inl {
+    display: flex;
+    align-items: center;
+
+    .bit-tgl-lbl {
+        margin: 0 spacing(2) 0 0;
+    }
+}

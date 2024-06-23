@@ -1,0 +1,99 @@
+﻿@page "/butil/screenOrientation"
+@inherits AppComponentBase
+@inject Bit.Butil.ScreenOrientation screenOrientation
+
+<PageOutlet Url="butil/screenOrientation"
+            Title="ScreenOrientation - Butil"
+            Description="ScreenOrientation class of the bit Butil" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>ScreenOrientation</BitTypography>
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+        How to use the ScreenOrientation class of the bit Butil?
+    </BitTypography>
+    <br />
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Usage</BitTypography>
+        <div class="section-card-txt">
+            To use the browser ScreenOrientation features you need to inject the Bit.Butil.ScreenOrientation class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.ScreenOrientation screenOrientation
+
+@@code {
+    var angle = await screenOrientation.GetAngle();
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Methods</BitTypography>
+        <div class="section-card-txt">
+            <br />
+            <b>GetOrientationType</b>: <br />
+            Returns the document's current orientation type.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/type" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getOrientationTypeExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetOrientationType">GetOrientationType</BitButton>
+                        <br />
+                        <br />
+                        <div>Orientation type: @orientationType</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetAngle</b>: <br />
+            Returns the document's current orientation angle.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getAngleExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetAngle">GetAngle</BitButton>
+                        <br />
+                        <br />
+                        <div>Angle: @angle</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+            
+            <b>Lock</b>: <br />
+            Locks the orientation of the containing document to the specified orientation.
+            Typically orientation locking is only enabled on mobile devices, and when the browser context is full screen.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/lock" target="_blank">MDN</a>).
+            <br /><br /><br />
+            
+            <b>Unlock</b>: <br />
+            Unlocks the orientation of the containing document from its default orientation.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/unlock" target="_blank">MDN</a>).
+            <br /><br /><br />
+
+            <b>AddChange</b>, <b>RemoveChange</b>: <br />
+            The change event of the ScreenOrientation interface fires when the orientation of the
+            screen has changed, for example when a user rotates their mobile phone.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/change_event" target="_blank">MDN</a>).
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="VisualViewport" PrevUrl="/butil/visualViewport" />

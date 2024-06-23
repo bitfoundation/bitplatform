@@ -20,9 +20,9 @@ public class BitPivotTests : BunitTestContext
             parameters.Add(p => p.OverflowBehavior, overflowBehavior);
         });
 
-        var linkFormatClass = linkFormat.ToString().ToLower();
-        var linkSizeClass = linkSize.ToString().ToLower();
-        var overflowBehaviorClass = overflowBehavior.ToString().ToLower();
+        var linkFormatClass = $"bit-pvt-{linkFormat.ToString().ToLower()}";
+        var linkSizeClass = $"bit-pvt-{linkSize.ToString().ToLower()}";
+        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior.ToString().ToLower()}";
 
         var bitPivot = component.Find(".bit-pvt");
 
@@ -48,7 +48,7 @@ public class BitPivotTests : BunitTestContext
         component.FindAll(".bit-pvt > div:first-child > div")[1].Click();
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        Assert.AreEqual(component.FindAll(".bit-pvt > div:first-child > div")[1].ClassList.Contains("selected-item"), expectedResult);
+        Assert.AreEqual(component.FindAll(".bit-pvt > div:first-child > div")[1].ClassList.Contains("bit-pvti-sel"), expectedResult);
     }
 
     [DataTestMethod, DataRow("Detailed label")]
@@ -83,10 +83,10 @@ public class BitPivotTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitPivotPosition.Top => "position-top",
-            BitPivotPosition.Bottom => "position-bottom",
-            BitPivotPosition.Left => "position-left",
-            BitPivotPosition.Right => "position-right",
+            BitPivotPosition.Top => "bit-pvt-top",
+            BitPivotPosition.Bottom => "bit-pvt-bottom",
+            BitPivotPosition.Left => "bit-pvt-left",
+            BitPivotPosition.Right => "bit-pvt-right",
             _ => string.Empty
         };
 

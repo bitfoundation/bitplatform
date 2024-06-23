@@ -1,0 +1,26 @@
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.card-list {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    width: calc(100% + 20px);
+    margin-left: -20px;
+
+    .benefit-card {
+        flex-grow: 0;
+        padding: rem2(16px);
+        margin-top: rem2(20px);
+        min-width: rem2(275px);
+        min-height: rem2(241px);
+        margin-left: rem2(20px);
+        box-sizing: border-box;
+        border-radius: rem2(2px);
+        max-width: calc(25% - 20px);
+        flex-basis: calc(25% - 20px);
+        box-shadow: $bit-box-shadow-callout;
+        transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    }
+}

@@ -6,8 +6,12 @@
 :root[bit-theme="fluent-dark"] {
     //spacing
     --bit-spa-scaling-factor: 0.5rem;
-    --bit-spa-ovr-zindex0: 1000;
-    --bit-spa-ovr-zindex1: 1001;
+    //zindex
+    --bit-zin-snackbar: 1400;
+    --bit-zin-modal: 1300;
+    --bit-zin-callout: 1200;
+    --bit-zin-overlay: 1100;
+    --bit-zin-base: 1000;
     //shape
     --bit-shp-brd-radius: 0.125rem;
     --bit-shp-brd-width: 0.0625rem;

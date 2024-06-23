@@ -1,0 +1,45 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+<CascadingValue Value="this" IsFixed="true">
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+</CascadingValue>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     role="group"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @for (int i = 0; i < _items.Count; i++)
+    {
+        var item = _items[i];
+        var isEnabled = IsEnabled && GetIsEnabled(item);
+        var template = GetTemplate(item);
+        <button @onclick="() => HandleOnItemClick(item)"
+                tabindex="@(isEnabled ? 0 : -1)"
+                disabled="@(isEnabled is false)"
+                aria-disabled="@(isEnabled is false)"
+                style="@GetStyle(item)"
+                class="bit-btg-itm@(GetItemClass(i, isEnabled)) @GetClass(item)">
+            @if (template is not null)
+            {
+                @template(item)
+            }
+            else if (ItemTemplate is not null)
+            {
+                @ItemTemplate(item)
+            }
+            else
+            {
+                var iconName = GetIconName(item);
+                @if (iconName.HasValue())
+                {
+                    <i class="bit-icon bit-icon--@iconName" />
+                }
+                <span class="bit-btg-btx">@GetText(item)</span>
+            }
+        </button>
+    }
+</div>

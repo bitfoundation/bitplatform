@@ -1,0 +1,616 @@
+﻿@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_mixins.scss';
+
+.page-sec {
+    width: 100%;
+    display: flex;
+    max-width: rem2(1440px);
+    box-sizing: border-box;
+    padding: rem2(40px) rem2(140px);
+    margin: 0 auto;
+
+    @include lg {
+        padding: rem2(32px) rem2(60px);
+    }
+
+    @include sm {
+        padding: rem2(16px);
+    }
+}
+
+.sec-title {
+    font-size: rem2(44px);
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: center;
+
+    @include lg {
+        font-size: rem2(34px);
+    }
+
+    @include md {
+        font-size: rem2(30px);
+    }
+
+    @include sm {
+        font-size: rem2(26px);
+    }
+}
+
+.sec-title-underline {
+    background-color: $Y1;
+    width: rem2(240px);
+    height: rem2(4px);
+    margin-bottom: 2rem;
+
+    @include lg {
+        width: rem2(200px);
+        height: rem2(2px);
+    }
+
+    @include md {
+        width: rem2(180px);
+    }
+
+    @include sm {
+        width: rem2(150px);
+    }
+}
+
+.sec-content {
+    color: $Gray2;
+    font-size: rem2(20px);
+    text-align: center;
+    line-height: 2rem;
+    margin-bottom: 4rem;
+
+    @include md {
+        font-size: rem2(18px);
+    }
+
+    @include sm {
+        font-size: rem2(16px);
+    }
+}
+
+.sec-btn--primary {
+    @include PrimaryButton($IsInNavbar: false);
+}
+
+.home-bg {
+    background-image: url('/images/home/home_bg.webp');
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-bottom: rem2(140px);
+}
+
+.to-the-moon {
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: rem2(224px);
+
+    @include md {
+        flex-flow: column-reverse;
+        align-items: center;
+        padding-top: rem2(100px);
+    }
+
+    .sec-bg {
+        flex-grow: 1;
+        height: rem2(482px);
+        background-size: contain;
+        background-position: right;
+        background-repeat: no-repeat;
+        background-image: url('/images/home/to-the-moon-bg.svg');
+
+        @include md {
+            width: 100%;
+            max-width: rem2(500px);
+        }
+
+        @include xs {
+            height: rem2(450px);
+        }
+    }
+
+    .sec-body {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: 100%;
+        max-width: rem2(589px);
+        margin-right: rem2(22px);
+        padding-top: rem2(24px);
+        box-sizing: border-box;
+        color: $Black;
+
+        @include lg {
+            max-width: rem2(450px);
+        }
+
+        @include md {
+            max-width: unset;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @include xs {
+            padding-top: unset;
+        }
+    }
+
+    .sec-title {
+        font-weight: 700;
+        font-size: rem2(56px);
+        line-height: rem2(80px);
+
+        @include lg {
+            font-size: rem2(48px);
+            line-height: rem2(64px);
+        }
+
+        @include md {
+            margin-bottom: 2rem;
+        }
+
+        @include sm {
+            font-size: rem2(34px);
+            line-height: rem2(48px);
+        }
+    }
+
+    .sec-subtitle {
+        font-weight: 600;
+        font-size: rem2(26px);
+        line-height: rem2(40px);
+        margin-bottom: rem2(20px);
+
+        @include lg {
+            font-size: rem2(22px);
+            line-height: rem2(32px);
+        }
+
+        @include md {
+            margin-bottom: 2rem;
+        }
+
+        @include sm {
+            font-size: rem2(20px);
+            line-height: rem2(28px);
+        }
+    }
+
+    .sec-desc {
+        font-weight: 500;
+        font-size: rem2(20px);
+        line-height: rem2(32px);
+        margin-bottom: rem2(30px);
+        color: $Gray1;
+        text-align: left;
+
+        @include md {
+            font-size: rem2(18px);
+            line-height: rem2(28px);
+            margin-bottom: rem2(50px);
+            text-align: center;
+        }
+
+        @include sm {
+            font-size: rem2(14px);
+            line-height: rem2(20px);
+        }
+    }
+}
+
+.what-we-offer {
+    width: 100%;
+    flex-flow: column;
+    align-items: center;
+    margin-bottom: rem2(140px);
+
+    .sec-card-group {
+        display: flex;
+        flex-flow: row wrap;
+        border-top: 1px solid $Gray4;
+        border-left: 1px solid $Gray4;
+        margin-bottom: rem2(77px);
+
+        @include md {
+            max-width: rem2(500px);
+        }
+
+        .card {
+            width: calc(100% / 4);
+            height: rem2(220px);
+            border-right: 1px solid $Gray4;
+            border-bottom: 1px solid $Gray4;
+            padding: rem2(178px) rem2(13px) 0;
+            font-weight: bold;
+            font-size: rem2(20px);
+            text-align: center;
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-position: top rem2(50px) center;
+            background-size: rem2(95px);
+            cursor: pointer;
+            color: $Black1;
+
+            &:hover {
+                box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.1);
+            }
+
+            @include lg {
+                font-size: rem2(16px);
+            }
+
+            @include md {
+                width: calc(100% / 2);
+            }
+
+            @include sm {
+                width: 100%;
+                font-size: rem2(20px);
+                background-position-y: rem2(30px);
+                padding-top: rem2(158px);
+            }
+        }
+
+        .card-1 {
+            background-image: url('/images/home/services/web-development-icon.svg')
+        }
+
+        .card-2 {
+            background-image: url('/images/home/services/mobile-development-icon.svg')
+        }
+
+        .card-3 {
+            background-image: url('/images/home/services/consulting-services-icon.svg')
+        }
+
+        .card-4 {
+            background-image: url('/images/home/services/ai-icon.svg')
+        }
+
+        .card-5 {
+            background-image: url('/images/home/services/uiux-icon.svg')
+        }
+
+        .card-6 {
+            background-image: url('/images/home/services/support-icon.svg')
+        }
+
+        .card-7 {
+            background-image: url('/images/home/services/cloud-icon.svg')
+        }
+
+        .card-8 {
+            background-image: url('/images/home/services/game-development-icon.svg')
+        }
+    }
+}
+
+
+.success-bg {
+    background-color: $Gray5;
+    margin-bottom: rem2(140px);
+
+    @include md {
+        padding-bottom: 2rem;
+    }
+}
+
+.success-story {
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 4rem;
+
+    .sec-carousel {
+        width: 100%;
+        background-color: $White;
+        padding: 3rem 4rem;
+        border-radius: 1rem;
+    }
+
+    ::deep .carousel {
+        width: 100%;
+        height: rem2(430px);
+
+        @include lg {
+            height: rem2(390px);
+        }
+
+        @include md {
+            height: rem2(530px);
+        }
+
+        @include sm {
+            height: rem2(300px);
+        }
+
+        .slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: rem2(20px);
+
+            @include md {
+                flex-flow: column;
+            }
+        }
+
+        .slide-image {
+            width: rem2(500px);
+            height: rem2(300px);
+
+            @include lg {
+                width: rem2(350px);
+                height: rem2(210px);
+            }
+
+            @include md {
+                width: rem2(330px);
+                height: rem2(200px);
+            }
+
+            @include sm {
+                width: rem2(250px);
+                height: rem2(160px);
+            }
+        }
+
+        .slide-content {
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: center;
+            align-items: flex-start;
+
+            @include md {
+                align-items: center;
+            }
+        }
+
+        .slide-title {
+            font-weight: 700;
+            font-size: rem2(30px);
+            line-height: rem2(40px);
+            color: #0065EF;
+            margin-bottom: rem2(16px);
+
+            @include lg {
+                font-size: rem2(26px);
+                line-height: rem2(36px);
+            }
+
+            @include md {
+                font-size: rem2(22px);
+                line-height: rem2(32px);
+            }
+        }
+
+        .slide-title-underline {
+            width: rem2(285px);
+            height: 2px;
+            background-color: $Gray4;
+            margin-bottom: 1rem;
+
+            @include md {
+                width: rem2(180px);
+            }
+        }
+
+        .slide-desc {
+            font-weight: 400;
+            font-size: rem2(20px);
+            line-height: rem2(32px);
+            color: $Gray1;
+
+            @include md {
+                text-align: center;
+                font-size: rem2(18px);
+                line-height: rem2(28px);
+            }
+
+            @include sm {
+                display: none;
+            }
+        }
+    }
+
+    .prev-next {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+
+        @include md {
+            padding: 3rem;
+        }
+
+        button {
+            cursor: pointer;
+            width: rem2(56px);
+            height: rem2(56px);
+            background: transparent;
+            stroke: $Gray2;
+            padding: 0;
+
+            &:hover {
+                svg path {
+                    stroke: $B2;
+                }
+            }
+        }
+    }
+}
+
+.how-we-work {
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 4rem;
+
+    .process-card {
+        position: relative;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        width: 100%;
+        max-width: rem2(1160px);
+        height: rem2(228px);
+        border: 1px solid #E6E6E6;
+        border-radius: rem2(15px);
+        margin-bottom: rem2(20px);
+        box-sizing: border-box;
+        background-color: $White;
+        background-position: center left rem2(42px);
+        background-repeat: no-repeat;
+        background-size: rem2(80px);
+        padding-left: rem2(171px);
+
+        @include md {
+            padding-left: rem2(150px);
+        }
+
+        @include sm {
+            background-position: top rem2(16px) left rem2(16px);
+            background-size: rem2(56px);
+            padding-left: rem2(16px);
+            padding-top: rem2(66px);
+        }
+
+        &:hover {
+            border-width: 2px;
+            box-shadow: 0px 4px 38px rgba(0, 0, 0, 0.12);
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .process-card-title {
+            font-weight: bold;
+            font-size: rem2(28px);
+            line-height: rem2(46px);
+            color: $Black;
+            margin-bottom: 1rem;
+
+            @include lg {
+                font-size: rem2(22px);
+                line-height: rem2(32px);
+            }
+
+            @include md {
+                font-size: rem2(18px);
+                line-height: rem2(24px);
+            }
+
+            @include sm {
+                font-size: rem2(16px);
+                line-height: rem2(20px);
+            }
+        }
+
+        .process-card-desc {
+            width: 100%;
+            max-width: rem2(754px);
+            font-size: rem2(16px);
+            line-height: rem2(25px);
+            color: $Black;
+
+            @include lg {
+                max-width: rem2(412px);
+            }
+
+            @include md {
+                max-width: rem2(330px);
+                font-size: rem2(14px);
+                line-height: rem2(22px);
+            }
+
+            @include sm {
+                max-width: unset;
+                font-size: rem2(13px);
+                line-height: rem2(18px);
+                padding-right: 1rem;
+            }
+        }
+
+        .process-card-number {
+            position: absolute;
+            bottom: rem2(24px);
+            right: rem2(40px);
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            width: rem2(80px);
+            height: rem2(140px);
+
+            @include md {
+                width: rem2(50px);
+                height: rem2(110px);
+            }
+
+            @include sm {
+                width: rem2(35px);
+                height: rem2(96px);
+                top: 0;
+                right: rem2(24px);
+            }
+        }
+    }
+
+
+    .process-card-1 {
+        background-image: url('/images/home/process/process1_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-1.svg');
+        }
+    }
+
+    .process-card-2 {
+        background-image: url('/images/home/process/process2_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-2.svg');
+        }
+    }
+
+    .process-card-3 {
+        background-image: url('/images/home/process/process3_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-3.svg');
+        }
+    }
+
+    .process-card-4 {
+        background-image: url('/images/home/process/process4_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-4.svg');
+        }
+    }
+
+    .process-card-5 {
+        background-image: url('/images/home/process/process5_bg.svg');
+
+        .process-card-number {
+            background-image: url('/images/home/process/process-no-5.svg');
+        }
+    }
+}
+
+.what-our-client-says {
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 9rem;
+}

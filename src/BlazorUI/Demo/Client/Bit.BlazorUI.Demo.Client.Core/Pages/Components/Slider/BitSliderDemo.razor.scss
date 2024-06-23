@@ -1,0 +1,81 @@
+﻿.flex-container {
+    gap: 2rem;
+    min-height: 19rem;
+    display: flex;
+
+    &.column {
+        flex-direction: column;
+    }
+}
+
+.custom-wrapper {
+    gap: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    width: max-content;
+    margin-bottom: 2rem;
+    flex-direction: column;
+}
+
+::deep {
+    .custom-class {
+        margin-left: 0.5rem;
+        border: 1px solid red;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-container {
+        height: auto;
+        padding-left: 1rem;
+        border-radius: 1rem;
+        background-color: dodgerblue;
+    }
+
+    .custom-input {
+        &::-webkit-slider-thumb {
+            background-color: white;
+            border: 0.25rem solid green;
+        }
+
+        &:hover::-webkit-slider-thumb {
+            background-color: white;
+            border: 0.25rem solid darkgreen;
+        }
+
+        &::-webkit-slider-runnable-track {
+            background: linear-gradient(seagreen, seagreen) 0/var(--sx) 100% no-repeat, white;
+        }
+
+        &:hover::-webkit-slider-runnable-track {
+            background: linear-gradient(green, green) 0/var(--sx) 100% no-repeat, white;
+        }
+    }
+
+    .custom-slider-box {
+        background: linear-gradient(0deg, red calc(0.5rem * 0.5), transparent 0);
+
+        &:hover {
+            background: linear-gradient(0deg, tomato calc(0.5rem * 0.5), transparent 0);
+        }
+
+        &:hover::before {
+            background-color: brown;
+        }
+
+        &::before {
+            background-color: darkred;
+        }
+
+        .custom-input {
+            &::-webkit-slider-thumb {
+                background-color: white;
+                border: 0.25rem solid slategray;
+            }
+
+            &:hover::-webkit-slider-thumb {
+                background-color: white;
+                border: 0.25rem solid dimgray;
+            }
+        }
+    }
+}

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
@@ -7,7 +6,7 @@ namespace Bit.BlazorUI;
 public partial class _BitNavChild<TItem> where TItem : class
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 {
-    private static Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
+    private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
     {
         [BitNavAriaCurrent.Page] = "page",
         [BitNavAriaCurrent.Step] = "step",
@@ -28,10 +27,10 @@ public partial class _BitNavChild<TItem> where TItem : class
     [Parameter] public int Depth { get; set; }
 
 
-    private async void HandleOnClick()
+    private async Task HandleOnClick()
     {
         if (Nav is null) return;
-        if (Nav.GetIsEnabled(Item) == false) return;
+        if (Nav.GetIsEnabled(Item) is false) return;
 
         if (Nav.GetChildItems(Item).Any() && Nav.GetUrl(Item).HasNoValue())
         {
@@ -42,79 +41,91 @@ public partial class _BitNavChild<TItem> where TItem : class
             await Nav.SetSelectedItem(Item);
         }
 
-        await Nav.OnItemClick.InvokeAsync(Item);
+        if (Nav.SelectedItem != Item || Nav.Reselectable)
+        {
+            await Nav.OnItemClick.InvokeAsync(Item);
+        }
     }
 
     private async Task ToggleItem()
     {
         if (Nav is null) return;
 
-        if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Any() is false) return;
+        if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Count is 0) return;
 
-        Nav.SetItemExpanded(Item, !Nav.GetItemExpanded(Item));
-
-        await Nav.OnItemToggle.InvokeAsync(Item);
+        await Nav.ToggleItem(Item);
     }
 
     private string GetItemContainerClasses()
     {
-        var sb = new StringBuilder();
+        var classes = new List<string>();
 
         if (Nav.GetIsEnabled(Item) is false)
         {
-            sb.Append("disabled ");
+            classes.Add("bit-nav-dis");
         }
 
         if (Nav.SelectedItem == Item)
         {
-            sb.Append("selected ")
-              .Append(Nav.ClassStyles?.SelectedItemContainer?.Class)
-              .Append(' ');
+            classes.Add("bit-nav-sel");
+            if (Nav.Classes?.SelectedItemContainer is not null)
+            {
+                classes.Add(Nav.Classes?.SelectedItemContainer!);
+            }
         }
 
-        sb.Append(Nav.ClassStyles?.ItemContainer?.Class);
+        if (Nav.Classes?.ItemContainer is not null)
+        {
+            classes.Add(Nav.Classes?.ItemContainer!);
+        }
 
-        return sb.ToString();
+        return string.Join(" ", classes);
     }
     private string GetItemContainerStyles()
     {
-        var sb = new StringBuilder();
-        sb.Append(Nav.ClassStyles?.ItemContainer?.Style);
-
-        if (Nav.SelectedItem == Item)
+        var classes = new List<string>();
+        if (Nav.Styles?.ItemContainer is not null)
         {
-            sb.Append(' ')
-              .Append(Nav.ClassStyles?.SelectedItemContainer?.Style);
+            classes.Add(Nav.Styles.ItemContainer);
         }
 
-        return sb.ToString();
+        if (Nav.SelectedItem == Item && Nav.Styles?.SelectedItemContainer is not null)
+        {
+            classes.Add(Nav.Styles?.SelectedItemContainer!);
+        }
+
+        return string.Join(" ", classes);
     }
 
     private string GetItemClasses()
     {
-        var sb = new StringBuilder();
-        sb.Append(Nav.ClassStyles?.Item?.Class);
-
-        if (Nav.SelectedItem == Item)
+        var classes = new List<string>();
+        if (Nav.Classes?.Item is not null)
         {
-            sb.Append(' ')
-              .Append(Nav.ClassStyles?.SelectedItem?.Class);
+            classes.Add(Nav.Classes?.Item!);
         }
 
-        return sb.ToString();
+        if (Nav.SelectedItem == Item && Nav.Classes?.SelectedItem is not null)
+        {
+            classes.Add(Nav.Classes?.SelectedItem!);
+        }
+
+        return string.Join(" ", classes);
     }
     private string GetItemStyles()
     {
-        var sb = new StringBuilder();
-        sb.Append(Nav.ClassStyles?.Item?.Style);
-
-        if (Nav.SelectedItem == Item)
+        var classes = new List<string>();
+        if (Nav.Styles?.Item is not null)
         {
-            sb.Append(' ')
-              .Append(Nav.ClassStyles?.SelectedItem?.Style);
+            classes.Add(Nav.Styles?.Item!);
         }
 
-        return sb.ToString();
+        if (Nav.SelectedItem == Item && Nav.Styles?.SelectedItem is not null)
+        {
+            classes.Add(Nav.Styles?.SelectedItem!);
+        }
+
+        return string.Join(" ", classes);
     }
 
 

@@ -1,9 +1,0 @@
-﻿var builder = WebApplication.CreateBuilder(args);
-
-Bit.Websites.Platform.Api.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);
-
-var app = builder.Build();
-
-Bit.Websites.Platform.Api.Startup.Middlewares.Use(app, builder.Environment, builder.Configuration);
-
-app.Run();

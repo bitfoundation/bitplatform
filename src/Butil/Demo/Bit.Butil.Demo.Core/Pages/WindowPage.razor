@@ -1,0 +1,446 @@
+﻿@page "/window"
+@implements IDisposable
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Window window
+
+<PageTitle>Window Samples</PageTitle>
+
+<h1>Window</h1>
+
+<pre style="font-family:Consolas; overflow: auto;">
+@@inject Bit.Butil.Window window
+
+@@code {
+    ...
+    await window.AddEventListener(ButilEvents.KeyDown, args => { ... });
+    ...
+    await window.Alert("Alert from C#");
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start pressing keys or clicking on buttons</h3>
+
+<hr />
+<br />
+
+<button @onclick=AddEventListener>AddEventListener</button>
+&nbsp;
+<button @onclick=RemoveEventListener>RemoveEventListener</button>
+<br />
+<br />
+<div>Is KeyDown Registered? @isKeyDownRegistered</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=AddBeforeUnload>AddBeforeUnload</button>
+&nbsp;
+<button @onclick=RemoveBeforeUnload>RemoveBeforeUnload</button>
+<br />
+<br />
+<div>Is BeforeUnload Registered? @isBeforeUnloadRegistered</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=GetInnerHeight>GetInnerHeight</button>
+&nbsp;
+<button @onclick=GetInnerWidth>GetInnerWidth</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=GetOuterHeight>GetOuterHeight</button>
+&nbsp;
+<button @onclick=GetOuterWidth>GetOuterWidth</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=GetScreenX>GetScreenX</button>
+&nbsp;
+<button @onclick=GetScreenY>GetScreenY</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=GetScrollX>GetScrollX</button>
+&nbsp;
+<button @onclick=GetScrollY>GetScrollY</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=ShowAlert>ShowAlert</button>
+&nbsp;
+<button @onclick=ShowConfirm>ShowConfirm</button>
+&nbsp;
+<button @onclick=ShowPrompt>ShowPrompt</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=OpenWindow>OpenWindow</button>
+&nbsp;
+<button @onclick=OpenPrint>OpenPrint</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind-value="btoaValue" />
+<br />
+<br />
+<button @onclick=EncodeData>EncodeData</button>
+<br />
+<br />
+<div>Encoded text is: @btoaText</div>
+
+<br />
+<br />
+
+<input @bind-value="atobValue" />
+<br />
+<br />
+<button @onclick=DecodeData>DecodeData</button>
+<br />
+<br />
+<div>Decoded text is: @atobText</div>
+
+<br />
+<hr />
+<br />
+
+<input placeholder="Find text on page" @bind-value="searchText" />
+<br />
+<br />
+<input type="checkbox" name="caseSensitive" @bind-value="isCaseSensitive"/>
+<label for="caseSensitive">CaseSensitive</label>
+<br />
+<input type="checkbox" name="backward" @bind-value="isBackward"/>
+<label for="backward">Backward</label>
+<br />
+<input type="checkbox" name="wrapAround" @bind-value="isWrapAround" />
+<label for="wrapAround">WrapAround</label>
+<br />
+<input type="checkbox" name="wholeWord" @bind-value="isWholeWord" />
+<label for="wholeWord">WholeWord</label>
+<br />
+<input type="checkbox" name="searchInFrame" @bind-value="@isSearchInFrame" />
+<label for="searchInFrame">SearchInFrame</label>
+<br />
+<br />
+<button @onclick=Find>Find</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick=CheckContextIsSecured>CheckContextIsSecured</button>
+<br />
+<br />
+<div>Is context secured? @contextSecureStatus</div>
+
+<br />
+<hr />
+<br />
+
+<input @bind-value="windowName" />
+<br />
+<br />
+<button @onclick=SetWindowName>SetWindowName</button>
+
+<br />
+<br />
+<br />
+
+<button @onclick=GetWindowName>GetWindowName</button>
+<br />
+<br />
+<div>Current window name is: @currentWindowName</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=GetOrigin>GetOrigin</button>
+<br />
+<br />
+<div>Origin is: @origin</div>
+
+<br />
+<hr />
+<br />
+
+<div>Select/Highlight a text on this window</div>
+<br />
+<button @onclick=GetSelection>GetSelection</button>
+<br />
+<br />
+<div>Selected text is: @selectedText</div>
+
+<br />
+<hr />
+<br />
+
+<button @onclick=GetMatchMedia>GetMatchMedia</button>
+<br />
+<br />
+<div>Is media query matches 'max-width: 600px'? @mediaQueryMatchStatus</div>
+
+<br />
+<hr />
+<br />
+
+X: <input type="number" @bind-value="scrollX"/>
+<br />
+<br />
+Y: <input type="number" @bind-value="scrollY"/>
+<br />
+<br />
+<button @onclick=Scroll>Scroll</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+X: <input type="number" @bind-value="scrollByX"/>
+<br />
+<br />
+Y: <input type="number" @bind-value="scrollByY"/>
+<br />
+<br />
+<button @onclick=ScrollBy>ScrollBy</button>
+
+<br />
+<br />
+
+@code {
+    private bool isKeyDownRegistered;
+    private bool isBeforeUnloadRegistered;
+
+    private string contextSecureStatus;
+
+    private string btoaValue;
+    private string atobValue;
+
+    private string btoaText;
+    private string atobText;
+
+    private string searchText;
+    private bool isCaseSensitive; 
+    private bool isBackward; 
+    private bool isWrapAround; 
+    private bool isWholeWord; 
+    private bool isSearchInFrame; 
+
+    private string windowName;
+    private string currentWindowName;
+
+    private string origin;
+
+    private string selectedText;
+
+    private string mediaQueryMatchStatus;
+
+    private float scrollY = 0;
+    private float scrollX = 0;
+
+    private float scrollByY = -156;
+    private float scrollByX = 0;
+
+    private Action<ButilKeyboardEventArgs> _handler = default!;
+
+    protected override void OnInitialized()
+    {
+        _handler = (ButilKeyboardEventArgs arg) => _ = console.Log("KeyDown from C#:", arg.Code);
+
+        base.OnInitialized();
+    }
+
+    private void AddEventListener()
+    {
+        _ = window.AddEventListener(ButilEvents.KeyDown, _handler);
+        isKeyDownRegistered = true;
+    }
+
+    private void RemoveEventListener()
+    {
+        _ = window.RemoveEventListener(ButilEvents.KeyDown, _handler);
+        isKeyDownRegistered = false;
+    }
+
+    private void AddBeforeUnload()
+    {
+        _ = window.AddBeforeUnload();
+        isBeforeUnloadRegistered = true;
+    }
+
+    private void RemoveBeforeUnload()
+    {
+        _ = window.RemoveBeforeUnload();
+        isBeforeUnloadRegistered = false;
+    }
+
+    private async Task GetInnerHeight()
+    {
+        await console.Log("Window InnerHeight =", await window.GetInnerHeight());
+    }
+
+    private async Task GetInnerWidth()
+    {
+        await console.Log("Window InnerWidth =", await window.GetInnerWidth());
+    }
+
+    private async Task GetOuterHeight()
+    {
+        await console.Log("Window OuterHeight =", await window.GetOuterHeight());
+    }
+
+    private async Task GetOuterWidth()
+    {
+        await console.Log("Window OuterWidth =", await window.GetOuterWidth());
+    }
+
+    private async Task GetScreenX()
+    {
+        await console.Log("Window ScreenX =", await window.GetScreenX());
+    }
+
+    private async Task GetScreenY()
+    {
+        await console.Log("Window ScreenY =", await window.GetScreenY());
+    }
+
+    private async Task GetScrollX()
+    {
+        await console.Log("Window ScrollX =", await window.GetScrollX());
+    }
+
+    private async Task GetScrollY()
+    {
+        await console.Log("Window ScrollY =", await window.GetScrollY());
+    }
+
+    private async Task ShowAlert()
+    {
+        await window.Alert("Alert from C#");
+    }
+
+    private async Task ShowConfirm()
+    {
+        await window.Confirm("Confirm from C#");
+    }
+
+    private async Task ShowPrompt()
+    {
+        await window.Prompt("Prompt from C#", string.Empty);
+    }
+
+    private async Task OpenWindow()
+    {
+        var windowFeatures = new WindowFeatures() { Popup = true, Width = 848, Height = 568 };
+        await window.Open("/document", "popupWindow", windowFeatures);
+    }
+
+    private async Task OpenPrint()
+    {
+        await window.Print();
+    }
+
+    private async Task EncodeData()
+    {
+        var res = await window.Btoa(btoaValue);
+        btoaText = res;
+    }
+
+    private async Task DecodeData()
+    {
+        var res = await window.Atob(atobValue);
+        atobText = res;
+    }
+
+    private async Task Find()
+    {
+        await window.Find(searchText,
+            isCaseSensitive,
+            isBackward,
+            isWrapAround,
+            isWholeWord,
+            isSearchInFrame);
+    }
+
+    private async Task CheckContextIsSecured()
+    {
+        var res = await window.IsSecureContext();
+        contextSecureStatus = res.ToString();
+    }
+
+    private async Task SetWindowName()
+    {
+        await window.SetName(windowName);
+    }
+
+    private async Task GetWindowName()
+    {
+        var res = await window.GetName();
+        currentWindowName = res;
+    }
+
+    private async Task GetOrigin()
+    {
+        var res = await window.GetOrigin();
+        origin = res;
+    }
+
+    private async Task GetSelection()
+    {
+        var res = await window.GetSelection();
+        selectedText = res;
+    }
+
+    private async Task GetMatchMedia()
+    {
+        var res = await window.MatchMedia("(max-width: 600px)");
+        mediaQueryMatchStatus = res.Matches.ToString();
+    }
+
+    private async Task Scroll()
+    {
+        var scrollOptions = new ScrollOptions() { Top = scrollY, Left = scrollX, Behavior = ScrollBehavior.Smooth };
+        await window.Scroll(scrollOptions);
+    }
+
+    private async Task ScrollBy()
+    {
+        var scrollOptions = new ScrollOptions() { Top = scrollByY, Left = scrollByX, Behavior = ScrollBehavior.Smooth };
+        await window.ScrollBy(scrollOptions);
+    }
+
+    public void Dispose()
+    {
+        if (isKeyDownRegistered)
+        {
+            _ = window.RemoveEventListener(ButilEvents.KeyDown, _handler);
+        }
+    }
+}

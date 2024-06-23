@@ -1,0 +1,217 @@
+﻿@import '../../Styles/abstracts/_vars.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+.main-container {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    @include lt-lg {
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+}
+
+.content-container {
+    width: 50%;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+
+    @include lt-lg {
+        width: 100%;
+
+        &:last-child {
+            margin-left: 0;
+        }
+    }
+
+    &.sample-side {
+        top: calc(rem2($HeaderHeight) + var(--bit-status-bar-height) + 5px);
+        position: sticky;
+    }
+}
+
+.component-list {
+    width: 100%;
+    display: flex;
+    max-width: rem2(500px);
+    flex-flow: column nowrap;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.component-row {
+    outline: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    user-select: none;
+    padding: rem2(20px);
+    position: relative;
+    display: inline-flex;
+    flex-flow: row nowrap;
+    margin-top: rem2(10px);
+    -ms-user-select: none;
+    text-decoration: none;
+    box-sizing: border-box;
+    -moz-user-select: none;
+    align-items: flex-start;
+    border-radius: rem2(2px);
+    transition-property: all;
+    -webkit-user-select: none;
+    transition-duration: 150ms;
+    justify-content: flex-start;
+    background-color: transparent;
+    border: rem2(1px) solid transparent;
+
+    &:hover {
+        background-color: $bit-color-action-active-background-primary;
+    }
+
+    .component-icon {
+        display: flex;
+        height: rem2(36px);
+        border-radius: 50%;
+        align-items: center;
+        min-width: rem2(36px);
+        margin-right: rem2(20px);
+        justify-content: center;
+
+        @include lt-lg {
+            margin-bottom: rem2(10px);
+        }
+    }
+
+    .component-info-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: flex-start;
+        flex-flow: column nowrap;
+        justify-content: space-around;
+    }
+
+    .component-name {
+        margin: 0;
+        line-height: 1.5;
+        font-weight: 700;
+        letter-spacing: 0;
+        font-size: rem2(14px);
+        color: $bit-color-foreground-primary;
+    }
+
+    .component-desc {
+        line-height: 1.5;
+        text-align: left;
+        font-weight: 400;
+        letter-spacing: 0;
+        margin-top: rem2(5px);
+        font-size: rem2(14px);
+        margin-bottom: rem2(5px);
+        color: $bit-color-foreground-secondary;
+    }
+
+    @include lt-lg {
+        align-items: flex-start;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+}
+
+.component-row--active {
+    background-color: $bit-color-background-secondary;
+}
+
+.example-preview {
+    box-shadow: $bit-box-shadow-callout;
+    border-radius: rem2(2px) rem2(2px) 0 0;
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+
+    @include lt-lg {
+        margin-top: rem2(20px);
+    }
+}
+
+.component-container {
+    padding: rem2(20px);
+    min-height: rem2(50px);
+}
+
+.example-code {
+    border-radius: 0 0 rem2(4px) rem2(4px);
+
+    pre {
+        margin: 0;
+        border: none;
+        direction: ltr;
+        overflow: auto;
+        border-radius: 0;
+        max-height: rem2(300px);
+        min-height: rem2(200px);
+
+        &::-webkit-scrollbar-thumb:hover {
+            background-color: #c8c6c4 !important;
+            border-radius: rem2(8px);
+            border: rem2(4px) solid #c8c6c4 !important;
+        }
+    }
+}
+
+::deep {
+    .component-link {
+        margin: 0;
+        color: #0072E5;
+        line-height: 1.5;
+        font-weight: 700;
+        letter-spacing: 0;
+        align-items: center;
+        display: inline-flex;
+        font-size: rem2(14px);
+        min-height: rem2(24px);
+        text-decoration: none;
+        padding-top: rem2(16px);
+
+        &:hover {
+            color: #0059B2;
+        }
+    }
+
+    .component-row--active {
+        .component-icon {
+            path {
+                fill: $B2Color;
+                stroke: $B2Color;
+            }
+        }
+    }
+
+    .component-icon {
+        path {
+            fill: $B2Color;
+            stroke: $B2Color;
+        }
+    }
+
+    .component-carousel {
+        height: rem2(280px);
+
+        @include gt-md {
+            display: none;
+        }
+    }
+
+    .link-chevron-right {
+        font-weight: 700;
+        font-size: rem2(12px);
+        margin-top: rem2(3px);
+        margin-left: rem2(4px);
+    }
+}

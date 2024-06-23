@@ -1,0 +1,154 @@
+﻿@page "/"
+@inherits AppComponentBase
+
+<PageTitle>bit Careers</PageTitle>
+
+<section class="hero-section-container">
+    <div class="person-pic"></div>
+    <div class="hero-section-content">
+        <div class="hero-section-title">مهم نیست کجای دنیایی، تو مسیر رشد کنارمون باش</div>
+        <div class="hero-section-description">
+            ما تو
+            <img src="/images/shared/bit-icon.svg" class="hero-section-bit-icon" />
+            از قسمت‌های مختلف دنیا دور هم جمع شدیم. درسته از هم دوریم ولی کنار هم برای پیشرفتمون تلاش می‌کنیم.
+        </div>
+        <button class="careers-button btn-pad">فرصت‌های همکاری</button>
+    </div>
+</section>
+
+<section class="about-us-section-container">
+    <div class="section-title">ما رو بشناس</div>
+    <div class="about-us-section-content">
+        <div class="about-us-section-img-container">
+            <img src="/images/main-page/team-work-pic.webp" class="about-us-section-img" />
+            <img src="/images/ui-effect/ui-effect-img-01.svg" class="ui-effect-1" />
+            <img src="/images/ui-effect/ui-effect-img-02.svg" class="ui-effect-2" />
+            <img src="/images/ui-effect/ui-effect-img-03.svg" class="ui-effect-3" />
+        </div>
+        <div class="about-us-section-info">
+            <div class="about-us-section-description">ما جمعی از افراد حرفه‌ای و کاربلدیم که در تولید و رشد نرم‌افزارهای مختلف با هم همکاری می‌کنیم. اینجا همواره برای پیشرفت خودمون تلاش می‌کنیم و کار تیمی و حال خوب هم‌تیمی هامون از مهمترین ارزش‌هامونه.</div>
+            <button class="about-us-section-btn btn-pad">شناخت بیشتر</button>
+        </div>
+        <img src="/images/ui-effect/ui-effect-img-04.svg" class="ui-effect-4" />
+    </div>
+</section>
+
+<section class="careers-section-container">
+    <div class="section-title">فرصت‌های همکاری</div>
+    <div class="careers-section-content">
+        @foreach (var career in Careers)
+        {
+            <CareerBox CareerModel="career"></CareerBox>
+        }
+        <div class="more-careers">
+            <div class="more-careers-title">.مهارتت جز موارد بالا نیست؟ مشکلی نیست، اینجا از خودت برامون بگو</div>
+            <button class="arrow-icon-btn send-resume-btn">ارسال رزومه</button>
+            <img src="/images/ui-effect/ui-effect-bell.svg" class="ui-effect-bell" />
+        </div>
+        <img src="/images/ui-effect/rocket-img.svg" class="ui-effect-rocket" />
+    </div>
+</section>
+
+<section class="feedback-section">
+    <BitCarousel ShowDots="false" AnimationDuration="2" ShowNextPrev="false" Class="bit-carousel" @ref="carousel">
+        <BitCarouselItem>
+            <div class="feedback-container">
+                <div class="product-designer-info-container">
+                    <div class="product-designer-info">
+                        <div class="designer-avatar"></div>
+                        <div class="designer-name">زهرا ابراهیمی</div>
+                        <div class="designer-post-text">Product Designer</div>
+                    </div>
+                </div>
+                <div class="feedback-content">
+                    <div class="section-title">دیدگاه افراد تیم</div>
+                    <div class="feedback-description">
+                        ما تو bit خیلی راحت می‌تونیم نظرات و ایده‌هامون رو بگیم و فضای خوبی برای رشد و یادگیری وجود داره، اینجا همه به هم کمک می‌کنیم و راه‌حل مناسبی برای چالش‌ها پیدا می‌کنیم.
+                        <img src="/images/main-page/quote-down-icon.svg" class="quote-down" />
+                        <img src="/images/main-page/quote-up-icon.svg" class="quote-up" />
+                        <img src="/images/ui-effect/ui-effect-img-05.svg" class="ui-effect-5" />
+                    </div>
+                    <div class="slide-btns">
+                        <button class="slides-left-arrow"></button>
+                        <button class="slides-right-arrow" @onclick=GoNext></button>
+                    </div>
+                </div>
+                <div class="team-members-img"></div>
+            </div>
+        </BitCarouselItem>
+        <BitCarouselItem>
+            <div class="second-slide">second slide</div>
+        </BitCarouselItem>
+    </BitCarousel>
+</section>
+
+<section class="flow-section-container">
+    <div class="section-title">دیدگاه افراد تیم</div>
+    <div class="flow-section-content">
+        <div class="flow-step">
+            <img src="/images/main-page/collaboration-avatar.svg" />
+            <div class="step-name">شروع همکاری</div>
+        </div>
+        <div class="connection-line"></div>
+        <div class="flow-step">
+            <img src="/images/main-page/meeting-icon.svg" />
+            <div class="step-name">آشنایی با تیم</div>
+        </div>
+        <div class="connection-line"></div>
+        <div class="flow-step">
+            <img src="/images/main-page/interview-avatar.svg" />
+            <div class="step-name">مصاحبه</div>
+        </div>
+        <div class="connection-line"></div>
+        <div class="flow-step">
+            <img src="/images/main-page/resume-avatar.svg" />
+            <div class="step-name">ارسال رزومه</div>
+        </div>
+    </div>
+</section>
+
+<section class="why-bit-section-container">
+    <div class="section-title">چرا bit؟</div>
+    <div class="why-bit-section-content">
+        <div class="why-bit-item-text">ساعت ‌کاری منعطف</div>
+        <div class="why-bit-item-text">تکنولوژی بروز</div>
+        <div class="why-bit-item-text">هم‌تیمی‌‌های خفن</div>
+        <div class="why-bit-item-text">تیم صمیمی و پویا</div>
+        <div class="why-bit-item-text">کار Open Source</div>
+        <div class="why-bit-item-text">تجربه دورکاری</div>
+        <div class="why-bit-item-text">کار حرفه‌ای و باکیفیت</div>
+        <div class="why-bit-item-text">استفاده از Cloud</div>
+        <div class="why-bit-item-text">فضای رشد فردی</div>
+    </div>
+</section>
+
+<section class="suggestions-section-container">
+    <div class="section-title">مقاله‌ و ویدئو</div>
+    <div class="suggestions-section-content">
+
+        <div class="suggestion-items-container">
+            <header class="suggestion-items-header-container">
+                <button class="arrow-icon-btn see-all-btn">مشاهده همه</button>
+                <span class="suggestion-items-container-title">مقاله‌ها</span>
+            </header>
+            <div class="suggestion-items">
+                @foreach (var suggestedArticle in SuggestedArticles)
+                {
+                    <IntroBox IntroBoxModel="suggestedArticle"></IntroBox>
+                }
+            </div>
+        </div>
+        <div class="suggestion-items-container">
+            <header class="suggestion-items-header-container">
+                <button class="arrow-icon-btn see-all-btn">مشاهده همه</button>
+                <span class="suggestion-items-container-title">ویدئوها</span>
+            </header>
+            <div class="suggestion-items">
+                @foreach (var suggestedVideo in SuggestedVideos)
+                {
+                    <IntroBox IntroBoxModel="suggestedVideo"></IntroBox>
+                }
+            </div>
+        </div>
+    </div>
+</section>

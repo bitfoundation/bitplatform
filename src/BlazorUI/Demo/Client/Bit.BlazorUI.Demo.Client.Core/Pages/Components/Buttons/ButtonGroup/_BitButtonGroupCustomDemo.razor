@@ -1,0 +1,254 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ExamplePreview>
+        <div>The buttons can be grouped by putting them in a ButtonGroup component.</div>
+        <br />
+        <BitButtonGroup Items="basicCustoms" NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ButtonStyle" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div>All the standard button styles are supported.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Primary (default)</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="disabledCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms" IsEnabled="false"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Standard</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="disabledCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms" IsEnabled="false"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="disabledCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicCustoms" IsEnabled="false"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ExamplePreview>
+        <div>Each item in the ButtonGroup can have an icon.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Primary (default)</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="iconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Standard</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="iconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="iconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Vertical" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div>By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.</div>
+        <br /><br />
+        <div class="buttons-container">
+            <div class="example-content">
+                <div>Primary (default)</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms" Vertical
+                                NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <div>Standard</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms" Vertical
+                                NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <div>Text</div>
+                <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicCustoms" Vertical
+                                NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Managing button click events.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Component's ItemClick event:</div>
+            <BitButtonGroup Items="basicCustoms"
+                            OnItemClick="(ButtonGroupActionItem item) => clickedCustom = item.Name"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <div>Clicked item: <b>@clickedCustom</b></div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Item's Click event:</div>
+            <BitButtonGroup Items="eventsCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon },
+                                                     OnClick = { Selector = i => i.Clicked } })" />
+            <div>Click count: <b>@clickCounter</b></div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ExamplePreview>
+        <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Info</div>
+            <BitButtonGroup Color="BitColor.Info" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.Info" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.Info" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Success</div>
+            <BitButtonGroup Color="BitColor.Success" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.Success" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.Success" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Warning</div>
+            <BitButtonGroup Color="BitColor.Warning" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.Warning" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.Warning" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>SevereWarning</div>
+            <BitButtonGroup Color="BitColor.SevereWarning" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.SevereWarning" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.SevereWarning" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Error</div>
+            <BitButtonGroup Color="BitColor.Error" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.Error" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Color="BitColor.Error" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div>Different sizes for buttons to meet design needs, ensuring flexibility within your application.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Small</div>
+            <BitButtonGroup Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Medium</div>
+            <BitButtonGroup Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Large</div>
+            <BitButtonGroup Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Component's style & class:</div>
+            <BitButtonGroup Items="basicCustoms" Style="padding:1rem;background:red"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+            <BitButtonGroup Items="basicCustoms" Class="custom-class"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Item's style & class:</div>
+            <BitButtonGroup Items="styleClassCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <BitButtonGroup Dir="BitDir.Rtl" 
+                        Items="rtlCustoms"
+                        ButtonStyle="BitButtonStyle.Primary"
+                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                 IconName = { Selector = i => i.Icon } })" />
+        <br /><br />
+        <BitButtonGroup Dir="BitDir.Rtl"
+                        Items="rtlCustoms"
+                        ButtonStyle="BitButtonStyle.Standard"
+                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                 IconName = { Selector = i => i.Icon } })" />
+        <br /><br />
+        <BitButtonGroup Dir="BitDir.Rtl"
+                        Items="rtlCustoms"
+                        ButtonStyle="BitButtonStyle.Text"
+                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                 IconName = { Selector = i => i.Icon } })" />
+    </ExamplePreview>
+</ComponentExampleBox>

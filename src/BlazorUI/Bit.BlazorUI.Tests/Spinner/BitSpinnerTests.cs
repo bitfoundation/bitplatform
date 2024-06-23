@@ -22,10 +22,10 @@ public class BitSpinnerTests : BunitTestContext
 
         var sizeClass = size switch
         {
-            BitSpinnerSize.Large => "large",
-            BitSpinnerSize.Medium => "medium",
-            BitSpinnerSize.Small => "small",
-            BitSpinnerSize.XSmall => "x-small",
+            BitSpinnerSize.XSmall => "bit-spn-xs",
+            BitSpinnerSize.Small => "bit-spn-sm",
+            BitSpinnerSize.Medium => "bit-spn-md",
+            BitSpinnerSize.Large => "bit-spn-lg",
             _ => throw new NotSupportedException()
         };
 
@@ -37,8 +37,8 @@ public class BitSpinnerTests : BunitTestContext
     [DataTestMethod,
         DataRow(BitLabelPosition.Top),
         DataRow(BitLabelPosition.Bottom),
-        DataRow(BitLabelPosition.Right),
-        DataRow(BitLabelPosition.Left)
+        DataRow(BitLabelPosition.End),
+        DataRow(BitLabelPosition.Start)
     ]
     public void BitSpinnerShouldRespectPosition(BitLabelPosition position)
     {
@@ -49,10 +49,10 @@ public class BitSpinnerTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitLabelPosition.Top => "top",
-            BitLabelPosition.Right => "right",
-            BitLabelPosition.Left => "left",
-            BitLabelPosition.Bottom => "bottom",
+            BitLabelPosition.Top => "bit-spn-top",
+            BitLabelPosition.End => "bit-spn-end",
+            BitLabelPosition.Start => "bit-spn-srt",
+            BitLabelPosition.Bottom => "bit-spn-btm",
             _ => throw new NotSupportedException()
         };
 

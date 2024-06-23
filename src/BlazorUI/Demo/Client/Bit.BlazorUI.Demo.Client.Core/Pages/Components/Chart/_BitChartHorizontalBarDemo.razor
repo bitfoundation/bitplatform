@@ -1,0 +1,14 @@
+﻿<ComponentExampleBox Title="Horizontal Bar Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example2">
+    <ExamplePreview>
+        <div class="example-desc">
+            A horizontal bar chart is a variation on a vertical bar chart. It is sometimes used to show trend data, 
+            and the comparison of multiple data sets side by side. To achieve this you will have to set the horizontal 
+            param in the BitChartBarConfig constructor to 'true'. The default for this property is 'false' and thus will show vertical bars.
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <BitChart Config="_config" @ref="_chart" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
