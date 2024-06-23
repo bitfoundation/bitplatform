@@ -216,6 +216,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Grid/BitGridDemo.razor.css",
+        "inputFile": "Pages/Components/Grid/BitGridDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Header/BitHeaderDemo.razor.css",
         "inputFile": "Pages/Components/Header/BitHeaderDemo.razor.scss",
         "minify": { "enabled": false },
