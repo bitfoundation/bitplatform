@@ -210,6 +210,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Footer/BitFooterDemo.razor.css",
+        "inputFile": "Pages/Components/Footer/BitFooterDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Header/BitHeaderDemo.razor.css",
         "inputFile": "Pages/Components/Header/BitHeaderDemo.razor.scss",
         "minify": { "enabled": false },
