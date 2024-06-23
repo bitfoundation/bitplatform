@@ -1,0 +1,12 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<header @ref=RootElement @attributes="HtmlAttributes"
+        id="@_Id"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        dir="@Dir?.ToString().ToLower()">
+    <div class="bit-hdr-gut">
+        @ChildContent
+    </div>
+</header>
