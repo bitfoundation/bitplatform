@@ -278,7 +278,7 @@ public partial class BitGridDemo
     <BitChoiceGroupOption Text=""Stretch"" Value=""BitGridAlignment.Stretch"" />
 </BitChoiceGroup>
 
-<BitGrid Style=""height: 480px"" Columns=""4"" HorizontalAlign=""horizontalAlign"">
+<BitGrid Columns=""4"" HorizontalAlign=""horizontalAlign"">
     @for (int i = 0; i < 13; i++)
     {
         var item = i + 1;
@@ -363,5 +363,16 @@ private double horizontalSpacing = 0.5;
     <BitGridItem Class=""grid-item"" Xs=""2"">
         Xs = 2
     </BitGridItem>
+</BitGrid>
+
+<BitGrid Columns=""5"" ColumnsMd=""4"" ColumnsSm=""3"" ColumnsXs=""2"">
+    @for (int i = 0; i < 8; i++)
+    {
+        var item = i + 1;
+
+        <BitGridItem Class=""grid-item"">
+            Grid Item@(item)
+        </BitGridItem>
+    }
 </BitGrid>";
 }

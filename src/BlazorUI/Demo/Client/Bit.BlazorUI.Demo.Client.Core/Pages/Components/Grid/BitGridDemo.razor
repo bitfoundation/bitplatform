@@ -68,7 +68,7 @@
                 </BitChoiceGroup>
                 <br />
                 <br />
-                <BitGrid Style="height: 480px" Columns="4" HorizontalAlign="horizontalAlign">
+                <BitGrid Columns="4" HorizontalAlign="horizontalAlign">
                     @for (int i = 0; i < 13; i++)
                     {
                         var item = i + 1;
@@ -104,6 +104,8 @@
         </ComponentExampleBox>
         <ComponentExampleBox Title="Breakpoints" RazorCode="@example5RazorCode" Id="example5">
             <ExamplePreview>
+                <div>Grid item breakpoints:</div>
+                <br />
                 <BitGrid Columns="4">
                     <BitGridItem Class="grid-item" ColumnSpan="4" Md="1">
                         Md = 1
@@ -126,6 +128,19 @@
                     <BitGridItem Class="grid-item" Xs="2">
                         Xs = 2
                     </BitGridItem>
+                </BitGrid>
+                <br /><br /><br />
+                <div>Grid parent breakpoints:</div>
+                <br />
+                <BitGrid Columns="5" ColumnsMd="4" ColumnsSm="3" ColumnsXs="2">
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        var item = i + 1;
+
+                        <BitGridItem Class="grid-item">
+                            Grid Item@(item)
+                        </BitGridItem>
+                    }
                 </BitGrid>
             </ExamplePreview>
         </ComponentExampleBox>
