@@ -83,7 +83,6 @@
         <Content Remove="package*.json" />
         <Content Remove="tsconfig.json" />
         <None Include="package*json" />
-        <ScssFiles Remove="Components\Header\BitHeader.scss" />
         <None Include="tsconfig.json" />
     </ItemGroup>
 
