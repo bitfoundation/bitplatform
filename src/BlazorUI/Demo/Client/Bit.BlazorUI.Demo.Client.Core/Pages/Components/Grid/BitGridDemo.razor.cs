@@ -20,6 +20,48 @@ public partial class BitGridDemo
         },
         new()
         {
+            Name = "ColumnsXs",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of columns in the extra small breakpoint.",
+        },
+        new()
+        {
+            Name = "ColumnsSm",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of columns in the small breakpoint.",
+        },
+        new()
+        {
+            Name = "ColumnsMd",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of columns in the medium breakpoint.",
+        },
+        new()
+        {
+            Name = "ColumnsLg",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of columns in the large breakpoint.",
+        },
+        new()
+        {
+            Name = "ColumnsXl",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of columns in the extra large breakpoint.",
+        },
+        new()
+        {
+            Name = "ColumnsXxl",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of columns in the extra extra large breakpoint.",
+        },
+        new()
+        {
             Name = "HorizontalAlign",
             Type = "BitGridAlignment",
             DefaultValue = "BitGridAlignment.Start",
