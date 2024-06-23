@@ -19,7 +19,6 @@ public partial class BitTextField
     private string _labelId = string.Empty;
     private string _inputType = string.Empty;
     private string _descriptionId = string.Empty;
-    private ElementReference _inputRef = default!;
 
     /// <summary>
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
@@ -267,17 +266,6 @@ public partial class BitTextField
     }
 
 
-    /// <summary>
-    /// The ElementReference to the input element of the BitTextField.
-    /// </summary>
-    public ElementReference InputElement => _inputRef;
-
-    /// <summary>
-    /// Gives focus to the input element of the BitTextField.
-    /// </summary>
-    public ValueTask FocusAsync() => _inputRef.FocusAsync();
-
-
 
     protected override string RootElementClass => "bit-txt";
 
@@ -307,18 +295,18 @@ public partial class BitTextField
         StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitTextField-{UniqueId}-input";
         _labelId = $"BitTextField-{UniqueId}-label";
         _descriptionId = $"BitTextField-{UniqueId}-description";
 
-        if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
+        if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            SetCurrentValueAsString(DefaultValue);
+            await SetCurrentValueAsStringAsync(DefaultValue, true);
         }
 
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -329,7 +317,7 @@ public partial class BitTextField
 
         if (AutoFocus)
         {
-            await _inputRef.FocusAsync();
+            await InputElement.FocusAsync();
         }
     }
 
@@ -378,14 +366,6 @@ public partial class BitTextField
         _hasFocus = true;
         ClassBuilder.Reset();
         await OnFocus.InvokeAsync(e);
-    }
-
-    private async Task HandleOnChange(ChangeEventArgs e)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-        CurrentValueAsString = e.Value?.ToString();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)

@@ -160,7 +160,7 @@ public class BitBreadcrumbTests : BunitTestContext
         switch (visibility)
         {
             case BitVisibility.Visible:
-                Assert.IsTrue(breadcrumb.GetAttribute("style").Contains(""));
+                Assert.IsFalse(breadcrumb.HasAttribute("style"));
                 break;
             case BitVisibility.Hidden:
                 Assert.IsTrue(breadcrumb.GetAttribute("style").Contains("visibility:hidden"));

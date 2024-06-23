@@ -17,7 +17,6 @@ public partial class BitSpinButton
     private string? _intermediateValue;
     private string _inputId = default!;
 
-    private ElementReference _inputRef;
     private ElementReference _incrementBtnRef;
     private ElementReference _decrementBtnRef;
     private CancellationTokenSource _cancellationTokenSource = new();
@@ -202,18 +201,6 @@ public partial class BitSpinButton
 
 
 
-    /// <summary>
-    /// The ElementReference to the input element of the BitSpinButton.
-    /// </summary>
-    public ElementReference? InputElement => ShowInput ? _inputRef : null;
-
-    /// <summary>
-    /// Gives focus to the input element of the BitSpinButton.
-    /// </summary>
-    public ValueTask FocusAsync() => ShowInput ? _inputRef.FocusAsync() : ValueTask.CompletedTask;
-
-
-
     protected override string RootElementClass => "bit-spb";
 
     protected override void RegisterCssClasses()
@@ -234,16 +221,16 @@ public partial class BitSpinButton
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitSpinButton-{UniqueId}-input";
 
         if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            InitCurrentValue(DefaultValue.Value);
+            Value = DefaultValue.Value;
         }
 
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -444,7 +431,7 @@ public partial class BitSpinButton
 
         await OnFocus.InvokeAsync(e);
 
-        await _js.SelectText(_inputRef);
+        await _js.SelectText(InputElement);
     }
 
     private void SetValue(double value)

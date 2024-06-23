@@ -56,17 +56,18 @@
             </div>
         }
 
-        <input @ref="@_inputRef" @attributes="@InputHtmlAttributes"
+        <input @ref="InputElement" @attributes="@InputHtmlAttributes"
                @onblur="HandleOnBlur"
                @onfocus="HandleOnFocus"
                @onkeydown="HandleOnKeyDown"
                @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
-               @oninput="HandleOnInputChange"
-               @onchange="HandleOnInputChange"
+               @onchange="HandleOnStringValueChangeAsync"
+               @oninput="HandleOnStringValueInputAsync"
                form=""
                min="@Min"
                max="@Max"
+               name="@Name"
                id="@_inputId"
                autocomplete="off"
                required="@Required"

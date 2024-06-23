@@ -72,10 +72,10 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <CallTarget Targets="InstallNodejsDependencies"/>
-        <CallTarget Targets="BuildJavaScript"/>
-        <CallTarget Targets="BuildIsolatedScssFiles"/>
-        <CallTarget Targets="BuildGlobalScssFiles"/>
+        <CallTarget Targets="InstallNodejsDependencies" />
+        <CallTarget Targets="BuildJavaScript" />
+        <CallTarget Targets="BuildIsolatedScssFiles" />
+        <CallTarget Targets="BuildGlobalScssFiles" />
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">

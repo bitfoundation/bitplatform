@@ -114,6 +114,8 @@ public partial class NavMenu : IDisposable
                 new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView" },
                 new() { Text = "Tooltip", Url = "/components/tooltip" },
                 new() { Text = "Layout", Url = "/components/layout" },
+                new() { Text = "Header", Url = "/components/header" },
+                new() { Text = "Footer", Url = "/components/footer" },
             ],
         },
         new()

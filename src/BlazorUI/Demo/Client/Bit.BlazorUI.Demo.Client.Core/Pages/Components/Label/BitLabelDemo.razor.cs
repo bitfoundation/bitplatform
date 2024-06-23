@@ -2,8 +2,8 @@
 
 public partial class BitLabelDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "ChildContent",
@@ -20,12 +20,12 @@ public partial class BitLabelDemo
         },
         new()
         {
-            Name = "IsRequired",
+            Name = "Required",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the associated field is required or not, it shows a star above of it.",
         }
-    };
+    ];
 
 
 
@@ -51,7 +51,7 @@ Collapsed: [ <BitLabel Visibility=""BitVisibility.Collapsed"">Collapsed Label</B
 <BitLabel Class=""custom-class"">I'm a Label with Class</BitLabel>";
 
     private readonly string example4RazorCode = @"
-<BitLabel IsRequired=""true"">I'm a required Label</BitLabel>";
+<BitLabel Required>I'm a required Label</BitLabel>";
 
     private readonly string example5RazorCode = @"
 <BitLabel For=""label-input"">A Label for An Input</BitLabel>

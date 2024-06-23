@@ -83,11 +83,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
 
     /// <summary>
-    /// Name of the ChoiceGroup, this unique name is used to group each item into the same logical component.
-    /// </summary>
-    [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
-
-    /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitChoiceGroupNameSelectors<TItem, TValue>? NameSelectors { get; set; }
@@ -147,9 +142,10 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     {
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
 
-        if (ValueHasBeenSet is false && DefaultValue is not null && Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
+        if (ValueHasBeenSet is false && DefaultValue is not null && 
+            Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
-            InitCurrentValue(DefaultValue);
+            Value = DefaultValue;
         }
 
         await base.OnInitializedAsync();
