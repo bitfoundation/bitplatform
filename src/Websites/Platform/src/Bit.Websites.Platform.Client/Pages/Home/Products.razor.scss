@@ -117,7 +117,7 @@
 .template-terminal {
     display: flex;
     padding: 2rem;
-    color: #f0f0f0;
+    color: $bit-color-state-info-bg;
     gap: rem2(12px);
     flex-wrap: wrap;
     align-items: center;
