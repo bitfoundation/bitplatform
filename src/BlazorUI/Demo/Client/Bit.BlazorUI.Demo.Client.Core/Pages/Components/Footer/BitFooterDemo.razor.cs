@@ -9,21 +9,21 @@ public partial class BitFooterDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Gets or sets the content to be rendered inside the BitHeader.",
+            Description = "Gets or sets the content to be rendered inside the BitFooter.",
         },
         new()
         {
             Name = "Height",
             Type = "int?",
             DefaultValue = "50",
-            Description = "Gets or sets the height of the BitHeader (in pixels).",
+            Description = "Gets or sets the height of the BitFooter (in pixels).",
         },
         new()
         {
             Name = "Fixed",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the header with a fixed position at the top of the page.",
+            Description = "Renders the footer with a fixed position at the bottom of the page.",
         }
     ];
 
