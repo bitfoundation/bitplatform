@@ -117,13 +117,13 @@
 .template-terminal {
     display: flex;
     padding: 2rem;
-    color: $bit-color-state-info-bg;
+    color: #f0f0f0;
     gap: rem2(12px);
     flex-wrap: wrap;
     align-items: center;
     margin: rem2(25px) 0;
     border-radius: rem2(4px);
-    background-color: $bit-color-background-primary;
+    background-color: #060e2d;
 
     @include lt-md {
         padding: 1.5rem;
