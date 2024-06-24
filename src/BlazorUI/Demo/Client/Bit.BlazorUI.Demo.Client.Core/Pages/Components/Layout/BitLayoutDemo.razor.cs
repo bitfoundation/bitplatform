@@ -29,6 +29,20 @@ public partial class BitLayoutDemo
         },
         new()
         {
+            Name = "Footer",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the footer section.",
+        },
+        new()
+        {
+            Name = "FooterHeight",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The height of the footer to calculate heights and paddings.",
+        },
+        new()
+        {
             Name = "Header",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -43,6 +57,13 @@ public partial class BitLayoutDemo
         },
         new()
         {
+            Name = "HideNavMenu",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides NavMenu content when true.",
+        },
+        new()
+        {
             Name = "Main",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -50,17 +71,10 @@ public partial class BitLayoutDemo
         },
         new()
         {
-            Name = "Footer",
+            Name = "NavMenu",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the footer section.",
-        },
-        new()
-        {
-            Name = "FooterHeight",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The height of the footer to calculate heights and paddings.",
+            Description = "The content of the nav-menu section.",
         },
         new()
         {
@@ -111,6 +125,20 @@ public partial class BitLayoutDemo
                 },
                 new()
                 {
+                    Name = "NavMenu",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the nav-menu section of the BitLayout."
+                },
+                new()
+                {
+                    Name = "MainContent",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the main-content section of the BitLayout."
+                },
+                new()
+                {
                     Name = "Footer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -122,83 +150,162 @@ public partial class BitLayoutDemo
 
 
 
+    private bool hideNavMenu;
+
+    private int headerHeight = 60;
+    private int footerHeight = 60;
+
+
     private readonly string example1RazorCode = @"
 <style>
     .header {
-        display: flex;
         padding: 0.5rem;
-        background-color: gray;
-        justify-content: center;
+        border: 1px solid gray;
     }
 
     .main {
         width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        height: 100%;
+        padding: 0.5rem;
+        border: 1px solid gray;
     }
 
     .footer {
-        display: flex;
         padding: 0.5rem;
-        background-color: gray;
-        justify-content: center;
+        border: 1px solid gray;
     }
 </style>
 
 <BitLayout>
     <Header>
-        <div class=""header"">
-            this is header
-        </div>
+        <div class=""header"">Header</div>
     </Header>
     <Main>
-        <div class=""main"">
-            this is main
-        </div>
+        <div class=""main"">Main</div>
     </Main>
     <Footer>
-        <div class=""footer"">
-            this is footer
-        </div>
+        <div class=""footer"">Footer</div>
     </Footer>
 </BitLayout>";
 
     private readonly string example2RazorCode = @"
 <style>
     .header {
-        display: flex;
         padding: 0.5rem;
-        background-color: gray;
-        justify-content: center;
+        border: 1px solid gray;
     }
 
     .main {
         width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        height: 100%;
+        padding: 0.5rem;
+        border: 1px solid gray;
+    }
+
+    .nav-menu {
+        width: 100%;
+        height: 100%;
+        padding: 0.5rem;
+        border: 1px solid gray;
     }
 
     .footer {
-        display: flex;
         padding: 0.5rem;
-        background-color: gray;
-        justify-content: center;
+        border: 1px solid gray;
     }
 </style>
 
-<BitLayout Classes=""@(new() { Header=""header"", Main=""main"", Footer=""footer"" })""
-           Styles=""@(new() { Main=""height:500px"" })"">
+<BitToggle Label=""Hide NavMenu"" @bind-Value=""hideNavMenu"" />
+
+<BitLayout HideNavMenu=""hideNavMenu"">
     <Header>
-        this is header
+        <div class=""header"">Header</div>
     </Header>
+    <NavMenu>
+        <div class=""nav-menu"">NavMenu</div>
+    </NavMenu>
     <Main>
-        this is main
+        <div class=""main"">Main</div>
     </Main>
     <Footer>
-        this is footer
+        <div class=""footer"">Footer</div>
     </Footer>
 </BitLayout>";
+    private readonly string example2CsharpCode = @"
+private bool hideNavMenu;";
 
+    private readonly string example3RazorCode = @"
+< style>
+    .header {
+        color: black;
+        display: flex;
+        padding: 1rem;
+        border: 1px solid red;
+        justify-content: center;
+        background-color: lightgreen;
+    }
+
+    .main {
+        border: 1px solid green;
+    }
+
+    .nav-menu2 {
+        color: black;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: lightblue;
+        border: 1px solid lightgreen;
+    }
+
+    .main-content {
+        color: black;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid darkgreen;
+        background-color: lightgoldenrodyellow;
+    }
+
+    .footer {
+        color: black;
+        display: flex;
+        padding: 1rem;
+        border: 1px solid blue;
+        justify-content: center;
+        background-color: lightpink;
+    }
+</style>
+
+<BitLayout Classes=""@(new() { Header=""header"",
+                              Main=""main"",
+                              NavMenu=""nav-menu2"",
+                              MainContent=""main-content"",
+                              Footer=""footer"" })""
+           Styles=""@(new() { Main=""height:300px"" })"">
+    <Header>Header</Header>
+    <NavMenu>NavMenu</NavMenu>
+    <Main>Main</Main>
+    <Footer>Footer</Footer>
+</BitLayout>";
+
+    private readonly string example4RazorCode = @"
+<BitNumberField Label=""Header height"" @bind-Value=""headerHeight"" />
+<BitNumberField Label=""Footer height"" @bind-Value=""footerHeight"" />
+
+<div class=""container"">
+<BitLayout HeaderHeight=""headerHeight"" FooterHeight=""footerHeight""
+           Style=""color:black""
+           Styles=""@(new() { Header=""background:lightcoral"",
+                             Main=""background:lightgreen"",
+                             NavMenu=""padding:1rem"",
+                             MainContent=""padding:1rem"",
+                             Footer=""background:lightblue"" })"">
+    <Header>Header</Header>
+    <NavMenu>NavMenu</NavMenu>
+    <Main>Main</Main>
+    <Footer>Footer</Footer>
+</BitLayout>";
 }
