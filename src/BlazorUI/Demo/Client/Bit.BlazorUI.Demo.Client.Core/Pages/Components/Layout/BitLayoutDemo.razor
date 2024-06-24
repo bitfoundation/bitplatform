@@ -28,9 +28,9 @@
 
     <ComponentExampleBox Title="NavMenu" RazorCode="@example2RazorCode" CsharpCode="example2CsharpCode" Id="example2">
         <ExamplePreview>
+            <BitToggle Label="Hide NavMenu" @bind-Value="hideNavMenu" />
+            <br />
             <div class="container">
-                <BitToggle Label="Hide NavMenu" @bind-Value="hideNavMenu" />
-                <br />
                 <BitLayout HideNavMenu="hideNavMenu">
                     <Header>
                         <div class="header">Header</div>
