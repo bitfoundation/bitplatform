@@ -29,6 +29,20 @@ public partial class BitLayoutDemo
         },
         new()
         {
+            Name = "Footer",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the footer section.",
+        },
+        new()
+        {
+            Name = "FooterHeight",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The height of the footer to calculate heights and paddings.",
+        },
+        new()
+        {
             Name = "Header",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -43,6 +57,13 @@ public partial class BitLayoutDemo
         },
         new()
         {
+            Name = "HideNavMenu",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides NavMenu content when true.",
+        },
+        new()
+        {
             Name = "Main",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -50,17 +71,10 @@ public partial class BitLayoutDemo
         },
         new()
         {
-            Name = "Footer",
+            Name = "NavMenu",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the footer section.",
-        },
-        new()
-        {
-            Name = "FooterHeight",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The height of the footer to calculate heights and paddings.",
+            Description = "The content of the nav-menu section.",
         },
         new()
         {
@@ -108,6 +122,20 @@ public partial class BitLayoutDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the main section of the BitLayout."
+                },
+                new()
+                {
+                    Name = "NavMenu",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the nav-menu section of the BitLayout."
+                },
+                new()
+                {
+                    Name = "MainContent",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the main-content section of the BitLayout."
                 },
                 new()
                 {

@@ -48,7 +48,7 @@ public partial class BitLayout
     [Parameter] public RenderFragment? Main { get; set; }
 
     /// <summary>
-    /// The content of the nav menu section.
+    /// The content of the nav-menu section.
     /// </summary>
     [Parameter] public RenderFragment? NavMenu { get; set; }
 
