@@ -52,8 +52,9 @@
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
         <!--/+:msbuild-conditional:noEmit -->
-        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' OR '$(sample)' == 'Admin' OR '$(sample)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' OR '$(sample)' == 'Admin' OR '$(sample)' == ''">false</PublishAot>
+        <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
+        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
+        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
@@ -67,8 +68,9 @@
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
         <!--/+:msbuild-conditional:noEmit -->
-        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' OR '$(sample)' == 'Admin' OR '$(sample)' == ''">True</UseInterpreter>
-        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' OR '$(sample)' == 'Admin' OR '$(sample)' == ''">false</PublishAot>
+        <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
+        <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
+        <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 

@@ -43,7 +43,7 @@ To implement this optimization, follow these steps in the Package Manager Consol
     Optimize-DbContext -Context OfflineDbContext -OutputDir Data/CompiledModel -Namespace Boilerplate.Client.Core.Data
     ```
 
-3. Uncomment the following line in the `OfflineDbContext.cs` file:
+3. Uncomment the following line in the `Boilerplate.Client.Core/ExtensionsIServiceCollectionExtensions.cs` file:
 
     ```csharp
     .UseModel(OfflineDbContextModel.Instance)
