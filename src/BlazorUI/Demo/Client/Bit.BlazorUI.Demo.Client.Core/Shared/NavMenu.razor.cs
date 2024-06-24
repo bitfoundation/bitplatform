@@ -116,6 +116,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Layout", Url = "/components/layout" },
                 new() { Text = "Header", Url = "/components/header" },
                 new() { Text = "Footer", Url = "/components/footer" },
+                new() { Text = "Spacer", Url = "/components/spacer" },
             ],
         },
         new()
