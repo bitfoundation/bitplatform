@@ -95,10 +95,10 @@
 .bit-chg-cnt {
     display: flex;
     flex-flow: column nowrap;
+}
 
-    &.horizontal {
-        flex-flow: row wrap;
-    }
+.bit-chg-hor {
+    flex-flow: row wrap;
 }
 
 .bit-chg-icn {
@@ -260,7 +260,6 @@
     margin: spacing(0.5) spacing(1) spacing(0.25);
 
     .bit-chg-itx {
-        display: inline-block;
         padding-inline-start: 0;
     }
 }

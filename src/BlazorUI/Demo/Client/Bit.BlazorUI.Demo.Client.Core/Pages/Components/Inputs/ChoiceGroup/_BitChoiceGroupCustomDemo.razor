@@ -54,22 +54,22 @@
     <ExamplePreview>
         <div class="example-content column">
             <BitChoiceGroup Label="Basic"
+                            Horizontal
                             DefaultValue="@("A")"
                             Items="basicCustoms"
-                            LayoutFlow="BitLayoutFlow.Horizontal"
                             NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
 
             <BitChoiceGroup Label="Disabled"
+                            Horizontal
                             IsEnabled="false"
                             DefaultValue="@("A")"
                             Items="basicCustoms"
-                            LayoutFlow="BitLayoutFlow.Horizontal"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
 
             <BitChoiceGroup Label="Image"
+                            Horizontal
                             DefaultValue="@("Bar")"
                             Items="imageCustoms"
-                            LayoutFlow="BitLayoutFlow.Horizontal"
                             NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
                                                      Value = { Name = nameof(ChoiceModel.ItemValue) },
                                                      ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
@@ -78,9 +78,9 @@
                                                      SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})" />
 
             <BitChoiceGroup Label="Icon"
+                            Horizontal
                             DefaultValue="@("Day")"
                             Items="iconCustoms"
-                            LayoutFlow="BitLayoutFlow.Horizontal"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      Value = { Selector = i => i.ItemValue },
                                                      IconName = { Selector = i => i.IconName },
