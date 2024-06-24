@@ -444,6 +444,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Spacer/BitSpacerDemo.razor.css",
+        "inputFile": "Pages/Components/Spacer/BitSpacerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.css",
         "inputFile": "Pages/Components/Spinner/BitSpinnerDemo.razor.scss",
         "minify": { "enabled": false },
