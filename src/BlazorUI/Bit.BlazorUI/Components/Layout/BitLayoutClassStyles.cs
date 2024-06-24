@@ -18,6 +18,16 @@ public class BitLayoutClassStyles
     public string? Main { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the nav-menu section of the BitLayout.
+    /// </summary>
+    public string? NavMenu { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the main-content section of the BitLayout.
+    /// </summary>
+    public string? MainContent { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the footer section of the BitLayout.
     /// </summary>
     public string? Footer { get; set; }

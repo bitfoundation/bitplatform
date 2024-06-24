@@ -13,39 +13,79 @@
             <div class="container">
                 <BitLayout>
                     <Header>
-                        <div class="header">
-                            this is header
-                        </div>
+                        <div class="header">Header</div>
                     </Header>
                     <Main>
-                        <div class="main">
-                            this is main
-                        </div>
+                        <div class="main">Main</div>
                     </Main>
                     <Footer>
-                        <div class="footer">
-                            this is footer
-                        </div>
+                        <div class="footer">Footer</div>
                     </Footer>
                 </BitLayout>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Classes & Styles" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="NavMenu" RazorCode="@example2RazorCode" CsharpCode="example2CsharpCode" Id="example2">
         <ExamplePreview>
             <div class="container">
-                <BitLayout Classes="@(new() { Header="header", Main="main", Footer="footer" })"
-                           Styles="@(new() { Main="height:500px" })">
+                <BitToggle Label="Hide NavMenu" @bind-Value="hideNavMenu" />
+                <br />
+                <BitLayout HideNavMenu="hideNavMenu">
                     <Header>
-                        this is header
+                        <div class="header">Header</div>
                     </Header>
+                    <NavMenu>
+                        <div class="nav-menu">NavMenu</div>
+                    </NavMenu>
                     <Main>
-                        this is main
+                        <div class="main">Main</div>
                     </Main>
                     <Footer>
-                        this is footer
+                        <div class="footer">Footer</div>
                     </Footer>
+                </BitLayout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Classes & Styles" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div class="container">
+                <BitLayout Classes="@(new() { Header="header2",
+                                              Main="main2",
+                                              NavMenu="nav-menu2",
+                                              MainContent="main-content2",
+                                              Footer="footer2" })"
+                           Styles="@(new() { Main="height:300px" })">
+                    <Header>Header</Header>
+                    <NavMenu>NavMenu</NavMenu>
+                    <Main>Main</Main>
+                    <Footer>Footer</Footer>
+                </BitLayout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customization" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div class="text-container">
+                <BitNumberField Label="Header height" @bind-Value="headerHeight" />
+                <BitNumberField Label="Footer height" @bind-Value="footerHeight" />
+            </div>
+            <br />
+            <div class="container">
+                <BitLayout HeaderHeight="headerHeight" FooterHeight="footerHeight"
+                           Style="color:black"
+                           Styles="@(new() { Header="background:lightcoral",
+                                              Main="background:lightgreen",
+                                              NavMenu="padding:1rem",
+                                              MainContent="padding:1rem",
+                                              Footer="background:lightblue" })">
+                    <Header>Header</Header>
+                    <NavMenu>NavMenu</NavMenu>
+                    <Main>Main</Main>
+                    <Footer>Footer</Footer>
                 </BitLayout>
             </div>
         </ExamplePreview>

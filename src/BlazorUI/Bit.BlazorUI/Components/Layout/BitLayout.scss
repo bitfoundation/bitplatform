@@ -27,9 +27,17 @@
 }
 
 .bit-lyt-man {
-    width: 100%;
     flex-grow: 1;
     display: flex;
+    box-sizing: border-box;
+}
+
+.bit-lyt-nmn {
+    box-sizing: border-box;
+}
+
+.bit-lyt-mcn {
+    flex-grow: 1;
     box-sizing: border-box;
 }
 
