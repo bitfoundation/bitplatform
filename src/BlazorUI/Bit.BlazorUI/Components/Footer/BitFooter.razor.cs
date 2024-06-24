@@ -2,6 +2,9 @@
 
 public partial class BitFooter
 {
+    private bool @fixed;
+    private int? height;
+
     /// <summary>
     /// Gets or sets the content to be rendered inside the BitFooter.
     /// </summary>
@@ -10,12 +13,34 @@ public partial class BitFooter
     /// <summary>
     /// Gets or sets the height of the BitFooter (in pixels).
     /// </summary>
-    [Parameter] public int? Height { get; set; } = 50;
+    [Parameter] 
+    public int? Height
+    {
+        get => height;
+        set
+        {
+            if (height == value) return;
+
+            height = value;
+            StyleBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Renders the footer with a fixed position at the bottom of the page.
     /// </summary>
-    [Parameter] public bool Fixed { get; set; }
+    [Parameter] 
+    public bool Fixed
+    {
+        get => @fixed;
+        set
+        {
+            if (@fixed == value) return;
+
+            @fixed = value;
+            ClassBuilder.Reset();
+        }
+    }
 
 
 
