@@ -30,14 +30,14 @@ public partial class BitStack : BitComponentBase
 
 
     /// <summary>
-    /// Defines how to render the Stack.
-    /// </summary>
-    [Parameter] public string As { get; set; } = "div";
-
-    /// <summary>
     /// The content of the Typography.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    [Parameter] public string? Element { get; set; }
 
     /// <summary>
     /// Defines the spacing between Stack children.
@@ -192,7 +192,7 @@ public partial class BitStack : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, As);
+        builder.OpenElement(0, Element ?? "div");
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
         builder.AddAttribute(3, "style", StyleBuilder.Value);

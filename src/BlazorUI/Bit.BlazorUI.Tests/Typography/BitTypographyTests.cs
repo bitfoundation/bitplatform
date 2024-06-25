@@ -117,7 +117,7 @@ public class BitTypographyTests : BunitTestContext
     {
         var com = RenderComponent<BitTypography>(parameters =>
         {
-            parameters.Add(p => p.Component, component);
+            parameters.Add(p => p.Element, component);
         });
 
         var defaultVariant = BitTypographyVariant.Subtitle1;

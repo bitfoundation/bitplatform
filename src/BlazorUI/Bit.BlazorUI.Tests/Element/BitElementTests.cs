@@ -21,7 +21,7 @@ public class BitElementTests : BunitTestContext
         {
             if (tag.HasValue())
             {
-                parameters.Add(p => p.Tag, tag);
+                parameters.Add(p => p.Element, tag);
             }
         });
 
@@ -39,7 +39,7 @@ public class BitElementTests : BunitTestContext
     {
         var com = RenderComponent<BitElement>(parameters =>
         {
-            parameters.Add(p => p.Tag, tag);
+            parameters.Add(p => p.Element, tag);
             parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object>
             {
                 { attribute, attributeValue }
