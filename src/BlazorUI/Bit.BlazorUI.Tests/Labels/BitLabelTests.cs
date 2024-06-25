@@ -155,23 +155,19 @@ public class BitLabelTests : BunitTestContext
     [DataTestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
-        DataRow(BitVisibility.Hidden),
-        DataRow(null)
+        DataRow(BitVisibility.Hidden)
     ]
-    public void BitLabelShouldRespectVisibility(BitVisibility? visibility)
+    public void BitLabelShouldRespectVisibility(BitVisibility visibility)
     {
         var component = RenderComponent<BitLabel>(parameters =>
         {
-            if (visibility.HasValue)
-            {
-                parameters.Add(p => p.Visibility, visibility.Value);
-            }
+            parameters.Add(p => p.Visibility, visibility);
         });
 
 
         switch (visibility)
         {
-            case BitVisibility.Visible or null:
+            case BitVisibility.Visible:
                 component.MarkupMatches(@"<label class:ignore id:ignore></label>");
                 break;
             case BitVisibility.Hidden:
