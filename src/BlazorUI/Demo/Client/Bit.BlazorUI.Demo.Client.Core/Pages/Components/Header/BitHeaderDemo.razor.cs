@@ -15,7 +15,7 @@ public partial class BitHeaderDemo
         {
             Name = "Height",
             Type = "int?",
-            DefaultValue = "50",
+            DefaultValue = "null",
             Description = "Gets or sets the height of the BitHeader (in pixels).",
         },
         new()
@@ -32,4 +32,20 @@ public partial class BitHeaderDemo
     private readonly string example1RazorCode = @"
 <BitHeader>I'm a Header</BitHeader>";
 
+    private readonly string example2RazorCode = @"
+<BitHeader Style=""gap: 1rem;"">
+    <BitIconButton IconName=""@BitIconName.GlobalNavButton"" Title=""Open Navigation""/>
+    <BitSpacer />
+    <BitSearchBox IsUnderlined Styles=""@(new() { Root = ""width: 70%;"", Input = ""width: 100%;"" })"" />
+    <BitSpacer />
+    <BitMenuButton TItem=""BitMenuButtonOption""
+                   ChevronDownIcon=""@BitIconName.More""
+                   ButtonStyle=""BitButtonStyle.Text""
+                   title=""See more""
+                   Styles=""@(new() { OperatorButton = ""padding: 0.5rem;"" })"">
+        <BitMenuButtonOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
+        <BitMenuButtonOption Text=""About"" IconName=""@BitIconName.Info"" />
+        <BitMenuButtonOption Text=""Feedback"" IconName=""@BitIconName.Feedback"" />
+    </BitMenuButton>
+</BitHeader>";
 }
