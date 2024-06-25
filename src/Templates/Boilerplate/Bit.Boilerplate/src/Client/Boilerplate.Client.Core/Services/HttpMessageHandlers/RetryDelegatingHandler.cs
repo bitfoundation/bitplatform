@@ -1,4 +1,7 @@
-﻿namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
+﻿using System.Reflection;
+using Boilerplate.Client.Core.Controllers;
+
+namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
     : DelegatingHandler(handler)
@@ -16,14 +19,31 @@ public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
             {
                 return await base.SendAsync(request, cancellationToken);
             }
-            catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException)
+            catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
             {
+                if (HasNoRetryPolicy(request))
+                    throw;
+
                 lastExp = exp;
                 await Task.Delay(delay, cancellationToken);
             }
         }
 
         throw lastExp!;
+    }
+
+    /// <summary>
+    /// <see cref="NoRetryPolicyAttribute"/>
+    /// </summary>
+    private static bool HasNoRetryPolicy(HttpRequestMessage request)
+    {
+        if (request.Options.TryGetValue(new(RequestOptionNames.IControllerTypeName), out string? controllerTypeName) is false)
+            return false;
+
+        var controllerType = Type.GetType(controllerTypeName!)!;
+        var parameterTypes = ((Dictionary<string, string>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => Type.GetType(p.Value)!).ToArray();
+        var method = controllerType.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
+        return method.GetCustomAttribute<NoRetryPolicyAttribute>() is not null;
     }
 
     private static IEnumerable<TimeSpan> GetDelays(TimeSpan scaleFirstTry, int maxRetries)

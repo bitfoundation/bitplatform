@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Reflection;
+using System.Net.Http.Headers;
+using Boilerplate.Client.Core.Controllers;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -7,7 +9,7 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.Headers.Authorization is null)
+        if (request.Headers.Authorization is null && HasNoAuthHeaderPolicy(request) is false)
         {
             var access_token = await tokenProvider.GetAccessTokenAsync();
             if (access_token is not null)
@@ -44,5 +46,19 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
 
             return await base.SendAsync(request, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// <see cref="NoAuthorizeHeaderPolicyAttribute"/>
+    /// </summary>
+    private static bool HasNoAuthHeaderPolicy(HttpRequestMessage request)
+    {
+        if (request.Options.TryGetValue(new(RequestOptionNames.IControllerTypeName), out string? controllerTypeName) is false)
+            return false;
+
+        var controllerType = Type.GetType(controllerTypeName!)!;
+        var parameterTypes = ((Dictionary<string, string>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => Type.GetType(p.Value)!).ToArray();
+        var method = controllerType.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
+        return method.GetCustomAttribute<NoAuthorizeHeaderPolicyAttribute>() is not null;
     }
 }

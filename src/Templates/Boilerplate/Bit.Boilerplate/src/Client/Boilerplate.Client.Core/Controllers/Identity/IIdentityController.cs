@@ -1,13 +1,11 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Controllers.Identity;
 
 [Route("api/[controller]/[action]/")]
 public interface IIdentityController : IAppController
 {
-    [HttpPost]
-    Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken = default);
-
     [HttpPost]
     Task SendConfirmEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken = default);
 
@@ -28,6 +26,12 @@ public interface IIdentityController : IAppController
 
     [HttpPost]
     Task<TokenResponseDto> Refresh(RefreshRequestDto request, CancellationToken cancellationToken = default) => default!;
+
+    [HttpPost]
+    //#if (captcha == "reCaptcha")
+    [NoRetryPolicy] // Please note that retrying requests with Google reCaptcha will not work, as the Google verification mechanism only accepts a captcha response once.
+    //#endif
+    Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task<SignInResponseDto> SignIn(SignInRequestDto request, CancellationToken cancellationToken = default) => default!;

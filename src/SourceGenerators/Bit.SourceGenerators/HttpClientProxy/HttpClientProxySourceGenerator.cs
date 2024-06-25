@@ -47,6 +47,10 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
                 var requestOptions = new StringBuilder();
                 requestOptions.AppendLine($"__request.Options.TryAdd(\"IControllerTypeName\", \"{iController.Symbol.GetAssemblyQualifiedName()}\");");
                 requestOptions.AppendLine($"__request.Options.TryAdd(\"ActionName\", \"{action.Method.Name}\");");
+                requestOptions.AppendLine($@"__request.Options.TryAdd(""ActionParametersInfo"", new Dictionary<string, string>
+                {{
+                    { string.Join(", ", action.Parameters.Select(p => $"{{ \"{p.Name}\", \"{p.Type.GetAssemblyQualifiedName()}\"  }}")) }
+                }});");
                 if (action.BodyParameter is not null)
                 {
                     requestOptions.AppendLine($"__request.Options.TryAdd(\"RequestTypeName\", \"{action.BodyParameter.Type.GetAssemblyQualifiedName()}\");");

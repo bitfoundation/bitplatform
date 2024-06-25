@@ -35,3 +35,23 @@ internal class HttpPatchAttribute(string? template = null) : Attribute
 {
     public string? Template { get; } = template;
 }
+
+/// <summary>
+/// Avoid retrying the request upon failure.
+/// <see cref="Services.HttpMessageHandlers.RetryDelegatingHandler" />
+/// </summary>
+[AttributeUsage(AttributeTargets.Method)]
+internal class NoRetryPolicyAttribute : Attribute
+{
+
+}
+
+/// <summary>
+/// Ensure the authorization header is not set for the action.
+/// <see cref="Services.HttpMessageHandlers.AuthDelegatingHandler" />
+/// </summary>
+[AttributeUsage(AttributeTargets.Method)]
+internal class NoAuthorizeHeaderPolicyAttribute : Attribute
+{
+
+}
