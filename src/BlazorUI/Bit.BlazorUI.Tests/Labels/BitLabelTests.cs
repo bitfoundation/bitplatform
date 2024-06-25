@@ -1,5 +1,4 @@
 ﻿using Bunit;
-using AngleSharp.Css.Dom;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Labels;
@@ -12,18 +11,7 @@ public class BitLabelTests : BunitTestContext
     {
         var component = RenderComponent<BitLabel>();
 
-        var bitLabel = component.Find(".bit-lbl");
-
-        Assert.AreEqual("label", bitLabel.TagName, true);
-        Assert.IsTrue(bitLabel.HasAttribute("id"));
-        Assert.IsTrue(bitLabel.HasAttribute("class"));
-
-        Assert.IsFalse(bitLabel.HasAttribute("style"));
-        Assert.IsFalse(bitLabel.HasAttribute("dir"));
-
-        Assert.AreEqual(string.Empty, bitLabel.TextContent);
-
-        component.MarkupMatches(@$"<label id:regex=""{GUID_PATTERN}"" class=""bit-lbl""></label>");
+        component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
     }
 
     [DataTestMethod,
@@ -37,16 +25,9 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
-        var bitLabel = component.Find(".bit-lbl");
+        var cssClass = isEnabled ? "bit-lbl" : "bit-lbl bit-dis";
 
-        if (isEnabled)
-        {
-            Assert.IsFalse(bitLabel.ClassList.Contains("bit-dis"));
-        }
-        else
-        {
-            Assert.IsTrue(bitLabel.ClassList.Contains("bit-dis"));
-        }
+        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
     }
 
     [DataTestMethod,
@@ -60,48 +41,30 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.Required, required);
         });
 
-        var bitLabel = component.Find(".bit-lbl");
+        var cssClass = required ? "bit-lbl bit-lbl-req" : "bit-lbl";
 
-        if (required)
-        {
-            Assert.IsTrue(bitLabel.ClassList.Contains("bit-lbl-req"));
-        }
-        else
-        {
-            Assert.IsFalse(bitLabel.ClassList.Contains("bit-lbl-req"));
-        }
+        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
     }
 
     [DataTestMethod,
-        DataRow("14px"),
-        DataRow("1rem"),
-        DataRow("6em"),
+        DataRow("font-size: 14px; color: red;"),
+        DataRow("padding: 1rem;"),
         DataRow(null)
     ]
-    public void BitLabelShouldRespectStyle(string size)
+    public void BitLabelShouldRespectStyle(string style)
     {
         var component = RenderComponent<BitLabel>(parameters =>
         {
-            if (size.HasValue())
-            {
-                parameters.Add(p => p.Style, $"font-size:{size};");
-            }
+            parameters.Add(p => p.Style, style);
         });
 
-        var bitLabel = component.Find(".bit-lbl");
-
-        var fontSize = bitLabel.GetStyle().GetFontSize();
-
-        if (size.HasValue())
+        if (style.HasNoValue())
         {
-            Assert.IsTrue(bitLabel.HasAttribute("style"));
-
-            Assert.AreEqual(size, fontSize);
+            component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
         }
         else
         {
-            Assert.AreEqual(string.Empty, fontSize);
-            Assert.IsFalse(bitLabel.HasAttribute("style"));
+            component.MarkupMatches(@$"<label style=""{style}"" class=""bit-lbl"" id:ignore></label>");
         }
     }
 
@@ -116,14 +79,9 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.Class, @class);
         });
 
-        var bitLabel = component.Find(".bit-lbl");
+        var cssClass = @class.HasValue() ? $"bit-lbl {@class}" : "bit-lbl";
 
-        component.MarkupMatches(@$"<label id:ignore class=""bit-lbl{(@class.HasValue() ? " test-class" : null)}""></label>");
-
-        if (@class.HasValue())
-        {
-            Assert.IsTrue(bitLabel.ClassList.Contains(@class));
-        }
+        component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
     }
 
     [DataTestMethod,
@@ -137,16 +95,17 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.Id, id);
         });
 
-        var bitLabel = component.Find(".bit-lbl");
 
         if (id.HasNoValue())
         {
+            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+
+            var bitLabel = component.Find(".bit-lbl");
             Assert.AreEqual(component.Instance.UniqueId.ToString(), bitLabel.Id);
-            StringAssert.Matches(bitLabel.Id, new(GUID_PATTERN));
         }
         else
         {
-            Assert.AreEqual(id, bitLabel.Id);
+            component.MarkupMatches(@$"<label id=""{id}"" class=""bit-lbl""></label>");
         }
     }
 
@@ -161,16 +120,14 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.For, @for);
         });
 
-        var bitLabel = component.Find(".bit-lbl");
 
         if (@for.HasNoValue())
         {
-            Assert.IsFalse(bitLabel.HasAttribute("for"));
+            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
         }
         else
         {
-            Assert.IsTrue(bitLabel.HasAttribute("for"));
-            Assert.AreEqual(@for, bitLabel.GetAttribute("for"));
+            component.MarkupMatches(@$"<label id:regex="".+"" class=""bit-lbl"" for=""{@for}""></label>");
         }
     }
 
@@ -187,16 +144,14 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.Dir, dir);
         });
 
-        var bitLabel = component.Find(".bit-lbl");
-
         if (dir.HasValue)
         {
-            Assert.IsTrue(bitLabel.HasAttribute("dir"));
-            Assert.AreEqual(dir.Value.ToString().ToLower(), bitLabel.GetAttribute("dir"));
+            var cssClass = dir is BitDir.Rtl ? "bit-lbl bit-rtl" : "bit-lbl";
+            component.MarkupMatches(@$"<label id:regex="".+"" class=""{cssClass}"" dir=""{dir.Value.ToString().ToLower()}""></label>");
         }
         else
         {
-            Assert.IsFalse(bitLabel.HasAttribute("dir"));
+            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
         }
     }
 
@@ -216,18 +171,17 @@ public class BitLabelTests : BunitTestContext
             }
         });
 
-        var bitLabel = component.Find(".bit-lbl");
 
         switch (visibility)
         {
             case BitVisibility.Visible or null:
-                Assert.IsFalse(bitLabel.HasAttribute("style"));
+                component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
                 break;
             case BitVisibility.Hidden:
-                Assert.AreEqual("hidden", bitLabel.GetStyle().GetVisibility());
+                component.MarkupMatches(@"<label id:regex="".+"" style=""visibility: hidden;"" class=""bit-lbl""></label>");
                 break;
             case BitVisibility.Collapsed:
-                Assert.AreEqual("none", bitLabel.GetStyle().GetDisplay());
+                component.MarkupMatches(@"<label id:regex="".+"" style=""display: none;"" class=""bit-lbl""></label>");
                 break;
         }
     }
@@ -244,29 +198,14 @@ public class BitLabelTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        var bitLabel = component.Find(".bit-lbl");
-
-        if (childContent.HasNoValue())
-        {
-            Assert.AreEqual(string.Empty, bitLabel.TextContent);
-        }
-        else
-        {
-            Assert.AreEqual(childContent, bitLabel.InnerHtml);
-        }
+        component.MarkupMatches(@$"<label id:regex="".+"" class=""bit-lbl"">{childContent}</label>");
     }
 
-    [DataTestMethod,
-        DataRow("data-val-bit", "ok"),
-        DataRow("data-val-test", "bit")
-    ]
-    public void BitLabelShouldRespectHtmlAttributes(string name, string value)
+    [DataTestMethod]
+    public void BitLabelShouldRespectHtmlAttributes()
     {
-        var component = RenderComponent<BitLabel>(ComponentParameter.CreateParameter(name, value));
+        var component = RenderComponent<BitLabelTest>();
 
-        var bitLabel = component.Find(".bit-lbl");
-
-        Assert.IsTrue(bitLabel.HasAttribute(name));
-        Assert.AreEqual(value, bitLabel.GetAttribute(name));
+        component.MarkupMatches(@"<label data-val-test=""bit"" id:regex="".+"" class=""bit-lbl"">I'm a label</label>");
     }
 }
