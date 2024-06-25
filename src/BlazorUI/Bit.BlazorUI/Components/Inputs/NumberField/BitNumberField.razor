@@ -59,7 +59,7 @@
         <input @ref="InputElement" @attributes="@InputHtmlAttributes"
                @onblur="HandleOnBlur"
                @onfocus="HandleOnFocus"
-               @onkeydown="HandleOnKeyDown"
+               @onkeydown="HandleOnKeyDown" @onkeydown:preventDefault @onkeydown:stopPropagation
                @onfocusin="HandleOnFocusIn"
                @onfocusout="HandleOnFocusOut"
                @onchange="HandleOnStringValueChangeAsync"
