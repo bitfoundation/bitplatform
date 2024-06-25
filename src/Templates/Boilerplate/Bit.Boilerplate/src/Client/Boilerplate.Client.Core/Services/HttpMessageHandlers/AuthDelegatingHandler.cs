@@ -9,9 +9,7 @@ public class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServicePro
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        bool hasNoAuthHeaderPolicy = HasNoAuthHeaderPolicy(request);
-
-        if (request.Headers.Authorization is null && hasNoAuthHeaderPolicy is false)
+        if (request.Headers.Authorization is null && HasNoAuthHeaderPolicy(request) is false)
         {
             var access_token = await tokenProvider.GetAccessTokenAsync();
             if (access_token is not null)
