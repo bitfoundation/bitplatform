@@ -36,4 +36,17 @@ public static class ITypeSymbolExtensions
 
         return typeSymbol;
     }
+
+    public static string GetAssemblyQualifiedName(this ITypeSymbol symbol)
+    {
+        var namespaceName = symbol.ContainingNamespace.ToDisplayString();
+
+        var typeName = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
+        var assemblyName = symbol.ContainingAssembly.Identity.Name;
+
+        var assemblyQualifiedName = $"{namespaceName}.{typeName}, {assemblyName}";
+
+        return assemblyQualifiedName;
+    }
 }
