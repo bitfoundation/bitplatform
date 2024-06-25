@@ -1,4 +1,9 @@
-﻿namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
+﻿//+:cnd:noEmit
+//#if (captcha == "reCaptcha")
+using Boilerplate.Shared.Dtos.Identity;
+//#endif
+
+namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
     : DelegatingHandler(handler)
@@ -16,8 +21,16 @@ public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
             {
                 return await base.SendAsync(request, cancellationToken);
             }
-            catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException)
+            catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
             {
+                //#if (captcha == "reCaptcha")
+                if (request.Content is JsonContent jsonContent && jsonContent.Value is SignUpRequestDto)
+                {
+                    // Please note that retrying requests with Google reCaptcha will not work, as the Google verification mechanism only accepts a captcha response once.
+                    throw;
+                }
+                //#endif
+
                 lastExp = exp;
                 await Task.Delay(delay, cancellationToken);
             }
