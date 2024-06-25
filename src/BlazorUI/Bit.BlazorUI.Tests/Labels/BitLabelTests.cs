@@ -13,17 +13,4 @@ public class BitLabelTests : BunitTestContext
         var bitLabel = component.Find(".bit-lbl");
         Assert.AreEqual(expectedResult, bitLabel.ClassList.Contains("bit-lbl-req"));
     }
-
-
-    [DataTestMethod,
-    DataRow(true),
-    DataRow(false)
-]
-    public void BitLabelShouldRespectIsEnabled(bool isEnabled)
-    {
-        var component = RenderComponent<BitLabel>(parameters =>
-        {
-            parameters.Add(p => p.IsEnabled, isEnabled);
-        });
-    }
 }
