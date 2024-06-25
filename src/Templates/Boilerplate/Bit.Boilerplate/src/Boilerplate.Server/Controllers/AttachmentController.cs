@@ -31,7 +31,7 @@ public partial class AttachmentController : AppControllerBase
 
         var destFileName = $"{userId}_{file.FileName}";
 
-        var userProfileImagesDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagesDir);
+        var userProfileImagesDir = Path.Combine(IsRunningInsideDocker() ? "/container_volume" : Directory.GetCurrentDirectory(), AppSettings.UserProfileImagesDir);
 
         var destFilePath = Path.Combine(userProfileImagesDir, destFileName);
 
@@ -103,7 +103,7 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagesDir);
+        var userProfileImageDirPath = Path.Combine(IsRunningInsideDocker() ? "/container_volume" : Directory.GetCurrentDirectory(), AppSettings.UserProfileImagesDir);
 
         var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
 
@@ -129,7 +129,7 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var userProfileImageDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettings.UserProfileImagesDir);
+        var userProfileImageDirPath = Path.Combine(IsRunningInsideDocker() ? "/container_volume" : Directory.GetCurrentDirectory(), AppSettings.UserProfileImagesDir);
 
         var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
 
@@ -143,5 +143,10 @@ public partial class AttachmentController : AppControllerBase
 
         return PhysicalFile(Path.Combine(webHostEnvironment.ContentRootPath, filePath),
             contentType, enableRangeProcessing: true);
+    }
+
+    private bool IsRunningInsideDocker()
+    {
+        return Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
     }
 }
