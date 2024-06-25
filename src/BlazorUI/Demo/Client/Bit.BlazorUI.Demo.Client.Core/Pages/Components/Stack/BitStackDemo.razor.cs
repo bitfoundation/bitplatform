@@ -5,17 +5,17 @@ public partial class BitStackDemo
     {
         new()
         {
-            Name = "As",
-            Type = "string",
-            DefaultValue = "div",
-            Description = "Defines how to render the Stack."
-        },
-        new()
-        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of the Typography."
+        },
+        new()
+        {
+            Name = "Element",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom html element used for the root node. The default is \"div\"."
         },
         new()
         {

@@ -34,9 +34,9 @@ public partial class BitTypography : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The component used for the root node.
+    /// The custom html element used for the root node.
     /// </summary>
-    [Parameter] public string? Component { get; set; }
+    [Parameter] public string? Element { get; set; }
 
     /// <summary>
     /// If true, the text will have a bottom margin.
@@ -101,7 +101,7 @@ public partial class BitTypography : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, Component ?? VariantMapping[Variant]);
+        builder.OpenElement(0, Element ?? VariantMapping[Variant]);
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
         builder.AddAttribute(3, "style", StyleBuilder.Value);

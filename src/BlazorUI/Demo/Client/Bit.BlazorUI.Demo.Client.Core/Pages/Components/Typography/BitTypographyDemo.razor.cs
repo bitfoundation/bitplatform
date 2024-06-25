@@ -13,10 +13,10 @@ public partial class BitTypographyDemo
         },
         new()
         {
-            Name = "Component",
+            Name = "Element",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The component used for the root node.",
+            Description = "The custom html element used for the root node.",
         },
         new()
         {

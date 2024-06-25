@@ -15,17 +15,17 @@ public class BitElementTests : BunitTestContext
      DataRow(null)
     ]
     [TestMethod]
-    public void BitElementTagTest(string tag)
+    public void BitElementTagTest(string element)
     {
         var com = RenderComponent<BitElement>(parameters =>
         {
-            if (tag.HasValue())
+            if (element.HasValue())
             {
-                parameters.Add(p => p.Tag, tag);
+                parameters.Add(p => p.Element, element);
             }
         });
 
-        var expectedElement = tag ?? "div";
+        var expectedElement = element ?? "div";
 
         var expectedHtml = $"<{expectedElement} diff:ignore></{expectedElement}>";
 
@@ -35,20 +35,18 @@ public class BitElementTests : BunitTestContext
     [DataTestMethod]
     [DataRow("input", "placeholder", "Enter text")]
     [DataRow("a", "href", "/")]
-    public void BitElementTagWithAttributesTest(string tag, string attribute, string attributeValue)
+    public void BitElementTagWithAttributesTest(string element, string attribute, string attributeValue)
     {
         var com = RenderComponent<BitElement>(parameters =>
         {
-            parameters.Add(p => p.Tag, tag);
+            parameters.Add(p => p.Element, element);
             parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object>
             {
                 { attribute, attributeValue }
             });
         });
 
-        var element = com.Find(tag);
-
-        var expectedHtml = $"<{tag} {attribute}=\"{attributeValue}\" diff:ignore></{tag}>";
+        var expectedHtml = $"<{element} {attribute}=\"{attributeValue}\" diff:ignore></{element}>";
         com.MarkupMatches(expectedHtml);
     }
 }

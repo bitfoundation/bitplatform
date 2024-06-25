@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using AngleSharp.Text;
-using Bunit;
+﻿using System.Globalization;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bunit;
 
 namespace Bit.BlazorUI.Tests.Typography;
 
@@ -113,18 +112,18 @@ public class BitTypographyTests : BunitTestContext
         DataRow(null)
     ]
     [TestMethod]
-    public void BitTypographyComponentTest(string component)
+    public void BitTypographyComponentTest(string element)
     {
         var com = RenderComponent<BitTypography>(parameters =>
         {
-            parameters.Add(p => p.Component, component);
+            parameters.Add(p => p.Element, element);
         });
 
         var defaultVariant = BitTypographyVariant.Subtitle1;
         var defaultElement = VariantMapping[defaultVariant];
 
-        var element = com.Find(component ?? defaultElement);
+        var el = com.Find(element ?? defaultElement);
 
-        Assert.IsTrue(element.ClassList.Contains("bit-tpg"));
+        Assert.IsTrue(el.ClassList.Contains("bit-tpg"));
     }
 }

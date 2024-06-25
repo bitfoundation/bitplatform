@@ -13,10 +13,10 @@ public partial class BitElementDemo
         },
         new()
         {
-            Name = "Tag",
-            Type = "string",
-            DefaultValue = "div",
-            Description = "The HTML tag used for the root node.",
+            Name = "Element",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom html element used for the root node. The default is \"div\".",
         }
     };
 

@@ -10,9 +10,9 @@ public partial class BitElement : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The HTML tag used for the root node.
+    /// The custom html element used for the root node. The default is "div".
     /// </summary>
-    [Parameter] public string Tag { get; set; } = "div";
+    [Parameter] public string? Element { get; set; }
 
 
     protected override string RootElementClass => "bit-elm";
@@ -20,7 +20,7 @@ public partial class BitElement : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, Tag);
+        builder.OpenElement(0, Element ?? "div");
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
         builder.AddAttribute(3, "style", StyleBuilder.Value);
