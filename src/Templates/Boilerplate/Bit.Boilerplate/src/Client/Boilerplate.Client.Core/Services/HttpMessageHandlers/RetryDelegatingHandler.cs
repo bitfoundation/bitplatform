@@ -21,7 +21,7 @@ public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
             }
             catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
             {
-                if (HasNoRetryPolicy(request) is true)
+                if (HasNoRetryPolicy(request))
                     throw;
 
                 lastExp = exp;

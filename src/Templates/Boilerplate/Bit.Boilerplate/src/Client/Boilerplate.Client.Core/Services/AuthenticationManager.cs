@@ -112,7 +112,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
             {
                 Name = "access_token",
                 Value = response.AccessToken,
-                MaxAge = rememberMe is true ? response.ExpiresIn : null,
+                MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
                 SameSite = SameSite.Strict,
                 Secure = BuildConfiguration.IsRelease()
             });
