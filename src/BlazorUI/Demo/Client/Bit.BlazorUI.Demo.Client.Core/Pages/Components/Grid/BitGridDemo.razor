@@ -53,9 +53,8 @@
         </ComponentExampleBox>
         <ComponentExampleBox Title="Alignment" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <ExamplePreview>
-                <BitChoiceGroup Label="Horizontal Align"
+                <BitChoiceGroup Label="Horizontal Align" Horizontal
                                 @bind-Value="horizontalAlign"
-                                LayoutFlow="@BitLayoutFlow.Horizontal"
                                 TItem="BitChoiceGroupOption<BitGridAlignment>" TValue="BitGridAlignment">
                     <BitChoiceGroupOption Text="Start" Value="BitGridAlignment.Start" />
                     <BitChoiceGroupOption Text="Center" Value="BitGridAlignment.Center" />
