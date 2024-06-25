@@ -60,11 +60,11 @@ public class BitLabelTests : BunitTestContext
 
         if (style.HasNoValue())
         {
-            component.MarkupMatches(@"<label class:ignore id:ignore></label>");
+            component.MarkupMatches(@"<label id:ignore class:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label style=""{style}"" class:ignore id:ignore></label>");
+            component.MarkupMatches(@$"<label style=""{style}"" id:ignore class:ignore></label>");
         }
     }
 
@@ -120,11 +120,11 @@ public class BitLabelTests : BunitTestContext
 
         if (@for.HasNoValue())
         {
-            component.MarkupMatches(@"<label class:ignore id:ignore></label>");
+            component.MarkupMatches(@"<label id:ignore class:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label for=""{@for}"" class:ignore id:ignore></label>");
+            component.MarkupMatches(@$"<label for=""{@for}"" id:ignore class:ignore></label>");
         }
     }
 
@@ -168,13 +168,13 @@ public class BitLabelTests : BunitTestContext
         switch (visibility)
         {
             case BitVisibility.Visible:
-                component.MarkupMatches(@"<label class:ignore id:ignore></label>");
+                component.MarkupMatches(@"<label id:ignore class:ignore></label>");
                 break;
             case BitVisibility.Hidden:
-                component.MarkupMatches(@"<label style=""visibility: hidden;"" class:ignore id:ignore></label>");
+                component.MarkupMatches(@"<label style=""visibility: hidden;"" id:ignore class:ignore></label>");
                 break;
             case BitVisibility.Collapsed:
-                component.MarkupMatches(@"<label style=""display: none;"" class:ignore id:ignore></label>");
+                component.MarkupMatches(@"<label style=""display: none;"" id:ignore class:ignore></label>");
                 break;
         }
     }
@@ -191,14 +191,14 @@ public class BitLabelTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        component.MarkupMatches(@$"<label class:ignore id:ignore>{childContent}</label>");
+        component.MarkupMatches(@$"<label id:ignore class:ignore>{childContent}</label>");
     }
 
     [DataTestMethod]
     public void BitLabelShouldRespectHtmlAttributes()
     {
-        var component = RenderComponent<BitLabelTest>();
+        var component = RenderComponent<BitLabelHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<label data-val-test=""bit"" class:ignore id:ignore>I'm a label</label>");
+        component.MarkupMatches(@"<label data-val-test=""bit"" id:ignore class:ignore>I'm a label</label>");
     }
 }
