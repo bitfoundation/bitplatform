@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitNavOption : ComponentBase, IDisposable
+public partial class BitNavOption : IDisposable
 {
     private bool _disposed;
 
@@ -141,28 +141,6 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
         await base.OnInitializedAsync();
     }
-
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var seq = 0;
-        builder.OpenComponent<CascadingValue<BitNavOption>>(seq++);
-        builder.AddAttribute(seq++, "Value", this);
-        builder.AddAttribute(seq++, "IsFixed", true);
-
-        builder.AddAttribute(seq++, "ChildContent", (RenderFragment)(builder2 =>
-        {
-            builder2.OpenElement(seq++, "div");
-            builder2.AddAttribute(seq++, "style", "display:none");
-            builder2.AddAttribute(seq++, "hidden");
-            builder2.AddContent(seq++, ChildContent);
-            builder2.CloseElement();
-        }));
-
-        builder.CloseComponent();
-
-        base.BuildRenderTree(builder);
-    }
-
 
 
     public void Dispose()
