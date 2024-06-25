@@ -60,11 +60,11 @@ public class BitLabelTests : BunitTestContext
 
         if (style.HasNoValue())
         {
-            component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
+            component.MarkupMatches(@"<label class:ignore id:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label style=""{style}"" class=""bit-lbl"" id:ignore></label>");
+            component.MarkupMatches(@$"<label style=""{style}"" class:ignore id:ignore></label>");
         }
     }
 
@@ -98,14 +98,11 @@ public class BitLabelTests : BunitTestContext
 
         if (id.HasNoValue())
         {
-            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
-
-            var bitLabel = component.Find(".bit-lbl");
-            Assert.AreEqual(component.Instance.UniqueId.ToString(), bitLabel.Id);
+            component.MarkupMatches(@$"<label id=""{component.Instance.UniqueId}"" class:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label id=""{id}"" class=""bit-lbl""></label>");
+            component.MarkupMatches(@$"<label id=""{id}"" class:ignore></label>");
         }
     }
 
@@ -123,11 +120,11 @@ public class BitLabelTests : BunitTestContext
 
         if (@for.HasNoValue())
         {
-            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+            component.MarkupMatches(@"<label class:ignore id:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label id:regex="".+"" class=""bit-lbl"" for=""{@for}""></label>");
+            component.MarkupMatches(@$"<label for=""{@for}"" class:ignore id:ignore></label>");
         }
     }
 
@@ -147,11 +144,11 @@ public class BitLabelTests : BunitTestContext
         if (dir.HasValue)
         {
             var cssClass = dir is BitDir.Rtl ? "bit-lbl bit-rtl" : "bit-lbl";
-            component.MarkupMatches(@$"<label id:regex="".+"" class=""{cssClass}"" dir=""{dir.Value.ToString().ToLower()}""></label>");
+            component.MarkupMatches(@$"<label class=""{cssClass}"" dir=""{dir.Value.ToString().ToLower()}"" id:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+            component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
         }
     }
 
@@ -175,13 +172,13 @@ public class BitLabelTests : BunitTestContext
         switch (visibility)
         {
             case BitVisibility.Visible or null:
-                component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+                component.MarkupMatches(@"<label class:ignore id:ignore></label>");
                 break;
             case BitVisibility.Hidden:
-                component.MarkupMatches(@"<label id:regex="".+"" style=""visibility: hidden;"" class=""bit-lbl""></label>");
+                component.MarkupMatches(@"<label style=""visibility: hidden;"" class:ignore id:ignore></label>");
                 break;
             case BitVisibility.Collapsed:
-                component.MarkupMatches(@"<label id:regex="".+"" style=""display: none;"" class=""bit-lbl""></label>");
+                component.MarkupMatches(@"<label style=""display: none;"" class:ignore id:ignore></label>");
                 break;
         }
     }
@@ -198,7 +195,7 @@ public class BitLabelTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        component.MarkupMatches(@$"<label id:regex="".+"" class=""bit-lbl"">{childContent}</label>");
+        component.MarkupMatches(@$"<label class:ignore id:ignore>{childContent}</label>");
     }
 
     [DataTestMethod]
@@ -206,6 +203,6 @@ public class BitLabelTests : BunitTestContext
     {
         var component = RenderComponent<BitLabelTest>();
 
-        component.MarkupMatches(@"<label data-val-test=""bit"" id:regex="".+"" class=""bit-lbl"">I'm a label</label>");
+        component.MarkupMatches(@"<label data-val-test=""bit"" class:ignore id:ignore>I'm a label</label>");
     }
 }
