@@ -44,6 +44,18 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
                 }
                 var jsonReadParameters = string.Join(", ", jsonReadParametersList);
 
+                var requestOptions = new StringBuilder();
+                requestOptions.AppendLine($"__request.Options.TryAdd(\"IControllerTypeName\", \"{iController.Symbol.GetAssemblyQualifiedName()}\");");
+                requestOptions.AppendLine($"__request.Options.TryAdd(\"ActionName\", \"{action.Method.Name}\");");
+                if (action.BodyParameter is not null)
+                {
+                    requestOptions.AppendLine($"__request.Options.TryAdd(\"RequestTypeName\", \"{action.BodyParameter.Type.GetAssemblyQualifiedName()}\");");
+                }
+                if (action.DoesReturnSomething)
+                {
+                    requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseTypeName\", \"{action.ReturnType.GetUnderlyingType().GetAssemblyQualifiedName()}\");");
+                }
+
                 generatedMethods.AppendLine($@"
         public async {action.ReturnType.ToDisplayString()} {action.Method.Name}({parameters})
         {{
@@ -56,6 +68,7 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
             {(action.DoesReturnSomething ? $@"return (await prerenderStateService.GetValue(__url, async () =>
             {{" : string.Empty)}
                 using var __request = new HttpRequestMessage(HttpMethod.{action.HttpMethod}, __url);
+                {requestOptions}
                 {(action.BodyParameter is not null ? $@"__request.Content = JsonContent.Create({action.BodyParameter.Name}, options.GetTypeInfo<{action.BodyParameter.Type.ToDisplayString()}>());" : string.Empty)}
                 {(action.DoesReturnIAsyncEnumerable ? "" : "using ")}var __response = await httpClient.SendAsync(__request, HttpCompletionOption.ResponseHeadersRead {(action.HasCancellationToken ? $", {action.CancellationTokenParameterName}" : string.Empty)});
                 {(action.DoesReturnSomething ? ($"return {(action.DoesReturnIAsyncEnumerable ? "" : "await")} __response.Content.{(action.DoesReturnIAsyncEnumerable ? "ReadFromJsonAsAsyncEnumerable" : action.DoesReturnString ? "ReadAsStringAsync" : "ReadFromJsonAsync")}({jsonReadParameters});" +
