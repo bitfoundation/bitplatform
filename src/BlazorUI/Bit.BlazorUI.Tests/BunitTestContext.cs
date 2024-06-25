@@ -8,6 +8,8 @@ namespace Bit.BlazorUI.Tests;
 
 public abstract class BunitTestContext : IDisposable
 {
+    protected const string GUID_PATTERN = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+
     protected Bunit.TestContext Context;
 
     public ITestRenderer Renderer => Context?.Renderer ?? throw new InvalidOperationException("MSTest has not started executing tests yet");
