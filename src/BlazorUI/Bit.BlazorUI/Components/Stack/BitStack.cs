@@ -192,17 +192,14 @@ public partial class BitStack : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var seq = 0;
-        builder.OpenElement(seq++, As);
-        builder.AddMultipleAttributes(seq++, RuntimeHelpers.TypeCheck<IEnumerable<KeyValuePair<string, object>>>(HtmlAttributes));
-        builder.AddAttribute(seq++, "id", _Id);
-        builder.AddAttribute(seq++, "style", StyleBuilder.Value);
-        builder.AddAttribute(seq++, "class", ClassBuilder.Value);
-        builder.AddAttribute(seq++, "dir", Dir?.ToString().ToLower());
-        builder.AddElementReferenceCapture(seq++, v => RootElement = v);
-
-        builder.AddContent(seq++, ChildContent);
-
+        builder.OpenElement(0, As);
+        builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
+        builder.AddAttribute(2, "id", _Id);
+        builder.AddAttribute(3, "style", StyleBuilder.Value);
+        builder.AddAttribute(4, "class", ClassBuilder.Value);
+        builder.AddAttribute(5, "dir", Dir?.ToString().ToLower());
+        builder.AddElementReferenceCapture(6, v => RootElement = v);
+        builder.AddContent(7, ChildContent);
         builder.CloseElement();
 
         base.BuildRenderTree(builder);
