@@ -1,7 +1,5 @@
-﻿//+:cnd:noEmit
-//#if (captcha == "reCaptcha")
-using Boilerplate.Shared.Dtos.Identity;
-//#endif
+﻿using System.Reflection;
+using Boilerplate.Client.Core.Controllers;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -23,13 +21,8 @@ public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
             }
             catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
             {
-                //#if (captcha == "reCaptcha")
-                if (request.Content is JsonContent jsonContent && jsonContent.Value is SignUpRequestDto)
-                {
-                    // Please note that retrying requests with Google reCaptcha will not work, as the Google verification mechanism only accepts a captcha response once.
+                if (HasNoRetryPolicy(request) is true)
                     throw;
-                }
-                //#endif
 
                 lastExp = exp;
                 await Task.Delay(delay, cancellationToken);
@@ -37,6 +30,20 @@ public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
         }
 
         throw lastExp!;
+    }
+
+    /// <summary>
+    /// <see cref="NoRetryPolicyAttribute"/>
+    /// </summary>
+    private static bool HasNoRetryPolicy(HttpRequestMessage request)
+    {
+        if (request.Options.TryGetValue(new(RequestOptionNames.IControllerTypeName), out string? controllerTypeName) is false)
+            return false;
+
+        var controllerType = Type.GetType(controllerTypeName!)!;
+        var parameterTypes = ((Dictionary<string, string>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => Type.GetType(p.Value)!).ToArray();
+        var method = controllerType.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
+        return method.GetCustomAttribute<NoRetryPolicyAttribute>() is not null;
     }
 
     private static IEnumerable<TimeSpan> GetDelays(TimeSpan scaleFirstTry, int maxRetries)

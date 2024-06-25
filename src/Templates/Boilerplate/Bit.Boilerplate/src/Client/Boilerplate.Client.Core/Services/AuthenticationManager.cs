@@ -112,7 +112,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
             {
                 Name = "access_token",
                 Value = response.AccessToken,
-                MaxAge = response.ExpiresIn,
+                MaxAge = rememberMe is true ? response.ExpiresIn : null,
                 SameSite = SameSite.Strict,
                 Secure = BuildConfiguration.IsRelease()
             });
