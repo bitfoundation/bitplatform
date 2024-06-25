@@ -48,19 +48,19 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitCheckboxSide.Start),
-        DataRow(BitCheckboxSide.End),
+        DataRow(false),
+        DataRow(true),
     ]
-    public void BitCheckboxBoxSideTest(BitCheckboxSide boxSide)
+    public void BitCheckboxReversedTest(bool reversed)
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.BoxSide, boxSide);
+            parameters.Add(p => p.Reversed, reversed);
         });
 
         var checkBox = component.Find(".bit-chb");
 
-        if (boxSide is BitCheckboxSide.End)
+        if (reversed)
         {
             Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-end"));
         }
@@ -80,7 +80,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.DefaultIsIndeterminate, true);
+            parameters.Add(p => p.DefaultIndeterminate, true);
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
 
@@ -263,7 +263,7 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.CheckmarkIconName, checkmarkIconName);
+            parameters.Add(p => p.CheckIconName, checkmarkIconName);
         });
 
         var icon = component.Find(".bit-chb-box i.bit-icon");
@@ -279,7 +279,7 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.CheckmarkIconAriaLabel, ariaLabel);
+            parameters.Add(p => p.CheckIconAriaLabel, ariaLabel);
         });
 
         var icon = component.Find(".bit-chb-box i.bit-icon");
@@ -336,8 +336,8 @@ public class BitCheckboxTests : BunitTestContext
     {
         var component = RenderComponent<BitCheckbox>(parameters =>
         {
-            parameters.Add(p => p.IsIndeterminate, true);
-            parameters.Add(p => p.IsIndeterminateChanged, HandleIsIndeterminateChanged);
+            parameters.Add(p => p.Indeterminate, true);
+            parameters.Add(p => p.IndeterminateChanged, HandleIsIndeterminateChanged);
         });
 
         var chb = component.Find("input");

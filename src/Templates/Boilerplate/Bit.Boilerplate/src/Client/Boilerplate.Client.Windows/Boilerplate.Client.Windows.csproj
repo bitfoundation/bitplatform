@@ -31,7 +31,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.60" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2535.41" />
-        <PackageReference Include="Velopack" Version="0.0.530-g4f25004" />
+        <PackageReference Include="Velopack" Version="0.0.541-gf8f3de0" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.5" />
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" Version="5.0.5" />

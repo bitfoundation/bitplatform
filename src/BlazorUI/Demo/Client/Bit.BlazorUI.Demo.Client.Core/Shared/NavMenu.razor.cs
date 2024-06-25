@@ -114,6 +114,9 @@ public partial class NavMenu : IDisposable
                 new() { Text = "ScrollablePane", Url = "/components/scrollablepane", Description = "ScrollView" },
                 new() { Text = "Tooltip", Url = "/components/tooltip" },
                 new() { Text = "Layout", Url = "/components/layout" },
+                new() { Text = "Header", Url = "/components/header" },
+                new() { Text = "Footer", Url = "/components/footer" },
+                new() { Text = "Spacer", Url = "/components/spacer" },
             ],
         },
         new()
@@ -122,6 +125,7 @@ public partial class NavMenu : IDisposable
             ChildItems =
             [
                 new() { Text = "Element", Url = "/components/element" },
+                new() { Text = "Grid", Url = "/components/grid" },
                 new() { Text = "Icon", Url = "/components/icon" },
                 new() { Text = "Image", Url = "/components/image" },
                 new() { Text = "Label",  Url = "/components/label" },

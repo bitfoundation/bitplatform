@@ -15,8 +15,8 @@
         var headerStyles = $"{headerHeightStyle}{headerPaddingStyle}{Styles?.Header}";
         var headerClasses = $"bit-lyt-hdr{(FixedHeader ? " bit-lyt-fhd" : "")} {Classes?.Header}";
 
-        var mainPaddingTopStyle = $"{(headerHeight > 0 ? $"padding-top:{headerHeight}px;" : "")}";
-        var mainPaddingBottomStyle = $"{(FooterHeight > 0 ? $"padding-bottom:{FooterHeight}px;" : "")}";
+        var mainPaddingTopStyle = $"{(FixedHeader && headerHeight > 0 ? $"padding-top:{headerHeight}px;" : "")}";
+        var mainPaddingBottomStyle = $"{(FixedFooter && FooterHeight > 0 ? $"padding-bottom:{FooterHeight}px;" : "")}";
         var mainStyles = $"{mainPaddingTopStyle}{mainPaddingBottomStyle}{Styles?.Main}";
         var mainClasses = $"bit-lyt-man {Classes?.Main}";
 
@@ -24,25 +24,32 @@
         var footerStyles = $"{footerHeightStyle}{Styles?.Footer}";
         var footerClasses = $"bit-lyt-ftr{(FixedFooter ? " bit-lyt-fft" : "")} {Classes?.Footer}";
     }
+    <CascadingValue Value="Dir">
+        @if (Header is not null)
+        {
+            <header class="@headerClasses" style="@headerStyles">
+                @Header
+            </header>
+        }
 
-    @if (Header is not null)
-    {
-        <header class="@headerClasses" style="@headerStyles">
-            @Header
-        </header>
-    }
-
-    @if (Main is not null)
-    {
         <main class="@mainClasses" style="@mainStyles">
-            @Main
-        </main>
-    }
+            @if (NavMenu is not null && HideNavMenu is false)
+            {
+                <div style="@Styles?.NavMenu" class="bit-lyt-nmn @Classes?.NavMenu">
+                    @NavMenu
+                </div>
+            }
 
-    @if (Footer is not null)
-    {
-        <footer class="@footerClasses" style="@footerStyles">
-            @Footer
-        </footer>
-    }
+            <div style="@Styles?.MainContent" class="bit-lyt-mcn @Classes?.MainContent">
+                @Main
+            </div>
+        </main>
+
+        @if (Footer is not null)
+        {
+            <footer class="@footerClasses" style="@footerStyles">
+                @Footer
+            </footer>
+        }
+    </CascadingValue>
 </div>

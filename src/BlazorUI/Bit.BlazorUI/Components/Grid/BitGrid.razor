@@ -1,0 +1,13 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<CascadingValue IsFixed Value="this">
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         id="@_Id"
+         aria-label="@AriaLabel"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+        @ChildContent
+    </div>
+</CascadingValue>

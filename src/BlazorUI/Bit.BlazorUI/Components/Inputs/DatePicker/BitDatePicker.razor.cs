@@ -118,7 +118,6 @@ public partial class BitDatePicker
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _inputId;
-    private ElementReference _inputRef = default!;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
 
@@ -674,7 +673,7 @@ public partial class BitDatePicker
         _selectedDateWeek = null;
         _selectedDateDayOfWeek = null;
 
-        await _inputRef.FocusAsync();
+        await InputElement.FocusAsync();
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)

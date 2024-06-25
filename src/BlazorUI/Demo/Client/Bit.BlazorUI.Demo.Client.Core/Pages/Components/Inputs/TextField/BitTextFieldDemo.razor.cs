@@ -431,15 +431,15 @@ public partial class BitTextFieldDemo
     private string? oneWayValue;
     private string? twoWayValue;
     private string? onChangeValue;
+    private string? immediateValue;
+    private string? debounceValue;
+    private string? throttleValue;
 
     private string? trimmedValue;
     private string? notTrimmedValue;
 
     private ValidationTextFieldModel validationTextFieldModel = new();
     public bool formIsValidSubmit;
-
-    private string? debounceValue;
-    private string? throttleValue;
 
     private async Task HandleValidSubmit()
     {
@@ -528,17 +528,31 @@ public partial class BitTextFieldDemo
 
     private readonly string example9RazorCode = @"
 <BitTextField Label=""One-way"" Value=""@oneWayValue"" />
-<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
+<div>Value: [@oneWayValue]</div>
+<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
 
 <BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
-<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
+<div>Value: [@twoWayValue]</div>
+<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" Immediate />
 
-<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" />
-<BitLabel>Value: @onChangeValue</BitLabel>";
+<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" Immediate />
+<BitLabel>Value: [@onChangeValue]</BitLabel>
+
+<BitTextField Label=""Immediate"" @bind-Value=""@immediateValue"" Immediate />
+<div>Value: [@immediateValue]</div>
+
+<BitTextField Label=""Debounce"" @bind-Value=""@debounceValue"" Immediate DebounceTime=""300"" />
+<div>Value: [@debounceValue]</div>
+
+<BitTextField Label=""Throttle"" @bind-Value=""@throttleValue"" Immediate ThrottleTime=""300"" />
+<div>Value: [@throttleValue]</div>";
     private readonly string example9CsharpCode = @"
 private string oneWayValue;
 private string twoWayValue;
-private string onChangeValue;";
+private string onChangeValue;
+private string? immediateValue;
+private string? debounceValue;
+private string? throttleValue;";
 
     private readonly string example10RazorCode = @"
 <BitTextField Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""trimmedValue"" />
@@ -662,17 +676,4 @@ private void HandleInvalidSubmit() { }";
               Dir=""BitDir.Rtl""
               Label=""تقویم"" 
               IconName=""@BitIconName.Calendar"" />";
-
-    private readonly string example14RazorCode = @"
-<BitTextField Dir=""BitDir.Rtl""
-              Placeholder=""پست الکترونیکی""
-              IconName=""@BitIconName.EditMail"" />
-
-<BitTextField IsUnderlined 
-              Dir=""BitDir.Rtl""
-              Label=""تقویم"" 
-              IconName=""@BitIconName.Calendar"" />";
-    private readonly string example14CsharpCode = @"
-private string? debounceValue;
-private string? throttleValue;";
 }

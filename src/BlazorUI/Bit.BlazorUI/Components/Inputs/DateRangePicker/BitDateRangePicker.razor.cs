@@ -183,7 +183,6 @@ public partial class BitDateRangePicker
     private string _calloutId = string.Empty;
     private string? _labelId;
     private string? _inputId;
-    private ElementReference _inputRef = default!;
     private ElementReference _startTimeHourInputRef = default!;
     private ElementReference _startTimeMinuteInputRef = default!;
     private ElementReference _endTimeHourInputRef = default!;
@@ -767,7 +766,7 @@ public partial class BitDateRangePicker
         _selectedStartDateDayOfWeek = null;
         _selectedEndDateDayOfWeek = null;
 
-        await _inputRef.FocusAsync();
+        await InputElement.FocusAsync();
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)

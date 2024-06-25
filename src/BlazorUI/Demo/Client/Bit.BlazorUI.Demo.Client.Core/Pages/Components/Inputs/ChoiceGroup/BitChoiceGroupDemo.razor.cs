@@ -2,13 +2,13 @@
 
 public partial class BitChoiceGroupDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AriaLabelledBy",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Id of an element to use as the aria label for the ChoiceGroup."
         },
         new()
@@ -33,6 +33,13 @@ public partial class BitChoiceGroupDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Default selected Value for ChoiceGroup."
+        },
+        new()
+        {
+            Name = "Horizontal",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the items in the ChoiceGroup horizontally."
         },
         new()
         {
@@ -62,13 +69,6 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "IsRequired",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, selecting an option is mandatory in the ChoiceGroup."
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -80,13 +80,6 @@ public partial class BitChoiceGroupDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom RenderFragment for the label of the ChoiceGroup."
-        },
-        new()
-        {
-            Name = "LayoutFlow",
-            Type = "BitLayoutFlow?",
-            DefaultValue = "null",
-            Description = "The render flow of the items in the ChoiceGroup, Horizontal or Vertical."
         },
         new()
         {
@@ -119,6 +112,13 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "Required",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, selecting an option is mandatory in the ChoiceGroup."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitChoiceGroupClassStyles?",
             DefaultValue = "null",
@@ -126,15 +126,16 @@ public partial class BitChoiceGroupDemo
             Href = "#class-styles",
             LinkType = LinkType.Link,
         },
-    };
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "choice-group-item",
             Title = "BitChoiceGroupItem",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "AriaLabel",
@@ -240,14 +241,14 @@ public partial class BitChoiceGroupDemo
                    DefaultValue = "null",
                    Description = "Index of the BitChoiceGroup item. This property's value is set by the component at render.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "choice-group-option",
             Title = "BitChoiceGroupOption",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "AriaLabel",
@@ -353,14 +354,14 @@ public partial class BitChoiceGroupDemo
                    DefaultValue = "null",
                    Description = "Index of the BitChoiceGroup option. This property's value is set by the component at render.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "name-selectors",
             Title = "BitChoiceGroupNameSelectors<TItem, TValue>",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "AriaLabel",
@@ -459,14 +460,14 @@ public partial class BitChoiceGroupDemo
                    DefaultValue = "nameof(BitChoiceGroupItem<TValue>.Index))",
                    Description = "The Index field name of the custom input class. This property's value is set by the component at render.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "class-styles",
             Title = "BitChoiceGroupClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -586,7 +587,7 @@ public partial class BitChoiceGroupDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the text of each item of the BitChoiceGroup.",
                },
-            }
+            ]
         }
-    };
+    ];
 }

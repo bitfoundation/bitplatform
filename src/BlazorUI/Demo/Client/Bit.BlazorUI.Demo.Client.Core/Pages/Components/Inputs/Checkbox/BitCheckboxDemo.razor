@@ -8,8 +8,7 @@
 <ComponentDemo ComponentName="Checkbox"
                ComponentDescription="BitCheckbox is a component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options. For example, the user may have to answer 'yes' or 'no' on a simple yes/no question. Checkboxes by default are shown as ☐ when unchecked and ☑ when checked."
                ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums">
+               ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-content">
@@ -20,21 +19,21 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Checkmark Icon" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Check icon" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="example-content">
-                <BitCheckbox Label="Custom checkmark checkbox" CheckmarkIconName="@BitIconName.Heart" />
-                <BitCheckbox Label="Disabled custom checkmark checkbox" CheckmarkIconName="@BitIconName.WavingHand" Value="true" IsEnabled="false" />
+                <BitCheckbox Label="Custom check icon" CheckIconName="@BitIconName.Heart" />
+                <BitCheckbox Label="Disabled custom check icon" CheckIconName="@BitIconName.WavingHand" Value="true" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BoxSide" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Label position" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="example-content">
-                <BitCheckbox Label="BitCheckboxSide.End - Basic Checkbox" BoxSide="@BitCheckboxSide.End" />
-                <BitCheckbox Label="BitCheckboxSide.End - Disable Checkbox" BoxSide="@BitCheckboxSide.End" IsEnabled="false" />
-                <BitCheckbox Label="BitCheckboxSide.End - Disable Checked Checkbox" BoxSide="@BitCheckboxSide.End" IsEnabled="false" Value="true" />
+                <BitCheckbox Label="Reversed" Reversed />
+                <BitCheckbox Label="Reversed - Disabled" Reversed IsEnabled="false" />
+                <BitCheckbox Label="Reversed - Disable Checked" Reversed IsEnabled="false" Value="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -59,26 +58,16 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="example-content">
-                <div style="display: flex">Visible: [ <BitCheckbox Visibility="BitVisibility.Visible" Label="Visible Checkbox" /> ]</div>
-                <div style="display: flex">Hidden: [ <BitCheckbox Visibility="BitVisibility.Hidden" Label="Hidden Checkbox" /> ]</div>
-                <div style="display: flex">Collapsed: [ <BitCheckbox Visibility="BitVisibility.Collapsed" Label="Collapsed Checkbox" /> ]</div>
+                <BitCheckbox Label="Indeterminate checkbox" Indeterminate />
+                <BitCheckbox Label="Disabled indeterminate checkbox" Indeterminate IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Indeterminate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <ExamplePreview>
-            <div class="example-content">
-                <BitCheckbox Label="Indeterminate checkbox" @bind-IsIndeterminate="isIndeterminate" />
-                <BitCheckbox Label="Disabled indeterminate checkbox" IsIndeterminate="true" IsEnabled="false" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div><b>Value</b>:</div>
             <br />
@@ -101,21 +90,21 @@
             <br />
             <div class="example-content">
                 <div class="controlled-box">
-                    <BitCheckbox Label="One-way indeterminate checkbox (Fixed)" IsIndeterminate="true" />
+                    <BitCheckbox Label="One-way indeterminate checkbox (Fixed)" Indeterminate />
                 </div>
                 <div class="controlled-box">
-                    <BitCheckbox Label="One-way Controlled indeterminate checkbox" IsIndeterminate="oneWayIsIndeterminate" />
-                    <BitButton OnClick="() => oneWayIsIndeterminate = !oneWayIsIndeterminate">@(oneWayIsIndeterminate ? "Remove" : "Make") Indeterminate</BitButton>
+                    <BitCheckbox Label="One-way Controlled indeterminate checkbox" Indeterminate="oneWayIndeterminate" />
+                    <BitButton OnClick="() => oneWayIndeterminate = !oneWayIndeterminate">@(oneWayIndeterminate ? "Remove" : "Make") Indeterminate</BitButton>
                 </div>
                 <div class="controlled-box">
-                    <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-IsIndeterminate="twoWayIsIndeterminate" />
-                    <BitButton OnClick="() => twoWayIsIndeterminate = !twoWayIsIndeterminate">@(twoWayIsIndeterminate ? "Remove" : "Make") Indeterminate</BitButton>
+                    <BitCheckbox Label="Two-way Controlled indeterminate checkbox" @bind-Indeterminate="twoWayIndeterminate" />
+                    <BitButton OnClick="() => twoWayIndeterminate = !twoWayIndeterminate">@(twoWayIndeterminate ? "Remove" : "Make") Indeterminate</BitButton>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div>
                 <BitCheckbox @bind-Value="labelTemplateValue">
@@ -127,7 +116,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom content" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Custom content" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div class="example-content">
                 <BitCheckbox @bind-Value="customCheckboxValue">
@@ -141,20 +130,20 @@
 
                 <br />
 
-                <BitCheckbox @bind-Value="customContentValue" @bind-IsIndeterminate="customContentIsIndeterminate">
+                <BitCheckbox @bind-Value="customContentValue" @bind-Indeterminate="customContentIndeterminate">
                     <div class="custom-checkbox">
                         <div class="custom-box">
-                            <BitIcon IconName="@(customContentIsIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))" />
+                            <BitIcon IconName="@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))" />
                         </div>
                         <span>Custom indeterminate checkbox</span>
                     </div>
                 </BitCheckbox>
-                <BitButton OnClick="() => customContentIsIndeterminate = true">Make Indeterminate</BitButton>
+                <BitButton OnClick="() => customContentIndeterminate = true">Make Indeterminate</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div>
                 @if (string.IsNullOrEmpty(SuccessMessage))
@@ -177,10 +166,14 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+    <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
-            <div class="example-content">
-                <BitCheckbox Dir="BitDir.Rtl" Label="کادر بررسی" />
+            <div class="example-content" dir="rtl">
+                <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس راست به چپ" />
+                <br />
+                <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال" IsEnabled="false" />
+                <br />
+                <BitCheckbox Dir="BitDir.Rtl" Label="چکباکس غیرفعال چک شده" IsEnabled="false" Value="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

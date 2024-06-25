@@ -19,7 +19,7 @@ public partial class BitTimePicker
     private int? _hour;
     private int? _minute;
     private string? _labelId;
-    private string? _textFieldId;
+    private string? _inputId;
     private string _timePickerId = string.Empty;
     private string _calloutId = string.Empty;
     private CancellationTokenSource _cancellationTokenSource = new();
@@ -329,8 +329,8 @@ public partial class BitTimePicker
     {
         _timePickerId = $"BitTimePicker-{UniqueId}";
         _labelId = $"BitTimePicker-{UniqueId}-label";
+        _inputId = $"BitTimePicker-{UniqueId}-input";
         _calloutId = $"BitTimePicker-{UniqueId}-callout";
-        _textFieldId = $"BitTimePicker-{UniqueId}-text-field";
 
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;

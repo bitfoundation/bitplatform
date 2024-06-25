@@ -16,7 +16,6 @@ public partial class BitSearchBox
     private string _inputId = string.Empty;
     private List<string> _searchItems = [];
     private string _calloutId = string.Empty;
-    private ElementReference _inputRef = default!;
     private string _scrollContainerId = string.Empty;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
@@ -208,18 +207,6 @@ public partial class BitSearchBox
 
 
 
-    /// <summary>
-    /// The ElementReference to the input element of the BitSearchBox.
-    /// </summary>
-    public ElementReference InputElement => _inputRef;
-
-    /// <summary>
-    /// Gives focus to the input element of the BitSearchBox.
-    /// </summary>
-    public ValueTask FocusAsync() => _inputRef.FocusAsync();
-
-
-
     protected override string RootElementClass => "bit-srb";
 
     protected override void RegisterCssClasses()
@@ -252,7 +239,7 @@ public partial class BitSearchBox
 
         if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
         {
-            SetCurrentValueAsString(DefaultValue);
+            SetCurrentValueAsStringAsync(DefaultValue);
         }
 
         OnValueChanged += HandleOnValueChanged;
@@ -283,7 +270,7 @@ public partial class BitSearchBox
 
         await HandleOnChange(new() { Value = string.Empty });
 
-        await _inputRef.FocusAsync();
+        await InputElement.FocusAsync();
 
         await OnClear.InvokeAsync();
     }
@@ -306,14 +293,14 @@ public partial class BitSearchBox
         if (eventArgs.Key == "Escape")
         {
             CurrentValue = string.Empty;
-            //await _inputRef.FocusAsync(); // is it required when the keydown event is captured on the input itself?
+            //await InputElement.FocusAsync(); // is it required when the keydown event is captured on the input itself?
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
             await CloseCallout();
         }
         else if (eventArgs.Key == "Enter")
         {
-            CurrentValue = await _js.GetProperty(_inputRef, "value");
+            CurrentValue = await _js.GetProperty(InputElement, "value");
             await OnSearch.InvokeAsync(CurrentValue);
             await CloseCallout();
         }
@@ -445,7 +432,7 @@ public partial class BitSearchBox
 
         CurrentValue = _searchItems[_selectedIndex];
 
-        await _js.BitSearchBoxMoveCursorToEnd(_inputRef);
+        await _js.BitSearchBoxMoveCursorToEnd(InputElement);
     }
 
     private async Task HandleOnItemClick(string item)

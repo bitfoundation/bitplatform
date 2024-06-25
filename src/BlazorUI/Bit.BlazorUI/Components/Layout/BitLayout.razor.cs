@@ -18,14 +18,29 @@ public partial class BitLayout
     [Parameter] public bool FixedFooter { get; set; }
 
     /// <summary>
+    /// The content of the footer section.
+    /// </summary>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// The height of the footer in px to calculate heights and paddings.
+    /// </summary>
+    [Parameter] public int FooterHeight { get; set; }
+
+    /// <summary>
     /// The content of the header section.
     /// </summary>
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
-    /// The height of the header to calculate heights and paddings.
+    /// The height of the header in px to calculate heights and paddings.
     /// </summary>
     [Parameter] public int HeaderHeight { get; set; }
+
+    /// <summary>
+    /// Hides NavMenu content when true.
+    /// </summary>
+    [Parameter] public bool HideNavMenu { get; set; }
 
     /// <summary>
     /// The content of the main section.
@@ -33,14 +48,9 @@ public partial class BitLayout
     [Parameter] public RenderFragment? Main { get; set; }
 
     /// <summary>
-    /// The content of the footer section.
+    /// The content of the nav-menu section.
     /// </summary>
-    [Parameter] public RenderFragment? Footer { get; set; }
-
-    /// <summary>
-    /// The height of the footer to calculate heights and paddings.
-    /// </summary>
-    [Parameter] public int FooterHeight { get; set; }
+    [Parameter] public RenderFragment? NavMenu { get; set; }
 
     /// <summary>
     /// The height of the status bar on mobile devices to calculate heights and paddings.
