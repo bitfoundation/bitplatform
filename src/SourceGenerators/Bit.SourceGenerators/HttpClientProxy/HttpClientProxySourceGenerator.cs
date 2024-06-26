@@ -45,19 +45,19 @@ public class HttpClientProxySourceGenerator : ISourceGenerator
                 var jsonReadParameters = string.Join(", ", jsonReadParametersList);
 
                 var requestOptions = new StringBuilder();
-                requestOptions.AppendLine($"__request.Options.TryAdd(\"IControllerTypeName\", \"{iController.Symbol.GetAssemblyQualifiedName()}\");");
+                requestOptions.AppendLine($"__request.Options.TryAdd(\"IControllerType\", typeof({iController.Symbol.ToDisplayString(NullableFlowState.None)}));");
                 requestOptions.AppendLine($"__request.Options.TryAdd(\"ActionName\", \"{action.Method.Name}\");");
-                requestOptions.AppendLine($@"__request.Options.TryAdd(""ActionParametersInfo"", new Dictionary<string, string>
+                requestOptions.AppendLine($@"__request.Options.TryAdd(""ActionParametersInfo"", new Dictionary<string, Type>
                 {{
-                    { string.Join(", ", action.Parameters.Select(p => $"{{ \"{p.Name}\", \"{p.Type.GetAssemblyQualifiedName()}\"  }}")) }
+                    {string.Join(", ", action.Parameters.Select(p => $"{{ \"{p.Name}\", typeof({p.Type.ToDisplayString(NullableFlowState.None)})  }}"))}
                 }});");
                 if (action.BodyParameter is not null)
                 {
-                    requestOptions.AppendLine($"__request.Options.TryAdd(\"RequestTypeName\", \"{action.BodyParameter.Type.GetAssemblyQualifiedName()}\");");
+                    requestOptions.AppendLine($"__request.Options.TryAdd(\"RequestType\", typeof({action.BodyParameter.Type.ToDisplayString(NullableFlowState.None)}));");
                 }
                 if (action.DoesReturnSomething)
                 {
-                    requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseTypeName\", \"{action.ReturnType.GetUnderlyingType().GetAssemblyQualifiedName()}\");");
+                    requestOptions.AppendLine($"__request.Options.TryAdd(\"ResponseType\", typeof({action.ReturnType.GetUnderlyingType().ToDisplayString(NullableFlowState.None)}));");
                 }
 
                 generatedMethods.AppendLine($@"
