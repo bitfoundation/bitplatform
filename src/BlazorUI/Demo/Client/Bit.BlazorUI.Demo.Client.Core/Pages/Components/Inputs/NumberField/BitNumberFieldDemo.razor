@@ -14,13 +14,13 @@
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitNumberField Label="Basic" TValue="int" />
+                <BitNumberField Label="Basic" TValue="int?" />
                 <br />
                 <BitNumberField Label="Disabled & DefaultValue" DefaultValue="1363" IsEnabled="false" />
                 <br />
                 <BitNumberField Label="Placeholder" TValue="int?" Placeholder="Enter a number..." />
                 <br />
-                <BitNumberField Label="Step(5) & Buttons" Step="5" ShowButtons="true" />
+                <BitNumberField Label="Step(5) & Buttons" Step="5" ShowButtons />
                 <br />
                 <BitNumberField Label="Required" TValue="int?" Required />
             </div>
@@ -34,7 +34,7 @@
                 <br />
                 <BitNumberField Label="Label Top" TValue="int" />
                 <br />
-                <BitNumberField Label="Label Left" TValue="int" LeftLabel />
+                <BitNumberField Label="Inline Label" TValue="int" InlineLabel />
                 <br /><br /><br /><br />
                 <div>LabelTemplate:</div>
                 <br />
@@ -182,6 +182,24 @@
                 {
                     <BitMessage Severity="BitSeverity.Success">@SuccessMessage</BitMessage>
                 }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <div dir="rtl">
+                <div class="example-box">
+                    <CascadingValue Value="BitDir.Rtl">
+                        <BitNumberField Label="برچسب در بالا" TValue="int" ShowButtons />
+                        <br />
+                        <BitNumberField Label="برچسب درخط" TValue="int" InlineLabel />
+                        <br />
+                        <BitNumberField TValue="int" Required />
+                        <br />
+                        <BitNumberField Label="الزامی" TValue="int" Required />
+                    </CascadingValue>
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

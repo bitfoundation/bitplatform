@@ -78,8 +78,8 @@
     align-items: center;
     display: inline-flex;
     flex-flow: row nowrap;
-    margin-right: spacing(1.25);
     justify-content: flex-start;
+    margin-inline-end: spacing(1.25);
 }
 
 .bit-nfl-lic {
@@ -221,7 +221,7 @@
     .bit-nfl-lbl::after {
         content: "*";
         color: $color-state-required;
-        margin-left: spacing(0.625);
+        margin-inline-start: spacing(0.625);
     }
 }
 
@@ -230,8 +230,8 @@
         content: "*";
         position: absolute;
         top: spacing(-0.625);
-        right: spacing(-1.25);
         font-size: spacing(1.75);
         color: $color-state-required;
+        inset-inline-end: spacing(-1.25);
     }
 }

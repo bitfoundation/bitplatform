@@ -227,7 +227,7 @@ public class BitNumberFieldTests : BunitTestContext
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.LeftLabel, leftLabel);
+            parameters.Add(p => p.InlineLabel, leftLabel);
         });
 
         var labelPositionClass = leftLabel ? "lf" : "tp";
@@ -304,8 +304,8 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        int? expectedMinValue = null;
-        int? expectedMaxValue = null;
+        int? expectedMinValue = int.MinValue;
+        int? expectedMaxValue = int.MaxValue;
 
         if (max.HasValue)
         {
@@ -315,6 +315,12 @@ public class BitNumberFieldTests : BunitTestContext
         if (min.HasValue)
         {
             expectedMinValue = min.Value;
+        }
+
+        if (expectedMinValue > expectedMaxValue)
+        {
+            expectedMinValue = int.MinValue;
+            expectedMaxValue = int.MaxValue;
         }
 
         Assert.AreEqual(expectedMinValue.HasValue ? expectedMinValue.ToString() : null, input.GetAttribute("aria-valuemin"));
