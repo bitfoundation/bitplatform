@@ -117,16 +117,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
 
     /// <summary>
-    /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
-    /// </summary>
-    [Parameter] public string Label { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
-    /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
-
-    /// <summary>
     /// The position of the label in regards to the number field.
     /// </summary>
     [Parameter]
@@ -142,6 +132,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             ClassBuilder.Reset();
         }
     }
+
+    /// <summary>
+    /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
+    /// </summary>
+    [Parameter] public string Label { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Min value of the number field. If not provided, the number field has minimum value.
@@ -293,7 +293,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-nfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => $"bit-nfl-{(InlineLabel ? "llf" : "ltp")}");
+        ClassBuilder.Register(() => $"bit-nfl-{(InlineLabel ? "ilb" : "tlb")}");
 
         ClassBuilder.Register(() => IsEnabled && Required ? $"bit-nfl-req" : string.Empty);
 

@@ -99,6 +99,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "InlineLabel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "The position of the label in regards to the number field.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string",
             DefaultValue = "string.Empty",
@@ -110,13 +117,6 @@ public partial class BitNumberFieldDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
-        },
-        new()
-        {
-            Name = "LeftLabel",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "The position of the label in regards to the number field.",
         },
         new()
         {

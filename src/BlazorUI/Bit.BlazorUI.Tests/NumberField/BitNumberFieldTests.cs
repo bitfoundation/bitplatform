@@ -223,18 +223,18 @@ public class BitNumberFieldTests : BunitTestContext
          DataRow(true),
          DataRow(false)
     ]
-    public void BitNumberFieldShouldHaveLabelPositionClassName(bool leftLabel)
+    public void BitNumberFieldShouldHaveLabelPositionClassName(bool inlineLabel)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.InlineLabel, leftLabel);
+            parameters.Add(p => p.InlineLabel, inlineLabel);
         });
 
-        var labelPositionClass = leftLabel ? "lf" : "tp";
+        var lblClass = inlineLabel ? "ilb" : "tlb";
 
         var numberFieldButton = component.Find(".bit-nfl");
 
-        Assert.IsTrue(numberFieldButton.ClassList.Contains($"bit-nfl-l{labelPositionClass}"));
+        Assert.IsTrue(numberFieldButton.ClassList.Contains($"bit-nfl-{lblClass}"));
     }
 
     [DataTestMethod,
