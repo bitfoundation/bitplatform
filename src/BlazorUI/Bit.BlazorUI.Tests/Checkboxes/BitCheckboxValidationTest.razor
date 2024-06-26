@@ -12,7 +12,7 @@
                  Title="@Title"
                  DefaultValue="@DefaultValue"
                  @bind-Value="@TestModel.Value"
-                 CheckIconAriaLabel="@CheckmarkIconAriaLabel"
+                 CheckIconAriaLabel="@CheckIconAriaLabel"
                  Reversed="@Reversed"
                  DefaultIndeterminate="@DefaultIndeterminate"
                  OnClick="HandleOnClick"
@@ -29,7 +29,7 @@
     [Parameter] public bool IsIndeterminate { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string CheckmarkIconName { get; set; }
-    [Parameter] public string CheckmarkIconAriaLabel { get; set; }
+    [Parameter] public string CheckIconAriaLabel { get; set; }
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public string AriaLabelledby { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
