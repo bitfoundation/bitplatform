@@ -6,9 +6,9 @@
 /// </summary>
 public class RequestOptionNames
 {
-    public const string IControllerTypeName = nameof(IControllerTypeName);
+    public const string IControllerType = nameof(IControllerType);
     public const string ActionName = nameof(ActionName);
     public const string ActionParametersInfo = nameof(ActionParametersInfo);
-    public const string RequestTypeName = nameof(RequestTypeName);
-    public const string ResponseTypeName = nameof(ResponseTypeName);
+    public const string RequestType = nameof(RequestType);
+    public const string ResponseType = nameof(ResponseType);
 }

@@ -37,12 +37,11 @@ public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
     /// </summary>
     private static bool HasNoRetryPolicy(HttpRequestMessage request)
     {
-        if (request.Options.TryGetValue(new(RequestOptionNames.IControllerTypeName), out string? controllerTypeName) is false)
+        if (request.Options.TryGetValue(new(RequestOptionNames.IControllerType), out Type? controllerType) is false)
             return false;
 
-        var controllerType = Type.GetType(controllerTypeName!)!;
-        var parameterTypes = ((Dictionary<string, string>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => Type.GetType(p.Value)!).ToArray();
-        var method = controllerType.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
+        var parameterTypes = ((Dictionary<string, Type>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => p.Value).ToArray();
+        var method = controllerType!.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
         return method.GetCustomAttribute<NoRetryPolicyAttribute>() is not null;
     }
 
