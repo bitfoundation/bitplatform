@@ -84,12 +84,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-02">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.5" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
