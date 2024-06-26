@@ -99,6 +99,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "InlineLabel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "The position of the label in regards to the number field.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string",
             DefaultValue = "string.Empty",
@@ -110,13 +117,6 @@ public partial class BitNumberFieldDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.",
-        },
-        new()
-        {
-            Name = "LeftLabel",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "The position of the label in regards to the number field.",
         },
         new()
         {
@@ -411,20 +411,20 @@ public partial class BitNumberFieldDemo
 
 
     private readonly string example1RazorCode = @"
-<BitNumberField Label=""Basic"" TValue=""int"" />
+<BitNumberField Label=""Basic"" TValue=""int?"" />
 
 <BitNumberField Label=""Disabled & DefaultValue"" DefaultValue=""1363"" IsEnabled=""false"" />
 
 <BitNumberField Label=""Placeholder"" TValue=""int?"" Placeholder=""Enter a number..."" />
 
-<BitNumberField Label=""Step(5) & Buttons"" Step=""5"" ShowButtons=""true"" />
+<BitNumberField Label=""Step(5) & Buttons"" Step=""5"" ShowButtons />
 
 <BitNumberField Label=""Required"" TValue=""int?"" Required />";
 
     private readonly string example2RazorCode = @"
 <BitNumberField Label=""Label Top"" TValue=""int"" />
 
-<BitNumberField Label=""Label Left"" TValue=""int"" LeftLabel />
+<BitNumberField Label=""Inline Label"" TValue=""int"" InlineLabel />
 
 <BitNumberField TValue=""int"">
     <LabelTemplate>
@@ -569,4 +569,17 @@ public class BitNumberFieldValidationModel
 }
 
 private BitNumberFieldValidationModel validationModel = new();";
+
+    private readonly string example11RazorCode = @"
+<CascadingValue Value=""BitDir.Rtl"">
+
+    <BitNumberField Label=""برچسب در بالا"" TValue=""int"" ShowButtons />
+
+    <BitNumberField Label=""برچسب درخط"" TValue=""int"" InlineLabel />
+
+    <BitNumberField TValue=""int"" Required />
+
+    <BitNumberField Label=""الزامی"" TValue=""int"" Required />
+
+</CascadingValue>";
 }

@@ -223,18 +223,18 @@ public class BitNumberFieldTests : BunitTestContext
          DataRow(true),
          DataRow(false)
     ]
-    public void BitNumberFieldShouldHaveLabelPositionClassName(bool leftLabel)
+    public void BitNumberFieldShouldHaveLabelPositionClassName(bool inlineLabel)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.LeftLabel, leftLabel);
+            parameters.Add(p => p.InlineLabel, inlineLabel);
         });
 
-        var labelPositionClass = leftLabel ? "lf" : "tp";
+        var lblClass = inlineLabel ? "ilb" : "tlb";
 
         var numberFieldButton = component.Find(".bit-nfl");
 
-        Assert.IsTrue(numberFieldButton.ClassList.Contains($"bit-nfl-l{labelPositionClass}"));
+        Assert.IsTrue(numberFieldButton.ClassList.Contains($"bit-nfl-{lblClass}"));
     }
 
     [DataTestMethod,
@@ -304,8 +304,8 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var input = component.Find("input");
-        int? expectedMinValue = null;
-        int? expectedMaxValue = null;
+        int? expectedMinValue = int.MinValue;
+        int? expectedMaxValue = int.MaxValue;
 
         if (max.HasValue)
         {
@@ -315,6 +315,12 @@ public class BitNumberFieldTests : BunitTestContext
         if (min.HasValue)
         {
             expectedMinValue = min.Value;
+        }
+
+        if (expectedMinValue > expectedMaxValue)
+        {
+            expectedMinValue = int.MinValue;
+            expectedMaxValue = int.MaxValue;
         }
 
         Assert.AreEqual(expectedMinValue.HasValue ? expectedMinValue.ToString() : null, input.GetAttribute("aria-valuemin"));

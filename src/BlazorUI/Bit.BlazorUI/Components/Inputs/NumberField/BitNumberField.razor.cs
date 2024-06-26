@@ -13,7 +13,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private TValue? min;
     private TValue? max;
     private bool required;
-    private bool leftLabel;
+    private bool inlineLabel;
 
     private double? _internalMin;
     private double? _internalMax;
@@ -30,6 +30,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private readonly double _maxGenericValue;
     private CancellationTokenSource _continuousChangeValueCts = new();
 
+
+
     public BitNumberField()
     {
         _typeOfValue = typeof(TValue);
@@ -43,7 +45,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _labelId = $"BitNumberField-{UniqueId}-label";
     }
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// Detailed description of the input for the benefit of screen readers.
@@ -111,6 +117,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
 
     /// <summary>
+    /// The position of the label in regards to the number field.
+    /// </summary>
+    [Parameter]
+    public bool InlineLabel
+    {
+        get => inlineLabel;
+        set
+        {
+            if (inlineLabel == value) return;
+
+            inlineLabel = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
     /// </summary>
     [Parameter] public string Label { get; set; } = string.Empty;
@@ -119,22 +142,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Shows the custom Label for number field. If you don't call default label, ensure that you give your custom label an id and that you set the input's aria-labelledby prop to that id.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
-
-    /// <summary>
-    /// The position of the label in regards to the number field.
-    /// </summary>
-    [Parameter]
-    public bool LeftLabel
-    {
-        get => leftLabel;
-        set
-        {
-            if (leftLabel == value) return;
-
-            leftLabel = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Min value of the number field. If not provided, the number field has minimum value.
@@ -284,13 +291,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-nfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => $"{RootElementClass}-{(LeftLabel ? "llf" : "ltp")}");
+        ClassBuilder.Register(() => $"bit-nfl-{(InlineLabel ? "ilb" : "tlb")}");
 
-        ClassBuilder.Register(() => IsEnabled && Required ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-nfl-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? $"{RootElementClass}-rnl" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? "bit-nfl-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -329,6 +336,48 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         await base.OnParametersSetAsync();
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        if (NumberFormat is not null)
+        {
+            value = CleanValue(value);
+        }
+
+        if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
+        {
+            var doubleValue = ConvertToDouble(result);
+            doubleValue = doubleValue < _internalMin ? _internalMin : doubleValue;
+            doubleValue = doubleValue > _internalMax ? _internalMax : doubleValue;
+            result = ConvertToGeneric(doubleValue);
+            parsingErrorMessage = null;
+            return true;
+        }
+        else
+        {
+            parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+            return false;
+        }
+    }
+
+    protected override string? FormatValueAsString(TValue? value)
+    {
+        if (value is null) return null;
+        if (NumberFormat is null) return value.ToString();
+
+        var normalValue = ConvertToDouble(value)!.Value;
+        return normalValue.ToString(NumberFormat!);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _continuousChangeValueCts.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
 
@@ -548,34 +597,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             : default;
     }
 
-    private double? ConvertToDouble(TValue? value, double? defaultValue = null)
+    private static double? ConvertToDouble(TValue? value, double? defaultValue = null)
     {
         return value is null
             ? defaultValue
             : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
-    }
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? parsingErrorMessage)
-    {
-        if (NumberFormat is not null)
-        {
-            value = CleanValue(value);
-        }
-
-        if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
-        {
-            var doubleValue = ConvertToDouble(result);
-            doubleValue = doubleValue < _internalMin ? _internalMin : doubleValue;
-            doubleValue = doubleValue > _internalMax ? _internalMax : doubleValue;
-            result = ConvertToGeneric(doubleValue);
-            parsingErrorMessage = null;
-            return true;
-        }
-        else
-        {
-            parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
-            return false;
-        }
     }
 
     private static string? CleanValue(string? value)
@@ -586,24 +612,5 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         var matchCollection = pattern.Matches(value!);
 
         return matchCollection is null ? value : string.Join("", matchCollection.Select(m => m.Value));
-    }
-
-    protected override string? FormatValueAsString(TValue? value)
-    {
-        if (value is null) return null;
-        if (NumberFormat is null) return value.ToString();
-
-        var normalValue = ConvertToDouble(value)!.Value;
-        return normalValue.ToString(NumberFormat!);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _continuousChangeValueCts.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 }

@@ -12,9 +12,9 @@
                  Title="@Title"
                  DefaultValue="@DefaultValue"
                  @bind-Value="@TestModel.Value"
-                 CheckmarkIconAriaLabel="@CheckmarkIconAriaLabel"
-                 BoxSide="@LeftLabel"
-                 DefaultIsIndeterminate="@DefaultIsIndeterminate"
+                 CheckIconAriaLabel="@CheckIconAriaLabel"
+                 Reversed="@Reversed"
+                 DefaultIndeterminate="@DefaultIndeterminate"
                  OnClick="HandleOnClick"
                  OnChange="HandleOnChange">
         <ChildContent>
@@ -29,16 +29,16 @@
     [Parameter] public bool IsIndeterminate { get; set; }
     [Parameter] public string AriaLabel { get; set; }
     [Parameter] public string CheckmarkIconName { get; set; }
-    [Parameter] public string CheckmarkIconAriaLabel { get; set; }
+    [Parameter] public string CheckIconAriaLabel { get; set; }
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public string AriaLabelledby { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
     [Parameter] public int? AriaSetSize { get; set; }
     [Parameter] public string Name { get; set; }
     [Parameter] public string Title { get; set; }
-    [Parameter] public bool LeftLabel { get; set; }
+    [Parameter] public bool Reversed { get; set; }
     [Parameter] public bool? DefaultValue { get; set; }
-    [Parameter] public bool? DefaultIsIndeterminate { get; set; }
+    [Parameter] public bool? DefaultIndeterminate { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Parameter] public BitCheckboxTestModel TestModel { get; set; }
 

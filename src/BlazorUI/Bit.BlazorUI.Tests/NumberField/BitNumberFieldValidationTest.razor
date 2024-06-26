@@ -13,7 +13,7 @@
                     AriaValueText="@AriaValueText"
                     AriaLabel="@AriaLabel"
                     Suffix="@Suffix"
-                    LeftLabel="@LeftLabel"
+                    InlineLabel="@InlineLabel"
                     IconName="@IconName"
                     IconAriaLabel="@IconAriaLabel"
                     DecrementIconName="@DecrementIconName"
@@ -37,7 +37,7 @@
 </EditForm>
 
 @code {
-    [Parameter] public bool LeftLabel { get; set; }
+    [Parameter] public bool InlineLabel { get; set; }
     [Parameter] public string AriaDescription { get; set; }
     [Parameter] public int? AriaPositionInSet { get; set; }
     [Parameter] public int? AriaSetSize { get; set; }
