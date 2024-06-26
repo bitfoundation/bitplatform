@@ -295,9 +295,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => $"bit-nfl-{(InlineLabel ? "ilb" : "tlb")}");
 
-        ClassBuilder.Register(() => IsEnabled && Required ? $"bit-nfl-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-nfl-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? $"bit-nfl-rnl" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? "bit-nfl-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
