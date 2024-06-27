@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using System.IO.Compression;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Services;
@@ -14,6 +13,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.DataProtection;
+using FluentStorage;
 using Twilio;
 //#endif
 
@@ -96,6 +96,8 @@ public static partial class Program
             {
 
             });
+            //#else
+            throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
         });
 
@@ -156,6 +158,29 @@ public static partial class Program
         {
             TwilioClient.Init(appSettings.Sms.AccountSid, appSettings.Sms.AuthToken);
         }
+
+        //#if (filesStorage == "Local")
+        services.TryAddSingleton(sp =>
+        {
+            var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+            var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+            Directory.CreateDirectory(attachmentsDirPath);
+            var connectionString = $"disk://path={attachmentsDirPath}";
+            return StorageFactory.Blobs.FromConnectionString(connectionString);
+        });
+        //#elif (filesStorage == "AzureBlobStorage")
+        services.TryAddSingleton(sp =>
+        {
+            StorageFactory.Modules.UseAzureBlobStorage();
+            return appSettings.AzureBlobStorageConnectionString is "azure.blob://development=true" ? StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator() : StorageFactory.Blobs.FromConnectionString(appSettings.AzureBlobStorageConnectionString);
+        });
+        //#else
+        services.TryAddSingleton<FluentStorage.Blobs.IBlobStorage>(sp =>
+        {
+            // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
+            throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
+        });
+        //#endif
 
         //#endif
 

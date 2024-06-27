@@ -22,6 +22,8 @@
     <ItemGroup Condition=" '$(api)' == 'true' OR '$(api)' == '' ">
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.9.1" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
+        <PackageReference Include="FluentStorage" Version="5.4.3" />
+        <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.2.3" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />

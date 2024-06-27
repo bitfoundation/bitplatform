@@ -60,10 +60,31 @@
                 },
                 {
                     "choice": "Other",
-                    "description": "Other"
+                    "description": "You can install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)"
                 }
             ],
             "description": "Boilerplate's API uses EF Core. You can use SQL Server, SQLite, or any other EF Core provider."
+        },
+        "filesStorage": {
+            "displayName": "Files storage",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "Local",
+            "choices": [
+                {
+                    "choice": "Local",
+                    "description": "Use either the local App_Data folder or the /container_volume for Docker containers."
+                },
+                {
+                    "choice": "AzureBlobStorage",
+                    "description": "Azure blob storage"
+                },
+                {
+                    "choice": "Other",
+                    "description": "You can install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
+                }
+            ],
+            "description": "Boilerplate's API uses App_Data folder in non docker environments and /container_volume for docker containers by default."
         },
         "captcha": {
             "displayName": "Captcha",

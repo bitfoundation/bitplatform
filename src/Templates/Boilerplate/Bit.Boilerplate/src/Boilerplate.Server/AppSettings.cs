@@ -12,6 +12,11 @@ public class AppSettings : IValidatableObject
     [Required]
     public string UserProfileImagesDir { get; set; } = default!;
 
+    //#if (filesStorage == "AzureBlobStorage")
+    [Required]
+    public string AzureBlobStorageConnectionString { get; set; } = default!;
+    //#endif
+
     //#if (captcha == "reCaptcha")
     [Required]
     public string GoogleRecaptchaSecretKey { get; set; } = default!;

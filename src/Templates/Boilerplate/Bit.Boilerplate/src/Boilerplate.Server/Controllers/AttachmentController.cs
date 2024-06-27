@@ -1,7 +1,7 @@
-﻿using Boilerplate.Server.Models.Identity;
+﻿using Microsoft.AspNetCore.StaticFiles;
+using Boilerplate.Server.Models.Identity;
+using FluentStorage.Blobs;
 using ImageMagick;
-using Microsoft.AspNetCore.StaticFiles;
-using SystemFile = System.IO.File;
 
 namespace Boilerplate.Server.Controllers;
 
@@ -14,6 +14,8 @@ public partial class AttachmentController : AppControllerBase
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
 
     [AutoInject] private IContentTypeProvider contentTypeProvider = default!;
+
+    [AutoInject] private IBlobStorage blobStorage = default!;
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -30,29 +32,22 @@ public partial class AttachmentController : AppControllerBase
             throw new ResourceNotFoundException();
 
         var destFileName = $"{userId}_{file.FileName}";
-
-        var userProfileImagesDir = Path.Combine(IsRunningInsideDocker() ? "/container_volume" : Directory.GetCurrentDirectory(), AppSettings.UserProfileImagesDir);
-
-        var destFilePath = Path.Combine(userProfileImagesDir, destFileName);
+        var destFilePath = $"{AppSettings.UserProfileImagesDir}{destFileName}";
 
         await using (var requestStream = file.OpenReadStream())
         {
-            Directory.CreateDirectory(userProfileImagesDir);
-
-            await using var fileStream = SystemFile.Create(destFilePath);
-
-            await requestStream.CopyToAsync(fileStream, cancellationToken);
+            await blobStorage.WriteAsync(destFilePath, requestStream, cancellationToken: cancellationToken);
         }
 
         if (user.ProfileImageName is not null)
         {
             try
             {
-                var oldFilePath = Path.Combine(userProfileImagesDir, user.ProfileImageName);
+                var oldFilePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
 
-                if (SystemFile.Exists(oldFilePath))
+                if (await blobStorage.ExistsAsync(oldFilePath, cancellationToken))
                 {
-                    SystemFile.Delete(oldFilePath);
+                    await blobStorage.DeleteAsync(oldFilePath, cancellationToken);
                 }
             }
             catch
@@ -62,17 +57,18 @@ public partial class AttachmentController : AppControllerBase
         }
 
         destFileName = destFileName.Replace(Path.GetExtension(destFileName), "_256.webp");
-        var resizedFilePath = Path.Combine(userProfileImagesDir, destFileName);
+        var resizedFilePath = $"{AppSettings.UserProfileImagesDir}{destFileName}";
 
         try
         {
-            using MagickImage sourceImage = new(destFilePath);
+            await using var destFileStream = await blobStorage.OpenReadAsync(destFilePath, cancellationToken);
+            using MagickImage sourceImage = new(destFileStream);
 
             MagickGeometry resizedImageSize = new(256, 256);
 
             sourceImage.Resize(resizedImageSize);
 
-            sourceImage.Write(resizedFilePath, MagickFormat.WebP);
+            await blobStorage.WriteAsync(resizedFilePath, sourceImage.ToByteArray(MagickFormat.WebP), cancellationToken: cancellationToken);
 
             user.ProfileImageName = destFileName;
 
@@ -82,19 +78,18 @@ public partial class AttachmentController : AppControllerBase
         }
         catch
         {
-            if (SystemFile.Exists(resizedFilePath))
-                SystemFile.Delete(resizedFilePath);
+            await blobStorage.DeleteAsync(resizedFilePath, cancellationToken);
 
             throw;
         }
         finally
         {
-            SystemFile.Delete(destFilePath);
+            await blobStorage.DeleteAsync(destFilePath, cancellationToken);
         }
     }
 
     [HttpDelete]
-    public async Task RemoveProfileImage()
+    public async Task RemoveProfileImage(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
@@ -103,11 +98,9 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var userProfileImageDirPath = Path.Combine(IsRunningInsideDocker() ? "/container_volume" : Directory.GetCurrentDirectory(), AppSettings.UserProfileImagesDir);
+        var filePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
 
-        var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
-
-        if (SystemFile.Exists(filePath) is false)
+        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserImageCouldNotBeFound)]);
 
         user.ProfileImageName = null;
@@ -116,11 +109,11 @@ public partial class AttachmentController : AppControllerBase
         if (!result.Succeeded)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
 
-        SystemFile.Delete(filePath);
+        await blobStorage.DeleteAsync(filePath, cancellationToken);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProfileImage()
+    public async Task<IActionResult> GetProfileImage(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
@@ -129,11 +122,9 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
-        var userProfileImageDirPath = Path.Combine(IsRunningInsideDocker() ? "/container_volume" : Directory.GetCurrentDirectory(), AppSettings.UserProfileImagesDir);
+        var filePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
 
-        var filePath = Path.Combine(userProfileImageDirPath, user.ProfileImageName);
-
-        if (SystemFile.Exists(filePath) is false)
+        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
             return new EmptyResult();
 
         if (contentTypeProvider.TryGetContentType(filePath, out var contentType) is false)
@@ -141,12 +132,6 @@ public partial class AttachmentController : AppControllerBase
             throw new InvalidOperationException();
         }
 
-        return PhysicalFile(Path.Combine(webHostEnvironment.ContentRootPath, filePath),
-            contentType, enableRangeProcessing: true);
-    }
-
-    private bool IsRunningInsideDocker()
-    {
-        return Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), contentType, enableRangeProcessing: true);
     }
 }
