@@ -2,12 +2,11 @@
 
 public partial class _BitNavOptionDemo
 {
-    private string? SelectedOptionKey;
-
     private BitNavOption ClickedOption = default!;
     private BitNavOption ToggledOption = default!;
     private BitNavOption SelectedOption = default!;
 
+    private string? SelectedOptionKey;
     private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     [
         new() { Text = "Beef Burger", Value = "Beef Burger" },
@@ -151,7 +150,25 @@ public partial class _BitNavOptionDemo
              Label=""Pick one""
              Items=""FoodMenuDropdownItems"" />";
     private readonly string example3NavOptionCsharpCode = @"
-private string SelectedOptionKey;";
+private string SelectedOptionKey;
+
+private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
+[
+    new() { Text = ""Beef Burger"", Value = ""Beef Burger"" },
+    new() { Text = ""Veggie Burger"", Value = ""Veggie Burger"" },
+    new() { Text = ""Bison Burger"", Value = ""Bison Burger"" },
+    new() { Text = ""Wild Salmon Burger"", Value = ""Wild Salmon Burger"" },
+    new() { Text = ""Cheese Pizza"", Value = ""Cheese Pizza"" },
+    new() { Text = ""Veggie Pizza"", Value = ""Veggie Pizza"" },
+    new() { Text = ""Pepperoni Pizza"", Value = ""Pepperoni Pizza"" },
+    new() { Text = ""Meat Pizza"", Value = ""Meat Pizza"" },
+    new() { Text = ""French Fries"", Value = ""French Fries"" },
+    new() { Text = ""Apple"", Value = ""Apple"" },
+    new() { Text = ""Orange"", Value = ""Orange"" },
+    new() { Text = ""Banana"", Value = ""Banana"" },
+    new() { Text = ""Ice Cream"", Value = ""Ice Cream"" },
+    new() { Text = ""Cookie"", Value = ""Cookie"" },
+];";
 
     private readonly string example4NavOptionRazorCode = @"
 <BitLabel>Header Template (in Grouped mode)</BitLabel>
