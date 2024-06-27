@@ -1,0 +1,79 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-smr {
+    display: block;
+
+    @keyframes shimmer-wave-anim {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    @keyframes shimmer-pulse-anim {
+        0% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes shimmer-opacity-anim {
+        0% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+}
+
+.bit-smr-cnt {
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    animation-timing-function: ease;
+    animation-name: shimmer-opacity-anim;
+}
+
+.bit-smr-wrp {
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    animation-timing-function: ease;
+    animation-name: shimmer-opacity-anim;
+    background-color: $color-background-secondary;
+}
+
+.bit-smr-lin {
+    border-radius: spacing(0.5);
+}
+
+.bit-smr-crl {
+    aspect-ratio: 1;
+    border-radius: 50%;
+}
+
+.bit-smr-anm {
+    inset: 0;
+    overflow: hidden;
+    position: absolute;
+    background: $color-background-disabled;
+}
+
+.bit-smr-wav {
+    transform: translateX(-100%);
+    animation: shimmer-wave-anim 1.6s linear 0.5s infinite;
+    background: linear-gradient(90deg, transparent, $color-background-disabled, transparent);
+}
+
+.bit-smr-pul {
+    animation: shimmer-pulse-anim 1.5s ease-in-out 0.5s infinite;
+}

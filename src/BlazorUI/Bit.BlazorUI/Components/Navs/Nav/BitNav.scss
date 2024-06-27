@@ -1,0 +1,179 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-nav {
+    font-family: $typography-font-family;
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+    }
+
+    li {
+        padding: 0;
+    }
+
+    &.bit-dis {
+        cursor: none;
+        pointer-events: none;
+        background-color: transparent;
+
+        .bit-nav-itm {
+            color: $color-foreground-disabled;
+        }
+    }
+}
+
+.bit-nav-gcb,
+.bit-nav-cbt {
+    cursor: pointer;
+    user-select: none;
+    width: spacing(3.75);
+    font-size: spacing(1.5);
+    background-color: transparent;
+    color: $color-foreground-primary;
+
+    i {
+        transition: transform 0.1s linear 0s;
+    }
+}
+
+.bit-nav-exp {
+    transform: rotate(-180deg);
+}
+
+.bit-nav-gcb {
+    width: 100%;
+    display: flex;
+    gap: spacing(1.25);
+    align-items: center;
+    height: spacing(5.5);
+    border-bottom: $shape-border-width $shape-border-style $color-border-primary;
+
+    .bit-nav-iit {
+        gap: spacing(1.25);
+    }
+}
+
+.bit-nav-ghd {
+    flex-grow: 1;
+    display: flex;
+    font-weight: 500;
+    font-size: spacing(2.25);
+}
+
+.bit-nav-itg {
+    width: 100%;
+    flex-grow: 1;
+    padding: spacing(1) 0;
+}
+
+.bit-nav-iit {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+
+.bit-nav-des {
+    all: unset;
+    display: block;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    font-weight: normal;
+    font-size: spacing(1.5);
+    padding: spacing(0.5) 0;
+    background: transparent;
+    text-overflow: ellipsis;
+    color: $color-foreground-disabled;
+    padding-inline-start: spacing(2.75);
+}
+
+.bit-nav-ict {
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    box-sizing: border-box;
+    min-height: spacing(5.5);
+    border-radius: $shape-border-radius;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+
+            .bit-nav-itm {
+                color: $color-primary-main;
+            }
+        }
+    }
+}
+
+.bit-nav-mct {
+    flex-grow: 1;
+    display: flex;
+}
+
+.bit-nav-itm {
+    width: 100%;
+    display: flex;
+    cursor: pointer;
+    overflow: hidden;
+    font-weight: 400;
+    user-select: none;
+    gap: spacing(0.5);
+    align-items: center;
+    white-space: nowrap;
+    flex-flow: row nowrap;
+    text-overflow: ellipsis;
+    font-size: spacing(1.75);
+    color: $color-foreground-secondary;
+}
+
+.bit-nav-itm,
+.bit-nav-cbt {
+    padding: 0;
+    background-color: transparent;
+}
+
+.bit-nav-cbt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-nav-iic {
+    color: $color-primary-main;
+}
+
+.bit-nav-sel {
+    background-color: $color-background-secondary;
+    border-inline-start: spacing(0.375) $shape-border-style $color-primary-main;
+
+    @media(hover:hover) {
+        &:hover {
+            background-color: $color-action-hover-background-primary;
+            /*.bit-nav-itm {
+                color: $color-primary-main;
+            }*/
+        }
+    }
+
+    .bit-nav-itm {
+        font-weight: 600;
+        color: $color-foreground-primary;
+    }
+}
+
+.bit-nav-dis {
+    pointer-events: none;
+
+    .bit-nav-itm {
+        pointer-events: none;
+        color: $color-foreground-disabled;
+    }
+}
+
+.bit-nav-sep {
+    height: 0;
+    border: 1px solid $color-border-secondary;
+}

@@ -1,0 +1,120 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-img {
+    overflow: hidden;
+    position: relative;
+
+    &.bit-dis {
+        .bit-img-img {
+            opacity: 0.5;
+            user-select: none;
+            pointer-events: none;
+            -webkit-user-drag: none;
+        }
+    }
+
+    @keyframes image-opacity-anim {
+        0% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+}
+
+.bit-img-fde {
+    animation-name: image-opacity-anim;
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+}
+
+.bit-img-img {
+    opacity: 0;
+    display: block;
+}
+
+.bit-img-vis {
+    opacity: 1;
+}
+
+.bit-img-max {
+    width: 100%;
+    height: 100%;
+
+    .bit-img-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.bit-img-non {
+    opacity: 1;
+    width: auto;
+    height: auto;
+}
+
+.bit-img-cnt {
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.bit-img-cvr {
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bit-img-ctr {
+    top: 50%;
+    left: 50%;
+    opacity: 1;
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.bit-img-lan {
+    &.bit-img-ccv {
+        top: 50%;
+        left: 50%;
+        opacity: 1;
+        max-height: 100%;
+        position: absolute;
+        transform: translate(-50%, -50%);
+    }
+
+    &.bit-img-cct {
+        top: 50%;
+        left: 50%;
+        opacity: 1;
+        max-width: 100%;
+        position: absolute;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.bit-img-por {
+    &.bit-img-ccv {
+        top: 50%;
+        left: 50%;
+        opacity: 1;
+        max-width: 100%;
+        position: absolute;
+        transform: translate(-50%, -50%);
+    }
+
+    &.bit-img-cct {
+        top: 50%;
+        left: 50%;
+        opacity: 1;
+        max-height: 100%;
+        position: absolute;
+        transform: translate(-50%, -50%);
+    }
+}
