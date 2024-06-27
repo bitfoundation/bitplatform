@@ -194,6 +194,27 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@$"<label id:ignore class:ignore>{childContent}</label>");
     }
 
+    [DataTestMethod,
+        DataRow("Bit Blazor UI"),
+        DataRow(null)
+    ]
+    public void BitLabelShouldRespectAriaLabel(string ariaLabel)
+    {
+        var component = RenderComponent<BitLabel>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, ariaLabel);
+        }); ;
+
+        if (ariaLabel.HasValue())
+        {
+            component.MarkupMatches(@$"<label aria-label=""{ariaLabel}"" id:ignore class:ignore></label>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<label id:ignore class:ignore></label>");
+        }
+    }
+
     [DataTestMethod]
     public void BitLabelShouldRespectHtmlAttributes()
     {
