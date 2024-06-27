@@ -1,7 +1,7 @@
-﻿using Bunit;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bunit;
 
-namespace Bit.BlazorUI.Tests.Icon;
+namespace Bit.BlazorUI.Tests.Components.Utilities.Icon;
 
 [TestClass]
 public class BitIconTests : BunitTestContext
