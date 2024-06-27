@@ -1,0 +1,32 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-stk {
+    z-index: 1;
+    position: sticky;
+}
+
+.bit-stk-top {
+    inset-block-start: 0;
+}
+
+.bit-stk-btm {
+    inset-block-end: 0;
+}
+
+.bit-stk-tab {
+    inset-block-end: 0;
+    inset-block-start: 0;
+}
+
+.bit-stk-srt {
+    inset-inline-start: 0;
+}
+
+.bit-stk-end {
+    inset-inline-end: 0;
+}
+
+.bit-stk-sae {
+    inset-inline-end: 0;
+    inset-inline-start: 0;
+}

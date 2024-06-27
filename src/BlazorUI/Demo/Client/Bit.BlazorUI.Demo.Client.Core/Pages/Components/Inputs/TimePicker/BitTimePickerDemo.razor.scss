@@ -1,0 +1,56 @@
+﻿@import '../../../../Styles/abstracts/_colors.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
+
+.validation-summary {
+    border-left: rem2(5px) solid $Red10;
+    background-color: $ErrorBlockRed;
+    overflow: hidden;
+    margin-bottom: rem2(10px);
+}
+
+.example-content {
+    width: 12rem;
+    display: flex;
+    overflow-x: auto;
+    flex-flow: column wrap;
+}
+
+::deep {
+    .validation-message {
+        color: $Red20;
+        font-size: rem2(12px);
+    }
+
+    .validation-errors {
+        margin: rem2(5px);
+    }
+
+    .custom-class {
+        margin: 1rem;
+        box-shadow: aqua 0 0 1rem;
+    }
+
+    .custom-root {
+        margin: 1rem;
+        border-radius: 0.5rem;
+        background-color: #211e1b;
+    }
+
+    .custom-inc-h,
+    .custom-inc-m {
+        background-color: red;
+    }
+
+    .custom-dec-h,
+    .custom-dec-m {
+        background-color: blue;
+    }
+}
+
+.example-box {
+    display: flex;
+    gap: rem2(15px);
+    flex-flow: column nowrap;
+    width: fit-content;
+}

@@ -1,0 +1,133 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-tpg {
+    font-family: $typography-font-family;
+}
+
+.bit-tpg-body1 {
+    margin: $typography-body1-margin;
+    font-size: $typography-body1-font-size;
+    font-weight: $typography-body1-font-weight;
+    line-height: $typography-body1-line-height;
+    letter-spacing: $typography-body1-letter-spacing;
+}
+
+.bit-tpg-body2 {
+    margin: $typography-body2-margin;
+    font-size: $typography-body2-font-size;
+    font-weight: $typography-body2-font-weight;
+    line-height: $typography-body2-line-height;
+    letter-spacing: $typography-body2-letter-spacing;
+}
+
+.bit-tpg-button {
+    margin: $typography-button-margin;
+    display: $typography-button-display;
+    font-size: $typography-button-font-size;
+    font-weight: $typography-button-font-weight;
+    line-height: $typography-button-line-height;
+    letter-spacing: $typography-button-letter-spacing;
+    text-transform: $typography-button-text-transform;
+}
+
+.bit-tpg-caption {
+    margin: $typography-caption-margin;
+    font-size: $typography-caption-font-size;
+    font-weight: $typography-caption-font-weight;
+    line-height: $typography-caption-line-height;
+    letter-spacing: $typography-caption-letter-spacing;
+}
+
+.bit-tpg-h1 {
+    margin: $typography-h1-margin;
+    font-size: $typography-h1-font-size;
+    font-weight: $typography-h1-font-weight;
+    line-height: $typography-h1-line-height;
+    letter-spacing: $typography-h1-letter-spacing;
+}
+
+.bit-tpg-h2 {
+    margin: $typography-h2-margin;
+    font-size: $typography-h2-font-size;
+    font-weight: $typography-h2-font-weight;
+    line-height: $typography-h2-line-height;
+    letter-spacing: $typography-h2-letter-spacing;
+}
+
+.bit-tpg-h3 {
+    margin: $typography-h3-margin;
+    font-size: $typography-h3-font-size;
+    font-weight: $typography-h3-font-weight;
+    line-height: $typography-h3-line-height;
+    letter-spacing: $typography-h3-letter-spacing;
+}
+
+.bit-tpg-h4 {
+    margin: $typography-h4-margin;
+    font-size: $typography-h4-font-size;
+    font-weight: $typography-h4-font-weight;
+    line-height: $typography-h4-line-height;
+    letter-spacing: $typography-h4-letter-spacing;
+}
+
+.bit-tpg-h5 {
+    margin: $typography-h5-margin;
+    font-size: $typography-h5-font-size;
+    line-height: $typography-h5-line-height;
+    font-weight: $typography-h5-font-weight;
+    letter-spacing: $typography-h5-letter-spacing;
+}
+
+.bit-tpg-h6 {
+    margin: $typography-h6-margin;
+    font-size: $typography-h6-font-size;
+    font-weight: $typography-h6-font-weight;
+    line-height: $typography-h6-line-height;
+    letter-spacing: $typography-h6-letter-spacing;
+}
+
+.bit-tpg-inherit {
+    margin: $typography-inherit-margin;
+    font-size: $typography-inherit-font-size;
+    font-family: $typography-inherit-font-family;
+    font-weight: $typography-inherit-font-weight;
+    line-height: $typography-inherit-line-height;
+    letter-spacing: $typography-inherit-letter-spacing;
+}
+
+.bit-tpg-overline {
+    margin: $typography-overline-margin;
+    display: $typography-overline-display;
+    font-size: $typography-overline-font-size;
+    font-weight: $typography-overline-font-weight;
+    line-height: $typography-overline-line-height;
+    letter-spacing: $typography-overline-letter-spacing;
+    text-transform: $typography-overline-text-transform;
+}
+
+.bit-tpg-subtitle1 {
+    margin: $typography-subtitle1-margin;
+    font-size: $typography-subtitle1-font-size;
+    font-weight: $typography-subtitle1-font-weight;
+    line-height: $typography-subtitle1-line-height;
+    letter-spacing: $typography-subtitle1-letter-spacing;
+}
+
+.bit-tpg-subtitle2 {
+    margin: $typography-subtitle2-margin;
+    font-size: $typography-subtitle2-font-size;
+    font-weight: $typography-subtitle2-font-weight;
+    line-height: $typography-subtitle2-line-height;
+    letter-spacing: $typography-subtitle2-letter-spacing;
+}
+
+
+.bit-tpg-nowrap {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-tpg-gutter {
+    margin-bottom: $typography-gutter-size;
+}

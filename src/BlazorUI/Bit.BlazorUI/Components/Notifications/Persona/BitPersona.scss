@@ -1,0 +1,551 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-prs {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    font-weight: 400;
+    box-shadow: none;
+    position: relative;
+    align-items: center;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    color: $color-foreground-primary;
+    font-family: $typography-font-family;
+
+    &.bit-dis {
+        pointer-events: none;
+        color: $color-foreground-disabled;
+        background-color: $color-background-disabled;
+    }
+}
+
+.bit-prs-cin {
+    font-weight: 400;
+    position: relative;
+    font-size: spacing(1.75);
+}
+
+.bit-prs-imc {
+    display: flex;
+    overflow: hidden;
+    font-weight: 600;
+    position: relative;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    background-color: $color-primary-main;
+}
+
+.bit-prs-imo {
+    width: 100%;
+    height: 100%;
+    display: none;
+    font-weight: 400;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    font-size: spacing(1.75);
+    transition: all 0.1s linear;
+    background-color: $color-primary-main;
+}
+
+.bit-prs-img {
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.bit-prs-pre {
+    top: auto;
+    display: flex;
+    width: spacing(1);
+    height: spacing(1);
+    position: absolute;
+    align-items: center;
+    border-radius: 50%;
+    right: spacing(-0.25);
+    bottom: spacing(-0.25);
+    font-size: spacing(0.5);
+    box-sizing: content-box;
+    justify-content: center;
+    forced-color-adjust: none;
+    background-clip: border-box;
+    border: spacing(0.125) $shape-border-style $color-border-secondary;
+}
+
+.bit-prs-unk {
+    color: $color-state-error;
+
+    .bit-prs-imc {
+        background-color: $color-background-secondary;
+    }
+}
+
+.bit-prs-det {
+    display: flex;
+    overflow: hidden;
+    text-align: start;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.bit-prs-ptx,
+.bit-prs-stx,
+.bit-prs-ttx,
+.bit-prs-otx {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: $color-foreground-primary;
+}
+
+.bit-prs-abt {
+    left: 50%;
+    bottom: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    font-weight: 400;
+    width: spacing(4);
+    background: unset;
+    color: transparent;
+    height: spacing(4);
+    position: absolute;
+    text-align: center;
+    align-items: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    justify-content: center;
+    font-size: spacing(1.75);
+    transform: translateX(-50%);
+    background-color: transparent;
+    font-family: $typography-font-family;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-foreground-primary;
+        }
+    }
+}
+
+.bit-prs-aic {
+    margin: 0 spacing(0.5);
+}
+
+.bit-prs-iac {
+    .bit-prs-imc {
+        cursor: pointer;
+
+        @media (hover: hover) {
+            &:hover {
+                .bit-prs-imo {
+                    display: flex;
+                }
+            }
+        }
+    }
+}
+
+.bit-prs-off {
+    background-color: $color-neutrals-white;
+    border: spacing(0.25) $shape-border-style $color-neutrals-gray110;
+}
+
+.bit-prs-onl {
+    background-color: $color-state-success;
+}
+
+.bit-prs-awy {
+    background-color: $color-state-warning;
+}
+
+.bit-prs-dnd {
+    background-color: $color-state-error;
+}
+
+.bit-prs-blk {
+    background-color: $color-neutrals-white;
+    border: spacing(0.25) $shape-border-style $color-state-error;
+}
+
+.bit-prs-bsy {
+    background-color: $color-state-error;
+}
+
+.bit-prs-s8 {
+    .bit-prs-pre {
+        position: static;
+    }
+
+    .bit-prs-pic {
+        font-size: spacing(1.25);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(1);
+    }
+
+    .bit-prs-ptx {
+        font-size: spacing(1.5);
+    }
+
+    .bit-prs-stx,
+    .bit-prs-ttx,
+    .bit-prs-otx {
+        display: none;
+    }
+}
+
+.bit-prs-s24 {
+    min-height: spacing(3);
+    min-width: spacing(3);
+
+    .bit-prs-ima {
+        flex: 0 0 auto;
+        width: spacing(3);
+        height: spacing(3);
+        position: relative;
+        text-align: center;
+    }
+
+    .bit-prs-imc {
+        aspect-ratio: 1;
+        width: spacing(3);
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(1);
+    }
+
+    .bit-prs-stx,
+    .bit-prs-ttx,
+    .bit-prs-otx {
+        display: none;
+    }
+}
+
+.bit-prs-s32 {
+    min-height: spacing(4);
+    min-width: spacing(4);
+
+    .bit-prs-ima {
+        flex: 0 0 auto;
+        width: spacing(4);
+        height: spacing(4);
+        position: relative;
+        text-align: center;
+    }
+
+    .bit-prs-imc {
+        aspect-ratio: 1;
+        width: spacing(4);
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(1);
+    }
+
+    .bit-prs-stx,
+    .bit-prs-ttx,
+    .bit-prs-otx {
+        display: none;
+    }
+}
+
+.bit-prs-s40 {
+    min-height: spacing(5);
+    min-width: spacing(5);
+
+    .bit-prs-ima {
+        flex: 0 0 auto;
+        width: spacing(5);
+        height: spacing(5);
+        position: relative;
+        text-align: center;
+    }
+
+    .bit-prs-imc {
+        aspect-ratio: 1;
+        width: spacing(5);
+        font-size: spacing(2);
+    }
+
+    .bit-prs-pre {
+        width: spacing(1.5);
+        height: spacing(1.5);
+        font-size: spacing(0.85);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(1.5);
+    }
+
+    .bit-prs-ptx {
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-stx {
+        font-weight: 400;
+        font-size: spacing(1.5);
+    }
+
+    .bit-prs-ttx {
+        display: none;
+    }
+
+    .bit-prs-otx {
+        display: none;
+    }
+}
+
+.bit-prs-s48 {
+    min-height: spacing(6);
+    min-width: spacing(6);
+
+    .bit-prs-ima {
+        flex: 0 0 auto;
+        width: spacing(6);
+        height: spacing(6);
+        position: relative;
+        text-align: center;
+    }
+
+    .bit-prs-imc {
+        aspect-ratio: 1;
+        width: spacing(6);
+        font-size: spacing(2);
+    }
+
+    .bit-prs-pre {
+        width: spacing(1.5);
+        height: spacing(1.5);
+        font-size: spacing(0.85);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(1.5);
+    }
+
+    .bit-prs-ptx {
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-stx {
+        font-weight: 400;
+        font-size: spacing(1.5);
+    }
+
+    .bit-prs-ttx {
+        display: none;
+    }
+
+    .bit-prs-otx {
+        display: none;
+    }
+}
+
+.bit-prs-s56 {
+    min-height: spacing(7);
+    min-width: spacing(7);
+
+    .bit-prs-ima {
+        flex: 0 0 auto;
+        width: spacing(7);
+        height: spacing(7);
+        position: relative;
+        text-align: center;
+    }
+
+    .bit-prs-imc {
+        aspect-ratio: 1;
+        width: spacing(7);
+        font-size: spacing(2.5);
+    }
+
+    .bit-prs-pre {
+        width: spacing(2);
+        height: spacing(2);
+        font-size: spacing(1.25);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(2);
+    }
+
+    .bit-prs-ptx {
+        font-weight: 400;
+        font-size: spacing(2.5);
+    }
+
+    .bit-prs-stx {
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-ttx {
+        display: none;
+    }
+
+    .bit-prs-otx {
+        display: none;
+    }
+}
+
+.bit-prs-s72 {
+    min-height: spacing(9);
+    min-width: spacing(9);
+
+    .bit-prs-ima {
+        flex: 0 0 auto;
+        width: spacing(9);
+        height: spacing(9);
+        position: relative;
+        text-align: center;
+    }
+
+    .bit-prs-imc {
+        aspect-ratio: 1;
+        width: spacing(9);
+        font-size: spacing(3.5);
+    }
+
+    .bit-prs-pre {
+        width: spacing(2.5);
+        height: spacing(2.5);
+        font-size: spacing(1.5);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(2);
+    }
+
+    .bit-prs-ptx {
+        font-weight: 400;
+        font-size: spacing(2.5);
+    }
+
+    .bit-prs-stx {
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-ttx {
+        display: block;
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-otx {
+        display: none;
+    }
+}
+
+.bit-prs-s100 {
+    min-height: spacing(12.5);
+    min-width: spacing(12.5);
+
+    .bit-prs-ima {
+        flex: 0 0 auto;
+        position: relative;
+        text-align: center;
+        width: spacing(12.5);
+        height: spacing(12.5);
+    }
+
+    .bit-prs-imc {
+        aspect-ratio: 1;
+        width: spacing(12.5);
+        font-size: spacing(5.25);
+    }
+
+    .bit-prs-pre {
+        width: spacing(3.5);
+        height: spacing(3.5);
+        font-size: spacing(2);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(2);
+    }
+
+    .bit-prs-ptx {
+        font-weight: 400;
+        font-size: spacing(2.5);
+    }
+
+    .bit-prs-stx {
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-ttx {
+        display: block;
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-otx {
+        display: block;
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+}
+
+.bit-prs-s120 {
+    min-height: spacing(15);
+    min-width: spacing(15);
+
+    .bit-prs-ima {
+        flex: 0 0 auto;
+        width: spacing(15);
+        position: relative;
+        text-align: center;
+        height: spacing(15);
+    }
+
+    .bit-prs-imc {
+        aspect-ratio: 1;
+        width: spacing(15);
+        font-size: spacing(5.25);
+    }
+
+    .bit-prs-pre {
+        width: spacing(4);
+        height: spacing(4);
+        font-size: spacing(2.5);
+    }
+
+    .bit-prs-det {
+        padding: 0 spacing(2);
+    }
+
+    .bit-prs-ptx {
+        font-weight: 400;
+        font-size: spacing(2.5);
+    }
+
+    .bit-prs-stx {
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-ttx {
+        display: block;
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+
+    .bit-prs-otx {
+        display: block;
+        font-weight: 400;
+        font-size: spacing(1.75);
+    }
+}
