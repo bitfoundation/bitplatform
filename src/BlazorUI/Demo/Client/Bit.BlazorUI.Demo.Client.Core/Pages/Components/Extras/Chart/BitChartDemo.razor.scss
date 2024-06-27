@@ -1,0 +1,27 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+
+::deep {
+    .chart-wrapper {
+        overflow: auto;
+
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            min-width: rem2(400px);
+            box-sizing: border-box;
+            min-height: rem2(250px);
+            justify-content: center;
+
+            canvas {
+                max-width: 800px;
+            }
+        }
+    }
+
+    .buttons-container {
+        display: flex;
+        margin-top: 2rem;
+        justify-content: center;
+    }
+}

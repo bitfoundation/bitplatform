@@ -1,0 +1,206 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-pnl {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    font-weight: 400;
+    font-size: spacing(2);
+    z-index: $zindex-modal;
+    font-family: $typography-font-family;
+
+    @keyframes bit-pnl-trans-x {
+        0% {
+            pointer-events: none;
+            transform: translate3d(spacing(5), 0px, 0px);
+        }
+
+        100% {
+            pointer-events: auto;
+            transform: translate3d(0px, 0px, 0px);
+        }
+    }
+
+    @keyframes bit-pnl-trans-y {
+        0% {
+            pointer-events: none;
+            transform: translate3d(0px, spacing(5), 0px);
+        }
+
+        100% {
+            pointer-events: auto;
+            transform: translate3d(0px, 0px, 0px);
+        }
+    }
+
+    @keyframes bit-pnl-trans-x-reverse {
+        0% {
+            pointer-events: none;
+            transform: translate3d(spacing(-5), 0px, 0px);
+        }
+
+        100% {
+            pointer-events: auto;
+            transform: translate3d(0px, 0px, 0px);
+        }
+    }
+
+    @keyframes bit-pnl-trans-y-reverse {
+        0% {
+            pointer-events: none;
+            transform: translate3d(0px, spacing(-5), 0px);
+        }
+
+        100% {
+            pointer-events: auto;
+            transform: translate3d(0px, 0px, 0px);
+        }
+    }
+}
+
+.bit-pnl-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    position: fixed;
+    pointer-events: auto;
+    z-index: $zindex-overlay;
+    background: $color-background-overlay;
+}
+
+.bit-pnl-cnt {
+    top: 0;
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    outline: none;
+    overflow: auto;
+    position: fixed;
+    max-width: 100%;
+    max-height: 100%;
+    box-sizing: border-box;
+    flex-direction: column;
+    z-index: $zindex-callout;
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    box-shadow: $box-shadow-callout;
+    animation-name: opacity, bit-pnl-trans-x;
+    background-color: $color-background-primary;
+    border-radius: 0 0 spacing(0.25) spacing(0.25);
+}
+
+.bit-pnl-hcn {
+    top: 0;
+    z-index: 1;
+    display: flex;
+    position: sticky;
+    font-weight: 600;
+    align-items: center;
+    font-size: spacing(2.5);
+    overflow-wrap: anywhere;
+    color: $color-foreground-primary;
+    padding: spacing(2.25) spacing(3) 0;
+    background-color: $color-background-primary;
+}
+
+.bit-pnl-ttl {
+    width: 100%;
+    hyphens: auto;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.bit-pnl-cls {
+    border: none;
+    display: flex;
+    cursor: pointer;
+    font-weight: 400;
+    width: spacing(4);
+    margin-left: auto;
+    height: spacing(4);
+    align-self: normal;
+    text-align: center;
+    align-items: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    justify-content: center;
+    font-size: spacing(1.75);
+    border-radius: spacing(0.25);
+    background-color: transparent;
+    color: $color-foreground-primary;
+
+    span {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+
+        i {
+            margin: 0 spacing(0.5);
+        }
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            color: $color-action-hover-foreground-primary;
+            background-color: $color-action-hover-background-primary;
+        }
+    }
+
+    &:active {
+        color: $color-action-active-foreground-primary;
+        background-color: $color-action-active-background-primary;
+    }
+}
+
+.bit-pnl-bdy {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-left: spacing(3);
+    padding-right: spacing(3);
+    padding-bottom: spacing(2.5);
+}
+
+.bit-pnl-fcn {
+    bottom: 0;
+    z-index: 1;
+    position: sticky;
+    padding: spacing(2) spacing(3);
+    background-color: $color-background-primary;
+}
+
+.bit-pnl-right {
+    right: 0;
+    width: spacing(40);
+    animation-name: opacity, bit-pnl-trans-x;
+}
+
+.bit-pnl-left {
+    left: 0;
+    width: spacing(40);
+    animation-name: opacity, bit-pnl-trans-x-reverse;
+}
+
+.bit-pnl-top {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: spacing(40);
+    animation-name: opacity, bit-pnl-trans-y-reverse;
+}
+
+.bit-pnl-bottom {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: unset;
+    width: 100%;
+    height: spacing(40);
+    animation-name: opacity, bit-pnl-trans-y;
+}

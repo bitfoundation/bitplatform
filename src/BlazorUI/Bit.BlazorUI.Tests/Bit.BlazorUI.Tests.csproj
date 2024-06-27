@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="..\Bit.BlazorUI\Components\ColorPicker\BitInternalColor.cs" Link="ColorPicker\BitInternalColor.cs" />
+	  <Compile Include="..\Bit.BlazorUI\Components\Inputs\_Pickers\ColorPicker\BitInternalColor.cs" Link="Components\Inputs\ColorPicker\BitInternalColor.cs" />
 	  <Compile Include="..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
 	  <Compile Include="..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
 	</ItemGroup>
