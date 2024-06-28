@@ -8,4 +8,9 @@ public partial class BitIcon
     [Parameter] public string? IconName { get; set; }
 
     protected override string RootElementClass => "bit-ico";
+
+    private string? GetIconClass()
+    {
+        return IconName.HasValue() ? $"bit-icon bit-icon--{IconName} {ClassBuilder.Value}" : ClassBuilder.Value;
+    }
 }
