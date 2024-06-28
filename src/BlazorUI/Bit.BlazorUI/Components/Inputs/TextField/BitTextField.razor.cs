@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitTextField
+public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool hasBorder = true;
     private bool isMultiline;
