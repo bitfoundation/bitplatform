@@ -11,6 +11,6 @@ public partial class BitIcon
 
     private string? GetIconClass()
     {
-        return IconName.HasValue() ? $"bit-icon bit-icon--{IconName} {ClassBuilder.Value}" : ClassBuilder.Value;
+        return IconName.HasValue() ? $"{ClassBuilder.Value} bit-icon bit-icon--{IconName}" : ClassBuilder.Value;
     }
 }
