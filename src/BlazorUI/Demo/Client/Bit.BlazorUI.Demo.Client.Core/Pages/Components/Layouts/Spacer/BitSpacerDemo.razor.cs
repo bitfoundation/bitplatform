@@ -16,6 +16,21 @@ public partial class BitSpacerDemo
 
 
     private readonly string example1RazorCode = @"
-<BitSpacer>I'm a Spacer</BitSpacer>";
+<div style=""display: flex; width: 100%;"">
+    <BitIconButton IconName=""@BitIconName.GlobalNavButton"" />
+    <BitSpacer />
+    <BitTypography Variant=""BitTypographyVariant.Caption"">Title</BitTypography>
+    <BitSpacer />
+    <BitIconButton IconName=""@BitIconName.Contact"" />
+</div>";
+
+    private readonly string example2RazorCode = @"
+<div style=""display: flex; width: 100%;"">
+    <BitSpinner />
+    <BitSpacer Width=""64"" />
+    <BitSpinner />
+    <BitSpacer Width=""64"" />
+    <BitSpinner />
+</div>";
 
 }
