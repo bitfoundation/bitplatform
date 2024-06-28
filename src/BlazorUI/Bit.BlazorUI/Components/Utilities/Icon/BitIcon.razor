@@ -6,5 +6,5 @@
    role="img"
    aria-label="@AriaLabel"
    style="@StyleBuilder.Value"
-   class="bit-icon bit-icon--@IconName @ClassBuilder.Value"
+   class="@(IconName.HasValue() ? $"{ClassBuilder.Value} bit-icon bit-icon--{IconName}" : ClassBuilder.Value)"
    dir="@Dir?.ToString().ToLower()" />
