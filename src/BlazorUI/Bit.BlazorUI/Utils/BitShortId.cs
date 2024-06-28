@@ -2,9 +2,8 @@
 
 internal class BitShortId
 {
-    private static object _lock = new();
-    private static string _chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-    private static int target = _chars.Length;
+    private static readonly string _chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    private static readonly int target = _chars.Length;
 
     public static string NewId() => ToString(Math.Abs(BitConverter.ToInt32(Guid.NewGuid().ToByteArray())));
 
