@@ -43,13 +43,6 @@ public partial class BitRatingDemo
         },
         new()
         {
-            Name = "IsReadOnly",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "A flag to mark rating control as readOnly.",
-        },
-        new()
-        {
             Name = "Max",
             Type = "int",
             DefaultValue = "5",
@@ -197,7 +190,7 @@ public partial class BitRatingDemo
 
 <BitRating IsEnabled=""false"" DefaultValue=""2"" />
 
-<BitRating IsReadOnly=""true"" DefaultValue=""3.5"" />";
+<BitRating ReadOnly DefaultValue=""3.5"" />";
 
     private readonly string example2RazorCode = @"
 Visible: [ <BitRating Visibility=""""BitVisibility.Visible"""" /> ]

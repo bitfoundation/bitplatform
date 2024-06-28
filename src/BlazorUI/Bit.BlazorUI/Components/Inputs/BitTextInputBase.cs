@@ -65,7 +65,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     /// <param name="e"></param>
     protected virtual async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || ReadOnly) return;
 
         await SetCurrentValueAsStringAsync(e.Value?.ToString());
     }
@@ -76,7 +76,7 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     /// <param name="e"></param>
     protected virtual async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || ReadOnly) return;
 
         if (Immediate is false) return;
 
