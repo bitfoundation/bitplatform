@@ -9,8 +9,8 @@ public partial class BitIcon
 
     protected override string RootElementClass => "bit-ico";
 
-    private string? GetIconClass()
+    protected override void RegisterCssClasses()
     {
-        return IconName.HasValue() ? $"{ClassBuilder.Value} bit-icon bit-icon--{IconName}" : ClassBuilder.Value;
+        ClassBuilder.Register(() => IconName.HasValue() ? $"bit-icon bit-icon--{IconName}" : string.Empty);
     }
 }
