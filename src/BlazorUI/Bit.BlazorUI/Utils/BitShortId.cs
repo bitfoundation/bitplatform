@@ -6,7 +6,7 @@ internal class BitShortId
     private static string _chars = "abcdefghijklmnopqrstuvwxyz0123456789";
     private static int target = _chars.Length;
 
-    public static string NewId() => ToString(Math.Abs(Math.Abs(BitConverter.ToInt32(Guid.NewGuid().ToByteArray()))));
+    public static string NewId() => ToString(Math.Abs(BitConverter.ToInt32(Guid.NewGuid().ToByteArray())));
 
     public static string ToString(int value)
     {
