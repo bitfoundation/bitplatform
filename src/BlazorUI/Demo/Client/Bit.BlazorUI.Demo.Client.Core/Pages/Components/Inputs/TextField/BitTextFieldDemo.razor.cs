@@ -71,13 +71,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "IsReadOnly",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, the text field is readonly.",
-        },
-        new()
-        {
             Name = "IsRequired",
             Type = "bool",
             DefaultValue = "false",
@@ -465,7 +458,7 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Basic"" />
 <BitTextField Label=""Placeholder"" Placeholder=""Enter a text..."" />
 <BitTextField Label=""Disabled"" IsEnabled=""false"" />
-<BitTextField Label=""ReadOnly"" IsReadOnly=""true"" />
+<BitTextField Label=""ReadOnly"" ReadOnly DefaultValue=""This is ReadOnly"" />
 <BitTextField Label=""Description"" Description=""This is Description"" />
 <BitTextField Label=""IsRequired"" IsRequired=""true"" />
 <BitTextField Label=""MaxLength: 5"" MaxLength=""5"" />

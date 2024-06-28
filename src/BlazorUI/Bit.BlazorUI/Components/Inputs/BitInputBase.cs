@@ -14,6 +14,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     protected bool IsDisposed;
     protected bool ValueHasBeenSet;
 
+    private bool readOnly;
     private TValue? value;
     private bool? valueInvalid;
 
@@ -61,6 +62,23 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// Callback for when the input value changes.
     /// </summary>
     [Parameter] public EventCallback<TValue?> OnChange { get; set; }
+
+    /// <summary>
+    /// Makes the input read-only.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly
+    {
+        get => readOnly;
+        set
+        {
+            if (readOnly == value) return;
+
+            readOnly = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -147,6 +165,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
                 case nameof(OnChange):
                     OnChange = (EventCallback<TValue?>)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(ReadOnly):
+                    ReadOnly = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 

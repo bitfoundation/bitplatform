@@ -4,9 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitRating
 {
-    private bool isReadOnly;
-
-
     /// <summary>
     /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.
     /// </summary>
@@ -34,22 +31,6 @@ public partial class BitRating
     /// Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if ariaLabel prop is not provided.
     /// </summary>
     [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
-
-    /// <summary>
-    /// A flag to mark rating control as readOnly.
-    /// </summary>
-    [Parameter]
-    public bool IsReadOnly
-    {
-        get => isReadOnly;
-        set
-        {
-            if (isReadOnly == value) return;
-
-            isReadOnly = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Maximum rating. Must be >= Min (0 if AllowZeroStars is true, 1 otherwise).
@@ -93,13 +74,13 @@ public partial class BitRating
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
+        ClassBuilder.Register(() => ReadOnly ? "bit-rtg-rdl" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
-            BitRatingSize.Small => $"{RootElementClass}-sm",
-            BitRatingSize.Medium => $"{RootElementClass}-md",
-            BitRatingSize.Large => $"{RootElementClass}-lg",
+            BitRatingSize.Small => "bit-rtg-sm",
+            BitRatingSize.Medium => "bit-rtg-md",
+            BitRatingSize.Large => "bit-rtg-lg",
             _ => string.Empty
         });
     }
@@ -137,7 +118,7 @@ public partial class BitRating
 
     private async Task HandleOnClick(int index)
     {
-        if (IsEnabled is false || IsReadOnly is true) return;
+        if (IsEnabled is false || ReadOnly) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (index > Max || index < (AllowZeroStars ? 0 : 1)) return;
 

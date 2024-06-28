@@ -191,6 +191,13 @@ public partial class ComponentDemo
         },
         new()
         {
+            Name = "ReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the input read-only.",
+        },
+        new()
+        {
             Name = "Value",
             Type = "TValue?",
             DefaultValue = "null",
