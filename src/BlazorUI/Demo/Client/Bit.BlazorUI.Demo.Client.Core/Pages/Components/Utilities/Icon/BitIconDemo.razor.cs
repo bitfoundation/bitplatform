@@ -6,11 +6,20 @@ public partial class BitIconDemo
     [
         new()
         {
+            Name = "Color",
+            Type = "BitColor",
+            LinkType = LinkType.Link,
+            Href = "#icon-color-enum",
+            DefaultValue = "null",
+            Description = "The color of icon.",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string",
             LinkType = LinkType.Link,
             Href = "/iconography",
-            Description = "The icon name for the icon shown in the button"
+            Description = "The icon name for the icon shown"
         },
         new()
         {
@@ -19,7 +28,7 @@ public partial class BitIconDemo
             DefaultValue = "null",
             Description = "The size of the icon.",
             LinkType = LinkType.Link,
-            Href = "#iconSize-enum",
+            Href = "#icon-size-enum",
         },
     ];
 
@@ -27,7 +36,46 @@ public partial class BitIconDemo
     [
         new()
         {
-            Id = "iconSize-enum",
+            Id = "icon-color-enum",
+            Name = "BitColor",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Info",
+                    Description="Info styled icon.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success styled icon.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning styled icon.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="Severe Warning styled icon.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error styled icon.",
+                    Value="4",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "icon-size-enum",
             Name = "BitSize",
             Description = "",
             Items =
@@ -89,4 +137,25 @@ public partial class BitIconDemo
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Accept"" />
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
+
+    private readonly string example5RazorCode = @"
+<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Pinned"" />
+                
+<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Pinned"" />
+                
+<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Pinned"" />
+                
+<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />";
 }
