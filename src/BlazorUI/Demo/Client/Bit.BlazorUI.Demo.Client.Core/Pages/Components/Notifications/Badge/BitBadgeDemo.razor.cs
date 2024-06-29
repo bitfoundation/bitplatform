@@ -99,7 +99,7 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "Size",
-            Type = "BitBadgeSize?",
+            Type = "BitSize?",
             DefaultValue = "null",
             Description = "The size of badge, Possible values: Small | Medium | Large",
             LinkType = LinkType.Link,
@@ -187,7 +187,7 @@ public partial class BitBadgeDemo
         new()
         {
             Id = "badge-size-enum",
-            Name = "BitBadgeSize",
+            Name = "BitSize",
             Description = "",
             Items =
             [
@@ -459,33 +459,33 @@ private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValu
 </BitBadge>";
 
     private readonly string example12RazorCode = @"
-<BitBadge Content=""100"" Size=""BitBadgeSize.Small"">
+<BitBadge Content=""100"" Size=""BitSize.Small"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Size=""BitBadgeSize.Medium"">
+<BitBadge Content=""100"" Size=""BitSize.Medium"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Size=""BitBadgeSize.Large"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-
-<BitBadge Content=""100"" Size=""BitBadgeSize.Small"" Appearance=""BitAppearance.Standard"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Size=""BitBadgeSize.Medium"" Appearance=""BitAppearance.Standard"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Size=""BitBadgeSize.Large"" Appearance=""BitAppearance.Standard"">
+<BitBadge Content=""100"" Size=""BitSize.Large"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
 
-<BitBadge Content=""100"" Size=""BitBadgeSize.Small"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Size=""BitSize.Small"" Appearance=""BitAppearance.Standard"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Size=""BitBadgeSize.Medium"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Size=""BitSize.Medium"" Appearance=""BitAppearance.Standard"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Size=""BitBadgeSize.Large"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Size=""BitSize.Large"" Appearance=""BitAppearance.Standard"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+
+<BitBadge Content=""100"" Size=""BitSize.Small"" Appearance=""BitAppearance.Text"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Size=""BitSize.Medium"" Appearance=""BitAppearance.Text"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Size=""BitSize.Large"" Appearance=""BitAppearance.Text"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>";
 
