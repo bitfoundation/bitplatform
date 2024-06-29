@@ -2,16 +2,16 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitNav<TItem> : IDisposable where TItem : class
+public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem : class
 {
-    private TItem? selectedItem;
     private bool SelectedItemHasBeenSet;
 
-    private bool _disposed;
-    private IEnumerable<TItem>? _oldItems;
+    private TItem? selectedItem;
 
+    private bool _disposed;
     internal TItem? _currentItem;
     internal List<TItem> _items = [];
+    private IEnumerable<TItem>? _oldItems;
     internal Dictionary<TItem, bool> _itemExpandStates = [];
 
 
@@ -664,7 +664,7 @@ public partial class BitNav<TItem> : IDisposable where TItem : class
     internal async Task SetSelectedItem(TItem item)
     {
         SelectedItem = item;
-        
+
         if (item != SelectedItem || Reselectable)
         {
             await OnSelectItem.InvokeAsync(item);

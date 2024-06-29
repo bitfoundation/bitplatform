@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitSlider
+public partial class BitSlider : BitComponentBase
 {
     private bool ValueHasBeenSet;
     private bool UpperValueHasBeenSet;

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
-public partial class BitButtonGroup<TItem> where TItem : class
+public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
     private bool vertical;
     private BitSize? size;
@@ -178,8 +178,8 @@ public partial class BitButtonGroup<TItem> where TItem : class
         return base.OnParametersSetAsync();
     }
 
-    
-    
+
+
     private string? GetItemClass(int index, bool isEnabled)
     {
         StringBuilder className = new StringBuilder();
@@ -220,7 +220,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
             className.Append(" bit-btg-ilt");
         }
 
-        if(isEnabled is false)
+        if (isEnabled is false)
         {
             className.Append(" bit-btg-ids");
         }

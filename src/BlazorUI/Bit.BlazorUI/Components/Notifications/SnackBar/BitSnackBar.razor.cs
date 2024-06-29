@@ -2,11 +2,13 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitSnackBar
+public partial class BitSnackBar : BitComponentBase
 {
     private BitSnackBarPosition position = BitSnackBarPosition.BottomRight;
 
-    private List<BitSnackBarItem> _items = new();
+    private List<BitSnackBarItem> _items = [];
+
+
 
     /// <summary>
     /// Whether or not to dismiss itself automatically.

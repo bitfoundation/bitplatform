@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitPagination
+public partial class BitPagination : BitComponentBase
 {
     private bool SelectedPageHasBeenSet;
 

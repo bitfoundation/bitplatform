@@ -1,16 +1,18 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPivot
+public partial class BitPivot : BitComponentBase
 {
     private BitSize? linkSize;
+    private string? selectedKey;
     private bool SelectedKeyHasBeenSet;
+    private BitPivotPosition position = BitPivotPosition.Top;
     private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
     private BitPivotOverflowBehavior overflowBehavior = BitPivotOverflowBehavior.None;
-    private BitPivotPosition position = BitPivotPosition.Top;
-    private string? selectedKey;
 
     private BitPivotItem? _selectedItem;
-    private List<BitPivotItem> _allItems = new();
+    private List<BitPivotItem> _allItems = [];
+
+
 
     /// <summary>
     /// The content of pivot, It can be Any custom tag

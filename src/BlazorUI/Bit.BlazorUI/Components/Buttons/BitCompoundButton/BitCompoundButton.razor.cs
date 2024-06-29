@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitCompoundButton
+public partial class BitCompoundButton : BitComponentBase
 {
     private BitSize? size;
     private BitColor? color;

@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitGrid
+public partial class BitGrid : BitComponentBase
 {
     private static readonly Dictionary<BitGridAlignment, string> _AlignmentMap = new()
     {
@@ -13,6 +13,7 @@ public partial class BitGrid
         { BitGridAlignment.Baseline, "baseline" },
         { BitGridAlignment.Stretch, "stretch" },
     };
+
 
 
     private int span = 1;

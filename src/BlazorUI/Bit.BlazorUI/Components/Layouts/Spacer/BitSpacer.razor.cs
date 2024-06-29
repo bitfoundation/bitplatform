@@ -1,14 +1,16 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitSpacer
+public partial class BitSpacer : BitComponentBase
 {
     private int? width;
+
+
 
     /// <summary>
     /// Gets or sets the width of the spacer (in pixels).
     /// </summary>
-    [Parameter] 
-    public int? Width 
+    [Parameter]
+    public int? Width
     {
         get => width;
         set

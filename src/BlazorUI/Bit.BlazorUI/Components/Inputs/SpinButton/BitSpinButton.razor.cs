@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitSpinButton
+public partial class BitSpinButton : BitInputBase<double>
 {
     private const int INITIAL_STEP_DELAY = 400;
     private const int STEP_DELAY = 75;

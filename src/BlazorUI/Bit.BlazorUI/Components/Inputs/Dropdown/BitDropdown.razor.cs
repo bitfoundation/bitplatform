@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitDropdown<TItem, TValue> where TItem : class, new()
+public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
     private bool IsOpenHasBeenSet;
     private bool ValuesHasBeenSet;

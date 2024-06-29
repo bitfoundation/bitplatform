@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitColorPicker : IDisposable
+public partial class BitColorPicker : BitComponentBase, IDisposable
 {
     private bool ColorHasBeenSet;
     private bool AlphaHasBeenSet;

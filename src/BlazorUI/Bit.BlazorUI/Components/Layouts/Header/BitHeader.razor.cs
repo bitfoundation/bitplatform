@@ -1,9 +1,11 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitHeader
+public partial class BitHeader : BitComponentBase
 {
     private bool @fixed;
     private int? height;
+
+
 
     /// <summary>
     /// Gets or sets the content to be rendered inside the BitHeader.

@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitLayout
+public partial class BitLayout : BitComponentBase
 {
     /// <summary>
     /// Custom CSS classes for different parts of the BitLayout.
