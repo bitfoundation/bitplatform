@@ -129,7 +129,15 @@
     }
 }
 
-.bit-pvt-normal {
+.bit-pvt-sm {
+    .bit-pvt-hct {
+        * {
+            font-size: spacing(1.5);
+        }
+    }
+}
+
+.bit-pvt-md {
     .bit-pvt-hct {
         * {
             font-size: spacing(2);
@@ -137,7 +145,7 @@
     }
 }
 
-.bit-pvt-large {
+.bit-pvt-lg {
     .bit-pvt-hct {
         * {
             font-size: spacing(2.5);

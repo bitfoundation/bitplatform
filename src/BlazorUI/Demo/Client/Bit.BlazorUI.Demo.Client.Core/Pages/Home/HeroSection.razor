@@ -65,10 +65,10 @@
                 </BitCompoundButton>
             </div>
             <BitProgressBar Height="20" Style="margin-bottom: 30px" Indeterminate />
-            <BitPivot LinkFormat="@BitPivotLinkFormat.Links"
+            <BitPivot HeadersOnly
+                      LinkSize="@BitSize.Large"
                       DefaultSelectedKey="Overview"
-                      LinkSize="@BitPivotLinkSize.Large"
-                      HeadersOnly="true"
+                      LinkFormat="@BitPivotLinkFormat.Links"
                       OnItemClick="@(item => _pivotSelectedKey = item.Key)">
                 <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
                 <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>
