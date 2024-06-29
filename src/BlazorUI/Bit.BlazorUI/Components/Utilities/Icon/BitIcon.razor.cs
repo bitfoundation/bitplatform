@@ -3,10 +3,29 @@
 public partial class BitIcon
 {
     private BitSize? size;
+    private BitColor? color;
     private string? iconName;
 
+
+
     /// <summary>
-    /// The icon name for the icon shown in the button
+    /// The color of icon.
+    /// </summary>
+    [Parameter]
+    public BitColor? Color
+    {
+        get => color;
+        set
+        {
+            if (color == value) return;
+
+            color = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The icon name for the icon shown.
     /// </summary>
     [Parameter]
     public string? IconName
@@ -50,6 +69,16 @@ public partial class BitIcon
             BitSize.Small => "bit-ico-sm",
             BitSize.Medium => "bit-ico-md",
             BitSize.Large => "bit-ico-lg",
+            _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Info => "bit-ico-inf",
+            BitColor.Success => "bit-ico-suc",
+            BitColor.Warning => "bit-ico-wrn",
+            BitColor.SevereWarning => "bit-ico-swr",
+            BitColor.Error => "bit-ico-err",
             _ => string.Empty
         });
     }
