@@ -75,7 +75,7 @@ public class BitTimelineNameSelectors<TItem>
     /// <summary>
     /// The Size field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, BitTimelineSize?> Size { get; set; } = new(nameof(BitTimelineItem.Size));
+    public BitNameSelectorPair<TItem, BitSize?> Size { get; set; } = new(nameof(BitTimelineItem.Size));
 
     /// <summary>
     /// Template field name and selector of the custom input class.

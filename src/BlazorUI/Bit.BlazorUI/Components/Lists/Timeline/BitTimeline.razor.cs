@@ -7,7 +7,7 @@ public partial class BitTimeline<TItem> where TItem : class
 {
     private bool horizontal;
     private BitColor? color;
-    private BitTimelineSize? size;
+    private BitSize? size;
     private BitAppearance appearance = BitAppearance.Primary;
 
     private List<TItem> _items = new();
@@ -104,7 +104,7 @@ public partial class BitTimeline<TItem> where TItem : class
     /// The size of timeline, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitTimelineSize? Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -167,10 +167,10 @@ public partial class BitTimeline<TItem> where TItem : class
 
         ClassBuilder.Register(() => Size switch
         {
-            BitTimelineSize.Small => "bit-tln-sm",
-            BitTimelineSize.Medium => "bit-tln-md",
-            BitTimelineSize.Large => "bit-tln-lg",
-            _ => string.Empty
+            BitSize.Small => "bit-tln-sm",
+            BitSize.Medium => "bit-tln-md",
+            BitSize.Large => "bit-tln-lg",
+            _ => "bit-tln-md"
         });
     }
 
@@ -213,9 +213,9 @@ public partial class BitTimeline<TItem> where TItem : class
         {
             className.Append(GetSize(item) switch
             {
-                BitTimelineSize.Small => " bit-tln-ism",
-                BitTimelineSize.Medium => " bit-tln-imd",
-                BitTimelineSize.Large => " bit-tln-ilg",
+                BitSize.Small => " bit-tln-ism",
+                BitSize.Medium => " bit-tln-imd",
+                BitSize.Large => " bit-tln-ilg",
                 _ => string.Empty
             });
         }
@@ -531,7 +531,7 @@ public partial class BitTimeline<TItem> where TItem : class
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.DotTemplate.Name);
     }
 
-    private BitTimelineSize? GetSize(TItem? item)
+    private BitSize? GetSize(TItem? item)
     {
         if (item is null) return null;
 
@@ -552,7 +552,7 @@ public partial class BitTimeline<TItem> where TItem : class
             return NameSelectors.Size.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitTimelineSize?>(NameSelectors.Size.Name, null);
+        return item.GetValueFromProperty<BitSize?>(NameSelectors.Size.Name, null);
     }
 
     private BitColor? GetColor(TItem? item)
