@@ -545,16 +545,18 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     }
 
 
+
     protected override string RootElementClass => "bit-drp";
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Required ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
 
-        ClassBuilder.Register(() => _selectedItems?.Count > 0 ? $"{RootElementClass}-hvl" : string.Empty);
+        ClassBuilder.Register(() => _selectedItems?.Count > 0 ? "bit-drp-hvl" : string.Empty);
 
-        ClassBuilder.Register(() => Chips ? $"{RootElementClass}-sch" : string.Empty);
+        ClassBuilder.Register(() => Chips ? "bit-drp-sch" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
