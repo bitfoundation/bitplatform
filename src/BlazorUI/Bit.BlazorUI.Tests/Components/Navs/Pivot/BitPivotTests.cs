@@ -20,8 +20,8 @@ public class BitPivotTests : BunitTestContext
             parameters.Add(p => p.OverflowBehavior, overflowBehavior);
         });
 
+        var linkSizeClass = $"bit-pvt-{linkSize switch { BitSize.Small => "sm", BitSize.Medium => "md", BitSize.Large => "lg", _ => "md" }}";
         var linkFormatClass = $"bit-pvt-{linkFormat.ToString().ToLower()}";
-        var linkSizeClass = $"bit-pvt-{linkSize.ToString().ToLower()}";
         var overflowBehaviorClass = $"bit-pvt-{overflowBehavior.ToString().ToLower()}";
 
         var bitPivot = component.Find(".bit-pvt");

@@ -132,7 +132,7 @@ public partial class BitPivot
 
         ClassBuilder.Register(() => LinkSize switch
         {
-            BitSize.Small => "bit-pvt-msm",
+            BitSize.Small => "bit-pvt-sm",
             BitSize.Medium => "bit-pvt-md",
             BitSize.Large => "bit-pvt-lg",
             _ => "bit-pvt-md"
