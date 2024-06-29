@@ -90,10 +90,10 @@ public class BitRatingTests : BunitTestContext
 
     [DataTestMethod,
         DataRow(null),
-        DataRow(BitRatingSize.Small),
-        DataRow(BitRatingSize.Large)
+        DataRow(BitSize.Small),
+        DataRow(BitSize.Large)
     ]
-    public void BitRatingShouldRespectSize(BitRatingSize size)
+    public void BitRatingShouldRespectSize(BitSize size)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
@@ -101,7 +101,7 @@ public class BitRatingTests : BunitTestContext
         });
         var bitRating = component.Find(".bit-rtg");
 
-        var sizeClass = size == BitRatingSize.Large ? "bit-rtg-lg" : "bit-rtg-sm";
+        var sizeClass = size == BitSize.Large ? "bit-rtg-lg" : "bit-rtg-sm";
 
         Assert.IsTrue(bitRating.ClassList.Contains(sizeClass));
     }

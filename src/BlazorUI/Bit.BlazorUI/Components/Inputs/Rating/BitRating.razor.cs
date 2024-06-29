@@ -4,6 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitRating
 {
+    private BitSize? size;
+
     /// <summary>
     /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.
     /// </summary>
@@ -45,7 +47,19 @@ public partial class BitRating
     /// <summary>
     /// Size of rating elements.
     /// </summary>
-    [Parameter] public BitRatingSize Size { get; set; } = BitRatingSize.Medium;
+    [Parameter]
+    public BitSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+
+            size = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitRating.
@@ -78,9 +92,9 @@ public partial class BitRating
 
         ClassBuilder.Register(() => Size switch
         {
-            BitRatingSize.Small => "bit-rtg-sm",
-            BitRatingSize.Medium => "bit-rtg-md",
-            BitRatingSize.Large => "bit-rtg-lg",
+            BitSize.Small => "bit-rtg-sm",
+            BitSize.Medium => "bit-rtg-md",
+            BitSize.Large => "bit-rtg-lg",
             _ => string.Empty
         });
     }
