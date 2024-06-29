@@ -19,7 +19,7 @@ public class BitTextFieldTests : BunitTestContext
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IsMultiline, isMultiline);
-            parameters.Add(p => p.IsRequired, isRequired);
+            parameters.Add(p => p.Required, isRequired);
         });
 
         var bitTextField = component.Find(".bit-txt");

@@ -9,10 +9,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private const int INITIAL_STEP_DELAY = 400;
     private const int STEP_DELAY = 75;
 
-    private TValue? step;
     private TValue? min;
     private TValue? max;
-    private bool required;
+    private TValue? step;
     private bool inlineLabel;
 
     private double? _internalMin;
@@ -226,22 +225,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Shows the custom prefix for numeric field.
     /// </summary>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
-
-    /// <summary>
-    /// Whether the associated input is required or not, add an asterisk "*" to its label.
-    /// </summary>
-    [Parameter]
-    public bool Required
-    {
-        get => required;
-        set
-        {
-            if (required == value) return;
-
-            required = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Whether to show the increment and decrement buttons.

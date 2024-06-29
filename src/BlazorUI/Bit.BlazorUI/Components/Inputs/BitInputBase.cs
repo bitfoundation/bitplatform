@@ -15,6 +15,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     protected bool ValueHasBeenSet;
 
     private bool readOnly;
+    private bool required;
     private TValue? value;
     private bool? valueInvalid;
 
@@ -75,6 +76,23 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             if (readOnly == value) return;
 
             readOnly = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Makes the input required.
+    /// </summary>
+    [Parameter]
+    public bool Required
+    {
+        get => required;
+        set
+        {
+            if (required == value) return;
+
+            required = value;
 
             ClassBuilder.Reset();
         }
@@ -170,6 +188,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
                 case nameof(ReadOnly):
                     ReadOnly = (bool)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(Required):
+                    Required = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
