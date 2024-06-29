@@ -25,6 +25,10 @@
 .bit-pvt-hct {
     display: flex;
     white-space: nowrap;
+
+    * {
+        font-size: spacing(2);
+    }
 }
 
 .bit-pvt-cct {
@@ -133,14 +137,6 @@
     .bit-pvt-hct {
         * {
             font-size: spacing(1.5);
-        }
-    }
-}
-
-.bit-pvt-md {
-    .bit-pvt-hct {
-        * {
-            font-size: spacing(2);
         }
     }
 }

@@ -45,7 +45,7 @@ public partial class BitSpinner
             BitSize.Small => "bit-spn-sm",
             BitSize.Medium => "bit-spn-md",
             BitSize.Large => "bit-spn-lg",
-            _ => "bit-spn-md"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => LabelPosition switch

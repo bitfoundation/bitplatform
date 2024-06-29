@@ -170,7 +170,7 @@ public partial class BitTimeline<TItem> where TItem : class
             BitSize.Small => "bit-tln-sm",
             BitSize.Medium => "bit-tln-md",
             BitSize.Large => "bit-tln-lg",
-            _ => "bit-tln-md"
+            _ => string.Empty
         });
     }
 

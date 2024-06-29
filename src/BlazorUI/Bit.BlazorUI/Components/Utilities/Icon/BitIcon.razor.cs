@@ -50,7 +50,7 @@ public partial class BitIcon
             BitSize.Small => "bit-ico-sm",
             BitSize.Medium => "bit-ico-md",
             BitSize.Large => "bit-ico-lg",
-            _ => "bit-ico-md"
+            _ => string.Empty
         });
     }
 }

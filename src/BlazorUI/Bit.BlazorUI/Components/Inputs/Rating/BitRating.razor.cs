@@ -95,7 +95,7 @@ public partial class BitRating
             BitSize.Small => "bit-rtg-sm",
             BitSize.Medium => "bit-rtg-md",
             BitSize.Large => "bit-rtg-lg",
-            _ => "bit-rtg-md"
+            _ => string.Empty
         });
     }
 

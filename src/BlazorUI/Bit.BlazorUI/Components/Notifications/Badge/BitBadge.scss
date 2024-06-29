@@ -86,11 +86,11 @@
     box-sizing: border-box;
     min-width: spacing(2.5);
     font-size: spacing(1.5);
+    padding: 0 spacing(0.75);
     -webkit-user-select: none;
     border-radius: spacing(1.25);
     border-width: $shape-border-width;
     border-style: $shape-border-style;
-    padding: spacing(0) spacing(0.75);
 
     &.bit-bdg-tlf {
         inset: auto calc(100% - spacing(0.5)) calc(100% - spacing(0.5)) auto;
@@ -262,7 +262,7 @@
 .bit-bdg-lg {
     height: spacing(3);
     min-width: spacing(3);
+    padding: 0 spacing(0.75);
     font-size: spacing(1.75);
     border-radius: spacing(1.5);
-    padding: spacing(0) spacing(0.75);
 }

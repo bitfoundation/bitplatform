@@ -135,7 +135,7 @@ public partial class BitPivot
             BitSize.Small => "bit-pvt-sm",
             BitSize.Medium => "bit-pvt-md",
             BitSize.Large => "bit-pvt-lg",
-            _ => "bit-pvt-md"
+            _ => string.Empty
         }).Register(() => LinkFormat switch
         {
             BitPivotLinkFormat.Links => "bit-pvt-links",
