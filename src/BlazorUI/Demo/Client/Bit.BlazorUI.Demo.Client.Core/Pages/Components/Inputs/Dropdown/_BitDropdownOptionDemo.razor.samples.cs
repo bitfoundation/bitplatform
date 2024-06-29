@@ -27,9 +27,8 @@ public partial class _BitDropdownOptionDemo
     }
 </BitDropdown>
 
-<BitDropdown Label=""IsRequired""
+<BitDropdown Label=""Required"" Required
              Placeholder=""Select an item""
-             IsRequired=""true""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {

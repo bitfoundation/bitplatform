@@ -199,7 +199,7 @@
                     <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
                         <DataAnnotationsValidator />
 
-                        <BitTextField Label="Required" IsRequired="true" @bind-Value="buttonValidationModel.RequiredText" />
+                        <BitTextField Label="Required" Required @bind-Value="buttonValidationModel.RequiredText" />
                         <ValidationMessage For="() => buttonValidationModel.RequiredText" />
                         <br />
                         <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />

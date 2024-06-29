@@ -198,6 +198,13 @@ public partial class ComponentDemo
         },
         new()
         {
+            Name = "Required",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the input required.",
+        },
+        new()
+        {
             Name = "Value",
             Type = "TValue?",
             DefaultValue = "null",

@@ -5,9 +5,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 {
-    private bool required;
-
-
     private List<TItem> _items = [];
     private string _labelId = default!;
     private IEnumerable<TItem>? _oldItems;
@@ -82,23 +79,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
-
-    /// <summary>
-    /// If true, selecting an option is mandatory in the ChoiceGroup.
-    /// </summary>
-    [Parameter]
-    public bool Required
-    {
-        get => required;
-        set
-        {
-            if (required == value) return;
-
-            required = value;
-
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitChoiceGroup.

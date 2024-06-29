@@ -9,9 +9,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     private bool IsOpenHasBeenSet;
     private bool ValuesHasBeenSet;
 
-    private bool isOpen;
-    private bool isRequired;
     private bool chips;
+    private bool isOpen;
     private ICollection<TValue?>? values = Array.Empty<TValue?>();
 
     private List<TItem> _selectedItems = [];
@@ -114,22 +113,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         }
     }
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
-
-    /// <summary>
-    /// Enables the required mode of the dropdown.
-    /// </summary>
-    [Parameter]
-    public bool IsRequired
-    {
-        get => isRequired;
-        set
-        {
-            if (isRequired == value) return;
-
-            isRequired = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Enables calling the select events when the same item is selected in single select mode.
@@ -562,16 +545,18 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     }
 
 
+
     protected override string RootElementClass => "bit-drp";
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
 
-        ClassBuilder.Register(() => _selectedItems?.Count > 0 ? $"{RootElementClass}-hvl" : string.Empty);
+        ClassBuilder.Register(() => _selectedItems?.Count > 0 ? "bit-drp-hvl" : string.Empty);
 
-        ClassBuilder.Register(() => Chips ? $"{RootElementClass}-sch" : string.Empty);
+        ClassBuilder.Register(() => Chips ? "bit-drp-sch" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

@@ -112,13 +112,6 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "Required",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, selecting an option is mandatory in the ChoiceGroup."
-        },
-        new()
-        {
             Name = "Styles",
             Type = "BitChoiceGroupClassStyles?",
             DefaultValue = "null",
