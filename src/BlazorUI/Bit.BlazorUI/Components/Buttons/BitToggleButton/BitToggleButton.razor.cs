@@ -4,8 +4,8 @@ public partial class BitToggleButton
 {
     private bool IsCheckedHasBeenSet;
 
+    private BitSize? size;
     private bool isChecked;
-    private BitButtonSize? size;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private int? _tabIndex;
@@ -122,7 +122,7 @@ public partial class BitToggleButton
     /// The size of button, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitButtonSize? Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -130,6 +130,7 @@ public partial class BitToggleButton
             if (size == value) return;
 
             size = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -168,9 +169,9 @@ public partial class BitToggleButton
 
         ClassBuilder.Register(() => Size switch
         {
-            BitButtonSize.Small => "bit-tgb-sm",
-            BitButtonSize.Medium => "bit-tgb-md",
-            BitButtonSize.Large => "bit-tgb-lg",
+            BitSize.Small => "bit-tgb-sm",
+            BitSize.Medium => "bit-tgb-md",
+            BitSize.Large => "bit-tgb-lg",
             _ => string.Empty
         });
     }

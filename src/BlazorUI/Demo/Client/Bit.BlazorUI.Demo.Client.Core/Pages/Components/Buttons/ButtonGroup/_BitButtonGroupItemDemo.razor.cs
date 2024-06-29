@@ -5,32 +5,32 @@ public partial class _BitButtonGroupItemDemo
     private int clickCounter;
     private string? clickedItem;
 
-    private List<BitButtonGroupItem> basicItems = new()
-    {
+    private List<BitButtonGroupItem> basicItems =
+    [
         new() { Text = "Add" }, new() { Text = "Edit" }, new() { Text = "Delete" }
-    };
+    ];
 
-    private List<BitButtonGroupItem> disabledItems = new()
-    {
+    private List<BitButtonGroupItem> disabledItems =
+    [
         new() { Text = "Add" }, new() { Text = "Edit", IsEnabled = false }, new() { Text = "Delete" }
-    };
+    ];
 
-    private List<BitButtonGroupItem> iconItems = new()
-    {
+    private List<BitButtonGroupItem> iconItems =
+    [
         new() { Text = "Add", IconName = BitIconName.Add },
         new() { Text = "Edit", IconName = BitIconName.Edit },
         new() { Text = "Delete", IconName = BitIconName.Delete }
-    };
+    ];
 
-    private List<BitButtonGroupItem> eventsItems = new()
-    {
+    private List<BitButtonGroupItem> eventsItems =
+    [
         new() { Text = "Increase", IconName = BitIconName.Add },
         new() { Text = "Reset", IconName = BitIconName.Reset },
         new() { Text = "Decrease", IconName = BitIconName.Remove }
-    };
+    ];
 
-    private List<BitButtonGroupItem> styleClassItems = new()
-    {
+    private List<BitButtonGroupItem> styleClassItems =
+    [
         new()
         {
             Text = "Styled",
@@ -43,14 +43,14 @@ public partial class _BitButtonGroupItemDemo
             Class = "custom-item",
             IconName = BitIconName.FormatPainter,
         }
-    };
+    ];
 
-    private List<BitButtonGroupItem> rtlItems = new()
-    {
+    private List<BitButtonGroupItem> rtlItems =
+    [
         new() { Text = "اضافه کردن", IconName = BitIconName.Add },
         new() { Text = "ویرایش", IconName = BitIconName.Edit },
         new() { Text = "حذف", IconName = BitIconName.Delete }
-    };
+    ];
 
     protected override void OnInitialized()
     {
@@ -165,17 +165,17 @@ private List<BitButtonGroupItem> basicItems = new()
 };";
 
     private readonly string example7RazorCode = @"
-<BitButtonGroup Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />";
+<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />";
     private readonly string example7CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = new()
 {

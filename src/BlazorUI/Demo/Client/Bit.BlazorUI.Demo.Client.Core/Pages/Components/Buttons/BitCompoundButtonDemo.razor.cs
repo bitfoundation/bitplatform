@@ -2,8 +2,8 @@
 
 public partial class BitCompoundButtonDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AllowDisabledFocus",
@@ -121,7 +121,7 @@ public partial class BitCompoundButtonDemo
         new()
         {
             Name = "Size",
-            Type = "BitButtonSize",
+            Type = "BitSize",
             LinkType = LinkType.Link,
             Href = "#button-size-enum",
             DefaultValue = "null",
@@ -150,16 +150,16 @@ public partial class BitCompoundButtonDemo
             DefaultValue = "null",
             Description = "The tooltip to show when the mouse is placed on the button.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "class-styles",
             Title = "BitCompoundButtonClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -195,19 +195,19 @@ public partial class BitCompoundButtonDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the secondary section of the BitCompoundButton."
                },
-            }
+            ]
         }
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "button-style-enum",
             Name = "BitButtonStyle",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Primary",
@@ -220,15 +220,15 @@ public partial class BitCompoundButtonDemo
                     Description="The button with black text on a white background.",
                     Value="1",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Button",
@@ -247,15 +247,15 @@ public partial class BitCompoundButtonDemo
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-color-enum",
             Name = "BitColor",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Info",
@@ -286,15 +286,15 @@ public partial class BitCompoundButtonDemo
                     Description="Error styled Button.",
                     Value="4",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-size-enum",
-            Name = "BitButtonSize",
+            Name = "BitSize",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Small",
@@ -313,15 +313,15 @@ public partial class BitCompoundButtonDemo
                     Description="The large size button.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-icon-enum",
             Name = "BitButtonIconPosition",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Start",
@@ -334,9 +334,9 @@ public partial class BitCompoundButtonDemo
                     Description="Renders the icon at the end of component.",
                     Value="1",
                 }
-            }
+            ]
         }
-    };
+    ];
 
 
 
@@ -456,17 +456,17 @@ private async Task HandleValidSubmit()
 <BitCompoundButton Color=""BitColor.Error"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Error</BitCompoundButton>";
 
     private readonly string example10RazorCode = @"
-<BitCompoundButton Size=""BitButtonSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitCompoundButton>
-<BitCompoundButton Size=""BitButtonSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitCompoundButton>
-<BitCompoundButton Size=""BitButtonSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitCompoundButton>
 
-<BitCompoundButton Size=""BitButtonSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitCompoundButton>
-<BitCompoundButton Size=""BitButtonSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitCompoundButton>
-<BitCompoundButton Size=""BitButtonSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitCompoundButton>
 
-<BitCompoundButton Size=""BitButtonSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Small</BitCompoundButton>
-<BitCompoundButton Size=""BitButtonSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitCompoundButton>
-<BitCompoundButton Size=""BitButtonSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Large</BitCompoundButton>";
+<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Small</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Large</BitCompoundButton>";
 
     private readonly string example11RazorCode = @"
 <style>

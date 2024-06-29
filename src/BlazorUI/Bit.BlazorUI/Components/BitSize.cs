@@ -1,19 +1,19 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitButtonSize
+public enum BitSize
 {
     /// <summary>
-    /// The small size button
+    /// The small size.
     /// </summary>
     Small,
     
     /// <summary>
-    /// The medium size button
+    /// The medium size.
     /// </summary>
     Medium,
     
     /// <summary>
-    /// The large size button
+    /// The large size.
     /// </summary>
     Large
 }

@@ -4,8 +4,8 @@ namespace Bit.BlazorUI;
 
 public partial class BitCompoundButton
 {
+    private BitSize? size;
     private BitColor? color;
-    private BitButtonSize? size;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
@@ -129,7 +129,7 @@ public partial class BitCompoundButton
     /// The size of button, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitButtonSize? Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -137,6 +137,7 @@ public partial class BitCompoundButton
             if (size == value) return;
 
             size = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -183,9 +184,9 @@ public partial class BitCompoundButton
 
         ClassBuilder.Register(() => Size switch
         {
-            BitButtonSize.Small => "bit-cmb-sm",
-            BitButtonSize.Medium => "bit-cmb-md",
-            BitButtonSize.Large => "bit-cmb-lg",
+            BitSize.Small => "bit-cmb-sm",
+            BitSize.Medium => "bit-cmb-md",
+            BitSize.Large => "bit-cmb-lg",
             _ => string.Empty
         });
 
