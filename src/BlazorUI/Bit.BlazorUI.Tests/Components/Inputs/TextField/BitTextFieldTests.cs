@@ -13,13 +13,13 @@ public class BitTextFieldTests : BunitTestContext
         DataRow(true, false, true),
         DataRow(false, false, false)
     ]
-    public void BitTextFieldShouldTakeCorrectTypeAndVisual(bool isEnabled, bool isMultiline, bool isRequired)
+    public void BitTextFieldShouldTakeCorrectTypeAndVisual(bool isEnabled, bool isMultiline, bool required)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IsMultiline, isMultiline);
-            parameters.Add(p => p.Required, isRequired);
+            parameters.Add(p => p.Required, required);
         });
 
         var bitTextField = component.Find(".bit-txt");
@@ -36,8 +36,8 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.AreEqual(isMultiline ? "TEXTAREA" : "INPUT", textField.TagName);
 
-        Assert.AreEqual(isRequired, textField.HasAttribute("required"));
-        Assert.AreEqual(isRequired, bitTextField.ClassList.Contains("bit-txt-req"));
+        Assert.AreEqual(required, textField.HasAttribute("required"));
+        Assert.AreEqual(required, bitTextField.ClassList.Contains("bit-txt-req"));
     }
 
     [DataTestMethod,

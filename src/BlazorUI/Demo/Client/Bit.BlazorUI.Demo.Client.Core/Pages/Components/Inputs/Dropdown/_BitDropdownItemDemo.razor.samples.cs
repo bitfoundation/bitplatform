@@ -14,11 +14,10 @@ public partial class _BitDropdownItemDemo
              Placeholder=""Select items""
              IsMultiSelect=""true"" />
 
-<BitDropdown Label=""IsRequired""
+<BitDropdown Label=""Required"" Required
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
-             Placeholder=""Select an item""
-             IsRequired=""true"" />
+             Placeholder=""Select an item"" />
 
 <BitDropdown Label=""Disabled""
              Items=""GetBasicItems()""

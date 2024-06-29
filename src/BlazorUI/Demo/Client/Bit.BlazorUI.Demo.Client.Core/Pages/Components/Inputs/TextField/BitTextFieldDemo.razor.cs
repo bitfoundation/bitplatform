@@ -71,13 +71,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "IsRequired",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
-        },
-        new()
-        {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
@@ -460,7 +453,7 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Disabled"" IsEnabled=""false"" />
 <BitTextField Label=""ReadOnly"" ReadOnly DefaultValue=""This is ReadOnly"" />
 <BitTextField Label=""Description"" Description=""This is Description"" />
-<BitTextField Label=""IsRequired"" IsRequired=""true"" />
+<BitTextField Label=""Required"" Required />
 <BitTextField Label=""MaxLength: 5"" MaxLength=""5"" />
 <BitTextField Label=""Auto focused"" AutoFocus=""true"" />";
 
@@ -468,12 +461,12 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Basic"" IsUnderlined=""true"" />
 <BitTextField Label=""Placeholder"" IsUnderlined=""true"" Placeholder=""Enter a text..."" />
 <BitTextField Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />
-<BitTextField Label=""Required"" IsUnderlined=""true"" IsRequired=""true"" />";
+<BitTextField Label=""Required"" IsUnderlined=""true"" Required />";
 
     private readonly string example3RazorCode = @"
 <BitTextField Label=""Basic"" Placeholder=""Enter a text..."" HasBorder=""false"" />
 <BitTextField Label=""Disabled"" Placeholder=""Enter a text..."" HasBorder=""false"" IsEnabled=""false"" />
-<BitTextField Label=""Required"" Placeholder=""Enter a text..."" HasBorder=""false"" IsRequired=""true"" />";
+<BitTextField Label=""Required"" Placeholder=""Enter a text..."" HasBorder=""false"" Required />";
 
     private readonly string example4RazorCode = @"
 <BitTextField Label=""Resizable"" IsMultiline=""true"" />
@@ -619,7 +612,7 @@ private string notTrimmedValue;";
 <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
 
-    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationTextFieldModel.Text"" />
+    <BitTextField Label=""Required"" Required @bind-Value=""validationTextFieldModel.Text"" />
     <ValidationMessage For=""() => validationTextFieldModel.Text"" />
 
     <BitTextField Label=""Numeric"" @bind-Value=""validationTextFieldModel.NumericText"" />

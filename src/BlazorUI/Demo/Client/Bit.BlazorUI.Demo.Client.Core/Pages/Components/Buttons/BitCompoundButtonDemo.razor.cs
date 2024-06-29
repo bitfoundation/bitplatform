@@ -381,7 +381,7 @@ private int clickCounter;";
 <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
+    <BitTextField Label=""Required"" Required @bind-Value=""validationButtonModel.RequiredText"" />
     <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
     <br />
     <BitTextField Label=""Non Required"" @bind-Value=""validationButtonModel.NonRequiredText"" />

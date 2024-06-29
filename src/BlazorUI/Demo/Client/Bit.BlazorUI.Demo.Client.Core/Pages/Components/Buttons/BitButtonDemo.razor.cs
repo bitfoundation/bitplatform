@@ -496,7 +496,7 @@ private int clickCounter;";
     private readonly string example10RazorCode = @"
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
-    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""buttonValidationModel.RequiredText"" />
+    <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
     <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
     <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
     <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
