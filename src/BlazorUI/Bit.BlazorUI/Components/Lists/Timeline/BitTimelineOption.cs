@@ -81,7 +81,7 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     /// <summary>
     /// The size of the option.
     /// </summary>
-    [Parameter] public BitTimelineSize? Size { get; set; }
+    [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
     /// The custom template for the option.

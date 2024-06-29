@@ -139,7 +139,7 @@ public partial class BitPaginationDemo
         new()
         {
             Name = "Size",
-            Type = "BitPaginationSize?",
+            Type = "BitSize?",
             DefaultValue = "null",
             Description = "The size of Pagination, Possible values: Small | Medium | Large",
             LinkType = LinkType.Link,
@@ -227,7 +227,7 @@ public partial class BitPaginationDemo
         new()
         {
             Id = "pagination-size-enum",
-            Name = "BitPaginationSize",
+            Name = "BitSize",
             Description = "",
             Items =
             [
@@ -416,17 +416,17 @@ private int paginationSelectedPage = 1;";
 <BitPagination Count=""5"" Color=""BitColor.Error"" Appearance=""BitAppearance.Text"" />";
 
     private readonly string example12RazorCode = @"
-<BitPagination Count=""5"" Size=""BitPaginationSize.Small"" />
-<BitPagination Count=""5"" Size=""BitPaginationSize.Medium"" />
-<BitPagination Count=""5"" Size=""BitPaginationSize.Large"" />
+<BitPagination Count=""5"" Size=""BitSize.Small"" />
+<BitPagination Count=""5"" Size=""BitSize.Medium"" />
+<BitPagination Count=""5"" Size=""BitSize.Large"" />
 
-<BitPagination Count=""5"" Size=""BitPaginationSize.Small"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Size=""BitPaginationSize.Medium"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Size=""BitPaginationSize.Large"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Size=""BitSize.Small"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Size=""BitSize.Medium"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Size=""BitSize.Large"" Appearance=""BitAppearance.Standard"" />
 
-<BitPagination Count=""5"" Size=""BitPaginationSize.Small"" Appearance=""BitAppearance.Text"" />
-<BitPagination Count=""5"" Size=""BitPaginationSize.Medium"" Appearance=""BitAppearance.Text"" />
-<BitPagination Count=""5"" Size=""BitPaginationSize.Large"" Appearance=""BitAppearance.Text"" />";
+<BitPagination Count=""5"" Size=""BitSize.Small"" Appearance=""BitAppearance.Text"" />
+<BitPagination Count=""5"" Size=""BitSize.Medium"" Appearance=""BitAppearance.Text"" />
+<BitPagination Count=""5"" Size=""BitSize.Large"" Appearance=""BitAppearance.Text"" />";
 
     private readonly string example13RazorCode = @"
 <style>

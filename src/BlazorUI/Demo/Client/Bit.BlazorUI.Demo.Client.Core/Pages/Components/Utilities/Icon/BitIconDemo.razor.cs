@@ -15,9 +15,9 @@ public partial class BitIconDemo
         new()
         {
             Name = "Size",
-            Type = "BitIconSize",
-            DefaultValue = "BitIconSize.Medium",
-            Description = "Size of icon.",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the icon.",
             LinkType = LinkType.Link,
             Href = "#iconSize-enum",
         },
@@ -28,7 +28,7 @@ public partial class BitIconDemo
         new()
         {
             Id = "iconSize-enum",
-            Name = "BitIconSize",
+            Name = "BitSize",
             Description = "",
             Items =
             [
@@ -78,15 +78,15 @@ public partial class BitIconDemo
 <BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;"" />";
 
     private readonly string example4RazorCode = @"
-<BitIcon Size=""BitIconSize.Small"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitIconSize.Small"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitIconSize.Small"" IconName=""@BitIconName.Pinned"" />
+<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
+<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Bus"" />
+<BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Pinned"" />
 
-<BitIcon Size=""BitIconSize.Medium"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitIconSize.Medium"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitIconSize.Medium"" IconName=""@BitIconName.Pinned"" />
+<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Accept"" />
+<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Bus"" />
+<BitIcon Size=""BitSize.Medium"" IconName=""@BitIconName.Pinned"" />
 
-<BitIcon Size=""BitIconSize.Large"" IconName=""@BitIconName.Accept"" />
-<BitIcon Size=""BitIconSize.Large"" IconName=""@BitIconName.Bus"" />
-<BitIcon Size=""BitIconSize.Large"" IconName=""@BitIconName.Pinned"" />";
+<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Accept"" />
+<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
+<BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
 }

@@ -188,7 +188,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "ImageSize",
-                   Type = "BitSize?",
+                   Type = "BitImageSize?",
                    DefaultValue = "null",
                    Description = "Provides Width and Height for the image of the BitChoiceGroup item.",
                },
@@ -301,7 +301,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "ImageSize",
-                   Type = "BitSize?",
+                   Type = "BitImageSize?",
                    DefaultValue = "null",
                    Description = "Provides Width and Height for the image of the BitChoiceGroup option.",
                },
@@ -414,7 +414,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "ImageSize",
-                   Type = "BitNameSelectorPair<TItem, BitSize?>",
+                   Type = "BitNameSelectorPair<TItem, BitImageSize?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.ImageSize))",
                    Description = "Provides Width and Height for the image of the BitChoiceGroup option.",
                },

@@ -17,6 +17,8 @@
     min-height: 100%;
     position: relative;
     align-items: center;
+    --bit-tln-dot-size: #{spacing(3.75)};
+    --bit-tln-font-size: #{spacing(1.75)};
 
     &.bit-tln-rvs {
         flex-flow: row-reverse;
@@ -214,11 +216,6 @@
 .bit-tln-sm, .bit-tln-ism {
     --bit-tln-dot-size: #{spacing(2.5)};
     --bit-tln-font-size: #{spacing(1.5)};
-}
-
-.bit-tln-md, .bit-tln-imd {
-    --bit-tln-dot-size: #{spacing(3.75)};
-    --bit-tln-font-size: #{spacing(1.75)};
 }
 
 .bit-tln-lg, .bit-tln-ilg {

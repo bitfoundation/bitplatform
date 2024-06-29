@@ -2,8 +2,8 @@
 
 public partial class BitToggleButtonDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AllowDisabledFocus",
@@ -122,7 +122,7 @@ public partial class BitToggleButtonDemo
         new()
         {
             Name = "Size",
-            Type = "BitButtonSize",
+            Type = "BitSize",
             LinkType = LinkType.Link,
             Href = "#button-size-enum",
             DefaultValue = "null",
@@ -151,16 +151,16 @@ public partial class BitToggleButtonDemo
             DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the toggle button.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "class-styles",
             Title = "BitToggleButtonClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -196,19 +196,19 @@ public partial class BitToggleButtonDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the text element of the BitToggleButton.",
                }
-            }
+            ]
         }
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "button-style-enum",
             Name = "ButtonStyle",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Primary",
@@ -227,15 +227,15 @@ public partial class BitToggleButtonDemo
                     Description="The button for less-pronounced actions.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-size-enum",
-            Name = "BitButtonSize",
+            Name = "BitSize",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Small",
@@ -254,9 +254,9 @@ public partial class BitToggleButtonDemo
                     Description="The large size button.",
                     Value="2",
                 }
-            }
+            ]
         }
-    };
+    ];
 
 
     private bool example51Value;
@@ -311,17 +311,17 @@ private bool example51Value;
 private bool example52Value;";
 
     private readonly string example6RazorCode = @"
-<BitToggleButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitToggleButton>
-<BitToggleButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitToggleButton>
-<BitToggleButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitToggleButton>
+<BitToggleButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitToggleButton>
+<BitToggleButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitToggleButton>
 
-<BitToggleButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitToggleButton>
-<BitToggleButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitToggleButton>
-<BitToggleButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitToggleButton>
+<BitToggleButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitToggleButton>
+<BitToggleButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitToggleButton>
 
-<BitToggleButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitToggleButton>
-<BitToggleButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitToggleButton>
-<BitToggleButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitToggleButton>";
+<BitToggleButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitToggleButton>
+<BitToggleButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitToggleButton>";
 
     private readonly string example7RazorCode = @"
 <style>

@@ -2,9 +2,9 @@
 
 public partial class BitPivot
 {
+    private BitSize? linkSize;
     private bool SelectedKeyHasBeenSet;
     private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
-    private BitPivotLinkSize linkSize = BitPivotLinkSize.Normal;
     private BitPivotOverflowBehavior overflowBehavior = BitPivotOverflowBehavior.None;
     private BitPivotPosition position = BitPivotPosition.Top;
     private string? selectedKey;
@@ -49,10 +49,10 @@ public partial class BitPivot
     }
 
     /// <summary>
-    /// Pivot link size
+    /// The size of the pivot links.
     /// </summary>
     [Parameter]
-    public BitPivotLinkSize LinkSize
+    public BitSize? LinkSize
     {
         get => linkSize;
         set
@@ -60,6 +60,7 @@ public partial class BitPivot
             if (value == linkSize) return;
 
             linkSize = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -131,8 +132,9 @@ public partial class BitPivot
 
         ClassBuilder.Register(() => LinkSize switch
         {
-            BitPivotLinkSize.Large => "bit-pvt-large",
-            BitPivotLinkSize.Normal => "bit-pvt-normal",
+            BitSize.Small => "bit-pvt-sm",
+            BitSize.Medium => "bit-pvt-md",
+            BitSize.Large => "bit-pvt-lg",
             _ => string.Empty
         }).Register(() => LinkFormat switch
         {

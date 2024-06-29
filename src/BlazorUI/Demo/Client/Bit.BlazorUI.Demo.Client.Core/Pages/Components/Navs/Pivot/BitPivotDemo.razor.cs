@@ -39,44 +39,44 @@ public partial class BitPivotDemo
             Name = "LinkFormat",
             Type = "BitPivotLinkFormat",
             DefaultValue = "BitPivotLinkFormat.Links",
+            Description = "Pivot link format, display mode for the pivot links.",
             LinkType = LinkType.Link,
             Href = "#linkFormat-enum",
-            Description = "Pivot link format, display mode for the pivot links.",
         },
         new()
         {
             Name = "LinkSize",
-            Type = "BitPivotLinkSize",
-            DefaultValue = "BitPivotLinkSize.Normal",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the pivot links.",
             LinkType = LinkType.Link,
             Href = "#linkSize-enum",
-            Description = "Pivot link size.",
         },
         new()
         {
             Name = "OverflowBehavior",
             Type = "BitOverflowBehavior",
             DefaultValue = "BitOverflowBehavior.None",
+            Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
             LinkType = LinkType.Link,
             Href = "#overflowBehavior-enum",
-            Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
         },
         new()
         {
             Name = "OnItemClick",
             Type = "EventCallback<BitPivotItem>",
+            Description = "Callback for when the a pivot item is clicked.",
             LinkType = LinkType.Link,
             Href = "#pivotItem",
-            Description = "Callback for when the a pivot item is clicked.",
         },
         new()
         {
             Name = "Position",
             Type = "BitPivotPosition",
             DefaultValue = "BitPivotPosition.Top",
+            Description = "Position of the pivot header.",
             LinkType = LinkType.Link,
             Href = "#pivotPosition-enum",
-            Description = "Position of the pivot header.",
         },
         new()
         {
@@ -261,21 +261,27 @@ public partial class BitPivotDemo
         new()
         {
             Id = "linkSize-enum",
-            Name = "BitLinkSize",
+            Name = "BitSize",
             Description = "",
             Items =
             [
                 new()
                 {
-                    Name= "Normal",
-                    Description="Display Link using normal font size.",
+                    Name= "Small",
+                    Description="Display Link using small font size.",
                     Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="Display Link using medium font size.",
+                    Value="1",
                 },
                 new()
                 {
                     Name= "Large",
                     Description="Display links using large font size.",
-                    Value="1",
+                    Value="2",
                 },
             ]
         },
@@ -400,7 +406,7 @@ public partial class BitPivotDemo
 </BitPivot>";
 
     private readonly string example3RazorCode = @"
-<BitPivot LinkSize=""@BitPivotLinkSize.Large"">
+<BitPivot LinkSize=""@BitSize.Large"">
     <BitPivotItem HeaderText=""Large File"">
         <div style=""margin-top:10px"">
             <h1>Pivot #1: Large File</h1>
@@ -444,7 +450,7 @@ public partial class BitPivotDemo
 </BitPivot>";
 
     private readonly string example5RazorCode = @"
-<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitSize.Large"">
     <BitPivotItem HeaderText=""Large File tab"">
         <div style=""margin-top:10px"">
             <h1>Pivot #1: Large File tab</h1>
@@ -466,7 +472,7 @@ public partial class BitPivotDemo
 </BitPivot>";
 
     private readonly string example6RazorCode = @"
-<BitPivot @bind-SelectedKey=""OverridePivotSelectedKey"" LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
+<BitPivot @bind-SelectedKey=""OverridePivotSelectedKey"" LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitSize.Large"">
     <BitPivotItem Key=""1"" HeaderText=""Samples"">
         <div style=""margin-top:10px"">
             <h1>Pivot #1: Samples</h1>
@@ -532,7 +538,7 @@ private string OverridePivotSelectedKey = ""1"";";
 
 <BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs""
             DefaultSelectedKey=""Foo""
-            LinkSize=""@BitPivotLinkSize.Large""
+            LinkSize=""@BitSize.Large""
             HeadersOnly=""true""
             OnItemClick=""@(item => SelectedKey = item.Key)"">
     <BitPivotItem HeaderText=""Foo"" Key=""Foo""></BitPivotItem>
@@ -548,7 +554,7 @@ private string SelectedKey = ""Foo"";";
     Last Pivot clicked: <strong>@SelectedPivotItem?.HeaderText</strong>
 </div>
 
-<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"" OnItemClick=""@(item => SelectedPivotItem = item)"">
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitSize.Large"" OnItemClick=""@(item => SelectedPivotItem = item)"">
     <BitPivotItem HeaderText=""Foo"">
         <div style=""margin-top:10px"">
             <h1>Pivot #1: Foo</h1>
@@ -584,7 +590,7 @@ private string SelectedKey = ""Foo"";";
 private BitPivotItem SelectedPivotItem;";
 
     private readonly string example9RazorCode = @"
-<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitPivotLinkSize.Large"">
+<BitPivot LinkFormat=""@BitPivotLinkFormat.Tabs"" LinkSize=""@BitSize.Large"">
     <BitPivotItem HeaderText=""Foo"">
         <div style=""margin-top:10px"">
             <h1>Pivot #1: Foo</h1>

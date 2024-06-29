@@ -8,12 +8,11 @@ namespace Bit.BlazorUI.Tests.Components.Progress.Spinner;
 public class BitSpinnerTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(BitSpinnerSize.Large),
-        DataRow(BitSpinnerSize.Medium),
-        DataRow(BitSpinnerSize.Small),
-        DataRow(BitSpinnerSize.XSmall)
+        DataRow(BitSize.Large),
+        DataRow(BitSize.Medium),
+        DataRow(BitSize.Small),
     ]
-    public void BitSpinnerShouldRespectSize(BitSpinnerSize size)
+    public void BitSpinnerShouldRespectSize(BitSize size)
     {
         var component = RenderComponent<BitSpinner>(parameters =>
         {
@@ -22,10 +21,9 @@ public class BitSpinnerTests : BunitTestContext
 
         var sizeClass = size switch
         {
-            BitSpinnerSize.XSmall => "bit-spn-xs",
-            BitSpinnerSize.Small => "bit-spn-sm",
-            BitSpinnerSize.Medium => "bit-spn-md",
-            BitSpinnerSize.Large => "bit-spn-lg",
+            BitSize.Small => "bit-spn-sm",
+            BitSize.Medium => "bit-spn-md",
+            BitSize.Large => "bit-spn-lg",
             _ => throw new NotSupportedException()
         };
 

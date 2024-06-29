@@ -2,8 +2,8 @@
 
 public partial class BitIcon
 {
+    private BitSize? size;
     private string? iconName;
-    private BitIconSize size = BitIconSize.Medium;
 
     /// <summary>
     /// The icon name for the icon shown in the button
@@ -23,10 +23,10 @@ public partial class BitIcon
     }
 
     /// <summary>
-    /// Size of icon.
+    /// The size of the icon.
     /// </summary>
     [Parameter]
-    public BitIconSize Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -47,9 +47,9 @@ public partial class BitIcon
 
         ClassBuilder.Register(() => Size switch
         {
-            BitIconSize.Small => "bit-ico-sm",
-            BitIconSize.Medium => "bit-ico-md",
-            BitIconSize.Large => "bit-ico-lg",
+            BitSize.Small => "bit-ico-sm",
+            BitSize.Medium => "bit-ico-md",
+            BitSize.Large => "bit-ico-lg",
             _ => string.Empty
         });
     }

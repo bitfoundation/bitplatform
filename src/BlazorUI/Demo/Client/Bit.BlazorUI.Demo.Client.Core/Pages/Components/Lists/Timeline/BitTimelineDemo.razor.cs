@@ -79,7 +79,7 @@ public partial class BitTimelineDemo
         new()
         {
             Name = "Size",
-            Type = "BitTimelineSize?",
+            Type = "BitSize?",
             DefaultValue = "null",
             Description = "The size of timeline, Possible values: Small | Medium | Large",
             LinkType = LinkType.Link,
@@ -102,8 +102,8 @@ public partial class BitTimelineDemo
         {
             Id = "timeline-group-items",
             Title = "BitTimelineItem",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Class",
@@ -198,7 +198,7 @@ public partial class BitTimelineDemo
                new()
                {
                    Name = "Size",
-                   Type = "BitTimelineSize?",
+                   Type = "BitSize?",
                    DefaultValue = "null",
                    Description = "The size of the item."
                },
@@ -216,14 +216,14 @@ public partial class BitTimelineDemo
                    DefaultValue = "null",
                    Description = "The custom template for the item.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "timeline-group-options",
             Title = "BitTimelineOption",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Class",
@@ -318,7 +318,7 @@ public partial class BitTimelineDemo
                new()
                {
                    Name = "Size",
-                   Type = "BitTimelineSize?",
+                   Type = "BitSize?",
                    DefaultValue = "null",
                    Description = "The size of the option."
                },
@@ -336,14 +336,14 @@ public partial class BitTimelineDemo
                    DefaultValue = "null",
                    Description = "The custom template for the option.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "name-selectors",
             Title = "BitTimelineNameSelectors",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Class",
@@ -470,14 +470,14 @@ public partial class BitTimelineDemo
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 }
-            }
+            ]
         },
         new()
         {
             Id = "name-selector-pair",
             Title = "BitNameSelectorPair",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Name",
@@ -490,14 +490,14 @@ public partial class BitTimelineDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
-            }
+            ]
         },
         new()
         {
             Id = "timeline-class-styles",
             Title = "BitTimelineClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -561,7 +561,7 @@ public partial class BitTimelineDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the icon of the BitButton."
                }
-            }
+            ]
         }
     ];
 
@@ -572,8 +572,8 @@ public partial class BitTimelineDemo
             Id = "timeline-appearance-enum",
             Name = "BitAppearance",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name = "Primary",
@@ -592,15 +592,15 @@ public partial class BitTimelineDemo
                     Description = "The appearance for less-pronounced actions.",
                     Value = "2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "timeline-color-enum",
             Name = "BitColor",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Info",
@@ -631,15 +631,15 @@ public partial class BitTimelineDemo
                     Description="Error styled timeline.",
                     Value="4",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "timeline-size-enum",
-            Name = "BitTimelineSize",
+            Name = "BitSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Small",
@@ -658,7 +658,7 @@ public partial class BitTimelineDemo
                     Description="The large size timeline.",
                     Value="2",
                 }
-            }
+            ]
         },
     ];
 }

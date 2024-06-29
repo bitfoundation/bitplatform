@@ -2,8 +2,8 @@
 
 public partial class BitRatingDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AllowZeroStars",
@@ -23,9 +23,9 @@ public partial class BitRatingDemo
             Name = "Classes",
             Type = "BitRatingClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitRating.",
             LinkType = LinkType.Link,
             Href = "#rating-class-styles",
-            Description = "Custom CSS classes for different parts of the BitRating.",
         },
         new()
         {
@@ -58,8 +58,8 @@ public partial class BitRatingDemo
         new()
         {
             Name = "Size",
-            Type = "BitRatingSize",
-            DefaultValue = "BitRatingSize.Medium",
+            Type = "BitSize?",
+            DefaultValue = "null",
             Description = "Size of rating elements.",
             LinkType = LinkType.Link,
             Href = "#ratingSize-enum",
@@ -69,9 +69,9 @@ public partial class BitRatingDemo
             Name = "Styles",
             Type = "BitRatingClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitRating.",
             LinkType = LinkType.Link,
             Href = "#rating-class-styles",
-            Description = "Custom CSS styles for different parts of the BitRating.",
         },
         new()
         {
@@ -80,17 +80,17 @@ public partial class BitRatingDemo
             DefaultValue = "FavoriteStar",
             Description = "Custom icon name for unselected rating elements.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "rating-class-styles",
             Title = "BitRatingClassStyles",
             Description = "",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Root",
@@ -126,19 +126,19 @@ public partial class BitRatingDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the rating unselected icon.",
                 }
-            }
+            ]
         }
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "ratingSize-enum",
-            Name = "BitRatingSize",
+            Name = "BitSize",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name = "Small",
@@ -157,9 +157,9 @@ public partial class BitRatingDemo
                     Description = "Display rating icon using large size.",
                     Value = "2",
                 }
-            }
+            ]
         }
-    };
+    ];
 
 
 
@@ -238,11 +238,11 @@ Collapsed: [ <BitRating Visibility=""""BitVisibility.Collapsed"""" /> ]";
 <BitRating SelectedIconName=""@BitIconName.LikeSolid"" UnselectedIconName=""@BitIconName.Dislike"" />";
 
     private readonly string example6RazorCode = @"
-<BitRating Size=""BitRatingSize.Small"" />
+<BitRating Size=""BitSize.Small"" />
 
-<BitRating Size=""BitRatingSize.Medium"" />
+<BitRating Size=""BitSize.Medium"" />
 
-<BitRating Size=""BitRatingSize.Large"" />";
+<BitRating Size=""BitSize.Large"" />";
 
     private readonly string example7RazorCode = @"
 <BitRating AllowZeroStars=""true"" Value=""oneWayBinding"" />
