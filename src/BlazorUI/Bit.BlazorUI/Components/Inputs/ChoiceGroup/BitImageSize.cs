@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public struct BitSize(int width, int height)
+public struct BitImageSize(int width, int height)
 {
     public int Width { get; set; } = width; 
 
