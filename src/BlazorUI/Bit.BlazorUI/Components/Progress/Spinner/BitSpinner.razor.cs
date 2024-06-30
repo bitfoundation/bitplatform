@@ -1,8 +1,10 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitSpinner
+public partial class BitSpinner : BitComponentBase
 {
     private BitSize? size;
+
+
 
     /// <summary>
     /// Politeness setting for label update announcement.

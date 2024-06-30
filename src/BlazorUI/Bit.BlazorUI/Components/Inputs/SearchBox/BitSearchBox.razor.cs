@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitSearchBox
+public partial class BitSearchBox : BitInputBase<string?>
 {
     private bool isOpen;
     private bool hideIcon;

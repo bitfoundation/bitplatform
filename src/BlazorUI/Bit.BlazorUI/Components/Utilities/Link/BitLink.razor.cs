@@ -1,8 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitLink
+public partial class BitLink : BitComponentBase
 {
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>

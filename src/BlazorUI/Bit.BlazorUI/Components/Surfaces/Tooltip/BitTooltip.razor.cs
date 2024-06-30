@@ -2,15 +2,15 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitTooltip
+public partial class BitTooltip : BitComponentBase
 {
     private bool IsShownHasBeenSet;
 
-    private CancellationTokenSource? _showDelayTokenSource = new CancellationTokenSource();
-    private CancellationTokenSource? _hideDelayTokenSource = new CancellationTokenSource();
-
     private bool isShown;
     private BitTooltipPosition tooltipPosition = BitTooltipPosition.Top;
+
+    private CancellationTokenSource? _showDelayTokenSource = new CancellationTokenSource();
+    private CancellationTokenSource? _hideDelayTokenSource = new CancellationTokenSource();
 
 
 
@@ -193,7 +193,7 @@ public partial class BitTooltip
     {
         if (IsShownHasBeenSet && IsShownChanged.HasDelegate is false) return;
         if (ShowOnFocus is false) return;
-        
+
         await Show();
     }
 

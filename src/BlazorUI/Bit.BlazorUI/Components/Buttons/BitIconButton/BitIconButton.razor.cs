@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitIconButton
+public partial class BitIconButton : BitComponentBase
 {
     private BitSize? size;
 
@@ -115,7 +115,7 @@ public partial class BitIconButton
         {
             _tabIndex = AllowDisabledFocus ? null : -1;
         }
-        
+
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
         base.OnParametersSet();

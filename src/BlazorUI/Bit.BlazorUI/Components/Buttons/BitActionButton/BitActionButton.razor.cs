@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitActionButton
+public partial class BitActionButton : BitComponentBase
 {
     private int? _tabIndex;
     private BitButtonType _buttonType;

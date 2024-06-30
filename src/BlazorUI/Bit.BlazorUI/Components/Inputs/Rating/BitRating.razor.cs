@@ -2,9 +2,11 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitRating
+public partial class BitRating : BitInputBase<double>
 {
     private BitSize? size;
+
+
 
     /// <summary>
     /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.

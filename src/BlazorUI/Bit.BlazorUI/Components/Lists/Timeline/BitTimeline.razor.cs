@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
-public partial class BitTimeline<TItem> where TItem : class
+public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 {
+    private BitSize? size;
     private bool horizontal;
     private BitColor? color;
-    private BitSize? size;
     private BitAppearance appearance = BitAppearance.Primary;
 
-    private List<TItem> _items = new();
+    private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
 
 
@@ -122,6 +122,7 @@ public partial class BitTimeline<TItem> where TItem : class
     [Parameter] public BitTimelineClassStyles? Styles { get; set; }
 
 
+
     internal void RegisterOption(BitTimelineOption option)
     {
         var item = (option as TItem)!;
@@ -137,6 +138,7 @@ public partial class BitTimeline<TItem> where TItem : class
 
         StateHasChanged();
     }
+
 
 
     protected override string RootElementClass => "bit-tln";

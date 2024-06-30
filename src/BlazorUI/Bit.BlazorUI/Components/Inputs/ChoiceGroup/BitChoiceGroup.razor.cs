@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitChoiceGroup<TItem, TValue> where TItem : class
+public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where TItem : class
 {
     private List<TItem> _items = [];
     private string _labelId = default!;

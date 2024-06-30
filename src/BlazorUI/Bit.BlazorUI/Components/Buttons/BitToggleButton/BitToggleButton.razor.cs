@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitToggleButton
+public partial class BitToggleButton : BitComponentBase
 {
     private bool IsCheckedHasBeenSet;
 
@@ -175,7 +175,7 @@ public partial class BitToggleButton
             _ => string.Empty
         });
     }
-    
+
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);

@@ -1,9 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitShimmer
+public partial class BitShimmer : BitComponentBase
 {
     private BitShimmerShape shape = BitShimmerShape.Line;
-    private BitShimmerAnimation animtaion = BitShimmerAnimation.Wave;
+    private BitShimmerAnimation animation = BitShimmerAnimation.Wave;
 
 
 
@@ -13,12 +13,12 @@ public partial class BitShimmer
     [Parameter]
     public BitShimmerAnimation Animation
     {
-        get => animtaion;
+        get => animation;
         set
         {
-            if (animtaion == value) return;
+            if (animation == value) return;
 
-            animtaion = value;
+            animation = value;
             ClassBuilder.Reset();
         }
     }
@@ -51,7 +51,8 @@ public partial class BitShimmer
     /// <summary>
     /// The shape of the shimmer.
     /// </summary>
-    [Parameter] public BitShimmerShape Shape
+    [Parameter]
+    public BitShimmerShape Shape
     {
         get => shape;
         set

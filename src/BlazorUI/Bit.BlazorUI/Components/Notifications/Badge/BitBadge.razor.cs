@@ -2,15 +2,15 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitBadge
+public partial class BitBadge : BitComponentBase
 {
     private BitSize? size;
     private BitColor? color;
     private BitAppearance appearance = BitAppearance.Primary;
     private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
 
-    
     private string? _content;
+
 
 
     /// <summary>
@@ -129,7 +129,7 @@ public partial class BitBadge
 
 
     protected override string RootElementClass => "bit-bdg";
-    
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);

@@ -1,12 +1,12 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitMessage
+public partial class BitMessage : BitComponentBase
 {
     private BitVariant variant = BitVariant.Fill;
     private BitSeverity severity = BitSeverity.Info;
 
-
     private bool _isExpanded;
+
 
 
     /// <summary>

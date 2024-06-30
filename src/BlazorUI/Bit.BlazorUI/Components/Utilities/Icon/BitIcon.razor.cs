@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitIcon
+public partial class BitIcon : BitComponentBase
 {
     private BitSize? size;
     private BitColor? color;
