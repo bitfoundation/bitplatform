@@ -116,3 +116,13 @@
 .bit-theme-light .github-codespaces-icon {
     background-image: url('images/github-icon-light.svg');
 }
+
+.section-card-txt {
+    font-weight: 400;
+    font-size: rem2(15px);
+    line-height: rem2(24px);
+
+    ul {
+        padding-left: rem2(16px);
+    }
+}
