@@ -38,7 +38,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights --serverUrl todo.bitplatform.dev
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database SqlServer --sample Todo --appInsights --serverUrl todo.bitplatform.dev --filesStorage AzureBlobStorage
 
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
