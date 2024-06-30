@@ -39,7 +39,7 @@ public class IdentitySettings : IdentityOptions
 
     [Required]
     public string Audience { get; set; } = default!;
-    
+
     /// <summary>
     /// To either confirm and/or change email
     /// </summary>
