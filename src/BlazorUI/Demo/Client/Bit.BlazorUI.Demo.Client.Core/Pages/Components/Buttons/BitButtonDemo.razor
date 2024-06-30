@@ -141,19 +141,19 @@
             <br />
             <div class="buttons-container-grid">
                 <div>
-                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Primary">Small</BitButton>
-                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Primary">Medium</BitButton>
-                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Primary">Large</BitButton>
+                    <BitButton Size="BitSize.Small" ButtonStyle="BitButtonStyle.Primary">Small</BitButton>
+                    <BitButton Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Primary">Medium</BitButton>
+                    <BitButton Size="BitSize.Large" ButtonStyle="BitButtonStyle.Primary">Large</BitButton>
                 </div>
                 <div>
-                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Standard">Small</BitButton>
-                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Standard">Medium</BitButton>
-                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Standard">Large</BitButton>
+                    <BitButton Size="BitSize.Small" ButtonStyle="BitButtonStyle.Standard">Small</BitButton>
+                    <BitButton Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Standard">Medium</BitButton>
+                    <BitButton Size="BitSize.Large" ButtonStyle="BitButtonStyle.Standard">Large</BitButton>
                 </div>
                 <div>
-                    <BitButton Size="BitButtonSize.Small" ButtonStyle="BitButtonStyle.Text">Small</BitButton>
-                    <BitButton Size="BitButtonSize.Medium" ButtonStyle="BitButtonStyle.Text">Medium</BitButton>
-                    <BitButton Size="BitButtonSize.Large" ButtonStyle="BitButtonStyle.Text">Large</BitButton>
+                    <BitButton Size="BitSize.Small" ButtonStyle="BitButtonStyle.Text">Small</BitButton>
+                    <BitButton Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Text">Medium</BitButton>
+                    <BitButton Size="BitSize.Large" ButtonStyle="BitButtonStyle.Text">Large</BitButton>
                 </div>
             </div>
         </ExamplePreview>
@@ -199,7 +199,7 @@
                     <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
                         <DataAnnotationsValidator />
 
-                        <BitTextField Label="Required" IsRequired="true" @bind-Value="buttonValidationModel.RequiredText" />
+                        <BitTextField Label="Required" Required @bind-Value="buttonValidationModel.RequiredText" />
                         <ValidationMessage For="() => buttonValidationModel.RequiredText" />
                         <br />
                         <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />
@@ -303,7 +303,7 @@
             <br />
             <div class="buttons-container">
                 <BitButton IsLoading="true"
-                           Size="BitButtonSize.Large"
+                           Size="BitSize.Large"
                            Title="Ellipsis loading...">
                     <LoadingTemplate>
                         <div class="custom-loading">

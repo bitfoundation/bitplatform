@@ -5,8 +5,8 @@
                   IsMultiline="IsMultiline"
                   Type="Type"
                   Placeholder="@Placeholder"
-                  IsReadOnly="IsReadOnly"
-                  IsRequired="IsRequired"
+                  ReadOnly="ReadOnly"
+                  Required="Required"
                   IsEnabled="IsEnabled"
                   IconName="@IconName"
                   @bind-Value="@TestModel.Value"
@@ -39,8 +39,8 @@
     [Parameter] public string IconName { get; set; }
     [Parameter] public bool IsMultiline { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
-    [Parameter] public bool IsReadOnly { get; set; }
-    [Parameter] public bool IsRequired { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public bool Required { get; set; }
     [Parameter] public string Placeholder { get; set; }
     [Parameter] public bool CanRevealPassword { get; set; }
     [Parameter] public string RevealPasswordAriaLabel { get; set; }

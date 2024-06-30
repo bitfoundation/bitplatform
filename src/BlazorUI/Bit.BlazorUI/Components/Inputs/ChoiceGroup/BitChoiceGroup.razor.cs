@@ -3,11 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitChoiceGroup<TItem, TValue> where TItem : class
+public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where TItem : class
 {
-    private bool required;
-
-
     private List<TItem> _items = [];
     private string _labelId = default!;
     private IEnumerable<TItem>? _oldItems;
@@ -82,23 +79,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
-
-    /// <summary>
-    /// If true, selecting an option is mandatory in the ChoiceGroup.
-    /// </summary>
-    [Parameter]
-    public bool Required
-    {
-        get => required;
-        set
-        {
-            if (required == value) return;
-
-            required = value;
-
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitChoiceGroup.
@@ -410,26 +390,26 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.ImageAlt.Name);
     }
 
-    private BitSize GetImageSize(TItem item)
+    private BitImageSize GetImageSize(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
-            return choiceGroupItem.ImageSize ?? new BitSize(0, 0);
+            return choiceGroupItem.ImageSize ?? new BitImageSize(0, 0);
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
-            return choiceGroupOption.ImageSize ?? new BitSize(0, 0);
+            return choiceGroupOption.ImageSize ?? new BitImageSize(0, 0);
         }
 
-        if (NameSelectors is null) return new BitSize(0, 0);
+        if (NameSelectors is null) return new BitImageSize(0, 0);
 
         if (NameSelectors.ImageSize.Selector is not null)
         {
-            return NameSelectors.ImageSize.Selector!(item) ?? new BitSize(0, 0);
+            return NameSelectors.ImageSize.Selector!(item) ?? new BitImageSize(0, 0);
         }
 
-        return item.GetValueFromProperty<BitSize?>(NameSelectors.ImageSize.Name) ?? new BitSize(0, 0);
+        return item.GetValueFromProperty<BitImageSize?>(NameSelectors.ImageSize.Name) ?? new BitImageSize(0, 0);
     }
 
     private string? GetPrefix(TItem item)

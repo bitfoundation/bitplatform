@@ -2,13 +2,11 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitTextField
+public partial class BitTextField : BitTextInputBase<string?>
 {
-    private bool hasBorder = true;
     private bool isMultiline;
-    private bool isReadOnly;
-    private bool isRequired;
     private bool isUnderlined;
+    private bool hasBorder = true;
     private bool isResizable = true;
     private BitTextFieldType type = BitTextFieldType.Text;
 
@@ -83,38 +81,6 @@ public partial class BitTextField
             if (isMultiline == value) return;
 
             isMultiline = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// If true, the text field is readonly.
-    /// </summary>
-    [Parameter]
-    public bool IsReadOnly
-    {
-        get => isReadOnly;
-        set
-        {
-            if (isReadOnly == value) return;
-
-            isReadOnly = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Whether the associated input is required or not, add an asterisk "*" to its label.
-    /// </summary>
-    [Parameter]
-    public bool IsRequired
-    {
-        get => isRequired;
-        set
-        {
-            if (isRequired == value) return;
-
-            isRequired = value;
             ClassBuilder.Reset();
         }
     }
@@ -274,18 +240,18 @@ public partial class BitTextField
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
-                                    ? $"{RootElementClass}-{(IsResizable ? "mln" : "mlf")}"
+                                    ? $"bit-txt-{(IsResizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-txt-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-txt-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? "bit-txt-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-txt-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => IsRequired && Label is null ? $"{RootElementClass}-rnl" : string.Empty);
+        ClassBuilder.Register(() => Required && Label is null ? "bit-txt-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

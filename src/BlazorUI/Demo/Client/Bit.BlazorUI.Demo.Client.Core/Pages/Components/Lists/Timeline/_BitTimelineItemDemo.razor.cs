@@ -224,17 +224,17 @@ private List<BitTimelineItem> iconItems = new()
 };";
 
     private readonly string example7RazorCode = @"
-<BitTimeline Horizontal Size=""BitTimelineSize.Small"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitTimelineSize.Small"" Appearance=""BitAppearance.Standard"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitTimelineSize.Small"" Appearance=""BitAppearance.Text"" Items=""iconItems"" />
+<BitTimeline Horizontal Size=""BitSize.Small"" Items=""iconItems"" />
+<BitTimeline Horizontal Size=""BitSize.Small"" Appearance=""BitAppearance.Standard"" Items=""iconItems"" />
+<BitTimeline Horizontal Size=""BitSize.Small"" Appearance=""BitAppearance.Text"" Items=""iconItems"" />
 
-<BitTimeline Horizontal Size=""BitTimelineSize.Medium"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitTimelineSize.Medium"" Appearance=""BitAppearance.Standard"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitTimelineSize.Medium"" Appearance=""BitAppearance.Text"" Items=""iconItems"" />
+<BitTimeline Horizontal Size=""BitSize.Medium"" Items=""iconItems"" />
+<BitTimeline Horizontal Size=""BitSize.Medium"" Appearance=""BitAppearance.Standard"" Items=""iconItems"" />
+<BitTimeline Horizontal Size=""BitSize.Medium"" Appearance=""BitAppearance.Text"" Items=""iconItems"" />
 
-<BitTimeline Horizontal Size=""BitTimelineSize.Large"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitTimelineSize.Large"" Appearance=""BitAppearance.Standard"" Items=""iconItems"" />
-<BitTimeline Horizontal Size=""BitTimelineSize.Large"" Appearance=""BitAppearance.Text"" Items=""iconItems"" />";
+<BitTimeline Horizontal Size=""BitSize.Large"" Items=""iconItems"" />
+<BitTimeline Horizontal Size=""BitSize.Large"" Appearance=""BitAppearance.Standard"" Items=""iconItems"" />
+<BitTimeline Horizontal Size=""BitSize.Large"" Appearance=""BitAppearance.Text"" Items=""iconItems"" />";
     private readonly string example7CsharpCode = @"
 private List<BitTimelineItem> iconItems = new()
 {

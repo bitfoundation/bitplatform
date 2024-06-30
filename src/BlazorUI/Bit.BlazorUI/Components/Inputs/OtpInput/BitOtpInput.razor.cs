@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitOtpInput : IDisposable
+public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 {
     private string?[] _inputValues = default!;
     private ElementReference[] _inputRefs = default!;

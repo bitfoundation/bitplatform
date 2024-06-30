@@ -1,15 +1,19 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPanel
+public partial class BitPanel : BitComponentBase
 {
-    private bool isOpen;
     private bool IsOpenHasBeenSet;
+
+    private bool isOpen;
 
     private int _offsetTop;
     private bool _internalIsOpen;
     private string _containerId = default!;
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>

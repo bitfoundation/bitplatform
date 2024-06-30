@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitInputBase<string?>
+@inherits BitTextInputBase<string?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -51,8 +51,8 @@
                           rows="@Rows"
                           name="@Name"
                           id="@_inputId"
-                          readonly=@IsReadOnly
-                          required=@IsRequired
+                          readonly="@ReadOnly"
+                          required="@Required"
                           style="@Styles?.Input"
                           autofocus="@AutoFocus"
                           maxlength="@MaxLength"
@@ -78,8 +78,8 @@
                        name="@Name"
                        id="@_inputId"
                        type="@_inputType"
-                       readonly=@IsReadOnly
-                       required=@IsRequired
+                       readonly="@ReadOnly"
+                       required="@Required"
                        style="@Styles?.Input"
                        autofocus="@AutoFocus"
                        maxlength="@MaxLength"

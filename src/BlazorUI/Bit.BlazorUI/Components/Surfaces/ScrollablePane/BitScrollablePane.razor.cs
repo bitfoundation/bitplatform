@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitScrollablePane
+public partial class BitScrollablePane : BitComponentBase
 {
     private static readonly Dictionary<BitOverflow, string> _OverflowMap = new()
     {
@@ -11,12 +11,15 @@ public partial class BitScrollablePane
     };
 
 
+
+    private string? width;
     private string? height;
     private BitOverflow? overflow;
     private BitOverflow? overflowX;
     private BitOverflow? overflowY;
     private BitScrollbarGutter? gutter;
-    private string? width;
+
+
 
     /// <summary>
     /// The content of the ScrollablePane, it can be any custom tag or text.

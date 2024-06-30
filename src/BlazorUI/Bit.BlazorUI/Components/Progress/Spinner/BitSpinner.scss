@@ -18,12 +18,14 @@
 
 .bit-spn-snr {
     border-radius: 50%;
-    animation: bit-spn-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    width: spacing(2.5);
+    height: spacing(2.5);
     border-width: spacing(0.1875);
     border-style: $shape-border-style;
     border-color: $color-border-secondary;
     border-top-color: $color-primary-main;
+    animation: bit-spn-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
 
 .bit-spn-lbl {
@@ -43,24 +45,10 @@
     margin: spacing(-0.125);
 }
 
-.bit-spn-xs {
+.bit-spn-sm {
     .bit-spn-snr {
         width: spacing(1.5);
         height: spacing(1.5);
-    }
-}
-
-.bit-spn-sm {
-    .bit-spn-snr {
-        width: spacing(2);
-        height: spacing(2);
-    }
-}
-
-.bit-spn-md {
-    .bit-spn-snr {
-        width: spacing(2.5);
-        height: spacing(2.5);
     }
 }
 

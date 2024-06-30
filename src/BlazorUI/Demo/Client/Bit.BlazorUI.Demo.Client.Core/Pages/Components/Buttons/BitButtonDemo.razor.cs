@@ -2,8 +2,8 @@
 
 public partial class BitButtonDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AllowDisabledFocus",
@@ -137,7 +137,7 @@ public partial class BitButtonDemo
         new()
         {
             Name = "Size",
-            Type = "BitButtonSize",
+            Type = "BitSize",
             LinkType = LinkType.Link,
             Href = "#button-size-enum",
             DefaultValue = "null",
@@ -166,17 +166,17 @@ public partial class BitButtonDemo
             DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the button.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "button-style-enum",
             Name = "BitButtonStyle",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Primary",
@@ -195,15 +195,15 @@ public partial class BitButtonDemo
                     Description="The button for less-pronounced actions.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-color-enum",
             Name = "BitColor",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Info",
@@ -234,15 +234,15 @@ public partial class BitButtonDemo
                     Description="Error styled Button.",
                     Value="4",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-size-enum",
-            Name = "BitButtonSize",
+            Name = "BitSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Small",
@@ -261,15 +261,15 @@ public partial class BitButtonDemo
                     Description="The large size button.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Button",
@@ -288,15 +288,15 @@ public partial class BitButtonDemo
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-icon-enum",
             Name = "BitButtonIconPosition",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Start",
@@ -309,15 +309,15 @@ public partial class BitButtonDemo
                     Description="Renders the icon at the end of component.",
                     Value="1",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-labelPosition-enum",
             Name = "BitLabelPosition",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Top",
@@ -342,18 +342,18 @@ public partial class BitButtonDemo
                     Description="The label shows on the start of the button.",
                     Value="3",
                 },
-            }
+            ]
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "button-class-styles",
             Title = "BitButtonClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -389,9 +389,9 @@ public partial class BitButtonDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the label section of the BitButton."
                },
-            }
+            ]
         }
-    };
+    ];
 
 
 
@@ -453,17 +453,17 @@ private int clickCounter;";
 <BitButton Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
 
     private readonly string example8RazorCode = @"
-<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>
-<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitButton>
-<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitButton>
+<BitButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>
+<BitButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitButton>
+<BitButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitButton>
 
-<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitButton>
-<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitButton>
-<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitButton>
+<BitButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitButton>
+<BitButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitButton>
+<BitButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitButton>
 
-<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitButton>
-<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitButton>
-<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitButton>";
+<BitButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitButton>
+<BitButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitButton>
+<BitButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitButton>";
 
     private readonly string example9RazorCode = @"
 <style>
@@ -496,7 +496,7 @@ private int clickCounter;";
     private readonly string example10RazorCode = @"
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
-    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""buttonValidationModel.RequiredText"" />
+    <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
     <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
     <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
     <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
@@ -617,7 +617,7 @@ private async Task LoadingTextClick()
 
 
 <BitButton IsLoading=""true""
-           Size=""BitButtonSize.Large""
+           Size=""BitSize.Large""
            Title=""Ellipsis loading..."">
     <LoadingTemplate>
         <div class=""custom-loading"">

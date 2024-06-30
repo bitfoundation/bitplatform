@@ -31,7 +31,7 @@ public partial class _BitChoiceGroupCustomDemo
         {
             Name = "Bar",
             ItemValue = "Bar",
-            ImageSize = new BitSize(32, 32),
+            ImageSize = new BitImageSize(32, 32),
             ImageDescription = "alt for Bar image",
             ImageAddress = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png",
             SelectedImageAddress = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png",
@@ -40,7 +40,7 @@ public partial class _BitChoiceGroupCustomDemo
         {
             Name = "Pie",
             ItemValue = "Pie",
-            ImageSize = new BitSize(32, 32),
+            ImageSize = new BitImageSize(32, 32),
             ImageDescription = "alt for Pie image",
             ImageAddress= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png",
             SelectedImageAddress = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png",
@@ -179,7 +179,7 @@ private readonly List<ChoiceModel> imageCustoms = new()
     {
         Name = ""Bar"",
         ItemValue = ""Bar"",
-        ImageSize = new BitSize(32, 32),
+        ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Bar image"",
         ImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
         SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
@@ -188,7 +188,7 @@ private readonly List<ChoiceModel> imageCustoms = new()
     {
         Name = ""Pie"",
         ItemValue = ""Pie"",
-        ImageSize = new BitSize(32, 32),
+        ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Pie image"",
         ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
         SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
@@ -262,7 +262,7 @@ private readonly List<ChoiceModel> imageCustoms = new()
     {
         Name = ""Bar"",
         ItemValue = ""Bar"",
-        ImageSize = new BitSize(32, 32),
+        ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Bar image"",
         ImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
         SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
@@ -271,7 +271,7 @@ private readonly List<ChoiceModel> imageCustoms = new()
     {
         Name = ""Pie"",
         ItemValue = ""Pie"",
-        ImageSize = new BitSize(32, 32),
+        ImageSize = new BitImageSize(32, 32),
         ImageDescription = ""alt for Pie image"",
         ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
         SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",

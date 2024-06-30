@@ -14,7 +14,7 @@
                  Title="@Title"
                  IsReselectable="IsReselectable"
                  OnSelectItem="HandleSelectItem"
-                 IsRequired="IsRequired"
+                 Required="Required"
                  TItem="BitDropdownItem<string>"
                  TValue="string">
         <LabelTemplate>
@@ -27,7 +27,7 @@
 @code {
     [Parameter] public bool IsMultiSelect { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
-    [Parameter] public bool IsRequired { get; set; }
+    [Parameter] public bool Required { get; set; }
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public List<BitDropdownItem<string>> Items { get; set; } = new();
     [Parameter] public BitDropdownTestModel TestModel { get; set; }

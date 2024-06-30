@@ -70,7 +70,7 @@ public class BitTimelineItem
     /// <summary>
     /// The size of the item.
     /// </summary>
-    public BitTimelineSize? Size { get; set; }
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// The custom value for the style attribute of the item.

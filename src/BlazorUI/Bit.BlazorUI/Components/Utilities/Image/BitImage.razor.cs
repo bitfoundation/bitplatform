@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitImage
+public partial class BitImage : BitComponentBase
 {
     private BitImageLoadingState _loadingState;
 

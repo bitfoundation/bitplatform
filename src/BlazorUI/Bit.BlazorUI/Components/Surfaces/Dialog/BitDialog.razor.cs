@@ -1,19 +1,22 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitDialog : IDisposable
+public partial class BitDialog : BitComponentBase, IDisposable
 {
-    private bool isOpen;
     private bool IsOpenHasBeenSet;
 
-    private bool _disposed;
+    private bool isOpen;
+
     private int _offsetTop;
+    private bool _disposed;
     private bool _isAlertRole;
     private bool _internalIsOpen;
     private string _containerId = default!;
     private TaskCompletionSource<BitDialogResult?>? _tcs = new();
 
 
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>

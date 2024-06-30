@@ -1,8 +1,19 @@
 ﻿namespace Bit.BlazorUI;
 
-public struct BitSize(int width, int height)
+public enum BitSize
 {
-    public int Width { get; set; } = width; 
-
-    public int Height { get; set;} = height;
+    /// <summary>
+    /// The small size.
+    /// </summary>
+    Small,
+    
+    /// <summary>
+    /// The medium size.
+    /// </summary>
+    Medium,
+    
+    /// <summary>
+    /// The large size.
+    /// </summary>
+    Large
 }

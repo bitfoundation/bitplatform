@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitTag
+public partial class BitTag : BitComponentBase
 {
     private BitColor? color;
     private BitAppearance appearance = BitAppearance.Primary;

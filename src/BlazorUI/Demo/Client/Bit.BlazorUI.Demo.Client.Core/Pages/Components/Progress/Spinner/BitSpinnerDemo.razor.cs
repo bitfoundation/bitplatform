@@ -32,11 +32,11 @@ public partial class BitSpinnerDemo
         new()
         {
             Name = "Size",
-            Type = "BitSpinnerSize",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of spinner to render.",
             LinkType = LinkType.Link,
             Href = "#spinnerSize-enum",
-            DefaultValue = "BitSpinnerSize.Medium",
-            Description = "The size of spinner to render.",
         }
     ];
 
@@ -105,33 +105,27 @@ public partial class BitSpinnerDemo
         new()
         {
             Id = "spinnerSize-enum",
-            Name = "BitSpinnerSize",
+            Name = "BitSize",
             Description = "",
             Items =
             [
                 new()
                 {
+                    Name= "Small",
+                    Description="12px Spinner diameter.",
+                    Value="0",
+                },
+                new()
+                {
                     Name= "Medium",
                     Description="20px Spinner diameter.",
-                    Value="0",
+                    Value="1",
                 },
                 new()
                 {
                     Name= "Large",
                     Description="28px Spinner diameter.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Small",
-                    Description="16px Spinner diameter.",
                     Value="2",
-                },
-                new()
-                {
-                    Name= "XSmall",
-                    Description="12px Spinner diameter.",
-                    Value="3",
                 },
             ],
         }
@@ -140,10 +134,9 @@ public partial class BitSpinnerDemo
 
 
     private readonly string example1RazorCode = @"
-<BitSpinner Size=""BitSpinnerSize.XSmall"" />
-<BitSpinner Size=""BitSpinnerSize.Small"" />
-<BitSpinner Size=""BitSpinnerSize.Medium"" />
-<BitSpinner Size=""BitSpinnerSize.Large"" />";
+<BitSpinner Size=""BitSize.Small"" />
+<BitSpinner Size=""BitSize.Medium"" />
+<BitSpinner Size=""BitSize.Large"" />";
 
     private readonly string example2RazorCode = @"
 <BitSpinner LabelPosition=""BitLabelPosition.Top"" Label=""I am definitely loading..."" />

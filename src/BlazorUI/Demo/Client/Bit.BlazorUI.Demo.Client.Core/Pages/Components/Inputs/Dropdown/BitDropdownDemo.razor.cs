@@ -125,13 +125,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "IsRequired",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the required mode of the dropdown.",
-        },
-        new()
-        {
             Name = "IsReselectable",
             Type = "bool",
             DefaultValue = "false",

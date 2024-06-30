@@ -1,17 +1,18 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitOverlay
+public partial class BitOverlay : BitComponentBase
 {
     private bool IsVisibleHasBeenSet;
 
     private bool isVisible;
 
-
     private int _offsetTop;
     private bool _internalIsVisible;
 
 
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>

@@ -1,10 +1,12 @@
 ﻿
 namespace Bit.BlazorUI;
 
-public partial class BitAccordion
+public partial class BitAccordion : BitComponentBase
 {
     private bool IsExpandedHasBeenSet;
+
     private bool isExpanded;
+
 
 
     /// <summary>

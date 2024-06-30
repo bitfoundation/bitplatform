@@ -2,9 +2,9 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitIconButton
+public partial class BitIconButton : BitComponentBase
 {
-    private BitButtonSize? size;
+    private BitSize? size;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -60,7 +60,7 @@ public partial class BitIconButton
     /// The size of button, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitButtonSize? Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -68,6 +68,7 @@ public partial class BitIconButton
             if (size == value) return;
 
             size = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -96,9 +97,9 @@ public partial class BitIconButton
 
         ClassBuilder.Register(() => Size switch
         {
-            BitButtonSize.Small => "bit-icb-sm",
-            BitButtonSize.Medium => "bit-icb-md",
-            BitButtonSize.Large => "bit-icb-lg",
+            BitSize.Small => "bit-icb-sm",
+            BitSize.Medium => "bit-icb-md",
+            BitSize.Large => "bit-icb-lg",
             _ => string.Empty
         });
     }
@@ -114,7 +115,7 @@ public partial class BitIconButton
         {
             _tabIndex = AllowDisabledFocus ? null : -1;
         }
-        
+
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
         base.OnParametersSet();

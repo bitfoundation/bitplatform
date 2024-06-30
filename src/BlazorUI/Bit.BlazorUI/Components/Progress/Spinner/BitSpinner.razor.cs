@@ -1,7 +1,11 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitSpinner
+public partial class BitSpinner : BitComponentBase
 {
+    private BitSize? size;
+
+
+
     /// <summary>
     /// Politeness setting for label update announcement.
     /// </summary>
@@ -15,7 +19,19 @@ public partial class BitSpinner
     /// <summary>
     /// The size of spinner to render
     /// </summary>
-    [Parameter] public BitSpinnerSize Size { get; set; }
+    [Parameter]
+    public BitSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+
+            size = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The label to show next to the spinner. Label updates will be announced to the screen readers
@@ -28,19 +44,18 @@ public partial class BitSpinner
     {
         ClassBuilder.Register(() => Size switch
         {
-            BitSpinnerSize.XSmall => $"{RootElementClass}-xs",
-            BitSpinnerSize.Small => $"{RootElementClass}-sm",
-            BitSpinnerSize.Medium => $"{RootElementClass}-md",
-            BitSpinnerSize.Large => $"{RootElementClass}-lg",
+            BitSize.Small => "bit-spn-sm",
+            BitSize.Medium => "bit-spn-md",
+            BitSize.Large => "bit-spn-lg",
             _ => string.Empty
         });
 
         ClassBuilder.Register(() => LabelPosition switch
         {
-            BitLabelPosition.Top => $"{RootElementClass}-top",
-            BitLabelPosition.Start => $"{RootElementClass}-srt",
-            BitLabelPosition.End => $"{RootElementClass}-end",
-            BitLabelPosition.Bottom => $"{RootElementClass}-btm",
+            BitLabelPosition.Top => "bit-spn-top",
+            BitLabelPosition.Start => "bit-spn-srt",
+            BitLabelPosition.End => "bit-spn-end",
+            BitLabelPosition.Bottom => "bit-spn-btm",
             _ => string.Empty
         });
     }

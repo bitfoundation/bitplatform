@@ -37,11 +37,11 @@ public class BitRatingTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRatingShouldRespectIsReadonly()
+    public void BitRatingShouldRespectReadOnly()
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
-            parameters.Add(p => p.IsReadOnly, true);
+            parameters.Add(p => p.ReadOnly, true);
             parameters.Add(p => p.AllowZeroStars, true);
         });
 
@@ -90,10 +90,10 @@ public class BitRatingTests : BunitTestContext
 
     [DataTestMethod,
         DataRow(null),
-        DataRow(BitRatingSize.Small),
-        DataRow(BitRatingSize.Large)
+        DataRow(BitSize.Small),
+        DataRow(BitSize.Large)
     ]
-    public void BitRatingShouldRespectSize(BitRatingSize size)
+    public void BitRatingShouldRespectSize(BitSize size)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
@@ -101,7 +101,7 @@ public class BitRatingTests : BunitTestContext
         });
         var bitRating = component.Find(".bit-rtg");
 
-        var sizeClass = size == BitRatingSize.Large ? "bit-rtg-lg" : "bit-rtg-sm";
+        var sizeClass = size == BitSize.Large ? "bit-rtg-lg" : "bit-rtg-sm";
 
         Assert.IsTrue(bitRating.ClassList.Contains(sizeClass));
     }
@@ -157,13 +157,13 @@ public class BitRatingTests : BunitTestContext
         DataRow(10, 4, false, true, 1),
         DataRow(10, 0, true, false, 1)
     ]
-    public void BitRatingShouldRespectClickIndex(int max, int clickedIndex, bool isEnabled, bool isReadonly, int expectedResult)
+    public void BitRatingShouldRespectClickIndex(int max, int clickedIndex, bool isEnabled, bool readOnly, int expectedResult)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Max, max);
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.IsReadOnly, isReadonly);
+            parameters.Add(p => p.ReadOnly, readOnly);
         });
 
         var bitRatingButtons = component.FindAll(".bit-rtg-btn");
@@ -183,8 +183,8 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(bitRatingButtons.Count(), max);
 
         //TODO: bypassed - BUnit 2-way bound parameters issue
-        Assert.AreEqual((!isEnabled || isReadonly) ? 1 : clickedIndex, filledBitRatingIconCount);
-        Assert.AreEqual((!isEnabled || isReadonly) ? max - 1 : max - clickedIndex, unselectedBitRatingIconCount);
+        Assert.AreEqual((!isEnabled || readOnly) ? 1 : clickedIndex, filledBitRatingIconCount);
+        Assert.AreEqual((!isEnabled || readOnly) ? max - 1 : max - clickedIndex, unselectedBitRatingIconCount);
     }
 
     [DataTestMethod, DataRow("Detailed label")]

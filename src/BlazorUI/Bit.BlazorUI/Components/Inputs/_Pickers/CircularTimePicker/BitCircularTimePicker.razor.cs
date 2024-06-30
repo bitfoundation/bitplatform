@@ -1,10 +1,10 @@
-﻿using System.Globalization;
+﻿using System.Text;
+using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace Bit.BlazorUI;
 
-public partial class BitCircularTimePicker
+public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 {
     private const string FORMAT_24_HOURS = "HH:mm";
     private const string FORMAT_12_HOURS = "hh:mm tt";

@@ -2,8 +2,8 @@
 
 public partial class BitIconButtonDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AllowDisabledFocus",
@@ -66,7 +66,7 @@ public partial class BitIconButtonDemo
         new()
         {
             Name = "Size",
-            Type = "BitButtonSize",
+            Type = "BitSize",
             LinkType = LinkType.Link,
             Href = "#button-size-enum",
             DefaultValue = "null",
@@ -95,16 +95,16 @@ public partial class BitIconButtonDemo
             DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the icon button.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "class-styles",
             Title = "BitIconButtonClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -123,19 +123,19 @@ public partial class BitIconButtonDemo
                    Type = "string?",
                    Description = "Custom CSS classes/styles for the Icon of the BitIconButton."
                }
-            }
+            ]
         }
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "button-size-enum",
-            Name = "BitButtonSize",
+            Name = "BitSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Small",
@@ -154,15 +154,15 @@ public partial class BitIconButtonDemo
                     Description="The large size button.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Button",
@@ -181,9 +181,9 @@ public partial class BitIconButtonDemo
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
-            }
+            ]
         }
-    };
+    ];
 
 
 
@@ -224,15 +224,15 @@ Collapsed: [<BitIconButton Visibility=""BitVisibility.Collapsed"" /> ]";
 <BitIconButton IconName=""@BitIconName.Website"" Href=""https://github.com/bitfoundation/bitplatform"" Title=""Go To bit platform"" />";
 
     private readonly string example6RazorCode = @"
-<BitIconButton IconName=""@BitIconName.People"" Size=""BitButtonSize.Small"" Title=""Small"" />
-<BitIconButton IconName=""@BitIconName.People"" Size=""BitButtonSize.Medium"" Title=""Medium"" />
-<BitIconButton IconName=""@BitIconName.People"" Size=""BitButtonSize.Large"" Title=""Large"" />";
+<BitIconButton IconName=""@BitIconName.People"" Size=""BitSize.Small"" Title=""Small"" />
+<BitIconButton IconName=""@BitIconName.People"" Size=""BitSize.Medium"" Title=""Medium"" />
+<BitIconButton IconName=""@BitIconName.People"" Size=""BitSize.Large"" Title=""Large"" />";
 
     private readonly string example7RazorCode = @"
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""buttonValidationModel.RequiredText"" />
+    <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
     <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
 
     <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />

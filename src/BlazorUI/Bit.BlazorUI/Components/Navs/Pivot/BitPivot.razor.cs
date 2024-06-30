@@ -1,16 +1,18 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPivot
+public partial class BitPivot : BitComponentBase
 {
-    private bool SelectedKeyHasBeenSet;
-    private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
-    private BitPivotLinkSize linkSize = BitPivotLinkSize.Normal;
-    private BitPivotOverflowBehavior overflowBehavior = BitPivotOverflowBehavior.None;
-    private BitPivotPosition position = BitPivotPosition.Top;
+    private BitSize? linkSize;
     private string? selectedKey;
+    private bool SelectedKeyHasBeenSet;
+    private BitPivotPosition position = BitPivotPosition.Top;
+    private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
+    private BitPivotOverflowBehavior overflowBehavior = BitPivotOverflowBehavior.None;
 
     private BitPivotItem? _selectedItem;
-    private List<BitPivotItem> _allItems = new();
+    private List<BitPivotItem> _allItems = [];
+
+
 
     /// <summary>
     /// The content of pivot, It can be Any custom tag
@@ -49,10 +51,10 @@ public partial class BitPivot
     }
 
     /// <summary>
-    /// Pivot link size
+    /// The size of the pivot links.
     /// </summary>
     [Parameter]
-    public BitPivotLinkSize LinkSize
+    public BitSize? LinkSize
     {
         get => linkSize;
         set
@@ -60,6 +62,7 @@ public partial class BitPivot
             if (value == linkSize) return;
 
             linkSize = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -131,8 +134,9 @@ public partial class BitPivot
 
         ClassBuilder.Register(() => LinkSize switch
         {
-            BitPivotLinkSize.Large => "bit-pvt-large",
-            BitPivotLinkSize.Normal => "bit-pvt-normal",
+            BitSize.Small => "bit-pvt-sm",
+            BitSize.Medium => "bit-pvt-md",
+            BitSize.Large => "bit-pvt-lg",
             _ => string.Empty
         }).Register(() => LinkFormat switch
         {

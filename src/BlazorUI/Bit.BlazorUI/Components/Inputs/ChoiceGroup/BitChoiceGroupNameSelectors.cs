@@ -40,7 +40,7 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     /// <summary>
     /// The ImageSize field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, BitSize?> ImageSize { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.ImageSize));
+    public BitNameSelectorPair<TItem, BitImageSize?> ImageSize { get; set; } = new(nameof(BitChoiceGroupItem<TValue>.ImageSize));
 
     /// <summary>
     /// The Prefix field name and selector of the custom input class.

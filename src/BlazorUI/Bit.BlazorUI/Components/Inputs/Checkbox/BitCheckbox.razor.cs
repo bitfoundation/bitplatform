@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitCheckbox : IDisposable
+public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 {
     private bool IndeterminateHasBeenSet;
 

@@ -1,27 +1,31 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitCarousel : IDisposable
+public partial class BitCarousel : BitComponentBase, IDisposable
 {
-    private ElementReference _carousel = default!;
-    private int[] _currentIndices = Array.Empty<int>();
-    private int[] _othersIndices = Array.Empty<int>();
-    private int _pagesCount;
-    private int _currentPage;
-    private string _directionStyle = string.Empty;
-    private string _goLeftButtonStyle = string.Empty;
-    private string _goRightButtonStyle = string.Empty;
-
-    private int _internalScrollItemsCount = 1;
     private int scrollItemsCount = 1;
 
+    private bool _disposed;
+    private int _pagesCount;
+    private int _currentPage;
+    private double _pointerX;
+    private bool _isPointerDown;
+    private int[] _othersIndices = [];
+    private int[] _currentIndices = [];
+    private int _internalScrollItemsCount = 1;
+    private string _directionStyle = string.Empty;
+    private ElementReference _carousel = default!;
     private string _resizeObserverId = string.Empty;
+    private string _goLeftButtonStyle = string.Empty;
+    private string _goRightButtonStyle = string.Empty;
+    private readonly List<BitCarouselItem> _allItems = [];
+    private System.Timers.Timer _autoPlayTimer = default!;
     private DotNetObjectReference<BitCarousel>? _dotnetObjRef = default!;
 
-    private System.Timers.Timer _autoPlayTimer = default!;
 
-    private readonly List<BitCarouselItem> AllItems = new();
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
@@ -99,20 +103,26 @@ public partial class BitCarousel : IDisposable
         await GotoPage(index - 1);
     }
 
+    [JSInvokable("OnRootResize")]
+    public async Task OnRootResize(ContentRect rect)
+    {
+        await ResetDimensionsAsync();
+    }
+
 
 
     internal void RegisterItem(BitCarouselItem item)
     {
-        item.Index = AllItems.Count;
+        item.Index = _allItems.Count;
 
-        AllItems.Add(item);
+        _allItems.Add(item);
 
         StateHasChanged();
     }
 
     internal void UnregisterItem(BitCarouselItem carouselItem)
     {
-        AllItems.Remove(carouselItem);
+        _allItems.Remove(carouselItem);
     }
 
 
@@ -145,18 +155,20 @@ public partial class BitCarousel : IDisposable
         await ResetDimensionsAsync();
     }
 
+
+
     private async Task ResetDimensionsAsync()
     {
         _currentIndices = Enumerable.Range(0, VisibleItemsCount).ToArray();
         _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).ToArray();
 
-        var itemsCount = AllItems.Count;
+        var itemsCount = _allItems.Count;
         var rect = await _js.GetBoundingClientRect(_carousel);
         if (rect is null) return;
         var sign = Dir == BitDir.Rtl ? -1 : 1;
         for (int i = 0; i < itemsCount; i++)
         {
-            var item = AllItems[i];
+            var item = _allItems[i];
             item.InternalStyle = FormattableString.Invariant($"width:{(rect.Width / VisibleItemsCount)}px;display:block");
             item.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({sign * 100 * i}%)");
         }
@@ -168,15 +180,9 @@ public partial class BitCarousel : IDisposable
         StateHasChanged();
     }
 
-    [JSInvokable("OnRootResize")]
-    public async Task OnRootResize(ContentRect rect)
-    {
-        await ResetDimensionsAsync();
-    }
-
     private void SetNavigationButtonsVisibility()
     {
-        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == AllItems.Count - 1) ? "display:none" : "";
+        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == _allItems.Count - 1) ? "display:none" : "";
 
         _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : "";
     }
@@ -190,7 +196,7 @@ public partial class BitCarousel : IDisposable
         _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
         {
             var idx = _currentIndices[0] - (i + 1);
-            if (InfiniteScrolling && idx < 0) idx += AllItems.Count;
+            if (InfiniteScrolling && idx < 0) idx += _allItems.Count;
             return idx;
         }).Where(i => i >= 0).Reverse().ToArray();
 
@@ -199,7 +205,7 @@ public partial class BitCarousel : IDisposable
 
     private async Task Next()
     {
-        var itemsCount = AllItems.Count;
+        var itemsCount = _allItems.Count;
         _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
         {
             var idx = _currentIndices[_currentIndices.Length - 1] + (i + 1);
@@ -224,8 +230,8 @@ public partial class BitCarousel : IDisposable
             ? _currentIndices.Skip(VisibleItemsCount - diff).Take(diff).Concat(_othersIndices)
             : _othersIndices.Concat(_currentIndices.Take(diff))).ToArray();
 
-        var currents = _currentIndices.Select(i => AllItems[i]).ToArray();
-        var others = _othersIndices.Select(i => AllItems[i]).ToArray();
+        var currents = _currentIndices.Select(i => _allItems[i]).ToArray();
+        var others = _othersIndices.Select(i => _allItems[i]).ToArray();
 
         var sign = isNext ? 1 : -1;
         var offset = isNext ? VisibleItemsCount : scrollCount;
@@ -294,7 +300,7 @@ public partial class BitCarousel : IDisposable
         else // go next
         {
             isNext = true;
-            var itemsCount = AllItems.Count;
+            var itemsCount = _allItems.Count;
             _othersIndices = indices.Select(idx =>
             {
                 if (InfiniteScrolling && idx > itemsCount - 1) idx -= itemsCount;
@@ -305,9 +311,6 @@ public partial class BitCarousel : IDisposable
         await Go(isNext, VisibleItemsCount);
     }
 
-
-    private double _pointerX;
-    private bool _isPointerDown;
     private async Task HandlePointerMove(MouseEventArgs e)
     {
         if (_isPointerDown is false) return;
@@ -346,7 +349,8 @@ public partial class BitCarousel : IDisposable
         await InvokeAsync(Next);
     }
 
-    private bool _disposed;
+
+
     public void Dispose()
     {
         Dispose(true);

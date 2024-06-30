@@ -247,13 +247,13 @@ public class BitButtonTests : BunitTestContext
     }
     
     [DataTestMethod,
-         DataRow(BitButtonSize.Small),
-         DataRow(BitButtonSize.Medium),
-         DataRow(BitButtonSize.Large),
+         DataRow(BitSize.Small),
+         DataRow(BitSize.Medium),
+         DataRow(BitSize.Large),
          DataRow(null)
     ]
     [TestMethod]
-    public void BitButtonSizeOfButtonTest(BitButtonSize? size)
+    public void BitSizeOfButtonTest(BitSize? size)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
@@ -267,9 +267,9 @@ public class BitButtonTests : BunitTestContext
 
         var sizeClassName = size switch
         {
-            BitButtonSize.Small => "bit-btn-sm",
-            BitButtonSize.Medium => "bit-btn-md",
-            BitButtonSize.Large => "bit-btn-lg",
+            BitSize.Small => "bit-btn-sm",
+            BitSize.Medium => "bit-btn-md",
+            BitSize.Large => "bit-btn-lg",
             _ => String.Empty
         };
 

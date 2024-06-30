@@ -6,27 +6,35 @@ internal static class BitFileUploadJsRuntimeExtensions
 {
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInfo))]
     internal static ValueTask<BitFileInfo[]> BitFileUploadReset(this IJSRuntime jsRuntime,
-                                                                   Guid id,
-                                                                   DotNetObjectReference<BitFileUpload>? dotnetObjectReference,
-                                                                   ElementReference element,
-                                                                   string uploadAddress,
-                                                                   IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
+                                                                     string id,
+                                                                     DotNetObjectReference<BitFileUpload>? dotnetObjectReference,
+                                                                     ElementReference element,
+                                                                     string uploadAddress,
+                                                                     IReadOnlyDictionary<string, string> uploadRequestHttpHeaders)
     {
-        return jsRuntime.InvokeAsync<BitFileInfo[]>("BitBlazorUI.FileUpload.reset", id.ToString(), dotnetObjectReference, element, uploadAddress, uploadRequestHttpHeaders);
+        return jsRuntime.InvokeAsync<BitFileInfo[]>("BitBlazorUI.FileUpload.reset", id, dotnetObjectReference, element, uploadAddress, uploadRequestHttpHeaders);
     }
 
-    internal static ValueTask BitFileUploadUpload(this IJSRuntime jsRuntime, Guid id, long from, long to, int index, string? uploadUrl, IReadOnlyDictionary<string, string>? httpHeaders)
+    internal static ValueTask BitFileUploadUpload(this IJSRuntime jsRuntime, 
+                                                       string id, 
+                                                       long from, 
+                                                       long to, 
+                                                       int index, 
+                                                       string? uploadUrl, 
+                                                       IReadOnlyDictionary<string, string>? httpHeaders)
     {
-        return (httpHeaders is null ? jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.upload", id.ToString(), from, to, index, uploadUrl)
-                                    : jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.upload", id.ToString(), from, to, index, uploadUrl, httpHeaders));
+        return (httpHeaders is null ? jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl)
+                                    : jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.upload", id, from, to, index, uploadUrl, httpHeaders));
     }
 
-    internal static ValueTask BitFileUploadPause(this IJSRuntime jsRuntime, Guid id, int index = -1)
+    internal static ValueTask BitFileUploadPause(this IJSRuntime jsRuntime, string id, int index = -1)
     {
-        return jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.pause", id.ToString(), index);
+        return jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.pause", id, index);
     }
 
-    internal static ValueTask<IJSObjectReference> BitFileUploadSetupDragDrop(this IJSRuntime jsRuntime, ElementReference dragDropZoneElement, ElementReference inputFileElement)
+    internal static ValueTask<IJSObjectReference> BitFileUploadSetupDragDrop(this IJSRuntime jsRuntime, 
+                                                                                  ElementReference dragDropZoneElement, 
+                                                                                  ElementReference inputFileElement)
     {
         return jsRuntime.InvokeAsync<IJSObjectReference>("BitBlazorUI.FileUpload.setupDragDrop", dragDropZoneElement, inputFileElement);
     }
@@ -36,8 +44,8 @@ internal static class BitFileUploadJsRuntimeExtensions
         return jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.browse", inputFileElement);
     }
 
-    internal static ValueTask BitFileUploadDispose(this IJSRuntime jsRuntime, Guid id)
+    internal static ValueTask BitFileUploadDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.dispose", id.ToString());
+        return jsRuntime.InvokeVoidAsync("BitBlazorUI.FileUpload.dispose", id);
     }
 }

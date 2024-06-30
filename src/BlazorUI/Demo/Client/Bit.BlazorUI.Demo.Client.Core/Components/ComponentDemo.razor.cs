@@ -163,24 +163,10 @@ public partial class ComponentDemo
     [
         new()
         {
-            Name = "DebounceTime",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The debounce time in milliseconds.",
-        },
-        new()
-        {
             Name = "DisplayName",
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the display name for this field.",
-        },
-        new()
-        {
-            Name = "Immediate",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Change the content of the input field when the user write text (based on 'oninput' HTML event).",
         },
         new()
         {
@@ -205,10 +191,17 @@ public partial class ComponentDemo
         },
         new()
         {
-            Name = "ThrottleTime",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The throttle time in milliseconds.",
+            Name = "ReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the input read-only.",
+        },
+        new()
+        {
+            Name = "Required",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the input required.",
         },
         new()
         {
@@ -218,7 +211,6 @@ public partial class ComponentDemo
             Description = "Gets or sets the value of the input. This should be used with two-way binding.",
         },
     ];
-
 
     private readonly List<ComponentParameter> _inputBasePublicMembers =
     [
@@ -241,6 +233,39 @@ public partial class ComponentDemo
             Description = "Gives focus to the input element.",
         },
     ];
+
+
+
+    private readonly List<string> _textInputComponents = [
+        "NumberField", "TextField"
+    ];
+
+    private readonly List<ComponentParameter> _textInputBaseParameters =
+    [
+        new()
+        {
+            Name = "DebounceTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The debounce time in milliseconds.",
+        },
+        new()
+        {
+            Name = "Immediate",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Change the content of the input field when the user write text (based on 'oninput' HTML event).",
+        },
+        new()
+        {
+            Name = "ThrottleTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The throttle time in milliseconds.",
+        },
+    ];
+
+
 
     private readonly List<string> _extraComponents = ["DataGrid", "Chart"];
 }

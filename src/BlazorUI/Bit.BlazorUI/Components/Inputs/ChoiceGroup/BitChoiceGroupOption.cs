@@ -44,7 +44,7 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     /// <summary>
     /// Provides Width and Height for the image of the BitChoiceGroup option.
     /// </summary>
-    [Parameter] public BitSize? ImageSize { get; set; }
+    [Parameter] public BitImageSize? ImageSize { get; set; }
 
     /// <summary>
     /// The text to show as a prefix for the BitChoiceGroup option.

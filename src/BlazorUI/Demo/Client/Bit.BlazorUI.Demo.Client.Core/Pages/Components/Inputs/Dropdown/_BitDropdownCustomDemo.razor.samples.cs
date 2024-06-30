@@ -14,11 +14,10 @@ public partial class _BitDropdownCustomDemo
              Placeholder=""Select items""
              IsMultiSelect=""true"" />
 
-<BitDropdown Label=""IsRequired""
+<BitDropdown Label=""Required"" Required
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""Select an item""
-             IsRequired=""true"" />
+             Placeholder=""Select an item"" />
 
 <BitDropdown Label=""Disabled""
              Items=""GetBasicCustoms()""

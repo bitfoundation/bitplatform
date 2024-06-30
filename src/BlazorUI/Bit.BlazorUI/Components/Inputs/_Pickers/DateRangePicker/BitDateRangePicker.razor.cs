@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitDateRangePicker
+public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 {
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
@@ -1539,7 +1539,7 @@ public partial class BitDateRangePicker
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate.HasValue is false && CurrentValue.EndDate.HasValue is false) return;
 
-        var isEndGreaterInOneDayRange = CurrentValue.StartDate.HasValue && 
+        var isEndGreaterInOneDayRange = CurrentValue.StartDate.HasValue &&
                                         CurrentValue.EndDate.HasValue &&
                                         CurrentValue.StartDate!.Value.Date == CurrentValue.EndDate!.Value.Date &&
                                         new TimeSpan(_startTimeHour, _startTimeMinute, 0) > new TimeSpan(_endTimeHour, _endTimeMinute, 0);

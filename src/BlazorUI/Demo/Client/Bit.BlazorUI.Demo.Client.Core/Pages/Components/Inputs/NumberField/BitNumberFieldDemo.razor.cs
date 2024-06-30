@@ -205,13 +205,6 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
-            Name = "Required",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
-        },
-        new()
-        {
             Name = "ShowButtons",
             Type = "bool",
             DefaultValue = "false",

@@ -7,20 +7,20 @@ public abstract partial class BitComponentBase : ComponentBase
     private string? @class;
     private bool isEnabled = true;
     private BitVisibility visibility;
-    private Guid _uniqueId = Guid.NewGuid();
+    private string _uniqueId = BitShortId.NewId();
 
 
 
     protected bool Rendered { get; private set; }
 
-    protected string _Id => Id ?? _uniqueId.ToString();
+    protected string _Id => Id ?? _uniqueId;
 
 
 
     /// <summary>
     /// The readonly unique id of the root element. it will be assigned to a new Guid at component instance construction.
     /// </summary>
-    public Guid UniqueId => _uniqueId;
+    public string UniqueId => _uniqueId;
 
     /// <summary>
     /// The ElementReference of the root element.

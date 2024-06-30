@@ -250,7 +250,7 @@ Collapsed: [ <BitActionButton Visibility=""BitVisibility.Collapsed"">Collapsed A
 
     <ValidationSummary />
 
-    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationButtonModel.RequiredText"" />
+    <BitTextField Label=""Required"" Required @bind-Value=""validationButtonModel.RequiredText"" />
     <ValidationMessage For=""() => validationButtonModel.RequiredText"" />
 
     <BitTextField Label=""Nonrequired"" @bind-Value=""validationButtonModel.NonRequiredText"" />
