@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitBasicList<TItem>
+public partial class BitBasicList<TItem> : BitComponentBase
 {
     private _BitBasicListVirtualize<TItem>? _bitBasicListVirtualizeRef;
 
@@ -61,9 +61,9 @@ public partial class BitBasicList<TItem>
         await _bitBasicListVirtualizeRef.RefreshDataAsync();
         StateHasChanged();
     }
-    
 
-    
+
+
     protected override string RootElementClass => "bit-bsl";
 
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling

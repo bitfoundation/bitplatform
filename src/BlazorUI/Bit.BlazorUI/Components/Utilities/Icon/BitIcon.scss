@@ -2,5 +2,36 @@
 
 .bit-ico {
     display: inline-block;
+    font-size: spacing(2);
+    line-height: spacing(2);
+}
+
+.bit-ico-sm {
+    font-size: spacing(1);
+    line-height: spacing(1);
+}
+
+.bit-ico-lg {
     font-size: spacing(3);
+    line-height: spacing(3);
+}
+
+.bit-ico-inf {
+    color: $color-state-info;
+}
+
+.bit-ico-suc {
+    color: $color-state-success;
+}
+
+.bit-ico-wrn {
+    color: $color-state-warning;
+}
+
+.bit-ico-swr {
+    color: $color-state-severe-warning;
+}
+
+.bit-ico-err {
+    color: $color-state-error;
 }

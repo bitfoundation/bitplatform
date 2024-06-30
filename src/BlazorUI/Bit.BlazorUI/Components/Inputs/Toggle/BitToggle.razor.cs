@@ -3,14 +3,15 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitToggle
+public partial class BitToggle : BitInputBase<bool>
 {
-    private string? _labelledById;
-    private string? _stateText;
-    private string? _buttonId;
     private string? _labelId;
+    private string? _buttonId;
+    private string? _stateText;
     private string? _stateTextId;
+    private string? _labelledById;
     private string? _ariaChecked => CurrentValueAsString;
+
 
 
     /// <summary>

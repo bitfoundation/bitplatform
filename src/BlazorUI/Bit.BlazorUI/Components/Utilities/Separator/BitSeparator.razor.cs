@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitSeparator
+public partial class BitSeparator : BitComponentBase
 {
     private bool isVertical;
     private BitSeparatorAlignContent separatorAlignContent = BitSeparatorAlignContent.Center;
@@ -10,7 +10,8 @@ public partial class BitSeparator
     /// <summary>
     /// Where the content should be aligned in the separator.
     /// </summary>
-    [Parameter] public BitSeparatorAlignContent AlignContent
+    [Parameter]
+    public BitSeparatorAlignContent AlignContent
     {
         get => separatorAlignContent;
         set
@@ -30,7 +31,8 @@ public partial class BitSeparator
     /// <summary>
     /// Whether the element is a vertical separator.
     /// </summary>
-    [Parameter] public bool IsVertical
+    [Parameter]
+    public bool IsVertical
     {
         get => isVertical;
         set

@@ -40,7 +40,7 @@ public class BitChoiceGroupItem<TValue>
     /// <summary>
     /// Provides Width and Height for the image of the BitChoiceGroup item.
     /// </summary>
-    public BitSize? ImageSize { get; set; }
+    public BitImageSize? ImageSize { get; set; }
 
     /// <summary>
     /// The text to show as a prefix for the BitChoiceGroup item.

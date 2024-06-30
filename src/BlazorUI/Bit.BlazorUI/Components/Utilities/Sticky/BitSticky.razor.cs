@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitSticky
+public partial class BitSticky : BitComponentBase
 {
     private BitStickyPosition? position;
 

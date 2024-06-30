@@ -73,7 +73,7 @@
 
     <ComponentExampleBox Title="Large link size" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
-            <BitPivot LinkSize="@BitPivotLinkSize.Large">
+            <BitPivot LinkSize="@BitSize.Large">
                 <BitPivotItem HeaderText="Large File">
                     <div style="margin-top:10px">
                         <h1>Pivot #1: Large File</h1>
@@ -123,7 +123,7 @@
 
     <ComponentExampleBox Title="Large Tab style" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
-            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitPivotLinkSize.Large">
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitSize.Large">
                 <BitPivotItem HeaderText="Large File tab">
                     <div style="margin-top:10px">
                         <h1>Pivot #1: Large File tab</h1>
@@ -148,7 +148,7 @@
 
     <ComponentExampleBox Title="Change tabs from outside of the component" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
-            <BitPivot @bind-SelectedKey="OverridePivotSelectedKey" LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitPivotLinkSize.Large">
+            <BitPivot @bind-SelectedKey="OverridePivotSelectedKey" LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitSize.Large">
                 <BitPivotItem Key="1" HeaderText="Samples">
                     <div style="margin-top:10px">
                         <h1>Pivot #1: Samples</h1>
@@ -213,7 +213,7 @@
             </div>
             <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
                       DefaultSelectedKey="Foo"
-                      LinkSize="@BitPivotLinkSize.Large"
+                      LinkSize="@BitSize.Large"
                       HeadersOnly="true"
                       OnItemClick="@(item => SelectedKey = item?.Key)">
                 <BitPivotItem HeaderText="Foo" Key="Foo"></BitPivotItem>
@@ -229,7 +229,7 @@
             <div style="margin-bottom:25px">
                 Last Pivot clicked: <strong>@SelectedPivotItem?.HeaderText</strong>
             </div>
-            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitPivotLinkSize.Large" OnItemClick="@(item => SelectedPivotItem = item)">
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitSize.Large" OnItemClick="@(item => SelectedPivotItem = item)">
                 <BitPivotItem HeaderText="Foo">
                     <div style="margin-top:10px">
                         <h1>Pivot #1: Foo</h1>
@@ -266,7 +266,7 @@
 
     <ComponentExampleBox Title="Show/Hide tabs" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
-            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitPivotLinkSize.Large">
+            <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs" LinkSize="@BitSize.Large">
                 <BitPivotItem HeaderText="Foo">
                     <div style="margin-top:10px">
                         <h1>Pivot #1: Foo</h1>

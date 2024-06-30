@@ -2,10 +2,11 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitProgressBar
+public partial class BitProgressBar : BitComponentBase
 {
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
+
 
 
     /// <summary>

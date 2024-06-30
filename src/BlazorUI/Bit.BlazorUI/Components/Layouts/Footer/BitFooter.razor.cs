@@ -1,9 +1,11 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitFooter
+public partial class BitFooter : BitComponentBase
 {
     private bool @fixed;
     private int? height;
+
+
 
     /// <summary>
     /// Gets or sets the content to be rendered inside the BitFooter.
@@ -13,7 +15,7 @@ public partial class BitFooter
     /// <summary>
     /// Gets or sets the height of the BitFooter (in pixels).
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public int? Height
     {
         get => height;
@@ -29,7 +31,7 @@ public partial class BitFooter
     /// <summary>
     /// Renders the footer with a fixed position at the bottom of the page.
     /// </summary>
-    [Parameter] 
+    [Parameter]
     public bool Fixed
     {
         get => @fixed;

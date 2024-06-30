@@ -378,54 +378,54 @@ private List<TimelineActionItem> iconCustoms = new()
 
     private readonly string example7RazorCode = @"
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Small""
+             Size=""BitSize.Small""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Small""
+             Size=""BitSize.Small""
              Appearance=""BitAppearance.Standard""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Small""
+             Size=""BitSize.Small""
              Appearance=""BitAppearance.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Medium""
+             Size=""BitSize.Medium""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Medium""
+             Size=""BitSize.Medium""
              Appearance=""BitAppearance.Standard""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Medium""
+             Size=""BitSize.Medium""
              Appearance=""BitAppearance.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Large""
+             Size=""BitSize.Large""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Large""
+             Size=""BitSize.Large""
              Appearance=""BitAppearance.Standard""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Size=""BitTimelineSize.Large""
+             Size=""BitSize.Large""
              Appearance=""BitAppearance.Text"" 
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },

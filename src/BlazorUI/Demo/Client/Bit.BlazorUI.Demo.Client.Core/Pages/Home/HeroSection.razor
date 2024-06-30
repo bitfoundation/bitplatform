@@ -6,7 +6,7 @@
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.</BitTypography>
     <br />
     <BitButton Href="/getting-started"
-               Size="BitButtonSize.Large"
+               Size="BitSize.Large"
                IconName="@BitIconName.ChevronRightSmall"
                IconPosition="BitButtonIconPosition.End">
         Get started
@@ -65,10 +65,10 @@
                 </BitCompoundButton>
             </div>
             <BitProgressBar Height="20" Style="margin-bottom: 30px" Indeterminate />
-            <BitPivot LinkFormat="@BitPivotLinkFormat.Links"
+            <BitPivot HeadersOnly
+                      LinkSize="@BitSize.Large"
                       DefaultSelectedKey="Overview"
-                      LinkSize="@BitPivotLinkSize.Large"
-                      HeadersOnly="true"
+                      LinkFormat="@BitPivotLinkFormat.Links"
                       OnItemClick="@(item => _pivotSelectedKey = item.Key)">
                 <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
                 <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>

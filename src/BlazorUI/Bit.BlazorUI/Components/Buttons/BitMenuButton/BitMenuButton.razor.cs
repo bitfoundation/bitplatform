@@ -2,12 +2,12 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitMenuButton<TItem> : IDisposable where TItem : class
+public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where TItem : class
 {
     private bool SelectedItemHasBeenSet;
 
     private bool isCalloutOpen;
-    private TItem selectedItem;
+    private TItem selectedItem = default!;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private string _calloutId = default!;

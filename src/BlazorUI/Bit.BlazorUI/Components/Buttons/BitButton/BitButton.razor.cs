@@ -2,10 +2,10 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitButton
+public partial class BitButton : BitComponentBase
 {
+    private BitSize? size;
     private BitColor? color;
-    private BitButtonSize? size;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
@@ -141,7 +141,7 @@ public partial class BitButton
     /// The size of button, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitButtonSize? Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -149,6 +149,7 @@ public partial class BitButton
             if (size == value) return;
 
             size = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -182,7 +183,7 @@ public partial class BitButton
             BitButtonStyle.Text => "bit-btn-txt",
             _ => "bit-btn-pri"
         });
-        
+
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Info => "bit-btn-inf",
@@ -192,12 +193,12 @@ public partial class BitButton
             BitColor.Error => "bit-btn-err",
             _ => string.Empty
         });
-        
+
         ClassBuilder.Register(() => Size switch
         {
-            BitButtonSize.Small => "bit-btn-sm",
-            BitButtonSize.Medium => "bit-btn-md",
-            BitButtonSize.Large => "bit-btn-lg",
+            BitSize.Small => "bit-btn-sm",
+            BitSize.Medium => "bit-btn-md",
+            BitSize.Large => "bit-btn-lg",
             _ => string.Empty
         });
 
@@ -225,7 +226,7 @@ public partial class BitButton
 
         base.OnParametersSet();
     }
-        
+
     private string GetLabelPositionClass()
         => LoadingLabelPosition switch
         {

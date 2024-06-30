@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitTimePicker
+public partial class BitTimePicker : BitInputBase<TimeSpan?>
 {
     private const int STEP_DELAY = 75;
     private const int INITIAL_STEP_DELAY = 400;
@@ -11,11 +11,15 @@ public partial class BitTimePicker
     private const string FORMAT_12_HOURS = "hh:mm tt";
 
 
-    private bool isOpen;
+
     private bool IsOpenHasBeenSet;
+
+    private bool isOpen;
     private CultureInfo culture = CultureInfo.CurrentUICulture;
     private BitIconLocation iconLocation = BitIconLocation.Right;
+
     private string focusClass = string.Empty;
+
     private int? _hour;
     private int? _minute;
     private string? _labelId;

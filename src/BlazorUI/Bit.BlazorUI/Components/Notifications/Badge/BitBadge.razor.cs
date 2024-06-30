@@ -2,15 +2,15 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitBadge
+public partial class BitBadge : BitComponentBase
 {
+    private BitSize? size;
     private BitColor? color;
-    private BitBadgeSize? size;
     private BitAppearance appearance = BitAppearance.Primary;
     private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
 
-    
     private string? _content;
+
 
 
     /// <summary>
@@ -110,7 +110,7 @@ public partial class BitBadge
     /// The size of badge, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitBadgeSize? Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -129,7 +129,7 @@ public partial class BitBadge
 
 
     protected override string RootElementClass => "bit-bdg";
-    
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
@@ -222,9 +222,9 @@ public partial class BitBadge
 
         className.Append(' ').Append(Size switch
         {
-            BitBadgeSize.Small => "bit-bdg-sm",
-            BitBadgeSize.Medium => "bit-bdg-md",
-            BitBadgeSize.Large => "bit-bdg-lg",
+            BitSize.Small => "bit-bdg-sm",
+            BitSize.Medium => "bit-bdg-md",
+            BitSize.Large => "bit-bdg-lg",
             _ => string.Empty
         });
 

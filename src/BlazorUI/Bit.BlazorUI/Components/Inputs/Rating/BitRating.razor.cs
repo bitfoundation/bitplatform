@@ -2,9 +2,10 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitRating
+public partial class BitRating : BitInputBase<double>
 {
-    private bool isReadOnly;
+    private BitSize? size;
+
 
 
     /// <summary>
@@ -36,22 +37,6 @@ public partial class BitRating
     [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
 
     /// <summary>
-    /// A flag to mark rating control as readOnly.
-    /// </summary>
-    [Parameter]
-    public bool IsReadOnly
-    {
-        get => isReadOnly;
-        set
-        {
-            if (isReadOnly == value) return;
-
-            isReadOnly = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Maximum rating. Must be >= Min (0 if AllowZeroStars is true, 1 otherwise).
     /// </summary>
     [Parameter] public int Max { get; set; } = 5;
@@ -64,7 +49,19 @@ public partial class BitRating
     /// <summary>
     /// Size of rating elements.
     /// </summary>
-    [Parameter] public BitRatingSize Size { get; set; } = BitRatingSize.Medium;
+    [Parameter]
+    public BitSize? Size
+    {
+        get => size;
+        set
+        {
+            if (size == value) return;
+
+            size = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitRating.
@@ -93,13 +90,13 @@ public partial class BitRating
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
+        ClassBuilder.Register(() => ReadOnly ? "bit-rtg-rdl" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
-            BitRatingSize.Small => $"{RootElementClass}-sm",
-            BitRatingSize.Medium => $"{RootElementClass}-md",
-            BitRatingSize.Large => $"{RootElementClass}-lg",
+            BitSize.Small => "bit-rtg-sm",
+            BitSize.Medium => "bit-rtg-md",
+            BitSize.Large => "bit-rtg-lg",
             _ => string.Empty
         });
     }
@@ -137,7 +134,7 @@ public partial class BitRating
 
     private async Task HandleOnClick(int index)
     {
-        if (IsEnabled is false || IsReadOnly is true) return;
+        if (IsEnabled is false || ReadOnly) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (index > Max || index < (AllowZeroStars ? 0 : 1)) return;
 

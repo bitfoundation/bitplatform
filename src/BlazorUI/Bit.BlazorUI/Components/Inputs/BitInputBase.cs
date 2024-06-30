@@ -1,8 +1,4 @@
-﻿// Inspired by
-// 1- Blazor InputBase class: https://github.com/dotnet/aspnetcore/blob/release/8.0/src/Components/Web/src/Forms/InputBase.cs
-// 2- Fluent Blazor base input class: https://github.com/microsoft/fluentui-blazor/blob/dev/src/Core/Components/Base/FluentInputBase.cs
-
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -18,6 +14,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     protected bool IsDisposed;
     protected bool ValueHasBeenSet;
 
+    private bool readOnly;
+    private bool required;
     private TValue? value;
     private bool? valueInvalid;
 
@@ -26,9 +24,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private bool _hasInitializedParameters;
     private bool _previousParsingAttemptFailed;
     private string? _incomingValueBeforeParsing;
-    private readonly BitDebouncer _debouncer = new();
-    private readonly BitThrottler _throttler = new();
-    private ChangeEventArgs _lastThrottleEventArgs = default!;
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
@@ -48,20 +43,10 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
 
     /// <summary>
-    /// The debounce time in milliseconds.
-    /// </summary>
-    [Parameter] public int DebounceTime { get; set; }
-
-    /// <summary>
     /// Gets or sets the display name for this field.
     /// This value is used when generating error messages when the input value fails to parse correctly.
     /// </summary>
     [Parameter] public string? DisplayName { get; set; }
-
-    /// <summary>
-    /// Change the content of the input field when the user write text (based on 'oninput' HTML event).
-    /// </summary>
-    [Parameter] public bool Immediate { get; set; }
 
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
@@ -80,9 +65,38 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     [Parameter] public EventCallback<TValue?> OnChange { get; set; }
 
     /// <summary>
-    /// The throttle time in milliseconds.
+    /// Makes the input read-only.
     /// </summary>
-    [Parameter] public int ThrottleTime { get; set; }
+    [Parameter]
+    public bool ReadOnly
+    {
+        get => readOnly;
+        set
+        {
+            if (readOnly == value) return;
+
+            readOnly = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Makes the input required.
+    /// </summary>
+    [Parameter]
+    public bool Required
+    {
+        get => required;
+        set
+        {
+            if (required == value) return;
+
+            required = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -152,18 +166,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
-                case nameof(DebounceTime):
-                    DebounceTime = (int)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
                 case nameof(DisplayName):
                     DisplayName = (string?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
-                case nameof(Immediate):
-                    Immediate = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -182,8 +186,13 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
-                case nameof(ThrottleTime):
-                    ThrottleTime = (int)parameter.Value;
+                case nameof(ReadOnly):
+                    ReadOnly = (bool)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(Required):
+                    Required = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -312,44 +321,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage);
 
-    /// <summary>
-    /// Handler for the OnChange event.
-    /// </summary>
-    /// <param name="e"></param>
-    /// <returns></returns>
-    protected virtual async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        await SetCurrentValueAsStringAsync(e.Value?.ToString());
-    }
-
-    /// <summary>
-    /// Handler for the OnInput event, with an optional delay to avoid to raise the <see cref="ValueChanged"/> event too often.
-    /// </summary>
-    /// <param name="e"></param>
-    /// <returns></returns>
-    protected virtual async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        if (Immediate is false) return;
-
-        if (DebounceTime > 0)
-        {
-            await _debouncer.Do(DebounceTime, async () => await InvokeAsync(async () => await HandleOnStringValueChangeAsync(e)));
-        }
-        else if (ThrottleTime > 0)
-        {
-            _lastThrottleEventArgs = e;
-            await _throttler.Do(ThrottleTime, async () => await InvokeAsync(async () => await HandleOnStringValueChangeAsync(_lastThrottleEventArgs)));
-        }
-        else
-        {
-            await HandleOnStringValueChangeAsync(e);
-        }
-    }
-
     protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass = false)
     {
         if (bypass && IsEnabled is false) return;
@@ -402,10 +373,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         }
     }
 
-
-
-
-    private async Task SetCurrentValueAsync(TValue? value)
+    protected async Task SetCurrentValueAsync(TValue? value)
     {
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
@@ -417,6 +385,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
         await OnChange.InvokeAsync(value);
     }
+
+
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
     {

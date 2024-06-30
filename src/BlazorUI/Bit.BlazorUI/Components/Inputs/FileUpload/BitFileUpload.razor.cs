@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A component that wraps the HTML file input element and uploads them.
 /// </summary>
-public partial class BitFileUpload : IDisposable
+public partial class BitFileUpload : BitComponentBase, IDisposable
 {
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb

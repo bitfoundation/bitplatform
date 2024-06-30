@@ -2,8 +2,8 @@
 
 public partial class BitButtonGroupDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "ButtonStyle",
@@ -77,22 +77,22 @@ public partial class BitButtonGroupDemo
         new()
         {
             Name = "Size",
-            Type = "BitButtonSize",
+            Type = "BitSize",
             LinkType = LinkType.Link,
             Href = "#button-size-enum",
             DefaultValue = "null",
             Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "button-group-items",
             Title = "BitButtonGroupItem",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Class",
@@ -149,14 +149,14 @@ public partial class BitButtonGroupDemo
                    DefaultValue = "null",
                    Description = "Text to render in the item.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "button-group-options",
             Title = "BitButtonGroupOption",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Class",
@@ -213,14 +213,14 @@ public partial class BitButtonGroupDemo
                    DefaultValue = "null",
                    Description = "Text to render in the option.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "name-selectors",
             Title = "BitButtonGroupNameSelectors",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Class",
@@ -293,14 +293,14 @@ public partial class BitButtonGroupDemo
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
-            }
+            ]
         },
         new()
         {
             Id = "name-selector-pair",
             Title = "BitNameSelectorPair",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Name",
@@ -313,19 +313,19 @@ public partial class BitButtonGroupDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
-            }
+            ]
         },
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
             Id = "button-style-enum",
             Name = "BitButtonStyle",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Primary",
@@ -344,15 +344,15 @@ public partial class BitButtonGroupDemo
                     Description="The button for less-pronounced actions.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-color-enum",
             Name = "BitColor",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Info",
@@ -383,15 +383,15 @@ public partial class BitButtonGroupDemo
                     Description="Error styled Button.",
                     Value="4",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-size-enum",
-            Name = "BitButtonSize",
+            Name = "BitSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Small",
@@ -410,15 +410,15 @@ public partial class BitButtonGroupDemo
                     Description="The large size button.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Button",
@@ -437,7 +437,7 @@ public partial class BitButtonGroupDemo
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
-            }
+            ]
         }
-    };
+    ];
 }

@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
-public partial class BitButtonGroup<TItem> where TItem : class
+public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
     private bool vertical;
+    private BitSize? size;
     private BitColor? color;
-    private BitButtonSize? size;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private List<TItem> _items = new();
@@ -104,7 +104,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
     /// The size of ButtonGroup, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitButtonSize? Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -112,6 +112,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
             if (size == value) return;
 
             size = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -157,9 +158,9 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
         ClassBuilder.Register(() => Size switch
         {
-            BitButtonSize.Small => "bit-btg-sm",
-            BitButtonSize.Medium => "bit-btg-md",
-            BitButtonSize.Large => "bit-btg-lg",
+            BitSize.Small => "bit-btg-sm",
+            BitSize.Medium => "bit-btg-md",
+            BitSize.Large => "bit-btg-lg",
             _ => string.Empty
         });
 
@@ -177,8 +178,8 @@ public partial class BitButtonGroup<TItem> where TItem : class
         return base.OnParametersSetAsync();
     }
 
-    
-    
+
+
     private string? GetItemClass(int index, bool isEnabled)
     {
         StringBuilder className = new StringBuilder();
@@ -203,9 +204,9 @@ public partial class BitButtonGroup<TItem> where TItem : class
 
         className.Append(Size switch
         {
-            BitButtonSize.Small => " bit-btg-ism",
-            BitButtonSize.Medium => " bit-btg-imd",
-            BitButtonSize.Large => " bit-btg-ilg",
+            BitSize.Small => " bit-btg-ism",
+            BitSize.Medium => " bit-btg-imd",
+            BitSize.Large => " bit-btg-ilg",
             _ => string.Empty
         });
 
@@ -219,7 +220,7 @@ public partial class BitButtonGroup<TItem> where TItem : class
             className.Append(" bit-btg-ilt");
         }
 
-        if(isEnabled is false)
+        if (isEnabled is false)
         {
             className.Append(" bit-btg-ids");
         }

@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitBreadcrumb<TItem> : IDisposable where TItem : class
+public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where TItem : class
 {
     private const string KEY_FIELD = nameof(BitBreadcrumbItem.Key);
     private const string CLASS_FIELD = nameof(BitBreadcrumbItem.Class);

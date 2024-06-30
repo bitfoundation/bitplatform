@@ -1,8 +1,10 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitLabel
+public partial class BitLabel : BitComponentBase
 {
     private bool required;
+
+
 
     /// <summary>
     /// The content of label, It can be Any custom tag or a text

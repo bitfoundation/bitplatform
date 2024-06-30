@@ -19,11 +19,11 @@
                 <br />
                 <BitTextField Label="Disabled" IsEnabled="false" />
                 <br />
-                <BitTextField Label="ReadOnly" IsReadOnly="true" />
+                <BitTextField Label="ReadOnly" ReadOnly DefaultValue="This is ReadOnly" />
                 <br />
                 <BitTextField Label="Description" Description="This is Description" />
                 <br />
-                <BitTextField Label="IsRequired" IsRequired="true" />
+                <BitTextField Label="Required" Required />
                 <br />
                 <BitTextField Label="MaxLength: 5" MaxLength="5" />
                 <br />
@@ -41,7 +41,7 @@
                 <br />
                 <BitTextField Label="Disabled" IsUnderlined="true" IsEnabled="false" />
                 <br />
-                <BitTextField Label="Required" IsUnderlined="true" IsRequired="true" />
+                <BitTextField Label="Required" IsUnderlined="true" Required />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -53,7 +53,7 @@
                 <br />
                 <BitTextField Label="Disabled" Placeholder="Enter a text..." HasBorder="false" IsEnabled="false" />
                 <br />
-                <BitTextField Label="Required" Placeholder="Enter a text..." HasBorder="false" IsRequired="true" />
+                <BitTextField Label="Required" Placeholder="Enter a text..." HasBorder="false" Required />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -207,33 +207,33 @@
             <div class="example-box">
                 @if (formIsValidSubmit is false)
                 {
-                            <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
-                                <DataAnnotationsValidator />
-                                <BitTextField Label="Required" IsRequired="true" @bind-Value="validationTextFieldModel.Text" />
-                                <ValidationMessage For="() => validationTextFieldModel.Text" />
-                                <br />
-                                <BitTextField Label="Numeric" @bind-Value="validationTextFieldModel.NumericText" />
-                                <ValidationMessage For="() => validationTextFieldModel.NumericText" />
-                                <br />
-                                <BitTextField Label="Only chars" @bind-Value="validationTextFieldModel.CharacterText" />
-                                <ValidationMessage For="() => validationTextFieldModel.CharacterText" />
-                                <br />
-                                <BitTextField Label="Email" @bind-Value="validationTextFieldModel.EmailText" />
-                                <ValidationMessage For="() => validationTextFieldModel.EmailText" />
-                                <br />
-                                <BitTextField Label="3 < Length < 5" @bind-Value="validationTextFieldModel.RangeText" />
-                                <ValidationMessage For="() => validationTextFieldModel.RangeText" />
-                                <br />
-                                <BitButton ButtonType="BitButtonType.Submit">
-                                    Submit
-                                </BitButton>
-                            </EditForm>
+                    <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                        <DataAnnotationsValidator />
+                        <BitTextField Label="Required" Required @bind-Value="validationTextFieldModel.Text" />
+                        <ValidationMessage For="() => validationTextFieldModel.Text" />
+                        <br />
+                        <BitTextField Label="Numeric" @bind-Value="validationTextFieldModel.NumericText" />
+                        <ValidationMessage For="() => validationTextFieldModel.NumericText" />
+                        <br />
+                        <BitTextField Label="Only chars" @bind-Value="validationTextFieldModel.CharacterText" />
+                        <ValidationMessage For="() => validationTextFieldModel.CharacterText" />
+                        <br />
+                        <BitTextField Label="Email" @bind-Value="validationTextFieldModel.EmailText" />
+                        <ValidationMessage For="() => validationTextFieldModel.EmailText" />
+                        <br />
+                        <BitTextField Label="3 < Length < 5" @bind-Value="validationTextFieldModel.RangeText" />
+                        <ValidationMessage For="() => validationTextFieldModel.RangeText" />
+                        <br />
+                        <BitButton ButtonType="BitButtonType.Submit">
+                            Submit
+                        </BitButton>
+                    </EditForm>
                 }
                 else
                 {
-                            <BitMessage Severity="BitSeverity.Success">
-                                The form is successfully submitted.
-                            </BitMessage>
+                    <BitMessage Severity="BitSeverity.Success">
+                        The form is successfully submitted.
+                    </BitMessage>
                 }
             </div>
         </ExamplePreview>

@@ -2,16 +2,16 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitPagination
+public partial class BitPagination : BitComponentBase
 {
     private bool SelectedPageHasBeenSet;
 
     private int count = 1;
+    private BitSize? size;
+    private BitColor? color;
     private int selectedPage;
     private int middleCount = 3;
     private int boundaryCount = 2;
-    private BitColor? color;
-    private BitPaginationSize? size;
     private BitAppearance appearance = BitAppearance.Primary;
 
 
@@ -165,7 +165,7 @@ public partial class BitPagination
     /// The size of pagination buttons, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
-    public BitPaginationSize? Size
+    public BitSize? Size
     {
         get => size;
         set
@@ -191,9 +191,9 @@ public partial class BitPagination
 
         ClassBuilder.Register(() => Size switch
         {
-            BitPaginationSize.Small => "bit-pgn-sm",
-            BitPaginationSize.Medium => "bit-pgn-md",
-            BitPaginationSize.Large => "bit-pgn-lg",
+            BitSize.Small => "bit-pgn-sm",
+            BitSize.Medium => "bit-pgn-md",
+            BitSize.Large => "bit-pgn-lg",
             _ => string.Empty
         });
     }

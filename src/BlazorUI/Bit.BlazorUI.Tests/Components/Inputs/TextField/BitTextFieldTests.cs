@@ -13,13 +13,13 @@ public class BitTextFieldTests : BunitTestContext
         DataRow(true, false, true),
         DataRow(false, false, false)
     ]
-    public void BitTextFieldShouldTakeCorrectTypeAndVisual(bool isEnabled, bool isMultiline, bool isRequired)
+    public void BitTextFieldShouldTakeCorrectTypeAndVisual(bool isEnabled, bool isMultiline, bool required)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.IsMultiline, isMultiline);
-            parameters.Add(p => p.IsRequired, isRequired);
+            parameters.Add(p => p.Required, required);
         });
 
         var bitTextField = component.Find(".bit-txt");
@@ -36,8 +36,8 @@ public class BitTextFieldTests : BunitTestContext
 
         Assert.AreEqual(isMultiline ? "TEXTAREA" : "INPUT", textField.TagName);
 
-        Assert.AreEqual(isRequired, textField.HasAttribute("required"));
-        Assert.AreEqual(isRequired, bitTextField.ClassList.Contains("bit-txt-req"));
+        Assert.AreEqual(required, textField.HasAttribute("required"));
+        Assert.AreEqual(required, bitTextField.ClassList.Contains("bit-txt-req"));
     }
 
     [DataTestMethod,
@@ -76,14 +76,14 @@ public class BitTextFieldTests : BunitTestContext
         DataRow(15, false, "this is placeholder", true),
         DataRow(15, false, "this is placeholder", false),
     ]
-    public void BitTextFieldShouldTakeBaseParameters(int maxLength, bool isMultiline, string placeholder, bool isReadOnly)
+    public void BitTextFieldShouldTakeBaseParameters(int maxLength, bool isMultiline, string placeholder, bool readOnly)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.MaxLength, maxLength);
             parameters.Add(p => p.IsMultiline, isMultiline);
             parameters.Add(p => p.Placeholder, placeholder);
-            parameters.Add(p => p.IsReadOnly, isReadOnly);
+            parameters.Add(p => p.ReadOnly, readOnly);
         });
 
         var bitTextField = component.Find(".bit-txt-inp");
@@ -94,7 +94,7 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsTrue(bitTextField.HasAttribute("placeholder"));
         Assert.AreEqual(bitTextField.GetAttribute("placeholder"), placeholder);
 
-        Assert.AreEqual(isReadOnly, bitTextField.HasAttribute("readonly"));
+        Assert.AreEqual(readOnly, bitTextField.HasAttribute("readonly"));
     }
 
     [DataTestMethod, DataRow("Emoji2")]

@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitSwiper : IDisposable
+public partial class BitSwiper : BitComponentBase, IDisposable
 {
     private double _lastX;
     private bool _disposed;
@@ -17,19 +17,20 @@ public partial class BitSwiper : IDisposable
     private long _pointerDownTime;
     private double _swiperEffectiveWidth;
     private int _internalScrollItemsCount = 1;
+    private ElementReference _swiper = default!;
     private string _directionStyle = string.Empty;
     private string _leftButtonStyle = string.Empty;
     private string _rightButtonStyle = string.Empty;
-
     private string _resizeObserverId = string.Empty;
+    private readonly List<BitSwiperItem> _allItems = [];
+    private System.Timers.Timer _autoPlayTimer = default!;
     private DotNetObjectReference<BitSwiper>? _dotnetObjRef = default!;
 
-    private ElementReference _swiper = default!;
-    private System.Timers.Timer _autoPlayTimer = default!;
 
-    private readonly List<BitSwiperItem> AllItems = new();
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     ///// <summary>
     ///// If enabled the swiper items will navigate in an infinite loop.
@@ -83,12 +84,12 @@ public partial class BitSwiper : IDisposable
 
     internal void RegisterItem(BitSwiperItem item)
     {
-        item.Index = AllItems.Count;
+        item.Index = _allItems.Count;
 
-        AllItems.Add(item);
+        _allItems.Add(item);
     }
 
-    internal void UnregisterItem(BitSwiperItem carouselItem) => AllItems.Remove(carouselItem);
+    internal void UnregisterItem(BitSwiperItem carouselItem) => _allItems.Remove(carouselItem);
 
 
 
@@ -105,7 +106,7 @@ public partial class BitSwiper : IDisposable
     {
         await GetDimensions();
 
-        var itemsCount = AllItems.Count;
+        var itemsCount = _allItems.Count;
         _internalScrollItemsCount = ScrollItemsCount < 1 ? 1
                                   : ScrollItemsCount > itemsCount ? itemsCount
                                   : ScrollItemsCount;
@@ -179,7 +180,7 @@ public partial class BitSwiper : IDisposable
         await _js.SetStyle(_swiper, "transitionDuration", "");
 
         var sign = isNext ? -1 : 1;
-        var scrollX = _swiperWidth / AllItems.Count * _internalScrollItemsCount;
+        var scrollX = _swiperWidth / _allItems.Count * _internalScrollItemsCount;
         var passedSlidesX = (int)(_translateX / scrollX);
         var x = sign * scrollX + passedSlidesX * scrollX;
 

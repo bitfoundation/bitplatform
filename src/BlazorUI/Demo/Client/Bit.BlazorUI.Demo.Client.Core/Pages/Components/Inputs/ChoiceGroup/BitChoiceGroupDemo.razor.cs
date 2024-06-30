@@ -112,13 +112,6 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
-            Name = "Required",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, selecting an option is mandatory in the ChoiceGroup."
-        },
-        new()
-        {
             Name = "Styles",
             Type = "BitChoiceGroupClassStyles?",
             DefaultValue = "null",
@@ -188,7 +181,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "ImageSize",
-                   Type = "BitSize?",
+                   Type = "BitImageSize?",
                    DefaultValue = "null",
                    Description = "Provides Width and Height for the image of the BitChoiceGroup item.",
                },
@@ -301,7 +294,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "ImageSize",
-                   Type = "BitSize?",
+                   Type = "BitImageSize?",
                    DefaultValue = "null",
                    Description = "Provides Width and Height for the image of the BitChoiceGroup option.",
                },
@@ -414,7 +407,7 @@ public partial class BitChoiceGroupDemo
                new()
                {
                    Name = "ImageSize",
-                   Type = "BitNameSelectorPair<TItem, BitSize?>",
+                   Type = "BitNameSelectorPair<TItem, BitImageSize?>",
                    DefaultValue = "new(nameof(BitChoiceGroupItem<TValue>.ImageSize))",
                    Description = "Provides Width and Height for the image of the BitChoiceGroup option.",
                },

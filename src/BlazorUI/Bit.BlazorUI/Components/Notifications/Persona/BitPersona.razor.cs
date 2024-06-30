@@ -1,12 +1,10 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPersona
+public partial class BitPersona : BitComponentBase
 {
     private bool unknown;
     private string? imageUrl;
     private BitPersonaSize size = BitPersonaSize.Size48;
-
-
 
     private bool _isLoaded;
     private bool _hasError;
@@ -154,7 +152,8 @@ public partial class BitPersona
     /// If true, show the special coin for unknown persona. 
     /// It has '?' in place of initials, with static font and background colors.
     /// </summary>
-    [Parameter] public bool Unknown
+    [Parameter]
+    public bool Unknown
     {
         get => unknown; set
         {
