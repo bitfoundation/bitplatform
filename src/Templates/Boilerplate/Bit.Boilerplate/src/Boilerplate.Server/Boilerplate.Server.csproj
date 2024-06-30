@@ -10,7 +10,6 @@
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-03" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-        <PackageReference Include="QRCoder" Version="1.5.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -20,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(api)' == 'true' OR '$(api)' == '' ">
+        <PackageReference Include="QRCoder" Version="1.6.0" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.9.1" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageReference Include="FluentStorage" Version="5.4.3" />
