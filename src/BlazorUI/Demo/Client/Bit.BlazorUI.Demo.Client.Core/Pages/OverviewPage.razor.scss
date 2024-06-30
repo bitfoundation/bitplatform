@@ -117,24 +117,12 @@
     background-image: url('images/github-icon-light.svg');
 }
 
-.table {
-    width: 100%;
-    overflow: auto;
-    white-space: nowrap;
-    border-collapse: collapse;
-}
+.section-card-txt {
+    font-weight: 400;
+    font-size: rem2(15px);
+    line-height: rem2(24px);
 
-.table-row {
-    display: table-row;
-    border-bottom: rem2(1px) solid $bit-color-border-secondary;
-
-    &:last-child {
-        border: none;
+    ul {
+        padding-left: rem2(16px);
     }
-}
-
-.table-cell {
-    padding: 0.5rem;
-    display: table-cell;
-    min-width: rem2(128px);
 }
