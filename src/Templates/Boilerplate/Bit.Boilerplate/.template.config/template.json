@@ -84,7 +84,7 @@
                     "description": "You can install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
                 }
             ],
-            "description": "Boilerplate's API uses App_Data folder in non docker environments and /container_volume for docker containers by default."
+            "description": "Boilerplate's API uses Fluent Storage. You can use any other fluent storage provider (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
         },
         "captcha": {
             "displayName": "Captcha",

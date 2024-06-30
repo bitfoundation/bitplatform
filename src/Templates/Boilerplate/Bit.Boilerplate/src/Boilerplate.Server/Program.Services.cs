@@ -173,7 +173,7 @@ public static partial class Program
         services.TryAddSingleton(sp =>
         {
             var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
-            return (IBlobStorage)(string.IsNullOrEmpty(azureBlobStorageSasUrl) ?
+            return (IBlobStorage)(azureBlobStorageSasUrl is "emulator" ?
                 StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator() :
                 StorageFactory.Blobs.AzureBlobStorageWithSas(azureBlobStorageSasUrl));
         });
