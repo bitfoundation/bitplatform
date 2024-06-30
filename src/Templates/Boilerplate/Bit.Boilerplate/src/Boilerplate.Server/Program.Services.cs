@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.DataProtection;
 using FluentStorage;
+using FluentStorage.Blobs;
 using Twilio;
 //#endif
 
@@ -171,11 +172,13 @@ public static partial class Program
         //#elif (filesStorage == "AzureBlobStorage")
         services.TryAddSingleton(sp =>
         {
-            StorageFactory.Modules.UseAzureBlobStorage();
-            return appSettings.AzureBlobStorageConnectionString is "azure.blob://development=true" ? StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator() : StorageFactory.Blobs.FromConnectionString(appSettings.AzureBlobStorageConnectionString);
+            var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
+            return (IBlobStorage)(string.IsNullOrEmpty(azureBlobStorageSasUrl) ?
+                StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator() :
+                StorageFactory.Blobs.AzureBlobStorageWithSas(azureBlobStorageSasUrl));
         });
         //#else
-        services.TryAddSingleton<FluentStorage.Blobs.IBlobStorage>(sp =>
+        services.TryAddSingleton<IBlobStorage>(sp =>
         {
             // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
