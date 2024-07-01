@@ -15,26 +15,10 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Name = "Color",
-            Type = "BitColor",
-            LinkType = LinkType.Link,
-            Href = "#button-color-enum",
-            DefaultValue = "null",
-            Description = "The color of the ButtonGroup.",
-        },
-        new()
-        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "The content inside the item can be customized.",
-        },
-        new()
-        {
-            Name = "Vertical",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Defines whether to render ButtonGroup children vertically."
         },
         new()
         {
@@ -76,13 +60,29 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "Severity",
+            Type = "BitSeverity?",
+            DefaultValue = "null",
+            Description = "The severity of the button group.",
+            LinkType = LinkType.Link,
+            Href = "#severity-enum",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
             DefaultValue = "null",
             Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
-        }
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+        },
+        new()
+        {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Defines whether to render ButtonGroup children vertically."
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -348,8 +348,8 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Id = "button-color-enum",
-            Name = "BitColor",
+            Id = "severity-enum",
+            Name = "BitSeverity",
             Description = "",
             Items =
             [

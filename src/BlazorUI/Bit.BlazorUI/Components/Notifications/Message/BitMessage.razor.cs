@@ -128,25 +128,23 @@ public partial class BitMessage : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsEnabled is false ? string.Empty
-                                    : Severity switch
-                                    {
-                                        BitSeverity.Info => "bit-msg-info",
-                                        BitSeverity.Success => "bit-msg-success",
-                                        BitSeverity.Warning => "bit-msg-warning",
-                                        BitSeverity.SevereWarning => "bit-msg-severe-warning",
-                                        BitSeverity.Error => "bit-msg-error",
-                                        _ => "bit-msg-info"
-                                    });
+        ClassBuilder.Register(() => Severity switch
+        {
+            BitSeverity.Info => "bit-msg-inf",
+            BitSeverity.Success => "bit-msg-suc",
+            BitSeverity.Warning => "bit-msg-wrn",
+            BitSeverity.SevereWarning => "bit-msg-swr",
+            BitSeverity.Error => "bit-msg-err",
+            _ => "bit-msg-info"
+        });
 
-        ClassBuilder.Register(() => IsEnabled is false ? string.Empty
-                                    : Variant switch
-                                    {
-                                        BitVariant.Fill => "bit-msg-fill",
-                                        BitVariant.Outline => "bit-msg-outline",
-                                        BitVariant.Text => "bit-msg-text",
-                                        _ => "bit-msg-fill"
-                                    });
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-msg-fill",
+            BitVariant.Outline => "bit-msg-outline",
+            BitVariant.Text => "bit-msg-text",
+            _ => "bit-msg-fill"
+        });
     }
 
     private void ToggleExpand() => _isExpanded = _isExpanded is false;

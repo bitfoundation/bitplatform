@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitButton : BitComponentBase
 {
     private BitSize? size;
-    private BitColor? color;
+    private BitSeverity? severity;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
@@ -66,22 +66,6 @@ public partial class BitButton : BitComponentBase
     [Parameter] public BitButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The color of button
-    /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Content { get; set; }
@@ -138,6 +122,23 @@ public partial class BitButton : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// The severity of button.
+    /// </summary>
+    [Parameter]
+    public BitSeverity? Severity
+    {
+        get => severity;
+        set
+        {
+            if (severity == value) return;
+
+            severity = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
     /// The size of button, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter]
@@ -184,13 +185,13 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-pri"
         });
 
-        ClassBuilder.Register(() => Color switch
+        ClassBuilder.Register(() => Severity switch
         {
-            BitColor.Info => "bit-btn-inf",
-            BitColor.Success => "bit-btn-suc",
-            BitColor.Warning => "bit-btn-wrn",
-            BitColor.SevereWarning => "bit-btn-swr",
-            BitColor.Error => "bit-btn-err",
+            BitSeverity.Info => "bit-btn-inf",
+            BitSeverity.Success => "bit-btn-suc",
+            BitSeverity.Warning => "bit-btn-wrn",
+            BitSeverity.SevereWarning => "bit-btn-swr",
+            BitSeverity.Error => "bit-btn-err",
             _ => string.Empty
         });
 

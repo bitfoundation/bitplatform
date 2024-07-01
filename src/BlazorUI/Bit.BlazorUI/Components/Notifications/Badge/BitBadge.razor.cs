@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitBadge : BitComponentBase
 {
     private BitSize? size;
-    private BitColor? color;
+    private BitSeverity? severity;
     private BitAppearance appearance = BitAppearance.Primary;
     private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
 
@@ -38,22 +38,6 @@ public partial class BitBadge : BitComponentBase
     /// Custom CSS classes for different parts of the BitBadge.
     /// </summary>
     [Parameter] public BitBadgeClassStyles? Classes { get; set; }
-
-    /// <summary>
-    /// The color of the badge.
-    /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Content you want inside the badge. Supported types are string and integer.
@@ -102,6 +86,22 @@ public partial class BitBadge : BitComponentBase
             if (badgePosition == value) return;
 
             badgePosition = value;
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The severity of the badge.
+    /// </summary>
+    [Parameter]
+    public BitSeverity? Severity
+    {
+        get => severity;
+        set
+        {
+            if (severity == value) return;
+
+            severity = value;
             ClassBuilder.Reset();
         }
     }
@@ -210,13 +210,13 @@ public partial class BitBadge : BitComponentBase
             _ => "bit-bdg-pri"
         });
 
-        className.Append(' ').Append(Color switch
+        className.Append(' ').Append(Severity switch
         {
-            BitColor.Info => "bit-bdg-inf",
-            BitColor.Success => "bit-bdg-suc",
-            BitColor.Warning => "bit-bdg-wrn",
-            BitColor.SevereWarning => "bit-bdg-swr",
-            BitColor.Error => "bit-bdg-err",
+            BitSeverity.Info => "bit-bdg-inf",
+            BitSeverity.Success => "bit-bdg-suc",
+            BitSeverity.Warning => "bit-bdg-wrn",
+            BitSeverity.SevereWarning => "bit-bdg-swr",
+            BitSeverity.Error => "bit-bdg-err",
             _ => string.Empty
         });
 

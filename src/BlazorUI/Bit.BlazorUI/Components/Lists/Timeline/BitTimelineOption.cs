@@ -14,9 +14,9 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
-    /// The color of the option.
+    /// The severity of the option.
     /// </summary>
-    [Parameter] public BitColor? Color { get; set; }
+    [Parameter] public BitSeverity? Severity { get; set; }
 
     /// <summary>
     /// The custom template for the item's dot.

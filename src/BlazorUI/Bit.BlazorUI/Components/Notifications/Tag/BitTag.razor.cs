@@ -2,7 +2,7 @@
 
 public partial class BitTag : BitComponentBase
 {
-    private BitColor? color;
+    private BitSeverity? severity;
     private BitAppearance appearance = BitAppearance.Primary;
 
 
@@ -34,22 +34,6 @@ public partial class BitTag : BitComponentBase
     [Parameter] public BitTagClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The color of the tag.
-    /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// The icon to show inside the tag.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
@@ -63,6 +47,22 @@ public partial class BitTag : BitComponentBase
     /// Dismiss button click event, if set the dismiss icon will show up.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// The severity of the tag.
+    /// </summary>
+    [Parameter]
+    public BitSeverity? Severity
+    {
+        get => severity;
+        set
+        {
+            if (severity == value) return;
+
+            severity = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitTag.
@@ -89,13 +89,13 @@ public partial class BitTag : BitComponentBase
             _ => "bit-tag-pri"
         });
 
-        ClassBuilder.Register(() => Color switch
+        ClassBuilder.Register(() => Severity switch
         {
-            BitColor.Info => "bit-tag-inf",
-            BitColor.Success => "bit-tag-suc",
-            BitColor.Warning => "bit-tag-wrn",
-            BitColor.SevereWarning => "bit-tag-swr",
-            BitColor.Error => "bit-tag-err",
+            BitSeverity.Info => "bit-tag-inf",
+            BitSeverity.Success => "bit-tag-suc",
+            BitSeverity.Warning => "bit-tag-wrn",
+            BitSeverity.SevereWarning => "bit-tag-swr",
+            BitSeverity.Error => "bit-tag-err",
             _ => string.Empty
         });
     }

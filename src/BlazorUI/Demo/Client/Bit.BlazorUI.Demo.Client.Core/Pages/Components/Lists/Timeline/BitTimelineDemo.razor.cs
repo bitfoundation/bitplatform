@@ -24,19 +24,10 @@ public partial class BitTimelineDemo
         {
             Name = "Classes",
             Type = "BitTimelineClassStyles?",
-            LinkType = LinkType.Link,
-            Href = "#timeline-class-styles",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitTimeline.",
-        },
-        new()
-        {
-            Name = "Color",
-            Type = "BitColor?",
-            DefaultValue = "null",
-            Description = "The color of component.",
             LinkType = LinkType.Link,
-            Href = "#timeline-color-enum",
+            Href = "#timeline-class-styles",
         },
         new()
         {
@@ -78,6 +69,15 @@ public partial class BitTimelineDemo
         },
         new()
         {
+            Name = "Severity",
+            Type = "BitSeverity?",
+            DefaultValue = "null",
+            Description = "The severity of the timeline.",
+            LinkType = LinkType.Link,
+            Href = "#severity-enum",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -89,10 +89,10 @@ public partial class BitTimelineDemo
         {
             Name = "Styles",
             Type = "BitTimelineClassStyles?",
-            LinkType = LinkType.Link,
-            Href = "#timeline-class-styles",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitTimeline.",
+            LinkType = LinkType.Link,
+            Href = "#timeline-class-styles",
         },
     ];
 
@@ -113,8 +113,8 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "Color",
-                   Type = "BitColor?",
+                   Name = "Severity",
+                   Type = "BitSeverity?",
                    DefaultValue = "null",
                    Description = "The color of the item."
                },
@@ -233,8 +233,8 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "Color",
-                   Type = "BitColor?",
+                   Name = "Severity",
+                   Type = "BitSeverity?",
                    DefaultValue = "null",
                    Description = "The color of the option."
                },
@@ -596,8 +596,8 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Id = "timeline-color-enum",
-            Name = "BitColor",
+            Id = "severity-enum",
+            Name = "BitSeverity",
             Description = "",
             Items =
             [

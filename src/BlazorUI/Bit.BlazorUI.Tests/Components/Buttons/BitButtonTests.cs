@@ -206,37 +206,37 @@ public class BitButtonTests : BunitTestContext
     }
     
     [DataTestMethod,
-         DataRow(BitColor.Info),
-         DataRow(BitColor.Success),
-         DataRow(BitColor.Warning),
-         DataRow(BitColor.SevereWarning),
-         DataRow(BitColor.Error),
+         DataRow(BitSeverity.Info),
+         DataRow(BitSeverity.Success),
+         DataRow(BitSeverity.Warning),
+         DataRow(BitSeverity.SevereWarning),
+         DataRow(BitSeverity.Error),
          DataRow(null),
     ]
     [TestMethod]
-    public void BitColorOfButtonTest(BitColor? color)
+    public void BitSeverityOfButtonTest(BitSeverity? severity)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            if (color.HasValue)
+            if (severity.HasValue)
             {
-                parameters.Add(p => p.Color, color.Value);
+                parameters.Add(p => p.Severity, severity.Value);
             }
         });
 
         var bitButton = com.Find(".bit-btn");
 
-        var colorClassName = color switch
+        var colorClassName = severity switch
         {
-            BitColor.Info => "bit-btn-inf",
-            BitColor.Success => "bit-btn-suc",
-            BitColor.Warning => "bit-btn-wrn",
-            BitColor.SevereWarning => "bit-btn-swr",
-            BitColor.Error => "bit-btn-err",
+            BitSeverity.Info => "bit-btn-inf",
+            BitSeverity.Success => "bit-btn-suc",
+            BitSeverity.Warning => "bit-btn-wrn",
+            BitSeverity.SevereWarning => "bit-btn-swr",
+            BitSeverity.Error => "bit-btn-err",
             _ => String.Empty
         };
 
-        if (color.HasValue)
+        if (severity.HasValue)
         {
             Assert.IsTrue(bitButton.ClassList.Contains(colorClassName));
         }

@@ -189,7 +189,7 @@
     --bit-tln-sec-brd-clr: #{$color-state-success};
 }
 
-.bit-tln-war, .bit-tln-iwa {
+.bit-tln-wrn, .bit-tln-iwr {
     --bit-tln-clr: #{$color-foreground-primary};
     --bit-tln-bg-clr: #{$color-state-warning-bg};
     --bit-tln-brd-clr: #{$color-state-warning-bg};
@@ -197,7 +197,7 @@
     --bit-tln-sec-brd-clr: #{$color-state-warning};
 }
 
-.bit-tln-swa, .bit-tln-isw {
+.bit-tln-swr, .bit-tln-isw {
     --bit-tln-clr: #{$color-foreground-primary};
     --bit-tln-bg-clr: #{$color-state-severe-warning-bg};
     --bit-tln-brd-clr: #{$color-state-severe-warning-bg};

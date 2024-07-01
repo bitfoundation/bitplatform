@@ -198,27 +198,27 @@ public class BitIconTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitColor.Info),
-        DataRow(BitColor.Success),
-        DataRow(BitColor.Warning),
-        DataRow(BitColor.SevereWarning),
-        DataRow(BitColor.Error),
+        DataRow(BitSeverity.Info),
+        DataRow(BitSeverity.Success),
+        DataRow(BitSeverity.Warning),
+        DataRow(BitSeverity.SevereWarning),
+        DataRow(BitSeverity.Error),
         DataRow(null)
     ]
-    public void BitIconShouldRespectColor(BitColor? color)
+    public void BitIconShouldRespectColor(BitSeverity? severity)
     {
         var component = RenderComponent<BitIcon>(parameters =>
         {
-            parameters.Add(p => p.Color, color);
+            parameters.Add(p => p.Severity, severity);
         });
 
-        var sizeClass = color switch
+        var sizeClass = severity switch
         {
-            BitColor.Info => " bit-ico-inf",
-            BitColor.Success => " bit-ico-suc",
-            BitColor.Warning => " bit-ico-wrn",
-            BitColor.SevereWarning => " bit-ico-swr",
-            BitColor.Error => " bit-ico-err",
+            BitSeverity.Info => " bit-ico-inf",
+            BitSeverity.Success => " bit-ico-suc",
+            BitSeverity.Warning => " bit-ico-wrn",
+            BitSeverity.SevereWarning => " bit-ico-swr",
+            BitSeverity.Error => " bit-ico-err",
             _ => null
         };
 

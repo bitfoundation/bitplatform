@@ -29,19 +29,19 @@ public partial class BitButtonDemo
         {
             Name = "ButtonStyle",
             Type = "BitButtonStyle",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum",
             DefaultValue = "BitButtonStyle.Primary",
             Description = "The style of the button, Possible values: Primary | Standard | Text.",
+            LinkType = LinkType.Link,
+            Href = "#button-style-enum",
         },
         new()
         {
             Name = "ButtonType",
-            Type = "BitButtonType",
-            LinkType = LinkType.Link,
-            Href = "#button-type-enum",
+            Type = "BitButtonType?",
             DefaultValue = "null",
             Description = "The type of the button.",
+            LinkType = LinkType.Link,
+            Href = "#button-type-enum",
         },
         new()
         {
@@ -54,19 +54,10 @@ public partial class BitButtonDemo
         {
             Name = "Classes",
             Type = "BitButtonClassStyles?",
-            LinkType = LinkType.Link,
-            Href = "#button-class-styles",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitButton.",
-        },
-        new()
-        {
-            Name = "Color",
-            Type = "BitColor",
             LinkType = LinkType.Link,
-            Href = "#button-color-enum",
-            DefaultValue = "null",
-            Description = "The color of the button.",
+            Href = "#button-class-styles",
         },
         new()
         {
@@ -136,21 +127,30 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "Size",
-            Type = "BitSize",
+            Name = "Severity",
+            Type = "BitSeverity?",
+            DefaultValue = "null",
+            Description = "The severity of the button.",
             LinkType = LinkType.Link,
-            Href = "#button-size-enum",
+            Href = "#severity-enum",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
             DefaultValue = "null",
             Description = "The size of button, Possible values: Small | Medium | Large.",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
         },
         new()
         {
             Name = "Styles",
             Type = "BitButtonClassStyles?",
-            LinkType = LinkType.Link,
-            Href = "#class-styles",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitButton.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {
@@ -199,8 +199,8 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Id = "button-color-enum",
-            Name = "BitColor",
+            Id = "severity-enum",
+            Name = "BitSeverity",
             Description = "",
             Items =
             [
@@ -432,25 +432,25 @@ public partial class BitButtonDemo
 private int clickCounter;";
 
     private readonly string example7RazorCode = @"
-<BitButton Color=""BitColor.Info"">Info</BitButton>
-<BitButton Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
-<BitButton Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
+<BitButton Color=""BitSeverity.Info"">Info</BitButton>
+<BitButton Color=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
+<BitButton Color=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
 
-<BitButton Color=""BitColor.Success"">Success</BitButton>
-<BitButton Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
-<BitButton Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
+<BitButton Color=""BitSeverity.Success"">Success</BitButton>
+<BitButton Color=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
+<BitButton Color=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
 
-<BitButton Color=""BitColor.Warning"">Warning</BitButton>
-<BitButton Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
-<BitButton Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
+<BitButton Color=""BitSeverity.Warning"">Warning</BitButton>
+<BitButton Color=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
+<BitButton Color=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
 
-<BitButton Color=""BitColor.SevereWarning"">SevereWarning</BitButton>
-<BitButton Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
-<BitButton Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
+<BitButton Color=""BitSeverity.SevereWarning"">SevereWarning</BitButton>
+<BitButton Color=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
+<BitButton Color=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
 
-<BitButton Color=""BitColor.Error"">Error</BitButton>
-<BitButton Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
-<BitButton Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
+<BitButton Color=""BitSeverity.Error"">Error</BitButton>
+<BitButton Color=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
+<BitButton Color=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
 
     private readonly string example8RazorCode = @"
 <BitButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>

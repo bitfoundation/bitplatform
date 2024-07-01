@@ -83,27 +83,27 @@
     font-size: spacing(1.25);
 }
 
-.bit-msg-info {
+.bit-msg-inf {
     --bit-msg-clr: #{$color-state-info};
     --bit-msg-clr-bg: #{$color-state-info-bg};
 }
 
-.bit-msg-success {
+.bit-msg-suc {
     --bit-msg-clr: #{$color-state-success};
     --bit-msg-clr-bg: #{$color-state-success-bg};
 }
 
-.bit-msg-warning {
+.bit-msg-wrn {
     --bit-msg-clr: #{$color-state-warning};
     --bit-msg-clr-bg: #{$color-state-warning-bg};
 }
 
-.bit-msg-severe-warning {
+.bit-msg-swr {
     --bit-msg-clr: #{$color-state-severe-warning};
     --bit-msg-clr-bg: #{$color-state-severe-warning-bg};
 }
 
-.bit-msg-error {
+.bit-msg-err {
     --bit-msg-clr: #{$color-state-error};
     --bit-msg-clr-bg: #{$color-state-error-bg};
 }

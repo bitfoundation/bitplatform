@@ -274,90 +274,90 @@ private List<TimelineActionItem> templateItems = new()
 
     private readonly string example6RazorCode = @"
 <BitTimeline Horizontal
-             Color=""BitColor.Info""
+             Color=""BitSeverity.Info""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.Info""
+             Color=""BitSeverity.Info""
              Appearance=""BitAppearance.Standard""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.Info""
+             Color=""BitSeverity.Info""
              Appearance=""BitAppearance.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 
 <BitTimeline Horizontal
-             Color=""BitColor.Success""
+             Color=""BitSeverity.Success""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.Success""
+             Color=""BitSeverity.Success""
              Appearance=""BitAppearance.Standard"" 
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.Success""
+             Color=""BitSeverity.Success""
              Appearance=""BitAppearance.Text"" 
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 
 <BitTimeline Horizontal
-             Color=""BitColor.Warning""
+             Color=""BitSeverity.Warning""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.Warning""
+             Color=""BitSeverity.Warning""
              Appearance=""BitAppearance.Standard""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.Warning""
+             Color=""BitSeverity.Warning""
              Appearance=""BitAppearance.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 
 <BitTimeline Horizontal
-             Color=""BitColor.SevereWarning""
+             Color=""BitSeverity.SevereWarning""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.SevereWarning""
+             Color=""BitSeverity.SevereWarning""
              Appearance=""BitAppearance.Standard""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.SevereWarning""
+             Color=""BitSeverity.SevereWarning""
              Appearance=""BitAppearance.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 
 <BitTimeline Horizontal
-             Color=""BitColor.Error""
+             Color=""BitSeverity.Error""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.Error""
+             Color=""BitSeverity.Error""
              Appearance=""BitAppearance.Standard""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
-             Color=""BitColor.Error""
+             Color=""BitSeverity.Error""
              Appearance=""BitAppearance.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
