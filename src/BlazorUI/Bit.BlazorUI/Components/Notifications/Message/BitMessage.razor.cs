@@ -135,7 +135,7 @@ public partial class BitMessage : BitComponentBase
             BitSeverity.Warning => "bit-msg-wrn",
             BitSeverity.SevereWarning => "bit-msg-swr",
             BitSeverity.Error => "bit-msg-err",
-            _ => "bit-msg-info"
+            _ => "bit-msg-inf"
         });
 
         ClassBuilder.Register(() => Variant switch
