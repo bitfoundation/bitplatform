@@ -395,25 +395,25 @@ private int paginationSelectedPage = 1;";
 <BitPagination Count=""4"" NextIcon=""@BitIconName.Next"" PreviousIcon=""@BitIconName.Previous"" />";
 
     private readonly string example11RazorCode = @"
-<BitPagination Count=""5"" Color=""BitSeverity.Info"" />
-<BitPagination Count=""5"" Color=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Color=""BitSeverity.Info"" Appearance=""BitAppearance.Text"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Info"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Text"" />
 
-<BitPagination Count=""5"" Color=""BitSeverity.Success"" />
-<BitPagination Count=""5"" Color=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Color=""BitSeverity.Success"" Appearance=""BitAppearance.Text"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Success"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Text"" />
 
-<BitPagination Count=""5"" Color=""BitSeverity.Warning"" />
-<BitPagination Count=""5"" Color=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Color=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"" />
 
-<BitPagination Count=""5"" Color=""BitSeverity.SevereWarning"" />
-<BitPagination Count=""5"" Color=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Color=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"" />
 
-<BitPagination Count=""5"" Color=""BitSeverity.Error"" />
-<BitPagination Count=""5"" Color=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Color=""BitSeverity.Error"" Appearance=""BitAppearance.Text"" />";
+<BitPagination Count=""5"" Severity=""BitSeverity.Error"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Text"" />";
 
     private readonly string example12RazorCode = @"
 <BitPagination Count=""5"" Size=""BitSize.Small"" />

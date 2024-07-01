@@ -195,81 +195,81 @@ public partial class _BitTimelineOptionDemo
 </BitTimeline>";
 
     private readonly string example6RazorCode = @"
-<BitTimeline Horizontal Color=""BitSeverity.Info"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Info"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.Info"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-<BitTimeline Horizontal Color=""BitSeverity.Success"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.Success"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
 
-<BitTimeline Horizontal Color=""BitSeverity.Warning"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Success"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-
-<BitTimeline Horizontal Color=""BitSeverity.SevereWarning"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
-    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
-    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
-</BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
 
-<BitTimeline Horizontal Color=""BitSeverity.Error"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Warning"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
 </BitTimeline>
-<BitTimeline Horizontal Color=""BitSeverity.Error"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
+<BitTimeline Horizontal Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Severity=""BitSeverity.SevereWarning"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+</BitTimeline>
+<BitTimeline Horizontal Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+</BitTimeline>
+<BitTimeline Horizontal Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+</BitTimeline>
+
+<BitTimeline Horizontal Severity=""BitSeverity.Error"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+</BitTimeline>
+<BitTimeline Horizontal Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"" TItem=""BitTimelineOption"">
+    <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
+    <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
+    <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
+</BitTimeline>
+<BitTimeline Horizontal Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Text"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
     <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" />
     <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />

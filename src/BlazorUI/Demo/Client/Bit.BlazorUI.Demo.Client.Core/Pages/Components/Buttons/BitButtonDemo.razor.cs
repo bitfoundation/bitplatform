@@ -432,25 +432,25 @@ public partial class BitButtonDemo
 private int clickCounter;";
 
     private readonly string example7RazorCode = @"
-<BitButton Color=""BitSeverity.Info"">Info</BitButton>
-<BitButton Color=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
-<BitButton Color=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
+<BitButton Severity=""BitSeverity.Info"">Info</BitButton>
+<BitButton Severity=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
+<BitButton Severity=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
 
-<BitButton Color=""BitSeverity.Success"">Success</BitButton>
-<BitButton Color=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
-<BitButton Color=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
+<BitButton Severity=""BitSeverity.Success"">Success</BitButton>
+<BitButton Severity=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
+<BitButton Severity=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
 
-<BitButton Color=""BitSeverity.Warning"">Warning</BitButton>
-<BitButton Color=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
-<BitButton Color=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
+<BitButton Severity=""BitSeverity.Warning"">Warning</BitButton>
+<BitButton Severity=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
+<BitButton Severity=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
 
-<BitButton Color=""BitSeverity.SevereWarning"">SevereWarning</BitButton>
-<BitButton Color=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
-<BitButton Color=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
+<BitButton Severity=""BitSeverity.SevereWarning"">SevereWarning</BitButton>
+<BitButton Severity=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
+<BitButton Severity=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
 
-<BitButton Color=""BitSeverity.Error"">Error</BitButton>
-<BitButton Color=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
-<BitButton Color=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
+<BitButton Severity=""BitSeverity.Error"">Error</BitButton>
+<BitButton Severity=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
+<BitButton Severity=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
 
     private readonly string example8RazorCode = @"
 <BitButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>

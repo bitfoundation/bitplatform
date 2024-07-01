@@ -408,53 +408,53 @@ private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValu
     .ToList();";
 
     private readonly string example11RazorCode = @"
-<BitBadge Content=""100"" Color=""BitSeverity.Info"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Info"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.Info"" Appearance=""BitAppearance.Text"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-
-<BitBadge Content=""100"" Color=""BitSeverity.Success"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.Success"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Text"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
 
-<BitBadge Content=""100"" Color=""BitSeverity.Warning"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Success"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-
-<BitBadge Content=""100"" Color=""BitSeverity.SevereWarning"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"">
-    <BitIcon IconName=""@BitIconName.Mail"" />
-</BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Text"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
 
-<BitBadge Content=""100"" Color=""BitSeverity.Error"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Warning"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>
-<BitBadge Content=""100"" Color=""BitSeverity.Error"" Appearance=""BitAppearance.Text"">
+<BitBadge Content=""100"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+
+<BitBadge Content=""100"" Severity=""BitSeverity.SevereWarning"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+
+<BitBadge Content=""100"" Severity=""BitSeverity.Error"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"">
+    <BitIcon IconName=""@BitIconName.Mail"" />
+</BitBadge>
+<BitBadge Content=""100"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Text"">
     <BitIcon IconName=""@BitIconName.Mail"" />
 </BitBadge>";
 

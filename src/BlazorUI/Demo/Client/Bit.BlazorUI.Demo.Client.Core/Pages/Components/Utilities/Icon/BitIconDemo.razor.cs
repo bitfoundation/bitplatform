@@ -15,7 +15,7 @@ public partial class BitIconDemo
         },
         new()
         {
-            Name = "Color",
+            Name = "Severity",
             Type = "BitSeverity?",
             DefaultValue = "null",
             Description = "The severity of the icon.",
@@ -140,23 +140,23 @@ public partial class BitIconDemo
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
 
     private readonly string example5RazorCode = @"
-<BitIcon Color=""BitSeverity.Info"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitSeverity.Info"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitSeverity.Info"" IconName=""@BitIconName.Pinned"" />
+<BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Accept"" />
+<BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Bus"" />
+<BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Pinned"" />
 
-<BitIcon Color=""BitSeverity.Success"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitSeverity.Success"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitSeverity.Success"" IconName=""@BitIconName.Pinned"" />
+<BitIcon Severity=""BitSeverity.Success"" IconName=""@BitIconName.Accept"" />
+<BitIcon Severity=""BitSeverity.Success"" IconName=""@BitIconName.Bus"" />
+<BitIcon Severity=""BitSeverity.Success"" IconName=""@BitIconName.Pinned"" />
                 
-<BitIcon Color=""BitSeverity.Warning"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitSeverity.Warning"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitSeverity.Warning"" IconName=""@BitIconName.Pinned"" />
+<BitIcon Severity=""BitSeverity.Warning"" IconName=""@BitIconName.Accept"" />
+<BitIcon Severity=""BitSeverity.Warning"" IconName=""@BitIconName.Bus"" />
+<BitIcon Severity=""BitSeverity.Warning"" IconName=""@BitIconName.Pinned"" />
                 
-<BitIcon Color=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Pinned"" />
+<BitIcon Severity=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Accept"" />
+<BitIcon Severity=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Bus"" />
+<BitIcon Severity=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Pinned"" />
                 
-<BitIcon Color=""BitSeverity.Error"" IconName=""@BitIconName.Accept"" />
-<BitIcon Color=""BitSeverity.Error"" IconName=""@BitIconName.Bus"" />
-<BitIcon Color=""BitSeverity.Error"" IconName=""@BitIconName.Pinned"" />";
+<BitIcon Severity=""BitSeverity.Error"" IconName=""@BitIconName.Accept"" />
+<BitIcon Severity=""BitSeverity.Error"" IconName=""@BitIconName.Bus"" />
+<BitIcon Severity=""BitSeverity.Error"" IconName=""@BitIconName.Pinned"" />";
 }

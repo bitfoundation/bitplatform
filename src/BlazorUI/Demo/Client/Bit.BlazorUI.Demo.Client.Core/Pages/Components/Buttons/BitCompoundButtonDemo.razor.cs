@@ -435,25 +435,25 @@ private async Task HandleValidSubmit()
 </BitCompoundButton>";
 
     private readonly string example9RazorCode = @"
-<BitCompoundButton Color=""BitSeverity.Info"" SecondaryText=""This is the secondary text"">Info</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.Info"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.Info"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Info</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Info"" SecondaryText=""This is the secondary text"">Info</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Info"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Info"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Info</BitCompoundButton>
 
-<BitCompoundButton Color=""BitSeverity.Success"" SecondaryText=""This is the secondary text"">Success</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.Success"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.Success"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Success</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Success"" SecondaryText=""This is the secondary text"">Success</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Success"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Success"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Success</BitCompoundButton>
 
-<BitCompoundButton Color=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"">Warning</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"">Warning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitCompoundButton>
 
-<BitCompoundButton Color=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"">SevereWarning</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"">SevereWarning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitCompoundButton>
 
-<BitCompoundButton Color=""BitSeverity.Error"" SecondaryText=""This is the secondary text"">Error</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.Error"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitCompoundButton>
-<BitCompoundButton Color=""BitSeverity.Error"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Error</BitCompoundButton>";
+<BitCompoundButton Severity=""BitSeverity.Error"" SecondaryText=""This is the secondary text"">Error</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Error"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Error"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Error</BitCompoundButton>";
 
     private readonly string example10RazorCode = @"
 <BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitCompoundButton>

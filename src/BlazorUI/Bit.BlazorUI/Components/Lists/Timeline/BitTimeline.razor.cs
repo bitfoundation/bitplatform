@@ -198,9 +198,9 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         StringBuilder className = new StringBuilder();
 
-        if (GetColor(item) is not null)
+        if (GetSeverity(item) is not null)
         {
-            className.Append(GetColor(item) switch
+            className.Append(GetSeverity(item) switch
             {
                 BitSeverity.Info => " bit-tln-iin",
                 BitSeverity.Success => " bit-tln-isu",
@@ -557,7 +557,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitSize?>(NameSelectors.Size.Name, null);
     }
 
-    private BitSeverity? GetColor(TItem? item)
+    private BitSeverity? GetSeverity(TItem? item)
     {
         if (item is null) return null;
 
