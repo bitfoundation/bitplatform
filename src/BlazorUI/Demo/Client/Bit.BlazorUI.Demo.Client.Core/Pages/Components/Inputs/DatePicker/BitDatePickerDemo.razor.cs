@@ -695,10 +695,10 @@ public partial class BitDatePickerDemo
                 },
                 new()
                 {
-                    Name = "TimePickerHourInput",
+                    Name = "TimePickerHourMinuteSeparator",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the time-picker's hour input of the BitDatePicker."
+                    Description = "Custom CSS classes/styles for the time-picker's hour/minute separator of the BitDatePicker."
                 },
                 new()
                 {

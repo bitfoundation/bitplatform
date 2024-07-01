@@ -193,9 +193,9 @@ public class BitDatePickerClassStyles
     public string? TimePickerHourInput { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the time-picker's divider of the BitDatePicker.
+    /// Custom CSS classes/styles for the time-picker's hour/minute separator of the BitDatePicker.
     /// </summary>
-    public string? TimePickerDivider { get; set; }
+    public string? TimePickerHourMinuteSeparator { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's minute input of the BitDatePicker.
