@@ -89,7 +89,7 @@
     background-color: var(--bit-tln-bg-clr);
 }
 
-.bit-tln-pri {
+.bit-tln-fil {
     --bit-tln-clr: #{$color-primary-text};
     --bit-tln-bg-clr: #{$color-primary-main};
     --bit-tln-brd-clr: #{$color-primary-main};
@@ -100,7 +100,7 @@
     }
 }
 
-.bit-tln-std {
+.bit-tln-otl {
     --bit-tln-clr: #{$color-secondary-text};
     --bit-tln-brd-clr: #{$color-secondary-text};
 

@@ -6,29 +6,29 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ButtonStyle" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
-        <div>All the standard button styles are supported.</div>
+        <div>The ButtonGroup has three variants: Fill (default), Outline, and Text..</div>
         <br /><br />
         <div class="example-content">
-            <div>Primary (default)</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="disabledItems" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicItems" IsEnabled="false" />
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Variant="BitVariant.Fill" Items="disabledItems" />
+            <BitButtonGroup Variant="BitVariant.Fill" Items="basicItems" IsEnabled="false" />
         </div>
         <br /><br />
         <div class="example-content">
-            <div>Standard</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="disabledItems" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" IsEnabled="false" />
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Variant="BitVariant.Outline" Items="disabledItems" />
+            <BitButtonGroup Variant="BitVariant.Outline" Items="basicItems" IsEnabled="false" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Text</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="disabledItems" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" IsEnabled="false" />
+            <BitButtonGroup Variant="BitVariant.Text" Items="basicItems" />
+            <BitButtonGroup Variant="BitVariant.Text" Items="disabledItems" />
+            <BitButtonGroup Variant="BitVariant.Text" Items="basicItems" IsEnabled="false" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -38,18 +38,18 @@
         <div>Each item in the ButtonGroup can have an icon.</div>
         <br /><br />
         <div class="example-content">
-            <div>Primary (default)</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="iconItems" />
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="iconItems" />
         </div>
         <br /><br />
         <div class="example-content">
-            <div>Standard</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="iconItems" />
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="iconItems" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Text</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="iconItems" />
+            <BitButtonGroup Variant="BitVariant.Text" Items="iconItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -60,18 +60,18 @@
         <br /><br />
         <div class="buttons-container">
             <div class="example-content">
-                <div>Primary (default)</div>
-                <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicItems" Vertical />
+                <div>Fill (default)</div>
+                <BitButtonGroup Variant="BitVariant.Fill" Items="basicItems" Vertical />
             </div>
             <br /><br />
             <div class="example-content">
-                <div>Standard</div>
-                <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicItems" Vertical />
+                <div>Outline</div>
+                <BitButtonGroup Variant="BitVariant.Outline" Items="basicItems" Vertical />
             </div>
             <br /><br />
             <div class="example-content">
                 <div>Text</div>
-                <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicItems" Vertical />
+                <BitButtonGroup Variant="BitVariant.Text" Items="basicItems" Vertical />
             </div>
         </div>
     </ExamplePreview>
@@ -101,37 +101,37 @@
         <br /><br />
         <div class="example-content">
             <div>Info</div>
-            <BitButtonGroup Severity="BitSeverity.Info" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.Info" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.Info" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Info" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Info" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Info" Variant="BitVariant.Text" Items="basicItems" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Success</div>
-            <BitButtonGroup Severity="BitSeverity.Success" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.Success" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.Success" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Success" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Success" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Success" Variant="BitVariant.Text" Items="basicItems" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Warning</div>
-            <BitButtonGroup Severity="BitSeverity.Warning" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.Warning" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.Warning" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Warning" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Warning" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Warning" Variant="BitVariant.Text" Items="basicItems" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>SevereWarning</div>
-            <BitButtonGroup Severity="BitSeverity.SevereWarning" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.SevereWarning" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.SevereWarning" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.SevereWarning" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.SevereWarning" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.SevereWarning" Variant="BitVariant.Text" Items="basicItems" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Error</div>
-            <BitButtonGroup Severity="BitSeverity.Error" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.Error" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup Severity="BitSeverity.Error" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Error" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Error" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Severity="BitSeverity.Error" Variant="BitVariant.Text" Items="basicItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -142,23 +142,23 @@
         <br /><br />
         <div class="example-content">
             <div>Small</div>
-            <BitButtonGroup Size="BitSize.Small" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Small" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Small" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Text" Items="basicItems" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Medium</div>
-            <BitButtonGroup Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Text" Items="basicItems" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Large</div>
-            <BitButtonGroup Size="BitSize.Large" ButtonStyle="BitButtonStyle.Primary" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Large" ButtonStyle="BitButtonStyle.Standard" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Large" ButtonStyle="BitButtonStyle.Text" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Text" Items="basicItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -182,10 +182,10 @@
 
 <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
-        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Primary" Items="rtlItems" />
+        <BitButtonGroup Dir="BitDir.Rtl" Variant="BitVariant.Fill" Items="rtlItems" />
         <br /><br />
-        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Standard" Items="rtlItems" />
+        <BitButtonGroup Dir="BitDir.Rtl" Variant="BitVariant.Outline" Items="rtlItems" />
         <br /><br />
-        <BitButtonGroup Dir="BitDir.Rtl" ButtonStyle="BitButtonStyle.Text" Items="rtlItems" />
+        <BitButtonGroup Dir="BitDir.Rtl" Variant="BitVariant.Text" Items="rtlItems" />
     </ExamplePreview>
 </ComponentExampleBox>

@@ -40,7 +40,7 @@ public partial class BitHeaderDemo
     <BitIconButton IconName=""@BitIconName.Contact"" Title=""Sign in"" />
     <BitMenuButton TItem=""BitMenuButtonOption""
                    ChevronDownIcon=""@BitIconName.More""
-                   ButtonStyle=""BitButtonStyle.Text""
+                   Variant=""BitVariant.Text""
                    title=""See more""
                    Styles=""@(new() { OperatorButton = ""padding: 0.5rem; color: dodgerblue"" })"">
         <BitMenuButtonOption Text=""Settings"" IconName=""@BitIconName.Settings"" />

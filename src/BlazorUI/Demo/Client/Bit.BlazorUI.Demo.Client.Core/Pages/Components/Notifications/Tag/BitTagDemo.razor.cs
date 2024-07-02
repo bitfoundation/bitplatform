@@ -6,15 +6,6 @@ public partial class BitTagDemo
     [
         new()
         {
-            Name = "Appearance",
-            Type = "BitAppearance",
-            DefaultValue = "BitAppearance.Primary",
-            Description = "The appearance of tag, Possible values: Primary | Standard | Text",
-            LinkType = LinkType.Link,
-            Href = "#tag-appearance-enum"
-        },
-        new()
-        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -75,75 +66,14 @@ public partial class BitTagDemo
             DefaultValue = "null",
             Description = "The text of the tag."
         },
-    ];
-
-    private readonly List<ComponentSubEnum> componentSubEnums =
-    [
         new()
         {
-            Id = "tag-appearance-enum",
-            Name = "BitAppearance",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="The appearance for primary actions that are high-emphasis.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Standard",
-                    Description="The appearance for important actions that are medium-emphasis.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="The appearance for less-pronounced actions.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "severity-enum",
-            Name = "BitSeverity",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Info",
-                    Description="Info styled tag.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success styled tag.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning styled tag.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="Severe Warning styled tag.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error styled tag.",
-                    Value="4",
-                }
-            ]
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the tag.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum"
         },
     ];
 
@@ -201,6 +131,76 @@ public partial class BitTagDemo
         }
     ];
 
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
+                new()
+                {
+                    Name= "Fill",
+                    Description="Fill styled variant.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Outline",
+                    Description="Outline styled variant.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="Text styled variant.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "severity-enum",
+            Name = "BitSeverity",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Info",
+                    Description="Info styled tag.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success styled tag.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning styled tag.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="Severe Warning styled tag.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error styled tag.",
+                    Value="4",
+                }
+            ]
+        },
+    ];
+
 
 
     private bool isDismissed;
@@ -210,59 +210,62 @@ public partial class BitTagDemo
 
 
     private readonly string example1RazorCode = @"
-<BitTag Text=""Text"" />
-<BitTag Text=""Text"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Text"" Appearance=""BitAppearance.Text"" />";
+<BitTag Text=""Text"" />";
 
     private readonly string example2RazorCode = @"
-<BitTag Text=""Primary"" />
-<BitTag Text=""Disabled"" IsEnabled=""false"" />";
+<BitTag Text=""Text"" Variant=""BitVariant.Fill"" />
+<BitTag Text=""Text"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Text"" Variant=""BitVariant.Text"" />";
 
     private readonly string example3RazorCode = @"
-<BitTag Text=""Standard"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Disabled"" Appearance=""BitAppearance.Standard"" IsEnabled=""false"" />";
+<BitTag Text=""Enabled"" />
+<BitTag Text=""Disabled"" IsEnabled=""false"" />";
 
     private readonly string example4RazorCode = @"
-<BitTag Text=""Text"" Appearance=""BitAppearance.Text"" />
-<BitTag Text=""Disabled"" Appearance=""BitAppearance.Text"" IsEnabled=""false"" />";
+<BitTag Text=""Enabled"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Disabled"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />";
 
     private readonly string example5RazorCode = @"
-<BitTag Text=""Text"" IconName=""@BitIconName.Calendar"" />";
+<BitTag Text=""Enabled"" Variant=""BitVariant.Text"" />
+<BitTag Text=""Disabled"" Variant=""BitVariant.Text"" IsEnabled=""false"" />";
 
     private readonly string example6RazorCode = @"
+<BitTag Text=""Text"" IconName=""@BitIconName.Calendar"" />";
+
+    private readonly string example7RazorCode = @"
 @if (isDismissed is false)
 {
     <BitTag IconName=""@BitIconName.AlarmClock"" Text=""Dismiss me"" OnDismiss=""() => isDismissed = true"" />
 }
 
-<BitButton IsEnabled=""isDismissed"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => isDismissed = false"">
+<BitButton IsEnabled=""isDismissed"" Variant=""BitVariant.Outline"" OnClick=""() => isDismissed = false"">
     Dismissed, click to reset
 </BitButton>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool isDismissed;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Info"" />
-<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Text"" />
+<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"" />
 
 <BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Success"" />
-<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Text"" />
+<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"" />
 
 <BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Warning"" />
-<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"" />
+<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"" />
 
 <BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.SevereWarning"" />
-<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"" />
+<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"" />
 
 <BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Error"" />
-<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Text"" />";
+<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitTag>
     <BitStack Horizontal Gap=""0.5rem"" Style=""padding-inline: 0.5rem;"">
         <BitLabel>Custom content</BitLabel>
@@ -270,7 +273,7 @@ private bool isDismissed;";
     </BitStack>
 </BitTag>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         border-radius: 0.25rem;
@@ -302,11 +305,11 @@ private bool isDismissed;";
         Style=""border-radius: 1rem; font-weight:bold"" />
 <BitTag Text=""Classed Tag""
         IconName=""@BitIconName.People""
-        Class=""custom-class"" Appearance=""BitAppearance.Standard"" />
+        Class=""custom-class"" Variant=""BitVariant.Outline"" />
 
 @if (isDismissed2 is false)
 {
-    <BitTag Text=""Primary""
+    <BitTag Text=""Fill""
             IconName=""@BitIconName.People""
             OnDismiss=""() => isDismissed2 = true""
             Styles=""@(new() { Root = ""border-color: darkblue; border-width: 0.25rem;"",
@@ -316,19 +319,19 @@ private bool isDismissed;";
 
 @if (isDismissed3 is false)
 {
-    <BitTag Text=""Standard""
+    <BitTag Text=""Outline""
             IconName=""@BitIconName.People""
             OnDismiss=""() => isDismissed3 = true""
-            Appearance=""BitAppearance.Standard""
+            Variant=""BitVariant.Outline""
             Classes=""@(new() { Root = ""custom-root"",
                                Icon = ""custom-icon"",
                                DismissButton = ""custom-dismiss"" })"" />
 }
 
-<BitButton IsEnabled=""@(isDismissed3 && isDismissed2)"" ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => isDismissed2 = isDismissed3 = false"">
+<BitButton IsEnabled=""@(isDismissed3 && isDismissed2)"" Variant=""BitVariant.Outline"" OnClick=""() => isDismissed2 = isDismissed3 = false"">
     Dismissed, click to reset
 </BitButton>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isDismissed2;
 private bool isDismissed3;";
 }

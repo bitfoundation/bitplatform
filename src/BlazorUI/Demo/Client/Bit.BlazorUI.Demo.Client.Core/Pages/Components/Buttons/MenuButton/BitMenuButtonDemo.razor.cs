@@ -2,8 +2,8 @@
 
 public partial class BitMenuButtonDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AriaDescription",
@@ -17,15 +17,6 @@ public partial class BitMenuButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element."
-        },
-        new()
-        {
-            Name = "ButtonStyle",
-            Type = "BitButtonStyle",
-            DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of button, Possible values: Primary | Standard.",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum"
         },
         new()
         {
@@ -160,17 +151,26 @@ public partial class BitMenuButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The text to show inside the header of BitMenuButton."
-        }
-    };
+        },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the menu button.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum"
+        },
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "menu-button-items",
             Title = "BitMenuButtonItem",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Class",
@@ -234,14 +234,14 @@ public partial class BitMenuButtonDemo
                    DefaultValue = "null",
                    Description = "Text to render in the item.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "menu-button-options",
             Title = "BitMenuButtonOption",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Class",
@@ -305,14 +305,14 @@ public partial class BitMenuButtonDemo
                    DefaultValue = "null",
                    Description = "Text to render in the option.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "class-styles",
             Title = "BitMenuButtonClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -411,14 +411,14 @@ public partial class BitMenuButtonDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the text of the BitMenuButton."
                },
-            },
+            ],
         },
         new()
         {
             Id = "name-selectors",
             Title = "BitMenuButtonNameSelectors",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Class",
@@ -491,14 +491,14 @@ public partial class BitMenuButtonDemo
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
-            }
+            ]
         },
         new()
         {
             Id = "name-selector-pair",
             Title = "BitNameSelectorPair",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Name",
@@ -511,46 +511,46 @@ public partial class BitMenuButtonDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
-            }
+            ]
         },
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
-            Id = "button-style-enum",
-            Name = "BitButtonStyle",
-            Description = "",
-            Items = new()
-            {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
                 new()
                 {
-                    Name= "Primary",
-                    Description="The button with white text on a blue background.",
+                    Name= "Fill",
+                    Description="Fill styled variant.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Standard",
-                    Description="The button with black text on a white background.",
+                    Name= "Outline",
+                    Description="Outline styled variant.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Text",
-                    Description="The button for less-pronounced actions.",
+                    Description="Text styled variant.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Button",
@@ -569,7 +569,7 @@ public partial class BitMenuButtonDemo
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
-            }
+            ]
         }
-    };
+    ];
 }

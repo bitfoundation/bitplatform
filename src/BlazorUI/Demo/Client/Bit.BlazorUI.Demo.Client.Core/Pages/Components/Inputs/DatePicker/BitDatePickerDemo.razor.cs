@@ -1145,7 +1145,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
     <ValidationMessage For=""@(() => validationModel.Date)"" />
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-    <BitButton ButtonType=""BitButtonType.Reset"" ButtonStyle=""BitButtonStyle.Standard""
+    <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline""
                OnClick=""() => { validationModel = new(); SuccessMessage=string.Empty; }"">
         Reset
     </BitButton>

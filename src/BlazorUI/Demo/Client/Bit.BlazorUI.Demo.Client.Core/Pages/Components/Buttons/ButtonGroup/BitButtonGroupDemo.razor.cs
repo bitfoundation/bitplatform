@@ -6,15 +6,6 @@ public partial class BitButtonGroupDemo
     [
         new()
         {
-            Name = "ButtonStyle",
-            Type = "BitButtonStyle",
-            DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of ButtonGroup, Possible values: Primary | Standard.",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum",
-        },
-        new()
-        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -75,6 +66,15 @@ public partial class BitButtonGroupDemo
             Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
             LinkType = LinkType.Link,
             Href = "#button-size-enum",
+        },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the button group.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
         },
         new()
         {
@@ -321,27 +321,27 @@ public partial class BitButtonGroupDemo
     [
         new()
         {
-            Id = "button-style-enum",
-            Name = "BitButtonStyle",
-            Description = "",
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
             Items =
             [
                 new()
                 {
-                    Name= "Primary",
-                    Description="The button with white text on a blue background.",
+                    Name= "Fill",
+                    Description="Fill styled variant.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Standard",
-                    Description="The button with black text on a white background.",
+                    Name= "Outline",
+                    Description="Outline styled variant.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Text",
-                    Description="The button for less-pronounced actions.",
+                    Description="Text styled variant.",
                     Value="2",
                 }
             ]

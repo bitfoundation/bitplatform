@@ -70,17 +70,17 @@ private List<BitButtonGroupItem> basicItems = new()
 };";
 
     private readonly string example2RazorCode = @"
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" Items=""disabledItems"" />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" IsEnabled=false />
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""disabledItems"" />
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" IsEnabled=false />
 
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" Items=""disabledItems"" />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" IsEnabled=false />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""disabledItems"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicItems"" IsEnabled=false />
 
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" Items=""disabledItems"" />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" IsEnabled=false />";
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicItems"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""disabledItems"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicItems"" IsEnabled=false />";
     private readonly string example2CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = new()
 {
@@ -93,9 +93,9 @@ private List<BitButtonGroupItem> disabledItems = new()
 };";
 
     private readonly string example3RazorCode = @"
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" Items=""iconItems"" />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" Items=""iconItems"" />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" Items=""iconItems"" />";
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""iconItems"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""iconItems"" />";
     private readonly string example3CsharpCode = @"
 private List<BitButtonGroupItem> iconItems = new()
 {
@@ -105,9 +105,9 @@ private List<BitButtonGroupItem> iconItems = new()
 };";
 
     private readonly string example4RazorCode = @"
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" Vertical />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" Vertical />
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" Vertical />";
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" Vertical />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicItems"" Vertical />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicItems"" Vertical />";
     private readonly string example4CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = new()
 {
@@ -139,25 +139,25 @@ protected override void OnInitialized()
 }";
 
     private readonly string example6RazorCode = @"
-<BitButtonGroup Severity=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />";
+<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
     private readonly string example6CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = new()
 {
@@ -165,17 +165,17 @@ private List<BitButtonGroupItem> basicItems = new()
 };";
 
     private readonly string example7RazorCode = @"
-<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Primary"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Standard"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Text"" Items=""basicItems"" />";
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
     private readonly string example7CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = new()
 {
@@ -223,9 +223,9 @@ private List<BitButtonGroupItem> styleClassItems = new()
 };";
 
     private readonly string example9RazorCode = @"
-<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Primary"" Items=""rtlItems"" />
-<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Standard"" Items=""rtlItems"" />
-<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Text"" Items=""rtlItems"" />";
+<BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill"" Items=""rtlItems"" />
+<BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Outline"" Items=""rtlItems"" />
+<BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Text"" Items=""rtlItems"" />";
     private readonly string example9CsharpCode = @"
 private List<BitButtonGroupItem> rtlItems = new()
 {

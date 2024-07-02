@@ -2,26 +2,10 @@
 
 public partial class BitTag : BitComponentBase
 {
+    private BitVariant? variant;
     private BitSeverity? severity;
-    private BitAppearance appearance = BitAppearance.Primary;
 
 
-
-    /// <summary>
-    /// The appearance of tag, Possible values: Primary | Standard | Text
-    /// </summary>
-    [Parameter]
-    public BitAppearance Appearance
-    {
-        get => appearance;
-        set
-        {
-            if (appearance == value) return;
-
-            appearance = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Child content of component, the content that the tag will apply to.
@@ -60,6 +44,7 @@ public partial class BitTag : BitComponentBase
             if (severity == value) return;
 
             severity = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -74,6 +59,23 @@ public partial class BitTag : BitComponentBase
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
+    /// <summary>
+    /// The visual variant of the tag.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
 
     protected override string RootElementClass => "bit-tag";
 
@@ -81,12 +83,12 @@ public partial class BitTag : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Appearance switch
+        ClassBuilder.Register(() => Variant switch
         {
-            BitAppearance.Primary => "bit-tag-pri",
-            BitAppearance.Standard => "bit-tag-std",
-            BitAppearance.Text => "bit-tag-txt",
-            _ => "bit-tag-pri"
+            BitVariant.Fill => "bit-tag-fil",
+            BitVariant.Outline => "bit-tag-otl",
+            BitVariant.Text => "bit-tag-txt",
+            _ => "bit-tag-fil"
         });
 
         ClassBuilder.Register(() => Severity switch

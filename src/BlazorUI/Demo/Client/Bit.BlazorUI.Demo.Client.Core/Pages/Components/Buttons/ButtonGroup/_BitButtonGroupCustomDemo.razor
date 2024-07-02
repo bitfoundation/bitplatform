@@ -6,37 +6,37 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="ButtonStyle" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
-        <div>All the standard button styles are supported.</div>
+        <div>The ButtonGroup has three variants: Fill (default), Outline, and Text.</div>
         <br /><br />
         <div class="example-content">
-            <div>Primary (default)</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="disabledCustoms"
+            <BitButtonGroup Variant="BitVariant.Fill" Items="disabledCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms" IsEnabled="false"
+            <BitButtonGroup Variant="BitVariant.Fill" Items="basicCustoms" IsEnabled="false"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
         <br /><br />
         <div class="example-content">
-            <div>Standard</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="disabledCustoms"
+            <BitButtonGroup Variant="BitVariant.Outline" Items="disabledCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms" IsEnabled="false"
+            <BitButtonGroup Variant="BitVariant.Outline" Items="basicCustoms" IsEnabled="false"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Text</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="disabledCustoms"
+            <BitButtonGroup Variant="BitVariant.Text" Items="disabledCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicCustoms" IsEnabled="false"
+            <BitButtonGroup Variant="BitVariant.Text" Items="basicCustoms" IsEnabled="false"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
     </ExamplePreview>
@@ -47,22 +47,22 @@
         <div>Each item in the ButtonGroup can have an icon.</div>
         <br /><br />
         <div class="example-content">
-            <div>Primary (default)</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="iconCustoms"
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="iconCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      IconName = { Selector = i => i.Icon } })" />
         </div>
         <br /><br />
         <div class="example-content">
-            <div>Standard</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="iconCustoms"
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="iconCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      IconName = { Selector = i => i.Icon } })" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Text</div>
-            <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="iconCustoms"
+            <BitButtonGroup Variant="BitVariant.Text" Items="iconCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      IconName = { Selector = i => i.Icon } })" />
         </div>
@@ -75,20 +75,20 @@
         <br /><br />
         <div class="buttons-container">
             <div class="example-content">
-                <div>Primary (default)</div>
-                <BitButtonGroup ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms" Vertical
+                <div>Fill (default)</div>
+                <BitButtonGroup Variant="BitVariant.Fill" Items="basicCustoms" Vertical
                                 NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
             </div>
             <br /><br />
             <div class="example-content">
-                <div>Standard</div>
-                <BitButtonGroup ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms" Vertical
+                <div>Outline</div>
+                <BitButtonGroup Variant="BitVariant.Outline" Items="basicCustoms" Vertical
                                 NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
             </div>
             <br /><br />
             <div class="example-content">
                 <div>Text</div>
-                <BitButtonGroup ButtonStyle="BitButtonStyle.Text" Items="basicCustoms" Vertical
+                <BitButtonGroup Variant="BitVariant.Text" Items="basicCustoms" Vertical
                                 NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
             </div>
         </div>
@@ -124,51 +124,51 @@
         <br /><br />
         <div class="example-content">
             <div>Info</div>
-            <BitButtonGroup Severity="BitSeverity.Info" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Info" Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.Info" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Info" Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.Info" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Info" Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Success</div>
-            <BitButtonGroup Severity="BitSeverity.Success" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Success" Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.Success" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Success" Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.Success" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Success" Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Warning</div>
-            <BitButtonGroup Severity="BitSeverity.Warning" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Warning" Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.Warning" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Warning" Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.Warning" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Warning" Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>SevereWarning</div>
-            <BitButtonGroup Severity="BitSeverity.SevereWarning" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.SevereWarning" Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.SevereWarning" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.SevereWarning" Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.SevereWarning" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.SevereWarning" Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Error</div>
-            <BitButtonGroup Severity="BitSeverity.Error" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Error" Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.Error" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Error" Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Severity="BitSeverity.Error" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Severity="BitSeverity.Error" Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
     </ExamplePreview>
@@ -180,31 +180,31 @@
         <br /><br />
         <div class="example-content">
             <div>Small</div>
-            <BitButtonGroup Size="BitSize.Small" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Size="BitSize.Small" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Size="BitSize.Small" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Medium</div>
-            <BitButtonGroup Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Large</div>
-            <BitButtonGroup Size="BitSize.Large" ButtonStyle="BitButtonStyle.Primary" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Fill" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Size="BitSize.Large" ButtonStyle="BitButtonStyle.Standard" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Outline" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
-            <BitButtonGroup Size="BitSize.Large" ButtonStyle="BitButtonStyle.Text" Items="basicCustoms"
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Text" Items="basicCustoms"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name } })" />
         </div>
     </ExamplePreview>
@@ -235,19 +235,19 @@
     <ExamplePreview>
         <BitButtonGroup Dir="BitDir.Rtl" 
                         Items="rtlCustoms"
-                        ButtonStyle="BitButtonStyle.Primary"
+                        Variant="BitVariant.Fill"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  IconName = { Selector = i => i.Icon } })" />
         <br /><br />
         <BitButtonGroup Dir="BitDir.Rtl"
                         Items="rtlCustoms"
-                        ButtonStyle="BitButtonStyle.Standard"
+                        Variant="BitVariant.Outline"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  IconName = { Selector = i => i.Icon } })" />
         <br /><br />
         <BitButtonGroup Dir="BitDir.Rtl"
                         Items="rtlCustoms"
-                        ButtonStyle="BitButtonStyle.Text"
+                        Variant="BitVariant.Text"
                         NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                  IconName = { Selector = i => i.Icon } })" />
     </ExamplePreview>

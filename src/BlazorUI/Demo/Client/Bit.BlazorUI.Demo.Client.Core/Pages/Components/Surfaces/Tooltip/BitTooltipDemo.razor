@@ -17,7 +17,7 @@
             <br />
             <div class="tooltips-container">
                 <BitTooltip Text="This is the tooltip text">
-                    <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
+                    <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
                 </BitTooltip>
             </div>
         </ExamplePreview>
@@ -32,19 +32,19 @@
             <div class="tooltips-container center">
                 <div class="tooltips-container">
                     <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Top">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Top</BitButton>
+                        <BitButton Variant="BitVariant.Outline">Top</BitButton>
                     </BitTooltip>
                     <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Right">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Right</BitButton>
+                        <BitButton Variant="BitVariant.Outline">Right</BitButton>
                     </BitTooltip>
                 </div>
                 <br />
                 <div class="tooltips-container">
                     <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Left">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard" Style="width: 100%;">Left</BitButton>
+                        <BitButton Variant="BitVariant.Outline" Style="width: 100%;">Left</BitButton>
                     </BitTooltip>
                     <BitTooltip DefaultIsShown="true" Text="Text" Position="BitTooltipPosition.Bottom">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Bottom</BitButton>
+                        <BitButton Variant="BitVariant.Outline">Bottom</BitButton>
                     </BitTooltip>
                 </div>
             </div>
@@ -71,14 +71,14 @@
             <div><b>Styles</b> & <b>Classes</b>:</div><br />
             <div class="tooltips-container">
                 <BitTooltip Text="This is the tooltip text" Styles="@(new() { Tooltip = "box-shadow: aqua 0 0 0.5rem;" })">
-                    <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
+                    <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
                 </BitTooltip>
                 <br /><br />
                 <BitTooltip Text="This is the tooltip text"
                             Classes="@(new() { Root = "custom-root",
                                                Tooltip = "custom-tooltip",
                                                Arrow = "custom-arrow" })">
-                    <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
+                    <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
                 </BitTooltip>
             </div>
         </ExamplePreview>
@@ -97,7 +97,7 @@
                         </ul>
                     </Template>
                     <Anchor>
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">Hover over me</BitButton>
+                        <BitButton Variant="BitVariant.Outline">Hover over me</BitButton>
                     </Anchor>
                 </BitTooltip>
             </div>
@@ -116,7 +116,7 @@
                         </ul>
                     </Template>
                     <Anchor>
-                        <BitButton ButtonStyle="BitButtonStyle.Standard">نشانگر ماوس را روی من بیاورید</BitButton>
+                        <BitButton Variant="BitVariant.Outline">نشانگر ماوس را روی من بیاورید</BitButton>
                     </Anchor>
                 </BitTooltip>
             </div>
@@ -136,7 +136,7 @@
                                 ShowOnClick="showOnClick"
                                 ShowOnHover="showOnHover"
                                 Position="tooltipPosition">
-                        <BitButton ButtonStyle="BitButtonStyle.Standard" Style="width: 8rem;">Anchor</BitButton>
+                        <BitButton Variant="BitVariant.Outline" Style="width: 8rem;">Anchor</BitButton>
                     </BitTooltip>
                     <br />
                     <BitDropdown Label="Tooltip positions" Items="tooltipPositionList" @bind-Value="tooltipPosition" Style="width: 8rem;" />

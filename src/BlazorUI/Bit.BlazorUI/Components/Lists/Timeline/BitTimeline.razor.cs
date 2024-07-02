@@ -7,8 +7,8 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 {
     private BitSize? size;
     private bool horizontal;
+    private BitVariant? variant;
     private BitSeverity? severity;
-    private BitAppearance appearance = BitAppearance.Primary;
 
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
@@ -21,22 +21,6 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [CascadingParameter] private EditContext? _editContext { get; set; }
 
 
-
-    /// <summary>
-    /// The appearance of component, Possible values: Primary | Standard
-    /// </summary>
-    [Parameter]
-    public BitAppearance Appearance
-    {
-        get => appearance;
-        set
-        {
-            if (appearance == value) return;
-
-            appearance = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The content of the BitTimeline, that are BitTimelineOption components.
@@ -60,6 +44,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             if (horizontal == value) return;
 
             horizontal = value;
+
             StyleBuilder.Reset();
         }
     }
@@ -96,6 +81,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             if (severity == value) return;
 
             severity = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -112,6 +98,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             if (size == value) return;
 
             size = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -120,6 +107,23 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// Custom CSS styles for different parts of the BitTimeline.
     /// </summary>
     [Parameter] public BitTimelineClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The visual variant of the timeline.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
 
 
@@ -149,12 +153,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => Horizontal ? "bit-tln-hrz" : string.Empty);
 
-        ClassBuilder.Register(() => Appearance switch
+        ClassBuilder.Register(() => Variant switch
         {
-            BitAppearance.Primary => "bit-tln-pri",
-            BitAppearance.Standard => "bit-tln-std",
-            BitAppearance.Text => "bit-tln-txt",
-            _ => "bit-tln-pri"
+            BitVariant.Fill => "bit-tln-fil",
+            BitVariant.Outline => "bit-tln-otl",
+            BitVariant.Text => "bit-tln-txt",
+            _ => "bit-tln-fil"
         });
 
         ClassBuilder.Register(() => Severity switch

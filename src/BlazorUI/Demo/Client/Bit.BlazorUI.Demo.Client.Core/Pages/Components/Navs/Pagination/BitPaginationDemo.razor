@@ -11,36 +11,43 @@
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div class="pagination-container">
+                <BitPagination Count="4" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Variants" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
             <div>
-                The pagination offers three appearance options: Primary (default), Standard, and Text.
+                The pagination offers three variants: Fill (default), Outline, and Text.
             </div>
             <br />
             <div class="pagination-container">
                 <div>
-                    <BitLabel>Primary</BitLabel>
-                    <BitPagination Count="4" />
+                    <BitLabel>Fill</BitLabel>
+                    <BitPagination Variant="BitVariant.Fill" Count="4" />
                 </div>
                 <div>
                     <BitLabel>Standard</BitLabel>
-                    <BitPagination Count="4" Appearance="BitAppearance.Standard" />
+                    <BitPagination Count="4" Variant="BitVariant.Outline" />
                 </div>
                 <div>
                     <BitLabel>Text</BitLabel>
-                    <BitPagination Count="4" Appearance="BitAppearance.Text" />
+                    <BitPagination Count="4" Variant="BitVariant.Text" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Primary pagination" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Fill pagination" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div>
-                Primary paginations are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+                Fill paginations are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
             </div>
             <br />
             <div class="pagination-container">
                 <div>
-                    <BitLabel>Default</BitLabel>
+                    <BitLabel>Enabled</BitLabel>
                     <BitPagination Count="4" />
                 </div>
                 <div>
@@ -51,26 +58,26 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Standard pagination" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Outline pagination" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>
-                Standard paginations offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text paginations and the more prominent Primary paginations, providing flexibility in emphasis.
+                Outline paginations offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text paginations and the more prominent Fill paginations, providing flexibility in emphasis.
             </div>
             <br />
             <div class="pagination-container">
                 <div>
-                    <BitLabel>Default</BitLabel>
-                    <BitPagination Count="4" Appearance="BitAppearance.Standard" />
+                    <BitLabel>Enabled</BitLabel>
+                    <BitPagination Count="4" Variant="BitVariant.Outline" />
                 </div>
                 <div>
                     <BitLabel>Disabled</BitLabel>
-                    <BitPagination Count="4" Appearance="BitAppearance.Standard" IsEnabled="false" />
+                    <BitPagination Count="4" Variant="BitVariant.Outline" IsEnabled="false" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Text pagination" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Text pagination" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div>
                 Text paginations are best suited for understated actions, serving as a less prominent choice in various interface elements.
@@ -78,18 +85,18 @@
             <br />
             <div class="pagination-container">
                 <div>
-                    <BitLabel>Default</BitLabel>
-                    <BitPagination Count="4" Appearance="BitAppearance.Text" />
+                    <BitLabel>Enabled</BitLabel>
+                    <BitPagination Count="4" Variant="BitVariant.Text" />
                 </div>
                 <div>
                     <BitLabel>Disabled</BitLabel>
-                    <BitPagination Count="4" Appearance="BitAppearance.Text" IsEnabled="false" />
+                    <BitPagination Count="4" Variant="BitVariant.Text" IsEnabled="false" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Default selected" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Default selected" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div>
                 Displays default selected page within the BitPagination component.
@@ -101,7 +108,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="BoundaryCount" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="BoundaryCount" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div>
                 Set a limit to the number of pages shown at the beginning and end of the pagination range.
@@ -113,7 +120,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="MiddleCount" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="MiddleCount" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div>
                 Allowing users to set the count of pages displayed in the middle portion of the pagination control. It also demonstrates how pages are rendered within the defined middle count range.
@@ -125,7 +132,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div>
                 Managing pagination page change event (OnChange).
@@ -138,7 +145,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Navigation buttons" RazorCode="@example9RazorCode" Id="example9">
+    <ComponentExampleBox Title="Navigation buttons" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div>
                 There are additional navigation buttons within the Pagination component, providing quick access to the initial and final pages.
@@ -150,7 +157,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icon" RazorCode="@example10RazorCode" Id="example10">
+    <ComponentExampleBox Title="Icon" RazorCode="@example11RazorCode" Id="example11">
         <ExamplePreview>
             <div>
                 Displaying custom icons feature within the Pagination navigation buttons.
@@ -162,7 +169,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Severity" RazorCode="@example11RazorCode" Id="example11">
+    <ComponentExampleBox Title="Severity" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div>
                 Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
@@ -172,38 +179,38 @@
                 <div class="pagination-container">
                     <BitLabel>Info</BitLabel>
                     <BitPagination Count="5" Severity="BitSeverity.Info" />
-                    <BitPagination Count="5" Severity="BitSeverity.Info" Appearance="BitAppearance.Standard" />
-                    <BitPagination Count="5" Severity="BitSeverity.Info" Appearance="BitAppearance.Text" />
+                    <BitPagination Count="5" Severity="BitSeverity.Info" Variant="BitVariant.Outline" />
+                    <BitPagination Count="5" Severity="BitSeverity.Info" Variant="BitVariant.Text" />
                 </div>
                 <div class="pagination-container">
                     <BitLabel>Success</BitLabel>
                     <BitPagination Count="5" Severity="BitSeverity.Success" />
-                    <BitPagination Count="5" Severity="BitSeverity.Success" Appearance="BitAppearance.Standard" />
-                    <BitPagination Count="5" Severity="BitSeverity.Success" Appearance="BitAppearance.Text" />
+                    <BitPagination Count="5" Severity="BitSeverity.Success" Variant="BitVariant.Outline" />
+                    <BitPagination Count="5" Severity="BitSeverity.Success" Variant="BitVariant.Text" />
                 </div>
                 <div class="pagination-container">
                     <BitLabel>Warning</BitLabel>
                     <BitPagination Count="5" Severity="BitSeverity.Warning" />
-                    <BitPagination Count="5" Severity="BitSeverity.Warning" Appearance="BitAppearance.Standard" />
-                    <BitPagination Count="5" Severity="BitSeverity.Warning" Appearance="BitAppearance.Text" />
+                    <BitPagination Count="5" Severity="BitSeverity.Warning" Variant="BitVariant.Outline" />
+                    <BitPagination Count="5" Severity="BitSeverity.Warning" Variant="BitVariant.Text" />
                 </div>
                 <div class="pagination-container">
                     <BitLabel>SevereWarning</BitLabel>
                     <BitPagination Count="5" Severity="BitSeverity.SevereWarning" />
-                    <BitPagination Count="5" Severity="BitSeverity.SevereWarning" Appearance="BitAppearance.Standard" />
-                    <BitPagination Count="5" Severity="BitSeverity.SevereWarning" Appearance="BitAppearance.Text" />
+                    <BitPagination Count="5" Severity="BitSeverity.SevereWarning" Variant="BitVariant.Outline" />
+                    <BitPagination Count="5" Severity="BitSeverity.SevereWarning" Variant="BitVariant.Text" />
                 </div>
                 <div class="pagination-container">
                     <BitLabel>Error</BitLabel>
                     <BitPagination Count="5" Severity="BitSeverity.Error" />
-                    <BitPagination Count="5" Severity="BitSeverity.Error" Appearance="BitAppearance.Standard" />
-                    <BitPagination Count="5" Severity="BitSeverity.Error" Appearance="BitAppearance.Text" />
+                    <BitPagination Count="5" Severity="BitSeverity.Error" Variant="BitVariant.Outline" />
+                    <BitPagination Count="5" Severity="BitSeverity.Error" Variant="BitVariant.Text" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="Size" RazorCode="@example13RazorCode" Id="example13">
         <ExamplePreview>
             <div>
                 Varying sizes for paginations tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
@@ -218,21 +225,21 @@
                 </div>
                 <div class="pagination-container">
                     <BitLabel>Standard</BitLabel>
-                    <BitPagination Count="5" Size="BitSize.Small" Appearance="BitAppearance.Standard" />
-                    <BitPagination Count="5" Size="BitSize.Medium" Appearance="BitAppearance.Standard" />
-                    <BitPagination Count="5" Size="BitSize.Large" Appearance="BitAppearance.Standard" />
+                    <BitPagination Count="5" Size="BitSize.Small" Variant="BitVariant.Outline" />
+                    <BitPagination Count="5" Size="BitSize.Medium" Variant="BitVariant.Outline" />
+                    <BitPagination Count="5" Size="BitSize.Large" Variant="BitVariant.Outline" />
                 </div>
                 <div class="pagination-container">
                     <BitLabel>Text</BitLabel>
-                    <BitPagination Count="5" Size="BitSize.Small" Appearance="BitAppearance.Text" />
-                    <BitPagination Count="5" Size="BitSize.Medium" Appearance="BitAppearance.Text" />
-                    <BitPagination Count="5" Size="BitSize.Large" Appearance="BitAppearance.Text" />
+                    <BitPagination Count="5" Size="BitSize.Small" Variant="BitVariant.Text" />
+                    <BitPagination Count="5" Size="BitSize.Medium" Variant="BitVariant.Text" />
+                    <BitPagination Count="5" Size="BitSize.Large" Variant="BitVariant.Text" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
         <ExamplePreview>
             <div>
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
@@ -257,14 +264,14 @@
                                                  SelectedButton = "background-color: tomato; color: #2e2e2e;",
                                                  Button = "border-color: transparent; background-color: #2e2e2e; color: tomato;" })" />
 
-                <BitPagination Count="4" 
-                               Appearance="BitAppearance.Standard"
+                <BitPagination Count="4"
+                               Variant="BitVariant.Outline"
                                Classes="@(new() { Root = "custom-root", Button = "custom-button" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <ComponentExampleBox Title="RTL" RazorCode="@example15RazorCode" Id="example15">
         <ExamplePreview>
             <div class="pagination-container">
                 <div>
@@ -273,17 +280,13 @@
                 </div>
                 <div>
                     <BitLabel>Standard</BitLabel>
-                    <BitPagination Dir="BitDir.Rtl" Count="4" Appearance="BitAppearance.Standard" />
+                    <BitPagination Dir="BitDir.Rtl" Count="4" Variant="BitVariant.Outline" />
                 </div>
                 <div>
                     <BitLabel>Text</BitLabel>
-                    <BitPagination Dir="BitDir.Rtl" Count="4" Appearance="BitAppearance.Text" />
+                    <BitPagination Dir="BitDir.Rtl" Count="4" Variant="BitVariant.Text" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private int paginationSelectedPage = 1;
-}

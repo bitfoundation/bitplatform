@@ -11,66 +11,75 @@
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <div>The tag offers three appearance options: Primary (default), Standard, and Text.</div>
-            <br />
             <div class="tags-container">
                 <BitTag Text="Text" />
-                <br />
-                <br />
-                <BitTag Text="Text" Appearance="BitAppearance.Standard" />
-                <br />
-                <br />
-                <BitTag Text="Text" Appearance="BitAppearance.Text" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Primary tag" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div>The tag offers three variants: Fill (default), Outline, and Text.</div>
+            <br />
+            <div class="tags-container">
+                <BitTag Text="Fill" Variant="BitVariant.Fill" />
+                <br />
+                <br />
+                <BitTag Text="Outline" Variant="BitVariant.Outline" />
+                <br />
+                <br />
+                <BitTag Text="Text" Variant="BitVariant.Text" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Fill tag" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div>
-                Primary tags are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+                Fill tags are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
             </div>
             <br />
             <div class="tags-container">
-                <BitTag Text="Primary" />
+                <BitTag Text="Enabled" />
                 <BitTag Text="Disabled" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Standard tag" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Outline tag" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>
-                Standard tags offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text tags and the more prominent Primary tags, providing flexibility in emphasis.
+                Outline tags offer a moderate level of emphasis, suitable for important actions that aren't central to the application. 
+                They serve as a middle ground between Text tags and the more prominent Fill tags, providing flexibility in emphasis.
             </div>
             <br />
             <div class="tags-container">
-                <BitTag Text="Standard" Appearance="BitAppearance.Standard" />
-                <BitTag Text="Disabled" Appearance="BitAppearance.Standard" IsEnabled="false" />
+                <BitTag Text="Enabled" Variant="BitVariant.Outline" />
+                <BitTag Text="Disabled" Variant="BitVariant.Outline" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Text tag" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Text tag" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div>
                 Text tags are best suited for understated actions, serving as a less prominent choice in various interface elements.
             </div>
             <br />
             <div class="tags-container">
-                <BitTag Text="Text" Appearance="BitAppearance.Text" />
-                <BitTag Text="Disabled" Appearance="BitAppearance.Text" IsEnabled="false" />
+                <BitTag Text="Enabled" Variant="BitVariant.Text" />
+                <BitTag Text="Disabled" Variant="BitVariant.Text" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Icon" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <BitTag Text="Text" IconName="@BitIconName.Calendar" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Dismiss" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Dismiss" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             @if (isDismissed is false)
             {
@@ -78,13 +87,13 @@
             }
             <br />
             <br />
-            <BitButton IsEnabled="isDismissed" ButtonStyle="BitButtonStyle.Standard" OnClick="() => isDismissed = false">
+            <BitButton IsEnabled="isDismissed" Variant="BitVariant.Outline" OnClick="() => isDismissed = false">
                 Dismissed, click to reset
             </BitButton>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Severity" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Severity" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div>
                 Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
@@ -93,38 +102,38 @@
             <div class="tags-container-grid">
                 <div>
                     <BitTag Text="Info" IconName="@BitIconName.Calendar" Severity="BitSeverity.Info" />
-                    <BitTag Text="Info" IconName="@BitIconName.Calendar" Severity="BitSeverity.Info" Appearance="BitAppearance.Standard" />
-                    <BitTag Text="Info" IconName="@BitIconName.Calendar" Severity="BitSeverity.Info" Appearance="BitAppearance.Text" />
+                    <BitTag Text="Info" IconName="@BitIconName.Calendar" Severity="BitSeverity.Info" Variant="BitVariant.Outline" />
+                    <BitTag Text="Info" IconName="@BitIconName.Calendar" Severity="BitSeverity.Info" Variant="BitVariant.Text" />
                 </div>
                 <br />
                 <div>
                     <BitTag Text="Success" IconName="@BitIconName.Calendar" Severity="BitSeverity.Success" />
-                    <BitTag Text="Success" IconName="@BitIconName.Calendar" Severity="BitSeverity.Success" Appearance="BitAppearance.Standard" />
-                    <BitTag Text="Success" IconName="@BitIconName.Calendar" Severity="BitSeverity.Success" Appearance="BitAppearance.Text" />
+                    <BitTag Text="Success" IconName="@BitIconName.Calendar" Severity="BitSeverity.Success" Variant="BitVariant.Outline" />
+                    <BitTag Text="Success" IconName="@BitIconName.Calendar" Severity="BitSeverity.Success" Variant="BitVariant.Text" />
                 </div>
                 <br />
                 <div>
                     <BitTag Text="Warning" IconName="@BitIconName.Calendar" Severity="BitSeverity.Warning" />
-                    <BitTag Text="Warning" IconName="@BitIconName.Calendar" Severity="BitSeverity.Warning" Appearance="BitAppearance.Standard" />
-                    <BitTag Text="Warning" IconName="@BitIconName.Calendar" Severity="BitSeverity.Warning" Appearance="BitAppearance.Text" />
+                    <BitTag Text="Warning" IconName="@BitIconName.Calendar" Severity="BitSeverity.Warning" Variant="BitVariant.Outline" />
+                    <BitTag Text="Warning" IconName="@BitIconName.Calendar" Severity="BitSeverity.Warning" Variant="BitVariant.Text" />
                 </div>
                 <br />
                 <div>
                     <BitTag Text="SevereWarning" IconName="@BitIconName.Calendar" Severity="BitSeverity.SevereWarning" />
-                    <BitTag Text="SevereWarning" IconName="@BitIconName.Calendar" Severity="BitSeverity.SevereWarning" Appearance="BitAppearance.Standard" />
-                    <BitTag Text="SevereWarning" IconName="@BitIconName.Calendar" Severity="BitSeverity.SevereWarning" Appearance="BitAppearance.Text" />
+                    <BitTag Text="SevereWarning" IconName="@BitIconName.Calendar" Severity="BitSeverity.SevereWarning" Variant="BitVariant.Outline" />
+                    <BitTag Text="SevereWarning" IconName="@BitIconName.Calendar" Severity="BitSeverity.SevereWarning" Variant="BitVariant.Text" />
                 </div>
                 <br />
                 <div>
                     <BitTag Text="Error" IconName="@BitIconName.Calendar" Severity="BitSeverity.Error" />
-                    <BitTag Text="Error" IconName="@BitIconName.Calendar" Severity="BitSeverity.Error" Appearance="BitAppearance.Standard" />
-                    <BitTag Text="Error" IconName="@BitIconName.Calendar" Severity="BitSeverity.Error" Appearance="BitAppearance.Text" />
+                    <BitTag Text="Error" IconName="@BitIconName.Calendar" Severity="BitSeverity.Error" Variant="BitVariant.Outline" />
+                    <BitTag Text="Error" IconName="@BitIconName.Calendar" Severity="BitSeverity.Error" Variant="BitVariant.Text" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Template" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="Template" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <BitTag>
                 <BitStack Horizontal Gap="0.5rem" Style="padding-inline: 0.5rem;">
@@ -135,7 +144,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div>
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
@@ -149,7 +158,7 @@
                         Style="border-radius: 1rem; font-weight:bold" />
                 <BitTag Text="Classed Tag"
                         IconName="@BitIconName.People"
-                        Class="custom-class" Appearance="BitAppearance.Standard" />
+                        Class="custom-class" Variant="BitVariant.Outline" />
             </div>
             <br /><br /><br />
             <div><b>Styles</b> & <b>Classes</b>:</div>
@@ -157,7 +166,7 @@
             <div class="tags-container">
                 @if (isDismissed2 is false)
                 {
-                    <BitTag Text="Primary"
+                    <BitTag Text="Fill"
                             IconName="@BitIconName.People"
                             OnDismiss="() => isDismissed2 = true"
                             Styles="@(new() { Root = "border-color: darkblue; border-width: 0.25rem;",
@@ -167,17 +176,17 @@
 
                 @if (isDismissed3 is false)
                 {
-                    <BitTag Text="Standard"
+                    <BitTag Text="Outline"
                             IconName="@BitIconName.People"
                             OnDismiss="() => isDismissed3 = true"
-                            Appearance="BitAppearance.Standard"
+                            Variant="BitVariant.Outline"
                             Classes="@(new() { Root = "custom-root",
                                                Icon = "custom-icon",
                                                DismissButton = "custom-dismiss" })" />
                 }
             </div>
             <br />
-            <BitButton IsEnabled="@(isDismissed3 && isDismissed2)" ButtonStyle="BitButtonStyle.Standard" OnClick="() => isDismissed2 = isDismissed3 = false">
+            <BitButton IsEnabled="@(isDismissed3 && isDismissed2)" Variant="BitVariant.Outline" OnClick="() => isDismissed2 = isDismissed3 = false">
                 Dismissed, click to reset
             </BitButton>
         </ExamplePreview>

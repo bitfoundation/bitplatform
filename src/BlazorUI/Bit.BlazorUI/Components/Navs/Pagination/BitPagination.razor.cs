@@ -10,27 +10,11 @@ public partial class BitPagination : BitComponentBase
     private BitSize? size;
     private int selectedPage;
     private int middleCount = 3;
-    private int boundaryCount = 2;
+    private BitVariant? variant;
     private BitSeverity? severity;
-    private BitAppearance appearance = BitAppearance.Primary;
+    private int boundaryCount = 2;
 
 
-
-    /// <summary>
-    /// The appearance of pagination buttons, Possible values: Primary | Standard | Text
-    /// </summary>
-    [Parameter]
-    public BitAppearance Appearance
-    {
-        get => appearance;
-        set
-        {
-            if (appearance == value) return;
-
-            appearance = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The number of items at the start and end of the pagination.
@@ -119,6 +103,7 @@ public partial class BitPagination : BitComponentBase
             if (selectedPage == value) return;
 
             selectedPage = value;
+
             _ = SelectedPageChanged.InvokeAsync(selectedPage);
         }
     }
@@ -137,6 +122,7 @@ public partial class BitPagination : BitComponentBase
             if (severity == value) return;
 
             severity = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -173,6 +159,7 @@ public partial class BitPagination : BitComponentBase
             if (size == value) return;
 
             size = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -181,6 +168,23 @@ public partial class BitPagination : BitComponentBase
     /// Custom CSS styles for different parts of the BitPagination.
     /// </summary>
     [Parameter] public BitPaginationClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The visual variant of the pagination.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
 
     protected override string RootElementClass => "bit-pgn";
@@ -290,12 +294,12 @@ public partial class BitPagination : BitComponentBase
     {
         StringBuilder className = new StringBuilder();
 
-        className.Append(' ').Append(Appearance switch
+        className.Append(' ').Append(Variant switch
         {
-            BitAppearance.Primary => "bit-pgn-pri",
-            BitAppearance.Standard => "bit-pgn-std",
-            BitAppearance.Text => "bit-pgn-txt",
-            _ => "bit-pgn-pri"
+            BitVariant.Fill => "bit-pgn-fil",
+            BitVariant.Outline => "bit-pgn-otl",
+            BitVariant.Text => "bit-pgn-txt",
+            _ => "bit-pgn-fil"
         });
 
         className.Append(' ').Append(Severity switch

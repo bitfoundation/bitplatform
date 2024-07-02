@@ -27,15 +27,6 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
-            Name = "ButtonStyle",
-            Type = "BitButtonStyle",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum",
-            DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of toggle button, Possible values: Primary | Standard",
-        },
-        new()
-        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -123,10 +114,10 @@ public partial class BitToggleButtonDemo
         {
             Name = "Size",
             Type = "BitSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
             DefaultValue = "null",
             Description = "The size of button, Possible values: Small | Medium | Large.",
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
         },
         new()
         {
@@ -150,7 +141,16 @@ public partial class BitToggleButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the toggle button.",
-        }
+        },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the toggle button.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -204,27 +204,27 @@ public partial class BitToggleButtonDemo
     [
         new()
         {
-            Id = "button-style-enum",
-            Name = "ButtonStyle",
-            Description = "",
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
             Items =
             [
                 new()
                 {
-                    Name= "Primary",
-                    Description="The button with white text on a blue background.",
+                    Name= "Fill",
+                    Description="Fill styled variant.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Standard",
-                    Description="The button with black text on a white background.",
+                    Name= "Outline",
+                    Description="Outline styled variant.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Text",
-                    Description="The button for less-pronounced actions.",
+                    Description="Text styled variant.",
                     Value="2",
                 }
             ]
@@ -259,40 +259,48 @@ public partial class BitToggleButtonDemo
     ];
 
 
+
     private bool example51Value;
     private bool example52Value;
 
 
-    private readonly string example1RazorCode = @"
-<BitToggleButton OffText=""Primary Unmute"" OnText=""Primary Mute""
-                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 
-<BitToggleButton OffText=""Standard Unmute"" OnText=""Standard Mute""
+    private readonly string example1RazorCode = @"
+<BitToggleButton OffText=""Fill Unmute"" OnText=""Fill Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
-                 ButtonStyle=""BitButtonStyle.Standard"" />
+                 Variant=""BitVariant.Fill"" />";
+
+    private readonly string example2RazorCode = @"
+<BitToggleButton OffText=""Fill Unmute"" OnText=""Fill Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
+                 Variant=""BitVariant.Fill"" />
+
+<BitToggleButton OffText=""Outline Unmute"" OnText=""Outline Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
+                 Variant=""BitVariant.Outline"" />
 
 <BitToggleButton OffText=""Text Unmute"" OnText=""Text Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
-                 ButtonStyle=""BitButtonStyle.Text"" />";
+                 Variant=""BitVariant.Text"" />";
 
-    private readonly string example2RazorCode = @"
-<BitToggleButton OffText=""Primary Unmute"" OnText=""Primary Mute""
+    private readonly string example3RazorCode = @"
+<BitToggleButton OffText=""Fill Unmute"" OnText=""Fill Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 <BitToggleButton IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
 
-    private readonly string example3RazorCode = @"
-<BitToggleButton OffText=""Standard Unmute"" OnText=""Standard Mute""
-                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
-                 ButtonStyle=""BitButtonStyle.Standard"" />
-<BitToggleButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
-
     private readonly string example4RazorCode = @"
-<BitToggleButton OffText=""Text Unmute"" OnText=""Text Mute""
+<BitToggleButton OffText=""Outline Unmute"" OnText=""Outline Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
-                 ButtonStyle=""BitButtonStyle.Text"" />
-<BitToggleButton ButtonStyle=""BitButtonStyle.Text"" IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
+                 Variant=""BitVariant.Outline"" />
+<BitToggleButton Variant=""BitVariant.Outline"" IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
 
     private readonly string example5RazorCode = @"
+<BitToggleButton OffText=""Text Unmute"" OnText=""Text Mute""
+                 OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
+                 Variant=""BitVariant.Text"" />
+<BitToggleButton Variant=""BitVariant.Text"" IsEnabled=""false"" Text=""Disabled"" IconName=""@BitIconName.MicOff"" />";
+
+    private readonly string example6RazorCode = @"
 <BitToggleButton DefaultIsChecked=""true""
                  OffText=""Unmute"" OnText=""Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
@@ -306,24 +314,24 @@ public partial class BitToggleButtonDemo
                  OffText=""Unmute"" OnText=""Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 <BitLabel>Check status is: @example52Value</BitLabel>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool example51Value;
 private bool example52Value;";
 
-    private readonly string example6RazorCode = @"
-<BitToggleButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitToggleButton>
-<BitToggleButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitToggleButton>
-<BitToggleButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitToggleButton>
-
-<BitToggleButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitToggleButton>
-<BitToggleButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitToggleButton>
-<BitToggleButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitToggleButton>
-
-<BitToggleButton Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitToggleButton>
-<BitToggleButton Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitToggleButton>
-<BitToggleButton Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitToggleButton>";
-
     private readonly string example7RazorCode = @"
+<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Fill"">Small</BitToggleButton>
+<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Fill"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Fill"">Large</BitToggleButton>
+
+<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Outline"">Small</BitToggleButton>
+<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Outline"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Outline"">Large</BitToggleButton>
+
+<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Text"">Small</BitToggleButton>
+<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Text"">Medium</BitToggleButton>
+<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Text"">Large</BitToggleButton>";
+
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -349,7 +357,7 @@ private bool example52Value;";
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 
 <BitToggleButton Class=""custom-class""
-                 ButtonStyle=""BitButtonStyle.Standard""
+                 Variant=""BitVariant.Outline""
                  OffText=""Classed Button : Unmute"" OnText=""Classed Button : Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
 
@@ -358,17 +366,17 @@ private bool example52Value;";
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
                  Styles=""@(new() { Container = ""font-size: 18px;"", Icon = ""color: red;"", Text = ""color: blue;"" })"" />
 
-<BitToggleButton ButtonStyle=""BitButtonStyle.Standard""
+<BitToggleButton Variant=""BitVariant.Outline""
                  OffText=""Classed Button : Unmute"" OnText=""Classed Button : Mute""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
                  Classes=""@(new() { Container = ""custom-container"", Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 Visible: [ <BitToggleButton Visibility=""BitVisibility.Visible"">Visible toggle button</BitToggleButton> ]
 Hidden: [ <BitToggleButton Visibility=""BitVisibility.Hidden"">Hidden toggle button</BitToggleButton> ]
 Collapsed: [ <BitToggleButton Visibility=""BitVisibility.Collapsed"">Collapsed toggle button</BitToggleButton> ]";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitToggleButton Dir=""BitDir.Rtl""
                  OffText=""صدا وصل"" OnText=""صدا قطع""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff"" />
@@ -376,10 +384,10 @@ Collapsed: [ <BitToggleButton Visibility=""BitVisibility.Collapsed"">Collapsed t
 <BitToggleButton Dir=""BitDir.Rtl""
                  OffText=""صدا وصل"" OnText=""صدا قطع""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
-                 ButtonStyle=""BitButtonStyle.Standard"" />
+                 Variant=""BitVariant.Outline"" />
 
 <BitToggleButton Dir=""BitDir.Rtl""
                  OffText=""صدا وصل"" OnText=""صدا قطع""
                  OffIconName=""@BitIconName.Microphone"" OnIconName=""@BitIconName.MicOff""
-                 ButtonStyle=""BitButtonStyle.Text"" />";
+                 Variant=""BitVariant.Text"" />";
 }

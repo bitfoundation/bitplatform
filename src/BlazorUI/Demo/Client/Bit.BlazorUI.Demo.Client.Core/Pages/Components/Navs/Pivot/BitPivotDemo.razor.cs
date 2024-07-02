@@ -500,13 +500,13 @@ public partial class BitPivotDemo
 </BitPivot>
 
 <div style=""margin-top:50px;display:flex;gap:10px"">
-    <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""1"")"" ButtonStyle=""BitButtonStyle.Standard""
+    <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""1"")"" Variant=""BitVariant.Outline""
                 OnClick=""(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) - 1).ToString())"">
         <div style=""display:flex;gap:2px"">
             <BitIcon IconName=""@BitIconName.CaretSolidLeft"" /> Prev
         </div>
     </BitButton>
-    <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""4"")"" ButtonStyle=""BitButtonStyle.Standard""
+    <BitButton IsEnabled=""@(OverridePivotSelectedKey != ""4"")"" Variant=""BitVariant.Outline""
                 OnClick=""(() => OverridePivotSelectedKey = (int.Parse(OverridePivotSelectedKey) + 1).ToString())"">
         <div style=""display:flex;gap:2px"">
             Next <BitIcon IconName=""@BitIconName.CaretSolidRight"" />
@@ -612,7 +612,7 @@ private BitPivotItem SelectedPivotItem;";
 </BitPivot>
 
 <div style=""margin-top:50px"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""TogglePivotItemVisibility"">Hide/Show Biz</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""TogglePivotItemVisibility"">Hide/Show Biz</BitButton>
 </div>";
     private readonly string example9CsharpCode = @"
 private BitVisibility PivotItemVisibility;

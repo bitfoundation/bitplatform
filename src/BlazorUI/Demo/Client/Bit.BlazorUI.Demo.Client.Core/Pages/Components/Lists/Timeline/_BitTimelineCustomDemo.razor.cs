@@ -102,16 +102,17 @@ private List<TimelineActionItem> basicCustoms1 = new()
     private readonly string example2RazorCode = @"
 <BitTimeline Horizontal
              Items=""disabledCustoms1""
+             Variant=""BitVariant.Fill""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText } })"" />
 
 <BitTimeline Horizontal
              Items=""disabledCustoms2""
-             Appearance=""BitAppearance.Standard"" 
+             Variant=""BitVariant.Outline"" 
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText } })"" />
 
 <BitTimeline Horizontal 
              Items=""disabledCustoms3""
-             Appearance=""BitAppearance.Text""
+             Variant=""BitVariant.Text""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText } })"" />";
     private readonly string example2CsharpCode = @"
 public class TimelineActionItem
@@ -144,18 +145,19 @@ private List<TimelineActionItem> disabledCustoms3 = new()
     private readonly string example3RazorCode = @"
 <BitTimeline Horizontal
              Items=""iconCustoms""
+             Variant=""BitVariant.Fill""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 
 <BitTimeline Horizontal
              Items=""iconCustoms""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 
 <BitTimeline Horizontal
              Items=""iconCustoms""
-             Appearance=""BitAppearance.Text""
+             Variant=""BitVariant.Text""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />";
     private readonly string example3CsharpCode = @"
@@ -280,13 +282,13 @@ private List<TimelineActionItem> templateItems = new()
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.Info""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.Info""
-             Appearance=""BitAppearance.Text""
+             Variant=""BitVariant.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
@@ -298,13 +300,13 @@ private List<TimelineActionItem> templateItems = new()
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.Success""
-             Appearance=""BitAppearance.Standard"" 
+             Variant=""BitVariant.Outline"" 
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.Success""
-             Appearance=""BitAppearance.Text"" 
+             Variant=""BitVariant.Text"" 
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
@@ -316,13 +318,13 @@ private List<TimelineActionItem> templateItems = new()
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.Warning""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.Warning""
-             Appearance=""BitAppearance.Text""
+             Variant=""BitVariant.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
@@ -334,13 +336,13 @@ private List<TimelineActionItem> templateItems = new()
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.SevereWarning""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.SevereWarning""
-             Appearance=""BitAppearance.Text""
+             Variant=""BitVariant.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
@@ -352,13 +354,13 @@ private List<TimelineActionItem> templateItems = new()
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.Error""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Severity=""BitSeverity.Error""
-             Appearance=""BitAppearance.Text""
+             Variant=""BitVariant.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />";
@@ -384,13 +386,13 @@ private List<TimelineActionItem> iconCustoms = new()
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Size=""BitSize.Small""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Size=""BitSize.Small""
-             Appearance=""BitAppearance.Text""
+             Variant=""BitVariant.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
@@ -402,13 +404,13 @@ private List<TimelineActionItem> iconCustoms = new()
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Size=""BitSize.Medium""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Size=""BitSize.Medium""
-             Appearance=""BitAppearance.Text""
+             Variant=""BitVariant.Text""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
@@ -420,13 +422,13 @@ private List<TimelineActionItem> iconCustoms = new()
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Size=""BitSize.Large""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />
 <BitTimeline Horizontal
              Size=""BitSize.Large""
-             Appearance=""BitAppearance.Text"" 
+             Variant=""BitVariant.Text"" 
              Items=""iconCustoms""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })"" />";
@@ -490,7 +492,7 @@ private List<TimelineActionItem> iconCustoms = new()
                                PrimaryText = ""color: aqua; font-size: 1.5rem;"",
                                Dot = ""background-color: dodgerblue;"" })"" />
 <BitTimeline Items=""iconCustoms""
-             Appearance=""BitAppearance.Standard""
+             Variant=""BitVariant.Outline""
              NameSelectors=""@(new() { PrimaryText = { Selector = i => i.FirstText },
                                       IconName = { Selector = i => i.Icon } })""
              Classes=""@(new() { Icon = ""custom-icon"",

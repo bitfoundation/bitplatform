@@ -12,55 +12,64 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <div>
-                The ToggleButton offers three style options: Primary (default), Standard, and Text.
-            </div>
-            <br />
             <div class="example-box">
-                <BitToggleButton OffText="Primary Unmute" OnText="Primary Mute"
+                <BitToggleButton OffText="Fill Unmute" OnText="Fill Mute"
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
-
-                <BitToggleButton OffText="Standard Unmute" OnText="Standard Mute"
-                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
-                                 ButtonStyle="BitButtonStyle.Standard" />
-
-                <BitToggleButton OffText="Text Unmute" OnText="Text Mute"
-                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
-                                 ButtonStyle="BitButtonStyle.Text" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Primary button" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div>The ToggleButton offers three variants: Fill (default), Outline, and Text.</div>
+            <br />
+            <div class="example-box">
+                <BitToggleButton OffText="Fill Unmute" OnText="Fill Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
+                                 Variant="BitVariant.Fill" />
+
+                <BitToggleButton OffText="Outline Unmute" OnText="Outline Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
+                                 Variant="BitVariant.Outline" />
+
+                <BitToggleButton OffText="Text Unmute" OnText="Text Mute"
+                                 OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
+                                 Variant="BitVariant.Text" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Fill button" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div>
-                Primary buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+                Fill buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
             </div>
             <br />
             <div class="buttons-container">
-                <BitToggleButton OffText="Primary Unmute" OnText="Primary Mute"
+                <BitToggleButton OffText="Fill Unmute" OnText="Fill Mute"
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
                 <BitToggleButton IsEnabled="false" Text="Disabled" IconName="@BitIconName.MicOff" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Standard button" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Outline button" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>
-                Standard buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text buttons and the more prominent Primary buttons, providing flexibility in emphasis.
+                Outline buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. 
+                They serve as a middle ground between Text buttons and the more prominent Fill buttons, providing flexibility in emphasis.
             </div>
             <br />
             <div class="buttons-container">
-                <BitToggleButton OffText="Standard Unmute" OnText="Standard Mute"
+                <BitToggleButton OffText="Outline Unmute" OnText="Outline Mute"
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
-                                 ButtonStyle="BitButtonStyle.Standard" />
-                <BitToggleButton ButtonStyle="BitButtonStyle.Standard" IsEnabled="false" Text="Disabled" IconName="@BitIconName.MicOff" />
+                                 Variant="BitVariant.Outline" />
+                <BitToggleButton Variant="BitVariant.Outline" IsEnabled="false" Text="Disabled" IconName="@BitIconName.MicOff" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Text button" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Text button" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div>
                 Text buttons are best suited for understated actions, serving as a less prominent choice in various interface elements.
@@ -69,18 +78,18 @@
             <div class="buttons-container">
                 <BitToggleButton OffText="Text Unmute" OnText="Text Mute"
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
-                                 ButtonStyle="BitButtonStyle.Text" />
-                <BitToggleButton ButtonStyle="BitButtonStyle.Text" IsEnabled="false" Text="Disabled" IconName="@BitIconName.MicOff" />
+                                 Variant="BitVariant.Text" />
+                <BitToggleButton Variant="BitVariant.Text" IsEnabled="false" Text="Disabled" IconName="@BitIconName.MicOff" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Controlled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Controlled" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
-        <div>
-            Explore default checked state, two-way binding, and handling change events for a customizable user experience.
-        </div>
-        <br />
+            <div>
+                Explore default checked state, two-way binding, and handling change events for a customizable user experience.
+            </div>
+            <br />
             <div>DefaultIsChecked:</div>
             <br />
             <div class="example-box column">
@@ -109,33 +118,33 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-        <ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" Id="example6">
-            <ExamplePreview>
+    <ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div>
+                Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
+            </div>
+            <br />
+            <div class="buttons-container-grid">
                 <div>
-                    Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
+                    <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill">Small</BitToggleButton>
+                    <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill">Medium</BitToggleButton>
+                    <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill">Large</BitToggleButton>
                 </div>
-                <br />
-                <div class="buttons-container-grid">
-                    <div>
-                        <BitToggleButton Size="BitSize.Small" ButtonStyle="BitButtonStyle.Primary">Small</BitToggleButton>
-                        <BitToggleButton Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Primary">Medium</BitToggleButton>
-                        <BitToggleButton Size="BitSize.Large" ButtonStyle="BitButtonStyle.Primary">Large</BitToggleButton>
-                    </div>
-                    <div>
-                        <BitToggleButton Size="BitSize.Small" ButtonStyle="BitButtonStyle.Standard">Small</BitToggleButton>
-                        <BitToggleButton Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Standard">Medium</BitToggleButton>
-                        <BitToggleButton Size="BitSize.Large" ButtonStyle="BitButtonStyle.Standard">Large</BitToggleButton>
-                    </div>
-                    <div>
-                        <BitToggleButton Size="BitSize.Small" ButtonStyle="BitButtonStyle.Text">Small</BitToggleButton>
-                        <BitToggleButton Size="BitSize.Medium" ButtonStyle="BitButtonStyle.Text">Medium</BitToggleButton>
-                        <BitToggleButton Size="BitSize.Large" ButtonStyle="BitButtonStyle.Text">Large</BitToggleButton>
-                    </div>
+                <div>
+                    <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline">Small</BitToggleButton>
+                    <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline">Medium</BitToggleButton>
+                    <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline">Large</BitToggleButton>
                 </div>
-            </ExamplePreview>
-        </ComponentExampleBox>
+                <div>
+                    <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text">Small</BitToggleButton>
+                    <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text">Medium</BitToggleButton>
+                    <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text">Large</BitToggleButton>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div>
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
@@ -149,7 +158,7 @@
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
 
                 <BitToggleButton Class="custom-class"
-                                 ButtonStyle="BitButtonStyle.Standard"
+                                 Variant="BitVariant.Outline"
                                  OffText="Classed Button : Unmute" OnText="Classed Button : Mute"
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff" />
             </div>
@@ -161,7 +170,7 @@
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
                                  Styles="@(new() { Container = "font-size: 18px;", Icon = "color: red;", Text = "color: blue;" })" />
 
-                <BitToggleButton ButtonStyle="BitButtonStyle.Standard"
+                <BitToggleButton Variant="BitVariant.Outline"
                                  OffText="Classed Button : Unmute" OnText="Classed Button : Mute"
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
                                  Classes="@(new() { Container = "custom-container", Icon = "custom-icon", Text = "custom-text" })" />
@@ -169,7 +178,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="Visibility" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div>
                 You can control the display of buttons with three settings, 'Visible' for full display, 'Hidden' for concealing buttons without altering layout, and 'Collapsed' to remove the button and its space.
@@ -183,7 +192,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+    <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div class="example-box">
                 <BitToggleButton Dir="BitDir.Rtl"
@@ -193,12 +202,12 @@
                 <BitToggleButton Dir="BitDir.Rtl"
                                  OffText="صدا وصل" OnText="صدا قطع"
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
-                                 ButtonStyle="BitButtonStyle.Standard" />
+                                 Variant="BitVariant.Outline" />
 
                 <BitToggleButton Dir="BitDir.Rtl"
                                  OffText="صدا وصل" OnText="صدا قطع"
                                  OffIconName="@BitIconName.Microphone" OnIconName="@BitIconName.MicOff"
-                                 ButtonStyle="BitButtonStyle.Text" />
+                                 Variant="BitVariant.Text" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

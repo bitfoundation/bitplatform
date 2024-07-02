@@ -9,18 +9,18 @@ namespace Bit.BlazorUI.Tests.Components.Buttons;
 public class BitButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(true, BitButtonStyle.Primary, "title"),
-        DataRow(true, BitButtonStyle.Standard, "title"),
-        DataRow(false, BitButtonStyle.Primary, "title"),
-        DataRow(false, BitButtonStyle.Standard, "title")
+        DataRow(true, BitVariant.Fill, "title"),
+        DataRow(true, BitVariant.Outline, "title"),
+        DataRow(false, BitVariant.Fill, "title"),
+        DataRow(false, BitVariant.Outline, "title")
     ]
-    public void BitButtonTest(bool isEnabled, BitButtonStyle buttonStyle, string title)
+    public void BitButtonTest(bool isEnabled, BitVariant variant, string title)
     {
         var clicked = false;
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, buttonStyle);
+            parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.Title, title);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
@@ -36,15 +36,16 @@ public class BitButtonTests : BunitTestContext
             Assert.IsTrue(bitButton.ClassList.Contains("bit-dis"));
         }
 
-        if (buttonStyle == BitButtonStyle.Standard)
+        if (variant == BitVariant.Fill)
         {
-            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-pri"));
-            Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-std"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-fil"));
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-otl"));
         }
-        else
+
+        if (variant == BitVariant.Outline)
         {
-            Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-pri"));
-            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-std"));
+            Assert.IsFalse(bitButton.ClassList.Contains("bit-btn-fil"));
+            Assert.IsTrue(bitButton.ClassList.Contains("bit-btn-otl"));
         }
 
         Assert.AreEqual(bitButton.GetAttribute("title"), title);
@@ -55,17 +56,17 @@ public class BitButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(true, BitButtonStyle.Primary, false, false),
-        DataRow(true, BitButtonStyle.Standard, true, false),
-        DataRow(false, BitButtonStyle.Primary, false, true),
-        DataRow(false, BitButtonStyle.Standard, true, false),
+        DataRow(true, BitVariant.Fill, false, false),
+        DataRow(true, BitVariant.Outline, true, false),
+        DataRow(false, BitVariant.Fill, false, true),
+        DataRow(false, BitVariant.Outline, true, false),
     ]
-    public void BitButtonDisabledFocusTest(bool isEnabled, BitButtonStyle style, bool allowDisabledFocus, bool expectedResult)
+    public void BitButtonDisabledFocusTest(bool isEnabled, BitVariant variant, bool allowDisabledFocus, bool expectedResult)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, style);
+            parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -82,17 +83,17 @@ public class BitButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(true, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(true, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(false, BitButtonStyle.Primary, "https://github.com/bitfoundation", "bit", "_blank"),
-         DataRow(false, BitButtonStyle.Standard, "https://github.com/bitfoundation", "bit", "_blank")
+         DataRow(true, BitVariant.Fill, "https://github.com/bitfoundation", "bit", "_blank"),
+         DataRow(true, BitVariant.Outline, "https://github.com/bitfoundation", "bit", "_blank"),
+         DataRow(false, BitVariant.Fill, "https://github.com/bitfoundation", "bit", "_blank"),
+         DataRow(false, BitVariant.Outline, "https://github.com/bitfoundation", "bit", "_blank")
     ]
-    public void BitAnchorButtonTest(bool isEnabled, BitButtonStyle style, string href, string title, string target)
+    public void BitAnchorButtonTest(bool isEnabled, BitVariant variant, string href, string title, string target)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, style);
+            parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.Href, href);
             parameters.Add(p => p.Title, title);
             parameters.Add(p => p.Target, target);
@@ -204,7 +205,7 @@ public class BitButtonTests : BunitTestContext
 
         Assert.AreEqual("button", bitButton.GetAttribute("type"));
     }
-    
+
     [DataTestMethod,
          DataRow(BitSeverity.Info),
          DataRow(BitSeverity.Success),
@@ -233,7 +234,7 @@ public class BitButtonTests : BunitTestContext
             BitSeverity.Warning => "bit-btn-wrn",
             BitSeverity.SevereWarning => "bit-btn-swr",
             BitSeverity.Error => "bit-btn-err",
-            _ => String.Empty
+            _ => string.Empty
         };
 
         if (severity.HasValue)
@@ -245,7 +246,7 @@ public class BitButtonTests : BunitTestContext
             Assert.AreEqual(3, bitButton.ClassList.Length);
         }
     }
-    
+
     [DataTestMethod,
          DataRow(BitSize.Small),
          DataRow(BitSize.Medium),
@@ -270,7 +271,7 @@ public class BitButtonTests : BunitTestContext
             BitSize.Small => "bit-btn-sm",
             BitSize.Medium => "bit-btn-md",
             BitSize.Large => "bit-btn-lg",
-            _ => String.Empty
+            _ => string.Empty
         };
 
         if (size.HasValue)

@@ -13,7 +13,7 @@
         <div>Horizontal</div>
         <br />
         <div class="example-content">
-            <BitTimeline Horizontal 
+            <BitTimeline Horizontal
                          Items="basicCustoms1"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   SecondaryText = { Selector = i => i.SecondText } })" />
@@ -21,33 +21,34 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Appearance" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
-        <div>The Timeline has three appearances: Primary (default), Standard, and Text.</div>
+        <div>The Timeline has three variants: Fill (default), Outline, and Text.</div>
         <br /><br />
-        <div>Primary (default)</div>
+        <div>Fill (default)</div>
         <br />
         <div class="example-content">
             <BitTimeline Horizontal
                          Items="disabledCustoms1"
+                         Variant="BitVariant.Fill"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText } })" />
         </div>
         <br /><br />
-        <div>Standard</div>
+        <div>Outline</div>
         <br />
         <div class="example-content">
             <BitTimeline Horizontal
                          Items="disabledCustoms2"
-                         Appearance="BitAppearance.Standard" 
+                         Variant="BitVariant.Outline"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText } })" />
         </div>
         <br /><br />
         <div>Text</div>
         <br />
         <div class="example-content">
-            <BitTimeline Horizontal 
+            <BitTimeline Horizontal
                          Items="disabledCustoms3"
-                         Appearance="BitAppearance.Text"
+                         Variant="BitVariant.Text"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText } })" />
         </div>
     </ExamplePreview>
@@ -57,11 +58,12 @@
     <ExamplePreview>
         <div>Each item in the Timeline can have an icon.</div>
         <br /><br />
-        <div>Primary (default)</div>
+        <div>Fill</div>
         <br />
         <div class="example-content">
             <BitTimeline Horizontal
                          Items="iconCustoms"
+                         Variant="BitVariant.Fill"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
         </div>
@@ -71,7 +73,7 @@
         <div class="example-content">
             <BitTimeline Horizontal
                          Items="iconCustoms"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
         </div>
@@ -81,7 +83,7 @@
         <div class="example-content">
             <BitTimeline Horizontal
                          Items="iconCustoms"
-                         Appearance="BitAppearance.Text"
+                         Variant="BitVariant.Text"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
         </div>
@@ -90,7 +92,7 @@
 
 <ComponentExampleBox Title="Reversed" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
-        <div>Each item in the Timeline can be revesed and be on the opposite side.</div>
+        <div>Each item in the Timeline can be reversed and be on the opposite side.</div>
         <br /><br />
         <div>Vertical (default)</div>
         <br />
@@ -152,13 +154,13 @@
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.Info"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.Info"
-                         Appearance="BitAppearance.Text"
+                         Variant="BitVariant.Text"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
@@ -174,13 +176,13 @@
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.Success"
-                         Appearance="BitAppearance.Standard" 
+                         Variant="BitVariant.Outline"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.Success"
-                         Appearance="BitAppearance.Text" 
+                         Variant="BitVariant.Text"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
@@ -196,13 +198,13 @@
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.Warning"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.Warning"
-                         Appearance="BitAppearance.Text"
+                         Variant="BitVariant.Text"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
@@ -218,13 +220,13 @@
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.SevereWarning"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.SevereWarning"
-                         Appearance="BitAppearance.Text"
+                         Variant="BitVariant.Text"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
@@ -240,13 +242,13 @@
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.Error"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Severity="BitSeverity.Error"
-                         Appearance="BitAppearance.Text"
+                         Variant="BitVariant.Text"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
@@ -268,13 +270,13 @@
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Size="BitSize.Small"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Size="BitSize.Small"
-                         Appearance="BitAppearance.Text"
+                         Variant="BitVariant.Text"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
@@ -290,13 +292,13 @@
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Size="BitSize.Medium"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Size="BitSize.Medium"
-                         Appearance="BitAppearance.Text"
+                         Variant="BitVariant.Text"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
@@ -312,13 +314,13 @@
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Size="BitSize.Large"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
             <BitTimeline Horizontal
                          Size="BitSize.Large"
-                         Appearance="BitAppearance.Text" 
+                         Variant="BitVariant.Text"
                          Items="iconCustoms"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })" />
@@ -360,7 +362,7 @@
                                            PrimaryText = "color: aqua; font-size: 1.5rem;",
                                            Dot = "background-color: dodgerblue;" })" />
             <BitTimeline Items="iconCustoms"
-                         Appearance="BitAppearance.Standard"
+                         Variant="BitVariant.Outline"
                          NameSelectors="@(new() { PrimaryText = { Selector = i => i.FirstText },
                                                   IconName = { Selector = i => i.Icon } })"
                          Classes="@(new() { Icon = "custom-icon",
@@ -400,44 +402,44 @@
         new()
         {
             FirstContent = (item => @<BitPersona PrimaryText="Annie Lindqvist"
-                                                 Size="@BitPersonaSize.Size32"
-                                                 Presence="@BitPersonaPresence.Online"
-                                                 ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png" />),
+            Size="@BitPersonaSize.Size32"
+            Presence="@BitPersonaPresence.Online"
+            ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png" />),
 
             DotContent = (item => @<div class="dot-template"><BitRingLoading Size="30" /></div>),
 
             SecondContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
-                                          <BitIcon IconName="Accept" Style="color: limegreen;" />
-                                          <BitLabel>Software Engineer</BitLabel>
-                                      </div>)
+        <BitIcon IconName="Accept" Style="color: limegreen;" />
+        <BitLabel>Software Engineer</BitLabel>
+    </div>)
         },
         new()
         {
             FirstContent = (item => @<BitPersona PrimaryText="Saleh Khafan"
-                                                 Size="@BitPersonaSize.Size32"
-                                                 Presence="@BitPersonaPresence.Online" />),
+            Size="@BitPersonaSize.Size32"
+            Presence="@BitPersonaPresence.Online" />),
 
             DotContent = (item => @<div class="dot-template"><BitSpinnerLoading Size="30" /></div>),
 
             SecondContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
-                                          <BitIcon IconName="Accept" Style="color: limegreen;" />
-                                          <BitLabel>Co-Founder & CTO</BitLabel>
-                                      </div>),
+        <BitIcon IconName="Accept" Style="color: limegreen;" />
+        <BitLabel>Co-Founder & CTO</BitLabel>
+    </div>),
             Opposite = true
         },
         new()
         {
             FirstContent = (item => @<BitPersona PrimaryText="Ted Randall"
-                                                 Size="@BitPersonaSize.Size32"
-                                                 Presence="@BitPersonaPresence.Online"
-                                                 ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png" />),
+            Size="@BitPersonaSize.Size32"
+            Presence="@BitPersonaPresence.Online"
+            ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png" />),
 
             DotContent = (item => @<div class="dot-template"><BitRollerLoading Size="30" /></div>),
 
             SecondContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
-                                          <BitIcon IconName="Accept" Style="color: limegreen;" />
-                                          <BitLabel>Project Manager</BitLabel>
-                                      </div>)
+        <BitIcon IconName="Accept" Style="color: limegreen;" />
+        <BitLabel>Project Manager</BitLabel>
+    </div>)
         },
     };
 }
