@@ -154,6 +154,8 @@ public partial class BitCompoundButton : BitComponentBase
         get => variant;
         set
         {
+            if (variant == value) return;
+
             variant = value;
 
             ClassBuilder.Reset();

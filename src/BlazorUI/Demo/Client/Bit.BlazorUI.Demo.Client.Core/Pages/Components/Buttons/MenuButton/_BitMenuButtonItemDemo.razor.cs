@@ -200,16 +200,16 @@ private List<BitMenuButtonItem> basicItems = new()
 
     private readonly string example2RazorCode = @"
 <BitMenuButton Text=""Fill""
-                Items=""basicItems""
-                Variant=""BitVariant.Fill"" />
+               Items=""basicItems""
+               Variant=""BitVariant.Fill"" />
 
 <BitMenuButton Text=""Outline""
-                Items=""basicItems""
-                Variant=""BitVariant.Outline"" />
+               Items=""basicItems""
+               Variant=""BitVariant.Outline"" />
 
 <BitMenuButton Text=""Text""
-                Items=""basicItems""
-                Variant=""BitVariant.Text"" />";
+               Items=""basicItems""
+               Variant=""BitVariant.Text"" />";
     private readonly string example2CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
