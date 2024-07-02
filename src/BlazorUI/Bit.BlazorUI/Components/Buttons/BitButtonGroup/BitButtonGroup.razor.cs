@@ -7,8 +7,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 {
     private bool vertical;
     private BitSize? size;
+    private BitVariant? variant;
     private BitSeverity? severity;
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
@@ -21,22 +21,6 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [CascadingParameter] private EditContext? _editContext { get; set; }
 
 
-
-    /// <summary>
-    /// The style of ButtonGroup, Possible values: Primary | Standard
-    /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle
-    {
-        get => buttonStyle;
-        set
-        {
-            if (buttonStyle == value) return;
-
-            buttonStyle = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The content of the BitButtonGroup, that are BitButtonGroupOption components.
@@ -55,6 +39,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             if (severity == value) return;
 
             severity = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -62,28 +47,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     ///  List of Item, each of which can be a button with different action in the ButtonGroup.
     /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// The content inside the item can be customized.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
-
-    /// <summary>
-    /// Defines whether to render ButtonGroup children vertically.
-    /// </summary>
-    [Parameter]
-    public bool Vertical
-    {
-        get => vertical;
-        set
-        {
-            if (vertical == value) return;
-
-            vertical = value;
-            StyleBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -117,6 +86,40 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
     }
 
+    /// <summary>
+    /// The visual variant of the button group.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Defines whether to render ButtonGroup children vertically.
+    /// </summary>
+    [Parameter]
+    public bool Vertical
+    {
+        get => vertical;
+        set
+        {
+            if (vertical == value) return;
+
+            vertical = value;
+
+            StyleBuilder.Reset();
+        }
+    }
+
 
     internal void RegisterOption(BitButtonGroupOption option)
     {
@@ -138,12 +141,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => ButtonStyle switch
+        ClassBuilder.Register(() => Variant switch
         {
-            BitButtonStyle.Primary => "bit-btg-pri",
-            BitButtonStyle.Standard => "bit-btg-std",
-            BitButtonStyle.Text => "bit-btg-txt",
-            _ => "bit-btg-pri"
+            BitVariant.Fill => "bit-btg-fil",
+            BitVariant.Outline => "bit-btg-otl",
+            BitVariant.Text => "bit-btg-txt",
+            _ => "bit-btg-fil"
         });
 
         ClassBuilder.Register(() => Severity switch
@@ -184,12 +187,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         StringBuilder className = new StringBuilder();
 
-        className.Append(ButtonStyle switch
+        className.Append(Variant switch
         {
-            BitButtonStyle.Primary => " bit-btg-ipr",
-            BitButtonStyle.Standard => " bit-btg-ist",
-            BitButtonStyle.Text => " bit-btg-itx",
-            _ => " bit-btg-ipr"
+            BitVariant.Fill => " bit-btg-ifl",
+            BitVariant.Outline => " bit-btg-iot",
+            BitVariant.Text => " bit-btg-itx",
+            _ => " bit-btg-ifl"
         });
 
         className.Append(Severity switch

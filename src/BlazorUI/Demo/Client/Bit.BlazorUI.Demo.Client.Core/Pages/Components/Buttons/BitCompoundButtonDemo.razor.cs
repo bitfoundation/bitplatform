@@ -27,15 +27,6 @@ public partial class BitCompoundButtonDemo
         },
         new()
         {
-            Name = "ButtonStyle",
-            Type = "BitButtonStyle",
-            DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of the BitCompoundButton.",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum",
-        },
-        new()
-        {
             Name = "ButtonType",
             Type = "BitButtonType?",
             DefaultValue = "null",
@@ -149,7 +140,16 @@ public partial class BitCompoundButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The tooltip to show when the mouse is placed on the button.",
-        }
+        },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the compound button.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -169,17 +169,17 @@ public partial class BitCompoundButtonDemo
                },
                new()
                {
+                   Name = "Container",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the internal container of the BitCompoundButton."
+               },
+               new()
+               {
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the icon of the BitCompoundButton."
-               },
-               new()
-               {
-                   Name = "TextContainer",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the text (Primary and Secoundary) container of the BitCompoundButton."
                },
                new()
                {
@@ -203,22 +203,28 @@ public partial class BitCompoundButtonDemo
     [
         new()
         {
-            Id = "button-style-enum",
-            Name = "BitButtonStyle",
-            Description = "",
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
             Items =
             [
                 new()
                 {
-                    Name= "Primary",
-                    Description="The button with white text on a blue background.",
+                    Name= "Fill",
+                    Description="Fill styled variant.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Standard",
-                    Description="The button with black text on a white background.",
+                    Name= "Outline",
+                    Description="Outline styled variant.",
                     Value="1",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="Text styled variant.",
+                    Value="2",
                 }
             ]
         },
@@ -341,26 +347,29 @@ public partial class BitCompoundButtonDemo
 
 
     private readonly string example1RazorCode = @"
-<BitCompoundButton SecondaryText=""This is the secondary text"">Primary</BitCompoundButton>
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" SecondaryText=""This is the secondary text"">Standard</BitCompoundButton>
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Text"" SecondaryText=""This is the secondary text"">Text</BitCompoundButton>";
+<BitCompoundButton SecondaryText=""This is the secondary text"">Compound Button</BitCompoundButton>";
 
     private readonly string example2RazorCode = @"
-<BitCompoundButton SecondaryText=""This is the secondary text"">Primary</BitCompoundButton>
+<BitCompoundButton Variant=""BitVariant.Fill"" SecondaryText=""This is the secondary text"">Fill</BitCompoundButton>
+<BitCompoundButton Variant=""BitVariant.Outline"" SecondaryText=""This is the secondary text"">Outline</BitCompoundButton>
+<BitCompoundButton Variant=""BitVariant.Text"" SecondaryText=""This is the secondary text"">Text</BitCompoundButton>";
+
+    private readonly string example3RazorCode = @"
+<BitCompoundButton SecondaryText=""This is the secondary text"">Fill</BitCompoundButton>
 <BitCompoundButton SecondaryText=""This is the secondary text"" IsEnabled=""false"">Disabled</BitCompoundButton>
 <BitCompoundButton SecondaryText=""This is the secondary text"" Href=""https://bitplatform.dev"">Link</BitCompoundButton>";
 
-    private readonly string example3RazorCode = @"
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" SecondaryText=""This is the secondary text"">Standard</BitCompoundButton>
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" SecondaryText=""This is the secondary text"" IsEnabled=""false"">Disabled</BitCompoundButton>
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"" SecondaryText=""This is the secondary text"" Href=""https://bitplatform.dev"">Link</BitCompoundButton>";
-
     private readonly string example4RazorCode = @"
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Text"" SecondaryText=""This is the secondary text"">Text</BitCompoundButton>
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Text"" SecondaryText=""This is the secondary text"" IsEnabled=""false"">Disabled</BitCompoundButton>
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Text"" SecondaryText=""This is the secondary text"" Href=""https://bitplatform.dev"">Link</BitCompoundButton>";
+<BitCompoundButton Variant=""BitVariant.Outline"" SecondaryText=""This is the secondary text"">Outline</BitCompoundButton>
+<BitCompoundButton Variant=""BitVariant.Outline"" SecondaryText=""This is the secondary text"" IsEnabled=""false"">Disabled</BitCompoundButton>
+<BitCompoundButton Variant=""BitVariant.Outline"" SecondaryText=""This is the secondary text"" Href=""https://bitplatform.dev"">Link</BitCompoundButton>";
 
     private readonly string example5RazorCode = @"
+<BitCompoundButton Variant=""BitVariant.Text"" SecondaryText=""This is the secondary text"">Text</BitCompoundButton>
+<BitCompoundButton Variant=""BitVariant.Text"" SecondaryText=""This is the secondary text"" IsEnabled=""false"">Disabled</BitCompoundButton>
+<BitCompoundButton Variant=""BitVariant.Text"" SecondaryText=""This is the secondary text"" Href=""https://bitplatform.dev"">Link</BitCompoundButton>";
+
+    private readonly string example6RazorCode = @"
 <BitCompoundButton IconName=""@BitIconName.Emoji"" SecondaryText=""IconPosition Start"">
     Default (Start)
 </BitCompoundButton>
@@ -368,16 +377,16 @@ public partial class BitCompoundButtonDemo
 <BitCompoundButton IconName=""@BitIconName.Emoji2""
                    IconPosition=""BitButtonIconPosition.End""
                    SecondaryText=""IconPosition End""
-                   ButtonStyle=""BitButtonStyle.Standard"">
+                   Variant=""BitVariant.Outline"">
     End
 </BitCompoundButton>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitCompoundButton OnClick=""() => clickCounter++"" SecondaryText=""@($""Click count is: {@clickCounter}"")"">Click me</BitCompoundButton>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private int clickCounter;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
 
@@ -393,7 +402,7 @@ private int clickCounter;";
         <BitCompoundButton ButtonType=BitButtonType.Button Text=""Button"" SecondaryText=""This is just a button"" />
     </div>
 </EditForm>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -413,7 +422,7 @@ private async Task HandleValidSubmit()
     StateHasChanged();
 }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitCompoundButton>
     <PrimaryTemplate>
         <span style=""color:red"">Primary Template!</span>
@@ -424,7 +433,7 @@ private async Task HandleValidSubmit()
     </SecondaryTemplate>
 </BitCompoundButton>
 
-<BitCompoundButton ButtonStyle=""BitButtonStyle.Standard"">
+<BitCompoundButton Variant=""BitVariant.Outline"">
     <PrimaryTemplate>
         <span style=""color:darkcyan"">Primary Template!</span>
     </PrimaryTemplate>
@@ -434,41 +443,41 @@ private async Task HandleValidSubmit()
     </SecondaryTemplate>
 </BitCompoundButton>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitCompoundButton Severity=""BitSeverity.Info"" SecondaryText=""This is the secondary text"">Info</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.Info"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.Info"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Info</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Info"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Outline"">Info</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Info"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Text"">Info</BitCompoundButton>
 
 <BitCompoundButton Severity=""BitSeverity.Success"" SecondaryText=""This is the secondary text"">Success</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.Success"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.Success"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Success</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Success"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Outline"">Success</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Success"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Text"">Success</BitCompoundButton>
 
 <BitCompoundButton Severity=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"">Warning</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Outline"">Warning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Warning"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Text"">Warning</BitCompoundButton>
 
 <BitCompoundButton Severity=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"">SevereWarning</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Outline"">SevereWarning</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.SevereWarning"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Text"">SevereWarning</BitCompoundButton>
 
 <BitCompoundButton Severity=""BitSeverity.Error"" SecondaryText=""This is the secondary text"">Error</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.Error"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitCompoundButton>
-<BitCompoundButton Severity=""BitSeverity.Error"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Error</BitCompoundButton>";
-
-    private readonly string example10RazorCode = @"
-<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitCompoundButton>
-<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitCompoundButton>
-<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitCompoundButton>
-
-<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitCompoundButton>
-<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitCompoundButton>
-<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitCompoundButton>
-
-<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Small</BitCompoundButton>
-<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitCompoundButton>
-<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" ButtonStyle=""BitButtonStyle.Text"">Large</BitCompoundButton>";
+<BitCompoundButton Severity=""BitSeverity.Error"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Outline"">Error</BitCompoundButton>
+<BitCompoundButton Severity=""BitSeverity.Error"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Text"">Error</BitCompoundButton>";
 
     private readonly string example11RazorCode = @"
+<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Fill"">Small</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Fill"">Medium</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Fill"">Large</BitCompoundButton>
+
+<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Outline"">Small</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Outline"">Medium</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Outline"">Large</BitCompoundButton>
+
+<BitCompoundButton Size=""BitSize.Small"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Text"">Small</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Medium"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Text"">Medium</BitCompoundButton>
+<BitCompoundButton Size=""BitSize.Large"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Text"">Large</BitCompoundButton>";
+
+    private readonly string example12RazorCode = @"
 <style>
     .custom-container {
         line-height: 2;
@@ -492,23 +501,23 @@ private async Task HandleValidSubmit()
                    Styles=""@(new() { TextContainer = ""line-height: 2;"",
                                      Primary = ""color: darkmagenta;"",
                                      Secondary = ""color: darkslateblue;"" })"">
-    Primary
+    Fill
 </BitCompoundButton>
 
 <BitCompoundButton SecondaryText=""This is secondary text""
-                   ButtonStyle=""BitButtonStyle.Standard""
+                   Variant=""BitVariant.Outline""
                    Classes=""@(new() { TextContainer = ""custom-container"",
                                       Primary = ""custom-primary"",
                                       Secondary = ""custom-secondary"" })"">
-    Standard
+    Outline
 </BitCompoundButton>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 Visible: [ <BitCompoundButton Visibility=""BitVisibility.Visible"" Text=""Visible"" SecondaryText=""This Button is a visible compound button""></BitCompoundButton> ]
 Hidden: [ <BitCompoundButton Text=""Hidden"" SecondaryText=""This Button is a hidden compound button"" Visibility=""BitVisibility.Hidden""></BitCompoundButton> ]
 Collapsed: [ <BitCompoundButton Text=""Collapsed"" SecondaryText=""This Button is a collapsed compound button"" Visibility=""BitVisibility.Collapsed""></BitCompoundButton> ]";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitCompoundButton Dir=""BitDir.Rtl"" 
                    IconName=""@BitIconName.Emoji"" 
                    SecondaryText=""محل قرار گیری نماد در ابتدا"">
@@ -517,7 +526,7 @@ Collapsed: [ <BitCompoundButton Text=""Collapsed"" SecondaryText=""This Button i
 
 <BitCompoundButton Dir=""BitDir.Rtl""
                    IconName=""@BitIconName.Emoji2""
-                   ButtonStyle=""BitButtonStyle.Standard""
+                   Variant=""BitVariant.Outline""
                    IconPosition=""BitButtonIconPosition.End""
                    SecondaryText=""محل قرار گیری نماد در انتها"">
     انتها

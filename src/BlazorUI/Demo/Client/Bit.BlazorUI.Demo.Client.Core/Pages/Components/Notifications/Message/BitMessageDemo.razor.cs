@@ -438,8 +438,8 @@ private bool isDismissed;";
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
     </Content>
     <Actions>
-        <BitButton ButtonStyle=""BitButtonStyle.Text"">Ok</BitButton>
-        <BitButton ButtonStyle=""BitButtonStyle.Text"">Cancel</BitButton>
+        <BitButton Variant=""BitVariant.Text"">Ok</BitButton>
+        <BitButton Variant=""BitVariant.Text"">Cancel</BitButton>
     </Actions>
 </BitMessage>
 
@@ -472,9 +472,9 @@ private bool isDismissed;";
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
     </Content>
     <Actions>
-        <BitButton ButtonStyle=""BitButtonStyle.Standard"">Yes</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">Yes</BitButton>
         &nbsp;
-        <BitButton ButtonStyle=""BitButtonStyle.Standard"">No</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">No</BitButton>
     </Actions>
 </BitMessage>";
     private readonly string example11CsharpCode = @"

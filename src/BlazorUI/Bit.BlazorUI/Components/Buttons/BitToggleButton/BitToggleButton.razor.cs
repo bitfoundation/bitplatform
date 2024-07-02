@@ -6,7 +6,7 @@ public partial class BitToggleButton : BitComponentBase
 
     private BitSize? size;
     private bool isChecked;
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitVariant? variant;
 
     private int? _tabIndex;
 
@@ -25,20 +25,6 @@ public partial class BitToggleButton : BitComponentBase
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
-
-    /// <summary>
-    /// The style of compound button, Possible values: Primary | Standard.
-    /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle
-    {
-        get => buttonStyle;
-        set
-        {
-            buttonStyle = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The content of BitToggleButton.
@@ -70,8 +56,11 @@ public partial class BitToggleButton : BitComponentBase
         set
         {
             if (value == isChecked) return;
+
             isChecked = value;
+
             ClassBuilder.Reset();
+
             _ = IsCheckedChanged.InvokeAsync(value);
         }
     }
@@ -150,6 +139,23 @@ public partial class BitToggleButton : BitComponentBase
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// The visual variant of the toggle button.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
 
     protected override string RootElementClass => "bit-tgb";
 
@@ -159,12 +165,12 @@ public partial class BitToggleButton : BitComponentBase
 
         ClassBuilder.Register(() => IsChecked ? $"bit-tgb-chk {Classes?.Checked}" : string.Empty);
 
-        ClassBuilder.Register(() => ButtonStyle switch
+        ClassBuilder.Register(() => Variant switch
         {
-            BitButtonStyle.Primary => "bit-tgb-pri",
-            BitButtonStyle.Standard => "bit-tgb-std",
-            BitButtonStyle.Text => "bit-tgb-txt",
-            _ => "bit-tgb-pri"
+            BitVariant.Fill => "bit-tgb-fil",
+            BitVariant.Outline => "bit-tgb-otl",
+            BitVariant.Text => "bit-tgb-txt",
+            _ => "bit-tgb-fil"
         });
 
         ClassBuilder.Register(() => Size switch

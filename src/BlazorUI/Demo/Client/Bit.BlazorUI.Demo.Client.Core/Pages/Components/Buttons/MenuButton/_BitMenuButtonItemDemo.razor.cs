@@ -189,15 +189,7 @@ public partial class _BitMenuButtonItemDemo
 
 
     private readonly string example1RazorCode = @"
-<BitMenuButton Text=""Primary"" Items=""basicItems"" />
-
-<BitMenuButton Text=""Standard""
-                Items=""basicItems""
-                ButtonStyle=""BitButtonStyle.Standard"" />
-
-<BitMenuButton Text=""Text""
-                Items=""basicItems""
-                ButtonStyle=""BitButtonStyle.Text"" />";
+<BitMenuButton Text=""MenuButton"" Items=""basicItems"" />";
     private readonly string example1CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
@@ -207,9 +199,17 @@ private List<BitMenuButtonItem> basicItems = new()
 };";
 
     private readonly string example2RazorCode = @"
-<BitMenuButton Text=""Items"" Items=""basicItems"" />
+<BitMenuButton Text=""Fill""
+                Items=""basicItems""
+                Variant=""BitVariant.Fill"" />
 
-<BitMenuButton Text=""Items"" IsEnabled=""false"" Items=""basicItems"" />";
+<BitMenuButton Text=""Outline""
+                Items=""basicItems""
+                Variant=""BitVariant.Outline"" />
+
+<BitMenuButton Text=""Text""
+                Items=""basicItems""
+                Variant=""BitVariant.Text"" />";
     private readonly string example2CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
@@ -219,14 +219,9 @@ private List<BitMenuButtonItem> basicItems = new()
 };";
 
     private readonly string example3RazorCode = @"
-<BitMenuButton Text=""Items""
-               Items=""basicItems""
-               ButtonStyle=""BitButtonStyle.Standard"" />
+<BitMenuButton Text=""Items"" Items=""basicItems"" />
 
-<BitMenuButton Text=""Items""
-               IsEnabled=""false""
-               Items=""basicItems""
-               ButtonStyle=""BitButtonStyle.Standard"" />";
+<BitMenuButton Text=""Items"" IsEnabled=""false"" Items=""basicItems"" />";
     private readonly string example3CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
@@ -238,12 +233,12 @@ private List<BitMenuButtonItem> basicItems = new()
     private readonly string example4RazorCode = @"
 <BitMenuButton Text=""Items""
                Items=""basicItems""
-               ButtonStyle=""BitButtonStyle.Text"" />
+               Variant=""BitVariant.Outline"" />
 
 <BitMenuButton Text=""Items""
                IsEnabled=""false""
                Items=""basicItems""
-               ButtonStyle=""BitButtonStyle.Text"" />";
+               Variant=""BitVariant.Outline"" />";
     private readonly string example4CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
@@ -253,19 +248,14 @@ private List<BitMenuButtonItem> basicItems = new()
 };";
 
     private readonly string example5RazorCode = @"
-<BitMenuButton Split
-               Text=""Primary""
-               Items=""basicItems"" />
-
-<BitMenuButton Split
-               Text=""Standard""
+<BitMenuButton Text=""Items""
                Items=""basicItems""
-               ButtonStyle=""BitButtonStyle.Standard"" />
+               Variant=""BitVariant.Text"" />
 
-<BitMenuButton Split
-               Text=""Text""
+<BitMenuButton Text=""Items""
+               IsEnabled=""false""
                Items=""basicItems""
-               ButtonStyle=""BitButtonStyle.Text"" />";
+               Variant=""BitVariant.Text"" />";
     private readonly string example5CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
@@ -275,11 +265,19 @@ private List<BitMenuButtonItem> basicItems = new()
 };";
 
     private readonly string example6RazorCode = @"
-<BitMenuButton Sticky Items=""basicItems"" />
+<BitMenuButton Split
+               Text=""Fill""
+               Items=""basicItems"" />
 
-<BitMenuButton Split Sticky
+<BitMenuButton Split
+               Text=""Outline""
                Items=""basicItems""
-               ButtonStyle=""BitButtonStyle.Standard"" />";
+               Variant=""BitVariant.Outline"" />
+
+<BitMenuButton Split
+               Text=""Text""
+               Items=""basicItems""
+               Variant=""BitVariant.Text"" />";
     private readonly string example6CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
@@ -289,6 +287,20 @@ private List<BitMenuButtonItem> basicItems = new()
 };";
 
     private readonly string example7RazorCode = @"
+<BitMenuButton Sticky Items=""basicItems"" />
+
+<BitMenuButton Split Sticky
+               Items=""basicItems""
+               Variant=""BitVariant.Outline"" />";
+    private readonly string example7CsharpCode = @"
+private List<BitMenuButtonItem> basicItems = new()
+{
+    new() { Text = ""Item A"", Key = ""A"" },
+    new() { Text = ""Item B"", Key = ""B"" },
+    new() { Text = ""Item C"", Key = ""C"" }
+};";
+
+    private readonly string example8RazorCode = @"
 <BitMenuButton Text=""IconName""
                Items=""basicItemsIcon""
                IconName=""@BitIconName.Edit"" />
@@ -297,9 +309,9 @@ private List<BitMenuButtonItem> basicItems = new()
                Text=""ChevronDownIcon""
                Items=""basicItemsIcon""
                IconName=""@BitIconName.Add""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                ChevronDownIcon=""@BitIconName.DoubleChevronDown"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private List<BitMenuButtonItem> basicItemsIcon = new()
 {
     new BitMenuButtonItem()
@@ -322,7 +334,7 @@ private List<BitMenuButtonItem> basicItemsIcon = new()
     }
 };";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitMenuButton Text=""Items""
                Items=""itemDisabledItems""
                OnClick=""(BitMenuButtonItem item) => example2SelectedItem = item?.Key"" />
@@ -330,7 +342,7 @@ private List<BitMenuButtonItem> basicItemsIcon = new()
 <BitMenuButton Split
                Text=""Items""
                Items=""basicItemsOnClick""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                OnClick=""@((BitMenuButtonItem item) => example2SelectedItem = ""Main button clicked"")"" />
 
 
@@ -340,11 +352,11 @@ private List<BitMenuButtonItem> basicItemsIcon = new()
 
 <BitMenuButton Split Sticky
                Items=""itemDisabledItems""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                OnClick=""(BitMenuButtonItem item) => example2SelectedItem = item?.Key"" />
 
 <div class=""clicked-item"">Clicked item: @example2SelectedItem</div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private string? exampleSelectedItem;
 
 private List<BitMenuButtonItem> itemDisabledItems = new()
@@ -403,7 +415,7 @@ protected override void OnInitialized()
     basicItemsOnClick.ForEach(i => i.OnClick = onClick);
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -423,7 +435,7 @@ protected override void OnInitialized()
 <BitMenuButton Split
                Text=""Items""
                Items=""itemTemplateItems""
-               ButtonStyle=""BitButtonStyle.Standard"">
+               Variant=""BitVariant.Outline"">
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
             <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
@@ -434,7 +446,7 @@ protected override void OnInitialized()
 </BitMenuButton>
 
 <BitMenuButton Text=""Items"" Items=""itemTemplateItems2"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
     new() { Text = ""Item A"", Key = ""A"" },
@@ -489,7 +501,7 @@ private List<BitMenuButtonItem> itemTemplateItems2 = new()
     }
 };";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -535,9 +547,9 @@ private List<BitMenuButtonItem> itemTemplateItems2 = new()
 <BitMenuButton Text=""Classes""
                Items=""basicItems""
                IconName=""@BitIconName.ExpandMenu""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
     new() { Text = ""Item A"", Key = ""A"" },
@@ -570,7 +582,7 @@ private List<BitMenuButtonItem> itemStyleClassItems = new()
     }
 };";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitMenuButton Split Sticky
                Items=""basicItems""
                DefaultSelectedItem=""basicItems[1]"" />
@@ -579,7 +591,7 @@ private List<BitMenuButtonItem> itemStyleClassItems = new()
 <BitMenuButton Sticky
                Items=""basicItems""
                @bind-SelectedItem=""twoWaySelectedItem""
-               ButtonStyle=""BitButtonStyle.Standard"" />
+               Variant=""BitVariant.Outline"" />
 
 <div>Selected item: <b>@twoWaySelectedItem.Text</b></div>
 
@@ -593,8 +605,8 @@ private List<BitMenuButtonItem> itemStyleClassItems = new()
 
 <BitMenuButton Sticky
                Items=""isSelectedItems""
-               ButtonStyle=""BitButtonStyle.Standard"" />";
-    private readonly string example11CsharpCode = @"
+               Variant=""BitVariant.Outline"" />";
+    private readonly string example12CsharpCode = @"
 private BitMenuButtonItem? changedSelectedItem;
 private BitMenuButtonItem twoWaySelectedItem = default!;
 
@@ -633,7 +645,7 @@ protected override void OnInitialized()
     twoWaySelectedItem = basicItems[2];
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitMenuButton Text=""گزینه ها""
                Dir=""BitDir.Rtl""
                Items=""rtlItemsIcon""
@@ -644,9 +656,9 @@ protected override void OnInitialized()
                Dir=""BitDir.Rtl""
                Items=""rtlItemsIcon""
                IconName=""@BitIconName.Add""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                ChevronDownIcon=""@BitIconName.DoubleChevronDown"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
  private List<BitMenuButtonItem> rtlItemsIcon = new()
  {
     new()

@@ -23,17 +23,17 @@ public class BitMenuButtonTests : BunitTestContext
     };
 
     [DataTestMethod,
-       DataRow(true, BitButtonStyle.Primary),
-       DataRow(true, BitButtonStyle.Standard),
-       DataRow(false, BitButtonStyle.Primary),
-       DataRow(false, BitButtonStyle.Standard)
+       DataRow(true, BitVariant.Fill),
+       DataRow(true, BitVariant.Outline),
+       DataRow(false, BitVariant.Fill),
+       DataRow(false, BitVariant.Outline)
     ]
-    public void BitMenuButtonTest(bool isEnabled, BitButtonStyle buttonStyle)
+    public void BitMenuButtonTest(bool isEnabled, BitVariant variant)
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, buttonStyle);
+            parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.Items, items);
         });
 
@@ -48,15 +48,16 @@ public class BitMenuButtonTests : BunitTestContext
             Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-dis"));
         }
 
-        if (buttonStyle == BitButtonStyle.Standard)
+
+        if (variant == BitVariant.Fill)
         {
-            Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-pri"));
-            Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-mnb-std"));
+            Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-mnb-fil"));
+            Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-otl"));
         }
-        else
+        if (variant == BitVariant.Outline)
         {
-            Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-mnb-pri"));
-            Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-std"));
+            Assert.IsFalse(bitMenuButton.ClassList.Contains("bit-mnb-fil"));
+            Assert.IsTrue(bitMenuButton.ClassList.Contains("bit-mnb-otl"));
         }
     }
 

@@ -1,27 +1,35 @@
-﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example11">
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
-        <div>
-            The MenuButton offers three style options: Primary (default), Standard, and Text.
-        </div>
-        <br />
         <div class="example-content">
-            <BitMenuButton Text="Primary" Items="basicItems" />
-
-            <BitMenuButton Text="Standard"
-                           Items="basicItems"
-                           ButtonStyle="BitButtonStyle.Standard" />
-
-            <BitMenuButton Text="Text"
-                           Items="basicItems"
-                           ButtonStyle="BitButtonStyle.Text" />
+            <BitMenuButton Text="MenuButton" Items="basicItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Primary button" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div>The MenuButton offers three variants: Fill (default), Outline, and Text.</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Fill"
+                           Items="basicItems"
+                           Variant="BitVariant.Fill" />
+
+            <BitMenuButton Text="Outline"
+                           Items="basicItems"
+                           Variant="BitVariant.Outline" />
+
+            <BitMenuButton Text="Text"
+                           Items="basicItems"
+                           Variant="BitVariant.Text" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Fill button" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <div>
-            Primary menu buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+            Fill menu buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
         </div>
         <br />
         <div class="example-content">
@@ -37,10 +45,10 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Standard button" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Outline button" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div>
-            Standard menu buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text menu buttons and the more prominent Primary menu buttons, providing flexibility in emphasis.
+            Outline menu buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. They serve as a middle ground between Text menu buttons and the more prominent Fill menu buttons, providing flexibility in emphasis.
         </div>
         <br />
         <div class="example-content">
@@ -48,20 +56,20 @@
                 <BitLabel>Default</BitLabel>
                 <BitMenuButton Text="Items"
                                Items="basicItems"
-                               ButtonStyle="BitButtonStyle.Standard" />
+                               Variant="BitVariant.Outline" />
             </div>
             <div>
                 <BitLabel>Disabled</BitLabel>
                 <BitMenuButton Text="Items"
                                IsEnabled="false"
                                Items="basicItems"
-                               ButtonStyle="BitButtonStyle.Standard" />
+                               Variant="BitVariant.Outline" />
             </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Text button" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Text button" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
         <div>
             Text menu buttons are best suited for understated actions, serving as a less prominent choice in various interface elements.
@@ -72,20 +80,20 @@
                 <BitLabel>Default</BitLabel>
                 <BitMenuButton Text="Items"
                                Items="basicItems"
-                               ButtonStyle="BitButtonStyle.Text" />
+                               Variant="BitVariant.Text" />
             </div>
             <div>
                 <BitLabel>Disabled</BitLabel>
                 <BitMenuButton Text="Items"
                                IsEnabled="false"
                                Items="basicItems"
-                               ButtonStyle="BitButtonStyle.Text" />
+                               Variant="BitVariant.Text" />
             </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Split" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Split" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
         <div>
             Explore the Split behavior of BitMenuButton, demonstrating buttons divided into two sections. One section triggers an action on click, while the other section opens a callout to reveal additional options.
@@ -93,21 +101,21 @@
         <br />
         <div class="example-content">
             <BitMenuButton Split
-                           Text="Primary"
+                           Text="Fill"
                            Items="basicItems" />
             <BitMenuButton Split
-                           Text="Standard"
+                           Text="Outline"
                            Items="basicItems"
-                           ButtonStyle="BitButtonStyle.Standard" />
+                           Variant="BitVariant.Outline" />
             <BitMenuButton Split
                            Text="Text"
                            Items="basicItems"
-                           ButtonStyle="BitButtonStyle.Text" />
+                           Variant="BitVariant.Text" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Sticky" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Sticky" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
         <div>
             Experience the Sticky functionality of BitMenuButton, showcasing a button that remains sticky after an item selection. The button displays the selected item and retains its state for continuous user interaction.
@@ -122,13 +130,13 @@
                 <BitLabel>Split</BitLabel>
                 <BitMenuButton Split Sticky
                                Items="basicItems"
-                               ButtonStyle="BitButtonStyle.Standard" />
+                               Variant="BitVariant.Outline" />
             </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Icons" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Icons" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div>
             Present BitMenuButton instances with customized icons, enriching the visual options for representing menu buttons.
@@ -143,13 +151,13 @@
                            Text="ChevronDownIcon"
                            Items="basicItemsIcon"
                            IconName="@BitIconName.Add"
-                           ButtonStyle="BitButtonStyle.Standard"
+                           Variant="BitVariant.Outline"
                            ChevronDownIcon="@BitIconName.DoubleChevronDown" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
         <div>
             Demonstrate BitMenuButton instances highlighting item click events, offering versatile interactions within the menu buttons.
@@ -165,7 +173,7 @@
                 <BitMenuButton Split
                                Text="Items"
                                Items="basicItemsOnClick"
-                               ButtonStyle="BitButtonStyle.Standard"
+                               Variant="BitVariant.Outline"
                                OnClick="@((BitMenuButtonItem item) => exampleSelectedItem = "Main button clicked")" />
             </div>
 
@@ -177,7 +185,7 @@
 
                 <BitMenuButton Split Sticky
                                Items="itemDisabledItems"
-                               ButtonStyle="BitButtonStyle.Standard"
+                               Variant="BitVariant.Outline"
                                OnClick="(BitMenuButtonItem item) => exampleSelectedItem = item?.Key" />
             </div>
         </div>
@@ -185,7 +193,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Customization" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="Customization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         <div>
             Explore BitMenuButton's customization capabilities.
@@ -210,7 +218,7 @@
                 <BitMenuButton Split
                                Text="Items"
                                Items="itemTemplateItems"
-                               ButtonStyle="BitButtonStyle.Standard">
+                               Variant="BitVariant.Outline">
                     <ItemTemplate Context="item">
                         <div class="item-template-box">
                             <span style="color: @(item.Key == "add-key" ? "green" : item.Key == "edit-key" ? "yellow" : "red");">
@@ -229,7 +237,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div>
             Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
@@ -267,13 +275,13 @@
             <BitMenuButton Text="Classes"
                            Items="basicItems"
                            IconName="@BitIconName.ExpandMenu"
-                           ButtonStyle="BitButtonStyle.Standard"
+                           Variant="BitVariant.Outline"
                            Classes="@(new() { Icon = "custom-icon", Text = "custom-text" })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<ComponentExampleBox Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <ExamplePreview>
         <div>
             This example demonstrates different ways to handle item selection and changes within the component.
@@ -294,7 +302,7 @@
                 <BitMenuButton Sticky
                                Items="basicItems"
                                @bind-SelectedItem="twoWaySelectedItem"
-                               ButtonStyle="BitButtonStyle.Standard" />
+                               Variant="BitVariant.Outline" />
                 <br />
                 <div>Selected item: <b>@twoWaySelectedItem.Text</b></div>
             </div>
@@ -316,13 +324,13 @@
                 <BitLabel>IsSelected</BitLabel>
                 <BitMenuButton Sticky
                                Items="isSelectedItems"
-                               ButtonStyle="BitButtonStyle.Standard" />
+                               Variant="BitVariant.Outline" />
             </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <ExamplePreview>
         <div class="example-content" style="direction:rtl">
             <BitMenuButton Text="گزینه ها"
@@ -335,7 +343,7 @@
                            Dir="BitDir.Rtl"
                            Items="rtlItemsIcon"
                            IconName="@BitIconName.Add"
-                           ButtonStyle="BitButtonStyle.Standard"
+                           Variant="BitVariant.Outline"
                            ChevronDownIcon="@BitIconName.DoubleChevronDown" />
         </div>
     </ExamplePreview>

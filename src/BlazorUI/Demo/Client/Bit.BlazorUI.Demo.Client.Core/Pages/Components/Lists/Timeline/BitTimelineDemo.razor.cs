@@ -6,15 +6,6 @@ public partial class BitTimelineDemo
     [
         new()
         {
-            Name = "Appearance",
-            Type = "BitAppearance",
-            DefaultValue = "BitAppearance.Primary",
-            Description = "The appearance of component, Possible values: Primary | Standard.",
-            LinkType = LinkType.Link,
-            Href = "#timeline-appearance-enum",
-        },
-        new()
-        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -93,6 +84,15 @@ public partial class BitTimelineDemo
             Description = "Custom CSS styles for different parts of the BitTimeline.",
             LinkType = LinkType.Link,
             Href = "#timeline-class-styles",
+        },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant",
+            DefaultValue = "null",
+            Description = "The visual variant of the timeline.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
         },
     ];
 
@@ -569,27 +569,27 @@ public partial class BitTimelineDemo
     [
         new()
         {
-            Id = "timeline-appearance-enum",
-            Name = "BitAppearance",
-            Description = "",
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
             Items =
             [
                 new()
                 {
-                    Name = "Primary",
-                    Description = "The appearance for primary actions that are high-emphasis.",
+                    Name = "Fill",
+                    Description = "Fill styled variant.",
                     Value = "0",
                 },
                 new()
                 {
-                    Name = "Standard",
-                    Description = "The appearance for important actions that are medium-emphasis.",
+                    Name = "Outline",
+                    Description = "Outline styled variant.",
                     Value = "1",
                 },
                 new()
                 {
                     Name = "Text",
-                    Description = "The appearance for less-pronounced actions.",
+                    Description = "Text styled variant.",
                     Value = "2",
                 }
             ]
