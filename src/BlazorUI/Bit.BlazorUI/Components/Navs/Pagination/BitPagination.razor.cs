@@ -8,10 +8,10 @@ public partial class BitPagination : BitComponentBase
 
     private int count = 1;
     private BitSize? size;
-    private BitColor? color;
     private int selectedPage;
     private int middleCount = 3;
     private int boundaryCount = 2;
+    private BitSeverity? severity;
     private BitAppearance appearance = BitAppearance.Primary;
 
 
@@ -49,22 +49,6 @@ public partial class BitPagination : BitComponentBase
     /// Custom CSS classes for different parts of the BitPagination.
     /// </summary>
     [Parameter] public BitPaginationClassStyles? Classes { get; set; }
-
-    /// <summary>
-    /// The color of the component.
-    /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The number of pages.
@@ -140,6 +124,22 @@ public partial class BitPagination : BitComponentBase
     }
 
     [Parameter] public EventCallback<int> SelectedPageChanged { get; set; }
+
+    /// <summary>
+    /// The severity of the pagination.
+    /// </summary>
+    [Parameter]
+    public BitSeverity? Severity
+    {
+        get => severity;
+        set
+        {
+            if (severity == value) return;
+
+            severity = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// If true, the navigate to first page button is shown.
@@ -298,13 +298,13 @@ public partial class BitPagination : BitComponentBase
             _ => "bit-pgn-pri"
         });
 
-        className.Append(' ').Append(Color switch
+        className.Append(' ').Append(Severity switch
         {
-            BitColor.Info => "bit-pgn-inf",
-            BitColor.Success => "bit-pgn-suc",
-            BitColor.Warning => "bit-pgn-wrn",
-            BitColor.SevereWarning => "bit-pgn-swr",
-            BitColor.Error => "bit-pgn-err",
+            BitSeverity.Info => "bit-pgn-inf",
+            BitSeverity.Success => "bit-pgn-suc",
+            BitSeverity.Warning => "bit-pgn-wrn",
+            BitSeverity.SevereWarning => "bit-pgn-swr",
+            BitSeverity.Error => "bit-pgn-err",
             _ => string.Empty
         });
 

@@ -3,26 +3,10 @@
 public partial class BitIcon : BitComponentBase
 {
     private BitSize? size;
-    private BitColor? color;
     private string? iconName;
+    private BitSeverity? severity;
 
 
-
-    /// <summary>
-    /// The color of icon.
-    /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The icon name for the icon shown.
@@ -37,6 +21,22 @@ public partial class BitIcon : BitComponentBase
 
             iconName = value;
 
+            ClassBuilder.Reset();
+        }
+    }
+
+    /// <summary>
+    /// The severity of the icon.
+    /// </summary>
+    [Parameter]
+    public BitSeverity? Severity
+    {
+        get => severity;
+        set
+        {
+            if (severity == value) return;
+
+            severity = value;
             ClassBuilder.Reset();
         }
     }
@@ -58,6 +58,8 @@ public partial class BitIcon : BitComponentBase
         }
     }
 
+
+
     protected override string RootElementClass => "bit-ico";
 
     protected override void RegisterCssClasses()
@@ -72,13 +74,13 @@ public partial class BitIcon : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Color switch
+        ClassBuilder.Register(() => Severity switch
         {
-            BitColor.Info => "bit-ico-inf",
-            BitColor.Success => "bit-ico-suc",
-            BitColor.Warning => "bit-ico-wrn",
-            BitColor.SevereWarning => "bit-ico-swr",
-            BitColor.Error => "bit-ico-err",
+            BitSeverity.Info => "bit-ico-inf",
+            BitSeverity.Success => "bit-ico-suc",
+            BitSeverity.Warning => "bit-ico-wrn",
+            BitSeverity.SevereWarning => "bit-ico-swr",
+            BitSeverity.Error => "bit-ico-err",
             _ => string.Empty
         });
     }

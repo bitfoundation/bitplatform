@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitCompoundButton : BitComponentBase
 {
     private BitSize? size;
-    private BitColor? color;
+    private BitSeverity? severity;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
@@ -64,22 +64,6 @@ public partial class BitCompoundButton : BitComponentBase
     [Parameter] public BitCompoundButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The color of button
-    /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// The value of the href attribute of the link rendered by the BitCompoundButton. If provided, the component will be rendered as an anchor.
     /// </summary>
     [Parameter] public string? Href { get; set; }
@@ -124,6 +108,22 @@ public partial class BitCompoundButton : BitComponentBase
     /// The RenderFragment for the secondary section of the BitCompoundButton.
     /// </summary>
     [Parameter] public RenderFragment? SecondaryTemplate { get; set; }
+
+    /// <summary>
+    /// The severity of the compound button.
+    /// </summary>
+    [Parameter]
+    public BitSeverity? Severity
+    {
+        get => severity;
+        set
+        {
+            if (severity == value) return;
+
+            severity = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The size of button, Possible values: Small | Medium | Large
@@ -172,13 +172,13 @@ public partial class BitCompoundButton : BitComponentBase
             _ => "bit-cmb-pri"
         });
 
-        ClassBuilder.Register(() => Color switch
+        ClassBuilder.Register(() => Severity switch
         {
-            BitColor.Info => "bit-cmb-inf",
-            BitColor.Success => "bit-cmb-suc",
-            BitColor.Warning => "bit-cmb-wrn",
-            BitColor.SevereWarning => "bit-cmb-swr",
-            BitColor.Error => "bit-cmb-err",
+            BitSeverity.Info => "bit-cmb-inf",
+            BitSeverity.Success => "bit-cmb-suc",
+            BitSeverity.Warning => "bit-cmb-wrn",
+            BitSeverity.SevereWarning => "bit-cmb-swr",
+            BitSeverity.Error => "bit-cmb-err",
             _ => string.Empty
         });
 

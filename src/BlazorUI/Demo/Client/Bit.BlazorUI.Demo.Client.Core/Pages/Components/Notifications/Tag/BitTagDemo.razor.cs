@@ -31,15 +31,6 @@ public partial class BitTagDemo
         },
         new()
         {
-            Name = "Color",
-            Type = "BitColor?",
-            DefaultValue = "null",
-            Description = "The color of the tag.",
-            LinkType = LinkType.Link,
-            Href = "#tag-color-enum"
-        },
-        new()
-        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
@@ -61,10 +52,12 @@ public partial class BitTagDemo
         },
         new()
         {
-            Name = "Text",
-            Type = "string?",
+            Name = "Severity",
+            Type = "BitSeverity?",
             DefaultValue = "null",
-            Description = "The text of the tag."
+            Description = "The severity of the tag.",
+            LinkType = LinkType.Link,
+            Href = "#severity-enum"
         },
         new()
         {
@@ -74,7 +67,14 @@ public partial class BitTagDemo
             Description = "Custom CSS styles for different parts of the BitTag.",
             LinkType = LinkType.Link,
             Href = "#tag-class-styles"
-        }
+        },
+        new()
+        {
+            Name = "Text",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the tag."
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -108,8 +108,8 @@ public partial class BitTagDemo
         },
         new()
         {
-            Id = "tag-color-enum",
-            Name = "BitColor",
+            Id = "severity-enum",
+            Name = "BitSeverity",
             Description = "",
             Items =
             [
@@ -242,25 +242,25 @@ public partial class BitTagDemo
 private bool isDismissed;";
 
     private readonly string example7RazorCode = @"
-<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Info"" />
-<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Info"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Info"" Appearance=""BitAppearance.Text"" />
+<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Info"" />
+<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"" />
+<BitTag Text=""Info"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Text"" />
 
-<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Success"" />
-<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Success"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Success"" Appearance=""BitAppearance.Text"" />
+<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Success"" />
+<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"" />
+<BitTag Text=""Success"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Text"" />
 
-<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Warning"" />
-<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Warning"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Warning"" Appearance=""BitAppearance.Text"" />
+<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Warning"" />
+<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"" />
+<BitTag Text=""Warning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"" />
 
-<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SevereWarning"" />
-<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SevereWarning"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Color=""BitColor.SevereWarning"" Appearance=""BitAppearance.Text"" />
+<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.SevereWarning"" />
+<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"" />
+<BitTag Text=""SevereWarning"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"" />
 
-<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" />
-<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" Appearance=""BitAppearance.Standard"" />
-<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" Appearance=""BitAppearance.Text"" />";
+<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Error"" />
+<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"" />
+<BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Text"" />";
 
     private readonly string example8RazorCode = @"
 <BitTag>

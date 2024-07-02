@@ -7,7 +7,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 {
     private BitSize? size;
     private bool horizontal;
-    private BitColor? color;
+    private BitSeverity? severity;
     private BitAppearance appearance = BitAppearance.Primary;
 
     private List<TItem> _items = [];
@@ -49,22 +49,6 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitTimelineClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The color of component.
-    /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Defines whether to render timeline children horizontaly.
     /// </summary>
     [Parameter]
@@ -99,6 +83,22 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
+    /// The severity of the timeline.
+    /// </summary>
+    [Parameter]
+    public BitSeverity? Severity
+    {
+        get => severity;
+        set
+        {
+            if (severity == value) return;
+
+            severity = value;
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The size of timeline, Possible values: Small | Medium | Large
@@ -157,13 +157,13 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             _ => "bit-tln-pri"
         });
 
-        ClassBuilder.Register(() => Color switch
+        ClassBuilder.Register(() => Severity switch
         {
-            BitColor.Info => "bit-tln-inf",
-            BitColor.Success => "bit-tln-suc",
-            BitColor.Warning => "bit-tln-war",
-            BitColor.SevereWarning => "bit-tln-swa",
-            BitColor.Error => "bit-tln-err",
+            BitSeverity.Info => "bit-tln-inf",
+            BitSeverity.Success => "bit-tln-suc",
+            BitSeverity.Warning => "bit-tln-wrn",
+            BitSeverity.SevereWarning => "bit-tln-swr",
+            BitSeverity.Error => "bit-tln-err",
             _ => string.Empty
         });
 
@@ -198,15 +198,15 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         StringBuilder className = new StringBuilder();
 
-        if (GetColor(item) is not null)
+        if (GetSeverity(item) is not null)
         {
-            className.Append(GetColor(item) switch
+            className.Append(GetSeverity(item) switch
             {
-                BitColor.Info => " bit-tln-iin",
-                BitColor.Success => " bit-tln-isu",
-                BitColor.Warning => " bit-tln-iwa",
-                BitColor.SevereWarning => " bit-tln-isw",
-                BitColor.Error => " bit-tln-ier",
+                BitSeverity.Info => " bit-tln-iin",
+                BitSeverity.Success => " bit-tln-isu",
+                BitSeverity.Warning => " bit-tln-iwr",
+                BitSeverity.SevereWarning => " bit-tln-isw",
+                BitSeverity.Error => " bit-tln-ier",
                 _ => string.Empty
             });
         }
@@ -557,27 +557,27 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitSize?>(NameSelectors.Size.Name, null);
     }
 
-    private BitColor? GetColor(TItem? item)
+    private BitSeverity? GetSeverity(TItem? item)
     {
         if (item is null) return null;
 
         if (item is BitTimelineItem timelineItem)
         {
-            return timelineItem.Color;
+            return timelineItem.Severity;
         }
 
         if (item is BitTimelineOption timelineOption)
         {
-            return timelineOption.Color;
+            return timelineOption.Severity;
         }
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.Color.Selector is not null)
+        if (NameSelectors.Severity.Selector is not null)
         {
-            return NameSelectors.Color.Selector!(item);
+            return NameSelectors.Severity.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitColor?>(NameSelectors.Color.Name, null);
+        return item.GetValueFromProperty<BitSeverity?>(NameSelectors.Severity.Name, null);
     }
 }

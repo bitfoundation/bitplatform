@@ -7,10 +7,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 {
     private bool vertical;
     private BitSize? size;
-    private BitColor? color;
+    private BitSeverity? severity;
     private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
 
-    private List<TItem> _items = new();
+    private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
 
 
@@ -44,17 +44,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The color of ButtonGroup.
+    /// The severity of the button group.
     /// </summary>
     [Parameter]
-    public BitColor? Color
+    public BitSeverity? Severity
     {
-        get => color;
+        get => severity;
         set
         {
-            if (color == value) return;
+            if (severity == value) return;
 
-            color = value;
+            severity = value;
             ClassBuilder.Reset();
         }
     }
@@ -146,13 +146,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ => "bit-btg-pri"
         });
 
-        ClassBuilder.Register(() => Color switch
+        ClassBuilder.Register(() => Severity switch
         {
-            BitColor.Info => "bit-btg-inf",
-            BitColor.Success => "bit-btg-suc",
-            BitColor.Warning => "bit-btg-war",
-            BitColor.SevereWarning => "bit-btg-swa",
-            BitColor.Error => "bit-btg-err",
+            BitSeverity.Info => "bit-btg-inf",
+            BitSeverity.Success => "bit-btg-suc",
+            BitSeverity.Warning => "bit-btg-war",
+            BitSeverity.SevereWarning => "bit-btg-swa",
+            BitSeverity.Error => "bit-btg-err",
             _ => string.Empty
         });
 
@@ -192,13 +192,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ => " bit-btg-ipr"
         });
 
-        className.Append(Color switch
+        className.Append(Severity switch
         {
-            BitColor.Info => " bit-btg-iin",
-            BitColor.Success => " bit-btg-isu",
-            BitColor.Warning => " bit-btg-iwa",
-            BitColor.SevereWarning => " bit-btg-isw",
-            BitColor.Error => " bit-btg-ier",
+            BitSeverity.Info => " bit-btg-iin",
+            BitSeverity.Success => " bit-btg-isu",
+            BitSeverity.Warning => " bit-btg-iwa",
+            BitSeverity.SevereWarning => " bit-btg-isw",
+            BitSeverity.Error => " bit-btg-ier",
             _ => string.Empty
         });
 

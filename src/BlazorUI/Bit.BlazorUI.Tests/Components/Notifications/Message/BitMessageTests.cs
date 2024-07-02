@@ -25,12 +25,12 @@ public class BitMessageTests : BunitTestContext
 
         var typeClass = type switch
         {
-            BitSeverity.Info => "bit-msg-info",
-            BitSeverity.Success => "bit-msg-success",
-            BitSeverity.Warning => "bit-msg-warning",
-            BitSeverity.SevereWarning => "bit-msg-severe-warning",
-            BitSeverity.Error => "bit-msg-error",
-            _ => "bit-msg-info"
+            BitSeverity.Info => "bit-msg-inf",
+            BitSeverity.Success => "bit-msg-suc",
+            BitSeverity.Warning => "bit-msg-wrn",
+            BitSeverity.SevereWarning => "bit-msg-swr",
+            BitSeverity.Error => "bit-msg-err",
+            _ => "bit-msg-inf"
         };
 
         Assert.IsTrue(bitMessage.ClassList.Contains(typeClass));
