@@ -131,203 +131,203 @@ jobs:
         run: >
           az logout
 
-  # build_blazor_hybrid_windows:
-  #   name: build blazor hybrid (windows)
-  #   runs-on: windows-2022
+  build_blazor_hybrid_windows:
+    name: build blazor hybrid (windows)
+    runs-on: windows-2022
   
-  #   steps:
+    steps:
      
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
 
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 20
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #       cd src\Templates\Boilerplate && dotnet build -c Release
-  #       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #       cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
+    - name: Create project from Boilerplate
+      run: |
+        cd src\Templates\Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
   
-  #   - name: Update appsettings.json api server address
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json'
-  #     env:
-  #       ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  #       WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
-  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+    - name: Update appsettings.json api server address
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
-  #   - name: Generate CSS/JS files
-  #     run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
-  #   - name: Set app center secret
-  #     run: (Get-Content AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs
-  #     shell: pwsh
+    - name: Set app center secret
+      run: (Get-Content AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs
+      shell: pwsh
 
-  #   - name: Publish
-  #     run: |
-  #         cd AdminPanel\src\Client\AdminPanel.Client.Windows\
-  #         dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-  #         ren .\bin\publish-arm64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-arm64.exe
-  #         dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-  #         ren .\bin\publish-x86\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x86.exe
-  #         dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-  #         ren .\bin\publish-x64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
-  #         dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-  #         del .\bin\publish\AdminPanel.Client.Windows.exe
-  #         echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
-  #         echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
-  #         echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
-  #         echo A | xcopy .\bin\publish .\publish-result /s /e /h
-  #         dotnet tool restore
-  #         dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+    - name: Publish
+      run: |
+          cd AdminPanel\src\Client\AdminPanel.Client.Windows\
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+          ren .\bin\publish-arm64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-arm64.exe
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+          ren .\bin\publish-x86\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x86.exe
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+          ren .\bin\publish-x64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+          del .\bin\publish\AdminPanel.Client.Windows.exe
+          echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
+          echo A | xcopy .\bin\publish .\publish-result /s /e /h
+          dotnet tool restore
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: win-exe-bundle
-  #       path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: win-exe-bundle
+        path: AdminPanel\src\Client\AdminPanel.Client.Windows\Releases
   
-  # build_blazor_hybrid_android:
-  #   name: build blazor hybrid (android)
-  #   runs-on: ubuntu-22.04
+  build_blazor_hybrid_android:
+    name: build blazor hybrid (android)
+    runs-on: ubuntu-22.04
   
-  #   steps:
+    steps:
      
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
      
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #      cd src/Templates/Boilerplate && dotnet build -c Release
-  #      dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #      dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #      cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
+    - name: Create project from Boilerplate
+      run: |
+       cd src/Templates/Boilerplate && dotnet build -c Release
+       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+       dotnet new install Bit.Boilerplate.0.0.0.nupkg
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 20
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
   
-  #   - name: Extract Android signing key from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
-  #         fileName: 'AdminPanel.keystore'
-  #         encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
+          fileName: 'AdminPanel.keystore'
+          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
-  #   - name: Update appsettings.json api server address
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
-  #     env:
-  #       ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+    - name: Update appsettings.json api server address
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-  #   - name: Set app center secret
-  #     run: |
-  #         sed -i 's/appCenterSecret = null;/appCenterSecret = "ea9b98ea-93a0-48c7-982a-0a72f4ad6d04";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
+    - name: Set app center secret
+      run: |
+          sed -i 's/appCenterSecret = null;/appCenterSecret = "ea9b98ea-93a0-48c7-982a-0a72f4ad6d04";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
-  #   - name: Install maui
-  #     run: cd src && dotnet workload install maui-android
+    - name: Install maui
+      run: cd src && dotnet workload install maui-android
 
-  #   - name: Install Android Sdk platform tools
-  #     run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
-  #   - name: Generate CSS/JS files
-  #     run: |
-  #         dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-  #         dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: |
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
   
-  #   - name: Build aab
-  #     run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net8.0-android
+    - name: Build aab
+      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net8.0-android
   
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: android-bundle
-  #       path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net8.0-android/*-Signed.*
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-bundle
+        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net8.0-android/*-Signed.*
   
-  # build_blazor_hybrid_ios:
-  #   name: build blazor hybrid (iOS-macOS)
-  #   runs-on: macos-14
+  build_blazor_hybrid_ios:
+    name: build blazor hybrid (iOS-macOS)
+    runs-on: macos-14
   
-  #   steps:
+    steps:
      
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
      
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
 
-  #   - uses: maxim-lobanov/setup-xcode@v1.6.0
-  #     with:
-  #       xcode-version: '15.4'
+    - uses: maxim-lobanov/setup-xcode@v1.6.0
+      with:
+        xcode-version: '15.4'
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 20
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #       cd src/Templates/Boilerplate && dotnet build -c Release
-  #       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
+    - name: Create project from Boilerplate
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
   
-  #   - name: Update appsettings.json api server address
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
-  #     env:
-  #       ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
-  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+    - name: Update appsettings.json api server address
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-  #   - name: Set app center secret
-  #     run: |
-  #         brew install gnu-sed && gsed -i 's/appCenterSecret = null;/appCenterSecret = "0bc0d910-dc84-4887-a3a0-eee6b1b55797";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
+    - name: Set app center secret
+      run: |
+          brew install gnu-sed && gsed -i 's/appCenterSecret = null;/appCenterSecret = "0bc0d910-dc84-4887-a3a0-eee6b1b55797";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
-  #   - name: Install maui
-  #     run: cd src && dotnet workload install maui
+    - name: Install maui
+      run: cd src && dotnet workload install maui
 
-  #   - name: Import Code-Signing Certificates
-  #     uses: apple-actions/import-codesign-certs@v3
-  #     with:
-  #       p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
-  #       p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+    - name: Import Code-Signing Certificates
+      uses: apple-actions/import-codesign-certs@v3
+      with:
+        p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
+        p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
-  #   - name: Download Apple Provisioning Profiles
-  #     uses: Apple-Actions/download-provisioning-profiles@v3
-  #     with:
-  #       bundle-id: 'com.bitplatform.AdminPanel.Template'
-  #       issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
-  #       api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-  #       api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+    - name: Download Apple Provisioning Profiles
+      uses: Apple-Actions/download-provisioning-profiles@v3
+      with:
+        bundle-id: 'com.bitplatform.AdminPanel.Template'
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
-  #   - name: Generate CSS/JS files
-  #     run: |
-  #         dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-  #         dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: |
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+          dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
   
-  #   - name: Build ipa
-  #     run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net8.0-ios
+    - name: Build ipa
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="AdminPanel" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net8.0-ios
 
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: ios-bundle
-  #       path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-bundle
+        path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
