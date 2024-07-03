@@ -41,13 +41,38 @@ jobs:
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
        
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+
+    - name: Update server appsettings.json
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'AdminPanel/src/Server/AdminPanel.Server/appsettings.Production.json'
+      env:
+        AppSettings__Email__DefaultFromEmail: no-reply@bitplatform.dev
+        AppSettings__Email__Host: smtp.sendgrid.net
+        AppSettings__Email__Password: ${{ secrets.SEND_GRID_PASSWORD }}
+        AppSettings__Email__Port: 25
+        AppSettings__Email__UserName: apikey
+        AppSettings__Sms__AccountSid: ${{ secrets.TWILIO_ACCOUNT_SID }}
+        AppSettings__Sms__AuthToken: ${{ secrets.TWILIO_AUTH_TOKEN }}
+        AppSettings__Sms__FromPhoneNumber: ${{ secrets.TWILIO_FROM_PHONE_NUMBER }}
+        Authentication__GitHub__ClientId: ${{ secrets.AUTH_GITHUB_CLIENT_ID }}
+        Authentication__GitHub__ClientSecret: ${{ secrets.AUTH_GITHUB_CLIENT_SECRET }}
+        Authentication__Google__ClientId: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
+        Authentication__Google__ClientSecret: ${{ secrets.AUTH_GOOGLE_CLIENT_SECRET }}
+        Authentication__Twitter__ConsumerKey: ${{ secrets.AUTH_TWITTER_CONSUMER_KEY }}
+        Authentication__Twitter__ConsumerSecret: ${{ secrets.AUTH_TWITTER_CONSUMER_SECRET }}
+        DataProtectionCertificatePassword: ${{ secrets.DATA_PROTECTION_CERTIFICATE_PASSWORD }}
+        ForwardedHeaders__AllowedHosts: adminpanel.bitplatform.dev
+        ForwardedHeaders__ForwardedHostHeaderName: X-HOST # Cloudflare
+        ConnectionStrings__AzureBlobStorageSasUrl: ${{ secrets.AZURE_BLOB_STORAGE_SAS_URL }}
+        ConnectionStrings__PostgreSQLConnectionString: ${{ secrets.POSTGRES_SQL_CONNECTION_STRING }}
 
     - uses: actions/setup-node@v4
       with:
@@ -229,7 +254,7 @@ jobs:
           fileName: 'AdminPanel.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
@@ -290,7 +315,7 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
   
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json'
