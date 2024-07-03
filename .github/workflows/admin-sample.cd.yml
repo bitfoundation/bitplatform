@@ -142,7 +142,6 @@ jobs:
         with:
           azPSVersion: "latest"
           inlineScript: |
-            Connect-AzAccount
             Stop-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }} -SubscriptionId ${{ secrets.SUBSCRIPTION_ID }}
             Start-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }} -SubscriptionId ${{ secrets.SUBSCRIPTION_ID }}
 
