@@ -78,12 +78,12 @@ jobs:
 
     - name: Delete DataProtectionCertificate.pfx
       run: |
-          rm DataProtectionCertificate.pfx
+          rm AdminPanel/src/AdminPanel.Server/DataProtectionCertificate.pfx
 
     - name: Extract identity certificate from env
       uses: timheuer/base64-to-file@v1.2
       with:
-          fileDir: './'
+          fileDir: './AdminPanel/src/AdminPanel.Server/'
           fileName: 'DataProtectionCertificate.pfx'
           encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
 

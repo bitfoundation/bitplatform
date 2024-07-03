@@ -77,12 +77,12 @@ jobs:
 
     - name: Delete DataProtectionCertificate.pfx
       run: |
-          rm DataProtectionCertificate.pfx
+          rm TodoSample/src/TodoSample.Server/DataProtectionCertificate.pfx
 
     - name: Extract identity certificate from env
       uses: timheuer/base64-to-file@v1.2
       with:
-          fileDir: './'
+          fileDir: './TodoSample/src/TodoSample.Server/'
           fileName: 'DataProtectionCertificate.pfx'
           encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
 
