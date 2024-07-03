@@ -157,7 +157,7 @@ public static partial class Program
         services.TryAddTransient<SmsService>();
         if (appSettings.Sms.Configured)
         {
-            TwilioClient.Init(appSettings.Sms.AccountSid, appSettings.Sms.AuthToken);
+            TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
         }
 
         //#if (filesStorage == "Local")

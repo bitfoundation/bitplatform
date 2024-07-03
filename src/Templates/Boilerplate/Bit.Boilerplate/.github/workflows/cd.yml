@@ -38,7 +38,7 @@ jobs:
     # - name: Enable pre rendering
     #   run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
         
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
@@ -143,7 +143,7 @@ jobs:
       with:
         node-version: 20
   
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
@@ -204,7 +204,7 @@ jobs:
           fileName: 'Boilerplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
@@ -256,7 +256,7 @@ jobs:
       with:
         node-version: 20
   
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
