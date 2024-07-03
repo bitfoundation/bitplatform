@@ -3,7 +3,7 @@ name: Todo Sample CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
 env:
-  API_SERVER_ADDRESS: 'https://todo-test.bitplatform.dev'
+  API_SERVER_ADDRESS: 'https://todo.bitplatform.dev'
 
 on:
   workflow_dispatch:
@@ -98,22 +98,30 @@ jobs:
 
     steps:
 
-      - name: Azure Login
-        uses: azure/login@v2
+      - name: Retrieve server bundle
+        uses: actions/download-artifact@v4
         with:
-          creds: ${{ secrets.azure_SPN }}
+          name: server-bundle
 
-      - name: Publish to Azure Containers app
-        run: >
-          az containerapp update --name ${{ env.CONTAINER_APP_NAME }} --container-name ${{ env.CONTAINER_APP_NAME }} --resource-group ${{ env.CONTAINER_RESOURCE_GROUP }} --image ${{ env.CONTAINER_REGISTRY_URL }}/${{ env.PROJECT_NAME_FOR_DOCKER }}:${{ github.sha }}
+      - name: Delete DataProtectionCertificate.pfx
+        run: |
+            rm DataProtectionCertificate.pfx
 
-      - name: Run Az PowerShell Script Against AzureStack
-        uses: azure/powershell@v2
+      - name: Extract identity certificate from env
+        uses: timheuer/base64-to-file@v1.2
         with:
-          azPSVersion: "latest"
-          inlineScript: |
-            Stop-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }} -SubscriptionId ${{ secrets.SUBSCRIPTION_ID }}
-            Start-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }} -SubscriptionId ${{ secrets.SUBSCRIPTION_ID }}
+            fileDir: './'
+            fileName: 'DataProtectionCertificate.pfx'
+            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'bit-todo'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .
 
       - name: Purge cache
         uses: jakejarvis/cloudflare-purge-action@v0.3.0
