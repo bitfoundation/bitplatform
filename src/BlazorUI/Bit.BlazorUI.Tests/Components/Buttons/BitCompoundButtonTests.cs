@@ -8,18 +8,18 @@ namespace Bit.BlazorUI.Tests.Components.Buttons;
 public class BitCompoundButtonTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(true, BitButtonStyle.Primary),
-        DataRow(true, BitButtonStyle.Standard),
-        DataRow(false, BitButtonStyle.Primary),
-        DataRow(false, BitButtonStyle.Standard)
+        DataRow(true, BitVariant.Fill),
+        DataRow(true, BitVariant.Outline),
+        DataRow(false, BitVariant.Fill),
+        DataRow(false, BitVariant.Outline)
     ]
-    public void BitCompoundButtonTest(bool isEnabled, BitButtonStyle style)
+    public void BitCompoundButtonTest(bool isEnabled, BitVariant variant)
     {
         var clicked = false;
         var com = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, style);
+            parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.OnClick, () => clicked = true);
         });
 
@@ -40,17 +40,17 @@ public class BitCompoundButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(true, BitButtonStyle.Primary, false, false),
-        DataRow(true, BitButtonStyle.Standard, true, false),
-        DataRow(false, BitButtonStyle.Primary, false, true),
-        DataRow(false, BitButtonStyle.Standard, true, false),
+        DataRow(true, BitVariant.Fill, false, false),
+        DataRow(true, BitVariant.Outline, true, false),
+        DataRow(false, BitVariant.Fill, false, true),
+        DataRow(false, BitVariant.Outline, true, false),
     ]
-    public void BitCompoundButtonDisabledFocusTest(bool isEnabled, BitButtonStyle style, bool allowDisabledFocus, bool expectedResult)
+    public void BitCompoundButtonDisabledFocusTest(bool isEnabled, BitVariant variant, bool allowDisabledFocus, bool expectedResult)
     {
         var com = RenderComponent<BitCompoundButton>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.ButtonStyle, style);
+            parameters.Add(p => p.Variant, variant);
             parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
         });
 
@@ -126,31 +126,32 @@ public class BitCompoundButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitButtonStyle.Primary),
-        DataRow(BitButtonStyle.Standard),
+        DataRow(BitVariant.Fill),
+        DataRow(BitVariant.Outline),
         DataRow(null),
     ]
-    public void BitCompoundButtonTypeOfButtonStyleTest(BitButtonStyle? buttonStyle)
+    public void BitCompoundButtonTypeOfVariantTest(BitVariant? variant)
     {
         var component = RenderComponent<BitCompoundButton>(parameters =>
         {
-            if (buttonStyle.HasValue)
+            if (variant.HasValue)
             {
-                parameters.Add(p => p.ButtonStyle, buttonStyle.Value);
+                parameters.Add(p => p.Variant, variant.Value);
             }
         });
 
         var bitCompoundButton = component.Find(".bit-cmb");
 
-        if (buttonStyle == BitButtonStyle.Standard)
+        if (variant == BitVariant.Fill)
         {
-            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmb-pri"));
-            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmb-std"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmb-fil"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmb-otl"));
         }
-        else
+
+        if (variant == BitVariant.Outline)
         {
-            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmb-pri"));
-            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmb-std"));
+            Assert.IsFalse(bitCompoundButton.ClassList.Contains("bit-cmb-fil"));
+            Assert.IsTrue(bitCompoundButton.ClassList.Contains("bit-cmb-otl"));
         }
     }
 

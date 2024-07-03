@@ -6,7 +6,7 @@ public partial class BitButton : BitComponentBase
 {
     private BitSize? size;
     private BitSeverity? severity;
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
+    private BitVariant? variant;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
     private int? _tabIndex;
@@ -33,22 +33,6 @@ public partial class BitButton : BitComponentBase
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
-
-    /// <summary>
-    /// The style of button, Possible values: Primary | Standard | Text
-    /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle
-    {
-        get => buttonStyle;
-        set
-        {
-            if (buttonStyle == value) return;
-
-            buttonStyle = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The type of the button
@@ -170,6 +154,23 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// The visual variant of the button.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
 
     protected override string RootElementClass => "bit-btn";
 
@@ -177,12 +178,12 @@ public partial class BitButton : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => ButtonStyle switch
+        ClassBuilder.Register(() => Variant switch
         {
-            BitButtonStyle.Primary => "bit-btn-pri",
-            BitButtonStyle.Standard => "bit-btn-std",
-            BitButtonStyle.Text => "bit-btn-txt",
-            _ => "bit-btn-pri"
+            BitVariant.Fill => "bit-btn-fil",
+            BitVariant.Outline => "bit-btn-otl",
+            BitVariant.Text => "bit-btn-txt",
+            _ => "bit-btn-fil"
         });
 
         ClassBuilder.Register(() => Severity switch

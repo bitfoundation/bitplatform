@@ -298,7 +298,7 @@ private bool IsPanelWithCustomHeaderOpen = false;";
     </ChildContent>
     <FooterTemplate>
         <BitButton OnClick=@(() => IsPanelWithFooterOpen = false)>Save</BitButton>
-        <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=@(() => IsPanelWithFooterOpen = false)>Close</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" OnClick=@(() => IsPanelWithFooterOpen = false)>Close</BitButton>
     </FooterTemplate>
 </BitPanel>";
     private readonly string example3CsharpCode = @"
@@ -344,7 +344,7 @@ private bool IsPanelWithFooterOpen = false;";
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
         sagittis nunc, ut interdum ipsum vestibulum non.
     </p>
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"" OnClick=""() => bitPanelRef.Close()"">Close</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => bitPanelRef.Close()"">Close</BitButton>
 </BitPanel>";
     private readonly string example4CsharpCode = @"
 private bool IsBlockingPanelOpen = false;

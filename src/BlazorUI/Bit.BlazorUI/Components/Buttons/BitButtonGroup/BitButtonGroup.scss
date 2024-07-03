@@ -18,13 +18,13 @@
     }
 }
 
-.bit-btg-pri {
+.bit-btg-fil {
     border-color: var(--bit-btg-pri-brd-clr);
     --bit-btg-pri-brd-clr: #{$color-primary-main};
     --bit-btg-clr-bg-dis: #{$color-background-disabled};
 }
 
-.bit-btg-std {
+.bit-btg-otl {
     border-color: var(--bit-btg-sec-brd-clr);
     --bit-btg-sec-brd-clr: #{$color-secondary-text};
     --bit-btg-clr-bg-dis: #{$color-background-primary};
@@ -63,7 +63,7 @@
     border-inline-end-width: 0;
 }
 
-.bit-btg-ipr {
+.bit-btg-ifl {
     color: var(--bit-btg-itm-pri-clr);
     background-color: var(--bit-btg-itm-bg-clr);
     border-color: var(--bit-btg-itm-pri-brd-clr);
@@ -84,7 +84,7 @@
     }
 }
 
-.bit-btg-ist {
+.bit-btg-iot {
     color: var(--bit-btg-itm-sec-clr);
     background-color: $color-secondary-main;
     border-color: var(--bit-btg-itm-sec-brd-clr);

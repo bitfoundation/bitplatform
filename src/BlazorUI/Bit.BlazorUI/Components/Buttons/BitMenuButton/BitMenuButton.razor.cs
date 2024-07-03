@@ -7,10 +7,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     private bool SelectedItemHasBeenSet;
 
     private bool isCalloutOpen;
+    private BitVariant? variant;
     private TItem selectedItem = default!;
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-
-    private string _calloutId = default!;
 
 
     private bool _isCalloutOpen
@@ -21,13 +19,15 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             if (isCalloutOpen == value) return;
 
             isCalloutOpen = value;
+
             ClassBuilder.Reset();
         }
     }
 
     private bool _disposed;
+    private List<TItem> _items = [];
     private BitButtonType _buttonType;
-    private List<TItem> _items = new();
+    private string _calloutId = default!;
     private IEnumerable<TItem> _oldItems = default!;
     private DotNetObjectReference<BitMenuButton<TItem>> _dotnetObj = default!;
 
@@ -51,20 +51,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
-
-    /// <summary>
-    /// The style of button, Possible values: Primary | Standard.
-    /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle
-    {
-        get => buttonStyle;
-        set
-        {
-            buttonStyle = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     ///  List of Item, each of which can be a Button with different action in the BitMenuButton.
@@ -109,7 +95,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// <summary>
     ///  List of BitMenuButtonItem to show as a item in BitMenuButton.
     /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// The custom content to render each item.
@@ -148,7 +134,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             if (selectedItem == value) return;
 
             selectedItem = value;
+
             ClassBuilder.Reset();
+
             _ = SelectedItemChanged.InvokeAsync(value);
         }
     }
@@ -170,6 +158,24 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
+    /// <summary>
+    /// The visual variant of the menu button.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
+
 
     [JSInvokable("CloseCallout")]
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
@@ -177,6 +183,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         _isCalloutOpen = false;
         StateHasChanged();
     }
+
 
 
     internal void RegisterOption(BitMenuButtonOption option)
@@ -202,18 +209,19 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     }
 
 
+
     protected override string RootElementClass => "bit-mnb";
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => ButtonStyle switch
+        ClassBuilder.Register(() => Variant switch
         {
-            BitButtonStyle.Primary => "bit-mnb-pri",
-            BitButtonStyle.Standard => "bit-mnb-std",
-            BitButtonStyle.Text => "bit-mnb-txt",
-            _ => "bit-mnb-pri"
+            BitVariant.Fill => "bit-mnb-fil",
+            BitVariant.Outline => "bit-mnb-otl",
+            BitVariant.Text => "bit-mnb-txt",
+            _ => "bit-mnb-fil"
         });
 
         ClassBuilder.Register(() => _isCalloutOpen ? "bit-mnb-omn" : string.Empty);

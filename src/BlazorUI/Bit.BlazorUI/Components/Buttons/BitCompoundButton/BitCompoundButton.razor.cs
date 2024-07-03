@@ -5,8 +5,8 @@ namespace Bit.BlazorUI;
 public partial class BitCompoundButton : BitComponentBase
 {
     private BitSize? size;
+    private BitVariant? variant;
     private BitSeverity? severity;
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
     private int? _tabIndex;
@@ -33,20 +33,6 @@ public partial class BitCompoundButton : BitComponentBase
     /// If true, adds an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
-
-    /// <summary>
-    /// The style of the BitCompoundButton.
-    /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle
-    {
-        get => buttonStyle;
-        set
-        {
-            buttonStyle = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The value of the type attribute of the button rendered by the BitCompoundButton.
@@ -85,6 +71,7 @@ public partial class BitCompoundButton : BitComponentBase
             if (iconPosition == value) return;
 
             iconPosition = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -121,6 +108,7 @@ public partial class BitCompoundButton : BitComponentBase
             if (severity == value) return;
 
             severity = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -157,6 +145,23 @@ public partial class BitCompoundButton : BitComponentBase
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// The visual variant of the compound button.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
+
 
     protected override string RootElementClass => "bit-cmb";
 
@@ -164,12 +169,12 @@ public partial class BitCompoundButton : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => ButtonStyle switch
+        ClassBuilder.Register(() => Variant switch
         {
-            BitButtonStyle.Primary => "bit-cmb-pri",
-            BitButtonStyle.Standard => "bit-cmb-std",
-            BitButtonStyle.Text => "bit-cmb-txt",
-            _ => "bit-cmb-pri"
+            BitVariant.Fill => "bit-cmb-fil",
+            BitVariant.Outline => "bit-cmb-otl",
+            BitVariant.Text => "bit-cmb-txt",
+            _ => "bit-cmb-fil"
         });
 
         ClassBuilder.Register(() => Severity switch

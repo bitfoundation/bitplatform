@@ -6,15 +6,6 @@ public partial class BitPaginationDemo
     [
         new()
         {
-            Name = "Appearance",
-            Type = "BitAppearance",
-            DefaultValue = "BitAppearance.Primary",
-            Description = "The appearance of pagination, Possible values: Primary | Standard | Text",
-            LinkType = LinkType.Link,
-            Href = "#pagination-appearance-enum"
-        },
-        new()
-        {
             Name = "BoundaryCount",
             Type = "int",
             DefaultValue = "2",
@@ -153,34 +144,43 @@ public partial class BitPaginationDemo
             Description = "Custom CSS styles for different parts of the BitPagination.",
             LinkType = LinkType.Link,
             Href = "#pagination-class-styles"
-        }
+        },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the pagination.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum"
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
         {
-            Id = "pagination-appearance-enum",
-            Name = "BitAppearance",
-            Description = "",
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
             Items =
             [
                 new()
                 {
-                    Name= "Primary",
-                    Description="The appearance for primary actions that are high-emphasis.",
+                    Name= "Fill",
+                    Description="Fill styled variant.",
                     Value="0",
                 },
                 new()
                 {
                     Name= "Standard",
-                    Description="The appearance for important actions that are medium-emphasis.",
+                    Description="Outline styled variant.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Text",
-                    Description="The appearance for less-pronounced actions.",
+                    Description="Text styled variant.",
                     Value="2",
                 }
             ]
@@ -351,84 +351,91 @@ public partial class BitPaginationDemo
 
 
 
+    private int paginationSelectedPage = 1;
+
+
+
     private readonly string example1RazorCode = @"
-<BitPagination Count=""4"" />
-
-<BitPagination Count=""4"" Appearance=""BitAppearance.Standard"" />
-
-<BitPagination Count=""4"" Appearance=""BitAppearance.Text"" />";
+<BitPagination Count=""4"" />";
 
     private readonly string example2RazorCode = @"
+<BitPagination Count=""4"" Variant=""BitVariant.Fill"" />
+
+<BitPagination Count=""4"" Variant=""BitVariant.Outline"" />
+
+<BitPagination Count=""4"" Variant=""BitVariant.Text"" />";
+
+    private readonly string example3RazorCode = @"
 <BitPagination Count=""4"" />
 
 <BitPagination Count=""4"" IsEnabled=""false"" />";
 
-    private readonly string example3RazorCode = @"
-<BitPagination Count=""4"" Appearance=""BitAppearance.Standard"" />
-
-<BitPagination Count=""4"" Appearance=""BitAppearance.Standard"" IsEnabled=""false"" />";
-
     private readonly string example4RazorCode = @"
-<BitPagination Count=""4"" Appearance=""BitAppearance.Text"" />
+<BitPagination Count=""4"" Variant=""BitVariant.Outline"" />
 
-<BitPagination Count=""4"" Appearance=""BitAppearance.Text"" IsEnabled=""false"" />";
+<BitPagination Count=""4"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />";
 
     private readonly string example5RazorCode = @"
-<BitPagination Count=""5"" DefaultSelectedPage=""3"" />";
+<BitPagination Count=""4"" Variant=""BitVariant.Text"" />
+
+<BitPagination Count=""4"" Variant=""BitVariant.Text"" IsEnabled=""false"" />";
 
     private readonly string example6RazorCode = @"
-<BitPagination Count=""11"" DefaultSelectedPage=""6"" BoundaryCount=""1"" />";
+<BitPagination Count=""5"" DefaultSelectedPage=""3"" />";
 
     private readonly string example7RazorCode = @"
-<BitPagination Count=""11"" MiddleCount=""3"" BoundaryCount=""1"" DefaultSelectedPage=""6"" />";
+<BitPagination Count=""11"" DefaultSelectedPage=""6"" BoundaryCount=""1"" />";
 
     private readonly string example8RazorCode = @"
-<BitPagination Count=""4"" OnChange=""(int page) => paginationSelectedPage = page"" />
-<div>Changed page: <b>@paginationSelectedPage</b></div>";
-    private readonly string example8CsharpCode = @"
-private int paginationSelectedPage = 1;";
+<BitPagination Count=""11"" MiddleCount=""3"" BoundaryCount=""1"" DefaultSelectedPage=""6"" />";
 
     private readonly string example9RazorCode = @"
-<BitPagination Count=""24"" ShowFirstButton ShowLastButton />";
+<BitPagination Count=""4"" OnChange=""(int page) => paginationSelectedPage = page"" />
+<div>Changed page: <b>@paginationSelectedPage</b></div>";
+    private readonly string example9CsharpCode = @"
+private int paginationSelectedPage = 1;";
 
     private readonly string example10RazorCode = @"
-<BitPagination Count=""4"" NextIcon=""@BitIconName.Next"" PreviousIcon=""@BitIconName.Previous"" />";
+<BitPagination Count=""24"" ShowFirstButton ShowLastButton />";
 
     private readonly string example11RazorCode = @"
-<BitPagination Count=""5"" Severity=""BitSeverity.Info"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Info"" Appearance=""BitAppearance.Text"" />
-
-<BitPagination Count=""5"" Severity=""BitSeverity.Success"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Success"" Appearance=""BitAppearance.Text"" />
-
-<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" Appearance=""BitAppearance.Text"" />
-
-<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" Appearance=""BitAppearance.Text"" />
-
-<BitPagination Count=""5"" Severity=""BitSeverity.Error"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Error"" Appearance=""BitAppearance.Text"" />";
+<BitPagination Count=""4"" NextIcon=""@BitIconName.Next"" PreviousIcon=""@BitIconName.Previous"" />";
 
     private readonly string example12RazorCode = @"
+<BitPagination Count=""5"" Severity=""BitSeverity.Info"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"" />
+
+<BitPagination Count=""5"" Severity=""BitSeverity.Success"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"" />
+
+<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"" />
+
+<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"" />
+
+<BitPagination Count=""5"" Severity=""BitSeverity.Error"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"" />";
+
+    private readonly string example13RazorCode = @"
 <BitPagination Count=""5"" Size=""BitSize.Small"" />
 <BitPagination Count=""5"" Size=""BitSize.Medium"" />
 <BitPagination Count=""5"" Size=""BitSize.Large"" />
 
-<BitPagination Count=""5"" Size=""BitSize.Small"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Size=""BitSize.Medium"" Appearance=""BitAppearance.Standard"" />
-<BitPagination Count=""5"" Size=""BitSize.Large"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" />
+<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" />
 
-<BitPagination Count=""5"" Size=""BitSize.Small"" Appearance=""BitAppearance.Text"" />
-<BitPagination Count=""5"" Size=""BitSize.Medium"" Appearance=""BitAppearance.Text"" />
-<BitPagination Count=""5"" Size=""BitSize.Large"" Appearance=""BitAppearance.Text"" />";
+<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Text"" />
+<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Text"" />
+<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Text"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         margin-left: 1rem;
@@ -462,14 +469,14 @@ private int paginationSelectedPage = 1;";
                                  Button = ""border-color: transparent; background-color: #2e2e2e; color: tomato;"" })"" />
 
 <BitPagination Count=""4"" 
-               Appearance=""BitAppearance.Standard""
+               Variant=""BitVariant.Outline""
                Classes=""@(new() { Root = ""custom-root"", Button = ""custom-button"" })"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitPagination Dir=""BitDir.Rtl"" Count=""4"" />
 
-<BitPagination Dir=""BitDir.Rtl"" Count=""4"" Appearance=""BitAppearance.Standard"" />
+<BitPagination Dir=""BitDir.Rtl"" Count=""4"" Variant=""BitVariant.Outline"" />
 
-<BitPagination Dir=""BitDir.Rtl"" Count=""4"" Appearance=""BitAppearance.Text"" />";
+<BitPagination Dir=""BitDir.Rtl"" Count=""4"" Variant=""BitVariant.Text"" />";
 
 }

@@ -13,65 +13,65 @@ public partial class _BitButtonGroupOptionDemo
 </BitButtonGroup>";
 
     private readonly string example2RazorCode = @"
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" IsEnabled=""false"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" IsEnabled=""false"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Fill"" IsEnabled=""false"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" IsEnabled=""false"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" IsEnabled=""false"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""false"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Outline"" IsEnabled=""false"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" IsEnabled=""false"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" IsEnabled=""false"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" IsEnabled=""false"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Text"" IsEnabled=""false"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" IsEnabled=""false"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
     private readonly string example3RazorCode = @"
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
     <BitButtonGroupOption Text=""Edit"" IconName=""@BitIconName.Edit"" />
     <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
     <BitButtonGroupOption Text=""Edit"" IconName=""@BitIconName.Edit"" />
     <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
     <BitButtonGroupOption Text=""Edit"" IconName=""@BitIconName.Edit"" />
     <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
 </BitButtonGroup>";
 
     private readonly string example4RazorCode = @"
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Primary"" Vertical TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Fill"" Vertical TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Standard"" Vertical TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Outline"" Vertical TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup ButtonStyle=""BitButtonStyle.Text"" Vertical TItem=""BitButtonGroupOption"">
+<BitButtonGroup Variant=""BitVariant.Text"" Vertical TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
@@ -94,84 +94,84 @@ private int clickCounter;
 private string? clickedOption;";
 
     private readonly string example6RazorCode = @"
-<BitButtonGroup Severity=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.Info"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Severity=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.Success"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup Severity=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.Warning"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup Severity=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Severity=""BitSeverity.Error"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
     private readonly string example7RazorCode = @"
-<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Small"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-
-<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Medium"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
-<BitButtonGroup Size=""BitSize.Large"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
@@ -202,19 +202,19 @@ private string? clickedOption;";
 </BitButtonGroup>";
 
     private readonly string example9RazorCode = @"
-<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Primary"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""اضافه کردن"" IconName=""@BitIconName.Add"" />
     <BitButtonGroupOption Text=""ویرایش"" IconName=""@BitIconName.Edit"" />
     <BitButtonGroupOption Text=""حذف"" IconName=""@BitIconName.Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Standard"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""اضافه کردن"" IconName=""@BitIconName.Add"" />
     <BitButtonGroupOption Text=""ویرایش"" IconName=""@BitIconName.Edit"" />
     <BitButtonGroupOption Text=""حذف"" IconName=""@BitIconName.Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup Dir=""BitDir.Rtl"" ButtonStyle=""BitButtonStyle.Text"" TItem=""BitButtonGroupOption"">
+<BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""اضافه کردن"" IconName=""@BitIconName.Add"" />
     <BitButtonGroupOption Text=""ویرایش"" IconName=""@BitIconName.Edit"" />
     <BitButtonGroupOption Text=""حذف"" IconName=""@BitIconName.Delete"" />

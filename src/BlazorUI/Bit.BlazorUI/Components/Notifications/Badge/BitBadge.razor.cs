@@ -5,29 +5,13 @@ namespace Bit.BlazorUI;
 public partial class BitBadge : BitComponentBase
 {
     private BitSize? size;
+    private BitVariant? variant;
     private BitSeverity? severity;
-    private BitAppearance appearance = BitAppearance.Primary;
     private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
 
     private string? _content;
 
 
-
-    /// <summary>
-    /// The appearance of badge, Possible values: Primary | Standard | Text
-    /// </summary>
-    [Parameter]
-    public BitAppearance Appearance
-    {
-        get => appearance;
-        set
-        {
-            if (appearance == value) return;
-
-            appearance = value;
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// Child content of component, the content that the badge will apply to.
@@ -86,6 +70,7 @@ public partial class BitBadge : BitComponentBase
             if (badgePosition == value) return;
 
             badgePosition = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -102,6 +87,7 @@ public partial class BitBadge : BitComponentBase
             if (severity == value) return;
 
             severity = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -118,6 +104,7 @@ public partial class BitBadge : BitComponentBase
             if (size == value) return;
 
             size = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -126,6 +113,23 @@ public partial class BitBadge : BitComponentBase
     /// Custom CSS styles for different parts of the BitBadge.
     /// </summary>
     [Parameter] public BitBadgeClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The visual variant of the badge.
+    /// </summary>
+    [Parameter]
+    public BitVariant? Variant
+    {
+        get => variant;
+        set
+        {
+            if (variant == value) return;
+
+            variant = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
 
     protected override string RootElementClass => "bit-bdg";
@@ -202,12 +206,12 @@ public partial class BitBadge : BitComponentBase
             className.Append(" bit-bdg-icn");
         }
 
-        className.Append(' ').Append(Appearance switch
+        className.Append(' ').Append(Variant switch
         {
-            BitAppearance.Primary => "bit-bdg-pri",
-            BitAppearance.Standard => "bit-bdg-std",
-            BitAppearance.Text => "bit-bdg-txt",
-            _ => "bit-bdg-pri"
+            BitVariant.Fill => "bit-bdg-fil",
+            BitVariant.Outline => "bit-bdg-otl",
+            BitVariant.Text => "bit-bdg-txt",
+            _ => "bit-bdg-fil"
         });
 
         className.Append(' ').Append(Severity switch

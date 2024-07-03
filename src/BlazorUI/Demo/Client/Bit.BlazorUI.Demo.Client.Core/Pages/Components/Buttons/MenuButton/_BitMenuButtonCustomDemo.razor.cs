@@ -190,22 +190,8 @@ public partial class _BitMenuButtonCustomDemo
 
 
     private readonly string example1RazorCode = @"
-<BitMenuButton Text=""Primary""
+<BitMenuButton Text=""MenuButton""
                Items=""basicCustoms""
-               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                        IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
-
-<BitMenuButton Text=""Standard""
-               Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Standard""
-               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                        IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
-
-<BitMenuButton Text=""Text""
-               Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Text""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />";
@@ -228,19 +214,29 @@ private List<MenuActionItem> basicCustoms = new()
 };";
 
     private readonly string example2RazorCode = @"
-<BitMenuButton Text=""Customs""
+<BitMenuButton Text=""Fill""
                Items=""basicCustoms""
+               Variant=""BitVariant.Fill""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
 
-<BitMenuButton Text=""Customs""
-               IsEnabled=""false""
+<BitMenuButton Text=""Outline""
                Items=""basicCustoms""
+               Variant=""BitVariant.Outline""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
+
+<BitMenuButton Text=""Text""
+               Items=""basicCustoms""
+               Variant=""BitVariant.Text""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />";
     private readonly string example2CsharpCode = @"
+private string example1SelectedItem;
+
 public class MenuActionItem
 {
     public string? Id { get; set; }
@@ -259,7 +255,6 @@ private List<MenuActionItem> basicCustoms = new()
     private readonly string example3RazorCode = @"
 <BitMenuButton Text=""Customs""
                Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Standard""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
@@ -267,7 +262,6 @@ private List<MenuActionItem> basicCustoms = new()
 <BitMenuButton Text=""Customs""
                IsEnabled=""false""
                Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Standard""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />";
@@ -290,7 +284,7 @@ private List<MenuActionItem> basicCustoms = new()
     private readonly string example4RazorCode = @"
 <BitMenuButton Text=""Customs""
                Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Text""
+               Variant=""BitVariant.Outline""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
@@ -298,7 +292,7 @@ private List<MenuActionItem> basicCustoms = new()
 <BitMenuButton Text=""Customs""
                IsEnabled=""false""
                Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Text""
+               Variant=""BitVariant.Outline""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />";
@@ -319,25 +313,17 @@ private List<MenuActionItem> basicCustoms = new()
 };";
 
     private readonly string example5RazorCode = @"
-<BitMenuButton Split
-               Text=""Primary""
+<BitMenuButton Text=""Customs""
                Items=""basicCustoms""
+               Variant=""BitVariant.Text""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
 
-<BitMenuButton Split
-               Text=""Standard""
+<BitMenuButton Text=""Customs""
+               IsEnabled=""false""
                Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Standard""
-               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                        IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
-
-<BitMenuButton Split
-               Text=""Text""
-               Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Text""
+               Variant=""BitVariant.Text""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />";
@@ -358,15 +344,25 @@ private List<MenuActionItem> basicCustoms = new()
 };";
 
     private readonly string example6RazorCode = @"
-<BitMenuButton Sticky
+<BitMenuButton Split
+               Text=""Fill""
                Items=""basicCustoms""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
 
-<BitMenuButton Split Sticky
+<BitMenuButton Split
+               Text=""Outline""
                Items=""basicCustoms""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
+
+<BitMenuButton Split
+               Text=""Text""
+               Items=""basicCustoms""
+               Variant=""BitVariant.Text""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"" />";
@@ -387,6 +383,35 @@ private List<MenuActionItem> basicCustoms = new()
 };";
 
     private readonly string example7RazorCode = @"
+<BitMenuButton Sticky
+               Items=""basicCustoms""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })"" />
+
+<BitMenuButton Split Sticky
+               Items=""basicCustoms""
+               Variant=""BitVariant.Outline""
+               NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
+                                        Key = { Name = nameof(MenuActionItem.Id) },
+                                        IconName = { Name = nameof(MenuActionItem.Icon) } })"" />";
+    private readonly string example7CsharpCode = @"
+public class MenuActionItem
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Icon { get; set; }
+    public bool IsEnabled { get; set; } = true;
+}
+
+private List<MenuActionItem> basicCustoms = new()
+{
+    new() { Name = ""Custom A"", Id = ""A"" },
+    new() { Name = ""Custom B"", Id = ""B"" },
+    new() { Name = ""Custom C"", Id = ""C"" }
+};";
+
+    private readonly string example8RazorCode = @"
 <BitMenuButton Text=""IconName""
                Items=""basicIconCustoms""
                IconName=""@BitIconName.Edit""
@@ -398,12 +423,12 @@ private List<MenuActionItem> basicCustoms = new()
                Text=""ChevronDownIcon""
                Items=""basicIconCustoms""
                IconName=""@BitIconName.Add""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                ChevronDownIcon=""@BitIconName.DoubleChevronDown""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
                                         IconName = { Selector = item => item.Icon } })"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 public class MenuActionItem
 {
     public string? Id { get; set; }
@@ -434,7 +459,7 @@ private List<MenuActionItem> basicIconCustoms = new()
     }
 };";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitMenuButton Text=""Customs""
                Items=""itemDisabledCustoms""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
@@ -445,7 +470,7 @@ private List<MenuActionItem> basicIconCustoms = new()
 <BitMenuButton Split
                Text=""Customs""
                Items=""basicCustomsOnClick""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
                                         IconName = { Selector = item => item.Icon } })""
@@ -461,14 +486,14 @@ private List<MenuActionItem> basicIconCustoms = new()
 
 <BitMenuButton Split Sticky
                Items=""itemDisabledCustoms""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
                                         IconName = { Selector = item => item.Icon } })""
                OnClick=""(MenuActionItem item) => exampleSelectedCustom = item?.Id"" />
 
 <div class=""clicked-item"">Clicked custom item: @exampleSelectedCustom</div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class MenuActionItem
 {
     public string? Id { get; set; }
@@ -522,7 +547,7 @@ private List<MenuActionItem> basicCustomsOnClick = new()
     }
 };";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -545,7 +570,7 @@ private List<MenuActionItem> basicCustomsOnClick = new()
 <BitMenuButton Split
                Text=""Customs""
                Items=""itemTemplateCustoms""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                NameSelectors=""@(new() { Text = { Name = nameof(MenuActionItem.Name) },
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) } })"">
@@ -564,7 +589,7 @@ private List<MenuActionItem> basicCustomsOnClick = new()
                                         Key = { Name = nameof(MenuActionItem.Id) },
                                         IconName = { Name = nameof(MenuActionItem.Icon) },
                                         Template = { Name = nameof(MenuActionItem.Fragment)} })"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class MenuActionItem
 {
     public string? Id { get; set; }
@@ -628,7 +653,7 @@ private List<MenuActionItem> itemTemplateCustoms2 = new()
     }
 };";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         color: aqua;
@@ -688,12 +713,12 @@ private List<MenuActionItem> itemTemplateCustoms2 = new()
 <BitMenuButton Text=""Classes""
                Items=""basicCustoms""
                IconName=""@BitIconName.ExpandMenu""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
                                         IconName = { Selector = item => item.Icon } })"" 
                Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 public class MenuActionItem
 {
     public string? Id { get; set; }
@@ -736,7 +761,7 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
     }
 };";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitMenuButton Split Sticky
                Items=""basicCustoms""
                DefaultSelectedItem=""basicCustoms[1]""
@@ -748,7 +773,7 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 <BitMenuButton Sticky
                Items=""basicCustoms""
                @bind-SelectedItem=""twoWaySelectedCustom""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
                                         IconName = { Selector = item => item.Icon } })"" />
@@ -768,11 +793,11 @@ private List<MenuActionItem> itemStyleClassCustoms = new()
 
 <BitMenuButton Sticky
                Items=""isSelectedCustoms""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
                                         IconName = { Selector = item => item.Icon } })"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class MenuActionItem
 {
     public string? Id { get; set; }
@@ -820,7 +845,7 @@ protected override void OnInitialized()
     twoWaySelectedCustom = basicCustoms[2];
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitMenuButton Text=""گزینه ها""
                Dir=""BitDir.Rtl""
                Items=""rtlCustoms""
@@ -834,12 +859,12 @@ protected override void OnInitialized()
                Dir=""BitDir.Rtl""
                Items=""rtlCustoms""
                IconName=""@BitIconName.Add""
-               ButtonStyle=""BitButtonStyle.Standard""
+               Variant=""BitVariant.Outline""
                ChevronDownIcon=""@BitIconName.DoubleChevronDown""
                NameSelectors=""@(new() { Text = { Selector = item => item.Name },
                                         Key = { Selector = item => item.Id },
                                         IconName = { Selector = item => item.Icon } })"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class MenuActionItem
 {
     public string? Id { get; set; }

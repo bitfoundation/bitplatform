@@ -271,21 +271,21 @@ public partial class BitTooltipDemo
 
     private readonly string example1RazorCode = @"
 <BitTooltip Text=""This is the tooltip text"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Hover over me</BitButton>
+    <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
 </BitTooltip>";
 
     private readonly string example2RazorCode = @"
 <BitTooltip DefaultIsShown=""true"" Text=""Text"" Position=""BitTooltipPosition.Top"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Top</BitButton>
+    <BitButton Variant=""BitVariant.Outline"">Top</BitButton>
 </BitTooltip>
 <BitTooltip DefaultIsShown=""true"" Text=""Text"" Position=""BitTooltipPosition.Right"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Right</BitButton>
+    <BitButton Variant=""BitVariant.Outline"">Right</BitButton>
 </BitTooltip>
 <BitTooltip DefaultIsShown=""true"" Text=""Text"" Position=""BitTooltipPosition.Left"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Left</BitButton>
+    <BitButton Variant=""BitVariant.Outline"">Left</BitButton>
 </BitTooltip>
 <BitTooltip DefaultIsShown=""true"" Text=""Text"" Position=""BitTooltipPosition.Bottom"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Bottom</BitButton>
+    <BitButton Variant=""BitVariant.Outline"">Bottom</BitButton>
 </BitTooltip>";
 
     private readonly string example3RazorCode = @"
@@ -326,14 +326,14 @@ public partial class BitTooltipDemo
 
 
 <BitTooltip Text=""This is the tooltip text"" Styles=""@(new() { Tooltip = ""box-shadow: aqua 0 0 0.5rem;"" })"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Hover over me</BitButton>
+    <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
 </BitTooltip>
 
 <BitTooltip Text=""This is the tooltip text""
             Classes=""@(new() { Root = ""custom-root"",
                                Tooltip = ""custom-tooltip"",
                                Arrow = ""custom-arrow"" })"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Hover over me</BitButton>
+    <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
 </BitTooltip>";
 
     private readonly string example4RazorCode = @"
@@ -345,7 +345,7 @@ public partial class BitTooltipDemo
         </ul>
     </Template>
     <Anchor>
-        <BitButton ButtonStyle=""BitButtonStyle.Standard"">Hover over me</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
     </Anchor>
 </BitTooltip>";
 
@@ -358,7 +358,7 @@ public partial class BitTooltipDemo
         </ul>
     </Template>
     <Anchor>
-        <BitButton ButtonStyle=""BitButtonStyle.Standard"">نشانگر ماوس را روی من بیاورید</BitButton>
+        <BitButton Variant=""BitVariant.Outline"">نشانگر ماوس را روی من بیاورید</BitButton>
     </Anchor>
 </BitTooltip>";
 
@@ -370,7 +370,7 @@ public partial class BitTooltipDemo
             ShowOnClick=""showOnClick""
             ShowOnHover=""showOnHover""
             Position=""tooltipPosition"">
-    <BitButton ButtonStyle=""BitButtonStyle.Standard"">Anchor</BitButton>
+    <BitButton Variant=""BitVariant.Outline"">Anchor</BitButton>
 </BitTooltip>
 
 <BitDropdown Label=""Tooltip positions"" Items=""tooltipPositionList"" @bind-Value=""tooltipPosition"" />
