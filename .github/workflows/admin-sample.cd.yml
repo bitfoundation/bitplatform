@@ -54,24 +54,24 @@ jobs:
       with:
         files: 'AdminPanel/src/AdminPanel.Server/appsettings.json'
       env:
-        AppSettings__Email__DefaultFromEmail: no-reply@bitplatform.dev
-        AppSettings__Email__Host: smtp.sendgrid.net
-        AppSettings__Email__Password: ${{ secrets.SEND_GRID_PASSWORD }}
-        AppSettings__Email__Port: 25
-        AppSettings__Email__UserName: apikey
-        AppSettings__Sms__AccountSid: ${{ secrets.TWILIO_ACCOUNT_SID }}
-        AppSettings__Sms__AuthToken: ${{ secrets.TWILIO_AUTH_TOKEN }}
-        AppSettings__Sms__FromPhoneNumber: ${{ secrets.TWILIO_FROM_PHONE_NUMBER }}
-        Authentication__GitHub__ClientId: ${{ secrets.AUTH_GITHUB_CLIENT_ID }}
-        Authentication__GitHub__ClientSecret: ${{ secrets.AUTH_GITHUB_CLIENT_SECRET }}
-        Authentication__Google__ClientId: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
-        Authentication__Google__ClientSecret: ${{ secrets.AUTH_GOOGLE_CLIENT_SECRET }}
-        Authentication__Twitter__ConsumerKey: ${{ secrets.AUTH_TWITTER_CONSUMER_KEY }}
-        Authentication__Twitter__ConsumerSecret: ${{ secrets.AUTH_TWITTER_CONSUMER_SECRET }}
+        AppSettings.Email.DefaultFromEmail: no-reply@bitplatform.dev
+        AppSettings.Email.Host: smtp.sendgrid.net
+        AppSettings.Email.Password: ${{ secrets.SEND_GRID_PASSWORD }}
+        AppSettings.Email.Port: 25
+        AppSettings.Email.UserName: apikey
+        AppSettings.Sms.AccountSid: ${{ secrets.TWILIO_ACCOUNT_SID }}
+        AppSettings.Sms.AuthToken: ${{ secrets.TWILIO_AUTH_TOKEN }}
+        AppSettings.Sms.FromPhoneNumber: ${{ secrets.TWILIO_FROM_PHONE_NUMBER }}
+        Authentication.GitHub.ClientId: ${{ secrets.AUTH_GITHUB_CLIENT_ID }}
+        Authentication.GitHub.ClientSecret: ${{ secrets.AUTH_GITHUB_CLIENT_SECRET }}
+        Authentication.Google.ClientId: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
+        Authentication.Google.ClientSecret: ${{ secrets.AUTH_GOOGLE_CLIENT_SECRET }}
+        Authentication.Twitter.ConsumerKey: ${{ secrets.AUTH_TWITTER_CONSUMER_KEY }}
+        Authentication.Twitter.ConsumerSecret: ${{ secrets.AUTH_TWITTER_CONSUMER_SECRET }}
         DataProtectionCertificatePassword: ${{ secrets.DATA_PROTECTION_CERTIFICATE_PASSWORD }}
-        ForwardedHeaders__ForwardedHostHeaderName: X-HOST # Cloudflare
-        ConnectionStrings__AzureBlobStorageSasUrl: ${{ secrets.AZURE_BLOB_STORAGE_SAS_URL }}
-        ConnectionStrings__PostgreSQLConnectionString: ${{ secrets.POSTGRES_SQL_CONNECTION_STRING }}
+        ForwardedHeaders.ForwardedHostHeaderName: X-HOST # Cloudflare
+        ConnectionStrings.AzureBlobStorageSasUrl: ${{ secrets.AZURE_BLOB_STORAGE_SAS_URL }}
+        ConnectionStrings.PostgreSQLConnectionString: ${{ secrets.POSTGRES_SQL_CONNECTION_STRING }}
 
     - uses: actions/setup-node@v4
       with:
