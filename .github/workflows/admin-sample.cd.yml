@@ -52,7 +52,7 @@ jobs:
     - name: Update server appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'AdminPanel/src/AdminPanel.Server/appsettings.Production.json, AdminPanel/src/AdminPanel.Server/appsettings.json'
+        files: 'AdminPanel/src/AdminPanel.Server/appsettings.json'
       env:
         AppSettings__Email__DefaultFromEmail: no-reply@bitplatform.dev
         AppSettings__Email__Host: smtp.sendgrid.net
@@ -69,7 +69,6 @@ jobs:
         Authentication__Twitter__ConsumerKey: ${{ secrets.AUTH_TWITTER_CONSUMER_KEY }}
         Authentication__Twitter__ConsumerSecret: ${{ secrets.AUTH_TWITTER_CONSUMER_SECRET }}
         DataProtectionCertificatePassword: ${{ secrets.DATA_PROTECTION_CERTIFICATE_PASSWORD }}
-        ForwardedHeaders__AllowedHosts: adminpanel.bitplatform.dev
         ForwardedHeaders__ForwardedHostHeaderName: X-HOST # Cloudflare
         ConnectionStrings__AzureBlobStorageSasUrl: ${{ secrets.AZURE_BLOB_STORAGE_SAS_URL }}
         ConnectionStrings__PostgreSQLConnectionString: ${{ secrets.POSTGRES_SQL_CONNECTION_STRING }}

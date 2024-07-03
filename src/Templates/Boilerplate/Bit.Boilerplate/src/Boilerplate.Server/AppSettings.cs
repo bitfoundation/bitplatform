@@ -79,10 +79,10 @@ public class EmailSettings
 public class SmsSettings
 {
     public string? FromPhoneNumber { get; set; }
-    public string? AccountSid { get; set; }
-    public string? AuthToken { get; set; }
+    public string? TwilioAccountSid { get; set; }
+    public string? TwilioAutoToken { get; set; }
 
     public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
-                              string.IsNullOrEmpty(AccountSid) is false &&
-                              string.IsNullOrEmpty(AuthToken) is false;
+                              string.IsNullOrEmpty(TwilioAccountSid) is false &&
+                              string.IsNullOrEmpty(TwilioAutoToken) is false;
 }
