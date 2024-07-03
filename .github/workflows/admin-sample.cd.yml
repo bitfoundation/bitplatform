@@ -52,7 +52,7 @@ jobs:
     - name: Update server appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'AdminPanel/src/AdminPanel.Server/appsettings.Production.json'
+        files: 'AdminPanel/src/AdminPanel.Server/appsettings.Production.json, AdminPanel/src/AdminPanel.Server/appsettings.json'
       env:
         AppSettings__Email__DefaultFromEmail: no-reply@bitplatform.dev
         AppSettings__Email__Host: smtp.sendgrid.net
@@ -182,7 +182,7 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --appCenter --serverUrl adminpanel.bitplatform.dev --filesStorage AzureBlobStorage
   
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json'

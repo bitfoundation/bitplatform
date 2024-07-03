@@ -56,7 +56,7 @@ jobs:
     - name: Update server appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/TodoSample.Server/appsettings.Production.json'
+        files: 'TodoSample/src/TodoSample.Server/appsettings.Production.json, TodoSample/src/TodoSample.Server/appsettings.json'
       env:
         AppSettings__Email__DefaultFromEmail: no-reply@bitplatform.dev
         AppSettings__Email__Host: smtp.sendgrid.net
@@ -193,7 +193,7 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --appCenter --serverUrl todo.bitplatform.dev --filesStorage AzureBlobStorage
   
-    - name: Update appsettings.json api server address
+    - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json'
