@@ -4,6 +4,7 @@ name: Admin Sample CD
 
 env:
   API_SERVER_ADDRESS: 'https://adminpanel-test.bitplatform.dev'
+  APP_SERVICE_NAME: 'bit-adminpanel'
 
 on:
   workflow_dispatch:
@@ -44,30 +45,6 @@ jobs:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-    - name: Update server appsettings.json
-      uses: devops-actions/variable-substitution@v1.2 
-      with:
-        files: 'AdminPanel/src/AdminPanel.Server/appsettings.json'
-      env:
-        AppSettings.Email.DefaultFromEmail: no-reply@bitplatform.dev
-        AppSettings.Email.Host: smtp.sendgrid.net
-        AppSettings.Email.Password: ${{ secrets.SEND_GRID_PASSWORD }}
-        AppSettings.Email.Port: 25
-        AppSettings.Email.UserName: apikey
-        AppSettings.Sms.AccountSid: ${{ secrets.TWILIO_ACCOUNT_SID }}
-        AppSettings.Sms.AuthToken: ${{ secrets.TWILIO_AUTH_TOKEN }}
-        AppSettings.Sms.FromPhoneNumber: ${{ secrets.TWILIO_FROM_PHONE_NUMBER }}
-        Authentication.GitHub.ClientId: ${{ secrets.AUTH_GITHUB_CLIENT_ID }}
-        Authentication.GitHub.ClientSecret: ${{ secrets.AUTH_GITHUB_CLIENT_SECRET }}
-        Authentication.Google.ClientId: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
-        Authentication.Google.ClientSecret: ${{ secrets.AUTH_GOOGLE_CLIENT_SECRET }}
-        Authentication.Twitter.ConsumerKey: ${{ secrets.AUTH_TWITTER_CONSUMER_KEY }}
-        Authentication.Twitter.ConsumerSecret: ${{ secrets.AUTH_TWITTER_CONSUMER_SECRET }}
-        DataProtectionCertificatePassword: ${{ secrets.DATA_PROTECTION_CERTIFICATE_PASSWORD }}
-        ForwardedHeaders.ForwardedHostHeaderName: X-HOST # Cloudflare
-        ConnectionStrings.AzureBlobStorageSasUrl: ${{ secrets.AZURE_BLOB_STORAGE_SAS_URL }}
-        ConnectionStrings.PostgreSQLConnectionString: ${{ secrets.POSTGRES_SQL_CONNECTION_STRING }}
-
     - uses: actions/setup-node@v4
       with:
         node-version: 20
@@ -86,32 +63,14 @@ jobs:
       
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.azure_SPN }}
-
-    - name: Login to azure container registry
-      run: az acr login --name ${{ env.CONTAINER_REGISTRY_NAME }}
-
-    - name: Delete DataProtectionCertificate.pfx
-      run: |
-          rm AdminPanel/src/AdminPanel.Server/DataProtectionCertificate.pfx
-
-    - name: Extract identity certificate from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: './AdminPanel/src/AdminPanel.Server/'
-          fileName: 'DataProtectionCertificate.pfx'
-          encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
-
     - name: Publish
-      run: dotnet publish AdminPanel/src/AdminPanel.Server/AdminPanel.Server.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true -r linux-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:PublishProfile=DefaultContainer -p:ContainerImageTag=${{ github.sha }} -p:ContainerRegistry=${{ env.CONTAINER_REGISTRY_URL }}
+      run: dotnet publish AdminPanel/src/AdminPanel.Server/AdminPanel.Server.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
-    - name: azure logout
-      run: >
-        az logout
+    - name: Upload server artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-bundle
+        path: ${{env.DOTNET_ROOT}}/server
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -123,22 +82,30 @@ jobs:
 
     steps:
 
-      - name: Azure Login
-        uses: azure/login@v2
+      - name: Retrieve server bundle
+        uses: actions/download-artifact@v4
         with:
-          creds: ${{ secrets.azure_SPN }}
+          name: server-bundle
 
-      - name: Publish to Azure Containers app
-        run: >
-          az containerapp update --name ${{ env.CONTAINER_APP_NAME }} --container-name ${{ env.CONTAINER_APP_NAME }} --resource-group ${{ env.CONTAINER_RESOURCE_GROUP }} --image ${{ env.CONTAINER_REGISTRY_URL }}/${{ env.PROJECT_NAME_FOR_DOCKER }}:${{ github.sha }}
+      - name: Delete DataProtectionCertificate.pfx
+        run: |
+            rm DataProtectionCertificate.pfx
 
-      - name: Run Az PowerShell Script Against AzureStack
-        uses: azure/powershell@v2
+      - name: Extract identity certificate from env
+        uses: timheuer/base64-to-file@v1.2
         with:
-          azPSVersion: "latest"
-          inlineScript: |
-            Stop-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }} -SubscriptionId ${{ secrets.SUBSCRIPTION_ID }}
-            Start-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }} -SubscriptionId ${{ secrets.SUBSCRIPTION_ID }}
+            fileDir: './'
+            fileName: 'DataProtectionCertificate.pfx'
+            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_SERVICE_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.ADMINPANEL_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .
 
       - name: Purge cache
         uses: jakejarvis/cloudflare-purge-action@v0.3.0
