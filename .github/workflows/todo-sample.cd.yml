@@ -4,6 +4,11 @@ name: Todo Sample CD
 
 env:
   API_SERVER_ADDRESS: 'https://todo.bitplatform.dev/'
+  CONTAINER_REGISTRY_URL: 'bitplatform.azurecr.io'
+  CONTAINER_REGISTRY_NAME: 'bitplatform'
+  CONTAINER_APP_NAME: 'todo'
+  CONTAINER_RESOURCE_GROUP: 'bit-arc-rg'
+  PROJECT_NAME_FOR_DOCKER: todo-server
 
 on:
   workflow_dispatch:
@@ -62,14 +67,31 @@ jobs:
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
-    - name: Publish
-      run: dotnet publish TodoSample/src/TodoSample.Server/TodoSample.Server.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-
-    - name: Upload server artifact
-      uses: actions/upload-artifact@v4
+    - name: Azure Login
+      uses: azure/login@v2
       with:
-        name: server-bundle
-        path: ${{env.DOTNET_ROOT}}/server
+        creds: ${{ secrets.azure_SPN }}
+
+    - name: Login to azure container registry
+      run: az acr login --name ${{ env.CONTAINER_REGISTRY_NAME }}
+
+    - name: Delete DataProtectionCertificate.pfx
+      run: |
+          rm DataProtectionCertificate.pfx
+
+    - name: Extract identity certificate from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './'
+          fileName: 'DataProtectionCertificate.pfx'
+          encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+
+    - name: Publish
+      run: dotnet publish TodoSample/src/TodoSample.Server/TodoSample.Server.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:PublishProfile=DefaultContainer -p:ContainerImageTag=${{ github.sha }} -p:ContainerRegistry=${{ env.CONTAINER_REGISTRY_URL }}
+
+    - name: azure logout
+      run: >
+        az logout
 
     - name: Changes for static-todo.bitplatform.dev - Part 2
       run:  sed -i 's/public static readonly bool PrerenderEnabled = true;/public static readonly bool PrerenderEnabled = false;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
@@ -98,30 +120,22 @@ jobs:
 
     steps:
 
-      - name: Retrieve server bundle
-        uses: actions/download-artifact@v4
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          name: server-bundle
+          creds: ${{ secrets.azure_SPN }}
 
-      - name: Delete DataProtectionCertificate.pfx
-        run: |
-            rm DataProtectionCertificate.pfx
+      - name: Publish to Azure Containers app
+        run: >
+          az containerapp update --name ${{ env.CONTAINER_APP_NAME }} --container-name ${{ env.CONTAINER_APP_NAME }} --resource-group ${{ env.CONTAINER_RESOURCE_GROUP }} --image ${{ env.CONTAINER_REGISTRY_URL }}/${{ env.PROJECT_NAME_FOR_DOCKER }}:${{ github.sha }}
 
-      - name: Extract identity certificate from env
-        uses: timheuer/base64-to-file@v1.2
+      - name: Run Az PowerShell Script Against AzureStack
+        uses: azure/powershell@v2
         with:
-            fileDir: './'
-            fileName: 'DataProtectionCertificate.pfx'
-            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'bit-todo'
-          slot-name: 'production'
-          publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-          package: .
+          azPSVersion: "latest"
+          inlineScript: |
+          Stop-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }}
+          Start-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }}
 
       - name: Purge cache
         uses: jakejarvis/cloudflare-purge-action@v0.3.0
