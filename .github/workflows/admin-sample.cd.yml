@@ -4,11 +4,6 @@ name: Admin Sample CD
 
 env:
   API_SERVER_ADDRESS: 'https://adminpanel-test.bitplatform.dev'
-  CONTAINER_REGISTRY_URL: 'bitplatform.azurecr.io'
-  CONTAINER_REGISTRY_NAME: 'bitplatform'
-  CONTAINER_APP_NAME: 'adminpanel'
-  CONTAINER_RESOURCE_GROUP: 'bit-arc-rg'
-  PROJECT_NAME_FOR_DOCKER: adminpanel-server
 
 on:
   workflow_dispatch:
