@@ -1,7 +1,4 @@
-﻿@import '../../../Styles/abstracts/_functions.scss';
-@import '../../../Styles/abstracts/_bit-css-variables.scss';
-
-::deep {
+﻿::deep {
     .custom-item {
         color: red;
         margin: 2px 5px;
