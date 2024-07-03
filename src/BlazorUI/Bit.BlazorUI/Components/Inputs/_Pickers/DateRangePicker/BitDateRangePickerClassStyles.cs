@@ -238,14 +238,14 @@ public class BitDateRangePickerClassStyles
     public string? EndTimeHourInput { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time's divider of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the start time's hour/minute separator of the BitDateRangePicker.
     /// </summary>
-    public string? StartTimeDivider { get; set; }
+    public string? StartTimeHourMinuteSeparator { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the end time's divider of the BitDateRangePicker.
+    /// Custom CSS classes/styles for the end time's hour/minute separator of the BitDateRangePicker.
     /// </summary>
-    public string? EndTimeDivider { get; set; }
+    public string? EndTimeHourMinuteSeparator { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the start time's minute input of the BitDateRangePicker.
