@@ -134,8 +134,8 @@ jobs:
         with:
           azPSVersion: "latest"
           inlineScript: |
-          Stop-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }}
-          Start-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }}
+            Stop-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }}
+            Start-AzContainerApp -Name ${{ env.CONTAINER_APP_NAME }} -ResourceGroupName ${{ env.CONTAINER_RESOURCE_GROUP }}
 
       - name: Purge cache
         uses: jakejarvis/cloudflare-purge-action@v0.3.0
