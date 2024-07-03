@@ -108,25 +108,30 @@ public partial class BitIconDemo
     private readonly string example1RazorCode = @"
 <BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" />
 <BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" />
-<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" />";
+<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" />
+
+<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" IsEnabled=""false"" />
+<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" IsEnabled=""false"" />
+<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
 <style>
     .icon-class {
+        color: #0081ef;
         font-size: 3rem;
         margin: 1rem 2rem;
     }
 </style>
+
 <BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" Class=""icon-class"" />
 <BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" Class=""icon-class"" />
-<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Class=""icon-class"" />";
+<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Class=""icon-class"" />
+
+<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" Style=""font-size: 3rem; margin: 1rem 2rem; color: red;"" />
+<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" Style=""font-size: 3rem; margin: 1rem 2rem; color: green;"" />
+<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 3rem; margin: 1rem 2rem; color: mediumpurple;"" />";
 
     private readonly string example3RazorCode = @"
-<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" Style=""font-size: 2rem; margin: 1rem 2rem; color: red;"" />
-<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" Style=""font-size: 2rem; margin: 1rem 2rem; color: green;"" />
-<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;"" />";
-
-    private readonly string example4RazorCode = @"
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Pinned"" />
@@ -139,7 +144,7 @@ public partial class BitIconDemo
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Accept"" />
 <BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Bus"" />
 <BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Pinned"" />

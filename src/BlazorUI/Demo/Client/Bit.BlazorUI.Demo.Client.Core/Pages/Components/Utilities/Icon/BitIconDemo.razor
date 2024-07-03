@@ -10,38 +10,46 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <div class="example-desc">To create an Icon you can use a BitIcon component.</div>
+            <div>To create an Icon you can use a BitIcon component.</div>
             <div>
                 <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" />
                 &nbsp;
                 <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" />
                 &nbsp;
                 <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" />
+
+                <br /><br />
+
+                <div>Disabled:</div>
+                <br />
+                <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" IsEnabled="false" />
+                &nbsp;
+                <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" IsEnabled="false" />
+                &nbsp;
+                <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" IsEnabled="false" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="CSS Class" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div>
                 <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" Class="icon-class" />
                 <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" Class="icon-class" />
                 <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" Class="icon-class" />
             </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
 
-    <ComponentExampleBox Title="CSS Style" RazorCode="@example3RazorCode" Id="example3">
-        <ExamplePreview>
+            <br /><br />
+
             <div>
-                <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" Style="font-size: 2rem; margin: 1rem 2rem; color: red;" />
-                <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" Style="font-size: 2rem; margin: 1rem 2rem; color: green;" />
-                <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" Style="font-size: 2rem; margin: 1rem 2rem; color: mediumpurple;" />
+                <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" Style="font-size: 3rem; margin: 1rem 2rem; color: red;" />
+                <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" Style="font-size: 3rem; margin: 1rem 2rem; color: green;" />
+                <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" Style="font-size: 3rem; margin: 1rem 2rem; color: mediumpurple;" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Size" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
                 <div>Small:</div>
@@ -75,7 +83,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Severity" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Severity" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>
                 Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
