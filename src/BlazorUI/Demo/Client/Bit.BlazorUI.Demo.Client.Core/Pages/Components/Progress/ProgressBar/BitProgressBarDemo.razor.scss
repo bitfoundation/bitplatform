@@ -1,12 +1,9 @@
-﻿@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_functions.scss';
-
-::deep {
+﻿::deep {
     .custom-class {
-        background-color: darkred;
-        border-radius: 0.5rem;
         padding: 0.2rem;
         margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        background-color: darkred;
     }
 
     .custom-track {

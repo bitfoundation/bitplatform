@@ -1,5 +1,4 @@
 ﻿@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../Styles/abstracts/_functions.scss';
 
 .example-content {
@@ -10,10 +9,10 @@
 }
 
 .validation-summary {
-    border-left: rem2(5px) solid $Red10;
-    background-color: $ErrorBlockRed;
     overflow: hidden;
     margin-bottom: rem2(10px);
+    background-color: $ErrorBlockRed;
+    border-left: rem2(5px) solid $Red10;
 }
 
 ::deep {

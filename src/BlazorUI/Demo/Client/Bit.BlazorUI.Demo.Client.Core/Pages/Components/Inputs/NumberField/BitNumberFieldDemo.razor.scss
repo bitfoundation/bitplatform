@@ -1,6 +1,4 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
 
 .example-box {
     display: flex;
@@ -16,11 +14,11 @@
     }
 
     .custom-input {
+        height: 3rem;
+        padding: 1rem;
+        font-size: 1rem;
         color: darkgreen;
         font-weight: 900;
-        font-size: 1rem;
-        padding: 1rem;
-        height: 3rem;
     }
 
     .custom-input-wrapper {

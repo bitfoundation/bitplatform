@@ -1,28 +1,28 @@
 ﻿.browse-file {
-    border: 1px solid #D2D2D7;
-    border-radius: 2px;
-    padding: 24px;
+    gap: 50px;
     width: 420px;
     height: 200px;
+    padding: 24px;
     display: flex;
+    cursor: pointer;
+    border-radius: 2px;
+    align-items: center;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    gap: 50px;
-    cursor: pointer;
+    border: 1px solid #D2D2D7;
 }
 
 .browse-file-header {
     display: flex;
+    font-size: 16px;
+    align-items: center;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    font-size: 16px;
 
     i {
+        color: #0072CE;
         font-size: 24px;
         font-weight: 700;
-        color: #0072CE;
     }
 
     strong {
@@ -32,21 +32,21 @@
 
 .browse-file-footer {
     display: flex;
+    color: #78787D;
+    font-size: 12px;
+    align-items: center;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    font-size: 12px;
-    color: #78787D;
 }
 
 .file-list {
-    border: 1px solid #D2D2D7;
-    border-radius: 2px;
-    padding: 24px;
     width: 420px;
+    padding: 24px;
     height: 200px;
     display: flex;
+    border-radius: 2px;
     flex-direction: column;
+    border: 1px solid #D2D2D7;
     justify-content: space-between;
 }
 
@@ -61,9 +61,9 @@
 }
 
 .file-info-title {
+    display: flex;
     color: #5A5A5F;
     line-height: 22px;
-    display: flex;
     justify-content: space-between;
 }
 
@@ -72,14 +72,14 @@
 }
 
 .file-info-ico {
-    border: 1px solid #F3F3F8;
-    border-radius: 2px;
-    background-color: #F3F3F8;
     width: 80px;
     height: 80px;
     display: flex;
-    justify-content: center;
+    border-radius: 2px;
     align-items: center;
+    justify-content: center;
+    border: 1px solid #F3F3F8;
+    background-color: #F3F3F8;
 
     i {
         font-size: 24px;
@@ -91,9 +91,9 @@
 }
 
 .file-info-btns {
+    gap: 8px;
     display: flex;
     justify-content: space-between;
-    gap: 8px;
 
     i {
         display: block;
@@ -111,29 +111,29 @@
 
 .file-info-progressbar-container {
     width: 100%;
-    overflow: hidden;
     height: 2px;
+    overflow: hidden;
     margin-top: 24px;
     background-color: #D9D9D9;
 }
 
 .file-info-progressbar {
     height: 2px;
-    transition: width 0.15s linear 0s;
     background-color: #0072CE;
+    transition: width 0.15s linear 0s;
 }
 
 .file-info-s-msg {
-    margin-top: 12px;
     color: #5EB227;
+    margin-top: 12px;
 }
 
 .file-info-e-msg {
-    margin-top: 12px;
     color: #F9423A;
+    margin-top: 12px;
 }
 
 .file-list-footer {
-    font-size: 12px;
     color: #78787D;
+    font-size: 12px;
 }

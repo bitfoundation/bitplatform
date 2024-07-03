@@ -2,11 +2,11 @@
 @import '../../../../Styles/abstracts/_functions.scss';
 
 .number {
-    position: absolute;
+    color: $Gray3;
     top: rem2(12px);
+    position: absolute;
     padding: rem2(12px);
     font-size: rem2(12px);
-    color: $Gray3;
 }
 
 .image {
@@ -15,21 +15,21 @@
 }
 
 .text-title {
-    position: absolute;
-    bottom: rem2(55px);
     width: 100%;
-    font-size: rem2(15px);
-    text-align: center;
     color: $White;
+    bottom: rem2(55px);
+    position: absolute;
+    text-align: center;
+    font-size: rem2(15px);
 }
 
 .text-description {
-    position: absolute;
-    bottom: rem2(30px);
     width: 100%;
-    font-size: rem2(11px);
-    text-align: center;
     color: $White;
+    bottom: rem2(30px);
+    position: absolute;
+    text-align: center;
+    font-size: rem2(11px);
 }
 
 .buttons-container {
@@ -47,8 +47,8 @@
 }
 
 ::deep .item {
-    text-align: center;
     color: black;
+    text-align: center;
     border: 1px solid blue;
     background-color: lightblue;
 
