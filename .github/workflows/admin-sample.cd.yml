@@ -76,16 +76,16 @@ jobs:
     - name: Login to azure container registry
       run: az acr login --name ${{ env.CONTAINER_REGISTRY_NAME }}
 
-    - name: Delete DataProtectionCertificate.pfx
-      run: |
-          rm AdminPanel/src/AdminPanel.Server/DataProtectionCertificate.pfx
+    # - name: Delete DataProtectionCertificate.pfx
+    #   run: |
+    #       rm AdminPanel/src/AdminPanel.Server/DataProtectionCertificate.pfx
 
-    - name: Extract identity certificate from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: './AdminPanel/src/AdminPanel.Server/'
-          fileName: 'DataProtectionCertificate.pfx'
-          encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+    # - name: Extract identity certificate from env
+    #   uses: timheuer/base64-to-file@v1.2
+    #   with:
+    #       fileDir: './AdminPanel/src/AdminPanel.Server/'
+    #       fileName: 'DataProtectionCertificate.pfx'
+    #       encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
 
     - name: Publish
       run: dotnet publish AdminPanel/src/AdminPanel.Server/AdminPanel.Server.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true -r linux-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:PublishProfile=DefaultContainer -p:ContainerImageTag=${{ github.sha }} -p:ContainerRegistry=${{ env.CONTAINER_REGISTRY_URL }}
