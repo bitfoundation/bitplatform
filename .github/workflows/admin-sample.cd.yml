@@ -52,7 +52,7 @@ jobs:
     - name: Update server appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'AdminPanel/src/Server/AdminPanel.Server/appsettings.Production.json'
+        files: 'AdminPanel/src/AdminPanel.Server/appsettings.Production.json'
       env:
         AppSettings__Email__DefaultFromEmail: no-reply@bitplatform.dev
         AppSettings__Email__Host: smtp.sendgrid.net
