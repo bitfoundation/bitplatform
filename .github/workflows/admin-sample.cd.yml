@@ -113,10 +113,6 @@ jobs:
           CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
-      - name: azure logout
-        run: >
-          az logout
-
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-2022

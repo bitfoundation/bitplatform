@@ -7,7 +7,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "dotnetRunMessages": true,
-            "applicationUrl": "http://localhost:8080"
+            "applicationUrl": "http://localhost:5030"
         },
         //#if (api == true)
         "Boilerplate.Server-Swagger": {
@@ -18,7 +18,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "dotnetRunMessages": true,
-            "applicationUrl": "http://localhost:8080"
+            "applicationUrl": "http://localhost:5030"
         },
         //#endif
         "Boilerplate.Server-BlazorWebAssembly": {
@@ -29,15 +29,15 @@
             },
             "dotnetRunMessages": true,
             "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-            "applicationUrl": "http://localhost:8080"
+            "applicationUrl": "http://localhost:5030"
         },
         "WSL": {
             "commandName": "WSL2",
             "launchBrowser": true,
-            "launchUrl": "http://localhost:8080/",
+            "launchUrl": "http://localhost:5030/",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8080"
+                "ASPNETCORE_URLS": "http://localhost:5030"
             }
         },
         "Docker": {
@@ -46,12 +46,12 @@
             "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/",
             "DockerfileRunArguments": "-v C:\\DockerVolumes\\AC87AA5B-4B37-4E52-8468-2D5DF24AF256:/container_volume",
             "environmentVariables": {
-                "ASPNETCORE_HTTP_PORTS": "8080",
+                "ASPNETCORE_HTTP_PORTS": "5030",
                 "ConnectionStrings__SqliteConnectionString": "Data Source=/container_volume/App_Data/BoilerplateDb.db;"
             },
             "publishAllPorts": true,
             "useSSL": false,
-            "httpPort": 8080
+            "httpPort": 5030
         }
     },
     "$schema": "http://json.schemastore.org/launchsettings.json"

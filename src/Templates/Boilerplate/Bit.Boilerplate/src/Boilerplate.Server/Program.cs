@@ -12,7 +12,7 @@ public static partial class Program
         // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
         if (BuildConfiguration.IsDebug() && OperatingSystem.IsWindows())
         {
-            builder.WebHost.UseUrls("http://localhost:8080", "http://*:8080");
+            builder.WebHost.UseUrls("http://localhost:5030", "http://*:5030");
         }
 
         builder.ConfigureServices();
