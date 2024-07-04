@@ -11,7 +11,7 @@ public class BitLabelTests : BunitTestContext
     {
         var component = RenderComponent<BitLabel>();
 
-        component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+        component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl""></label>");
     }
 
     [DataTestMethod,
@@ -27,7 +27,7 @@ public class BitLabelTests : BunitTestContext
 
         var cssClass = isEnabled ? "bit-lbl" : "bit-lbl bit-dis";
 
-        component.MarkupMatches(@$"<label id:regex="".+"" class=""{cssClass}""></label>");
+        component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""{cssClass}""></label>");
     }
 
     [DataTestMethod,
@@ -43,7 +43,7 @@ public class BitLabelTests : BunitTestContext
 
         var cssClass = required ? "bit-lbl bit-lbl-req" : "bit-lbl";
 
-        component.MarkupMatches(@$"<label id:regex="".+"" class=""{cssClass}""></label>");
+        component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""{cssClass}""></label>");
     }
 
     [DataTestMethod,
@@ -60,11 +60,11 @@ public class BitLabelTests : BunitTestContext
 
         if (style.HasNoValue())
         {
-            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+            component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl""></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label id:regex="".+"" class=""bit-lbl"" style=""{style}""></label>");
+            component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl"" style=""{style}""></label>");
         }
     }
 
@@ -81,7 +81,7 @@ public class BitLabelTests : BunitTestContext
 
         var cssClass = @class.HasValue() ? $"bit-lbl {@class}" : "bit-lbl";
 
-        component.MarkupMatches(@$"<label id:regex="".+"" class=""{cssClass}""></label>");
+        component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""{cssClass}""></label>");
     }
 
     [DataTestMethod,
@@ -111,14 +111,13 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.For, @for);
         });
 
-
         if (@for.HasNoValue())
         {
-            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+            component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl""></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label id:regex="".+"" class=""bit-lbl"" for=""{@for}""></label>");
+            component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl"" for=""{@for}""></label>");
         }
     }
 
@@ -138,11 +137,11 @@ public class BitLabelTests : BunitTestContext
         if (dir.HasValue)
         {
             var cssClass = dir is BitDir.Rtl ? "bit-lbl bit-rtl" : "bit-lbl";
-            component.MarkupMatches(@$"<label id:regex="".+"" class=""{cssClass}"" dir=""{dir.Value.ToString().ToLower()}""></label>");
+            component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""{cssClass}"" dir=""{dir.Value.ToString().ToLower()}""></label>");
         }
         else
         {
-            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+            component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl""></label>");
         }
     }
 
@@ -161,13 +160,13 @@ public class BitLabelTests : BunitTestContext
         switch (visibility)
         {
             case BitVisibility.Visible:
-                component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+                component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl""></label>");
                 break;
             case BitVisibility.Hidden:
-                component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl"" style=""visibility: hidden;""></label>");
+                component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl"" style=""visibility: hidden;""></label>");
                 break;
             case BitVisibility.Collapsed:
-                component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl"" style=""display: none;""></label>");
+                component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl"" style=""display: none;""></label>");
                 break;
         }
     }
@@ -184,7 +183,7 @@ public class BitLabelTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        component.MarkupMatches(@$"<label id:regex="".+"" class=""bit-lbl"">{childContent}</label>");
+        component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl"">{childContent}</label>");
     }
 
     [DataTestMethod,
@@ -200,11 +199,11 @@ public class BitLabelTests : BunitTestContext
 
         if (ariaLabel.HasValue())
         {
-            component.MarkupMatches(@$"<label id:regex="".+"" class=""bit-lbl"" aria-label=""{ariaLabel}""></label>");
+            component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl"" aria-label=""{ariaLabel}""></label>");
         }
         else
         {
-            component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+            component.MarkupMatches(@$"<label id:regex=""{IdRegexPattern}"" class=""bit-lbl""></label>");
         }
     }
 
@@ -213,6 +212,6 @@ public class BitLabelTests : BunitTestContext
     {
         var component = RenderComponent<BitLabelHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<label data-val-test=""bit"" id:regex="".+"" class=""bit-lbl"">I'm a label</label>");
+        component.MarkupMatches(@$"<label data-val-test=""bit"" id:regex=""{IdRegexPattern}"" class=""bit-lbl"">I'm a label</label>");
     }
 }
