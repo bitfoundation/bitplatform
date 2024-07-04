@@ -14,7 +14,11 @@
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
             <div class="example-box">
-                <BitNumberField Label="Basic" TValue="int?" />
+                <BitNumberField Label="Basic" Min="-1" />
+                <BitNumberField Label="Basic" TValue="double?" Step="0.2" />
+                <BitNumberField Label="Basic" TValue="decimal?" Step="0.2M" />
+                <BitNumberField Label="Basic" TValue="float?" Step="0.2F" />
+                <BitNumberField Label="Basic" TValue="long?" />
                 <br />
                 <BitNumberField Label="Disabled & DefaultValue" DefaultValue="1363" IsEnabled="false" />
                 <br />

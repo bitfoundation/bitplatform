@@ -14,8 +14,8 @@
             {
                 <i style="@Styles?.Icon"
                    class="bit-nfl-lic bit-icon bit-icon--@IconName @Classes?.Icon"
+                   role="@(IconAriaLabel.HasValue() ? "img" : null)"
                    aria-hidden="true"
-                   role="@GetIconRole"
                    aria-label="@IconAriaLabel" />
             }
 
@@ -27,19 +27,19 @@
             }
             else if (Label.HasValue())
             {
-                <label style="@Styles?.Label"
-                       class="bit-nfl-lbl @Classes?.Label"
-                       id="@_labelId"
-                       for="@_inputId">
+                <label id="@_labelId"
+                       for="@_inputId"
+                       style="@Styles?.Label"
+                       class="bit-nfl-lbl @Classes?.Label">
                     @Label
                 </label>
             }
         </div>
     }
 
-    <div style="@Styles?.InputWrapper"
+    <div title="@Title"
+         style="@Styles?.InputWrapper"
          class="bit-nfl-wrp @Classes?.InputWrapper"
-         title="@Title"
          aria-label="@AriaLabel"
          aria-setsize="@AriaSetSize"
          aria-posinset="@AriaPositionInSet">
@@ -65,14 +65,14 @@
                @onchange="HandleOnStringValueChangeAsync"
                @oninput="HandleOnStringValueInputAsync"
                form=""
+               min="@_min"
+               max="@_max"
                name="@Name"
+               step="@_step"
                id="@_inputId"
                autocomplete="off"
-               min="@_internalMin"
-               max="@_internalMax"
                readonly="@ReadOnly"
                required="@Required"
-               step="@_internalStep"
                style="@Styles?.Input"
                placeholder="@Placeholder"
                aria-labelledby="@_labelId"
@@ -80,11 +80,11 @@
                disabled="@(IsEnabled is false)"
                class="bit-nfl-inp @Classes?.Input"
                type="@(NumberFormat.HasValue() ? "text" : "number")"
-               aria-valuemin="@_internalMin"
-               aria-valuemax="@_internalMax"
-               aria-valuenow="@GetAriaValueNow"
-               aria-valuetext="@GetAriaValueText"
+               aria-valuemin="@_min"
+               aria-valuemax="@_max"
                aria-describedby="@AriaDescription"
+               aria-valuenow="@(AriaValueNow ?? CurrentValue)"
+               aria-valuetext="@(AriaValueText ?? CurrentValueAsString)"
                aria-disabled="@(IsEnabled is false)" />
         @if (ShowButtons)
         {

@@ -6,40 +6,34 @@ namespace Bit.BlazorUI;
 
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
-    private const int INITIAL_STEP_DELAY = 400;
     private const int STEP_DELAY = 75;
+    private const int INITIAL_STEP_DELAY = 400;
 
-    private TValue? min;
-    private TValue? max;
-    private TValue? step;
     private bool inlineLabel;
 
-    private double? _internalMin;
-    private double? _internalMax;
-    private double _internalStep = 1;
+    private bool _hasFocus;
+    private TValue _min = default!;
+    private TValue _max = default!;
+    private TValue _step = default!;
     private readonly string _labelId;
     private readonly string _inputId;
+    private readonly Type _typeOfValue;
+    private readonly TValue _defaultStep;
+    private readonly TValue _defaultValue;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
-    private readonly Type _typeOfValue;
-    private readonly bool _isNullableType;
-    private bool _hasFocus;
-    private readonly bool _isDecimals;
-    private readonly double _minGenericValue;
-    private readonly double _maxGenericValue;
     private CancellationTokenSource _continuousChangeValueCts = new();
 
 
 
     public BitNumberField()
     {
+        BindConverter.TryConvertTo("0", CultureInfo.InvariantCulture, out _defaultValue!);
+        BindConverter.TryConvertTo("1", CultureInfo.InvariantCulture, out _defaultStep!);
+
         _typeOfValue = typeof(TValue);
-        _isNullableType = Nullable.GetUnderlyingType(_typeOfValue) is not null;
         _typeOfValue = Nullable.GetUnderlyingType(_typeOfValue) ?? _typeOfValue;
 
-        _isDecimals = _typeOfValue == typeof(float) || _typeOfValue == typeof(double) || _typeOfValue == typeof(decimal);
-        _minGenericValue = GetMinValue();
-        _maxGenericValue = GetMaxValue();
         _inputId = $"BitNumberField-{UniqueId}-input";
         _labelId = $"BitNumberField-{UniqueId}-label";
     }
@@ -146,29 +140,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Min value of the number field. If not provided, the number field has minimum value.
     /// </summary>
     [Parameter]
-    public TValue? Min
-    {
-        get => min;
-        set
-        {
-            min = value;
-            _internalMin = ConvertToDouble(value);
-        }
-    }
+    public TValue? Min { get; set; }
 
     /// <summary>
     /// Max value of the number field. If not provided, the number field has max value.
     /// </summary>
     [Parameter]
-    public TValue? Max
-    {
-        get => max;
-        set
-        {
-            max = value;
-            _internalMax = ConvertToDouble(value);
-        }
-    }
+    public TValue? Max { get; set; }
 
     /// <summary>
     /// The format of the number in the number field.
@@ -235,15 +213,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Difference between two adjacent values of the number field.
     /// </summary>
     [Parameter]
-    public TValue? Step
-    {
-        get => step;
-        set
-        {
-            step = value;
-            _internalStep = ConvertToDouble(value) ?? 1;
-        }
-    }
+    public TValue? Step { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitNumberField.
@@ -302,26 +272,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override async Task OnParametersSetAsync()
     {
-        if (_internalMin.HasValue is false)
-        {
-            _internalMin = _minGenericValue;
-        }
+        _min = Min is null ? GetMinValue() : Min;
+        _max = Max is null ? GetMaxValue() : Max;
 
-        if (_internalMax.HasValue is false)
-        {
-            _internalMax = _maxGenericValue;
-        }
-
-        if (_internalMin > _internalMax)
-        {
-            _internalMin = _minGenericValue;
-            _internalMax = _maxGenericValue;
-        }
+        _step = Step ?? _defaultStep;
 
         await base.OnParametersSetAsync();
     }
 
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         if (NumberFormat is not null)
         {
@@ -330,10 +289,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
-            var doubleValue = ConvertToDouble(result);
-            doubleValue = doubleValue < _internalMin ? _internalMin : doubleValue;
-            doubleValue = doubleValue > _internalMax ? _internalMax : doubleValue;
-            result = ConvertToGeneric(doubleValue);
+            Console.WriteLine(result);
+            result = CheckMinAndMax(result);
+            Console.WriteLine(result);
+
             parsingErrorMessage = null;
             return true;
         }
@@ -349,8 +308,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         if (value is null) return null;
         if (NumberFormat is null) return value.ToString();
 
-        var normalValue = ConvertToDouble(value)!.Value;
-        return normalValue.ToString(NumberFormat!);
+        return _typeOfValue == typeof(byte) ? Convert.ToByte(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(short) ? Convert.ToInt16(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(int) ? Convert.ToInt32(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(long) ? Convert.ToInt64(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(float) ? Convert.ToSingle(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(double) ? Convert.ToDouble(value).ToString(NumberFormat)
+             : "0";
     }
 
     protected override void Dispose(bool disposing)
@@ -373,7 +342,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         switch (e.Key)
         {
             case "ArrowUp":
-                ChangeValue(true);
+                ChangeValue(+1);
 
                 if (OnIncrement.HasDelegate)
                 {
@@ -382,7 +351,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 break;
 
             case "ArrowDown":
-                ChangeValue(false);
+                ChangeValue(-1);
 
                 if (OnDecrement.HasDelegate)
                 {
@@ -480,7 +449,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task ChangeValueAndInvokeEvents(bool isIncrement)
     {
-        ChangeValue(isIncrement);
+        ChangeValue(isIncrement ? +1 : -1);
 
         if (isIncrement && OnIncrement.HasDelegate)
         {
@@ -493,37 +462,26 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void ChangeValue(bool isIncrement)
+    private void ChangeValue(int f)
     {
-        bool isValid;
-        double result;
+        Console.WriteLine($"{Min}-{Max}");
 
-        var value = ConvertToDouble(CurrentValue, 0d)!.Value;
+        var result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(f) * Convert.ToByte(_step)))
+                   : _typeOfValue == typeof(sbyte) ? (TValue)(object)(Convert.ToSByte(CurrentValue) + (Convert.ToSByte(f) * Convert.ToSByte(_step)))
+                   : _typeOfValue == typeof(short) ? (TValue)(object)(Convert.ToInt16(CurrentValue) + (Convert.ToInt16(f) * Convert.ToInt16(_step)))
+                   : _typeOfValue == typeof(ushort) ? (TValue)(object)(Convert.ToUInt16(CurrentValue) + (Convert.ToUInt16(f) * Convert.ToUInt16(_step)))
+                   : _typeOfValue == typeof(int) ? (TValue)(object)(Convert.ToInt32(CurrentValue) + (Convert.ToInt32(f) * Convert.ToInt32(_step)))
+                   : _typeOfValue == typeof(uint) ? (TValue)(object)(Convert.ToUInt32(CurrentValue) + (Convert.ToUInt32(f) * Convert.ToUInt32(_step)))
+                   : _typeOfValue == typeof(long) ? (TValue)(object)(Convert.ToInt64(CurrentValue) + (Convert.ToInt64(f) * Convert.ToInt64(_step)))
+                   : _typeOfValue == typeof(ulong) ? (TValue)(object)(Convert.ToUInt64(CurrentValue) + (Convert.ToUInt64(f) * Convert.ToUInt64(_step)))
+                   : _typeOfValue == typeof(float) ? (TValue)(object)(Convert.ToSingle(CurrentValue) + (Convert.ToSingle(f) * Convert.ToSingle(_step)))
+                   : _typeOfValue == typeof(decimal) ? (TValue)(object)(Convert.ToDecimal(CurrentValue) + (Convert.ToDecimal(f) * Convert.ToDecimal(_step)))
+                   : _typeOfValue == typeof(double) ? (TValue)(object)(Convert.ToDouble(CurrentValue) + (Convert.ToDouble(f) * Convert.ToDouble(_step)))
+                   : _defaultValue;
 
-        if (isIncrement)
-        {
-            result = value + _internalStep;
-            isValid = result <= _internalMax && result >= _internalMin;
-        }
-        else
-        {
-            result = value - _internalStep;
-            isValid = result <= _internalMax && result >= _internalMin;
-        }
+        result = CheckMinAndMax(result);
 
-        if (isValid is false) return;
-
-        if (result > _internalMax)
-        {
-            result = _internalMax.Value;
-        }
-
-        if (result < _internalMin)
-        {
-            result = _internalMin.Value;
-        }
-
-        CurrentValue = ConvertToGeneric(result);
+        CurrentValue = result;
 
         StateHasChanged();
     }
@@ -535,56 +493,52 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _continuousChangeValueCts = new();
     }
 
-    private double GetMaxValue()
+    private TValue GetMaxValue()
     {
-        return _typeOfValue == typeof(byte) ? byte.MaxValue
-             : _typeOfValue == typeof(sbyte) ? sbyte.MaxValue
-             : _typeOfValue == typeof(short) ? short.MaxValue
-             : _typeOfValue == typeof(ushort) ? ushort.MaxValue
-             : _typeOfValue == typeof(int) ? int.MaxValue
-             : _typeOfValue == typeof(uint) ? uint.MaxValue
-             : _typeOfValue == typeof(long) ? long.MaxValue
-             : _typeOfValue == typeof(ulong) ? ulong.MaxValue
-             : _typeOfValue == typeof(float) ? float.MaxValue
-             : _typeOfValue == typeof(decimal) ? (double)decimal.MaxValue
-             : _typeOfValue == typeof(double) ? double.MaxValue
-             : double.MaxValue;
+        return _typeOfValue == typeof(byte) ? (TValue)(object)byte.MaxValue
+             : _typeOfValue == typeof(sbyte) ? (TValue)(object)sbyte.MaxValue
+             : _typeOfValue == typeof(short) ? (TValue)(object)short.MaxValue
+             : _typeOfValue == typeof(ushort) ? (TValue)(object)ushort.MaxValue
+             : _typeOfValue == typeof(int) ? (TValue)(object)int.MaxValue
+             : _typeOfValue == typeof(uint) ? (TValue)(object)uint.MaxValue
+             : _typeOfValue == typeof(long) ? (TValue)(object)long.MaxValue
+             : _typeOfValue == typeof(ulong) ? (TValue)(object)ulong.MaxValue
+             : _typeOfValue == typeof(float) ? (TValue)(object)float.MaxValue
+             : _typeOfValue == typeof(decimal) ? (TValue)(object)decimal.MaxValue
+             : _typeOfValue == typeof(double) ? (TValue)(object)double.MaxValue
+             : _defaultValue;
     }
 
-    private double GetMinValue()
+    private TValue GetMinValue()
     {
-        return _typeOfValue == typeof(byte) ? byte.MinValue
-             : _typeOfValue == typeof(sbyte) ? sbyte.MinValue
-             : _typeOfValue == typeof(short) ? short.MinValue
-             : _typeOfValue == typeof(ushort) ? ushort.MinValue
-             : _typeOfValue == typeof(int) ? int.MinValue
-             : _typeOfValue == typeof(uint) ? uint.MinValue
-             : _typeOfValue == typeof(long) ? long.MinValue
-             : _typeOfValue == typeof(ulong) ? ulong.MinValue
-             : _typeOfValue == typeof(float) ? float.MinValue
-             : _typeOfValue == typeof(decimal) ? (double)decimal.MinValue
-             : _typeOfValue == typeof(double) ? double.MinValue
-             : double.MinValue;
+        return _typeOfValue == typeof(byte) ? (TValue)(object)byte.MinValue
+             : _typeOfValue == typeof(sbyte) ? (TValue)(object)sbyte.MinValue
+             : _typeOfValue == typeof(short) ? (TValue)(object)short.MinValue
+             : _typeOfValue == typeof(ushort) ? (TValue)(object)ushort.MinValue
+             : _typeOfValue == typeof(int) ? (TValue)(object)int.MinValue
+             : _typeOfValue == typeof(uint) ? (TValue)(object)uint.MinValue
+             : _typeOfValue == typeof(long) ? (TValue)(object)long.MinValue
+             : _typeOfValue == typeof(ulong) ? (TValue)(object)ulong.MinValue
+             : _typeOfValue == typeof(float) ? (TValue)(object)float.MinValue
+             : _typeOfValue == typeof(decimal) ? (TValue)(object)decimal.MinValue
+             : _typeOfValue == typeof(double) ? (TValue)(object)double.MinValue
+             : _defaultValue;
     }
 
-    private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : CurrentValue;
-
-    private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : CurrentValueAsString;
-
-    private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
-
-    private TValue? ConvertToGeneric(double? value)
+    private TValue CheckMinAndMax(TValue result)
     {
-        return value.HasValue
-            ? (TValue)Convert.ChangeType(value, _typeOfValue, CultureInfo.InvariantCulture)
-            : default;
-    }
-
-    private static double? ConvertToDouble(TValue? value, double? defaultValue = null)
-    {
-        return value is null
-            ? defaultValue
-            : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
+        return _typeOfValue == typeof(byte) ? Convert.ToByte(result) < Convert.ToByte(_min) ? _min : Convert.ToByte(result) > Convert.ToByte(_max) ? _max : result
+             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(result) < Convert.ToSByte(_min) ? _min : Convert.ToSByte(result) > Convert.ToSByte(_max) ? _max : result
+             : _typeOfValue == typeof(short) ? Convert.ToInt16(result) < Convert.ToInt16(_min) ? _min : Convert.ToInt16(result) > Convert.ToInt16(_max) ? _max : result
+             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(result) < Convert.ToUInt16(_min) ? _min : Convert.ToUInt16(result) > Convert.ToUInt16(_max) ? _max : result
+             : _typeOfValue == typeof(int) ? Convert.ToInt32(result) < Convert.ToInt32(_min) ? _min : Convert.ToInt32(result) > Convert.ToInt32(_max) ? _max : result
+             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(result) < Convert.ToUInt32(_min) ? _min : Convert.ToUInt32(result) > Convert.ToUInt32(_max) ? _max : result
+             : _typeOfValue == typeof(long) ? Convert.ToInt64(result) < Convert.ToInt64(_min) ? _min : Convert.ToInt64(result) > Convert.ToInt64(_max) ? _max : result
+             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(result) < Convert.ToUInt64(_min) ? _min : Convert.ToUInt64(result) > Convert.ToUInt64(_max) ? _max : result
+             : _typeOfValue == typeof(float) ? Convert.ToSingle(result) < Convert.ToSingle(_min) ? _min : Convert.ToSingle(result) > Convert.ToSingle(_max) ? _max : result
+             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(result) < Convert.ToDecimal(_min) ? _min : Convert.ToDecimal(result) > Convert.ToDecimal(_max) ? _max : result
+             : _typeOfValue == typeof(double) ? Convert.ToDouble(result) < Convert.ToDouble(_min) ? _min : Convert.ToDouble(result) > Convert.ToDouble(_max) ? _max : result
+             : _defaultValue;
     }
 
     private static string? CleanValue(string? value)
