@@ -93,7 +93,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
         var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn}"));
-        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"profile?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}");
+        var link = new Uri(HttpContext.Request.GetBaseUrl(), $"profile?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
     }
