@@ -475,10 +475,10 @@ public partial class BitSearchBox : BitInputBase<string?>
         StateHasChanged();
     }
 
-    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         result = value;
-        validationErrorMessage = null;
+        parsingErrorMessage = null;
         return true;
     }
 

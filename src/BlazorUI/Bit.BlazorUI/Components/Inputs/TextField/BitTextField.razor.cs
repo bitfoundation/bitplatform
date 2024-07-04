@@ -361,10 +361,10 @@ public partial class BitTextField : BitTextInputBase<string?>
         SetElementType();
     }
 
-    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         result = IsTrimmed ? value?.Trim() : value;
-        validationErrorMessage = null;
+        parsingErrorMessage = null;
         return true;
     }
 }
