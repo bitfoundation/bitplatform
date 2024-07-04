@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 
 namespace Bit.BlazorUI;
 
@@ -475,19 +476,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void ChangeValue(int f)
+    private void ChangeValue(int factor)
     {
-        var result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(f) * Convert.ToByte(_step)))
-                   : _typeOfValue == typeof(sbyte) ? (TValue)(object)(Convert.ToSByte(CurrentValue) + (Convert.ToSByte(f) * Convert.ToSByte(_step)))
-                   : _typeOfValue == typeof(short) ? (TValue)(object)(Convert.ToInt16(CurrentValue) + (Convert.ToInt16(f) * Convert.ToInt16(_step)))
-                   : _typeOfValue == typeof(ushort) ? (TValue)(object)(Convert.ToUInt16(CurrentValue) + (Convert.ToUInt16(f) * Convert.ToUInt16(_step)))
-                   : _typeOfValue == typeof(int) ? (TValue)(object)(Convert.ToInt32(CurrentValue) + (Convert.ToInt32(f) * Convert.ToInt32(_step)))
-                   : _typeOfValue == typeof(uint) ? (TValue)(object)(Convert.ToUInt32(CurrentValue) + (Convert.ToUInt32(f) * Convert.ToUInt32(_step)))
-                   : _typeOfValue == typeof(long) ? (TValue)(object)(Convert.ToInt64(CurrentValue) + (Convert.ToInt64(f) * Convert.ToInt64(_step)))
-                   : _typeOfValue == typeof(ulong) ? (TValue)(object)(Convert.ToUInt64(CurrentValue) + (Convert.ToUInt64(f) * Convert.ToUInt64(_step)))
-                   : _typeOfValue == typeof(float) ? (TValue)(object)(Convert.ToSingle(CurrentValue) + (Convert.ToSingle(f) * Convert.ToSingle(_step)))
-                   : _typeOfValue == typeof(decimal) ? (TValue)(object)(Convert.ToDecimal(CurrentValue) + (Convert.ToDecimal(f) * Convert.ToDecimal(_step)))
-                   : _typeOfValue == typeof(double) ? (TValue)(object)(Convert.ToDouble(CurrentValue) + (Convert.ToDouble(f) * Convert.ToDouble(_step)))
+        var result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(factor) * Convert.ToByte(_step)))
+                   : _typeOfValue == typeof(sbyte) ? (TValue)(object)(Convert.ToSByte(CurrentValue) + (Convert.ToSByte(factor) * Convert.ToSByte(_step)))
+                   : _typeOfValue == typeof(short) ? (TValue)(object)(Convert.ToInt16(CurrentValue) + (Convert.ToInt16(factor) * Convert.ToInt16(_step)))
+                   : _typeOfValue == typeof(ushort) ? (TValue)(object)(Convert.ToUInt16(CurrentValue) + (Convert.ToUInt16(factor) * Convert.ToUInt16(_step)))
+                   : _typeOfValue == typeof(int) ? (TValue)(object)(Convert.ToInt32(CurrentValue) + (Convert.ToInt32(factor) * Convert.ToInt32(_step)))
+                   : _typeOfValue == typeof(uint) ? (TValue)(object)(Convert.ToUInt32(CurrentValue) + (Convert.ToUInt32(factor) * Convert.ToUInt32(_step)))
+                   : _typeOfValue == typeof(long) ? (TValue)(object)(Convert.ToInt64(CurrentValue) + (Convert.ToInt64(factor) * Convert.ToInt64(_step)))
+                   : _typeOfValue == typeof(ulong) ? (TValue)(object)(Convert.ToUInt64(CurrentValue) + (Convert.ToUInt64(factor) * Convert.ToUInt64(_step)))
+                   : _typeOfValue == typeof(float) ? (TValue)(object)(Convert.ToSingle(CurrentValue) + (Convert.ToSingle(factor) * Convert.ToSingle(_step)))
+                   : _typeOfValue == typeof(decimal) ? (TValue)(object)(Convert.ToDecimal(CurrentValue) + (Convert.ToDecimal(factor) * Convert.ToDecimal(_step)))
+                   : _typeOfValue == typeof(double) ? (TValue)(object)(Convert.ToDouble(CurrentValue) + (Convert.ToDouble(factor) * Convert.ToDouble(_step)))
                    : _zeroValue;
 
         result = CheckMinAndMax(result);
