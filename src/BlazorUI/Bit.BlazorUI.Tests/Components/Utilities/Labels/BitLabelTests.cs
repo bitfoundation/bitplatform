@@ -113,7 +113,7 @@ public class BitLabelTests : BunitTestContext
 
         if (@for.HasValue())
         {
-            component.MarkupMatches(@$"<label class=""bit-lbl"" for=""{@for}"" id:ignore></label>");
+            component.MarkupMatches(@$"<label for=""{@for}"" class=""bit-lbl"" id:ignore></label>");
         }
         else
         {
@@ -199,7 +199,7 @@ public class BitLabelTests : BunitTestContext
 
         if (ariaLabel.HasValue())
         {
-            component.MarkupMatches(@$"<label class=""bit-lbl"" aria-label=""{ariaLabel}"" id:ignore></label>");
+            component.MarkupMatches(@$"<label aria-label=""{ariaLabel}"" class=""bit-lbl"" id:ignore></label>");
         }
         else
         {
