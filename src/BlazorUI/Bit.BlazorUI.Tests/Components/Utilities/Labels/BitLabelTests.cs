@@ -11,7 +11,7 @@ public class BitLabelTests : BunitTestContext
     {
         var component = RenderComponent<BitLabel>();
 
-        component.MarkupMatches(@"<label id:regex="".+"" class=""bit-lbl""></label>");
+        component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
     }
 
     [DataTestMethod,
@@ -58,13 +58,13 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.Style, style);
         });
 
-        if (style.HasNoValue())
+        if (style.HasValue())
         {
-            component.MarkupMatches(@"<label id:ignore class:ignore></label>");
+            component.MarkupMatches(@$"<label style=""{style}"" class=""bit-lbl"" id:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label style=""{style}"" id:ignore class:ignore></label>");
+            component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
         }
     }
 
@@ -95,15 +95,9 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.Id, id);
         });
 
+        var expectedId = id.HasValue() ? id : component.Instance.UniqueId;
 
-        if (id.HasNoValue())
-        {
-            component.MarkupMatches(@$"<label id=""{component.Instance.UniqueId}"" class:ignore></label>");
-        }
-        else
-        {
-            component.MarkupMatches(@$"<label id=""{id}"" class:ignore></label>");
-        }
+        component.MarkupMatches(@$"<label id=""{expectedId}"" class=""bit-lbl""></label>");
     }
 
     [DataTestMethod,
@@ -117,14 +111,13 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.For, @for);
         });
 
-
-        if (@for.HasNoValue())
+        if (@for.HasValue())
         {
-            component.MarkupMatches(@"<label id:ignore class:ignore></label>");
+            component.MarkupMatches(@$"<label for=""{@for}"" class=""bit-lbl"" id:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@$"<label for=""{@for}"" id:ignore class:ignore></label>");
+            component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
         }
     }
 
@@ -164,17 +157,16 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.Visibility, visibility);
         });
 
-
         switch (visibility)
         {
             case BitVisibility.Visible:
-                component.MarkupMatches(@"<label id:ignore class:ignore></label>");
+                component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
                 break;
             case BitVisibility.Hidden:
-                component.MarkupMatches(@"<label style=""visibility: hidden;"" id:ignore class:ignore></label>");
+                component.MarkupMatches(@"<label style=""visibility: hidden;"" class=""bit-lbl"" id:ignore></label>");
                 break;
             case BitVisibility.Collapsed:
-                component.MarkupMatches(@"<label style=""display: none;"" id:ignore class:ignore></label>");
+                component.MarkupMatches(@"<label style=""display: none;"" class=""bit-lbl"" id:ignore></label>");
                 break;
         }
     }
@@ -191,7 +183,7 @@ public class BitLabelTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        component.MarkupMatches(@$"<label id:ignore class:ignore>{childContent}</label>");
+        component.MarkupMatches(@$"<label class=""bit-lbl"" id:ignore>{childContent}</label>");
     }
 
     [DataTestMethod,
@@ -203,15 +195,15 @@ public class BitLabelTests : BunitTestContext
         var component = RenderComponent<BitLabel>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
-        }); ;
+        });
 
         if (ariaLabel.HasValue())
         {
-            component.MarkupMatches(@$"<label aria-label=""{ariaLabel}"" id:ignore class:ignore></label>");
+            component.MarkupMatches(@$"<label aria-label=""{ariaLabel}"" class=""bit-lbl"" id:ignore></label>");
         }
         else
         {
-            component.MarkupMatches(@"<label id:ignore class:ignore></label>");
+            component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
         }
     }
 
@@ -220,6 +212,6 @@ public class BitLabelTests : BunitTestContext
     {
         var component = RenderComponent<BitLabelHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<label data-val-test=""bit"" id:ignore class:ignore>I'm a label</label>");
+        component.MarkupMatches(@"<label data-val-test=""bit"" class=""bit-lbl"" id:ignore>I'm a label</label>");
     }
 }
