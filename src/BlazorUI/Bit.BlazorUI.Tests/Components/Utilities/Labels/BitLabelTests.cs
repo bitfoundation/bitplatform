@@ -163,10 +163,10 @@ public class BitLabelTests : BunitTestContext
                 component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
                 break;
             case BitVisibility.Hidden:
-                component.MarkupMatches(@"<label class=""bit-lbl"" style=""visibility: hidden;"" id:ignore></label>");
+                component.MarkupMatches(@"<label style=""visibility: hidden;"" class=""bit-lbl"" id:ignore></label>");
                 break;
             case BitVisibility.Collapsed:
-                component.MarkupMatches(@"<label class=""bit-lbl"" style=""display: none;"" id:ignore></label>");
+                component.MarkupMatches(@"<label style=""display: none;"" class=""bit-lbl"" id:ignore></label>");
                 break;
         }
     }
