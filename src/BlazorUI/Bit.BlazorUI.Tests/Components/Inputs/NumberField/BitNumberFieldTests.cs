@@ -316,12 +316,6 @@ public class BitNumberFieldTests : BunitTestContext
             expectedMinValue = min.Value;
         }
 
-        if (expectedMinValue > expectedMaxValue)
-        {
-            expectedMinValue = int.MinValue;
-            expectedMaxValue = int.MaxValue;
-        }
-
         Assert.AreEqual(expectedMinValue.HasValue ? expectedMinValue.ToString() : null, input.GetAttribute("aria-valuemin"));
         Assert.AreEqual(expectedMaxValue.HasValue ? expectedMaxValue.ToString() : null, input.GetAttribute("aria-valuemax"));
     }
@@ -528,7 +522,7 @@ public class BitNumberFieldTests : BunitTestContext
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue + step <= max
             ? defaultValue + step
-            : defaultValue;
+            : max;
 
         Assert.AreEqual(inputValue, expectedResult.ToString());
     }
@@ -558,7 +552,7 @@ public class BitNumberFieldTests : BunitTestContext
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue + step <= max
             ? defaultValue + step
-            : defaultValue;
+            : max;
 
         Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
@@ -585,7 +579,7 @@ public class BitNumberFieldTests : BunitTestContext
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue - step >= min
             ? defaultValue - step
-            : defaultValue;
+            : min;
 
         Assert.AreEqual(inputValue, expectedResult.ToString());
     }
@@ -614,7 +608,7 @@ public class BitNumberFieldTests : BunitTestContext
         var inputValue = input.GetAttribute("value");
         var expectedResult = defaultValue - step >= min
             ? defaultValue - step
-            : defaultValue;
+            : min;
 
         Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
