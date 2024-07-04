@@ -10,8 +10,6 @@ public abstract class BunitTestContext : IDisposable
 {
     protected Bunit.TestContext Context;
 
-    protected readonly string IdRegexPattern = @"[a-z0-9]{5,6}";
-
     public ITestRenderer Renderer => Context?.Renderer ?? throw new InvalidOperationException("MSTest has not started executing tests yet");
 
     public TestServiceProvider Services => Context?.Services ?? throw new InvalidOperationException("MSTest has not started executing tests yet");
