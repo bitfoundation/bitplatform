@@ -95,14 +95,9 @@ public class BitLabelTests : BunitTestContext
             parameters.Add(p => p.Id, id);
         });
 
-        if (id.HasNoValue())
-        {
-            component.MarkupMatches(@$"<label id=""{component.Instance.UniqueId}"" class=""bit-lbl""></label>");
-        }
-        else
-        {
-            component.MarkupMatches(@$"<label id=""{id}"" class=""bit-lbl""></label>");
-        }
+        var expectedId = id.HasValue() ? id : component.Instance.UniqueId.ToString();
+
+        component.MarkupMatches(@$"<label id=""{expectedId}"" class=""bit-lbl""></label>");
     }
 
     [DataTestMethod,
