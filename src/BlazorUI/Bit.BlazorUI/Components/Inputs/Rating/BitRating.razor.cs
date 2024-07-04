@@ -141,17 +141,17 @@ public partial class BitRating : BitInputBase<double>
         CurrentValue = index;
     }
 
-    protected override bool TryParseValueFromString(string? value, out double result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         if (double.TryParse(value, out var parsedValue))
         {
             result = parsedValue;
-            validationErrorMessage = null;
+            parsingErrorMessage = null;
             return true;
         }
 
         result = default;
-        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        parsingErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
         return false;
     }
 }
