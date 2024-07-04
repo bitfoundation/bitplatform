@@ -60,7 +60,7 @@ public class BitLabelTests : BunitTestContext
 
         if (style.HasValue())
         {
-            component.MarkupMatches(@$"<label class=""bit-lbl"" style=""{style}"" id:ignore></label>");
+            component.MarkupMatches(@$"<label style=""{style}"" class=""bit-lbl"" id:ignore></label>");
         }
         else
         {
