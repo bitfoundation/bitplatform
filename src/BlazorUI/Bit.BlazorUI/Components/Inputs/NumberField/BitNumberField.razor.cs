@@ -9,6 +9,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private const int STEP_DELAY = 75;
     private const int INITIAL_STEP_DELAY = 400;
 
+    private TValue? min;
+    private TValue? max;
+    private TValue? step;
     private bool inlineLabel;
 
     private bool _hasFocus;
@@ -18,21 +21,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private readonly string _labelId;
     private readonly string _inputId;
     private readonly Type _typeOfValue;
-    private readonly TValue _defaultStep;
-    private readonly TValue _defaultValue;
+    private readonly TValue _zeroValue;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
     private CancellationTokenSource _continuousChangeValueCts = new();
 
-
-
     public BitNumberField()
     {
-        BindConverter.TryConvertTo("0", CultureInfo.InvariantCulture, out _defaultValue!);
-        BindConverter.TryConvertTo("1", CultureInfo.InvariantCulture, out _defaultStep!);
+        BindConverter.TryConvertTo("1", CultureInfo.InvariantCulture, out _step!);
+        BindConverter.TryConvertTo("0", CultureInfo.InvariantCulture, out _zeroValue!);
 
         _typeOfValue = typeof(TValue);
         _typeOfValue = Nullable.GetUnderlyingType(_typeOfValue) ?? _typeOfValue;
+
+        _min = GetTypeMinValue();
+        _max = GetTypeMaxValue();
 
         _inputId = $"BitNumberField-{UniqueId}-input";
         _labelId = $"BitNumberField-{UniqueId}-label";
@@ -140,13 +143,28 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Min value of the number field. If not provided, the number field has minimum value.
     /// </summary>
     [Parameter]
-    public TValue? Min { get; set; }
+    public TValue? Min
+    {
+        get => min;
+        set
+        {
+            min = value;
+            _min = value is null ? _min : value;
+        }
+    }
 
     /// <summary>
     /// Max value of the number field. If not provided, the number field has max value.
     /// </summary>
     [Parameter]
-    public TValue? Max { get; set; }
+    public TValue? Max
+    {
+        get => max; set
+        {
+            max = value;
+            _max = value is null ? _max : value;
+        }
+    }
 
     /// <summary>
     /// The format of the number in the number field.
@@ -213,7 +231,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Difference between two adjacent values of the number field.
     /// </summary>
     [Parameter]
-    public TValue? Step { get; set; }
+    public TValue? Step
+    {
+        get => step; set
+        {
+            step = value;
+            _step = value is null ? _step : value;
+        }
+    }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitNumberField.
@@ -270,16 +295,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        _min = Min is null ? GetMinValue() : Min;
-        _max = Max is null ? GetMaxValue() : Max;
-
-        _step = Step ?? _defaultStep;
-
-        await base.OnParametersSetAsync();
-    }
-
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         if (NumberFormat is not null)
@@ -289,9 +304,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
-            Console.WriteLine(result);
             result = CheckMinAndMax(result);
-            Console.WriteLine(result);
 
             parsingErrorMessage = null;
             return true;
@@ -464,8 +477,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void ChangeValue(int f)
     {
-        Console.WriteLine($"{Min}-{Max}");
-
         var result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(f) * Convert.ToByte(_step)))
                    : _typeOfValue == typeof(sbyte) ? (TValue)(object)(Convert.ToSByte(CurrentValue) + (Convert.ToSByte(f) * Convert.ToSByte(_step)))
                    : _typeOfValue == typeof(short) ? (TValue)(object)(Convert.ToInt16(CurrentValue) + (Convert.ToInt16(f) * Convert.ToInt16(_step)))
@@ -477,7 +488,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                    : _typeOfValue == typeof(float) ? (TValue)(object)(Convert.ToSingle(CurrentValue) + (Convert.ToSingle(f) * Convert.ToSingle(_step)))
                    : _typeOfValue == typeof(decimal) ? (TValue)(object)(Convert.ToDecimal(CurrentValue) + (Convert.ToDecimal(f) * Convert.ToDecimal(_step)))
                    : _typeOfValue == typeof(double) ? (TValue)(object)(Convert.ToDouble(CurrentValue) + (Convert.ToDouble(f) * Convert.ToDouble(_step)))
-                   : _defaultValue;
+                   : _zeroValue;
 
         result = CheckMinAndMax(result);
 
@@ -493,7 +504,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _continuousChangeValueCts = new();
     }
 
-    private TValue GetMaxValue()
+    private TValue GetTypeMaxValue()
     {
         return _typeOfValue == typeof(byte) ? (TValue)(object)byte.MaxValue
              : _typeOfValue == typeof(sbyte) ? (TValue)(object)sbyte.MaxValue
@@ -506,10 +517,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
              : _typeOfValue == typeof(float) ? (TValue)(object)float.MaxValue
              : _typeOfValue == typeof(decimal) ? (TValue)(object)decimal.MaxValue
              : _typeOfValue == typeof(double) ? (TValue)(object)double.MaxValue
-             : _defaultValue;
+             : _zeroValue;
     }
 
-    private TValue GetMinValue()
+    private TValue GetTypeMinValue()
     {
         return _typeOfValue == typeof(byte) ? (TValue)(object)byte.MinValue
              : _typeOfValue == typeof(sbyte) ? (TValue)(object)sbyte.MinValue
@@ -522,7 +533,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
              : _typeOfValue == typeof(float) ? (TValue)(object)float.MinValue
              : _typeOfValue == typeof(decimal) ? (TValue)(object)decimal.MinValue
              : _typeOfValue == typeof(double) ? (TValue)(object)double.MinValue
-             : _defaultValue;
+             : _zeroValue;
     }
 
     private TValue CheckMinAndMax(TValue result)
@@ -538,7 +549,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
              : _typeOfValue == typeof(float) ? Convert.ToSingle(result) < Convert.ToSingle(_min) ? _min : Convert.ToSingle(result) > Convert.ToSingle(_max) ? _max : result
              : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(result) < Convert.ToDecimal(_min) ? _min : Convert.ToDecimal(result) > Convert.ToDecimal(_max) ? _max : result
              : _typeOfValue == typeof(double) ? Convert.ToDouble(result) < Convert.ToDouble(_min) ? _min : Convert.ToDouble(result) > Convert.ToDouble(_max) ? _max : result
-             : _defaultValue;
+             : _zeroValue;
     }
 
     private static string? CleanValue(string? value)
