@@ -11,7 +11,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIcon>();
 
-        component.MarkupMatches(@"<i id:regex="".+"" role=""img"" class=""bit-ico"" />");
+        component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
     }
 
     [DataTestMethod,
@@ -27,7 +27,7 @@ public class BitIconTests : BunitTestContext
 
         var cssClass = isEnabled ? null : " bit-dis";
 
-        component.MarkupMatches(@$"<i id:regex="".+"" role=""img"" class=""bit-ico{cssClass}"" />");
+        component.MarkupMatches(@$"<i class=""bit-ico{cssClass}"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod,
@@ -45,7 +45,7 @@ public class BitIconTests : BunitTestContext
 
         var icoClass = iconName.HasValue() ? $" bit-icon bit-icon--{iconName}" : null;
 
-        component.MarkupMatches(@$"<i id:regex="".+"" role=""img"" class=""bit-ico{icoClass}"" />");
+        component.MarkupMatches(@$"<i class=""bit-ico{icoClass}"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod,
@@ -62,11 +62,11 @@ public class BitIconTests : BunitTestContext
 
         if (style.HasValue())
         {
-            component.MarkupMatches(@$"<i id:regex="".+"" role=""img"" style=""{style}"" class=""bit-ico"" />");
+            component.MarkupMatches(@$"<i style=""{style}"" role=""img"" class=""bit-ico"" id:ignore />");
         }
         else
         {
-            component.MarkupMatches(@"<i id:regex="".+"" role=""img"" class=""bit-ico"" />");
+            component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
         }
     }
 
@@ -83,7 +83,7 @@ public class BitIconTests : BunitTestContext
 
         var cssClass = @class.HasValue() ? $" {@class}" : null;
 
-        component.MarkupMatches(@$"<i id:regex="".+"" role=""img"" class=""bit-ico{cssClass}"" />");
+        component.MarkupMatches(@$"<i class=""bit-ico{cssClass}"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod,
@@ -118,11 +118,11 @@ public class BitIconTests : BunitTestContext
         if (dir.HasValue)
         {
             var cssClass = dir is BitDir.Rtl ? " bit-rtl" : null;
-            component.MarkupMatches(@$"<i id:regex="".+"" role=""img"" class=""bit-ico{cssClass}"" dir=""{dir.Value.ToString().ToLower()}"" />");
+            component.MarkupMatches(@$"<i class=""bit-ico{cssClass}"" dir=""{dir.Value.ToString().ToLower()}"" role=""img"" id:ignore />");
         }
         else
         {
-            component.MarkupMatches(@"<i id:regex="".+"" role=""img"" class=""bit-ico"" />");
+            component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
         }
     }
 
@@ -141,13 +141,13 @@ public class BitIconTests : BunitTestContext
         switch (visibility)
         {
             case BitVisibility.Visible:
-                component.MarkupMatches(@"<i id:regex="".+"" role=""img"" class=""bit-ico"" />");
+                component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
                 break;
             case BitVisibility.Hidden:
-                component.MarkupMatches(@"<i id:regex="".+"" role=""img"" style=""visibility: hidden;"" class=""bit-ico"" />");
+                component.MarkupMatches(@"<i style=""visibility: hidden;"" role=""img"" class=""bit-ico"" id:ignore />");
                 break;
             case BitVisibility.Collapsed:
-                component.MarkupMatches(@"<i id:regex="".+"" role=""img"" style=""display: none;"" class=""bit-ico"" />");
+                component.MarkupMatches(@"<i style=""display: none;"" role=""img"" class=""bit-ico"" id:ignore />");
                 break;
         }
     }
@@ -165,11 +165,11 @@ public class BitIconTests : BunitTestContext
 
         if (ariaLabel.HasValue())
         {
-            component.MarkupMatches(@$"<i id:regex="".+"" role=""img"" aria-label=""{ariaLabel}"" class=""bit-ico"" />");
+            component.MarkupMatches(@$"<i aria-label=""{ariaLabel}"" role=""img"" class=""bit-ico"" id:ignore />");
         }
         else
         {
-            component.MarkupMatches(@"<i id:regex="".+"" role=""img"" class=""bit-ico"" />");
+            component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
         }
     }
 
@@ -194,7 +194,7 @@ public class BitIconTests : BunitTestContext
             _ => null
         };
 
-        component.MarkupMatches(@$"<i id:regex="".+"" role=""img"" class=""bit-ico{sizeClass}"" />");
+        component.MarkupMatches(@$"<i class=""bit-ico{sizeClass}"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod,
@@ -222,7 +222,7 @@ public class BitIconTests : BunitTestContext
             _ => null
         };
 
-        component.MarkupMatches(@$"<i id:regex="".+"" role=""img"" class=""bit-ico{sizeClass}"" />");
+        component.MarkupMatches(@$"<i class=""bit-ico{sizeClass}"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod]
@@ -230,6 +230,6 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIconHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<i data-val-test=""bit"" id:regex="".+"" role=""img"" class=""bit-ico"" />");
+        component.MarkupMatches(@"<i data-val-test=""bit"" role=""img"" class=""bit-ico"" id:ignore />");
     }
 }
