@@ -64,8 +64,8 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-inf-bg", bitTheme.Color.State.InfoBackground);
         addCssVar("--bit-clr-suc", bitTheme.Color.State.Success);
         addCssVar("--bit-clr-suc-bg", bitTheme.Color.State.SuccessBackground);
-        addCssVar("--bit-clr-war", bitTheme.Color.State.Warning);
-        addCssVar("--bit-clr-war-bg", bitTheme.Color.State.WarningBackground);
+        addCssVar("--bit-clr-wrn", bitTheme.Color.State.Warning);
+        addCssVar("--bit-clr-wrn-bg", bitTheme.Color.State.WarningBackground);
         addCssVar("--bit-clr-swr", bitTheme.Color.State.SevereWarning);
         addCssVar("--bit-clr-swr-bg", bitTheme.Color.State.SevereWarningBackground);
         addCssVar("--bit-clr-err", bitTheme.Color.State.Error);

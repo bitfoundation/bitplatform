@@ -149,15 +149,15 @@
 }
 
 .bit-cmb-wrn {
-    --bit-cmb-bg-clr: #{$clr-war-bg};
+    --bit-cmb-bg-clr: #{$clr-wrn-bg};
     --bit-cmb-pri-clr: #{$clr-fg-pri};
-    --bit-cmb-pri-brd-clr: #{$clr-war-bg};
-    --bit-cmb-pri-hover-bg-clr: #{$clr-war-bg-hover};
-    --bit-cmb-pri-active-bg-clr: #{$clr-war-bg-active};
-    --bit-cmb-sec-clr: #{$clr-war};
-    --bit-cmb-sec-brd-clr: #{$clr-war};
-    --bit-cmb-sec-hover-bg-clr: #{$clr-war-bg-hover};
-    --bit-cmb-sec-active-bg-clr: #{$clr-war-bg-active};
+    --bit-cmb-pri-brd-clr: #{$clr-wrn-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$clr-wrn-bg-hover};
+    --bit-cmb-pri-active-bg-clr: #{$clr-wrn-bg-active};
+    --bit-cmb-sec-clr: #{$clr-wrn};
+    --bit-cmb-sec-brd-clr: #{$clr-wrn};
+    --bit-cmb-sec-hover-bg-clr: #{$clr-wrn-bg-hover};
+    --bit-cmb-sec-active-bg-clr: #{$clr-wrn-bg-active};
 }
 
 .bit-cmb-swr {

@@ -225,12 +225,12 @@
 }
 
 .bit-bdg-wrn {
-    --bit-bdg-bg-clr: #{$clr-war-bg};
-    --bit-bdg-ldg-brd-top-clr: #{$clr-war};
+    --bit-bdg-bg-clr: #{$clr-wrn-bg};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-wrn};
     --bit-bdg-pri-clr: #{$clr-fg-pri};
-    --bit-bdg-pri-brd-clr: #{$clr-war-bg};
-    --bit-bdg-sec-clr: #{$clr-war};
-    --bit-bdg-sec-brd-clr: #{$clr-war};
+    --bit-bdg-pri-brd-clr: #{$clr-wrn-bg};
+    --bit-bdg-sec-clr: #{$clr-wrn};
+    --bit-bdg-sec-brd-clr: #{$clr-wrn};
 }
 
 .bit-bdg-swr {

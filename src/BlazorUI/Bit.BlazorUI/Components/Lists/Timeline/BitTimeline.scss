@@ -191,10 +191,10 @@
 
 .bit-tln-wrn, .bit-tln-iwr {
     --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-war-bg};
-    --bit-tln-brd-clr: #{$clr-war-bg};
-    --bit-tln-sec-clr: #{$clr-war};
-    --bit-tln-sec-brd-clr: #{$clr-war};
+    --bit-tln-bg-clr: #{$clr-wrn-bg};
+    --bit-tln-brd-clr: #{$clr-wrn-bg};
+    --bit-tln-sec-clr: #{$clr-wrn};
+    --bit-tln-sec-brd-clr: #{$clr-wrn};
 }
 
 .bit-tln-swr, .bit-tln-isw {

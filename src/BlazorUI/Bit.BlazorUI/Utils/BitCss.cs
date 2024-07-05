@@ -393,18 +393,18 @@ public static class BitCss
 
             public static class Warning
             {
-                public const string Foreground = "--bit-clr-war";
-                public const string Background = "--bit-clr-war-bg";
-                public const string Border = "--bit-clr-war-brd";
+                public const string Foreground = "--bit-clr-wrn";
+                public const string Background = "--bit-clr-wrn-bg";
+                public const string Border = "--bit-clr-wrn-brd";
                 public static class Hover
                 {
-                    public const string Foreground = "--bit-clr-war-hover";
-                    public const string Background = "--bit-clr-war-bg-hover";
+                    public const string Foreground = "--bit-clr-wrn-hover";
+                    public const string Background = "--bit-clr-wrn-bg-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "--bit-clr-war-active";
-                    public const string Background = "--bit-clr-war-bg-active";
+                    public const string Foreground = "--bit-clr-wrn-active";
+                    public const string Background = "--bit-clr-wrn-bg-active";
                 }
             }
 

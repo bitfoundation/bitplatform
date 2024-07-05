@@ -162,16 +162,16 @@
 }
 
 .bit-tag-wrn {
-    --bit-tag-bg-clr: #{$clr-war-bg};
-    --bit-tag-ldg-brd-top-clr: #{$clr-war};
+    --bit-tag-bg-clr: #{$clr-wrn-bg};
+    --bit-tag-ldg-brd-top-clr: #{$clr-wrn};
     --bit-tag-pri-clr: #{$clr-fg-pri};
-    --bit-tag-pri-brd-clr: #{$clr-war-bg};
-    --bit-tag-pri-hover-bg-clr: #{$clr-war-bg-hover};
-    --bit-tag-pri-active-bg-clr: #{$clr-war-bg-active};
-    --bit-tag-sec-clr: #{$clr-war};
-    --bit-tag-sec-brd-clr: #{$clr-war};
-    --bit-tag-sec-hover-bg-clr: #{$clr-war-bg-hover};
-    --bit-tag-sec-active-bg-clr: #{$clr-war-bg-active};
+    --bit-tag-pri-brd-clr: #{$clr-wrn-bg};
+    --bit-tag-pri-hover-bg-clr: #{$clr-wrn-bg-hover};
+    --bit-tag-pri-active-bg-clr: #{$clr-wrn-bg-active};
+    --bit-tag-sec-clr: #{$clr-wrn};
+    --bit-tag-sec-brd-clr: #{$clr-wrn};
+    --bit-tag-sec-hover-bg-clr: #{$clr-wrn-bg-hover};
+    --bit-tag-sec-active-bg-clr: #{$clr-wrn-bg-active};
 }
 
 .bit-tag-swr {
