@@ -18,14 +18,13 @@ public static partial class Program
         builder.ConfigureServices();
 
         var app = builder.Build();
-//#if (api == true)
+
         if (BuildConfiguration.IsDebug())
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Database.MigrateAsync();
         }
-//#endif
 
         app.ConfiureMiddlewares();
 

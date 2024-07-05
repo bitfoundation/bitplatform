@@ -51,7 +51,7 @@ public partial class WindowsLocalHttpServer(IServiceCollection services) : ILoca
             
             await App.Current.Dispatcher.InvokeAsync(() => App.Current.MainWindow.Activate());
 
-            var url = $"{configuration.GetApiServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
+            var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
             context.Response.Redirect(url);
         });
 

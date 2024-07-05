@@ -3,7 +3,6 @@ using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Services;
-//#if (api == true)
 using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
@@ -16,7 +15,6 @@ using Microsoft.AspNetCore.DataProtection;
 using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
-//#endif
 
 namespace Boilerplate.Server;
 
@@ -54,8 +52,6 @@ public static partial class Program
         //#if (appInsights == true)
         services.AddApplicationInsightsTelemetry(configuration);
         //#endif
-
-        //#if (api == true)
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
@@ -185,11 +181,9 @@ public static partial class Program
         });
         //#endif
 
-        //#endif
-
         AddBlazor(builder);
 
-        //#if (api == true && captcha == "reCaptcha")
+        //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
         {
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
@@ -206,16 +200,16 @@ public static partial class Program
 
         services.TryAddTransient(sp =>
         {
-            Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+            Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out var serverAddress);
 
-            if (apiServerAddress!.IsAbsoluteUri is false)
+            if (serverAddress!.IsAbsoluteUri is false)
             {
-                apiServerAddress = new Uri(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl(), apiServerAddress);
+                serverAddress = new Uri(sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.GetBaseUrl(), serverAddress);
             }
 
             return new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler"))
             {
-                BaseAddress = apiServerAddress
+                BaseAddress = serverAddress
             };
         });
 
@@ -228,7 +222,6 @@ public static partial class Program
         services.AddClientWebProjectServices();
     }
 
-    //#if (api == true)
     private static void AddIdentity(WebApplicationBuilder builder)
     {
         var services = builder.Services;
@@ -373,6 +366,4 @@ public static partial class Program
             });
         });
     }
-
-    //#endif
 }

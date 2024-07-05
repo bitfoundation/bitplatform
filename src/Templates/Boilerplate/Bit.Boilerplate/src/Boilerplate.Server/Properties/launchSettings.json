@@ -9,7 +9,6 @@
             "dotnetRunMessages": true,
             "applicationUrl": "http://localhost:5030"
         },
-        //#if (api == true)
         "Boilerplate.Server-Swagger": {
             "commandName": "Project",
             "launchBrowser": true,
@@ -20,7 +19,6 @@
             "dotnetRunMessages": true,
             "applicationUrl": "http://localhost:5030"
         },
-        //#endif
         "Boilerplate.Server-BlazorWebAssembly": {
             "commandName": "Project",
             "launchBrowser": true,

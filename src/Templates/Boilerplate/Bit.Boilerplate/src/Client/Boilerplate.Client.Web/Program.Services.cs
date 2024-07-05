@@ -22,14 +22,14 @@ public static partial class Program
 
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
-        Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.RelativeOrAbsolute, out var apiServerAddress);
+        Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out var serverAddress);
 
-        if (apiServerAddress!.IsAbsoluteUri is false)
+        if (serverAddress!.IsAbsoluteUri is false)
         {
-            apiServerAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), apiServerAddress);
+            serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
         }
 
-        services.TryAddSingleton(sp => new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler")) { BaseAddress = apiServerAddress });
+        services.TryAddSingleton(sp => new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler")) { BaseAddress = serverAddress });
 
         //#if (appInsights == true)
         services.AddBlazorApplicationInsights(x =>

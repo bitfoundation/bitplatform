@@ -105,9 +105,9 @@ public partial class NavMenu
 
         user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
 
-        var apiUri = Configuration.GetApiServerAddress();
+        var serverAddress = Configuration.GetServerAddress();
         var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
-        profileImageUrl = $"{apiUri}/api/Attachment/GetProfileImage?access_token={access_token}";
+        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
     }
 
     private async Task DoSignOut()

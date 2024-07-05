@@ -33,13 +33,6 @@
                 "format": "yyyy-MM-dd"
             }
         },
-        "api": {
-            "displayName": "Add API to Server project?",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "true",
-            "description": "If you're not using your custom API backend, Boilerplate offers one pre-configured with ASP.NET Core Identity, EF Core, and more."
-        },
         "database": {
             "displayName": "Backend database",
             "type": "parameter",
@@ -318,39 +311,10 @@
                     ]
                 },
                 {
-                    "condition": "(api != true)",
-                    "exclude": [
-                        "src/Boilerplate.Server/.config/**",
-                        "src/Boilerplate.Server/Components/*Template.razor",
-                        "src/Boilerplate.Server/Controllers/**",
-                        "src/Boilerplate.Server/Data/**",
-                        "src/Boilerplate.Server/Mappers/**",
-                        "src/Boilerplate.Server/Models/**",
-                        "src/Boilerplate.Server/Resources/**",
-                        "src/Boilerplate.Server/Services/ODataOperationFilter.cs",
-                        "src/Boilerplate.Server/Services/AppIdentityErrorDescriber.cs",
-                        "src/Boilerplate.Server/Services/AppSecureJwtDataFormat.cs",
-                        "src/Boilerplate.Server/Services/ServerJsonContext.cs",
-                        "src/Boilerplate.Server/Services/AppUserConfirmation.cs",
-                        "src/Boilerplate.Server/Services/SmsService.cs",
-                        "src/Boilerplate.Server/Services/EmailService.cs",
-                        "src/Boilerplate.Server/Extensions/SignInManagerExtensions.cs",
-                        "src/Boilerplate.Server/Extensions/UserManagerExtensions.cs",
-                        "src/Boilerplate.Server/wwwroot/swagger/**",
-                        "src/Boilerplate.Server/AppSettings.cs",
-                        "src/Boilerplate.Server/DataProtectionCertificate.pfx"
-                    ]
-                },
-                {
-                    "condition": "(api != true || captcha != reCaptcha)",
-                    "exclude": [
-                        "src/Boilerplate.Server/Services/GoogleRecaptchaHttpClient.cs",
-                        "src/Boilerplate.Server/Services/GoogleRecaptchaVerificationResponse.cs"
-                    ]
-                },
-                {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Boilerplate.Server/Services/GoogleRecaptchaVerificationResponse.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
                     ]
                 },

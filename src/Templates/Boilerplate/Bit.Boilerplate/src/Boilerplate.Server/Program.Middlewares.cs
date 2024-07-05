@@ -64,18 +64,14 @@ public static partial class Program
             }
         });
 
-        //#if (api == true)
         // 0.0.0.0 origins are essential for the proper functioning of BlazorHybrid's WebView, while localhost:4030 is a prerequisite for BlazorWebAssemblyStandalone testing.
         app.UseCors(options => options.WithOrigins("https://0.0.0.0", "app://0.0.0.0", "http://localhost:4030")
             .AllowAnyHeader().AllowAnyMethod().WithExposedHeaders(HeaderNames.RequestId));
-        //#endif
 
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.UseAntiforgery();
-
-        //#if (api == true)
 
         app.UseSwagger();
 
@@ -90,8 +86,6 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
-        //#endif
-
         app.MapGet("/.well-known/apple-app-site-association", async () =>
         {
             // https://branch.io/resources/aasa-validator/ 
@@ -100,11 +94,7 @@ public static partial class Program
             return Results.Stream(File.OpenRead(path), contentType, "apple-app-site-association");
         }).ExcludeFromDescription();
 
-        //#if (api == true)
-
         app.MapControllers().RequireAuthorization();
-
-        //#endif
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()

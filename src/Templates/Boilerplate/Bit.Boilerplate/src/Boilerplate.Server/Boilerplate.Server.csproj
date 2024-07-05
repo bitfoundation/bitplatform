@@ -18,7 +18,7 @@
         <Using Include="Boilerplate.Shared.Enums" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(api)' == 'true' OR '$(api)' == '' ">
+    <ItemGroup>
         <PackageReference Include="QRCoder" Version="1.6.0" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.9.1" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
@@ -40,7 +40,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.6" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.1.0" />
         <PackageReference Include="Riok.Mapperly" Version="3.6.0" />
-        <PackageReference Include="Twilio" Version="7.2.1" />
+        <PackageReference Include="Twilio" Version="7.2.2" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />

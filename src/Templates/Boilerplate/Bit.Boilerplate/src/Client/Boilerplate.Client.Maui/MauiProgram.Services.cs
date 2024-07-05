@@ -19,14 +19,14 @@ public static partial class MauiProgram
             services.AddBlazorWebViewDeveloperTools();
         }
 
-        Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
+        Uri.TryCreate(configuration.GetServerAddress(), UriKind.Absolute, out var serverAddress);
 
         services.TryAddSingleton(sp =>
         {
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
-                BaseAddress = apiServerAddress
+                BaseAddress = serverAddress
             };
             return httpClient;
         });
