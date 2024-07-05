@@ -89,8 +89,8 @@
     padding: 0 spacing(0.75);
     -webkit-user-select: none;
     border-radius: spacing(1.25);
-    border-width: $shape-border-width;
-    border-style: $shape-border-style;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
 
     &.bit-bdg-tlf {
         inset: auto calc(100% - spacing(0.5)) calc(100% - spacing(0.5)) auto;

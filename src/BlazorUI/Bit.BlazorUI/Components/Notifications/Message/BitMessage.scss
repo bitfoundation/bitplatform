@@ -8,7 +8,7 @@
     box-sizing: border-box;
     font-size: spacing(1.5);
     justify-content: center;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
 }
 
@@ -118,8 +118,8 @@
     color: var(--bit-msg-clr);
     border-color: var(--bit-msg-clr);
     background-color: transparent;
-    border-width: $shape-border-width;
-    border-style: $shape-border-style;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
 }
 
 .bit-msg-text {

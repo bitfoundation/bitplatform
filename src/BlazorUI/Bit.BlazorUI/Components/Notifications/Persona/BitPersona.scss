@@ -73,7 +73,7 @@
     justify-content: center;
     forced-color-adjust: none;
     background-clip: border-box;
-    border: spacing(0.125) $shape-border-style $clr-brd-sec;
+    border: spacing(0.125) $shp-border-style $clr-brd-sec;
 }
 
 .bit-prs-unk {
@@ -152,7 +152,7 @@
 
 .bit-prs-off {
     background-color: $clr-ntr-white;
-    border: spacing(0.25) $shape-border-style $clr-ntr-gray110;
+    border: spacing(0.25) $shp-border-style $clr-ntr-gray110;
 }
 
 .bit-prs-onl {
@@ -169,7 +169,7 @@
 
 .bit-prs-blk {
     background-color: $clr-ntr-white;
-    border: spacing(0.25) $shape-border-style $clr-err;
+    border: spacing(0.25) $shp-border-style $clr-err;
 }
 
 .bit-prs-bsy {

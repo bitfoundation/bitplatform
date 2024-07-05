@@ -8,9 +8,9 @@
     min-height: spacing(4);
     box-sizing: border-box;
     font-size: spacing(1.75);
-    border-width: $shape-border-width;
-    border-style: $shape-border-style;
-    border-radius: $shape-border-radius;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
 
@@ -142,9 +142,9 @@
     background-color: unset;
 
     .bit-mnb-chb {
-        border-width: $shape-border-width;
-        border-style: $shape-border-style;
-        border-radius: $shape-border-radius;
+        border-width: $shp-border-width;
+        border-style: $shp-border-style;
+        border-radius: $shp-border-radius;
         border-left: none;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;

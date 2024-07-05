@@ -20,7 +20,7 @@
             pointer-events: none;
             color: $clr-fg-dis;
             background: none $clr-bg-dis;
-            border: $shape-border-width $shape-border-style $clr-brd-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
 
         .bit-dtrp-ico {
@@ -70,9 +70,9 @@
     flex-flow: row nowrap;
     padding: 0 spacing(1);
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     background-color: $clr-bg-pri;
-    border: $shape-border-width $shape-border-style $clr-brd-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-dtrp-ico {
@@ -147,8 +147,8 @@
         position: absolute;
         pointer-events: none;
         inset: spacing(-0.125);
-        border-radius: $shape-border-radius;
-        border: spacing(0.25) $shape-border-style $clr-pri;
+        border-radius: $shp-border-radius;
+        border: spacing(0.25) $shp-border-style $clr-pri;
     }
 }
 
@@ -161,7 +161,7 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     box-shadow: $box-shadow-callout;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
 }
 
@@ -252,7 +252,7 @@
     outline: none;
     position: relative;
     overflow: hidden auto;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     background-color: $clr-bg-pri;
 }
 
@@ -345,7 +345,7 @@
     justify-content: center;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
@@ -444,7 +444,7 @@
     padding: spacing(0.375) 0 0 0;
     color: $clr-fg-sec;
     background-color: $clr-bg-sec;
-    border-inline-end: $shape-border-width $shape-border-style $clr-brd-sec;
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-dtrp-pkh {
@@ -484,7 +484,7 @@
     animation-name: bit-fade-show;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -522,7 +522,7 @@
     line-height: spacing(3.5);
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
@@ -554,7 +554,7 @@
     font-size: spacing(1.5);
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     aspect-ratio: 1;
 
     @media (hover: hover) {
@@ -589,7 +589,7 @@
 
 .bit-dtrp-dvd {
     top: 0;
-    border-right: $shape-border-width $shape-border-style $clr-brd-sec;
+    border-right: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-dtrp-mwp {
@@ -634,7 +634,7 @@
     text-overflow: ellipsis;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
@@ -744,7 +744,7 @@
 
     &:focus {
         border: none;
-        border-bottom: $shape-border-width $shape-border-style $clr-brd-pri-active;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
         outline: none;
     }
 }
@@ -797,7 +797,7 @@
     .bit-dtrp-wrp {
         width: 100%;
         display: flex;
-        border-bottom: $shape-border-width $shape-border-style $clr-brd-pri;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     .bit-dtrp-icn {
@@ -816,7 +816,7 @@
         .bit-dtrp-icn::after {
             border: none;
             border-radius: 0;
-            border-bottom: spacing(0.25) $shape-border-style $clr-brd-pri;
+            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
         }
     }
 }

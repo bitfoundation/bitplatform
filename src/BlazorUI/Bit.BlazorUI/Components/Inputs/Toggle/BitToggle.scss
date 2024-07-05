@@ -13,7 +13,7 @@
         .bit-tgl-btn {
             cursor: default;
             background: $clr-bg-dis;
-            border: $shape-border-width $shape-border-style $clr-brd-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
 
             @media (hover: hover) {
                 &:hover {
@@ -32,7 +32,7 @@
             .bit-tgl-btn {
                 justify-content: flex-end;
                 background: $clr-bg-dis;
-                border: $shape-border-width $shape-border-style transparent;
+                border: $shp-border-width $shp-border-style transparent;
             }
 
             .bit-tgl-sta {
@@ -101,7 +101,7 @@
     border-radius: spacing(1.25);
     transition: all 0.1s ease 0s;
     background: $clr-bg-pri;
-    border: $shape-border-width $shape-border-style $clr-brd-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
         &:hover {
@@ -122,7 +122,7 @@
     box-sizing: border-box;
     transition: all 0.1s ease 0s;
     background-color: $clr-fg-sec;
-    border: spacing(0.75) $shape-border-style transparent;
+    border: spacing(0.75) $shp-border-style transparent;
 }
 
 .bit-tgl-stx {
@@ -137,7 +137,7 @@
         cursor: pointer;
         justify-content: flex-end;
         background: $clr-pri;
-        border: $shape-border-width $shape-border-style transparent;
+        border: $shp-border-width $shp-border-style transparent;
 
         @media (hover: hover) {
             &:hover {

@@ -147,7 +147,7 @@
         box-sizing: border-box;
         background-color: $clr-bg-pri;
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $clr-brd-pri;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     &:after {
@@ -199,7 +199,7 @@
     min-height: spacing(2.5);
     transition: all 0.2s ease;
     padding-block-start: spacing(2.75);
-    border: $shape-border-width $shape-border-style transparent;
+    border: $shp-border-width $shp-border-style transparent;
 
     &:before {
         opacity: 0;
@@ -215,7 +215,7 @@
         inset-block-start: spacing(0.375);
         background-color: $clr-bg-pri;
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $clr-brd-pri;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     &:after {
@@ -319,7 +319,7 @@
             inset-block-start: spacing(0.625);
             inset-inline-start: spacing(0.625);
             background-color: $clr-pri;
-            border: spacing(0.625) $shape-border-style $clr-pri;
+            border: spacing(0.625) $shp-border-style $clr-pri;
         }
 
         @media (hover: hover) {
@@ -351,7 +351,7 @@
             inset-inline-end: spacing(1);
             inset-block-start: spacing(1);
             background-color: $clr-pri;
-            border: spacing(0.625) $shape-border-style $clr-pri;
+            border: spacing(0.625) $shp-border-style $clr-pri;
         }
 
         @media (hover: hover) {
@@ -436,7 +436,7 @@
         .bit-chg-ilwi {
             &:after {
                 background-color: $clr-bg-dis;
-                border: spacing(0.625) $shape-border-style $clr-brd-dis;
+                border: spacing(0.625) $shp-border-style $clr-brd-dis;
             }
 
             @media (hover: hover) {

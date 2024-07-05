@@ -5,9 +5,9 @@
     flex-direction: row;
     display: inline-flex;
     max-width: fit-content;
-    border-width: $shape-border-width;
-    border-style: $shape-border-style;
-    border-radius: $shape-border-radius;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-radius: $shp-border-radius;
 
     &.bit-dis {
         border-color: $clr-brd-dis;
@@ -49,8 +49,8 @@
     text-decoration: none;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    border-style: $shape-border-style;
-    border-width: $shape-border-width;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
     padding: spacing(0.7) spacing(2);
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
@@ -213,7 +213,7 @@
     flex-direction: column;
 
     .bit-btg-itm {
-        border-width: $shape-border-width;
+        border-width: $shp-border-width;
         border-block-start-width: 0;
         border-inline-start-width: 0;
         border-inline-end-width: 0;

@@ -20,7 +20,7 @@
             cursor: default;
             color: $clr-fg-dis;
             background: $clr-bg-dis;
-            border: $shape-border-width $shape-border-style $clr-brd-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
 
         .bit-txt-inp {
@@ -36,7 +36,7 @@
             .bit-txt-wrp {
                 width: 100%;
                 display: flex;
-                border-bottom: $shape-border-width $shape-border-style $clr-brd-dis;
+                border-bottom: $shp-border-width $shp-border-style $clr-brd-dis;
             }
 
             .bit-txt-lbl {
@@ -98,9 +98,9 @@
     flex-flow: row nowrap;
     min-height: spacing(4);
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     background-color: $clr-bg-pri;
-    border: $shape-border-width $shape-border-style $clr-brd-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-txt-inp {
@@ -233,8 +233,8 @@
         position: absolute;
         pointer-events: none;
         inset: spacing(-0.125);
-        border-radius: $shape-border-radius;
-        border: spacing(0.25) $shape-border-style $clr-pri;
+        border-radius: $shp-border-radius;
+        border: spacing(0.25) $shp-border-style $clr-pri;
     }
 
     &.bit-txt-und {
@@ -247,7 +247,7 @@
             position: absolute;
             pointer-events: none;
             inset: spacing(-0.125);
-            border-bottom: spacing(0.25) $shape-border-style $clr-pri;
+            border-bottom: spacing(0.25) $shp-border-style $clr-pri;
         }
     }
 }
@@ -256,7 +256,7 @@
     .bit-txt-wrp {
         width: 100%;
         display: flex;
-        border-bottom: $shape-border-width $shape-border-style $clr-brd-pri;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     .bit-txt-lbl {

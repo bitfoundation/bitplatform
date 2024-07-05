@@ -48,7 +48,7 @@
     gap: spacing(1.25);
     align-items: center;
     height: spacing(5.5);
-    border-bottom: $shape-border-width $shape-border-style $clr-brd-pri;
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
 
     .bit-nav-iit {
         gap: spacing(1.25);
@@ -95,7 +95,7 @@
     flex-flow: column;
     box-sizing: border-box;
     min-height: spacing(5.5);
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
@@ -147,7 +147,7 @@
 
 .bit-nav-sel {
     background-color: $clr-bg-sec;
-    border-inline-start: spacing(0.375) $shape-border-style $clr-pri;
+    border-inline-start: spacing(0.375) $shp-border-style $clr-pri;
 
     @media(hover:hover) {
         &:hover {

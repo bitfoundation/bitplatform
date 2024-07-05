@@ -37,7 +37,7 @@
             pointer-events: none;
             color: $clr-fg-dis;
             background: $clr-bg-dis;
-            border: $shape-border-width $shape-border-style $clr-brd-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
     }
 
@@ -78,8 +78,8 @@
     height: spacing(4);
     position: relative;
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
-    border: $shape-border-width $shape-border-style $clr-brd-pri;
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-spb-hdi {
@@ -106,7 +106,7 @@
     color: $clr-fg-pri;
     padding: 0 spacing(1) 0 spacing(1.125);
     background-color: $clr-bg-pri;
-    border-radius: $shape-border-radius 0 0 $shape-border-radius;
+    border-radius: $shp-border-radius 0 0 $shp-border-radius;
 }
 
 .bit-spb-cin {
@@ -118,11 +118,11 @@
     flex-direction: column;
 
     &:first-child {
-        border-radius: 0 $shape-border-radius 0 0;
+        border-radius: 0 $shp-border-radius 0 0;
     }
 
     &:nth-child(2) {
-        border-radius: 0 0 $shape-border-radius 0;
+        border-radius: 0 0 $shp-border-radius 0;
     }
 }
 
@@ -142,7 +142,7 @@
     -webkit-user-select: none;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {

@@ -8,10 +8,10 @@
     font-size: spacing(1.75);
     flex-flow: column nowrap;
     color: $clr-fg-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
     background-color: $clr-bg-pri;
-    border: $shape-border-width $shape-border-style $clr-brd-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &.bit-dis {
         color: $clr-fg-dis;

@@ -40,7 +40,7 @@
             pointer-events: none;
             color: $clr-fg-dis;
             background: $clr-bg-dis;
-            border: $shape-border-width $shape-border-style $clr-brd-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
     }
 
@@ -104,9 +104,9 @@
     height: spacing(4);
     position: relative;
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     background-color: $clr-bg-pri;
-    border: $shape-border-width $shape-border-style $clr-brd-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-nfl-inp {
@@ -129,7 +129,7 @@
     background: none transparent;
     color: $clr-fg-pri;
     padding: 0 spacing(1) 0 spacing(1.125);
-    border-radius: $shape-border-radius 0 0 $shape-border-radius;
+    border-radius: $shp-border-radius 0 0 $shp-border-radius;
 }
 
 .bit-nfl-act {
@@ -153,7 +153,7 @@
     box-sizing: border-box;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
@@ -164,11 +164,11 @@
 }
 
 .bit-nfl-aup {
-    border-radius: 0 $shape-border-radius 0 0;
+    border-radius: 0 $shp-border-radius 0 0;
 }
 
 .bit-nfl-adn {
-    border-radius: 0 0 $shape-border-radius 0;
+    border-radius: 0 0 $shp-border-radius 0;
 }
 
 .bit-nfl-aic {
@@ -194,8 +194,8 @@
         position: absolute;
         pointer-events: none;
         inset: spacing(-0.125);
-        border-radius: $shape-border-radius;
-        border: spacing(0.25) $shape-border-style $clr-pri;
+        border-radius: $shp-border-radius;
+        border: spacing(0.25) $shp-border-style $clr-pri;
     }
 }
 

@@ -30,7 +30,7 @@
     justify-content: center;
     width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 }
 
 .bit-pgn-btn {
@@ -42,9 +42,9 @@
     justify-content: center;
     width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
-    border-style: $shape-border-style;
-    border-width: $shape-border-width;
-    border-radius: $shape-border-radius;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-radius: $shp-border-radius;
 
     &[disabled] {
         cursor: default;

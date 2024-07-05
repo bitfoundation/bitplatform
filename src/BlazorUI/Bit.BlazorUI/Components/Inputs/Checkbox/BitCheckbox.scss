@@ -80,10 +80,10 @@
     min-width: spacing(2.5);
     justify-content: center;
     transition-duration: 200ms;
-    border-style: $shape-border-style;
-    border-width: $shape-border-width;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
     border-color: $clr-brd-pri;
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
     transition-property: background, border, border-color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
 

@@ -51,7 +51,7 @@
     padding: spacing(0.5) spacing(2);
     color: $clr-fg-pri;
     background-color: $clr-bg-pri;
-    border: $shape-border-width $shape-border-style $clr-brd-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
         &:hover {
@@ -84,7 +84,7 @@
     border-radius: spacing(0.625);
     justify-content: space-between;
     color: $clr-fg-pri;
-    border: $shape-border-width $shape-border-style $clr-brd-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
         &:hover {
@@ -208,7 +208,7 @@
     width: spacing(2);
     height: spacing(2);
     border-width: spacing(0.2125);
-    border-style: $shape-border-style;
+    border-style: $shp-border-style;
     border-color: $clr-brd-sec;
     border-top-color: $clr-pri-dark;
     animation: bit-upl-spinner-animation 1.3s linear infinite;

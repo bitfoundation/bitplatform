@@ -30,7 +30,7 @@ $BgHover: $clr-pri-light;
         margin-top: spacing(-0.75);
         border-radius: spacing(1.25);
         background-color: $clr-bg-pri;
-        border: spacing(0.25) $shape-border-style $BgTrack;
+        border: spacing(0.25) $shp-border-style $BgTrack;
     }
 
     input::-webkit-slider-runnable-track {
@@ -54,7 +54,7 @@ $BgHover: $clr-pri-light;
         border-radius: spacing(1.25);
         background-color: $clr-bg-sec;
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-        border: spacing(0.25) $shape-border-style $BgTrack;
+        border: spacing(0.25) $shp-border-style $BgTrack;
     }
 
     input::-moz-range-track {
@@ -86,7 +86,7 @@ $BgHover: $clr-pri-light;
         pointer-events: auto;
         box-sizing: border-box;
         border-radius: spacing(1.25);
-        border: spacing(0.25) $shape-border-style $BgTrack;
+        border: spacing(0.25) $shp-border-style $BgTrack;
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
     }
 
