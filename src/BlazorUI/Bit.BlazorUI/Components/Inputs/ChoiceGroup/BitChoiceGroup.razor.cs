@@ -91,10 +91,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         _items.Add((option as TItem)!);
 
-        if (Value is null)
-        {
-            InitDefaultValue();
-        }
+        InitDefaultValue();
 
         StateHasChanged();
     }
@@ -153,7 +150,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private void InitDefaultValue()
     {
         if (ValueHasBeenSet is false && DefaultValue is not null &&
-            Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
+            _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
             Value = DefaultValue;
         }
