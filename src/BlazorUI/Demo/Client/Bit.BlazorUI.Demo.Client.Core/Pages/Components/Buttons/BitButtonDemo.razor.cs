@@ -260,7 +260,7 @@ public partial class BitButtonDemo
                 new()
                 {
                     Name= "Secondary",
-                    Description="Info general color.",
+                    Description="Secondary general color.",
                     Value="1",
                 },
                 new()
