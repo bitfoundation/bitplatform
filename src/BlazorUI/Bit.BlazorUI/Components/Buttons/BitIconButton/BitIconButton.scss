@@ -2,6 +2,7 @@
 
 .bit-icb {
     border: none;
+    color: $clr-pri;
     cursor: pointer;
     width: spacing(4);
     height: spacing(4);
@@ -9,10 +10,9 @@
     text-decoration: none;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $clr-pri;
+    font-family: $tg-font-family;
     background-color: transparent;
     border-radius: $shape-border-radius;
-    font-family: $tg-font-family;
 
     @media (hover: hover) {
         &:hover {
@@ -28,12 +28,12 @@
 
     &.bit-dis {
         cursor: default;
-        pointer-events: none;
         color: $clr-fg-dis;
-        border-width: $shape-border-width;
-        border-style: $shape-border-style;
+        pointer-events: none;
         border-color: $clr-brd-dis;
         background-color: $clr-bg-dis;
+        border-width: $shape-border-width;
+        border-style: $shape-border-style;
     }
 }
 
