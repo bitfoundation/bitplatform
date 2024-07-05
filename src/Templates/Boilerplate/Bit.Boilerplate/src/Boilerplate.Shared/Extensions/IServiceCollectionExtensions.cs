@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components.Web;
+
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {
@@ -21,6 +23,9 @@ public static class IServiceCollectionExtensions
         services.AddLocalization();
 
         services.AddTransient(typeof(Lazy<>), typeof(Lazy<>)); // add support for lazy injection
+        services.TryAddTransient<HtmlRenderer>();
+        services.TryAddTransient(sp => AppJsonContext.Default.Options);
+        services.AddTypedHttpClients();
 
         return services;
     }

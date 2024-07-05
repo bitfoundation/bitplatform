@@ -5,9 +5,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-03" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-03" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
         <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.6" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
@@ -21,6 +27,7 @@
     <ItemGroup>
         <SupportedPlatform Include="browser" />
         <Using Include="Boilerplate.Shared.Attributes" />
+        <Using Include="Boilerplate.Shared.Services.Contracts" />
     </ItemGroup>
 
     <ItemGroup>

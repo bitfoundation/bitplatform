@@ -30,7 +30,7 @@ public static partial class Program
 
         var host = builder.Build();
 
-        if (AppRenderMode.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled)
         {
             var uri = new Uri(host.Services.GetRequiredService<NavigationManager>().Uri);
 

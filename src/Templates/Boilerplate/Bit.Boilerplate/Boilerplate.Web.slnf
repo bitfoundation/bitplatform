@@ -3,6 +3,7 @@
     "path": "Boilerplate.sln",
     "projects": [
       "src\\Boilerplate.Server\\Boilerplate.Server.csproj",
+      "src\\Boilerplate.Server\\Boilerplate.Api.csproj",
       "src\\Boilerplate.Shared\\Boilerplate.Shared.csproj",
       "src\\Client\\Boilerplate.Client.Core\\Boilerplate.Client.Core.csproj",
       "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj"

@@ -11,7 +11,7 @@ public class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
         request.SetBrowserRequestCredentials(BrowserRequestCredentials.Omit);
         request.SetBrowserResponseStreamingEnabled(true);
 
-        if (AppRenderMode.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled)
         {
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }

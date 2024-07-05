@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using FluentEmail.Core;
-using Boilerplate.Server.Resources;
-using Boilerplate.Server.Components;
 using Boilerplate.Server.Models.Emailing;
 using Boilerplate.Server.Models.Identity;
 

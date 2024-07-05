@@ -11,7 +11,7 @@ public partial class MainWindow
         services.ConfigureServices();
         InitializeComponent();
         BlazorWebView.Services = services.BuildServiceProvider();
-        if (AppRenderMode.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled)
         {
             BlazorWebView.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(App.Current.Properties["Culture"]?.ToString() ?? CultureInfo.CurrentUICulture.Name);
         }

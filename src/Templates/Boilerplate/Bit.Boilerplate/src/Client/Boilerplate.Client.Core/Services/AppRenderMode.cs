@@ -28,16 +28,6 @@ public static class AppRenderMode
 #endif
 
     /// <summary>
-    /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the MultilingualEnabled flag.
-    /// </summary>
-    public static bool MultilingualEnabled { get; } =
-#if MultilingualEnabled
-    true;
-#else
-    false;
-#endif
-
-    /// <summary>
     /// Is running under .NET MAUI?
     /// </summary>
     public static bool IsBlazorHybrid { get; set; }

@@ -1,8 +1,7 @@
 @using Boilerplate.Server.Models.Emailing
-@using Boilerplate.Server.Resources
 
 @code {
-    [Parameter] public ResetPasswordTokenTemplateModel Model { get; set; } = default!;
+    [Parameter] public OtpTemplateModel Model { get; set; } = default!;
     [Parameter] public HttpContext HttpContext { get; set; } = default!;
     [Inject] public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
 }
@@ -12,29 +11,29 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
-    <title>@EmailLocalizer[nameof(EmailStrings.ResetPasswordEmailSubject), Model.Token]</title>
+    <title>@EmailLocalizer[nameof(EmailStrings.OtpEmailSubject), Model.Token]</title>
 </head>
 <body dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)" style="width:100%; height:100%; margin:0; padding:0; background-color:#FCFCFC; font-family:Arial,sans-serif;">
     <main style="padding:50px">
         <table style="width:100%;border:1px solid #EDEBE9;border-radius:2px;padding:50px;text-align:center;">
             <tr>
                 <td style="color:#0D2960;font-weight:600;font-size:24px;padding-bottom:50px;">
-                    @EmailLocalizer[nameof(EmailStrings.ResetPasswordTitle), Model.DisplayName!]
+                    @EmailLocalizer[nameof(EmailStrings.OtpTitle), Model.DisplayName!]
                 </td>
             </tr>
             <tr>
                 <td style="padding-bottom:20px;">
-                    @EmailLocalizer[nameof(EmailStrings.ResetPasswordSubtitle)]
+                    @EmailLocalizer[nameof(EmailStrings.OtpSubtitle)]
                 </td>
             </tr>
             <tr>
                 <td style="padding-bottom:50px;">
-                    @EmailLocalizer[nameof(EmailStrings.ResetPasswordBody)]
+                    @EmailLocalizer[nameof(EmailStrings.OtpBody)]
                 </td>
             </tr>
             <tr>
                 <td style="padding-bottom:20px;">
-                    @EmailLocalizer[nameof(EmailStrings.ResetPasswordTokenMessage)]
+                    @EmailLocalizer[nameof(EmailStrings.OtpMessage)]
                 </td>
             </tr>
             <tr>
@@ -44,7 +43,7 @@
             </tr>
             <tr>
                 <td style="padding-bottom:20px;">
-                    @EmailLocalizer[nameof(EmailStrings.ResetPasswordLinkMessage)]
+                    @EmailLocalizer[nameof(EmailStrings.OtpLinkMessage)]
                 </td>
             </tr>
             <tr>

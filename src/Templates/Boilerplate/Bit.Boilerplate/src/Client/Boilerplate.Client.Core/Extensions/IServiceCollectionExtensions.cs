@@ -29,16 +29,12 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddSessioned<HttpClientHandler>();
-        services.TryAddTransient<HtmlRenderer>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.TryAddSessioned<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
-
-        services.TryAddTransient(sp => AppJsonContext.Default.Options);
-        services.AddTypedHttpClients();
 
         services.AddBitButilServices();
         services.AddBitBlazorUIServices();

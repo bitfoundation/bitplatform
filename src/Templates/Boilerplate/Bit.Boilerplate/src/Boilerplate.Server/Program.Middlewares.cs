@@ -1,12 +1,13 @@
 ﻿//+:cnd:noEmit
 using System.Net;
+using System.Web;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Web;
-using Boilerplate.Client.Core.Services;
-using Microsoft.AspNetCore.Components.Endpoints;
-using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Components.Endpoints;
+using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server;
 
@@ -15,14 +16,14 @@ public static partial class Program
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    public static void ConfiureMiddlewares(this WebApplication app)
+    private static void ConfiureMiddlewares(this WebApplication app)
     {
         var configuration = app.Configuration;
         var env = app.Environment;
 
         app.UseForwardedHeaders();
 
-        if (AppRenderMode.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled)
         {
             var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => sc.Culture).ToArray();
             app.UseRequestLocalization(new RequestLocalizationOptions

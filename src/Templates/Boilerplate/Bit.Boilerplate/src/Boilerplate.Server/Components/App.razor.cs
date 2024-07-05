@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Localization;
-using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Components;
 
@@ -13,7 +12,7 @@ public partial class App
     {
         base.OnInitialized();
 
-        if (AppRenderMode.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled)
         {
             HttpContext?.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,
             CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)));

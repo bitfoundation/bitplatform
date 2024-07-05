@@ -12,6 +12,16 @@ public static partial class MauiProgram
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+#if ANDROID
+        services.AddClientMauiProjectAndroidServices();
+#elif iOS
+        services.AddClientMauiProjectIosServices();
+#elif Mac
+        services.AddClientMauiProjectMacCatalystServices();
+#elif Windows
+        services.AddClientMauiProjectWindowsServices();
+#endif
+
         services.AddMauiBlazorWebView();
 
         if (BuildConfiguration.IsDebug())
@@ -80,16 +90,6 @@ public static partial class MauiProgram
 
 #if LocalHttpServerEnabled
         services.AddSingleton<ILocalHttpServer>(sp => new MauiLocalHttpServer(services));
-#endif
-
-#if ANDROID
-        services.AddClientMauiProjectAndroidServices();
-#elif iOS
-        services.AddClientMauiProjectIosServices();
-#elif Mac
-        services.AddClientMauiProjectMacCatalystServices();
-#elif Windows
-        services.AddClientMauiProjectWindowsServices();
 #endif
 
         services.AddClientCoreProjectServices();

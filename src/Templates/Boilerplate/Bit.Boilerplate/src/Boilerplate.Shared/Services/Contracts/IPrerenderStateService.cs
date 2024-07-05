@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Boilerplate.Client.Core.Services.Contracts;
+namespace Boilerplate.Shared.Services.Contracts;
 
 /// <summary>
 /// This service simplifies the process of persisting application state in Pre-Rendering mode

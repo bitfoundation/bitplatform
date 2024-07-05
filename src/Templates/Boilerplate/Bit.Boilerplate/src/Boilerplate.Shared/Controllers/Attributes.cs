@@ -41,7 +41,7 @@ internal class HttpPatchAttribute(string? template = null) : Attribute
 /// <see cref="Services.HttpMessageHandlers.RetryDelegatingHandler" />
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-internal class NoRetryPolicyAttribute : Attribute
+public class NoRetryPolicyAttribute : Attribute
 {
 
 }
@@ -51,7 +51,7 @@ internal class NoRetryPolicyAttribute : Attribute
 /// <see cref="Services.HttpMessageHandlers.AuthDelegatingHandler" />
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-internal class NoAuthorizeHeaderPolicyAttribute : Attribute
+public class NoAuthorizeHeaderPolicyAttribute : Attribute
 {
 
 }

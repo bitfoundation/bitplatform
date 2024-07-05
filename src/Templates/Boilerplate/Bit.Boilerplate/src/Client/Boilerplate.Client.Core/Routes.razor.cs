@@ -11,7 +11,7 @@ public partial class Routes
     {
         if (AppRenderMode.IsBlazorHybrid)
         {
-            if (AppRenderMode.MultilingualEnabled)
+            if (CultureInfoManager.MultilingualEnabled)
             {
                 cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
                                                      CultureInfo.CurrentUICulture.Name); // 2- OS settings
