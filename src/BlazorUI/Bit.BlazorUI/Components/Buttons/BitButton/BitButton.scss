@@ -11,14 +11,13 @@
     color: var(--bit-btn-clr);
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
+    padding: var(--bit-btn-padding);
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
     font-size: var(--bit-btn-fontsize);
     min-width: var(--bit-btn-minwidth);
     min-height: var(--bit-btn-minheight);
-    padding-block: var(--bit-btn-padding-block);
-    padding-inline: var(--bit-btn-padding-inline);
 
     &.bit-dis {
         cursor: default;
@@ -219,9 +218,8 @@
     --bit-btn-minheight: #{spacing(3)};
     --bit-btn-fontsize: #{spacing(1.5)};
     --bit-btn-spn-size: #{spacing(1.75)};
-    --bit-btn-padding-block: #{spacing(0.3)};
-    --bit-btn-padding-inline: #{spacing(1.5)};
     --bit-btn-lbl-fontsize: #{spacing(1.75)};
+    --bit-btn-padding: #{spacing(0.3)} #{spacing(1.5)};
 }
 
 .bit-btn-md {
@@ -229,9 +227,8 @@
     --bit-btn-minheight: #{spacing(4)};
     --bit-btn-fontsize: #{spacing(1.75)};
     --bit-btn-spn-size: #{spacing(2.5)};
-    --bit-btn-padding-block: #{spacing(0.5)};
-    --bit-btn-padding-inline: #{spacing(2.0)};
     --bit-btn-lbl-fontsize: #{spacing(1.5)};
+    --bit-btn-padding: #{spacing(0.5)} #{spacing(2.0)};
 }
 
 .bit-btn-lg {
@@ -239,9 +236,8 @@
     --bit-btn-minheight: #{spacing(5)};
     --bit-btn-fontsize: #{spacing(2.0)};
     --bit-btn-spn-size: #{spacing(3.25)};
-    --bit-btn-padding-block: #{spacing(0.7)};
-    --bit-btn-padding-inline: #{spacing(2.5)};
     --bit-btn-lbl-fontsize: #{spacing(1.75)};
+    --bit-btn-padding: #{spacing(0.7)} #{spacing(2.5)};
 }
 
 .bit-btn-top {
