@@ -207,43 +207,43 @@ public class BitButtonTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(BitSeverity.Info),
-         DataRow(BitSeverity.Success),
-         DataRow(BitSeverity.Warning),
-         DataRow(BitSeverity.SevereWarning),
-         DataRow(BitSeverity.Error),
+         DataRow(BitColor.Info),
+         DataRow(BitColor.Success),
+         DataRow(BitColor.Warning),
+         DataRow(BitColor.SevereWarning),
+         DataRow(BitColor.Error),
          DataRow(null),
     ]
     [TestMethod]
-    public void BitSeverityOfButtonTest(BitSeverity? severity)
+    public void BitColorOfButtonTest(BitColor? color)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            if (severity.HasValue)
+            if (color.HasValue)
             {
-                parameters.Add(p => p.Severity, severity.Value);
+                parameters.Add(p => p.Color, color.Value);
             }
         });
 
         var bitButton = com.Find(".bit-btn");
 
-        var colorClassName = severity switch
+        var colorClassName = color switch
         {
-            BitSeverity.Info => "bit-btn-inf",
-            BitSeverity.Success => "bit-btn-suc",
-            BitSeverity.Warning => "bit-btn-wrn",
-            BitSeverity.SevereWarning => "bit-btn-swr",
-            BitSeverity.Error => "bit-btn-err",
-            _ => string.Empty
+            BitColor.Info => "bit-btn-inf",
+            BitColor.Success => "bit-btn-suc",
+            BitColor.Warning => "bit-btn-wrn",
+            BitColor.SevereWarning => "bit-btn-swr",
+            BitColor.Error => "bit-btn-err",
+            _ => "bit-btn-pri"
         };
 
-        if (severity.HasValue)
+        if (color.HasValue)
         {
             Assert.IsTrue(bitButton.ClassList.Contains(colorClassName));
         }
         else
         {
-            Assert.AreEqual(3, bitButton.ClassList.Length);
+            Assert.AreEqual(5, bitButton.ClassList.Length);
         }
     }
 
@@ -271,7 +271,7 @@ public class BitButtonTests : BunitTestContext
             BitSize.Small => "bit-btn-sm",
             BitSize.Medium => "bit-btn-md",
             BitSize.Large => "bit-btn-lg",
-            _ => string.Empty
+            _ => "bit-btn-md"
         };
 
         if (size.HasValue)
@@ -280,7 +280,7 @@ public class BitButtonTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(3, bitButton.ClassList.Length);
+            Assert.AreEqual(5, bitButton.ClassList.Length);
         }
     }
 

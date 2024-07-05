@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitButton : BitComponentBase
 {
     private BitSize? size;
-    private BitSeverity? severity;
+    private BitColor? color;
     private BitVariant? variant;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
@@ -48,6 +48,23 @@ public partial class BitButton : BitComponentBase
     /// Custom CSS classes for different parts of the BitButton.
     /// </summary>
     [Parameter] public BitButtonClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the button.
+    /// </summary>
+    [Parameter]
+    public BitColor? Color
+    {
+        get => color;
+        set
+        {
+            if (color == value) return;
+
+            color = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// Alias of ChildContent.
@@ -104,23 +121,6 @@ public partial class BitButton : BitComponentBase
     /// Callback for when the button clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-    /// <summary>
-    /// The severity of button.
-    /// </summary>
-    [Parameter]
-    public BitSeverity? Severity
-    {
-        get => severity;
-        set
-        {
-            if (severity == value) return;
-
-            severity = value;
-
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The size of button, Possible values: Small | Medium | Large
@@ -186,14 +186,16 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-fil"
         });
 
-        ClassBuilder.Register(() => Severity switch
+        ClassBuilder.Register(() => Color switch
         {
-            BitSeverity.Info => "bit-btn-inf",
-            BitSeverity.Success => "bit-btn-suc",
-            BitSeverity.Warning => "bit-btn-wrn",
-            BitSeverity.SevereWarning => "bit-btn-swr",
-            BitSeverity.Error => "bit-btn-err",
-            _ => string.Empty
+            BitColor.Primary => "bit-btn-pri",
+            BitColor.Secondary => "bit-btn-sec",
+            BitColor.Info => "bit-btn-inf",
+            BitColor.Success => "bit-btn-suc",
+            BitColor.Warning => "bit-btn-wrn",
+            BitColor.SevereWarning => "bit-btn-swr",
+            BitColor.Error => "bit-btn-err",
+            _ => "bit-btn-pri"
         });
 
         ClassBuilder.Register(() => Size switch
@@ -201,7 +203,7 @@ public partial class BitButton : BitComponentBase
             BitSize.Small => "bit-btn-sm",
             BitSize.Medium => "bit-btn-md",
             BitSize.Large => "bit-btn-lg",
-            _ => string.Empty
+            _ => "bit-btn-md"
         });
 
         ClassBuilder.Register(() => IconPosition switch
