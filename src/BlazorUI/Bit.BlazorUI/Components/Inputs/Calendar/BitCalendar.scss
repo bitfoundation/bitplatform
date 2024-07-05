@@ -9,7 +9,7 @@
     max-width: fit-content;
     box-sizing: border-box;
     font-size: spacing(2.25);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         .bit-cal-cnt {
@@ -24,11 +24,11 @@
         .bit-cal-dbt,
         .bit-cal-pkb,
         .bit-cal-ptb {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-cal-dbt.bit-cal-dtd {
-            background-color: $color-background-disabled;
+            background-color: $clr-bg-dis;
         }
     }
 }
@@ -40,8 +40,8 @@
     outline: transparent;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
+    border-radius: $shp-border-radius;
+    font-family: $tg-font-family;
 }
 
 .bit-cal-sdt {
@@ -95,7 +95,7 @@
     animation-fill-mode: both;
     animation-duration: 0.267s;
     animation-name: bit-fade-in;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -116,56 +116,56 @@
     line-height: spacing(3);
     justify-content: center;
     background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
+    color: $clr-fg-pri;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:active {
-        background-color: $color-action-active-background-primary;
+        background-color: $clr-bg-pri-active;
     }
 
     &:disabled {
         pointer-events: none;
         background-color: transparent;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
     }
 }
 
 .bit-cal-dbs {
-    background-color: $color-background-secondary;
+    background-color: $clr-bg-sec;
 
     &::after {
         inset: 0;
         content: "";
         position: absolute;
-        border: $shape-border-width $shape-border-style $color-border-primary;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 }
 
 .bit-cal-dbo {
     font-weight: 400;
-    color: $color-foreground-secondary;
+    color: $clr-fg-sec;
 }
 
 .bit-cal-dtd {
     font-weight: 600;
     border-radius: 50%;
-    color: $color-primary-text;
-    background-color: $color-primary-main;
+    color: $clr-pri-text;
+    background-color: $clr-pri;
 
     @media(hover: hover) {
         &:hover {
-            background-color: $color-action-hover-primary;
+            background-color: $clr-pri-hover;
         }
     }
 
     &:active {
-        background-color: $color-action-active-primary;
+        background-color: $clr-pri-active;
     }
 }
 
@@ -180,9 +180,9 @@
     font-size: spacing(1.5);
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
-    color: $color-foreground-secondary;
-    background-color: $color-background-secondary;
-    border-inline-end: $shape-border-width $shape-border-style $color-border-secondary;
+    color: $clr-fg-sec;
+    background-color: $clr-bg-sec;
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-cal-pkh {
@@ -219,8 +219,8 @@
     animation-duration: 0.267s;
     animation-name: bit-fade-show;
     background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
+    color: $clr-fg-pri;
+    border-radius: $shp-border-radius;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -229,7 +229,7 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 }
@@ -258,12 +258,12 @@
     min-height: spacing(3.5);
     line-height: spacing(3.5);
     background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
+    color: $clr-fg-pri;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
@@ -273,7 +273,7 @@
 
         .bit-icon,
         .bit-cal-gti {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 }
@@ -290,18 +290,18 @@
     line-height: spacing(3.75);
     font-size: spacing(1.5);
     background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
+    color: $clr-fg-pri;
+    border-radius: $shp-border-radius;
     aspect-ratio: 1;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:active {
-        background-color: $color-action-hover-background-primary;
+        background-color: $clr-bg-pri-hover;
     }
 
     i {
@@ -316,14 +316,14 @@
         background-color: transparent;
 
         i {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 }
 
 .bit-cal-dvd {
     top: 0;
-    border-inline-end: $shape-border-width $shape-border-style $color-border-secondary;
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-cal-mwp {
@@ -361,41 +361,41 @@
     text-overflow: ellipsis;
     line-height: spacing(5.17);
     background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
+    color: $clr-fg-pri;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:disabled {
         pointer-events: none;
         background-color: transparent;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
     }
 }
 
 .bit-cal-psm {
     font-weight: 600;
-    background-color: $color-background-secondary;
+    background-color: $clr-bg-sec;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 }
 
 .bit-cal-pcm {
-    color: $color-primary-text;
-    background-color: $color-primary-main;
+    color: $clr-pri-text;
+    background-color: $clr-pri;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-secondary;
-            background-color: $color-action-hover-primary;
+            color: $clr-sec-hover;
+            background-color: $clr-pri-hover;
         }
     }
 }
@@ -427,7 +427,7 @@
     justify-content: center;
     align-items: center;
     font-size: spacing(2.5);
-    font-weight: $typography-font-weight;
+    font-weight: $tg-font-weight;
 }
 
 .bit-cal-am-pm {
@@ -449,9 +449,9 @@
     box-sizing: border-box;
     justify-content: center;
     -moz-appearance: textfield; // Firefox
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
     font-size: spacing(2.28);
-    font-weight: $typography-font-weight;
+    font-weight: $tg-font-weight;
     overflow: hidden;
     aspect-ratio: 1;
 
@@ -463,7 +463,7 @@
 
     &:focus {
         border: none;
-        border-bottom: $shape-border-width $shape-border-style $color-action-active-border-primary;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
         outline: none;
     }
 }
@@ -471,21 +471,21 @@
 .bit-cal-bam,
 .bit-cal-bpm {
     font-size: spacing(1.8);
-    font-weight: $typography-font-weight;
+    font-weight: $tg-font-weight;
 }
 
 .bit-cal-bns {
-    color: $color-primary-text;
-    background-color: $color-primary-main;
+    color: $clr-pri-text;
+    background-color: $clr-pri;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-primary;
+            background-color: $clr-pri-hover;
         }
     }
 
     &:active {
-        background-color: $color-action-active-primary;
+        background-color: $clr-pri-active;
     }
 }
 

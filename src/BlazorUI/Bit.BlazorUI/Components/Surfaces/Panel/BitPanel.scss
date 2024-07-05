@@ -8,7 +8,7 @@
     font-weight: 400;
     font-size: spacing(2);
     z-index: $zindex-modal;
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     @keyframes bit-pnl-trans-x {
         0% {
@@ -68,7 +68,7 @@
     position: fixed;
     pointer-events: auto;
     z-index: $zindex-overlay;
-    background: $color-background-overlay;
+    background: $clr-bg-overlay;
 }
 
 .bit-pnl-cnt {
@@ -88,7 +88,7 @@
     animation-duration: 0.367s;
     box-shadow: $box-shadow-callout;
     animation-name: opacity, bit-pnl-trans-x;
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
 }
 
@@ -101,9 +101,9 @@
     align-items: center;
     font-size: spacing(2.5);
     overflow-wrap: anywhere;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
     padding: spacing(2.25) spacing(3) 0;
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
 }
 
 .bit-pnl-ttl {
@@ -131,7 +131,7 @@
     font-size: spacing(1.75);
     border-radius: spacing(0.25);
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     span {
         height: 100%;
@@ -147,14 +147,14 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-foreground-primary;
-            background-color: $color-action-hover-background-primary;
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:active {
-        color: $color-action-active-foreground-primary;
-        background-color: $color-action-active-background-primary;
+        color: $clr-fg-pri-active;
+        background-color: $clr-bg-pri-active;
     }
 }
 
@@ -171,7 +171,7 @@
     z-index: 1;
     position: sticky;
     padding: spacing(2) spacing(3);
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
 }
 
 .bit-pnl-right {

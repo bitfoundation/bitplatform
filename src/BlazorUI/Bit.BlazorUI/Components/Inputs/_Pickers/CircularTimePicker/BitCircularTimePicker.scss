@@ -3,32 +3,32 @@
 .bit-ctp {
     &.bit-dis {
         .bit-ctp-lbl {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-ctp-icn {
             cursor: default;
             pointer-events: none;
-            color: $color-foreground-disabled;
-            background: none $color-background-disabled;
-            border: $shape-border-width $shape-border-style $color-border-disabled;
+            color: $clr-fg-dis;
+            background: none $clr-bg-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
 
             .bit-icon {
                 cursor: default;
-                color: $color-foreground-disabled;
+                color: $clr-fg-dis;
             }
 
             .bit-ctp-inp {
                 cursor: default;
-                color: $color-foreground-disabled;
-                background: none $color-background-disabled;
+                color: $clr-fg-dis;
+                background: none $clr-bg-dis;
             }
         }
     }
 
     &.bit-inv {
         .bit-ctp-icn {
-            border-color: $color-state-error;
+            border-color: $clr-err;
         }
     }
 }
@@ -42,7 +42,7 @@
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-ctp-wrp {
@@ -60,16 +60,16 @@
     padding: 0 spacing(1);
     flex-flow: row nowrap;
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-ctp-ico {
     cursor: pointer;
     padding-inline-end: 0;
     padding-inline-start: spacing(1);
-    color: $color-foreground-secondary;
+    color: $clr-fg-sec;
 }
 
 .bit-ctp-inp {
@@ -88,8 +88,8 @@
     text-overflow: ellipsis;
     font-size: spacing(1.75);
     background: none transparent;
-    color: $color-foreground-primary;
-    font-family: $typography-font-family;
+    color: $clr-fg-pri;
+    font-family: $tg-font-family;
 }
 
 .bit-ctp-ein {
@@ -113,8 +113,8 @@
         position: absolute;
         pointer-events: none;
         inset: spacing(-0.125);
-        border-radius: $shape-border-radius;
-        border: spacing(0.25) $shape-border-style $color-primary-main;
+        border-radius: $shp-border-radius;
+        border: spacing(0.25) $shp-border-style $clr-pri;
     }
 }
 
@@ -122,7 +122,7 @@
     .bit-ctp-wrp {
         display: flex;
         width: 100%;
-        border-bottom: $shape-border-width $shape-border-style $color-border-primary;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     .bit-ctp-icn {
@@ -133,7 +133,7 @@
 
     &.bit-dis {
         .bit-ctp-wrp {
-            border-bottom-color: $color-border-disabled;
+            border-bottom-color: $clr-brd-dis;
         }
     }
 
@@ -141,7 +141,7 @@
         .bit-ctp-icn::after {
             border: none;
             border-radius: 0;
-            border-bottom: spacing(0.25) $shape-border-style $color-border-primary;
+            border-bottom: spacing(0.25) $shp-border-style $clr-brd-pri;
         }
     }
 }
@@ -172,16 +172,16 @@
     z-index: $zindex-callout;
     font-size: spacing(1.75);
     box-shadow: $box-shadow-callout;
-    border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
+    border-radius: $shp-border-radius;
+    font-family: $tg-font-family;
 }
 
 .bit-ctp-cac {
     outline: none;
     position: relative;
     overflow: hidden auto;
-    border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
 }
 
 .bit-ctp-tbr {
@@ -191,8 +191,8 @@
     padding: spacing(2) 0;
     justify-content: center;
     min-width: spacing(32.5);
-    color: $color-primary-text;
-    background-color: $color-primary-main;
+    color: $clr-pri-text;
+    background-color: $clr-pri;
 }
 
 .bit-ctp-txt,
@@ -213,7 +213,7 @@
     justify-content: center;
     -webkit-appearance: none;
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-ctp-ina {
@@ -257,7 +257,7 @@
     width: spacing(0.75);
     height: spacing(0.75);
     transform: translate(-50%,-50%);
-    background-color: $color-primary-main;
+    background-color: $clr-pri;
 }
 
 .bit-ctp-ptr {
@@ -266,7 +266,7 @@
     width: spacing(0.25);
     left: calc(50% - spacing(0.125));
     transform-origin: center bottom 0;
-    background-color: $color-primary-main;
+    background-color: $clr-pri;
 }
 
 .bit-ctp-ani {
@@ -290,8 +290,8 @@
     top: spacing(-1.125);
     height: spacing(1.25);
     background: transparent;
-    color: $color-primary-main;
-    border: spacing(0.25) $shape-border-style;
+    color: $clr-pri;
+    border: spacing(0.25) $shp-border-style;
 }
 
 .bit-ctp-num {
@@ -306,13 +306,13 @@
     transition-duration: 120ms;
     transition-property: color;
     bottom: calc(100% - spacing(4));
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
     left: calc((100% - spacing(4))/2);
 }
 
 .bit-ctp-sel {
-    color: $color-foreground-primary;
-    background-color: $color-primary-main;
+    color: $clr-fg-pri;
+    background-color: $clr-pri;
     z-index: 1;
 }
 
@@ -336,17 +336,17 @@
     max-width: spacing(5);
     font-size: spacing(1.5);
     background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
+    color: $clr-fg-pri;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:active {
-        background-color: $color-action-hover-background-primary;
+        background-color: $clr-bg-pri-hover;
     }
 }
 

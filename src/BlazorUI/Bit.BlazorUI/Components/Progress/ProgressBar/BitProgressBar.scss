@@ -4,7 +4,7 @@
     font-weight: 400;
     position: relative;
     font-size: spacing(1.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     @keyframes bit-prb-animation {
         0% {
@@ -25,14 +25,14 @@
     text-overflow: ellipsis;
     line-height: spacing(2.5);
     padding-bottom: spacing(1);
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-prb-pct {
     top: 0;
     position: absolute;
     inset-inline-end: 0;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-prb-bcn {
@@ -44,7 +44,7 @@
     width: 100%;
     height: inherit;
     position: absolute;
-    background-color: $color-background-secondary;
+    background-color: $clr-bg-sec;
 }
 
 .bit-prb-bar {
@@ -58,7 +58,7 @@
 .bit-prb-des {
     font-size: spacing(1.5);
     line-height: spacing(2.25);
-    color: $color-foreground-secondary;
+    color: $clr-fg-sec;
 }
 
 
@@ -68,5 +68,5 @@
     position: absolute;
     transition: width 0.3s ease 0s;
     animation: 3s ease 0s infinite normal none running bit-prb-animation;
-    background: linear-gradient(to right, $color-background-secondary 0%, var(--bit-prb-bar-color) 50%, $color-background-secondary 100%);
+    background: linear-gradient(to right, $clr-bg-sec 0%, var(--bit-prb-bar-color) 50%, $clr-bg-sec 100%);
 }

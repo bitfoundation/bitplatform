@@ -4,13 +4,13 @@
     display: block;
     font-weight: 400;
     font-size: spacing(1.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-chg-req {
         .bit-chg-lbl {
             &::after {
                 content: " *";
-                color: $color-state-required;
+                color: $clr-req;
                 padding-right: spacing(1.5);
             }
         }
@@ -18,61 +18,61 @@
 
     &.bit-inv {
         .bit-chg-ilw {
-            color: $color-state-error;
-            border-color: $color-state-error;
+            color: $clr-err;
+            border-color: $clr-err;
 
             &:before {
-                border-color: $color-state-error;
+                border-color: $clr-err;
             }
 
             &:after {
-                border-color: $color-state-error;
-                background-color: $color-state-error;
+                border-color: $clr-err;
+                background-color: $clr-err;
             }
 
             @media (hover: hover) {
                 &:hover {
                     .bit-chg-itx {
-                        color: $color-state-error;
+                        color: $clr-err;
                     }
 
                     &:before {
-                        border-color: $color-state-error;
+                        border-color: $clr-err;
                     }
 
                     &:after {
-                        border-color: $color-state-error;
-                        background-color: $color-state-error;
+                        border-color: $clr-err;
+                        background-color: $clr-err;
                     }
                 }
             }
         }
 
         .bit-chg-ilwi {
-            color: $color-state-error;
-            border-color: $color-state-error;
+            color: $clr-err;
+            border-color: $clr-err;
 
             &:before {
-                border-color: $color-state-error;
+                border-color: $clr-err;
             }
 
             &:after {
-                border-color: $color-state-error;
-                background-color: $color-state-error;
+                border-color: $clr-err;
+                background-color: $clr-err;
             }
 
             @media (hover: hover) {
                 &:hover {
-                    border-color: $color-state-error;
+                    border-color: $clr-err;
 
                     &:before {
                         opacity: 1;
-                        border-color: $color-state-error;
+                        border-color: $clr-err;
                     }
 
                     &:after {
-                        border-color: $color-state-error;
-                        background-color: $color-state-error;
+                        border-color: $clr-err;
+                        background-color: $clr-err;
                     }
                 }
             }
@@ -89,7 +89,7 @@
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-chg-cnt {
@@ -112,8 +112,8 @@
     min-height: spacing(3.25);
     margin-inline-end: spacing(1);
     margin-block-start: spacing(1);
-    color: $color-foreground-primary;
-    font-family: $typography-font-family;
+    color: $clr-fg-pri;
+    font-family: $tg-font-family;
 }
 
 .bit-chg-ihi {
@@ -122,7 +122,7 @@
     width: fit-content;
     display: inline-flex;
     padding-inline-start: 0;
-    background-color: $color-background-secondary;
+    background-color: $clr-bg-sec;
 }
 
 .bit-chg-ilw {
@@ -145,9 +145,9 @@
         inset-inline-start: 0;
         display: inline-block;
         box-sizing: border-box;
-        background-color: $color-background-primary;
+        background-color: $clr-bg-pri;
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $color-border-primary;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     &:after {
@@ -165,11 +165,11 @@
     @media (hover: hover) {
         &:hover {
             .bit-chg-itx {
-                color: $color-action-hover-foreground-primary;
+                color: $clr-fg-pri-hover;
             }
 
             &:before {
-                border-color: $color-action-hover-border-primary;
+                border-color: $clr-brd-pri-hover;
             }
 
             &:after {
@@ -178,7 +178,7 @@
                 inset-block-start: spacing(0.625);
                 inset-inline-start: spacing(0.625);
                 transition-property: background-color;
-                background-color: $color-action-hover-foreground-secondary;
+                background-color: $clr-fg-sec-hover;
             }
         }
     }
@@ -199,7 +199,7 @@
     min-height: spacing(2.5);
     transition: all 0.2s ease;
     padding-block-start: spacing(2.75);
-    border: $shape-border-width $shape-border-style transparent;
+    border: $shp-border-width $shp-border-style transparent;
 
     &:before {
         opacity: 0;
@@ -213,9 +213,9 @@
         inset-inline-start: auto;
         inset-inline-end: spacing(0.375);
         inset-block-start: spacing(0.375);
-        background-color: $color-background-primary;
+        background-color: $clr-bg-pri;
         transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shape-border-width $shape-border-style $color-border-primary;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     &:after {
@@ -232,11 +232,11 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-border-primary;
+            border-color: $clr-brd-pri-hover;
 
             &:before {
                 opacity: 1;
-                border-color: $color-action-hover-border-primary;
+                border-color: $clr-brd-pri-hover;
             }
         }
     }
@@ -256,7 +256,7 @@
     white-space: pre-wrap;
     font-size: spacing(1.75);
     line-height: spacing(1.875);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
     margin: spacing(0.5) spacing(1) spacing(0.25);
 
     .bit-chg-itx {
@@ -307,10 +307,10 @@
 
 .bit-chg-ich {
     .bit-chg-ilw {
-        border-color: $color-primary-main;
+        border-color: $clr-pri;
 
         &:before {
-            border-color: $color-primary-main;
+            border-color: $clr-pri;
         }
 
         &:after {
@@ -318,30 +318,30 @@
             height: spacing(1.25);
             inset-block-start: spacing(0.625);
             inset-inline-start: spacing(0.625);
-            background-color: $color-primary-main;
-            border: spacing(0.625) $shape-border-style $color-primary-main;
+            background-color: $clr-pri;
+            border: spacing(0.625) $shp-border-style $clr-pri;
         }
 
         @media (hover: hover) {
             &:hover {
                 &:before {
-                    border-color: $color-action-hover-primary;
+                    border-color: $clr-pri-hover;
                 }
 
                 &:after {
-                    border-color: $color-action-hover-primary;
-                    background-color: $color-action-hover-primary;
+                    border-color: $clr-pri-hover;
+                    background-color: $clr-pri-hover;
                 }
             }
         }
     }
 
     .bit-chg-ilwi {
-        border-color: $color-primary-main;
+        border-color: $clr-pri;
 
         &:before {
             opacity: 1;
-            border-color: $color-primary-main;
+            border-color: $clr-pri;
         }
 
         &:after {
@@ -350,22 +350,22 @@
             inset-inline-start: auto;
             inset-inline-end: spacing(1);
             inset-block-start: spacing(1);
-            background-color: $color-primary-main;
-            border: spacing(0.625) $shape-border-style $color-primary-main;
+            background-color: $clr-pri;
+            border: spacing(0.625) $shp-border-style $clr-pri;
         }
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-action-hover-primary;
+                border-color: $clr-pri-hover;
 
                 &:before {
                     opacity: 1;
-                    border-color: $color-action-hover-primary;
+                    border-color: $clr-pri-hover;
                 }
 
                 &:after {
-                    border-color: $color-action-hover-primary;
-                    background-color: $color-action-hover-primary;
+                    border-color: $clr-pri-hover;
+                    background-color: $clr-pri-hover;
                 }
             }
         }
@@ -376,28 +376,28 @@
     .bit-chg-ilw {
         cursor: default;
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
 
         &:before {
-            border-color: $color-border-disabled;
+            border-color: $clr-brd-dis;
         }
 
         &:after {
-            border-color: $color-border-disabled;
+            border-color: $clr-brd-dis;
         }
 
         .bit-chg-itx {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         @media (hover: hover) {
             &:hover {
                 .bit-chg-itx {
-                    color: $color-border-disabled;
+                    color: $clr-brd-dis;
                 }
 
                 &:before, &:after {
-                    border-color: $color-border-disabled;
+                    border-color: $clr-brd-dis;
                 }
             }
         }
@@ -406,10 +406,10 @@
     .bit-chg-ilwi {
         cursor: default;
         border-color: transparent;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
 
         &:before {
-            border-color: $color-border-disabled;
+            border-color: $clr-brd-dis;
         }
 
         @media (hover: hover) {
@@ -418,25 +418,25 @@
 
                 &:before, &:after {
                     opacity: 0;
-                    border-color: $color-border-disabled;
+                    border-color: $clr-brd-dis;
                 }
             }
         }
     }
 
     .bit-chg-icw {
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
 
         i {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 
     &.bit-chg-ich {
         .bit-chg-ilwi {
             &:after {
-                background-color: $color-background-disabled;
-                border: spacing(0.625) $shape-border-style $color-border-disabled;
+                background-color: $clr-bg-dis;
+                border: spacing(0.625) $shp-border-style $clr-brd-dis;
             }
 
             @media (hover: hover) {

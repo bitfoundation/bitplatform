@@ -2,6 +2,7 @@
 
 .bit-icb {
     border: none;
+    color: $clr-pri;
     cursor: pointer;
     width: spacing(4);
     height: spacing(4);
@@ -9,31 +10,30 @@
     text-decoration: none;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-primary-main;
+    font-family: $tg-font-family;
     background-color: transparent;
-    border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-primary;
-            background-color: $color-action-hover-background-primary;
+            color: $clr-pri-hover;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:active {
-        color: $color-action-active-primary;
-        background-color: $color-action-active-background-primary;
+        color: $clr-pri-active;
+        background-color: $clr-bg-pri-active;
     }
 
     &.bit-dis {
         cursor: default;
+        color: $clr-fg-dis;
         pointer-events: none;
-        color: $color-foreground-disabled;
-        border-width: $shape-border-width;
-        border-style: $shape-border-style;
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+        border-width: $shp-border-width;
+        border-style: $shp-border-style;
     }
 }
 

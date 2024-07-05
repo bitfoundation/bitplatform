@@ -7,8 +7,8 @@
 .bit-spr-cnt {
     position: relative;
     display: inline-block;
-    color: $color-foreground-primary;
-    background: $color-background-primary;
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
 }
 
 .bit-spr-hrz {
@@ -20,8 +20,8 @@
         display: block;
         inset: 50% 0 0;
         position: absolute;
-        height: $shape-border-width;
-        background-color: $color-border-secondary;
+        height: $shp-border-width;
+        background-color: $clr-brd-sec;
     }
 
     .bit-spr-cnt {
@@ -53,8 +53,8 @@
         display: block;
         inset: 0 0 0 50%;
         position: absolute;
-        width: $shape-border-width;
-        background-color: $color-border-secondary;
+        width: $shp-border-width;
+        background-color: $clr-brd-sec;
     }
 
     .bit-spr-cnt {

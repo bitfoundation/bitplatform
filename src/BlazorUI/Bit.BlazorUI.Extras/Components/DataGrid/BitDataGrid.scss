@@ -58,8 +58,8 @@
         border: 1px solid;
         position: absolute;
         inset-inline-start: 0;
-        border-color: var(--bit-clr-brd-primary);
-        background-color: var(--bit-clr-bg-secondary);
+        border-color: var(--bit-clr-brd-pri);
+        background-color: var(--bit-clr-bg-sec);
     }
 
     .col-justify-end .col-options {
@@ -183,7 +183,7 @@
         inset-block-end: 5px;
         inset-block-start: 5px;
         inset-inline-start: 0.5rem;
-        border-color: var(--bit-clr-brd-primary);
+        border-color: var(--bit-clr-brd-pri);
     }
 
     > tbody > tr > td.grid-cell-placeholder:after {

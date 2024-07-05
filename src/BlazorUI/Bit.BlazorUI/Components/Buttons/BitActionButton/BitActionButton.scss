@@ -3,42 +3,42 @@
 .bit-acb {
     border: none;
     cursor: pointer;
+    color: $clr-fg-pri;
     text-decoration: none;
     min-width: spacing(8);
     min-height: spacing(4);
     box-sizing: border-box;
-    font-size: spacing(1.75);
-    background-color: transparent;
     padding: 0 spacing(0.5);
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    background-color: transparent;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-primary;
+            color: $clr-pri-hover;
 
             .bit-icon {
-                color: $color-action-hover-primary;
+                color: $clr-pri-hover;
             }
         }
     }
 
     &:active {
-        color: $color-action-active-primary;
+        color: $clr-pri-active;
 
         .bit-icon {
-            color: $color-action-active-primary;
+            color: $clr-pri-active;
         }
     }
 
     &.bit-dis {
         cursor: default;
+        color: $clr-fg-dis;
         pointer-events: none;
-        color: $color-foreground-disabled;
 
         .bit-icon {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 }
@@ -49,12 +49,12 @@
 
     .bit-icon {
         flex-shrink: 0;
+        color: $clr-pri;
         flex-wrap: nowrap;
         text-align: center;
         align-items: center;
         margin: 0 spacing(0.5);
         justify-content: center;
-        color: $color-primary-main;
     }
 }
 

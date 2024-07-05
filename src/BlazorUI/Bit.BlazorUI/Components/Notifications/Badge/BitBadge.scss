@@ -8,7 +8,7 @@
         .bit-bdg-ctn {
             cursor: default;
             pointer-events: none;
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 }
@@ -89,8 +89,8 @@
     padding: 0 spacing(0.75);
     -webkit-user-select: none;
     border-radius: spacing(1.25);
-    border-width: $shape-border-width;
-    border-style: $shape-border-style;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
 
     &.bit-bdg-tlf {
         inset: auto calc(100% - spacing(0.5)) calc(100% - spacing(0.5)) auto;
@@ -161,27 +161,27 @@
     color: var(--bit-bdg-pri-clr);
     background-color: var(--bit-bdg-bg-clr);
     border-color: var(--bit-bdg-pri-brd-clr);
-    --bit-bdg-bg-clr: #{$color-primary-main};
-    --bit-bdg-pri-clr: #{$color-primary-text};
-    --bit-bdg-pri-brd-clr: #{$color-primary-main};
-    --bit-bdg-ldg-brd-top-clr: #{$color-primary-dark};
+    --bit-bdg-bg-clr: #{$clr-pri};
+    --bit-bdg-pri-clr: #{$clr-pri-text};
+    --bit-bdg-pri-brd-clr: #{$clr-pri};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-pri-dark};
 
     .bit-dis & {
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
     }
 }
 
 .bit-bdg-otl {
     color: var(--bit-bdg-sec-clr);
-    background-color: $color-secondary-main;
+    background-color: $clr-sec;
     border-color: var(--bit-bdg-sec-brd-clr);
-    --bit-bdg-sec-clr: #{$color-secondary-text};
-    --bit-bdg-sec-brd-clr: #{$color-secondary-text};
-    --bit-bdg-ldg-brd-top-clr: #{$color-primary-dark};
+    --bit-bdg-sec-clr: #{$clr-sec-text};
+    --bit-bdg-sec-brd-clr: #{$clr-sec-text};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-pri-dark};
 
     .bit-dis & {
-        border-color: $color-border-disabled;
+        border-color: $clr-brd-dis;
     }
 }
 
@@ -189,8 +189,8 @@
     border-color: transparent;
     color: var(--bit-bdg-sec-clr);
     background-color: transparent;
-    --bit-bdg-sec-clr: #{$color-secondary-text};
-    --bit-bdg-ldg-brd-top-clr: #{$color-primary-dark};
+    --bit-bdg-sec-clr: #{$clr-sec-text};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-pri-dark};
 }
 
 .bit-bdg-icn {
@@ -207,48 +207,48 @@
 }
 
 .bit-bdg-inf {
-    --bit-bdg-bg-clr: #{$color-state-info-bg};
-    --bit-bdg-ldg-brd-top-clr: #{$color-state-info};
-    --bit-bdg-pri-clr: #{$color-foreground-primary};
-    --bit-bdg-pri-brd-clr: #{$color-state-info-bg};
-    --bit-bdg-sec-clr: #{$color-state-info};
-    --bit-bdg-sec-brd-clr: #{$color-state-info};
+    --bit-bdg-bg-clr: #{$clr-inf};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-inf};
+    --bit-bdg-pri-clr: #{$clr-fg-pri};
+    --bit-bdg-pri-brd-clr: #{$clr-inf};
+    --bit-bdg-sec-clr: #{$clr-inf};
+    --bit-bdg-sec-brd-clr: #{$clr-inf};
 }
 
 .bit-bdg-suc {
-    --bit-bdg-bg-clr: #{$color-state-success-bg};
-    --bit-bdg-ldg-brd-top-clr: #{$color-state-success};
-    --bit-bdg-pri-clr: #{$color-foreground-primary};
-    --bit-bdg-pri-brd-clr: #{$color-state-success-bg};
-    --bit-bdg-sec-clr: #{$color-state-success};
-    --bit-bdg-sec-brd-clr: #{$color-state-success};
+    --bit-bdg-bg-clr: #{$clr-suc};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-suc};
+    --bit-bdg-pri-clr: #{$clr-fg-pri};
+    --bit-bdg-pri-brd-clr: #{$clr-suc};
+    --bit-bdg-sec-clr: #{$clr-suc};
+    --bit-bdg-sec-brd-clr: #{$clr-suc};
 }
 
 .bit-bdg-wrn {
-    --bit-bdg-bg-clr: #{$color-state-warning-bg};
-    --bit-bdg-ldg-brd-top-clr: #{$color-state-warning};
-    --bit-bdg-pri-clr: #{$color-foreground-primary};
-    --bit-bdg-pri-brd-clr: #{$color-state-warning-bg};
-    --bit-bdg-sec-clr: #{$color-state-warning};
-    --bit-bdg-sec-brd-clr: #{$color-state-warning};
+    --bit-bdg-bg-clr: #{$clr-wrn};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-wrn};
+    --bit-bdg-pri-clr: #{$clr-fg-pri};
+    --bit-bdg-pri-brd-clr: #{$clr-wrn};
+    --bit-bdg-sec-clr: #{$clr-wrn};
+    --bit-bdg-sec-brd-clr: #{$clr-wrn};
 }
 
 .bit-bdg-swr {
-    --bit-bdg-bg-clr: #{$color-state-severe-warning-bg};
-    --bit-bdg-ldg-brd-top-clr: #{$color-state-severe-warning};
-    --bit-bdg-pri-clr: #{$color-foreground-primary};
-    --bit-bdg-pri-brd-clr: #{$color-state-severe-warning-bg};
-    --bit-bdg-sec-clr: #{$color-state-severe-warning};
-    --bit-bdg-sec-brd-clr: #{$color-state-severe-warning};
+    --bit-bdg-bg-clr: #{$clr-swr};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-swr};
+    --bit-bdg-pri-clr: #{$clr-fg-pri};
+    --bit-bdg-pri-brd-clr: #{$clr-swr};
+    --bit-bdg-sec-clr: #{$clr-swr};
+    --bit-bdg-sec-brd-clr: #{$clr-swr};
 }
 
 .bit-bdg-err {
-    --bit-bdg-bg-clr: #{$color-state-error-bg};
-    --bit-bdg-ldg-brd-top-clr: #{$color-state-error};
-    --bit-bdg-pri-clr: #{$color-foreground-primary};
-    --bit-bdg-pri-brd-clr: #{$color-state-error-bg};
-    --bit-bdg-sec-clr: #{$color-state-error};
-    --bit-bdg-sec-brd-clr: #{$color-state-error};
+    --bit-bdg-bg-clr: #{$clr-err};
+    --bit-bdg-ldg-brd-top-clr: #{$clr-err};
+    --bit-bdg-pri-clr: #{$clr-fg-pri};
+    --bit-bdg-pri-brd-clr: #{$clr-err};
+    --bit-bdg-sec-clr: #{$clr-err};
+    --bit-bdg-sec-brd-clr: #{$clr-err};
 }
 
 .bit-bdg-sm {

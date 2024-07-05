@@ -41,14 +41,14 @@
     font-size: spacing(3);
     justify-content: center;
     transition: opacity .15s ease;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     @media (hover: hover) {
         &:hover {
             outline: 0;
             opacity: .9;
             text-decoration: none;
-            color: $color-action-hover-foreground-primary;
+            color: $clr-fg-pri-hover;
         }
     }
 }
@@ -73,20 +73,20 @@
         display: inline-block;
         margin: 0 spacing(0.5);
         transition: background-color 0.6s ease;
-        background-color: $color-background-secondary;
+        background-color: $clr-bg-sec;
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-background-secondary;
+                background-color: $clr-bg-sec-hover;
             }
         }
 
         &.current {
-            background-color: $color-primary-main;
+            background-color: $clr-pri;
 
             @media (hover: hover) {
                 &:hover {
-                    background-color: $color-action-hover-primary;
+                    background-color: $clr-pri-hover;
                 }
             }
         }

@@ -8,14 +8,14 @@
     font-size: inherit;
     font-weight: inherit;
     text-decoration: none;
-    color: $color-primary-main;
+    color: $clr-pri;
     background-color: transparent;
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &:hover,
     &:active,
     &:focus {
-        color: $color-action-hover-primary;
+        color: $clr-pri-hover;
     }
 
     &:hover,
@@ -25,12 +25,12 @@
 
     &.bit-dis {
         cursor: default;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
 
         &:hover,
         &:active,
         &:focus {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         &:hover,

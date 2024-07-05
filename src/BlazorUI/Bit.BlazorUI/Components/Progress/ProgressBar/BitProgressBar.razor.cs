@@ -101,7 +101,7 @@ public partial class BitProgressBar : BitComponentBase
     {
         StringBuilder sb = new();
 
-        sb.Append($"--bit-prb-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-primary-main)")};");
+        sb.Append($"--bit-prb-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-pri)")};");
 
         sb.Append(Styles?.Bar);
 

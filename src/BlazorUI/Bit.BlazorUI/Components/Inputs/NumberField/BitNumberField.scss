@@ -5,53 +5,53 @@
     font-weight: 400;
     align-items: center;
     font-size: spacing(5.125);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         .bit-nfl-lct {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-nfl-lbl {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-nfl-wrp {
             border: none;
             cursor: default;
             background: none;
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-nfl-inp {
             border: none;
             cursor: default;
-            color: $color-foreground-disabled;
-            background: $color-background-disabled;
+            color: $clr-fg-dis;
+            background: $clr-bg-dis;
         }
 
         .bit-nfl-pre,
         .bit-nfl-suf {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-nfl-aup, .bit-nfl-adn {
             cursor: default;
             pointer-events: none;
-            color: $color-foreground-disabled;
-            background: $color-background-disabled;
-            border: $shape-border-width $shape-border-style $color-border-disabled;
+            color: $clr-fg-dis;
+            background: $clr-bg-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
     }
 
     &.bit-inv {
         .bit-nfl-wrp {
-            border-color: $color-state-error;
+            border-color: $clr-err;
         }
 
         &.bit-nfl-fcs {
             .bit-nfl-wrp::after {
-                border-color: $color-state-error;
+                border-color: $clr-err;
             }
         }
     }
@@ -95,7 +95,7 @@
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     line-height: spacing(2.5);
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-nfl-wrp {
@@ -104,9 +104,9 @@
     height: spacing(4);
     position: relative;
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-nfl-inp {
@@ -127,9 +127,9 @@
     text-overflow: ellipsis;
     font-size: spacing(1.75);
     background: none transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
     padding: 0 spacing(1) 0 spacing(1.125);
-    border-radius: $shape-border-radius 0 0 $shape-border-radius;
+    border-radius: $shp-border-radius 0 0 $shp-border-radius;
 }
 
 .bit-nfl-act {
@@ -152,23 +152,23 @@
     width: spacing(2.875);
     box-sizing: border-box;
     background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
+    color: $clr-fg-pri;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-foreground-primary;
-            background-color: $color-action-hover-background-primary;
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
         }
     }
 }
 
 .bit-nfl-aup {
-    border-radius: 0 $shape-border-radius 0 0;
+    border-radius: 0 $shp-border-radius 0 0;
 }
 
 .bit-nfl-adn {
-    border-radius: 0 0 $shape-border-radius 0;
+    border-radius: 0 0 $shp-border-radius 0;
 }
 
 .bit-nfl-aic {
@@ -194,8 +194,8 @@
         position: absolute;
         pointer-events: none;
         inset: spacing(-0.125);
-        border-radius: $shape-border-radius;
-        border: spacing(0.25) $shape-border-style $color-primary-main;
+        border-radius: $shp-border-radius;
+        border: spacing(0.25) $shp-border-style $clr-pri;
     }
 }
 
@@ -208,8 +208,8 @@
     white-space: nowrap;
     padding: 0 spacing(1.25);
     min-height: spacing(3.75);
-    color: $color-foreground-primary;
-    background: $color-background-secondary;
+    color: $clr-fg-pri;
+    background: $clr-bg-sec;
 
     span {
         font-size: spacing(1.75);
@@ -220,7 +220,7 @@
 .bit-nfl-req {
     .bit-nfl-lbl::after {
         content: "*";
-        color: $color-state-required;
+        color: $clr-req;
         margin-inline-start: spacing(0.625);
     }
 }
@@ -231,7 +231,7 @@
         position: absolute;
         top: spacing(-0.625);
         font-size: spacing(1.75);
-        color: $color-state-required;
+        color: $clr-req;
         inset-inline-end: spacing(-1.25);
     }
 }

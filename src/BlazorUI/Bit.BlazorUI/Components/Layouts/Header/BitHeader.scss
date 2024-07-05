@@ -4,14 +4,14 @@
     display: flex;
     flex-shrink: 0;
     z-index: $zindex-base;
-    color: $color-foreground-primary;
-    line-height: $typography-line-height;
-    font-weight: $typography-font-weight;
-    font-family: $typography-font-family;
-    background-color: $color-background-primary;
+    color: $clr-fg-pri;
+    line-height: $tg-line-height;
+    font-weight: $tg-font-weight;
+    font-family: $tg-font-family;
+    background-color: $clr-bg-pri;
 
     &.bit-dis {
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
     }
 }
 
