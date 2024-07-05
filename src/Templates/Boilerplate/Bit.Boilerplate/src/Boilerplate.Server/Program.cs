@@ -11,6 +11,7 @@ public static partial class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Configuration.AddClientConfigurations();
+        builder.Configuration.AddApiConfigurations(builder.Environment.EnvironmentName);
 
         // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
         if (BuildConfiguration.IsDebug() && OperatingSystem.IsWindows())
