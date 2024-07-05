@@ -280,9 +280,9 @@
                         "src/Boilerplate.Api/Mappers/ProductsMapper.cs",
                         "src/Boilerplate.Api/Models/Categories/**",
                         "src/Boilerplate.Api/Models/Products/**",
-                        "src/Client/Boilerplate.Client.Core/Controllers/Categories/**",
-                        "src/Client/Boilerplate.Client.Core/Controllers/Products/**",
-                        "src/Client/Boilerplate.Client.Core/Controllers/Dashboard/**",
+                        "src/Boilerplate.Shared/Controllers/Categories/**",
+                        "src/Boilerplate.Shared/Controllers/Products/**",
+                        "src/Boilerplate.Shared/Controllers/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
@@ -295,7 +295,7 @@
                         "src/Boilerplate.Api/Controllers/Todo/**",
                         "src/Boilerplate.Api/Mappers/TodoMapper.cs",
                         "src/Boilerplate.Api/Models/Todo/**",
-                        "src/Client/Boilerplate.Client.Core/Controllers/Todo/**",
+                        "src/Boilerplate.Shared/Controllers/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"
                     ]
                 },
