@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Controllers;
+﻿namespace Boilerplate.Shared.Controllers;
 
 public interface IAppController
 {

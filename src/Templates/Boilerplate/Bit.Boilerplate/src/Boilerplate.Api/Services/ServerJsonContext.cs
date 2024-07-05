@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-namespace Boilerplate.Server.Services;
+namespace Boilerplate.Api.Services;
 
 /// <summary>
 /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/

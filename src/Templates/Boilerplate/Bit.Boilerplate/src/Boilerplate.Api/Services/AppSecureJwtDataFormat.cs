@@ -2,7 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication;
 
-namespace Boilerplate.Server.Services;
+namespace Boilerplate.Api.Services;
 
 /// <summary>
 /// Stores bearer token in jwt format

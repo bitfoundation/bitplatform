@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Shared.Dtos.Categories;
 
-namespace Boilerplate.Client.Core.Controllers.Categories;
+namespace Boilerplate.Shared.Controllers.Categories;
 
 [Route("api/[controller]/[action]/")]
 public interface ICategoryController : IAppController

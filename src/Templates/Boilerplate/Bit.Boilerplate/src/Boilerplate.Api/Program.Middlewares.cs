@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Net.Http.Headers;
 
-namespace Boilerplate.Server;
+namespace Boilerplate.Api;
 
 public static partial class Program
 {

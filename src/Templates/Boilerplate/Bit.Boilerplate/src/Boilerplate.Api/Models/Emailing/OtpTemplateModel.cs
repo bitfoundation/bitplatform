@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Models.Emailing;
+﻿namespace Boilerplate.Api.Models.Emailing;
 
 public class OtpTemplateModel
 {

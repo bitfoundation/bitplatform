@@ -1,7 +1,7 @@
-﻿using Boilerplate.Client.Core.Controllers.Todo;
+﻿using Boilerplate.Shared.Controllers.Todo;
 using Boilerplate.Shared.Dtos.Todo;
 
-namespace Boilerplate.Server.Controllers.Todo;
+namespace Boilerplate.Api.Controllers.Todo;
 
 [ApiController, Route("api/[controller]/[action]")]
 public partial class TodoItemController : AppControllerBase, ITodoItemController

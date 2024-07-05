@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Net.Http.Headers;
 
-namespace Boilerplate.Server.Services;
+namespace Boilerplate.Api.Services;
 
 public partial class ServerExceptionHandler : IExceptionHandler
 {

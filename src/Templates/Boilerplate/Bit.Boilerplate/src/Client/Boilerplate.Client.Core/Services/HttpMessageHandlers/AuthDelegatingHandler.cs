@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using System.Net.Http.Headers;
-using Boilerplate.Client.Core.Controllers;
+using Boilerplate.Shared.Controllers;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 

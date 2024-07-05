@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 
-namespace Boilerplate.Server;
+namespace Boilerplate.Api;
 
 public static partial class Program
 {

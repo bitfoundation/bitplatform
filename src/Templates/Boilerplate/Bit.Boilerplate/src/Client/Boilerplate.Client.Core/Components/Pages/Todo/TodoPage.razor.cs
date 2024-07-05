@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Controllers.Todo;
+﻿using Boilerplate.Shared.Controllers.Todo;
 using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Client.Core.Components.Pages.Todo;

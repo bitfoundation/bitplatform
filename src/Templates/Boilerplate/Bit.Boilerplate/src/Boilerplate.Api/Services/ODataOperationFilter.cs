@@ -2,7 +2,7 @@
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Boilerplate.Server.Services;
+namespace Boilerplate.Api.Services;
 
 /// <summary>
 /// https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview

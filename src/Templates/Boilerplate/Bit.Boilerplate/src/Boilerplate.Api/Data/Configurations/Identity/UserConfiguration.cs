@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Models.Identity;
+using Boilerplate.Api.Models.Identity;
 
-namespace Boilerplate.Server.Data.Configurations.Identity;
+namespace Boilerplate.Api.Data.Configurations.Identity;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {

@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Shared.Dtos.Dashboard;
 
-namespace Boilerplate.Client.Core.Controllers.Dashboard;
+namespace Boilerplate.Shared.Controllers.Dashboard;
 
 [Route("api/[controller]/[action]/")]
 public interface IDashboardController : IAppController

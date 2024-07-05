@@ -1,7 +1,7 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Resources;
 
-namespace Boilerplate.Client.Core.Controllers.Identity;
+namespace Boilerplate.Shared.Controllers.Identity;
 
 [Route("api/[controller]/[action]/")]
 public interface IUserController : IAppController

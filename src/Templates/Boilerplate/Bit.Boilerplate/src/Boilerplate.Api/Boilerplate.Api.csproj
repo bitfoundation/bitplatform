@@ -47,8 +47,8 @@
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <Using Include="Boilerplate.Server.Data" />
-        <Using Include="Boilerplate.Server.Mappers" />
+        <Using Include="Boilerplate.Api.Data" />
+        <Using Include="Boilerplate.Api.Mappers" />
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />

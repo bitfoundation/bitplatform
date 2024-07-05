@@ -2,12 +2,12 @@
 using System.Text.Encodings.Web;
 using QRCoder;
 using Boilerplate.Shared;
-using Boilerplate.Server.Services;
+using Boilerplate.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Server.Models.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Api.Models.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Server.Controllers.Identity;
+namespace Boilerplate.Api.Controllers.Identity;
 
 [ApiController, Route("api/[controller]/[action]")]
 public partial class UserController : AppControllerBase, IUserController

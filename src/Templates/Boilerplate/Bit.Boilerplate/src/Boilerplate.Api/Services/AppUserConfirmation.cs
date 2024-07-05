@@ -1,6 +1,6 @@
-﻿using Boilerplate.Server.Models.Identity;
+﻿using Boilerplate.Api.Models.Identity;
 
-namespace Boilerplate.Server.Services;
+namespace Boilerplate.Api.Services;
 
 public class AppUserConfirmation : IUserConfirmation<User>
 {

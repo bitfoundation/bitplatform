@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Server.Services;
+﻿namespace Boilerplate.Api.Services;
 
 public class GoogleRecaptchaVerificationResponse
 {

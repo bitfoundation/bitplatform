@@ -1,7 +1,7 @@
-﻿using Boilerplate.Client.Core.Controllers.Categories;
+﻿using Boilerplate.Shared.Controllers.Categories;
 using Boilerplate.Shared.Dtos.Categories;
 
-namespace Boilerplate.Server.Controllers;
+namespace Boilerplate.Api.Controllers;
 
 [ApiController, Route("api/[controller]/[action]")]
 public partial class CategoryController : AppControllerBase, ICategoryController

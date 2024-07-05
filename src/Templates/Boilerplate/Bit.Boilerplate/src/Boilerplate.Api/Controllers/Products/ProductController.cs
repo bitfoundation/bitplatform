@@ -1,7 +1,7 @@
-﻿using Boilerplate.Client.Core.Controllers.Product;
+﻿using Boilerplate.Shared.Controllers.Product;
 using Boilerplate.Shared.Dtos.Products;
 
-namespace Boilerplate.Server.Controllers;
+namespace Boilerplate.Api.Controllers;
 
 [ApiController, Route("api/[controller]/[action]")]
 public partial class ProductController : AppControllerBase, IProductController

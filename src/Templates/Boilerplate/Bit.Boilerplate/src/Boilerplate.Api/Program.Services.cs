@@ -1,11 +1,11 @@
 ﻿//+:cnd:noEmit
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
-using Boilerplate.Server.Services;
+using Boilerplate.Api.Services;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
-using Boilerplate.Server.Models.Identity;
+using Boilerplate.Api.Models.Identity;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
@@ -14,9 +14,8 @@ using Microsoft.AspNetCore.DataProtection;
 using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
-using Boilerplate.Api.Services;
 
-namespace Boilerplate.Server;
+namespace Boilerplate.Api;
 
 public static partial class Program
 {

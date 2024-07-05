@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Data;
+using Boilerplate.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Boilerplate.Server;

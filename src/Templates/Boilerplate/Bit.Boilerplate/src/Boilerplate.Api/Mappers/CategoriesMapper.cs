@@ -1,8 +1,8 @@
-﻿using Boilerplate.Server.Models.Categories;
+﻿using Boilerplate.Api.Models.Categories;
 using Boilerplate.Shared.Dtos.Categories;
 using Riok.Mapperly.Abstractions;
 
-namespace Boilerplate.Server.Mappers;
+namespace Boilerplate.Api.Mappers;
 
 /// <summary>
 /// More info at Server/Mappers/README.md

@@ -1,7 +1,7 @@
 ﻿using Boilerplate.Shared.Dtos.Dashboard;
-using Boilerplate.Client.Core.Controllers.Dashboard;
+using Boilerplate.Shared.Controllers.Dashboard;
 
-namespace Boilerplate.Server.Controllers;
+namespace Boilerplate.Api.Controllers;
 
 [ApiController, Route("api/[controller]/[action]")]
 public partial class DashboardController : AppControllerBase, IDashboardController

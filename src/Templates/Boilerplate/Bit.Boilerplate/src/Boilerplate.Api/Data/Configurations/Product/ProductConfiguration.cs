@@ -1,6 +1,6 @@
-﻿using Boilerplate.Server.Models.Products;
+﻿using Boilerplate.Api.Models.Products;
 
-namespace Boilerplate.Server.Data.Configurations.Identity;
+namespace Boilerplate.Api.Data.Configurations.Identity;
 
 public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {

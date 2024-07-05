@@ -1,15 +1,15 @@
 ﻿//+:cnd:noEmit
 //#if (sample == "Admin")
-using Boilerplate.Server.Models.Categories;
-using Boilerplate.Server.Models.Products;
+using Boilerplate.Api.Models.Categories;
+using Boilerplate.Api.Models.Products;
 //#elif (sample == "Todo")
-using Boilerplate.Server.Models.Todo;
+using Boilerplate.Api.Models.Todo;
 //#endif
-using Boilerplate.Server.Models.Identity;
+using Boilerplate.Api.Models.Identity;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Boilerplate.Server.Data;
+namespace Boilerplate.Api.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, int>(options), IDataProtectionKeyContext
