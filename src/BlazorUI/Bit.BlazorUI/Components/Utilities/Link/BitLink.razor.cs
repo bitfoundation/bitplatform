@@ -9,7 +9,7 @@ public partial class BitLink : BitComponentBase
     /// <summary>
     /// URL the link points to
     /// </summary>
-    [Parameter] public string Href { get; set; } = string.Empty;
+    [Parameter] public string? Href { get; set; }
 
     /// <summary>
     /// If Href provided, specifies how to open the link
@@ -36,7 +36,7 @@ public partial class BitLink : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => HasUnderline ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => HasUnderline ? "bit-lnk-und" : string.Empty);
     }
 
     protected virtual async Task HandleClick(MouseEventArgs e)
@@ -48,6 +48,8 @@ public partial class BitLink : BitComponentBase
 
     private async Task ScrollIntoView()
     {
-        await _js.ScrollElementIntoView(Href[1..]);
+        if (IsEnabled is false) return;
+
+        await _js.ScrollElementIntoView(Href![1..]);
     }
 }
