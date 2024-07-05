@@ -125,88 +125,88 @@
 }
 
 .bit-btg-inf {
-    --bit-btg-pri-brd-clr: #{$clr-inf-bg};
+    --bit-btg-pri-brd-clr: #{$clr-inf};
     --bit-btg-sec-brd-clr: #{$clr-inf};
 }
 
 .bit-btg-iin {
-    --bit-btg-itm-bg-clr: #{$clr-inf-bg};
+    --bit-btg-itm-bg-clr: #{$clr-inf};
     --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-inf-brd};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-inf-bg-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-inf-bg-active};
+    --bit-btg-itm-pri-brd-clr: #{$clr-inf};
+    --bit-btg-itm-pri-hover-bg-clr: #{$clr-inf-hover};
+    --bit-btg-itm-pri-active-bg-clr: #{$clr-inf-active};
     --bit-btg-itm-sec-clr: #{$clr-inf};
     --bit-btg-itm-sec-brd-clr: #{$clr-inf};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-inf-bg-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-inf-bg-active};
+    --bit-btg-itm-sec-hover-bg-clr: #{$clr-inf-hover};
+    --bit-btg-itm-sec-active-bg-clr: #{$clr-inf-active};
 }
 
 .bit-btg-suc {
-    --bit-btg-pri-brd-clr: #{$clr-suc-bg};
+    --bit-btg-pri-brd-clr: #{$clr-suc};
     --bit-btg-sec-brd-clr: #{$clr-suc};
 }
 
 .bit-btg-isu {
-    --bit-btg-itm-bg-clr: #{$clr-suc-bg};
+    --bit-btg-itm-bg-clr: #{$clr-suc};
     --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-suc-brd};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-suc-bg-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-suc-bg-active};
+    --bit-btg-itm-pri-brd-clr: #{$clr-suc};
+    --bit-btg-itm-pri-hover-bg-clr: #{$clr-suc-hover};
+    --bit-btg-itm-pri-active-bg-clr: #{$clr-suc-active};
     --bit-btg-itm-sec-clr: #{$clr-suc};
     --bit-btg-itm-sec-brd-clr: #{$clr-suc};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-suc-bg-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-suc-bg-active};
+    --bit-btg-itm-sec-hover-bg-clr: #{$clr-suc-hover};
+    --bit-btg-itm-sec-active-bg-clr: #{$clr-suc-active};
 }
 
 .bit-btg-war {
-    --bit-btg-pri-brd-clr: #{$clr-wrn-bg};
+    --bit-btg-pri-brd-clr: #{$clr-wrn};
     --bit-btg-sec-brd-clr: #{$clr-wrn};
 }
 
 .bit-btg-iwa {
-    --bit-btg-itm-bg-clr: #{$clr-wrn-bg};
+    --bit-btg-itm-bg-clr: #{$clr-wrn};
     --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-wrn-brd};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-wrn-bg-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-wrn-bg-active};
+    --bit-btg-itm-pri-brd-clr: #{$clr-wrn};
+    --bit-btg-itm-pri-hover-bg-clr: #{$clr-wrn-hover};
+    --bit-btg-itm-pri-active-bg-clr: #{$clr-wrn-active};
     --bit-btg-itm-sec-clr: #{$clr-wrn};
     --bit-btg-itm-sec-brd-clr: #{$clr-wrn};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-wrn-bg-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-wrn-bg-active};
+    --bit-btg-itm-sec-hover-bg-clr: #{$clr-wrn-hover};
+    --bit-btg-itm-sec-active-bg-clr: #{$clr-wrn-active};
 }
 
 .bit-btg-swa {
-    --bit-btg-pri-brd-clr: #{$clr-swr-bg};
+    --bit-btg-pri-brd-clr: #{$clr-swr};
     --bit-btg-sec-brd-clr: #{$clr-swr};
 }
 
 .bit-btg-isw {
-    --bit-btg-itm-bg-clr: #{$clr-swr-bg};
+    --bit-btg-itm-bg-clr: #{$clr-swr};
     --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-swr-brd};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-swr-bg-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-swr-bg-active};
+    --bit-btg-itm-pri-brd-clr: #{$clr-swr};
+    --bit-btg-itm-pri-hover-bg-clr: #{$clr-swr-hover};
+    --bit-btg-itm-pri-active-bg-clr: #{$clr-swr-active};
     --bit-btg-itm-sec-clr: #{$clr-swr};
     --bit-btg-itm-sec-brd-clr: #{$clr-swr};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-swr-bg-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-swr-bg-active};
+    --bit-btg-itm-sec-hover-bg-clr: #{$clr-swr-hover};
+    --bit-btg-itm-sec-active-bg-clr: #{$clr-swr-active};
 }
 
 .bit-btg-err {
-    --bit-btg-pri-brd-clr: #{$clr-err-bg};
+    --bit-btg-pri-brd-clr: #{$clr-err};
     --bit-btg-sec-brd-clr: #{$clr-err};
 }
 
 .bit-btg-ier {
-    --bit-btg-itm-bg-clr: #{$clr-err-bg};
+    --bit-btg-itm-bg-clr: #{$clr-err};
     --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-err-brd};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-err-bg-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-err-bg-active};
+    --bit-btg-itm-pri-brd-clr: #{$clr-err};
+    --bit-btg-itm-pri-hover-bg-clr: #{$clr-err-hover};
+    --bit-btg-itm-pri-active-bg-clr: #{$clr-err-active};
     --bit-btg-itm-sec-clr: #{$clr-err};
     --bit-btg-itm-sec-brd-clr: #{$clr-err};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-err-bg-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-err-bg-active};
+    --bit-btg-itm-sec-hover-bg-clr: #{$clr-err-hover};
+    --bit-btg-itm-sec-active-bg-clr: #{$clr-err-active};
 }
 
 .bit-btg-vrt {

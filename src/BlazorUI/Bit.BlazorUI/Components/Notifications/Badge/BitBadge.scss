@@ -207,46 +207,46 @@
 }
 
 .bit-bdg-inf {
-    --bit-bdg-bg-clr: #{$clr-inf-bg};
+    --bit-bdg-bg-clr: #{$clr-inf};
     --bit-bdg-ldg-brd-top-clr: #{$clr-inf};
     --bit-bdg-pri-clr: #{$clr-fg-pri};
-    --bit-bdg-pri-brd-clr: #{$clr-inf-bg};
+    --bit-bdg-pri-brd-clr: #{$clr-inf};
     --bit-bdg-sec-clr: #{$clr-inf};
     --bit-bdg-sec-brd-clr: #{$clr-inf};
 }
 
 .bit-bdg-suc {
-    --bit-bdg-bg-clr: #{$clr-suc-bg};
+    --bit-bdg-bg-clr: #{$clr-suc};
     --bit-bdg-ldg-brd-top-clr: #{$clr-suc};
     --bit-bdg-pri-clr: #{$clr-fg-pri};
-    --bit-bdg-pri-brd-clr: #{$clr-suc-bg};
+    --bit-bdg-pri-brd-clr: #{$clr-suc};
     --bit-bdg-sec-clr: #{$clr-suc};
     --bit-bdg-sec-brd-clr: #{$clr-suc};
 }
 
 .bit-bdg-wrn {
-    --bit-bdg-bg-clr: #{$clr-wrn-bg};
+    --bit-bdg-bg-clr: #{$clr-wrn};
     --bit-bdg-ldg-brd-top-clr: #{$clr-wrn};
     --bit-bdg-pri-clr: #{$clr-fg-pri};
-    --bit-bdg-pri-brd-clr: #{$clr-wrn-bg};
+    --bit-bdg-pri-brd-clr: #{$clr-wrn};
     --bit-bdg-sec-clr: #{$clr-wrn};
     --bit-bdg-sec-brd-clr: #{$clr-wrn};
 }
 
 .bit-bdg-swr {
-    --bit-bdg-bg-clr: #{$clr-swr-bg};
+    --bit-bdg-bg-clr: #{$clr-swr};
     --bit-bdg-ldg-brd-top-clr: #{$clr-swr};
     --bit-bdg-pri-clr: #{$clr-fg-pri};
-    --bit-bdg-pri-brd-clr: #{$clr-swr-bg};
+    --bit-bdg-pri-brd-clr: #{$clr-swr};
     --bit-bdg-sec-clr: #{$clr-swr};
     --bit-bdg-sec-brd-clr: #{$clr-swr};
 }
 
 .bit-bdg-err {
-    --bit-bdg-bg-clr: #{$clr-err-bg};
+    --bit-bdg-bg-clr: #{$clr-err};
     --bit-bdg-ldg-brd-top-clr: #{$clr-err};
     --bit-bdg-pri-clr: #{$clr-fg-pri};
-    --bit-bdg-pri-brd-clr: #{$clr-err-bg};
+    --bit-bdg-pri-brd-clr: #{$clr-err};
     --bit-bdg-sec-clr: #{$clr-err};
     --bit-bdg-sec-brd-clr: #{$clr-err};
 }

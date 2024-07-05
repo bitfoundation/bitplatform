@@ -84,28 +84,28 @@
 }
 
 .bit-msg-inf {
-    --bit-msg-clr: #{$clr-inf};
-    --bit-msg-clr-bg: #{$clr-inf-bg};
+    --bit-msg-clr: #{$clr-inf-text};
+    --bit-msg-clr-bg: #{$clr-inf};
 }
 
 .bit-msg-suc {
-    --bit-msg-clr: #{$clr-suc};
-    --bit-msg-clr-bg: #{$clr-suc-bg};
+    --bit-msg-clr: #{$clr-suc-text};
+    --bit-msg-clr-bg: #{$clr-suc};
 }
 
 .bit-msg-wrn {
-    --bit-msg-clr: #{$clr-wrn};
-    --bit-msg-clr-bg: #{$clr-wrn-bg};
+    --bit-msg-clr: #{$clr-wrn-text};
+    --bit-msg-clr-bg: #{$clr-wrn};
 }
 
 .bit-msg-swr {
-    --bit-msg-clr: #{$clr-swr};
-    --bit-msg-clr-bg: #{$clr-swr-bg};
+    --bit-msg-clr: #{$clr-swr-text};
+    --bit-msg-clr-bg: #{$clr-swr};
 }
 
 .bit-msg-err {
-    --bit-msg-clr: #{$clr-err};
-    --bit-msg-clr-bg: #{$clr-err-bg};
+    --bit-msg-clr: #{$clr-err-text};
+    --bit-msg-clr-bg: #{$clr-err};
 }
 
 .bit-msg-fill {

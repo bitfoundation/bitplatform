@@ -136,66 +136,66 @@
 }
 
 .bit-tag-inf {
-    --bit-tag-bg-clr: #{$clr-inf-bg};
+    --bit-tag-bg-clr: #{$clr-inf};
     --bit-tag-ldg-brd-top-clr: #{$clr-inf};
     --bit-tag-pri-clr: #{$clr-fg-pri};
-    --bit-tag-pri-brd-clr: #{$clr-inf-bg};
-    --bit-tag-pri-hover-bg-clr: #{$clr-inf-bg-hover};
-    --bit-tag-pri-active-bg-clr: #{$clr-inf-bg-active};
+    --bit-tag-pri-brd-clr: #{$clr-inf};
+    --bit-tag-pri-hover-bg-clr: #{$clr-inf-hover};
+    --bit-tag-pri-active-bg-clr: #{$clr-inf-active};
     --bit-tag-sec-clr: #{$clr-inf};
     --bit-tag-sec-brd-clr: #{$clr-inf};
-    --bit-tag-sec-hover-bg-clr: #{$clr-inf-bg-hover};
-    --bit-tag-sec-active-bg-clr: #{$clr-inf-bg-active};
+    --bit-tag-sec-hover-bg-clr: #{$clr-inf-hover};
+    --bit-tag-sec-active-bg-clr: #{$clr-inf-active};
 }
 
 .bit-tag-suc {
-    --bit-tag-bg-clr: #{$clr-suc-bg};
+    --bit-tag-bg-clr: #{$clr-suc};
     --bit-tag-ldg-brd-top-clr: #{$clr-suc};
     --bit-tag-pri-clr: #{$clr-fg-pri};
-    --bit-tag-pri-brd-clr: #{$clr-suc-bg};
-    --bit-tag-pri-hover-bg-clr: #{$clr-suc-bg-hover};
-    --bit-tag-pri-active-bg-clr: #{$clr-suc-bg-active};
+    --bit-tag-pri-brd-clr: #{$clr-suc};
+    --bit-tag-pri-hover-bg-clr: #{$clr-suc-hover};
+    --bit-tag-pri-active-bg-clr: #{$clr-suc-active};
     --bit-tag-sec-clr: #{$clr-suc};
     --bit-tag-sec-brd-clr: #{$clr-suc};
-    --bit-tag-sec-hover-bg-clr: #{$clr-suc-bg-hover};
-    --bit-tag-sec-active-bg-clr: #{$clr-suc-bg-active};
+    --bit-tag-sec-hover-bg-clr: #{$clr-suc-hover};
+    --bit-tag-sec-active-bg-clr: #{$clr-suc-active};
 }
 
 .bit-tag-wrn {
-    --bit-tag-bg-clr: #{$clr-wrn-bg};
+    --bit-tag-bg-clr: #{$clr-wrn};
     --bit-tag-ldg-brd-top-clr: #{$clr-wrn};
     --bit-tag-pri-clr: #{$clr-fg-pri};
-    --bit-tag-pri-brd-clr: #{$clr-wrn-bg};
-    --bit-tag-pri-hover-bg-clr: #{$clr-wrn-bg-hover};
-    --bit-tag-pri-active-bg-clr: #{$clr-wrn-bg-active};
+    --bit-tag-pri-brd-clr: #{$clr-wrn};
+    --bit-tag-pri-hover-bg-clr: #{$clr-wrn-hover};
+    --bit-tag-pri-active-bg-clr: #{$clr-wrn-active};
     --bit-tag-sec-clr: #{$clr-wrn};
     --bit-tag-sec-brd-clr: #{$clr-wrn};
-    --bit-tag-sec-hover-bg-clr: #{$clr-wrn-bg-hover};
-    --bit-tag-sec-active-bg-clr: #{$clr-wrn-bg-active};
+    --bit-tag-sec-hover-bg-clr: #{$clr-wrn-hover};
+    --bit-tag-sec-active-bg-clr: #{$clr-wrn-active};
 }
 
 .bit-tag-swr {
-    --bit-tag-bg-clr: #{$clr-swr-bg};
+    --bit-tag-bg-clr: #{$clr-swr};
     --bit-tag-ldg-brd-top-clr: #{$clr-swr};
     --bit-tag-pri-clr: #{$clr-fg-pri};
-    --bit-tag-pri-brd-clr: #{$clr-swr-bg};
-    --bit-tag-pri-hover-bg-clr: #{$clr-swr-bg-hover};
-    --bit-tag-pri-active-bg-clr: #{$clr-swr-bg-active};
+    --bit-tag-pri-brd-clr: #{$clr-swr};
+    --bit-tag-pri-hover-bg-clr: #{$clr-swr-hover};
+    --bit-tag-pri-active-bg-clr: #{$clr-swr-active};
     --bit-tag-sec-clr: #{$clr-swr};
     --bit-tag-sec-brd-clr: #{$clr-swr};
-    --bit-tag-sec-hover-bg-clr: #{$clr-swr-bg-hover};
-    --bit-tag-sec-active-bg-clr: #{$clr-swr-bg-active};
+    --bit-tag-sec-hover-bg-clr: #{$clr-swr-hover};
+    --bit-tag-sec-active-bg-clr: #{$clr-swr-active};
 }
 
 .bit-tag-err {
-    --bit-tag-bg-clr: #{$clr-err-bg};
+    --bit-tag-bg-clr: #{$clr-err};
     --bit-tag-ldg-brd-top-clr: #{$clr-err};
     --bit-tag-pri-clr: #{$clr-fg-pri};
-    --bit-tag-pri-brd-clr: #{$clr-err-bg};
-    --bit-tag-pri-hover-bg-clr: #{$clr-err-bg-hover};
-    --bit-tag-pri-active-bg-clr: #{$clr-err-bg-active};
+    --bit-tag-pri-brd-clr: #{$clr-err};
+    --bit-tag-pri-hover-bg-clr: #{$clr-err-hover};
+    --bit-tag-pri-active-bg-clr: #{$clr-err-active};
     --bit-tag-sec-clr: #{$clr-err};
     --bit-tag-sec-brd-clr: #{$clr-err};
-    --bit-tag-sec-hover-bg-clr: #{$clr-err-bg-hover};
-    --bit-tag-sec-active-bg-clr: #{$clr-err-bg-active};
+    --bit-tag-sec-hover-bg-clr: #{$clr-err-hover};
+    --bit-tag-sec-active-bg-clr: #{$clr-err-active};
 }

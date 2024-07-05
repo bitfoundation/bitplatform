@@ -175,40 +175,40 @@
 
 .bit-tln-inf, .bit-tln-iin {
     --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-inf-bg};
-    --bit-tln-brd-clr: #{$clr-inf-bg};
+    --bit-tln-bg-clr: #{$clr-inf};
+    --bit-tln-brd-clr: #{$clr-inf};
     --bit-tln-sec-clr: #{$clr-inf};
     --bit-tln-sec-brd-clr: #{$clr-inf};
 }
 
 .bit-tln-suc, .bit-tln-isu {
     --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-suc-bg};
-    --bit-tln-brd-clr: #{$clr-suc-bg};
+    --bit-tln-bg-clr: #{$clr-suc};
+    --bit-tln-brd-clr: #{$clr-suc};
     --bit-tln-sec-clr: #{$clr-suc};
     --bit-tln-sec-brd-clr: #{$clr-suc};
 }
 
 .bit-tln-wrn, .bit-tln-iwr {
     --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-wrn-bg};
-    --bit-tln-brd-clr: #{$clr-wrn-bg};
+    --bit-tln-bg-clr: #{$clr-wrn};
+    --bit-tln-brd-clr: #{$clr-wrn};
     --bit-tln-sec-clr: #{$clr-wrn};
     --bit-tln-sec-brd-clr: #{$clr-wrn};
 }
 
 .bit-tln-swr, .bit-tln-isw {
     --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-swr-bg};
-    --bit-tln-brd-clr: #{$clr-swr-bg};
+    --bit-tln-bg-clr: #{$clr-swr};
+    --bit-tln-brd-clr: #{$clr-swr};
     --bit-tln-sec-clr: #{$clr-swr};
     --bit-tln-sec-brd-clr: #{$clr-swr};
 }
 
 .bit-tln-err, .bit-tln-ier {
     --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-err-bg};
-    --bit-tln-brd-clr: #{$clr-err-bg};
+    --bit-tln-bg-clr: #{$clr-err};
+    --bit-tln-brd-clr: #{$clr-err};
     --bit-tln-sec-clr: #{$clr-err};
     --bit-tln-sec-brd-clr: #{$clr-err};
 }

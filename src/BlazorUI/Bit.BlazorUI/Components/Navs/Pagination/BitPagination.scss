@@ -149,68 +149,68 @@
 }
 
 .bit-pgn-inf {
-    --bit-pgn-bg-clr: #{$clr-inf-bg};
+    --bit-pgn-bg-clr: #{$clr-inf};
     --bit-pgn-pri-clr: #{$clr-fg-pri};
-    --bit-pgn-pri-brd-clr: #{$clr-inf-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$clr-inf-bg-hover};
-    --bit-pgn-pri-active-bg-clr: #{$clr-inf-bg-active};
-    --bit-pgn-sec-bg-clr: #{$clr-inf-bg};
+    --bit-pgn-pri-brd-clr: #{$clr-inf};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-inf-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-inf-active};
+    --bit-pgn-sec-bg-clr: #{$clr-inf};
     --bit-pgn-sec-clr: #{$clr-inf};
     --bit-pgn-sec-brd-clr: #{$clr-inf};
-    --bit-pgn-sec-hover-bg-clr: #{$clr-inf-bg-hover};
-    --bit-pgn-sec-active-bg-clr: #{$clr-inf-bg-active};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-inf-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-inf-active};
 }
 
 .bit-pgn-suc {
-    --bit-pgn-bg-clr: #{$clr-suc-bg};
+    --bit-pgn-bg-clr: #{$clr-suc};
     --bit-pgn-pri-clr: #{$clr-fg-pri};
-    --bit-pgn-pri-brd-clr: #{$clr-suc-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$clr-suc-bg-hover};
-    --bit-pgn-pri-active-bg-clr: #{$clr-suc-bg-active};
-    --bit-pgn-sec-bg-clr: #{$clr-suc-bg};
+    --bit-pgn-pri-brd-clr: #{$clr-suc};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-suc-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-suc-active};
+    --bit-pgn-sec-bg-clr: #{$clr-suc};
     --bit-pgn-sec-clr: #{$clr-suc};
     --bit-pgn-sec-brd-clr: #{$clr-suc};
-    --bit-pgn-sec-hover-bg-clr: #{$clr-suc-bg-hover};
-    --bit-pgn-sec-active-bg-clr: #{$clr-suc-bg-active};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-suc-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-suc-active};
 }
 
 .bit-pgn-wrn {
-    --bit-pgn-bg-clr: #{$clr-wrn-bg};
+    --bit-pgn-bg-clr: #{$clr-wrn};
     --bit-pgn-pri-clr: #{$clr-fg-pri};
-    --bit-pgn-pri-brd-clr: #{$clr-wrn-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$clr-wrn-bg-hover};
-    --bit-pgn-pri-active-bg-clr: #{$clr-wrn-bg-active};
-    --bit-pgn-sec-bg-clr: #{$clr-wrn-bg};
+    --bit-pgn-pri-brd-clr: #{$clr-wrn};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-wrn-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-wrn-active};
+    --bit-pgn-sec-bg-clr: #{$clr-wrn};
     --bit-pgn-sec-clr: #{$clr-wrn};
     --bit-pgn-sec-brd-clr: #{$clr-wrn};
-    --bit-pgn-sec-hover-bg-clr: #{$clr-wrn-bg-hover};
-    --bit-pgn-sec-active-bg-clr: #{$clr-wrn-bg-active};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-wrn-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-wrn-active};
 }
 
 .bit-pgn-swr {
-    --bit-pgn-bg-clr: #{$clr-swr-bg};
+    --bit-pgn-bg-clr: #{$clr-swr};
     --bit-pgn-pri-clr: #{$clr-fg-pri};
-    --bit-pgn-pri-brd-clr: #{$clr-swr-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$clr-swr-bg-hover};
-    --bit-pgn-pri-active-bg-clr: #{$clr-swr-bg-active};
-    --bit-pgn-sec-bg-clr: #{$clr-swr-bg};
+    --bit-pgn-pri-brd-clr: #{$clr-swr};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-swr-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-swr-active};
+    --bit-pgn-sec-bg-clr: #{$clr-swr};
     --bit-pgn-sec-clr: #{$clr-swr};
     --bit-pgn-sec-brd-clr: #{$clr-swr};
-    --bit-pgn-sec-hover-bg-clr: #{$clr-swr-bg-hover};
-    --bit-pgn-sec-active-bg-clr: #{$clr-swr-bg-active};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-swr-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-swr-active};
 }
 
 .bit-pgn-err {
-    --bit-pgn-bg-clr: #{$clr-err-bg};
+    --bit-pgn-bg-clr: #{$clr-err};
     --bit-pgn-pri-clr: #{$clr-fg-pri};
-    --bit-pgn-pri-brd-clr: #{$clr-err-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$clr-err-bg-hover};
-    --bit-pgn-pri-active-bg-clr: #{$clr-err-bg-active};
-    --bit-pgn-sec-bg-clr: #{$clr-err-bg};
+    --bit-pgn-pri-brd-clr: #{$clr-err};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-err-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-err-active};
+    --bit-pgn-sec-bg-clr: #{$clr-err};
     --bit-pgn-sec-clr: #{$clr-err};
     --bit-pgn-sec-brd-clr: #{$clr-err};
-    --bit-pgn-sec-hover-bg-clr: #{$clr-err-bg-hover};
-    --bit-pgn-sec-active-bg-clr: #{$clr-err-bg-active};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-err-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-err-active};
 }
 
 

@@ -100,86 +100,101 @@ public static class BitCss
 
             public static class Info
             {
-                public const string Foreground = "bit-css-clr-inf";
-                public const string Background = "bit-css-clr-inf-bg";
-                public const string Border = "bit-css-clr-inf-brd";
+                public const string Main = "bit-css-clr-inf";
+                public const string Dark = "bit-css-clr-inf-dark";
+                public const string Light = "bit-css-clr-inf-light";
+                public const string Text = "bit-css-clr-inf-text";
                 public static class Hover
                 {
-                    public const string Foreground = "bit-css-clr-inf-hover";
-                    public const string Background = "bit-css-clr-inf-bg-hover";
+                    public const string Main = "bit-css-clr-inf-hover";
+                    public const string Dark = "bit-css-clr-inf-dark-hover";
+                    public const string Light = "bit-css-clr-inf-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "bit-css-clr-inf-active";
-                    public const string Background = "bit-css-clr-inf-bg-active";
+                    public const string Main = "bit-css-clr-inf-active";
+                    public const string Dark = "bit-css-clr-inf-dark-active";
+                    public const string Light = "bit-css-clr-inf-light-active";
                 }
             }
 
             public static class Success
             {
-                public const string Foreground = "bit-css-clr-suc";
-                public const string Background = "bit-css-clr-suc-bg";
-                public const string Border = "bit-css-clr-suc-brd";
+                public const string Main = "bit-css-clr-suc";
+                public const string Dark = "bit-css-clr-suc-dark";
+                public const string Light = "bit-css-clr-suc-light";
+                public const string Text = "bit-css-clr-suc-text";
                 public static class Hover
                 {
-                    public const string Foreground = "bit-css-clr-suc-hover";
-                    public const string Background = "bit-css-clr-suc-bg-hover";
+                    public const string Main = "bit-css-clr-suc-hover";
+                    public const string Dark = "bit-css-clr-suc-dark-hover";
+                    public const string Light = "bit-css-clr-suc-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "bit-css-clr-suc-active";
-                    public const string Background = "bit-css-clr-suc-bg-active";
+                    public const string Main = "bit-css-clr-suc-active";
+                    public const string Dark = "bit-css-clr-suc-dark-active";
+                    public const string Light = "bit-css-clr-suc-light-active";
                 }
             }
 
             public static class Warning
             {
-                public const string Foreground = "bit-css-clr-war";
-                public const string Background = "bit-css-clr-war-bg";
-                public const string Border = "bit-css-clr-war-brd";
+                public const string Main = "bit-css-clr-wrn";
+                public const string Dark = "bit-css-clr-wrn-dark";
+                public const string Light = "bit-css-clr-wrn-light";
+                public const string Text = "bit-css-clr-wrn-text";
                 public static class Hover
                 {
-                    public const string Foreground = "bit-css-clr-war-hover";
-                    public const string Background = "bit-css-clr-war-bg-hover";
+                    public const string Main = "bit-css-clr-wrn-hover";
+                    public const string Dark = "bit-css-clr-wrn-dark-hover";
+                    public const string Light = "bit-css-clr-wrn-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "bit-css-clr-war-active";
-                    public const string Background = "bit-css-clr-war-bg-active";
+                    public const string Main = "bit-css-clr-wrn-active";
+                    public const string Dark = "bit-css-clr-wrn-dark-active";
+                    public const string Light = "bit-css-clr-wrn-light-active";
                 }
             }
 
             public static class SevereWarning
             {
-                public const string Foreground = "bit-css-clr-swr";
-                public const string Background = "bit-css-clr-swr-bg";
-                public const string Border = "bit-css-clr-swr-brd";
+                public const string Main = "bit-css-clr-swr";
+                public const string Dark = "bit-css-clr-swr-dark";
+                public const string Light = "bit-css-clr-swr-light";
+                public const string Text = "bit-css-clr-swr-text";
                 public static class Hover
                 {
-                    public const string Foreground = "bit-css-clr-swr-hover";
-                    public const string Background = "bit-css-clr-swr-bg-hover";
+                    public const string Main = "bit-css-clr-swr-hover";
+                    public const string Dark = "bit-css-clr-swr-dark-hover";
+                    public const string Light = "bit-css-clr-swr-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "bit-css-clr-swr-active";
-                    public const string Background = "bit-css-clr-swr-bg-active";
+                    public const string Main = "bit-css-clr-swr-active";
+                    public const string Dark = "bit-css-clr-swr-dark-active";
+                    public const string Light = "bit-css-clr-swr-light-active";
                 }
             }
 
             public static class Error
             {
-                public const string Foreground = "bit-css-clr-err";
-                public const string Background = "bit-css-clr-err-bg";
-                public const string Border = "bit-css-clr-err-brd";
+                public const string Main = "bit-css-clr-err";
+                public const string Dark = "bit-css-clr-err-dark";
+                public const string Light = "bit-css-clr-err-light";
+                public const string Text = "bit-css-clr-err-text";
                 public static class Hover
                 {
-                    public const string Foreground = "bit-css-clr-err-hover";
-                    public const string Background = "bit-css-clr-err-bg-hover";
+                    public const string Main = "bit-css-clr-err-hover";
+                    public const string Dark = "bit-css-clr-err-dark-hover";
+                    public const string Light = "bit-css-clr-err-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "bit-css-clr-err-active";
-                    public const string Background = "bit-css-clr-err-bg-active";
+                    public const string Main = "bit-css-clr-err-active";
+                    public const string Dark = "bit-css-clr-err-dark-active";
+                    public const string Light = "bit-css-clr-err-light-active";
                 }
             }
 
@@ -359,86 +374,101 @@ public static class BitCss
 
             public static class Info
             {
-                public const string Foreground = "--bit-clr-inf";
-                public const string Background = "--bit-clr-inf-bg";
-                public const string Border = "--bit-clr-inf-brd";
+                public const string Main = "--bit-clr-inf";
+                public const string Dark = "--bit-clr-inf-dark";
+                public const string Light = "--bit-clr-inf-light";
+                public const string Text = "--bit-clr-inf-text";
                 public static class Hover
                 {
-                    public const string Foreground = "--bit-clr-inf-hover";
-                    public const string Background = "--bit-clr-inf-bg-hover";
+                    public const string Main = "--bit-clr-inf-hover";
+                    public const string Dark = "--bit-clr-inf-dark-hover";
+                    public const string Light = "--bit-clr-inf-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "--bit-clr-inf-active";
-                    public const string Background = "--bit-clr-inf-bg-active";
+                    public const string Main = "--bit-clr-inf-active";
+                    public const string Dark = "--bit-clr-inf-dark-active";
+                    public const string Light = "--bit-clr-inf-light-active";
                 }
             }
 
             public static class Success
             {
-                public const string Foreground = "--bit-clr-suc";
-                public const string Background = "--bit-clr-suc-bg";
-                public const string Border = "--bit-clr-suc-brd";
+                public const string Main = "--bit-clr-suc";
+                public const string Dark = "--bit-clr-suc-dark";
+                public const string Light = "--bit-clr-suc-light";
+                public const string Text = "--bit-clr-suc-text";
                 public static class Hover
                 {
-                    public const string Foreground = "--bit-clr-suc-hover";
-                    public const string Background = "--bit-clr-suc-bg-hover";
+                    public const string Main = "--bit-clr-suc-hover";
+                    public const string Dark = "--bit-clr-suc-dark-hover";
+                    public const string Light = "--bit-clr-suc-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "--bit-clr-suc-active";
-                    public const string Background = "--bit-clr-suc-bg-active";
+                    public const string Main = "--bit-clr-suc-active";
+                    public const string Dark = "--bit-clr-suc-dark-active";
+                    public const string Light = "--bit-clr-suc-light-active";
                 }
             }
 
             public static class Warning
             {
-                public const string Foreground = "--bit-clr-wrn";
-                public const string Background = "--bit-clr-wrn-bg";
-                public const string Border = "--bit-clr-wrn-brd";
+                public const string Main = "--bit-clr-wrn";
+                public const string Dark = "--bit-clr-wrn-dark";
+                public const string Light = "--bit-clr-wrn-light";
+                public const string Text = "--bit-clr-wrn-text";
                 public static class Hover
                 {
-                    public const string Foreground = "--bit-clr-wrn-hover";
-                    public const string Background = "--bit-clr-wrn-bg-hover";
+                    public const string Main = "--bit-clr-wrn-hover";
+                    public const string Dark = "--bit-clr-wrn-dark-hover";
+                    public const string Light = "--bit-clr-wrn-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "--bit-clr-wrn-active";
-                    public const string Background = "--bit-clr-wrn-bg-active";
+                    public const string Main = "--bit-clr-wrn-active";
+                    public const string Dark = "--bit-clr-wrn-dark-active";
+                    public const string Light = "--bit-clr-wrn-light-active";
                 }
             }
 
             public static class SevereWarning
             {
-                public const string Foreground = "--bit-clr-swr";
-                public const string Background = "--bit-clr-swr-bg";
-                public const string Border = "--bit-clr-swr-brd";
+                public const string Main = "--bit-clr-swr";
+                public const string Dark = "--bit-clr-swr-dark";
+                public const string Light = "--bit-clr-swr-light";
+                public const string Text = "--bit-clr-swr-text";
                 public static class Hover
                 {
-                    public const string Foreground = "--bit-clr-swr-hover";
-                    public const string Background = "--bit-clr-swr-bg-hover";
+                    public const string Main = "--bit-clr-swr-hover";
+                    public const string Dark = "--bit-clr-swr-dark-hover";
+                    public const string Light = "--bit-clr-swr-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "--bit-clr-swr-active";
-                    public const string Background = "--bit-clr-swr-bg-active";
+                    public const string Main = "--bit-clr-swr-active";
+                    public const string Dark = "--bit-clr-swr-dark-active";
+                    public const string Light = "--bit-clr-swr-light-active";
                 }
             }
 
             public static class Error
             {
-                public const string Foreground = "--bit-clr-err";
-                public const string Background = "--bit-clr-err-bg";
-                public const string Border = "--bit-clr-err-brd";
+                public const string Main = "--bit-clr-err";
+                public const string Dark = "--bit-clr-err-dark";
+                public const string Light = "--bit-clr-err-light";
+                public const string Text = "--bit-clr-err-text";
                 public static class Hover
                 {
-                    public const string Foreground = "--bit-clr-err-hover";
-                    public const string Background = "--bit-clr-err-bg-hover";
+                    public const string Main = "--bit-clr-err-hover";
+                    public const string Dark = "--bit-clr-err-dark-hover";
+                    public const string Light = "--bit-clr-err-light-hover";
                 }
                 public static class Active
                 {
-                    public const string Foreground = "--bit-clr-err-active";
-                    public const string Background = "--bit-clr-err-bg-active";
+                    public const string Main = "--bit-clr-err-active";
+                    public const string Dark = "--bit-clr-err-dark-active";
+                    public const string Light = "--bit-clr-err-light-active";
                 }
             }
 
