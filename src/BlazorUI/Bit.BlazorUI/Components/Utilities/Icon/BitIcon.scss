@@ -6,7 +6,7 @@
     line-height: spacing(2);
 
     &.bit-dis {
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
     }
 }
 
@@ -21,21 +21,21 @@
 }
 
 .bit-ico-inf {
-    color: $color-state-info;
+    color: $clr-inf;
 }
 
 .bit-ico-suc {
-    color: $color-state-success;
+    color: $clr-suc;
 }
 
 .bit-ico-wrn {
-    color: $color-state-warning;
+    color: $clr-war;
 }
 
 .bit-ico-swr {
-    color: $color-state-severe-warning;
+    color: $clr-swr;
 }
 
 .bit-ico-err {
-    color: $color-state-error;
+    color: $clr-err;
 }

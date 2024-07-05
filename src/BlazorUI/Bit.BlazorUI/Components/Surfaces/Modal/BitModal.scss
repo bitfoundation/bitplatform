@@ -8,7 +8,7 @@
     font-weight: 400;
     z-index: $zindex-modal;
     font-size: spacing(1.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 }
 
 .bit-mdl-nta {
@@ -40,7 +40,7 @@
     inset: 0;
     z-index: 0;
     position: absolute;
-    background-color: $color-background-overlay;
+    background-color: $clr-bg-overlay;
 }
 
 .bit-mdl-scn {
@@ -57,7 +57,7 @@
     box-sizing: border-box;
     box-shadow: $box-shadow-callout;
     border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
 }
 
 .bit-mdl-ctr {

@@ -13,15 +13,15 @@
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
 
     &.bit-dis {
         cursor: default;
         user-select: none;
         pointer-events: none;
         -webkit-user-select: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
     }
 }
 
@@ -29,11 +29,11 @@
     color: var(--bit-cmb-pri-clr);
     background-color: var(--bit-cmb-bg-clr);
     border-color: var(--bit-cmb-pri-brd-clr);
-    --bit-cmb-bg-clr: #{$color-primary-main};
-    --bit-cmb-pri-clr: #{$color-primary-text};
-    --bit-cmb-pri-brd-clr: #{$color-primary-main};
-    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-primary};
-    --bit-cmb-pri-active-bg-clr: #{$color-action-active-primary};
+    --bit-cmb-bg-clr: #{$clr-pri};
+    --bit-cmb-pri-clr: #{$clr-pri-text};
+    --bit-cmb-pri-brd-clr: #{$clr-pri};
+    --bit-cmb-pri-hover-bg-clr: #{$clr-pri-hover};
+    --bit-cmb-pri-active-bg-clr: #{$clr-pri-active};
 
     @media (hover: hover) {
         &:hover {
@@ -48,19 +48,19 @@
     }
 
     &.bit-dis {
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
     }
 }
 
 .bit-cmb-otl {
     color: var(--bit-cmb-sec-clr);
-    background-color: $color-secondary-main;
+    background-color: $clr-sec;
     border-color: var(--bit-cmb-sec-brd-clr);
-    --bit-cmb-sec-clr: #{$color-secondary-text};
-    --bit-cmb-sec-brd-clr: #{$color-secondary-text};
-    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-secondary};
-    --bit-cmb-sec-active-bg-clr: #{$color-action-active-secondary};
+    --bit-cmb-sec-clr: #{$clr-sec-text};
+    --bit-cmb-sec-brd-clr: #{$clr-sec-text};
+    --bit-cmb-sec-hover-bg-clr: #{$clr-sec-hover};
+    --bit-cmb-sec-active-bg-clr: #{$clr-sec-active};
 
     @media (hover: hover) {
         &:hover {
@@ -73,7 +73,7 @@
     }
 
     &.bit-dis {
-        border-color: $color-border-disabled;
+        border-color: $clr-brd-dis;
     }
 }
 
@@ -81,9 +81,9 @@
     border-color: transparent;
     color: var(--bit-cmb-sec-clr);
     background-color: transparent;
-    --bit-cmb-sec-clr: #{$color-secondary-text};
-    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-secondary};
-    --bit-cmb-sec-active-bg-clr: #{$color-action-active-secondary};
+    --bit-cmb-sec-clr: #{$clr-sec-text};
+    --bit-cmb-sec-hover-bg-clr: #{$clr-sec-hover};
+    --bit-cmb-sec-active-bg-clr: #{$clr-sec-active};
 
     @media (hover: hover) {
         &:hover {
@@ -125,63 +125,63 @@
 }
 
 .bit-cmb-inf {
-    --bit-cmb-bg-clr: #{$color-state-info-bg};
-    --bit-cmb-pri-clr: #{$color-foreground-primary};
-    --bit-cmb-pri-brd-clr: #{$color-state-info-bg};
-    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-info-bg};
-    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-info-bg};
-    --bit-cmb-sec-clr: #{$color-state-info};
-    --bit-cmb-sec-brd-clr: #{$color-state-info};
-    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-info-bg};
-    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-info-bg};
+    --bit-cmb-bg-clr: #{$clr-inf-bg};
+    --bit-cmb-pri-clr: #{$clr-fg-pri};
+    --bit-cmb-pri-brd-clr: #{$clr-inf-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$clr-inf-bg-hover};
+    --bit-cmb-pri-active-bg-clr: #{$clr-inf-bg-active};
+    --bit-cmb-sec-clr: #{$clr-inf};
+    --bit-cmb-sec-brd-clr: #{$clr-inf};
+    --bit-cmb-sec-hover-bg-clr: #{$clr-inf-bg-hover};
+    --bit-cmb-sec-active-bg-clr: #{$clr-inf-bg-active};
 }
 
 .bit-cmb-suc {
-    --bit-cmb-bg-clr: #{$color-state-success-bg};
-    --bit-cmb-pri-clr: #{$color-foreground-primary};
-    --bit-cmb-pri-brd-clr: #{$color-state-success-bg};
-    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-success-bg};
-    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-success-bg};
-    --bit-cmb-sec-clr: #{$color-state-success};
-    --bit-cmb-sec-brd-clr: #{$color-state-success};
-    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-success-bg};
-    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-success-bg};
+    --bit-cmb-bg-clr: #{$clr-suc-bg};
+    --bit-cmb-pri-clr: #{$clr-fg-pri};
+    --bit-cmb-pri-brd-clr: #{$clr-suc-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$clr-suc-bg-hover};
+    --bit-cmb-pri-active-bg-clr: #{$clr-suc-bg-active};
+    --bit-cmb-sec-clr: #{$clr-suc};
+    --bit-cmb-sec-brd-clr: #{$clr-suc};
+    --bit-cmb-sec-hover-bg-clr: #{$clr-suc-bg-hover};
+    --bit-cmb-sec-active-bg-clr: #{$clr-suc-bg-active};
 }
 
 .bit-cmb-wrn {
-    --bit-cmb-bg-clr: #{$color-state-warning-bg};
-    --bit-cmb-pri-clr: #{$color-foreground-primary};
-    --bit-cmb-pri-brd-clr: #{$color-state-warning-bg};
-    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-warning-bg};
-    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-warning-bg};
-    --bit-cmb-sec-clr: #{$color-state-warning};
-    --bit-cmb-sec-brd-clr: #{$color-state-warning};
-    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-warning-bg};
-    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-warning-bg};
+    --bit-cmb-bg-clr: #{$clr-war-bg};
+    --bit-cmb-pri-clr: #{$clr-fg-pri};
+    --bit-cmb-pri-brd-clr: #{$clr-war-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$clr-war-bg-hover};
+    --bit-cmb-pri-active-bg-clr: #{$clr-war-bg-active};
+    --bit-cmb-sec-clr: #{$clr-war};
+    --bit-cmb-sec-brd-clr: #{$clr-war};
+    --bit-cmb-sec-hover-bg-clr: #{$clr-war-bg-hover};
+    --bit-cmb-sec-active-bg-clr: #{$clr-war-bg-active};
 }
 
 .bit-cmb-swr {
-    --bit-cmb-bg-clr: #{$color-state-severe-warning-bg};
-    --bit-cmb-pri-clr: #{$color-foreground-primary};
-    --bit-cmb-pri-brd-clr: #{$color-state-severe-warning-bg};
-    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
-    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-severe-warning-bg};
-    --bit-cmb-sec-clr: #{$color-state-severe-warning};
-    --bit-cmb-sec-brd-clr: #{$color-state-severe-warning};
-    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
-    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-severe-warning-bg};
+    --bit-cmb-bg-clr: #{$clr-swr-bg};
+    --bit-cmb-pri-clr: #{$clr-fg-pri};
+    --bit-cmb-pri-brd-clr: #{$clr-swr-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$clr-swr-bg-hover};
+    --bit-cmb-pri-active-bg-clr: #{$clr-swr-bg-active};
+    --bit-cmb-sec-clr: #{$clr-swr};
+    --bit-cmb-sec-brd-clr: #{$clr-swr};
+    --bit-cmb-sec-hover-bg-clr: #{$clr-swr-bg-hover};
+    --bit-cmb-sec-active-bg-clr: #{$clr-swr-bg-active};
 }
 
 .bit-cmb-err {
-    --bit-cmb-bg-clr: #{$color-state-error-bg};
-    --bit-cmb-pri-clr: #{$color-foreground-primary};
-    --bit-cmb-pri-brd-clr: #{$color-state-error-bg};
-    --bit-cmb-pri-hover-bg-clr: #{$color-action-hover-state-error-bg};
-    --bit-cmb-pri-active-bg-clr: #{$color-action-active-state-error-bg};
-    --bit-cmb-sec-clr: #{$color-state-error};
-    --bit-cmb-sec-brd-clr: #{$color-state-error};
-    --bit-cmb-sec-hover-bg-clr: #{$color-action-hover-state-error-bg};
-    --bit-cmb-sec-active-bg-clr: #{$color-action-active-state-error-bg};
+    --bit-cmb-bg-clr: #{$clr-err-bg};
+    --bit-cmb-pri-clr: #{$clr-fg-pri};
+    --bit-cmb-pri-brd-clr: #{$clr-err-bg};
+    --bit-cmb-pri-hover-bg-clr: #{$clr-err-bg-hover};
+    --bit-cmb-pri-active-bg-clr: #{$clr-err-bg-active};
+    --bit-cmb-sec-clr: #{$clr-err};
+    --bit-cmb-sec-brd-clr: #{$clr-err};
+    --bit-cmb-sec-hover-bg-clr: #{$clr-err-bg-hover};
+    --bit-cmb-sec-active-bg-clr: #{$clr-err-bg-active};
 }
 
 .bit-cmb-sm {

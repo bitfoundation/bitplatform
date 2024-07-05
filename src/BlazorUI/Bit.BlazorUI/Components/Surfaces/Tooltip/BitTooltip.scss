@@ -15,7 +15,7 @@
 
     &.bit-dis {
         .bit-ttp-ctn {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 }
@@ -44,8 +44,8 @@
     padding: spacing(1.25);
     font-size: spacing(1.5);
     z-index: $zindex-callout;
-    color: $color-foreground-primary;
-    background-color: $color-background-secondary;
+    color: $clr-fg-pri;
+    background-color: $clr-bg-sec;
 }
 
 .bit-ttp-vis {
@@ -58,8 +58,8 @@
     width: spacing(1.5);
     height: spacing(1.5);
     z-index: $zindex-callout;
-    color: $color-foreground-primary;
-    background-color: $color-background-secondary;
+    color: $clr-fg-pri;
+    background-color: $clr-bg-sec;
 }
 
 .bit-ttp-top {

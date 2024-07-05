@@ -9,31 +9,31 @@
     text-decoration: none;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-primary-main;
+    color: $clr-pri;
     background-color: transparent;
     border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-primary;
-            background-color: $color-action-hover-background-primary;
+            color: $clr-pri-hover;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:active {
-        color: $color-action-active-primary;
-        background-color: $color-action-active-background-primary;
+        color: $clr-pri-active;
+        background-color: $clr-bg-pri-active;
     }
 
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
         border-width: $shape-border-width;
         border-style: $shape-border-style;
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
     }
 }
 

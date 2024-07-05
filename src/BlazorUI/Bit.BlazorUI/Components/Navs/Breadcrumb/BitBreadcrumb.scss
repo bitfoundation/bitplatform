@@ -7,7 +7,7 @@
         cursor: default;
         font-weight: 400;
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
 
         .bit-brc-obt,
         .bit-brc-itm,
@@ -16,7 +16,7 @@
             cursor: default;
             font-weight: 400;
             pointer-events: none;
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 }
@@ -42,17 +42,17 @@
 }
 
 .bit-brc-sep {
-    color: $color-foreground-secondary;
+    color: $clr-fg-sec;
 }
 
 .bit-brc-obt {
     cursor: pointer;
     line-height: spacing(4.5);
-    color: $color-foreground-secondary;
+    color: $clr-fg-sec;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 }
@@ -63,11 +63,11 @@
     padding: 0 spacing(1);
     font-size: spacing(2.5);
     line-height: spacing(4.5);
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 }
@@ -91,7 +91,7 @@
     animation-duration: 0.367s;
     box-shadow: $box-shadow-callout;
     border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 
@@ -127,12 +127,12 @@
     min-width: spacing(22.5);
     line-height: spacing(2.5);
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
     border: $shape-border-width $shape-border-style transparent;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 }
@@ -150,7 +150,7 @@
 
 .bit-brc-disi {
     pointer-events: none;
-    color: $color-foreground-disabled;
+    color: $clr-fg-dis;
 }
 
 .bit-brc-sel {

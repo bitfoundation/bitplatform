@@ -3,66 +3,66 @@
 .bit-tgl {
     font-size: inherit;
     font-weight: inherit;
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         .bit-tgl-lbl {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-tgl-btn {
             cursor: default;
-            background: $color-background-disabled;
-            border: $shape-border-width $shape-border-style $color-border-disabled;
+            background: $clr-bg-dis;
+            border: $shape-border-width $shape-border-style $clr-brd-dis;
 
             @media (hover: hover) {
                 &:hover {
                     .bit-tgl-sta {
-                        background-color: $color-foreground-disabled;
+                        background-color: $clr-fg-dis;
                     }
                 }
             }
         }
 
         .bit-tgl-sta {
-            background-color: $color-foreground-disabled;
+            background-color: $clr-fg-dis;
         }
 
         &.bit-tgl-chk {
             .bit-tgl-btn {
                 justify-content: flex-end;
-                background: $color-background-disabled;
+                background: $clr-bg-dis;
                 border: $shape-border-width $shape-border-style transparent;
             }
 
             .bit-tgl-sta {
-                background-color: $color-background-disabled;
+                background-color: $clr-bg-dis;
             }
         }
     }
 
     &.bit-inv {
         .bit-tgl-btn {
-            border-color: $color-state-error;
+            border-color: $clr-err;
         }
 
         .bit-tgl-stx {
-            color: $color-state-error;
+            color: $clr-err;
         }
 
         &.bit-tgl-chk {
             .bit-tgl-btn {
-                background-color: $color-state-error;
+                background-color: $clr-err;
 
                 @media (hover: hover) {
                     &:hover {
-                        background-color: $color-state-error;
+                        background-color: $clr-err;
                     }
                 }
             }
 
             .bit-tgl-stx {
-                color: $color-state-error;
+                color: $clr-err;
             }
         }
     }
@@ -77,7 +77,7 @@
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-tgl-cnt {
@@ -100,15 +100,15 @@
     padding: 0 spacing(0.375);
     border-radius: spacing(1.25);
     transition: all 0.1s ease 0s;
-    background: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    background: $clr-bg-pri;
+    border: $shape-border-width $shape-border-style $clr-brd-pri;
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-border-primary;
+            border-color: $clr-brd-pri-hover;
 
             .bit-tgl-sta {
-                background-color: $color-action-hover-foreground-secondary;
+                background-color: $clr-fg-sec-hover;
             }
         }
     }
@@ -121,7 +121,7 @@
     height: spacing(1.5);
     box-sizing: border-box;
     transition: all 0.1s ease 0s;
-    background-color: $color-foreground-secondary;
+    background-color: $clr-fg-sec;
     border: spacing(0.75) $shape-border-style transparent;
 }
 
@@ -136,23 +136,23 @@
     .bit-tgl-btn {
         cursor: pointer;
         justify-content: flex-end;
-        background: $color-primary-main;
+        background: $clr-pri;
         border: $shape-border-width $shape-border-style transparent;
 
         @media (hover: hover) {
             &:hover {
                 border-color: transparent;
-                background-color: $color-action-hover-primary;
+                background-color: $clr-pri-hover;
 
                 .bit-tgl-sta {
-                    background-color: $color-primary-text;
+                    background-color: $clr-pri-text;
                 }
             }
         }
     }
 
     .bit-tgl-sta {
-        background-color: $color-primary-text;
+        background-color: $clr-pri-text;
     }
 }
 

@@ -8,7 +8,7 @@
     font-weight: 400;
     z-index: $zindex-modal;
     font-size: spacing(1.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 }
 
 .bit-dlg-nta {
@@ -39,7 +39,7 @@
     inset: 0;
     z-index: 0;
     position: absolute;
-    background-color: $color-background-overlay;
+    background-color: $clr-bg-overlay;
 }
 
 .bit-dlg-ctn {
@@ -48,7 +48,7 @@
     box-sizing: border-box;
     box-shadow: $box-shadow-callout;
     border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
 }
 
 .bit-dlg-hdr {
@@ -56,7 +56,7 @@
     display: flex;
     align-items: center;
     overflow-wrap: anywhere;
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
     padding: spacing(2) spacing(3) spacing(2.5);
 }
 
@@ -67,7 +67,7 @@
     line-height: normal;
     font-size: spacing(2.5);
     min-height: spacing(2.5);
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-dlg-scr-cnt {
@@ -84,7 +84,7 @@
     font-size: spacing(1.75);
     overflow-wrap: break-word;
     margin: 0 spacing(3) spacing(3);
-    color: $color-foreground-secondary;
+    color: $clr-fg-sec;
 }
 
 .bit-dlg-bct {
@@ -95,7 +95,7 @@
     align-items: center;
     justify-content: flex-end;
     padding: 0 spacing(3) spacing(3);
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
 
     button {
         cursor: pointer;
@@ -109,42 +109,42 @@
         border-width: $shape-border-width;
         border-style: $shape-border-style;
         border-radius: $shape-border-radius;
-        font-family: $typography-font-family;
-        font-weight: $typography-font-weight;
+        font-family: $tg-font-family;
+        font-weight: $tg-font-weight;
     }
 }
 
 .bit-dlg-pri {
-    color: $color-primary-text;
-    border-color: $color-primary-main;
-    background-color: $color-primary-main;
+    color: $clr-pri-text;
+    border-color: $clr-pri;
+    background-color: $clr-pri;
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-primary;
-            background-color: $color-action-hover-primary;
+            border-color: $clr-pri-hover;
+            background-color: $clr-pri-hover;
         }
     }
 
     &:active {
-        border-color: $color-action-active-primary;
-        background-color: $color-action-active-primary;
+        border-color: $clr-pri-active;
+        background-color: $clr-pri-active;
     }
 }
 
 .bit-dlg-std {
-    color: $color-secondary-text;
-    border-color: $color-border-primary;
-    background-color: $color-secondary-main;
+    color: $clr-sec-text;
+    border-color: $clr-brd-pri;
+    background-color: $clr-sec;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-secondary;
+            background-color: $clr-sec-hover;
         }
     }
 
     &:active {
-        background-color: $color-action-active-secondary;
+        background-color: $clr-sec-active;
     }
 }
 
@@ -164,7 +164,7 @@
     font-size: spacing(1.75);
     border-radius: spacing(0.25);
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     span {
         height: 100%;
@@ -180,14 +180,14 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-foreground-primary;
-            background-color: $color-action-hover-background-primary;
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:active {
-        color: $color-action-active-foreground-primary;
-        background-color: $color-action-active-background-primary;
+        color: $clr-fg-pri-active;
+        background-color: $clr-bg-pri-active;
     }
 }
 

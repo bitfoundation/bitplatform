@@ -9,7 +9,7 @@
     font-size: spacing(1.5);
     justify-content: center;
     border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 }
 
 .bit-msg-con {
@@ -84,32 +84,32 @@
 }
 
 .bit-msg-inf {
-    --bit-msg-clr: #{$color-state-info};
-    --bit-msg-clr-bg: #{$color-state-info-bg};
+    --bit-msg-clr: #{$clr-inf};
+    --bit-msg-clr-bg: #{$clr-inf-bg};
 }
 
 .bit-msg-suc {
-    --bit-msg-clr: #{$color-state-success};
-    --bit-msg-clr-bg: #{$color-state-success-bg};
+    --bit-msg-clr: #{$clr-suc};
+    --bit-msg-clr-bg: #{$clr-suc-bg};
 }
 
 .bit-msg-wrn {
-    --bit-msg-clr: #{$color-state-warning};
-    --bit-msg-clr-bg: #{$color-state-warning-bg};
+    --bit-msg-clr: #{$clr-war};
+    --bit-msg-clr-bg: #{$clr-war-bg};
 }
 
 .bit-msg-swr {
-    --bit-msg-clr: #{$color-state-severe-warning};
-    --bit-msg-clr-bg: #{$color-state-severe-warning-bg};
+    --bit-msg-clr: #{$clr-swr};
+    --bit-msg-clr-bg: #{$clr-swr-bg};
 }
 
 .bit-msg-err {
-    --bit-msg-clr: #{$color-state-error};
-    --bit-msg-clr-bg: #{$color-state-error-bg};
+    --bit-msg-clr: #{$clr-err};
+    --bit-msg-clr-bg: #{$clr-err-bg};
 }
 
 .bit-msg-fill {
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
     border-color: transparent;
     background-color: var(--bit-msg-clr-bg);
 }

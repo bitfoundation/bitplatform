@@ -11,19 +11,19 @@
     flex-direction: row;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         .bit-otp-inp {
-            border-color: $color-border-disabled;
-            background-color: $color-background-disabled;
+            border-color: $clr-brd-dis;
+            background-color: $clr-bg-dis;
         }
     }
 
     &.bit-inv {
         .bit-otp-inp {
             outline: none;
-            border: spacing(0.25) $shape-border-style $color-state-error;
+            border: spacing(0.25) $shape-border-style $clr-err;
         }
     }
 }
@@ -40,8 +40,8 @@
     font-size: spacing(1.75);
     -moz-appearance: textfield;
     border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    background-color: $clr-bg-pri;
+    border: $shape-border-width $shape-border-style $clr-brd-pri;
 
     &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
@@ -50,7 +50,7 @@
 
     &:focus {
         outline: none;
-        border: spacing(0.25) $shape-border-style $color-primary-main;
+        border: spacing(0.25) $shape-border-style $clr-pri;
     }
 }
 

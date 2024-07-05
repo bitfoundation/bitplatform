@@ -11,128 +11,128 @@
     border-width: $shape-border-width;
     border-style: $shape-border-style;
     border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
 
     &.bit-dis,
     .bit-mnb-opb.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
 
         .bit-mnb-spb {
-            background-color: $color-foreground-disabled;
+            background-color: $clr-fg-dis;
         }
     }
 }
 
 .bit-mnb-fil {
-    color: $color-primary-text;
-    border-color: $color-primary-main;
-    background-color: $color-primary-main;
+    color: $clr-pri-text;
+    border-color: $clr-pri;
+    background-color: $clr-pri;
 
     .bit-mnb-opb,
     .bit-mnb-chb {
-        border-color: $color-primary-main;
-        background-color: $color-primary-main;
+        border-color: $clr-pri;
+        background-color: $clr-pri;
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-action-hover-primary;
-                background-color: $color-action-hover-primary;
+                border-color: $clr-pri-hover;
+                background-color: $clr-pri-hover;
             }
         }
 
         &:active {
-            border-color: $color-action-active-primary;
-            background-color: $color-action-active-primary;
+            border-color: $clr-pri-active;
+            background-color: $clr-pri-active;
         }
     }
 
     &.bit-mnb-omn {
         .bit-mnb-chb {
-            border-color: $color-action-active-primary;
-            background-color: $color-action-active-primary;
+            border-color: $clr-pri-active;
+            background-color: $clr-pri-active;
         }
     }
 
     .bit-mnb-spb {
-        background-color: $color-primary-text;
+        background-color: $clr-pri-text;
     }
 
     &.bit-dis,
     &.bit-dis .bit-mnb-opb {
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
     }
 }
 
 .bit-mnb-otl {
-    color: $color-secondary-text;
-    border-color: $color-border-primary;
-    background-color: $color-secondary-main;
+    color: $clr-sec-text;
+    border-color: $clr-brd-pri;
+    background-color: $clr-sec;
 
     .bit-mnb-opb,
     .bit-mnb-chb {
-        border-color: $color-border-primary;
-        background-color: $color-secondary-main;
+        border-color: $clr-brd-pri;
+        background-color: $clr-sec;
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-secondary;
+                background-color: $clr-sec-hover;
             }
         }
 
         &:active {
-            background-color: $color-action-active-secondary;
+            background-color: $clr-sec-active;
         }
     }
 
     &.bit-mnb-omn {
         .bit-mnb-chb {
-            background-color: $color-action-active-secondary;
+            background-color: $clr-sec-active;
         }
     }
 
     .bit-mnb-spb {
-        background-color: $color-secondary-text;
+        background-color: $clr-sec-text;
     }
 
     &.bit-dis,
     &.bit-dis .bit-mnb-opb {
-        border-color: $color-border-disabled;
+        border-color: $clr-brd-dis;
     }
 }
 
 .bit-mnb-txt {
     border-color: transparent;
-    color: $color-secondary-text;
-    background-color: $color-secondary-main;
+    color: $clr-sec-text;
+    background-color: $clr-sec;
 
     .bit-mnb-opb,
     .bit-mnb-chb {
         border-color: transparent;
-        background-color: $color-secondary-main;
+        background-color: $clr-sec;
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color-action-hover-secondary;
+                background-color: $clr-sec-hover;
             }
         }
 
         &:active {
-            background-color: $color-action-active-secondary;
+            background-color: $clr-sec-active;
         }
     }
 
     &.bit-mnb-omn {
         .bit-mnb-chb {
-            background-color: $color-action-active-secondary;
+            background-color: $clr-sec-active;
         }
     }
 
     .bit-mnb-spb {
-        background-color: $color-secondary-text;
+        background-color: $clr-sec-text;
     }
 }
 
@@ -195,7 +195,7 @@
     z-index: $zindex-callout;
     box-shadow: $box-shadow-callout;
     transition: opacity 100ms, transform 300ms;
-    background-color: $color-background-primary;
+    background-color: $clr-bg-pri;
     transform: translate3d(0, spacing(-1.25), 0);
     border-radius: 0 0 spacing(0.25) spacing(0.25);
 
@@ -245,29 +245,29 @@
     align-items: center;
     line-height: inherit;
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     .bit-icon {
-        color: $color-primary-main;
+        color: $clr-pri;
     }
 
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
 
         .bit-icon {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-secondary;
+            background-color: $clr-sec-hover;
         }
     }
 
     &:active {
-        background-color: $color-action-active-secondary;
+        background-color: $clr-sec-active;
     }
 }

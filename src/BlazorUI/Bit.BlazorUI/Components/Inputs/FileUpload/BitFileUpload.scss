@@ -4,21 +4,21 @@
     display: flex;
     flex-flow: column nowrap;
     max-width: spacing(43.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-dis {
-        color: $color-foreground-disabled;
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
 
         @media (hover: hover) {
             &:hover {
-                border-color: $color-border-disabled;
+                border-color: $clr-brd-dis;
             }
         }
 
         &:active {
-            background-color: $color-background-disabled;
+            background-color: $clr-bg-dis;
         }
     }
 
@@ -49,18 +49,18 @@
     min-height: spacing(4.5);
     border-radius: spacing(0.5);
     padding: spacing(0.5) spacing(2);
-    color: $color-foreground-primary;
-    background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    color: $clr-fg-pri;
+    background-color: $clr-bg-pri;
+    border: $shape-border-width $shape-border-style $clr-brd-pri;
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-border-primary;
+            border-color: $clr-brd-pri-hover;
         }
     }
 
     &:active {
-        background-color: $color-action-active-background-primary;
+        background-color: $clr-bg-pri-active;
     }
 
     i {
@@ -83,12 +83,12 @@
     margin-top: spacing(0.375);
     border-radius: spacing(0.625);
     justify-content: space-between;
-    color: $color-foreground-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    color: $clr-fg-pri;
+    border: $shape-border-width $shape-border-style $clr-brd-pri;
 
     @media (hover: hover) {
         &:hover {
-            border-color: $color-action-hover-border-primary;
+            border-color: $clr-brd-pri-hover;
         }
     }
 
@@ -102,19 +102,19 @@
 
 .bit-upl-uld {
     .bit-upl-us {
-        color: $color-state-success;
+        color: $clr-suc;
     }
 }
 
 .bit-upl-fld {
     .bit-upl-us {
-        color: $color-state-error;
+        color: $clr-err;
     }
 }
 
 .bit-upl-psd {
     .bit-upl-us {
-        color: $color-primary-main;
+        color: $clr-pri;
     }
 }
 
@@ -174,7 +174,7 @@
 .bit-upl-pbr {
     height: spacing(0.25);
     transition: width 0.15s linear 0s;
-    background-color: $color-primary-main;
+    background-color: $clr-pri;
 }
 
 .bit-upl-usi {
@@ -188,7 +188,7 @@
     @media (hover: hover) {
         &:hover {
             i {
-                color: $color-primary-main;
+                color: $clr-pri;
             }
         }
     }
@@ -209,8 +209,8 @@
     height: spacing(2);
     border-width: spacing(0.2125);
     border-style: $shape-border-style;
-    border-color: $color-border-secondary;
-    border-top-color: $color-primary-dark;
+    border-color: $clr-brd-sec;
+    border-top-color: $clr-pri-dark;
     animation: bit-upl-spinner-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }

@@ -29,8 +29,8 @@
     min-height: spacing(8.75);
     border-radius: spacing(0.375);
     justify-content: space-between;
-    color: $color-foreground-primary;
-    background-color: $color-background-secondary;
+    color: $clr-fg-pri;
+    background-color: $clr-bg-sec;
 }
 
 .bit-snb-pbr {
@@ -70,42 +70,42 @@
 }
 
 .bit-snb-info {
-    background-color: $color-state-info-bg;
+    background-color: $clr-inf-bg;
 
     .bit-snb-pbr {
-        background-color: $color-state-info;
+        background-color: $clr-inf;
     }
 }
 
 .bit-snb-success {
-    background-color: $color-state-success-bg;
+    background-color: $clr-suc-bg;
 
     .bit-snb-pbr {
-        background-color: $color-state-success;
+        background-color: $clr-suc;
     }
 }
 
 .bit-snb-warning {
-    background-color: $color-state-warning-bg;
+    background-color: $clr-war-bg;
 
     .bit-snb-pbr {
-        background-color: $color-state-warning;
+        background-color: $clr-war;
     }
 }
 
 .bit-snb-severe-warning {
-    background-color: $color-state-severe-warning-bg;
+    background-color: $clr-swr-bg;
 
     .bit-snb-pbr {
-        background-color: $color-state-severe-warning;
+        background-color: $clr-swr;
     }
 }
 
 .bit-snb-error {
-    background-color: $color-state-error-bg;
+    background-color: $clr-err-bg;
 
     .bit-snb-pbr {
-        background-color: $color-state-error;
+        background-color: $clr-err;
     }
 }
 

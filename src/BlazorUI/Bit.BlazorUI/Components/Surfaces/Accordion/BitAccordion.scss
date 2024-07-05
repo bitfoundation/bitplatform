@@ -7,19 +7,19 @@
     box-sizing: border-box;
     font-size: spacing(1.75);
     flex-flow: column nowrap;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
     border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
-    background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    font-family: $tg-font-family;
+    background-color: $clr-bg-pri;
+    border: $shape-border-width $shape-border-style $clr-brd-pri;
 
     &.bit-dis {
-        color: $color-foreground-disabled;
-        background-color: $color-background-disabled;
+        color: $clr-fg-dis;
+        background-color: $clr-bg-dis;
 
         .bit-acd-ttl,
         .bit-acd-des {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 }
@@ -31,7 +31,7 @@
     align-items: center;
     padding: spacing(1.5);
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-acd-hic {
@@ -57,7 +57,7 @@
 }
 
 .bit-acd-des {
-    color: $color-foreground-secondary;
+    color: $clr-fg-sec;
 }
 
 .bit-acd-hex {
