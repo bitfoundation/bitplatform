@@ -43,7 +43,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/TodoSample.Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
@@ -157,7 +157,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json'
+        files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\TodoSample.Shared\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
@@ -229,7 +229,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/TodoSample.Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
@@ -310,7 +310,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/TodoSample.Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}

@@ -50,7 +50,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -168,7 +168,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -250,7 +250,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
   
   - script: |
       dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release

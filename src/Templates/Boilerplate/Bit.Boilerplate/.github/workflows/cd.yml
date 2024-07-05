@@ -41,7 +41,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -146,7 +146,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
+        files: 'src\Client\Boilerplate.Client.Core\appsettings.json, src\Boilerplate.Shared\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
@@ -207,7 +207,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -259,7 +259,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
