@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Shared.Services.Contracts;
+﻿namespace Boilerplate.Client.Core.Services.Contracts;
 
 public interface IStorageService
 {

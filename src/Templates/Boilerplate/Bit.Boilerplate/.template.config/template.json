@@ -248,7 +248,9 @@
                         "**/.git/**",
                         "**/*.nuspec",
                         "src/Boilerplate.Server/Data/Migrations/**",
-                        "src/Boilerplate.Server/*.db*"
+                        "src/Boilerplate.Server/*.db*",
+                        "src/Boilerplate.Api/Data/Migrations/**",
+                        "src/Boilerplate.Api/*.db*"
                     ]
                 },
                 {
@@ -269,15 +271,15 @@
                         "src/Boilerplate.Shared/Dtos/Categories/**",
                         "src/Boilerplate.Shared/Dtos/Dashboard/**",
                         "src/Boilerplate.Shared/Dtos/Products/**",
-                        "src/Boilerplate.Server/Controllers/Categories/**",
-                        "src/Boilerplate.Server/Controllers/Products/**",
-                        "src/Boilerplate.Server/Controllers/Dashboard/**",
-                        "src/Boilerplate.Server/Data/Configurations/Category/**",
-                        "src/Boilerplate.Server/Data/Configurations/Product/**",
-                        "src/Boilerplate.Server/Mappers/CategoriesMapper.cs",
-                        "src/Boilerplate.Server/Mappers/ProductsMapper.cs",
-                        "src/Boilerplate.Server/Models/Categories/**",
-                        "src/Boilerplate.Server/Models/Products/**",
+                        "src/Boilerplate.Api/Controllers/Categories/**",
+                        "src/Boilerplate.Api/Controllers/Products/**",
+                        "src/Boilerplate.Api/Controllers/Dashboard/**",
+                        "src/Boilerplate.Api/Data/Configurations/Category/**",
+                        "src/Boilerplate.Api/Data/Configurations/Product/**",
+                        "src/Boilerplate.Api/Mappers/CategoriesMapper.cs",
+                        "src/Boilerplate.Api/Mappers/ProductsMapper.cs",
+                        "src/Boilerplate.Api/Models/Categories/**",
+                        "src/Boilerplate.Api/Models/Products/**",
                         "src/Client/Boilerplate.Client.Core/Controllers/Categories/**",
                         "src/Client/Boilerplate.Client.Core/Controllers/Products/**",
                         "src/Client/Boilerplate.Client.Core/Controllers/Dashboard/**",
@@ -290,9 +292,9 @@
                     "condition": "(sample != Todo)",
                     "exclude": [
                         "src/Boilerplate.Shared/Dtos/Todo/**",
-                        "src/Boilerplate.Server/Controllers/Todo/**",
-                        "src/Boilerplate.Server/Mappers/TodoMapper.cs",
-                        "src/Boilerplate.Server/Models/Todo/**",
+                        "src/Boilerplate.Api/Controllers/Todo/**",
+                        "src/Boilerplate.Api/Mappers/TodoMapper.cs",
+                        "src/Boilerplate.Api/Models/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Controllers/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"
                     ]
@@ -313,8 +315,8 @@
                 {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
-                        "src/Boilerplate.Server/Services/GoogleRecaptchaHttpClient.cs",
-                        "src/Boilerplate.Server/Services/GoogleRecaptchaVerificationResponse.cs",
+                        "src/Boilerplate.Api/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Boilerplate.Api/Services/GoogleRecaptchaVerificationResponse.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
                     ]
                 },

@@ -75,12 +75,12 @@ jobs:
     displayName: 'Build migrations bundle'
     inputs:
       targetType: 'inline'
-      script: 'cd src/Boilerplate.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj'
+      script: 'cd src/Boilerplate.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Api.csproj'
   
   - task: PublishPipelineArtifact@1
     displayName: Upload ef migrations bundle
     inputs:
-      targetPath: 'src/Boilerplate.Server/efbundle'
+      targetPath: 'src/Boilerplate.Api/efbundle'
       artifact: 'migrations-bundle'
       publishLocation: 'pipeline'
 

@@ -2,6 +2,7 @@
 using Boilerplate.Api;
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Services;
+using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Boilerplate.Server;
 

@@ -47,11 +47,6 @@ jobs:
         dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --windows --captcha none
         dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false
 
-    - name: Release build empty sample without api
-      run: |
-        dotnet new bit-bp --name ApiFalse --database other --sample none --pipeline azure --api false
-        dotnet build ApiFalse/ApiFalse.sln -c Release -p:RunAOTCompilation=false
-
     - name: Release build admin panel sample + PostgreSQL database
       run: |
         dotnet new bit-bp --name AdminBPSqlServer --database PostgreSQL --sample admin --pipeline github --serverUrl adminpanel.bitplatform.dev --appInsights --appCenter
