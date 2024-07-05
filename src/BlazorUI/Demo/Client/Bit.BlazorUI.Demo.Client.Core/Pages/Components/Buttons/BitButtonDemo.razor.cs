@@ -52,6 +52,15 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the button.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "Content",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -115,15 +124,6 @@ public partial class BitButtonDemo
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the button clicked.",
-        },
-        new()
-        {
-            Name = "Severity",
-            Type = "BitSeverity?",
-            DefaultValue = "null",
-            Description = "The severity of the button.",
-            LinkType = LinkType.Link,
-            Href = "#severity-enum",
         },
         new()
         {
@@ -246,40 +246,52 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Id = "severity-enum",
-            Name = "BitSeverity",
-            Description = "",
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
             Items =
             [
                 new()
                 {
-                    Name= "Info",
-                    Description="Info styled Button.",
+                    Name= "Primary",
+                    Description="Info Primary general color.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Success",
-                    Description="Success styled Button.",
+                    Name= "Secondary",
+                    Description="Info general color.",
                     Value="1",
                 },
                 new()
                 {
-                    Name= "Warning",
-                    Description="Warning styled Button.",
+                    Name= "Info",
+                    Description="Info general color.",
                     Value="2",
                 },
                 new()
                 {
-                    Name= "SevereWarning",
-                    Description="Severe Warning styled Button.",
+                    Name= "Success",
+                    Description="Success general color.",
                     Value="3",
                 },
                 new()
                 {
-                    Name= "Error",
-                    Description="Error styled Button.",
+                    Name= "Warning",
+                    Description="Warning general color.",
                     Value="4",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="6",
                 }
             ]
         },
@@ -392,353 +404,4 @@ public partial class BitButtonDemo
             ]
         }
     ];
-
-
-
-    private readonly string example1RazorCode = @"
-<BitButton>Button</BitButton>";
-
-    private readonly string example2RazorCode = @"
-<BitButton Variant=""BitVariant.Fill"">Fill</BitButton>
-<BitButton Variant=""BitVariant.Outline"">Outline</BitButton>
-<BitButton Variant=""BitVariant.Text"">Text</BitButton>";
-
-    private readonly string example3RazorCode = @"
-<BitButton>Fill</BitButton>
-<BitButton IsEnabled=""false"">Disabled</BitButton>
-<BitButton Href=""https://bitplatform.dev"">Link</BitButton>";
-
-    private readonly string example4RazorCode = @"
-<BitButton Variant=""BitVariant.Outline"">Outline</BitButton>
-<BitButton Variant=""BitVariant.Outline"" IsEnabled=""false"">Disabled</BitButton>
-<BitButton Variant=""BitVariant.Outline"" Href=""https://bitplatform.dev"">Link</BitButton>";
-
-    private readonly string example5RazorCode = @"
-<BitButton Variant=""BitVariant.Text"">Text</BitButton>
-<BitButton Variant=""BitVariant.Text"" IsEnabled=""false"">Disabled</BitButton>
-<BitButton Variant=""BitVariant.Text"" Href=""https://bitplatform.dev"">Link</BitButton>";
-
-    private readonly string example6RazorCode = @"
-<BitButton IconName=""@BitIconName.Emoji"">
-    Default (Start)
-</BitButton>
-
-<BitButton IconName=""@BitIconName.Emoji2""
-           Variant=""BitVariant.Outline""
-           IconPosition=""BitButtonIconPosition.End"">
-    End
-</BitButton>";
-
-    private readonly string example7RazorCode = @"
-<BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
-    private readonly string example7CsharpCode = @"
-private int clickCounter;";
-
-    private readonly string example8RazorCode = @"
-<BitButton Severity=""BitSeverity.Info"">Info</BitButton>
-<BitButton Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"">Info</BitButton>
-<BitButton Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"">Info</BitButton>
-
-<BitButton Severity=""BitSeverity.Success"">Success</BitButton>
-<BitButton Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"">Success</BitButton>
-<BitButton Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"">Success</BitButton>
-
-<BitButton Severity=""BitSeverity.Warning"">Warning</BitButton>
-<BitButton Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"">Warning</BitButton>
-<BitButton Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"">Warning</BitButton>
-
-<BitButton Severity=""BitSeverity.SevereWarning"">SevereWarning</BitButton>
-<BitButton Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"">SevereWarning</BitButton>
-<BitButton Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"">SevereWarning</BitButton>
-
-<BitButton Severity=""BitSeverity.Error"">Error</BitButton>
-<BitButton Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"">Error</BitButton>
-<BitButton Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"">Error</BitButton>";
-
-    private readonly string example9RazorCode = @"
-<BitButton Size=""BitSize.Small"" Variant=""BitVariant.Fill"">Small</BitButton>
-<BitButton Size=""BitSize.Medium"" Variant=""BitVariant.Fill"">Medium</BitButton>
-<BitButton Size=""BitSize.Large"" Variant=""BitVariant.Fill"">Large</BitButton>
-
-<BitButton Size=""BitSize.Small"" Variant=""BitVariant.Outline"">Small</BitButton>
-<BitButton Size=""BitSize.Medium"" Variant=""BitVariant.Outline"">Medium</BitButton>
-<BitButton Size=""BitSize.Large"" Variant=""BitVariant.Outline"">Large</BitButton>
-
-<BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"">Small</BitButton>
-<BitButton Size=""BitSize.Medium"" Variant=""BitVariant.Text"">Medium</BitButton>
-<BitButton Size=""BitSize.Large"" Variant=""BitVariant.Text"">Large</BitButton>";
-
-    private readonly string example10RazorCode = @"
-<style>
-    .custom-content {
-        gap: 0.5rem;
-        display: flex;
-        align-items: center;
-    }
-</style>
-
-
-<BitButton Class=""custom-content"">
-    <BitIcon IconName=""@BitIconName.Airplane"" />
-    <span>A Fill custom content</span>
-    <BitRippleLoading Size=""20"" />
-</BitButton>
-
-<BitButton Class=""custom-content"" Variant=""BitVariant.Outline"">
-    <BitIcon IconName=""@BitIconName.Accept"" />
-    <span>An Outline custom content</span>
-    <BitRollerLoading Size=""20"" />
-</BitButton>
-
-<BitButton Class=""custom-content"" Variant=""BitVariant.Text"">
-    <BitIcon IconName=""@BitIconName.Asterisk"" />
-    <span>A Text custom content</span>
-    <BitCircleLoading Size=""20"" />
-</BitButton>";
-
-    private readonly string example11RazorCode = @"
-<EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
-    <DataAnnotationsValidator />
-    <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
-    <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
-    <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
-    <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
-    <div>
-        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-        <BitButton ButtonType=""BitButtonType.Reset"">Reset</BitButton>
-        <BitButton ButtonType=""BitButtonType.Button"">Button</BitButton>
-    </div>
-</EditForm>";
-    private readonly string example11CsharpCode = @"
-public class ButtonValidationModel
-{
-    [Required]
-    public string RequiredText { get; set; } = string.Empty;
-    public string? NonRequiredText { get; set; }
-}
-
-private ButtonValidationModel buttonValidationModel = new();
-
-private async Task HandleValidSubmit()
-{
-    await Task.Delay(2000);
-
-    buttonValidationModel = new();
-
-    StateHasChanged();
-}";
-
-    private readonly string example12RazorCode = @"
-<BitButton IsLoading=""fillIsLoading""
-           Style=""min-width: 6rem;""
-           Variant=""BitVariant.Fill""
-           OnClick=""LoadingFillClick"">
-    Fill
-</BitButton>
-
-<BitButton IsLoading=""outlineIsLoading""
-           Style=""min-width: 6rem;""
-           Variant=""BitVariant.Outline""
-           OnClick=""LoadingOutlineClick"">
-    Outline
-</BitButton>
-
-<BitButton IsLoading=""textIsLoading""
-           Style=""min-width: 6rem;""
-           Variant=""BitVariant.Text""
-           OnClick=""LoadingTextClick"">
-    Text
-</BitButton>";
-    private readonly string example12CsharpCode = @"
-private bool fillIsLoading;
-private bool outlineIsLoading;
-private bool textIsLoading;
-
-private async Task LoadingFillClick()
-{
-    fillIsLoading = true;
-    await Task.Delay(3000);
-    fillIsLoading = false;
-}
-
-private async Task LoadingOutlineClick()
-{
-    outlineIsLoading = true;
-    await Task.Delay(3000);
-    outlineIsLoading = false;
-}
-
-private async Task LoadingTextClick()
-{
-    textIsLoading = true;
-    await Task.Delay(3000);
-    textIsLoading = false;
-}";
-
-    private readonly string example13RazorCode = @"
-<BitButton IsLoading=""true""
-           LoadingLabel=""End...""
-           Style=""min-width: 6.5rem;""
-           Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.End"">
-    End
-</BitButton>
-
-<BitButton IsLoading=""true""
-           LoadingLabel=""Start...""
-           Style=""min-width: 6.5rem;""
-           Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Start"">
-    Start
-</BitButton>
-
-<BitButton IsLoading=""true""
-           LoadingLabel=""Bottom...""
-           Style=""min-width: 6.5rem;""
-           Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Bottom"">
-    Bottom
-</BitButton>
-
-<BitButton IsLoading=""true""
-           LoadingLabel=""Top...""
-           Style=""min-width: 6.5rem;""
-           Variant=""BitVariant.Outline""
-           LoadingLabelPosition=""BitLabelPosition.Top"">
-    Top
-</BitButton>";
-
-    private readonly string example14RazorCode = @"
-<style>
-    .custom-loading {
-        display: flex;
-        gap: 0.3125rem;
-        align-items: center;
-        justify-content: center;
-    }
-</style>
-
-
-<BitButton IsLoading=""true""
-           Size=""BitSize.Large""
-           Title=""Ellipsis loading..."">
-    <LoadingTemplate>
-        <div class=""custom-loading"">
-            <BitEllipsisLoading Size=""20"" />
-            <span>Wait...</span>
-        </div>
-    </LoadingTemplate>
-    <Content>
-        Ellipsis...
-    </Content>
-</BitButton>";
-
-    private readonly string example15RazorCode = @"
-<style>
-    .custom-class {
-        color: blueviolet;
-        border-radius: 1rem;
-    }
-
-    .custom-root {
-        min-width: 7.2rem;
-        box-shadow: aqua 0 0 0.5rem;
-    }
-
-    .custom-container {
-        text-shadow: aqua 0 0 0.5rem;
-    }
-
-    .custom-label {
-        color: goldenrod;
-    }
-
-    .custom-spinner {
-        border-color: aqua;
-        border-top-color: goldenrod;
-    }
-</style>
-
-
-<BitButton Style=""color:darkblue; font-weight:bold"">
-    Styled Button
-</BitButton>
-
-<BitButton Class=""custom-class"" Variant=""BitVariant.Outline"">
-    Classed Button
-</BitButton>
-
-
-<BitButton IsLoading=""stylesIsLoading""
-           LoadingLabel=""Wait...""
-           OnClick=""LoadingStylesClick""
-           Styles=""@(new() { Root = ""border-radius: 1rem; min-width: 6rem;"",
-                             LoadingLabel = ""color: tomato;"",
-                             Spinner = ""border-color: goldenrod; border-top-color: tomato;"" })"">
-    Fill
-</BitButton>
-
-<BitButton IsLoading=""classesIsLoading""
-           LoadingLabel=""Sending...""
-           OnClick=""LoadingClassesClick"" 
-           Variant=""BitVariant.Outline""
-           Classes=""@(new() { Root = ""custom-root"",
-                              LoadingContainer = ""custom-container"",
-                              LoadingLabel = ""custom-label"",
-                              Spinner = ""custom-spinner"" })"">
-    Outline
-</BitButton>";
-    private readonly string example15CsharpCode = @"
-private bool stylesIsLoading;
-private bool classesIsLoading;
-
-private async Task LoadingStylesClick()
-{
-    stylesIsLoading = true;
-    await Task.Delay(3000);
-    stylesIsLoading = false;
-}
-
-private async Task LoadingClassesClick()
-{
-    classesIsLoading = true;
-    await Task.Delay(3000);
-    classesIsLoading = false;
-}";
-
-    private readonly string example16RazorCode = @"
-<BitButton Dir=""BitDir.Rtl""
-           IconName=""@BitIconName.Emoji""
-           Variant=""BitVariant.Fill"">
-    دکمه با نماد
-</BitButton>
-
-<BitButton Dir=""BitDir.Rtl""
-           IconName=""@BitIconName.Emoji""
-           Variant=""BitVariant.Outline"">
-    دکمه با نماد
-</BitButton>
-
-<BitButton Dir=""BitDir.Rtl""
-           IconName=""@BitIconName.Emoji""
-           Variant=""BitVariant.Text"">
-    دکمه با نماد
-</BitButton>
-
-
-<BitButton IsLoading
-           Dir=""BitDir.Rtl""
-           LoadingLabel=""دکمه ی بارگذاری""
-           Variant=""BitVariant.Fill"" />
-
-<BitButton IsLoading
-           Dir=""BitDir.Rtl""
-           LoadingLabel=""دکمه ی بارگذاری""
-           Variant=""BitVariant.Outline"" />
-
-<BitButton IsLoading
-           Dir=""BitDir.Rtl""
-           LoadingLabel=""دکمه ی بارگذاری""
-           Variant=""BitVariant.Text"" />
-";
 }
