@@ -7,11 +7,11 @@ if (BuildConfiguration.IsDebug())
     // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
     if (OperatingSystem.IsWindows())
     {
-        builder.WebHost.UseUrls("https://localhost:5201", "http://localhost:5200", "https://*:5201", "http://*:5200");
+        builder.WebHost.UseUrls("https://localhost:5001", "http://localhost:5000", "https://*:5001", "http://*:5000");
     }
     else
     {
-        builder.WebHost.UseUrls("https://localhost:5201", "http://localhost:5200");
+        builder.WebHost.UseUrls("https://localhost:5001", "http://localhost:5000");
     }
 }
 
