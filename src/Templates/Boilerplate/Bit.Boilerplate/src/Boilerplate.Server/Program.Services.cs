@@ -17,6 +17,8 @@ public static partial class Program
 
         AddBlazor(builder);
 
+        services.AddHttpContextAccessor();
+
         builder.ConfigureApiServices();
 
         services.AddClientWebProjectServices();
