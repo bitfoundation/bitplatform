@@ -265,33 +265,39 @@ public partial class BitButtonDemo
                 },
                 new()
                 {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
                     Name= "Info",
                     Description="Info general color.",
-                    Value="2",
+                    Value="3",
                 },
                 new()
                 {
                     Name= "Success",
                     Description="Success general color.",
-                    Value="3",
+                    Value="4",
                 },
                 new()
                 {
                     Name= "Warning",
                     Description="Warning general color.",
-                    Value="4",
+                    Value="5",
                 },
                 new()
                 {
                     Name= "SevereWarning",
                     Description="SevereWarning general color.",
-                    Value="5",
+                    Value="6",
                 },
                 new()
                 {
                     Name= "Error",
                     Description="Error general color.",
-                    Value="6",
+                    Value="7",
                 }
             ]
         },

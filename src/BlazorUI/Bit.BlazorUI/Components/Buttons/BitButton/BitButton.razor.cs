@@ -190,6 +190,7 @@ public partial class BitButton : BitComponentBase
         {
             BitColor.Primary => "bit-btn-pri",
             BitColor.Secondary => "bit-btn-sec",
+            BitColor.Tertiary => "bit-btn-ter",
             BitColor.Info => "bit-btn-inf",
             BitColor.Success => "bit-btn-suc",
             BitColor.Warning => "bit-btn-wrn",

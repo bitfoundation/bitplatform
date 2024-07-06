@@ -23,6 +23,10 @@ public partial class BitButtonDemo
 <BitButton Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"">Secondary</BitButton>
 <BitButton Color=""BitColor.Secondary"" Variant=""BitVariant.Text"">Secondary</BitButton>
 
+<BitButton Color=""BitColor.Tertiary"">Tertiary</BitButton>
+<BitButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"">Tertiary</BitButton>
+<BitButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"">Tertiary</BitButton>
+
 <BitButton Color=""BitColor.Info"">Info</BitButton>
 <BitButton Color=""BitColor.Info"" Variant=""BitVariant.Outline"">Info</BitButton>
 <BitButton Color=""BitColor.Info"" Variant=""BitVariant.Text"">Info</BitButton>

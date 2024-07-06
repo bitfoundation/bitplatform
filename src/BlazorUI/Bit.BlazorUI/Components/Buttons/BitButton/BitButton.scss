@@ -148,6 +148,19 @@
     --bit-btn-clr-ldg-brd: #{$clr-sec-dark};
 }
 
+.bit-btn-ter {
+    --bit-btn-clr: #{$clr-ter-text};
+    --bit-btn-clr-bg: #{$clr-ter};
+    --bit-btn-clr-bg-hover: #{$clr-ter-hover};
+    --bit-btn-clr-bg-active: #{$clr-ter-active};
+    --bit-btn-clr-bg-dis: #{$clr-bg-dis};
+    --bit-btn-clr-brd: #{$clr-ter};
+    --bit-btn-clr-brd-hover: #{$clr-ter-hover};
+    --bit-btn-clr-brd-active: #{$clr-ter-active};
+    --bit-btn-clr-brd-dis: #{$clr-brd-dis};
+    --bit-btn-clr-ldg-brd: #{$clr-ter-dark};
+}
+
 .bit-btn-inf {
     --bit-btn-clr: #{$clr-inf-text};
     --bit-btn-clr-bg: #{$clr-inf};
