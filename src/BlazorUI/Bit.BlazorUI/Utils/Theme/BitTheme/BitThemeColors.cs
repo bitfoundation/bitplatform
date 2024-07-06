@@ -4,14 +4,15 @@ public class BitThemeColors
 {
     public BitThemeColorVariants Primary { get; set; } = new();
     public BitThemeColorVariants Secondary { get; set; } = new();
-    public BitThemeGeneralColorVariants Foreground { get; set; } = new();
-    public BitThemeBackgroundColorVariants Background { get; set; } = new();
-    public BitThemeGeneralColorVariants Border { get; set; } = new();
+    public BitThemeColorVariants Tertiary { get; set; } = new();
     public BitThemeColorVariants Info { get; set; } = new();
     public BitThemeColorVariants Success { get; set; } = new();
     public BitThemeColorVariants Warning { get; set; } = new();
     public BitThemeColorVariants SevereWarning { get; set; } = new();
     public BitThemeColorVariants Error { get; set; } = new();
+    public BitThemeGeneralColorVariants Foreground { get; set; } = new();
+    public BitThemeBackgroundColorVariants Background { get; set; } = new();
+    public BitThemeGeneralColorVariants Border { get; set; } = new();
     public string? Required { get; set; }
     public BitThemeNeutralColorVariants Neutral { get; set; } = new();
 }
