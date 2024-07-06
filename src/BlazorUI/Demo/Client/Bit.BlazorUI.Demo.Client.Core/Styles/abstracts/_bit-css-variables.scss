@@ -1,71 +1,118 @@
 /*-------- Colors --------*/
-$bit-color-primary-main: var(--bit-clr-pri);
+//primary
+$bit-color-primary: var(--bit-clr-pri);
+$bit-color-primary-hover: var(--bit-clr-pri-hover);
+$bit-color-primary-active: var(--bit-clr-pri-active);
 $bit-color-primary-dark: var(--bit-clr-pri-dark);
+$bit-color-primary-dark-hover: var(--bit-clr-pri-dark-hover);
+$bit-color-primary-dark-active: var(--bit-clr-pri-dark-active);
 $bit-color-primary-light: var(--bit-clr-pri-light);
+$bit-color-primary-light-hover: var(--bit-clr-pri-light-hover);
+$bit-color-primary-light-active: var(--bit-clr-pri-light-active);
 $bit-color-primary-text: var(--bit-clr-pri-text);
 
+//secondary
 $bit-color-secondary-main: var(--bit-clr-sec);
+$bit-color-secondary-hover: var(--bit-clr-sec-hover);
+$bit-color-secondary-active: var(--bit-clr-sec-active);
 $bit-color-secondary-dark: var(--bit-clr-sec-dark);
+$bit-color-secondary-dark-hover: var(--bit-clr-sec-dark-hover);
+$bit-color-secondary-dark-active: var(--bit-clr-sec-dark-active);
 $bit-color-secondary-light: var(--bit-clr-sec-light);
+$bit-color-secondary-light-hover: var(--bit-clr-sec-light-hover);
+$bit-color-secondary-light-active: var(--bit-clr-sec-light-active);
 $bit-color-secondary-text: var(--bit-clr-sec-text);
 
 //foreground
 $bit-color-foreground-primary: var(--bit-clr-fg-pri);
+$bit-color-foreground-primary-hover: var(--bit-clr-fg-pri-hover);
+$bit-color-foreground-primary-active: var(--bit-clr-fg-pri-active);
 $bit-color-foreground-secondary: var(--bit-clr-fg-sec);
+$bit-color-foreground-secondary-hover: var(--bit-clr-fg-sec-hover);
+$bit-color-foreground-secondary-active: var(--bit-clr-fg-sec-hover);
 $bit-color-foreground-disabled: var(--bit-clr-fg-dis);
 
 //backgrounds
 $bit-color-background-primary: var(--bit-clr-bg-pri);
+$bit-color-background-primary-hover: var(--bit-clr-bg-pri-hover);
+$bit-color-background-primary-active: var(--bit-clr-bg-pri-active);
 $bit-color-background-secondary: var(--bit-clr-bg-sec);
+$bit-color-background-secondary-hover: var(--bit-clr-bg-sec-hover);
+$bit-color-background-secondary-active: var(--bit-clr-bg-sec-active);
 $bit-color-background-disabled: var(--bit-clr-bg-dis);
 $bit-color-background-overlay: var(--bit-clr-bg-overlay);
 
 //borders
 $bit-color-border-primary: var(--bit-clr-brd-pri);
+$bit-color-border-primary-hover: var(--bit-clr-brd-pri-hover);
+$bit-color-border-primary-active: var(--bit-clr-brd-pri-active);
 $bit-color-border-secondary: var(--bit-clr-brd-sec);
+$bit-color-border-secondary-hover: var(--bit-clr-brd-sec-hover);
+$bit-color-border-secondary-active: var(--bit-clr-brd-sec-active);
 $bit-color-border-disabled: var(--bit-clr-brd-dis);
 
-//actions
-$bit-color-action-hover-primary: var(--bit-clr-pri-hover);
-$bit-color-action-active-primary: var(--bit-clr-pri-active);
-$bit-color-action-hover-primary-dark: var(--bit-clr-pri-dark-hover);
-$bit-color-action-active-primary-dark: var(--bit-clr-pri-dark-active);
-$bit-color-action-hover-primary-light: var(--bit-clr-pri-light-hover);
-$bit-color-action-active-primary-light: var(--bit-clr-pri-light-active);
-$bit-color-action-hover-secondary: var(--bit-clr-sec-hover);
-$bit-color-action-active-secondary: var(--bit-clr-sec-active);
-$bit-color-action-hover-secondary-dark: var(--bit-clr-sec-dark-hover);
-$bit-color-action-active-secondary-dark: var(--bit-clr-sec-dark-active);
-$bit-color-action-hover-secondary-light: var(--bit-clr-sec-light-hover);
-$bit-color-action-active-secondary-light: var(--bit-clr-sec-light-active);
-//actions-foreground
-$bit-color-action-hover-foreground-primary: var(--bit-clr-fg-pri-hover);
-$bit-color-action-active-foreground-primary: var(--bit-clr-fg-pri-active);
-$bit-color-action-hover-foreground-secondary: var(--bit-clr-fg-sec-hover);
-$bit-color-action-active-foreground-secondary: var(--bit-clr-fg-sec-hover);
-//actions-backgrounds
-$bit-color-action-hover-background-primary: var(--bit-clr-bg-pri-hover);
-$bit-color-action-active-background-primary: var(--bit-clr-bg-pri-active);
-$bit-color-action-hover-background-secondary: var(--bit-clr-bg-sec-hover);
-$bit-color-action-active-background-secondary: var(--bit-clr-bg-sec-active);
-//actions-borders
-$bit-color-action-hover-border-primary: var(--bit-clr-brd-pri-hover);
-$bit-color-action-active-border-primary: var(--bit-clr-brd-pri-active);
-$bit-color-action-hover-border-secondary: var(--bit-clr-brd-sec-hover);
-$bit-color-action-active-border-secondary: var(--bit-clr-brd-sec-active);
+//info
+$bit-color-info: var(--bit-clr-inf);
+$bit-color-info-hover: var(--bit-clr-inf-hover);
+$bit-color-info-active: var(--bit-clr-inf-active);
+$bit-color-info-dark: var(--bit-clr-inf-dark);
+$bit-color-info-dark-hover: var(--bit-clr-inf-dark-hover);
+$bit-color-info-dark-active: var(--bit-clr-inf-dark-active);
+$bit-color-info-light: var(--bit-clr-inf-light);
+$bit-color-info-light-hover: var(--bit-clr-inf-light-hover);
+$bit-color-info-light-active: var(--bit-clr-inf-light-active);
+$bit-color-info-text: var(--bit-clr-inf-text);
 
-//states
-$bit-color-state-info: var(--bit-clr-inf);
-$bit-color-state-info-bg: var(--bit-clr-inf-bg);
-$bit-color-state-success: var(--bit-clr-suc);
-$bit-color-state-success-bg: var(--bit-clr-suc-bg);
-$bit-color-state-warning: var(--bit-clr-wrn);
-$bit-color-state-warning-bg: var(--bit-clr-wrn-bg);
-$bit-color-state-severe-warning: var(--bit-clr-swr);
-$bit-color-state-severe-warning-bg: var(--bit-clr-swr-bg);
-$bit-color-state-error: var(--bit-clr-err);
-$bit-color-state-error-bg: var(--bit-clr-err-bg);
-$bit-color-state-required: var(--bit-clr-req);
+//success
+$bit-color-success: var(--bit-clr-suc);
+$bit-color-success-hover: var(--bit-clr-suc-hover);
+$bit-color-success-active: var(--bit-clr-suc-active);
+$bit-color-success-dark: var(--bit-clr-suc-dark);
+$bit-color-success-dark-hover: var(--bit-clr-suc-dark-hover);
+$bit-color-success-dark-active: var(--bit-clr-suc-dark-active);
+$bit-color-success-light: var(--bit-clr-suc-light);
+$bit-color-success-light-hover: var(--bit-clr-suc-light-hover);
+$bit-color-success-light-active: var(--bit-clr-suc-light-active);
+$bit-color-success-text: var(--bit-clr-suc-text);
+
+//warning
+$bit-color-warning: var(--bit-clr-wrn);
+$bit-color-warning-hover: var(--bit-clr-wrn-hover);
+$bit-color-warning-active: var(--bit-clr-wrn-active);
+$bit-color-warning-dark: var(--bit-clr-wrn-dark);
+$bit-color-warning-dark-hover: var(--bit-clr-wrn-dark-hover);
+$bit-color-warning-dark-active: var(--bit-clr-wrn-dark-active);
+$bit-color-warning-light: var(--bit-clr-wrn-light);
+$bit-color-warning-light-hover: var(--bit-clr-wrn-light-hover);
+$bit-color-warning-light-active: var(--bit-clr-wrn-light-active);
+$bit-color-warning-text: var(--bit-clr-wrn-text);
+
+//severe-warning
+$bit-color-severe-warning: var(--bit-clr-swr);
+$bit-color-severe-warning-hover: var(--bit-clr-swr-hover);
+$bit-color-severe-warning-active: var(--bit-clr-swr-active);
+$bit-color-severe-warning-dark: var(--bit-clr-swr-dark);
+$bit-color-severe-warning-dark-hover: var(--bit-clr-swr-dark-hover);
+$bit-color-severe-warning-dark-active: var(--bit-clr-swr-dark-active);
+$bit-color-severe-warning-light: var(--bit-clr-swr-light);
+$bit-color-severe-warning-light-hover: var(--bit-clr-swr-light-hover);
+$bit-color-severe-warning-light-active: var(--bit-clr-swr-light-active);
+$bit-color-severe-warning-text: var(--bit-clr-swr-text);
+
+//error
+$bit-color-error: var(--bit-clr-err);
+$bit-color-error-hover: var(--bit-clr-err-hover);
+$bit-color-error-active: var(--bit-clr-err-active);
+$bit-color-error-dark: var(--bit-clr-err-dark);
+$bit-color-error-dark-hover: var(--bit-clr-err-dark-hover);
+$bit-color-error-dark-active: var(--bit-clr-err-dark-active);
+$bit-color-error-light: var(--bit-clr-err-light);
+$bit-color-error-light-hover: var(--bit-clr-err-light-hover);
+$bit-color-error-light-active: var(--bit-clr-err-light-active);
+$bit-color-error-text: var(--bit-clr-err-text);
+
+//required
+$bit-color-requried: var(--bit-clr-req);
 
 //neutrals
 $bit-color-neutrals-white: var(--bit-clr-ntr-white);
