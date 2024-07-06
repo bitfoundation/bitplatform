@@ -30,30 +30,16 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-sec-light-active", bitTheme.Color.Secondary.LightActive);
         addCssVar("--bit-clr-sec-text", bitTheme.Color.Secondary.Text);
 
-        addCssVar("--bit-clr-fg-pri", bitTheme.Color.Foreground.Primary);
-        addCssVar("--bit-clr-fg-pri-hover", bitTheme.Color.Foreground.PrimaryHover);
-        addCssVar("--bit-clr-fg-pri-active", bitTheme.Color.Foreground.PrimaryActive);
-        addCssVar("--bit-clr-fg-sec", bitTheme.Color.Foreground.Secondary);
-        addCssVar("--bit-clr-fg-sec-hover", bitTheme.Color.Foreground.SecondaryHover);
-        addCssVar("--bit-clr-fg-sec-active", bitTheme.Color.Foreground.SecondaryActive);
-        addCssVar("--bit-clr-fg-dis", bitTheme.Color.Foreground.Disabled);
-
-        addCssVar("--bit-clr-bg-pri", bitTheme.Color.Background.Primary);
-        addCssVar("--bit-clr-bg-pri-hover", bitTheme.Color.Background.PrimaryHover);
-        addCssVar("--bit-clr-bg-pri-active", bitTheme.Color.Background.PrimaryActive);
-        addCssVar("--bit-clr-bg-sec", bitTheme.Color.Background.Secondary);
-        addCssVar("--bit-clr-bg-sec-hover", bitTheme.Color.Background.SecondaryHover);
-        addCssVar("--bit-clr-bg-sec-active", bitTheme.Color.Background.SecondaryActive);
-        addCssVar("--bit-clr-bg-dis", bitTheme.Color.Background.Disabled);
-        addCssVar("--bit-clr-bg-overlay", bitTheme.Color.Background.Overlay);
-
-        addCssVar("--bit-clr-brd-pri", bitTheme.Color.Border.Primary);
-        addCssVar("--bit-clr-brd-pri-hover", bitTheme.Color.Border.PrimaryHover);
-        addCssVar("--bit-clr-brd-pri-active", bitTheme.Color.Border.PrimaryActive);
-        addCssVar("--bit-clr-brd-sec", bitTheme.Color.Border.Secondary);
-        addCssVar("--bit-clr-brd-sec-hover", bitTheme.Color.Border.SecondaryHover);
-        addCssVar("--bit-clr-brd-sec-active", bitTheme.Color.Border.SecondaryActive);
-        addCssVar("--bit-clr-brd-dis", bitTheme.Color.Border.Disabled);
+        addCssVar("--bit-clr-ter", bitTheme.Color.Tertiary.Main);
+        addCssVar("--bit-clr-ter-hover", bitTheme.Color.Tertiary.MainHover);
+        addCssVar("--bit-clr-ter-active", bitTheme.Color.Tertiary.MainActive);
+        addCssVar("--bit-clr-ter-dark", bitTheme.Color.Tertiary.Dark);
+        addCssVar("--bit-clr-ter-dark-hover", bitTheme.Color.Tertiary.DarkHover);
+        addCssVar("--bit-clr-ter-dark-active", bitTheme.Color.Tertiary.DarkActive);
+        addCssVar("--bit-clr-ter-light", bitTheme.Color.Tertiary.Light);
+        addCssVar("--bit-clr-ter-light-hover", bitTheme.Color.Tertiary.LightHover);
+        addCssVar("--bit-clr-ter-light-active", bitTheme.Color.Tertiary.LightActive);
+        addCssVar("--bit-clr-ter-text", bitTheme.Color.Tertiary.Text);
 
         addCssVar("--bit-clr-inf", bitTheme.Color.Info.Main);
         addCssVar("--bit-clr-inf-hover", bitTheme.Color.Info.MainHover);
@@ -109,6 +95,31 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-err-light-hover", bitTheme.Color.Error.LightHover);
         addCssVar("--bit-clr-err-light-active", bitTheme.Color.Error.LightActive);
         addCssVar("--bit-clr-err-text", bitTheme.Color.Error.Text);
+
+        addCssVar("--bit-clr-fg-pri", bitTheme.Color.Foreground.Primary);
+        addCssVar("--bit-clr-fg-pri-hover", bitTheme.Color.Foreground.PrimaryHover);
+        addCssVar("--bit-clr-fg-pri-active", bitTheme.Color.Foreground.PrimaryActive);
+        addCssVar("--bit-clr-fg-sec", bitTheme.Color.Foreground.Secondary);
+        addCssVar("--bit-clr-fg-sec-hover", bitTheme.Color.Foreground.SecondaryHover);
+        addCssVar("--bit-clr-fg-sec-active", bitTheme.Color.Foreground.SecondaryActive);
+        addCssVar("--bit-clr-fg-dis", bitTheme.Color.Foreground.Disabled);
+
+        addCssVar("--bit-clr-bg-pri", bitTheme.Color.Background.Primary);
+        addCssVar("--bit-clr-bg-pri-hover", bitTheme.Color.Background.PrimaryHover);
+        addCssVar("--bit-clr-bg-pri-active", bitTheme.Color.Background.PrimaryActive);
+        addCssVar("--bit-clr-bg-sec", bitTheme.Color.Background.Secondary);
+        addCssVar("--bit-clr-bg-sec-hover", bitTheme.Color.Background.SecondaryHover);
+        addCssVar("--bit-clr-bg-sec-active", bitTheme.Color.Background.SecondaryActive);
+        addCssVar("--bit-clr-bg-dis", bitTheme.Color.Background.Disabled);
+        addCssVar("--bit-clr-bg-overlay", bitTheme.Color.Background.Overlay);
+
+        addCssVar("--bit-clr-brd-pri", bitTheme.Color.Border.Primary);
+        addCssVar("--bit-clr-brd-pri-hover", bitTheme.Color.Border.PrimaryHover);
+        addCssVar("--bit-clr-brd-pri-active", bitTheme.Color.Border.PrimaryActive);
+        addCssVar("--bit-clr-brd-sec", bitTheme.Color.Border.Secondary);
+        addCssVar("--bit-clr-brd-sec-hover", bitTheme.Color.Border.SecondaryHover);
+        addCssVar("--bit-clr-brd-sec-active", bitTheme.Color.Border.SecondaryActive);
+        addCssVar("--bit-clr-brd-dis", bitTheme.Color.Border.Disabled);
 
         addCssVar("--bit-clr-req", bitTheme.Color.Required);
 
@@ -306,18 +317,16 @@ internal static class BitThemeMapper
         result.Color.Secondary.LightActive = bitTheme.Color.Secondary.LightActive ?? other.Color.Secondary.LightActive;
         result.Color.Secondary.Text = bitTheme.Color.Secondary.Text ?? other.Color.Secondary.Text;
 
-        result.Color.Foreground.Primary = bitTheme.Color.Foreground.Primary ?? other.Color.Foreground.Primary;
-        result.Color.Foreground.Secondary = bitTheme.Color.Foreground.Secondary ?? other.Color.Foreground.Secondary;
-        result.Color.Foreground.Disabled = bitTheme.Color.Foreground.Disabled ?? other.Color.Foreground.Disabled;
-
-        result.Color.Background.Primary = bitTheme.Color.Background.Primary ?? other.Color.Background.Primary;
-        result.Color.Background.Secondary = bitTheme.Color.Background.Secondary ?? other.Color.Background.Secondary;
-        result.Color.Background.Disabled = bitTheme.Color.Background.Disabled ?? other.Color.Background.Disabled;
-        result.Color.Background.Overlay = bitTheme.Color.Background.Overlay ?? other.Color.Background.Overlay;
-
-        result.Color.Border.Primary = bitTheme.Color.Border.Primary ?? other.Color.Border.Primary;
-        result.Color.Border.Secondary = bitTheme.Color.Border.Secondary ?? other.Color.Border.Secondary;
-        result.Color.Border.Disabled = bitTheme.Color.Border.Disabled ?? other.Color.Border.Disabled;
+        result.Color.Tertiary.Main = bitTheme.Color.Tertiary.Main ?? other.Color.Tertiary.Main;
+        result.Color.Tertiary.MainHover = bitTheme.Color.Tertiary.MainHover ?? other.Color.Tertiary.MainHover;
+        result.Color.Tertiary.MainActive = bitTheme.Color.Tertiary.MainActive ?? other.Color.Tertiary.MainActive;
+        result.Color.Tertiary.Dark = bitTheme.Color.Tertiary.Dark ?? other.Color.Tertiary.Dark;
+        result.Color.Tertiary.DarkHover = bitTheme.Color.Tertiary.DarkHover ?? other.Color.Tertiary.DarkHover;
+        result.Color.Tertiary.DarkActive = bitTheme.Color.Tertiary.DarkActive ?? other.Color.Tertiary.DarkActive;
+        result.Color.Tertiary.Light = bitTheme.Color.Tertiary.Light ?? other.Color.Tertiary.Light;
+        result.Color.Tertiary.LightHover = bitTheme.Color.Tertiary.LightHover ?? other.Color.Tertiary.LightHover;
+        result.Color.Tertiary.LightActive = bitTheme.Color.Tertiary.LightActive ?? other.Color.Tertiary.LightActive;
+        result.Color.Tertiary.Text = bitTheme.Color.Tertiary.Text ?? other.Color.Tertiary.Text;
 
         result.Color.Info.Main = bitTheme.Color.Info.Main ?? other.Color.Info.Main;
         result.Color.Info.MainHover = bitTheme.Color.Info.MainHover ?? other.Color.Info.MainHover;
@@ -373,6 +382,31 @@ internal static class BitThemeMapper
         result.Color.Error.LightHover = bitTheme.Color.Error.LightHover ?? other.Color.Error.LightHover;
         result.Color.Error.LightActive = bitTheme.Color.Error.LightActive ?? other.Color.Error.LightActive;
         result.Color.Error.Text = bitTheme.Color.Error.Text ?? other.Color.Error.Text;
+
+        result.Color.Foreground.Primary = bitTheme.Color.Foreground.Primary ?? other.Color.Foreground.Primary;
+        result.Color.Foreground.PrimaryHover = bitTheme.Color.Foreground.PrimaryHover ?? other.Color.Foreground.PrimaryHover;
+        result.Color.Foreground.PrimaryActive = bitTheme.Color.Foreground.PrimaryActive ?? other.Color.Foreground.PrimaryActive;
+        result.Color.Foreground.Secondary = bitTheme.Color.Foreground.Secondary ?? other.Color.Foreground.Secondary;
+        result.Color.Foreground.SecondaryHover = bitTheme.Color.Foreground.SecondaryHover ?? other.Color.Foreground.SecondaryHover;
+        result.Color.Foreground.SecondaryActive = bitTheme.Color.Foreground.SecondaryActive ?? other.Color.Foreground.SecondaryActive;
+        result.Color.Foreground.Disabled = bitTheme.Color.Foreground.Disabled ?? other.Color.Foreground.Disabled;
+
+        result.Color.Background.Primary = bitTheme.Color.Background.Primary ?? other.Color.Background.Primary;
+        result.Color.Background.PrimaryHover = bitTheme.Color.Background.PrimaryHover ?? other.Color.Background.PrimaryHover;
+        result.Color.Background.PrimaryActive = bitTheme.Color.Background.PrimaryActive ?? other.Color.Background.PrimaryActive;
+        result.Color.Background.Secondary = bitTheme.Color.Background.Secondary ?? other.Color.Background.Secondary;
+        result.Color.Background.SecondaryHover = bitTheme.Color.Background.SecondaryHover ?? other.Color.Background.SecondaryHover;
+        result.Color.Background.SecondaryActive = bitTheme.Color.Background.SecondaryActive ?? other.Color.Background.SecondaryActive;
+        result.Color.Background.Disabled = bitTheme.Color.Background.Disabled ?? other.Color.Background.Disabled;
+        result.Color.Background.Overlay = bitTheme.Color.Background.Overlay ?? other.Color.Background.Overlay;
+
+        result.Color.Border.Primary = bitTheme.Color.Border.Primary ?? other.Color.Border.Primary;
+        result.Color.Border.PrimaryHover = bitTheme.Color.Border.PrimaryHover ?? other.Color.Border.PrimaryHover;
+        result.Color.Border.PrimaryActive = bitTheme.Color.Border.PrimaryActive ?? other.Color.Border.PrimaryActive;
+        result.Color.Border.Secondary = bitTheme.Color.Border.Secondary ?? other.Color.Border.Secondary;
+        result.Color.Border.SecondaryHover = bitTheme.Color.Border.SecondaryHover ?? other.Color.Border.SecondaryHover;
+        result.Color.Border.SecondaryActive = bitTheme.Color.Border.SecondaryActive ?? other.Color.Border.SecondaryActive;
+        result.Color.Border.Disabled = bitTheme.Color.Border.Disabled ?? other.Color.Border.Disabled;
 
         result.Color.Required = bitTheme.Color.Required ?? other.Color.Required;
 
