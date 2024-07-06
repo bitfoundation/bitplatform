@@ -82,7 +82,7 @@
 
 .link--active {
     font-weight: 600;
-    color: $bit-color-primary-main;
+    color: $bit-color-primary;
 }
 
 .right-section {
@@ -114,7 +114,7 @@
     min-width: rem2(35px);
     border-radius: 50%;
     color: $bit-color-primary-text;
-    background-color: $bit-color-primary-main;
+    background-color: $bit-color-primary;
 
     .icon-container {
         height: 100%;
