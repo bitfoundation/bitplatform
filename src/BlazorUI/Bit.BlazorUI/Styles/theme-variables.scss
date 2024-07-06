@@ -23,33 +23,17 @@ $clr-sec-light-hover: var(--bit-clr-sec-light-hover);
 $clr-sec-light-active: var(--bit-clr-sec-light-active);
 $clr-sec-text: var(--bit-clr-sec-text);
 
-//foreground
-$clr-fg-pri: var(--bit-clr-fg-pri);
-$clr-fg-pri-hover: var(--bit-clr-fg-pri-hover);
-$clr-fg-pri-active: var(--bit-clr-fg-pri-active);
-$clr-fg-sec: var(--bit-clr-fg-sec);
-$clr-fg-sec-hover: var(--bit-clr-fg-sec-hover);
-$clr-fg-sec-active: var(--bit-clr-fg-sec-active);
-$clr-fg-dis: var(--bit-clr-fg-dis);
-
-//backgrounds
-$clr-bg-pri: var(--bit-clr-bg-pri);
-$clr-bg-pri-hover: var(--bit-clr-bg-pri-hover);
-$clr-bg-pri-active: var(--bit-clr-bg-pri-active);
-$clr-bg-sec: var(--bit-clr-bg-sec);
-$clr-bg-sec-hover: var(--bit-clr-bg-sec-hover);
-$clr-bg-sec-active: var(--bit-clr-bg-sec-active);
-$clr-bg-dis: var(--bit-clr-bg-dis);
-$clr-bg-overlay: var(--bit-clr-bg-overlay);
-
-//borders
-$clr-brd-pri: var(--bit-clr-brd-pri);
-$clr-brd-pri-hover: var(--bit-clr-brd-pri-hover);
-$clr-brd-pri-active: var(--bit-clr-brd-pri-active);
-$clr-brd-sec: var(--bit-clr-brd-sec);
-$clr-brd-sec-hover: var(--bit-clr-brd-sec-hover);
-$clr-brd-sec-active: var(--bit-clr-brd-sec-active);
-$clr-brd-dis: var(--bit-clr-brd-dis);
+//tertiary
+$clr-ter: var(--bit-clr-ter);
+$clr-ter-hover: var(--bit-clr-ter-hover);
+$clr-ter-active: var(--bit-clr-ter-active);
+$clr-ter-dark: var(--bit-clr-ter-dark);
+$clr-ter-dark-hover: var(--bit-clr-ter-dark-hover);
+$clr-ter-dark-active: var(--bit-clr-ter-dark-active);
+$clr-ter-light: var(--bit-clr-ter-light);
+$clr-ter-light-hover: var(--bit-clr-ter-light-hover);
+$clr-ter-light-active: var(--bit-clr-ter-light-active);
+$clr-ter-text: var(--bit-clr-ter-text);
 
 //info
 $clr-inf: var(--bit-clr-inf);
@@ -110,6 +94,34 @@ $clr-err-light: var(--bit-clr-err-light);
 $clr-err-light-hover: var(--bit-clr-err-light-hover);
 $clr-err-light-active: var(--bit-clr-err-light-active);
 $clr-err-text: var(--bit-clr-err-text);
+
+//foreground
+$clr-fg-pri: var(--bit-clr-fg-pri);
+$clr-fg-pri-hover: var(--bit-clr-fg-pri-hover);
+$clr-fg-pri-active: var(--bit-clr-fg-pri-active);
+$clr-fg-sec: var(--bit-clr-fg-sec);
+$clr-fg-sec-hover: var(--bit-clr-fg-sec-hover);
+$clr-fg-sec-active: var(--bit-clr-fg-sec-active);
+$clr-fg-dis: var(--bit-clr-fg-dis);
+
+//backgrounds
+$clr-bg-pri: var(--bit-clr-bg-pri);
+$clr-bg-pri-hover: var(--bit-clr-bg-pri-hover);
+$clr-bg-pri-active: var(--bit-clr-bg-pri-active);
+$clr-bg-sec: var(--bit-clr-bg-sec);
+$clr-bg-sec-hover: var(--bit-clr-bg-sec-hover);
+$clr-bg-sec-active: var(--bit-clr-bg-sec-active);
+$clr-bg-dis: var(--bit-clr-bg-dis);
+$clr-bg-overlay: var(--bit-clr-bg-overlay);
+
+//borders
+$clr-brd-pri: var(--bit-clr-brd-pri);
+$clr-brd-pri-hover: var(--bit-clr-brd-pri-hover);
+$clr-brd-pri-active: var(--bit-clr-brd-pri-active);
+$clr-brd-sec: var(--bit-clr-brd-sec);
+$clr-brd-sec-hover: var(--bit-clr-brd-sec-hover);
+$clr-brd-sec-active: var(--bit-clr-brd-sec-active);
+$clr-brd-dis: var(--bit-clr-brd-dis);
 
 //required
 $clr-req: var(--bit-clr-req);

@@ -4,6 +4,7 @@ public class BitThemeColors
 {
     public BitThemeColorVariants Primary { get; set; } = new();
     public BitThemeColorVariants Secondary { get; set; } = new();
+    public BitThemeColorVariants Tertiary { get; set; } = new();
     public BitThemeGeneralColorVariants Foreground { get; set; } = new();
     public BitThemeBackgroundColorVariants Background { get; set; } = new();
     public BitThemeGeneralColorVariants Border { get; set; } = new();

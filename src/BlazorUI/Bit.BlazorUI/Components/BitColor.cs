@@ -16,6 +16,11 @@ public enum BitColor
     Secondary,
 
     /// <summary>
+    /// Tertiary general color.
+    /// </summary>
+    Tertiary,
+
+    /// <summary>
     /// Info general color.
     /// </summary>
     Info,

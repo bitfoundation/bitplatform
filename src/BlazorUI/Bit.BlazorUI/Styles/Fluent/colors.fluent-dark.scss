@@ -23,31 +23,17 @@
     --bit-clr-sec-light-hover: #FF9440;
     --bit-clr-sec-light-active: #FF8A2E;
     --bit-clr-sec-text: #111;
-    //foregrounds
-    --bit-clr-fg-pri: #E8E8E8;
-    --bit-clr-fg-pri-hover: #DDD;
-    --bit-clr-fg-pri-active: #CCC;
-    --bit-clr-fg-sec: #B9B9B9;
-    --bit-clr-fg-sec-hover: #AAA;
-    --bit-clr-fg-sec-active: #999;
-    --bit-clr-fg-dis: #5C5C5C;
-    //backgrounds
-    --bit-clr-bg-pri: #0D1117;
-    --bit-clr-bg-pri-hover: #1A2639;
-    --bit-clr-bg-pri-active: #121B29;
-    --bit-clr-bg-sec: #161B22;
-    --bit-clr-bg-sec-hover: #222;
-    --bit-clr-bg-sec-active: #333;
-    --bit-clr-bg-dis: #21262D;
-    --bit-clr-bg-overlay: rgba(255, 255, 255, 0.2);
-    //borders
-    --bit-clr-brd-pri: #AAA;
-    --bit-clr-brd-pri-hover: #BBB;
-    --bit-clr-brd-pri-active: #CCC;
-    --bit-clr-brd-sec: #333;
-    --bit-clr-brd-sec-hover: #777;
-    --bit-clr-brd-sec-active: #888;
-    --bit-clr-brd-dis: #21262D;
+    //tertiary
+    --bit-clr-ter: #E5E5E5;
+    --bit-clr-ter-hover: #DDDDDD;
+    --bit-clr-ter-active: #D9D9D9;
+    --bit-clr-ter-dark: #D5D5D5;
+    --bit-clr-ter-dark-hover: #CCCCCC;
+    --bit-clr-ter-dark-active: #C9C9C9;
+    --bit-clr-ter-light: #E0E0E0;
+    --bit-clr-ter-light-hover: #E4E4E4;
+    --bit-clr-ter-light-active: #EEEEEE;
+    --bit-clr-ter-text: #111;
     //info
     --bit-clr-inf: #777777;
     --bit-clr-inf-hover: #6D6D6D;
@@ -103,6 +89,31 @@
     --bit-clr-err-light-hover: #EE0000;
     --bit-clr-err-light-active: #DD0000;
     --bit-clr-err-text: #111;
+    //foregrounds
+    --bit-clr-fg-pri: #E8E8E8;
+    --bit-clr-fg-pri-hover: #DDD;
+    --bit-clr-fg-pri-active: #CCC;
+    --bit-clr-fg-sec: #B9B9B9;
+    --bit-clr-fg-sec-hover: #AAA;
+    --bit-clr-fg-sec-active: #999;
+    --bit-clr-fg-dis: #5C5C5C;
+    //backgrounds
+    --bit-clr-bg-pri: #0D1117;
+    --bit-clr-bg-pri-hover: #1A2639;
+    --bit-clr-bg-pri-active: #121B29;
+    --bit-clr-bg-sec: #161B22;
+    --bit-clr-bg-sec-hover: #222;
+    --bit-clr-bg-sec-active: #333;
+    --bit-clr-bg-dis: #21262D;
+    --bit-clr-bg-overlay: rgba(255, 255, 255, 0.2);
+    //borders
+    --bit-clr-brd-pri: #AAA;
+    --bit-clr-brd-pri-hover: #BBB;
+    --bit-clr-brd-pri-active: #CCC;
+    --bit-clr-brd-sec: #333;
+    --bit-clr-brd-sec-hover: #777;
+    --bit-clr-brd-sec-active: #888;
+    --bit-clr-brd-dis: #21262D;
     //req
     --bit-clr-req: #A4262C;
     // shadows-callout
