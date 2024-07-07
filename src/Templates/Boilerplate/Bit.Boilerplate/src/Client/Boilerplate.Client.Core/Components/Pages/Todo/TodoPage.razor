@@ -16,8 +16,9 @@
         <h1 class="main-title">@Localizer[nameof(AppStrings.TodoTitle)]</h1>
         <div class="add-todo-container">
             <BitTextField @bind-Value="newTodoTitle"
-                          Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]"
-                          Class="add-todo-input" />
+                          Class="add-todo-input"
+                          Immediate DebounceTime="300"
+                          Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]" />
             <BitButton IsLoading="isAdding"
                        OnClick="WrapHandled(AddTodoItem)"
                        Class="add-todo-button"
