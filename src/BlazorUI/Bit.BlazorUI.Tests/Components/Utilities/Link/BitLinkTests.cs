@@ -55,7 +55,7 @@ public class BitLinkTests : BunitTestContext
         {
             if (hasUnderline.HasValue)
             {
-                parameters.Add(p => p.HasUnderline, hasUnderline.Value);
+                parameters.Add(p => p.Underlined, hasUnderline.Value);
             }
         });
 
