@@ -24,7 +24,7 @@ public partial class BitLink : BitComponentBase
     /// <summary>
     /// Whether the link is styled with an underline or not.
     /// </summary>
-    [Parameter] public bool HasUnderline { get; set; } = false;
+    [Parameter] public bool Underlined { get; set; }
 
     /// <summary>
     /// Callback for when the link clicked
@@ -36,7 +36,7 @@ public partial class BitLink : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => HasUnderline ? "bit-lnk-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? "bit-lnk-und" : string.Empty);
     }
 
     protected virtual async Task HandleClick(MouseEventArgs e)
