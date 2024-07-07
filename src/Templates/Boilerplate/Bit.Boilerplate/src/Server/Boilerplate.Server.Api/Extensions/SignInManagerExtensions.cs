@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Boilerplate.Api.Models.Identity;
+using Boilerplate.Server.Api.Models.Identity;
 
 namespace Microsoft.AspNetCore.Identity;
 

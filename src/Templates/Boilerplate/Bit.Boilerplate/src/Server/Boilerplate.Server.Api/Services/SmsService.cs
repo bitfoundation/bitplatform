@@ -1,6 +1,6 @@
 ﻿using Twilio.Rest.Api.V2010.Account;
 
-namespace Boilerplate.Api.Services;
+namespace Boilerplate.Server.Api.Services;
 
 public partial class SmsService
 {

@@ -247,10 +247,8 @@
                         "**/*.lock.json",
                         "**/.git/**",
                         "**/*.nuspec",
-                        "src/Boilerplate.Server/Data/Migrations/**",
-                        "src/Boilerplate.Server/*.db*",
-                        "src/Boilerplate.Api/Data/Migrations/**",
-                        "src/Boilerplate.Api/*.db*"
+                        "src/Server/**/Data/Migrations/**",
+                        "src/**/App_Data/**"
                     ]
                 },
                 {
@@ -268,21 +266,21 @@
                 {
                     "condition": "(sample != Admin)",
                     "exclude": [
-                        "src/Boilerplate.Shared/Dtos/Categories/**",
-                        "src/Boilerplate.Shared/Dtos/Dashboard/**",
-                        "src/Boilerplate.Shared/Dtos/Products/**",
-                        "src/Boilerplate.Api/Controllers/Categories/**",
-                        "src/Boilerplate.Api/Controllers/Products/**",
-                        "src/Boilerplate.Api/Controllers/Dashboard/**",
-                        "src/Boilerplate.Api/Data/Configurations/Category/**",
-                        "src/Boilerplate.Api/Data/Configurations/Product/**",
-                        "src/Boilerplate.Api/Mappers/CategoriesMapper.cs",
-                        "src/Boilerplate.Api/Mappers/ProductsMapper.cs",
-                        "src/Boilerplate.Api/Models/Categories/**",
-                        "src/Boilerplate.Api/Models/Products/**",
-                        "src/Boilerplate.Shared/Controllers/Categories/**",
-                        "src/Boilerplate.Shared/Controllers/Products/**",
-                        "src/Boilerplate.Shared/Controllers/Dashboard/**",
+                        "src/Shared/Dtos/Categories/**",
+                        "src/Shared/Dtos/Dashboard/**",
+                        "src/Shared/Dtos/Products/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Categories/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Products/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Dashboard/**",
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/Category/**",
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/Product/**",
+                        "src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs",
+                        "src/Server/Boilerplate.Server.Api/Mappers/ProductsMapper.cs",
+                        "src/Server/Boilerplate.Server.Api/Models/Categories/**",
+                        "src/Server/Boilerplate.Server.Api/Models/Products/**",
+                        "src/Shared/Controllers/Categories/**",
+                        "src/Shared/Controllers/Products/**",
+                        "src/Shared/Controllers/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
@@ -291,11 +289,11 @@
                 {
                     "condition": "(sample != Todo)",
                     "exclude": [
-                        "src/Boilerplate.Shared/Dtos/Todo/**",
-                        "src/Boilerplate.Api/Controllers/Todo/**",
-                        "src/Boilerplate.Api/Mappers/TodoMapper.cs",
-                        "src/Boilerplate.Api/Models/Todo/**",
-                        "src/Boilerplate.Shared/Controllers/Todo/**",
+                        "src/Shared/Dtos/Todo/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Todo/**",
+                        "src/Server/Boilerplate.Server.Api/Mappers/TodoMapper.cs",
+                        "src/Server/Boilerplate.Server.Api/Models/Todo/**",
+                        "src/Shared/Controllers/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"
                     ]
                 },
@@ -315,8 +313,8 @@
                 {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
-                        "src/Boilerplate.Api/Services/GoogleRecaptchaHttpClient.cs",
-                        "src/Boilerplate.Api/Services/GoogleRecaptchaVerificationResponse.cs",
+                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
                     ]
                 },

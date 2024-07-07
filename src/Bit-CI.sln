@@ -233,7 +233,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.BlazorUI.Demo.Client.Wi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Windows", "Templates\Boilerplate\Bit.Boilerplate\src\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj", "{5021C89A-8AB8-4345-B8C4-E1B4F1F20BE7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Api", "Templates\Boilerplate\Bit.Boilerplate\src\Boilerplate.Api\Boilerplate.Api.csproj", "{44BE8600-E77F-487C-830B-DF3CC8B77E6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server.Api", "Templates\Boilerplate\Bit.Boilerplate\src\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj", "{44BE8600-E77F-487C-830B-DF3CC8B77E6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

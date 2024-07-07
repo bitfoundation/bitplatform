@@ -56,13 +56,13 @@ jobs:
 
     - name: Build migrations bundle
       run: |
-        cd src/Boilerplate.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Api.csproj
+        cd src/Server/Boilerplate.Server.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj
 
     - name: Upload ef migrations bundle
       uses: actions/upload-artifact@v4
       with:
         name: migrations-bundle
-        path: src/Boilerplate.Api/efbundle
+        path: src/Boilerplate.Server.Api/efbundle
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4

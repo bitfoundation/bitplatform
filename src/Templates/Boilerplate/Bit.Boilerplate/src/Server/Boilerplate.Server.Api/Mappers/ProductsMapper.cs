@@ -1,8 +1,8 @@
-﻿using Boilerplate.Api.Models.Products;
+﻿using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Dtos.Products;
 using Riok.Mapperly.Abstractions;
 
-namespace Boilerplate.Api.Mappers;
+namespace Boilerplate.Server.Api.Mappers;
 
 /// <summary>
 /// More info at Server/Mappers/README.md

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Boilerplate.Api.Resources {
+namespace Boilerplate.Server.Api.Resources {
     using System;
     
     

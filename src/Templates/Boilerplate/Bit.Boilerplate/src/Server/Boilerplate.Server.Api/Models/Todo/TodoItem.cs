@@ -1,6 +1,6 @@
-﻿using Boilerplate.Api.Models.Identity;
+﻿using Boilerplate.Server.Api.Models.Identity;
 
-namespace Boilerplate.Api.Models.Todo;
+namespace Boilerplate.Server.Api.Models.Todo;
 
 public class TodoItem
 {

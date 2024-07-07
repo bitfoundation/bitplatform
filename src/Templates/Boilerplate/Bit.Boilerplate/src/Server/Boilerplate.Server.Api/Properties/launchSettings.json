@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Boilerplate.Api": {
+        "Boilerplate.Server.Api": {
             "commandName": "Project",
             "launchBrowser": true,
             "launchUrl": "swagger",

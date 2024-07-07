@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Api.Controllers;
+﻿namespace Boilerplate.Server.Api.Controllers;
 
 public partial class AppControllerBase : ControllerBase
 {

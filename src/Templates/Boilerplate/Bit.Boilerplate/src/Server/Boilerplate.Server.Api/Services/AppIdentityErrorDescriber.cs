@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Boilerplate.Api.Services;
+namespace Boilerplate.Server.Api.Services;
 
 public partial class AppIdentityErrorDescriber : IdentityErrorDescriber
 {

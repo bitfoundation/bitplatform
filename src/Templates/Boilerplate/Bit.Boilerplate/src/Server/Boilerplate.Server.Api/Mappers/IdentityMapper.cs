@@ -1,8 +1,8 @@
-﻿using Boilerplate.Api.Models.Identity;
+﻿using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 using Riok.Mapperly.Abstractions;
 
-namespace Boilerplate.Api.Mappers;
+namespace Boilerplate.Server.Api.Mappers;
 
 /// <summary>
 /// More info at Server/Mappers/README.md

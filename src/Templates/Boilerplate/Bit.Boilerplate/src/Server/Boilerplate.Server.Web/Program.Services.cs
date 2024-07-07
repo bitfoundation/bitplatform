@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Api;
+using Boilerplate.Server.Api;
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Services;
 using Boilerplate.Client.Core.Services.Contracts;

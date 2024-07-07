@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using FluentEmail.Core;
-using Boilerplate.Api.Models.Emailing;
-using Boilerplate.Api.Models.Identity;
+using Boilerplate.Server.Api.Models.Emailing;
+using Boilerplate.Server.Api.Models.Identity;
 
-namespace Boilerplate.Api.Services;
+namespace Boilerplate.Server.Api.Services;
 
 public partial class EmailService
 {

@@ -1,6 +1,6 @@
-﻿using Boilerplate.Api.Models.Categories;
+﻿using Boilerplate.Server.Api.Models.Categories;
 
-namespace Boilerplate.Api.Models.Products;
+namespace Boilerplate.Server.Api.Models.Products;
 
 public class Product
 {

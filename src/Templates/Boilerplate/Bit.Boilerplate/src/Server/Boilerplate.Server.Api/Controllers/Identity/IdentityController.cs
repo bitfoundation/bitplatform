@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Boilerplate.Api.Services;
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Api.Models.Identity;
+using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Api.Controllers.Identity;
+namespace Boilerplate.Server.Api.Controllers.Identity;
 
 [ApiController, AllowAnonymous]
 [Route("api/[controller]/[action]")]

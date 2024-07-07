@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.StaticFiles;
-using Boilerplate.Api.Models.Identity;
+using Boilerplate.Server.Api.Models.Identity;
 using FluentStorage.Blobs;
 using ImageMagick;
 
-namespace Boilerplate.Api.Controllers;
+namespace Boilerplate.Server.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]

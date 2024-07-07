@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Api.Models.Identity;
+﻿namespace Boilerplate.Server.Api.Models.Identity;
 
 public class User : IdentityUser<int>
 {

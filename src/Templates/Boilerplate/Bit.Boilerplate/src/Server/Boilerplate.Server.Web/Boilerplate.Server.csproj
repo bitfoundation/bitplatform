@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Boilerplate.Api\Boilerplate.Api.csproj" />
+        <ProjectReference Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
         <ProjectReference Include="..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
     </ItemGroup>
 

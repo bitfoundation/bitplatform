@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace Boilerplate.Api.Data.Migrations
+namespace Boilerplate.Server.Api.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialMigration : Migration

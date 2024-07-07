@@ -1,6 +1,6 @@
-﻿using Boilerplate.Api.Models.Categories;
+﻿using Boilerplate.Server.Api.Models.Categories;
 
-namespace Boilerplate.Api.Data.Configurations.Identity;
+namespace Boilerplate.Server.Api.Data.Configurations.Identity;
 
 public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {

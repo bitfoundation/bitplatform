@@ -15,8 +15,8 @@
         <Using Include="Microsoft.Extensions.Options" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Boilerplate.Shared.Enums" />
-        <Using Include="Boilerplate.Api.Components" />
-        <Using Include="Boilerplate.Api.Resources" />
+        <Using Include="Boilerplate.Server.Api.Components" />
+        <Using Include="Boilerplate.Server.Api.Resources" />
     </ItemGroup>
 
     <ItemGroup>
@@ -46,8 +46,8 @@
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
         <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <Using Include="Boilerplate.Api.Data" />
-        <Using Include="Boilerplate.Api.Mappers" />
+        <Using Include="Boilerplate.Server.Api.Data" />
+        <Using Include="Boilerplate.Server.Api.Mappers" />
         <Using Include="Microsoft.AspNetCore.Identity" />
         <Using Include="Microsoft.EntityFrameworkCore" />
         <Using Include="Microsoft.AspNetCore.OData.Query" />

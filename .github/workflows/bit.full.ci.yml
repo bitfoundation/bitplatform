@@ -34,7 +34,7 @@ jobs:
         dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
         dotnet new bit-bp --name TodoBPSqlite --database Sqlite --sample Todo --pipeline None --serverUrl todo.bitplatform.dev
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-        cd TodoBPSqlite/src/TodoBPSqlite.Api/
+        cd TodoBPSqlite/src/Server/TodoBPSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update

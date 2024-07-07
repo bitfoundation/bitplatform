@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-namespace Boilerplate.Api;
+namespace Boilerplate.Server.Api;
 
 public class AppSettings : IValidatableObject
 {

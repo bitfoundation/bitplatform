@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Api.Models.Emailing;
+﻿namespace Boilerplate.Server.Api.Models.Emailing;
 
 public class ResetPasswordTokenTemplateModel
 {
