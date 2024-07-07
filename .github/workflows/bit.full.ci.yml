@@ -38,7 +38,7 @@ jobs:
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
-        cd ../../../
+        cd ../../../../
         dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
         dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Web/TodoBPSqlite.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true
 
