@@ -41,7 +41,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -52,7 +52,7 @@ jobs:
       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+      run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
     - name: Build migrations bundle
       run: |
@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: migrations-bundle
-        path: src/Boilerplate.Server.Api/efbundle
+        path: src/Server/Boilerplate.Server.Api/efbundle
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
@@ -146,7 +146,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src\Client\Boilerplate.Client.Core\appsettings.json, src\Boilerplate.Shared\appsettings.json'
+        files: 'src\Client\Boilerplate.Client.Core\appsettings.json, src\Shared\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
@@ -207,7 +207,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 
@@ -259,7 +259,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
 

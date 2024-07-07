@@ -50,7 +50,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -62,7 +62,7 @@ jobs:
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -c Release --self-contained -r linux-x64 -o server'
+      script: 'dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload server artifact
@@ -168,7 +168,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -250,7 +250,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Boilerplate.Shared/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
   
   - script: |
       dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release

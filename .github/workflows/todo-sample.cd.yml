@@ -43,7 +43,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/TodoSample.Shared/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
@@ -57,13 +57,13 @@ jobs:
           sed -i 's/Auto;/BlazorWebAssembly;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
 
     - name: Changes for static-todo.bitplatform.dev - Part 1
-      run:  sed -i 's/http:\/\/localhost:4030/https:\/\/static-todo.bitplatform.dev/g' TodoSample/src/TodoSample.Server/Program.Middlewares.cs
+      run:  sed -i 's/http:\/\/localhost:4030/https:\/\/static-todo.bitplatform.dev/g' TodoSample/src/Server/TodoSample.Server.Web/Program.Middlewares.cs
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish TodoSample/src/TodoSample.Server/TodoSample.Server.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
@@ -157,7 +157,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\TodoSample.Shared\appsettings.json'
+        files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Shared\appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
@@ -229,7 +229,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/TodoSample.Shared/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
@@ -310,7 +310,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/TodoSample.Shared/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
         ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}

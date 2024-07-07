@@ -13,9 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{248D8229-BABD-4F0A-A9C6-0417B464507B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Shared", "src\Boilerplate.Shared\Boilerplate.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Shared", "src\Shared\Boilerplate.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server", "src\Boilerplate.Server\Boilerplate.Server.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server", "src\Server\Boilerplate.Server.Web\Boilerplate.Server.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Core", "src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj", "{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}"
 EndProject
