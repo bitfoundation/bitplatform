@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{248D82
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Shared", "src\Shared\Boilerplate.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server", "src\Server\Boilerplate.Server.Web\Boilerplate.Server.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server.Web", "src\Server\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Core", "src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj", "{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}"
 EndProject
@@ -41,7 +41,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Windows", "src\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj", "{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boilerplate.Server.Api", "src\Server\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj", "{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server.Api", "src\Server\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj", "{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{723683EA-193C-45FD-A64D-7830A2867E4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -84,6 +86,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A} = {723683EA-193C-45FD-A64D-7830A2867E4F}
+		{8CC3E410-B716-4F4D-89C7-3392CA624439} = {723683EA-193C-45FD-A64D-7830A2867E4F}
 		{FC60C68D-8E8D-494B-8D60-0C8D83A472E7} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 		{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 		{22816913-64D5-4AE8-9B34-6F188B71FAD1} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
