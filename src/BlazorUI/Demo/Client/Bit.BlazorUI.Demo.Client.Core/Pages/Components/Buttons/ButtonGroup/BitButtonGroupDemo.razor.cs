@@ -6,10 +6,19 @@ public partial class BitButtonGroupDemo
     [
         new()
         {
-            Name = "ItemTemplate",
-            Type = "RenderFragment<TItem>?",
+            Name = "ChildContent",
+            Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content inside the item can be customized.",
+            Description = "The content of the BitButtonGroup, that are BitButtonGroupOption components.",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the button group.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -25,7 +34,7 @@ public partial class BitButtonGroupDemo
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
-            Description = "The content inside the item can be customized."
+            Description = "The content inside the item can be customized.",
         },
         new()
         {
@@ -48,15 +57,6 @@ public partial class BitButtonGroupDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Alias of ChildContent.",
-        },
-        new()
-        {
-            Name = "Severity",
-            Type = "BitSeverity?",
-            DefaultValue = "null",
-            Description = "The severity of the button group.",
-            LinkType = LinkType.Link,
-            Href = "#severity-enum",
         },
         new()
         {
@@ -348,40 +348,58 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Id = "severity-enum",
-            Name = "BitSeverity",
+            Id = "color-enum",
+            Name = "BitColor",
             Description = "",
             Items =
             [
                 new()
                 {
-                    Name= "Info",
-                    Description="Info styled Button.",
+                    Name= "Primary",
+                    Description="Primary general color.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Success",
-                    Description="Success styled Button.",
+                    Name= "Secondary",
+                    Description="Secondary general color.",
                     Value="1",
                 },
                 new()
                 {
-                    Name= "Warning",
-                    Description="Warning styled Button.",
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
                     Value="2",
                 },
                 new()
                 {
-                    Name= "SevereWarning",
-                    Description="Severe Warning styled Button.",
+                    Name= "Info",
+                    Description="Info general color.",
                     Value="3",
                 },
                 new()
                 {
-                    Name= "Error",
-                    Description="Error styled Button.",
+                    Name= "Success",
+                    Description="Success general color.",
                     Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="Severe Warning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
                 }
             ]
         },

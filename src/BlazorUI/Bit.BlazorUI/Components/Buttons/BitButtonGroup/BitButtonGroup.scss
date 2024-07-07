@@ -8,34 +8,19 @@
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
+    --bit-btg-itm-brd-wid: #{$shp-border-width};
+    --bit-btg-itm-brd-wid-ver: 0;
+
+    &.bit-dis, &.bit-dis * {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
 
     &.bit-dis {
         border-color: $clr-brd-dis;
-
-        .bit-btg-itm {
-            border-color: $clr-brd-dis;
-        }
-    }
-}
-
-.bit-btg-fil {
-    border-color: var(--bit-btg-pri-brd-clr);
-    --bit-btg-pri-brd-clr: #{$clr-pri};
-    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
-}
-
-.bit-btg-otl {
-    border-color: var(--bit-btg-sec-brd-clr);
-    --bit-btg-sec-brd-clr: #{$clr-sec-text};
-    --bit-btg-clr-bg-dis: #{$clr-bg-pri};
-}
-
-.bit-btg-txt {
-    border-color: transparent;
-    --bit-btg-clr-bg-dis: transparent;
-
-    &.bit-dis {
-        border-color: transparent;
+        --bit-btg-itm-clr-bg: #{$clr-bg-dis};
+        --bit-btg-itm-clr-brd: #{$clr-brd-dis};
     }
 }
 
@@ -43,195 +28,45 @@
     display: flex;
     gap: spacing(1);
     cursor: pointer;
+    border-width: 0;
     text-align: left;
     align-items: center;
     line-height: inherit;
     text-decoration: none;
     box-sizing: border-box;
-    font-size: spacing(1.75);
-    border-style: $shp-border-style;
-    border-width: $shp-border-width;
-    padding: spacing(0.7) spacing(2);
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
-    border-block-end-width: 0;
-    border-block-start-width: 0;
-    border-inline-start-width: 0;
-}
-
-.bit-btg-ilt {
-    border-inline-end-width: 0;
-}
-
-.bit-btg-ifl {
-    color: var(--bit-btg-itm-pri-clr);
-    background-color: var(--bit-btg-itm-bg-clr);
-    border-color: var(--bit-btg-itm-pri-brd-clr);
-    --bit-btg-itm-bg-clr: #{$clr-pri};
-    --bit-btg-itm-pri-clr: #{$clr-pri-text};
-    --bit-btg-itm-pri-brd-clr: #{$clr-pri-dark};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-pri-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-pri-active};
+    border-style: $shp-border-style;
+    color: var(--bit-btg-itm-clr);
+    padding: var(--bit-btg-itm-padding);
+    font-size: var(--bit-btg-itm-fontsize);
+    border-color: var(--bit-btg-itm-clr-brd);
+    background-color: var(--bit-btg-itm-clr-bg);
+    border-inline-end-width: var(--bit-btg-itm-brd-wid);
+    border-block-end-width: var(--bit-btg-itm-brd-wid-ver);
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-btg-itm-pri-hover-bg-clr);
+            color: var(--bit-btg-itm-clr-hover);
+            background-color: var(--bit-btg-itm-clr-bg-hover);
         }
     }
 
     &:active {
-        background-color: var(--bit-btg-itm-pri-active-bg-clr);
-    }
-}
-
-.bit-btg-iot {
-    color: var(--bit-btg-itm-sec-clr);
-    background-color: $clr-sec;
-    border-color: var(--bit-btg-itm-sec-brd-clr);
-    --bit-btg-itm-sec-clr: #{$clr-sec-text};
-    --bit-btg-itm-sec-brd-clr: #{$clr-sec-text};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-sec-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-sec-active};
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: var(--bit-btg-itm-sec-hover-bg-clr);
-        }
+        background-color: var(--bit-btg-itm-clr-bg-active);
     }
 
-    &:active {
-        background-color: var(--bit-btg-itm-sec-active-bg-clr);
-    }
-}
-
-.bit-btg-itx {
-    color: var(--bit-btg-itm-sec-clr);
-    background-color: transparent;
-    border-color: var(--bit-btg-itm-sec-brd-clr);
-    --bit-btg-itm-sec-clr: #{$clr-sec-text};
-    --bit-btg-itm-sec-brd-clr: #{$clr-sec-text};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-sec-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-sec-active};
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: var(--bit-btg-itm-sec-hover-bg-clr);
-        }
+    &[disabled] {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+        background-color: var(--bit-btg-itm-clr-bg-dis);
     }
 
-    &:active {
-        background-color: var(--bit-btg-itm-sec-active-bg-clr);
-    }
-}
-
-.bit-btg-inf {
-    --bit-btg-pri-brd-clr: #{$clr-inf};
-    --bit-btg-sec-brd-clr: #{$clr-inf};
-}
-
-.bit-btg-iin {
-    --bit-btg-itm-bg-clr: #{$clr-inf};
-    --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-inf};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-inf-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-inf-active};
-    --bit-btg-itm-sec-clr: #{$clr-inf};
-    --bit-btg-itm-sec-brd-clr: #{$clr-inf};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-inf-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-inf-active};
-}
-
-.bit-btg-suc {
-    --bit-btg-pri-brd-clr: #{$clr-suc};
-    --bit-btg-sec-brd-clr: #{$clr-suc};
-}
-
-.bit-btg-isu {
-    --bit-btg-itm-bg-clr: #{$clr-suc};
-    --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-suc};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-suc-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-suc-active};
-    --bit-btg-itm-sec-clr: #{$clr-suc};
-    --bit-btg-itm-sec-brd-clr: #{$clr-suc};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-suc-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-suc-active};
-}
-
-.bit-btg-war {
-    --bit-btg-pri-brd-clr: #{$clr-wrn};
-    --bit-btg-sec-brd-clr: #{$clr-wrn};
-}
-
-.bit-btg-iwa {
-    --bit-btg-itm-bg-clr: #{$clr-wrn};
-    --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-wrn};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-wrn-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-wrn-active};
-    --bit-btg-itm-sec-clr: #{$clr-wrn};
-    --bit-btg-itm-sec-brd-clr: #{$clr-wrn};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-wrn-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-wrn-active};
-}
-
-.bit-btg-swa {
-    --bit-btg-pri-brd-clr: #{$clr-swr};
-    --bit-btg-sec-brd-clr: #{$clr-swr};
-}
-
-.bit-btg-isw {
-    --bit-btg-itm-bg-clr: #{$clr-swr};
-    --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-swr};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-swr-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-swr-active};
-    --bit-btg-itm-sec-clr: #{$clr-swr};
-    --bit-btg-itm-sec-brd-clr: #{$clr-swr};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-swr-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-swr-active};
-}
-
-.bit-btg-err {
-    --bit-btg-pri-brd-clr: #{$clr-err};
-    --bit-btg-sec-brd-clr: #{$clr-err};
-}
-
-.bit-btg-ier {
-    --bit-btg-itm-bg-clr: #{$clr-err};
-    --bit-btg-itm-pri-clr: #{$clr-fg-pri};
-    --bit-btg-itm-pri-brd-clr: #{$clr-err};
-    --bit-btg-itm-pri-hover-bg-clr: #{$clr-err-hover};
-    --bit-btg-itm-pri-active-bg-clr: #{$clr-err-active};
-    --bit-btg-itm-sec-clr: #{$clr-err};
-    --bit-btg-itm-sec-brd-clr: #{$clr-err};
-    --bit-btg-itm-sec-hover-bg-clr: #{$clr-err-hover};
-    --bit-btg-itm-sec-active-bg-clr: #{$clr-err-active};
-}
-
-.bit-btg-vrt {
-    flex-direction: column;
-
-    .bit-btg-itm {
-        border-width: $shp-border-width;
-        border-block-start-width: 0;
-        border-inline-start-width: 0;
+    &:last-child {
+        border-block-end-width: 0;
         border-inline-end-width: 0;
     }
-
-    .bit-btg-ilt {
-        border-block-end-width: 0;
-    }
-}
-
-.bit-btg-ism {
-    font-size: spacing(1.5);
-    padding: spacing(0.5) spacing(1.5);
-}
-
-.bit-btg-ilg {
-    font-size: spacing(2);
-    padding: spacing(0.9) spacing(2.5);
 }
 
 .bit-btg-btx {
@@ -239,11 +74,184 @@
     text-overflow: ellipsis;
 }
 
-.bit-btg-ids {
-    cursor: default;
-    user-select: none;
-    pointer-events: none;
-    -webkit-user-select: none;
-    color: $clr-fg-dis;
-    background-color: var(--bit-btg-clr-bg-dis);
+.bit-btg-fil {
+    border-color: var(--bit-btg-clr-brd);
+    --bit-btg-itm-clr: var(--bit-btg-clr);
+    --bit-btg-itm-clr-bg: var(--bit-btg-clr-bg);
+    --bit-btg-itm-clr-brd: var(--bit-btg-clr-brd2);
+    --bit-btg-itm-clr-hover: var(--bit-btg-clr-hover);
+    --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-bg-hover);
+    --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-bg-active);
+    --bit-btg-itm-clr-bg-dis: var(--bit-btg-clr-bg-dis);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-btg-clr-brd-hover);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-btg-clr-brd-active);
+    }
+}
+
+.bit-btg-otl {
+    border-color: var(--bit-btg-clr-brd);
+    --bit-btg-itm-clr: var(--bit-btg-clr-bg);
+    --bit-btg-itm-clr-bg: transparent;
+    --bit-btg-itm-clr-brd: var(--bit-btg-clr-brd2);
+    --bit-btg-itm-clr-hover: var(--bit-btg-clr-hover);
+    --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-bg-hover);
+    --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-bg-active);
+    --bit-btg-itm-clr-bg-dis: transprent;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-btg-clr-brd-hover);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-btg-clr-brd-active);
+    }
+}
+
+.bit-btg-txt {
+    border-color: transparent;
+    --bit-btg-itm-clr: var(--bit-btg-clr-bg);
+    --bit-btg-itm-clr-bg: transparent;
+    --bit-btg-itm-clr-brd: var(--bit-btg-clr-brd2);
+    --bit-btg-itm-clr-hover: var(--bit-btg-clr-hover);
+    --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-bg-hover);
+    --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-bg-active);
+    --bit-btg-itm-clr-bg-dis: transprent;
+
+    &.bit-dis {
+        border-color: transparent;
+    }
+}
+
+.bit-btg-pri {
+    --bit-btg-clr-brd: #{$clr-pri};
+    --bit-btg-clr: #{$clr-pri-text};
+    --bit-btg-clr-bg: #{$clr-pri};
+    --bit-btg-clr-brd2: #{$clr-pri-dark};
+    --bit-btg-clr-hover: #{$clr-pri-text};
+    --bit-btg-clr-brd-hover: #{$clr-pri-hover};
+    --bit-btg-clr-brd-active: #{$clr-pri-active};
+    --bit-btg-clr-bg-hover: #{$clr-pri-hover};
+    --bit-btg-clr-bg-active: #{$clr-pri-active};
+    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
+}
+
+.bit-btg-sec {
+    --bit-btg-clr-brd: #{$clr-sec};
+    --bit-btg-clr: #{$clr-sec-text};
+    --bit-btg-clr-bg: #{$clr-sec};
+    --bit-btg-clr-brd2: #{$clr-sec-dark};
+    --bit-btg-clr-hover: #{$clr-sec-text};
+    --bit-btg-clr-brd-hover: #{$clr-sec-hover};
+    --bit-btg-clr-brd-active: #{$clr-sec-active};
+    --bit-btg-clr-bg-hover: #{$clr-sec-hover};
+    --bit-btg-clr-bg-active: #{$clr-sec-active};
+    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
+}
+
+.bit-btg-ter {
+    --bit-btg-clr-brd: #{$clr-ter};
+    --bit-btg-clr: #{$clr-ter-text};
+    --bit-btg-clr-bg: #{$clr-ter};
+    --bit-btg-clr-brd2: #{$clr-ter-dark};
+    --bit-btg-clr-hover: #{$clr-ter-text};
+    --bit-btg-clr-brd-hover: #{$clr-ter-hover};
+    --bit-btg-clr-brd-active: #{$clr-ter-active};
+    --bit-btg-clr-bg-hover: #{$clr-ter-hover};
+    --bit-btg-clr-bg-active: #{$clr-ter-active};
+    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
+}
+
+.bit-btg-inf {
+    --bit-btg-clr-brd: #{$clr-inf};
+    --bit-btg-clr: #{$clr-inf-text};
+    --bit-btg-clr-bg: #{$clr-inf};
+    --bit-btg-clr-brd2: #{$clr-inf-dark};
+    --bit-btg-clr-hover: #{$clr-inf-text};
+    --bit-btg-clr-brd-hover: #{$clr-inf-hover};
+    --bit-btg-clr-brd-active: #{$clr-inf-active};
+    --bit-btg-clr-bg-hover: #{$clr-inf-hover};
+    --bit-btg-clr-bg-active: #{$clr-inf-active};
+    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
+}
+
+.bit-btg-suc {
+    --bit-btg-clr-brd: #{$clr-suc};
+    --bit-btg-clr: #{$clr-suc-text};
+    --bit-btg-clr-bg: #{$clr-suc};
+    --bit-btg-clr-brd2: #{$clr-suc-dark};
+    --bit-btg-clr-hover: #{$clr-suc-text};
+    --bit-btg-clr-brd-hover: #{$clr-suc-hover};
+    --bit-btg-clr-brd-active: #{$clr-suc-active};
+    --bit-btg-clr-bg-hover: #{$clr-suc-hover};
+    --bit-btg-clr-bg-active: #{$clr-suc-active};
+    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
+}
+
+.bit-btg-wrn {
+    --bit-btg-clr-brd: #{$clr-wrn};
+    --bit-btg-clr: #{$clr-wrn-text};
+    --bit-btg-clr-bg: #{$clr-wrn};
+    --bit-btg-clr-brd2: #{$clr-wrn-dark};
+    --bit-btg-clr-hover: #{$clr-wrn-text};
+    --bit-btg-clr-brd-hover: #{$clr-wrn-hover};
+    --bit-btg-clr-brd-active: #{$clr-wrn-active};
+    --bit-btg-clr-bg-hover: #{$clr-wrn-hover};
+    --bit-btg-clr-bg-active: #{$clr-wrn-active};
+    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
+}
+
+.bit-btg-swr {
+    --bit-btg-clr-brd: #{$clr-swr};
+    --bit-btg-clr: #{$clr-swr-text};
+    --bit-btg-clr-bg: #{$clr-swr};
+    --bit-btg-clr-brd2: #{$clr-swr-dark};
+    --bit-btg-clr-hover: #{$clr-swr-text};
+    --bit-btg-clr-brd-hover: #{$clr-swr-hover};
+    --bit-btg-clr-brd-active: #{$clr-swr-active};
+    --bit-btg-clr-bg-hover: #{$clr-swr-hover};
+    --bit-btg-clr-bg-active: #{$clr-swr-active};
+    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
+}
+
+.bit-btg-err {
+    --bit-btg-clr-brd: #{$clr-err};
+    --bit-btg-clr: #{$clr-err-text};
+    --bit-btg-clr-bg: #{$clr-err};
+    --bit-btg-clr-brd2: #{$clr-err-dark};
+    --bit-btg-clr-hover: #{$clr-err-text};
+    --bit-btg-clr-brd-hover: #{$clr-err-hover};
+    --bit-btg-clr-brd-active: #{$clr-err-active};
+    --bit-btg-clr-bg-hover: #{$clr-err-hover};
+    --bit-btg-clr-bg-active: #{$clr-err-active};
+    --bit-btg-clr-bg-dis: #{$clr-bg-dis};
+}
+
+.bit-btg-sm {
+    --bit-btg-itm-fontsize: #{spacing(1.5)};
+    --bit-btg-itm-padding: #{spacing(0.5)} #{spacing(1.5)};
+}
+
+.bit-btg-md {
+    --bit-btg-itm-fontsize: #{spacing(1.75)};
+    --bit-btg-itm-padding: #{spacing(0.7)} #{spacing(2.0)};
+}
+
+.bit-btg-lg {
+    --bit-btg-itm-fontsize: #{spacing(2.0)};
+    --bit-btg-itm-padding: #{spacing(0.9)} #{spacing(2.5)};
+}
+
+.bit-btg-vrt {
+    flex-direction: column;
+    --bit-btg-itm-brd-wid: 0;
+    --bit-btg-itm-brd-wid-ver: #{$shp-border-width};
 }
