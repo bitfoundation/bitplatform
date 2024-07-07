@@ -39,7 +39,7 @@ namespace Boilerplate.Server.Api.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Boilerplate.Api.Resources.EmailStrings", typeof(EmailStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Boilerplate.Server.Api.Resources.EmailStrings", typeof(EmailStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

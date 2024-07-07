@@ -13,7 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
-        <ProjectReference Include="..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
+        <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
     </ItemGroup>
 
     <ItemGroup>
