@@ -4,7 +4,6 @@ using Boilerplate.Client.Core.Data;
 using Microsoft.EntityFrameworkCore;
 //#endif
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -61,6 +60,11 @@ public static class IServiceCollectionExtensions
                     .EnableDetailedErrors(BuildConfiguration.IsDebug());
         });
         //#endif
+
+        System.Reflection.Assembly.Load("Boilerplate.Shared")!
+            .GetType("Microsoft.Extensions.DependencyInjection.IHttpClientServiceCollectionExtensions")!
+            .GetMethod("AddTypedHttpClients")!
+            .Invoke(null, [services]);
 
         services.AddSharedProjectServices();
         return services;

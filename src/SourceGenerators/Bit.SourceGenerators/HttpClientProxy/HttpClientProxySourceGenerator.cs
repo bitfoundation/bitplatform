@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{BitSourceGeneratorUtil.GetPackageVersion()}"")]
 [global::System.Diagnostics.DebuggerNonUserCode]
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-internal static class IHttpClientServiceCollectionExtensions
+public static class IHttpClientServiceCollectionExtensions
 {{
     public static void AddTypedHttpClients(this IServiceCollection services)
     {{

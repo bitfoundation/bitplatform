@@ -187,8 +187,6 @@ public static partial class Program
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
-
-        services.TryAddTransient<IPrerenderStateService, TempPrerenderSateService>();
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)
