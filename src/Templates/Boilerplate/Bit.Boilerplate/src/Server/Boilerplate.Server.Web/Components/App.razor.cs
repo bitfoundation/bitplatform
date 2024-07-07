@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Localization;
 
-namespace Boilerplate.Server.Components;
+namespace Boilerplate.Server.Web.Components;
 
 [StreamRendering(enabled: true)]
 public partial class App

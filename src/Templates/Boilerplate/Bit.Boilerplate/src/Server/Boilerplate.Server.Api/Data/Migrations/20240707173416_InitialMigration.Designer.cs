@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boilerplate.Server.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240705202419_InitialMigration")]
+    [Migration("20240707173416_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -19,7 +19,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.6");
 
-            modelBuilder.Entity("Boilerplate.Server.Models.Categories.Category", b =>
+            modelBuilder.Entity("Boilerplate.Server.Api.Models.Categories.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -70,7 +70,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Boilerplate.Server.Models.Identity.Role", b =>
+            modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -97,7 +97,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                     b.ToTable("Roles", "identity");
                 });
 
-            modelBuilder.Entity("Boilerplate.Server.Models.Identity.User", b =>
+            modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -201,11 +201,11 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            BirthDate = 1306790461440000210L,
+                            BirthDate = 1306790461440000060L,
                             ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
                             Email = "test@bitplatform.dev",
                             EmailConfirmed = true,
-                            EmailTokenRequestedOn = 1306790461440000210L,
+                            EmailTokenRequestedOn = 1306790461440000060L,
                             FullName = "Boilerplate test account",
                             Gender = 2,
                             LockoutEnabled = true,
@@ -220,7 +220,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Boilerplate.Server.Models.Products.Product", b =>
+            modelBuilder.Entity("Boilerplate.Server.Api.Models.Products.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -255,7 +255,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
-                            CreatedOn = 1306466648064000270L,
+                            CreatedOn = 1306466648064000120L,
                             Description = "The Ford Mustang is ranked #1 in Sports Cars",
                             Name = "Mustang",
                             Price = 27155m
@@ -264,7 +264,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 2,
                             CategoryId = 1,
-                            CreatedOn = 1306457800704000270L,
+                            CreatedOn = 1306457800704000120L,
                             Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                             Name = "GT",
                             Price = 500000m
@@ -273,7 +273,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 3,
                             CategoryId = 1,
-                            CreatedOn = 1306440105984000270L,
+                            CreatedOn = 1306440105984000120L,
                             Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                             Name = "Ranger",
                             Price = 25000m
@@ -282,7 +282,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 4,
                             CategoryId = 1,
-                            CreatedOn = 1306431258624000270L,
+                            CreatedOn = 1306431258624000120L,
                             Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                             Name = "Raptor",
                             Price = 53205m
@@ -291,7 +291,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 5,
                             CategoryId = 1,
-                            CreatedOn = 1306422411264000270L,
+                            CreatedOn = 1306422411264000120L,
                             Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                             Name = "Maverick",
                             Price = 22470m
@@ -300,7 +300,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 6,
                             CategoryId = 2,
-                            CreatedOn = 1306466648064000270L,
+                            CreatedOn = 1306466648064000120L,
                             Description = "A powerful convertible sports car",
                             Name = "Roadster",
                             Price = 42800m
@@ -309,7 +309,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 7,
                             CategoryId = 2,
-                            CreatedOn = 1306457800704000270L,
+                            CreatedOn = 1306457800704000120L,
                             Description = "A perfectly adequate family sedan with sharp looks",
                             Name = "Altima",
                             Price = 24550m
@@ -318,7 +318,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 8,
                             CategoryId = 2,
-                            CreatedOn = 1306440105984000270L,
+                            CreatedOn = 1306440105984000120L,
                             Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                             Name = "GT-R",
                             Price = 113540m
@@ -327,7 +327,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 9,
                             CategoryId = 2,
-                            CreatedOn = 1306422411264000270L,
+                            CreatedOn = 1306422411264000120L,
                             Description = "A new smart SUV",
                             Name = "Juke",
                             Price = 28100m
@@ -336,7 +336,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 10,
                             CategoryId = 3,
-                            CreatedOn = 1306466648064000270L,
+                            CreatedOn = 1306466648064000120L,
                             Description = "",
                             Name = "H247",
                             Price = 54950m
@@ -345,7 +345,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 11,
                             CategoryId = 3,
-                            CreatedOn = 1306457800704000270L,
+                            CreatedOn = 1306457800704000120L,
                             Description = "",
                             Name = "V297",
                             Price = 103360m
@@ -354,7 +354,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 12,
                             CategoryId = 3,
-                            CreatedOn = 1306422411264000270L,
+                            CreatedOn = 1306422411264000120L,
                             Description = "",
                             Name = "R50",
                             Price = 2000000m
@@ -363,7 +363,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 13,
                             CategoryId = 4,
-                            CreatedOn = 1306466648064000270L,
+                            CreatedOn = 1306466648064000120L,
                             Description = "",
                             Name = "M550i",
                             Price = 77790m
@@ -372,7 +372,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 14,
                             CategoryId = 4,
-                            CreatedOn = 1306457800704000270L,
+                            CreatedOn = 1306457800704000120L,
                             Description = "",
                             Name = "540i",
                             Price = 60945m
@@ -381,7 +381,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 15,
                             CategoryId = 4,
-                            CreatedOn = 1306448953344000270L,
+                            CreatedOn = 1306448953344000120L,
                             Description = "",
                             Name = "530e",
                             Price = 56545m
@@ -390,7 +390,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 16,
                             CategoryId = 4,
-                            CreatedOn = 1306440105984000270L,
+                            CreatedOn = 1306440105984000120L,
                             Description = "",
                             Name = "530i",
                             Price = 55195m
@@ -399,7 +399,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 17,
                             CategoryId = 4,
-                            CreatedOn = 1306431258624000270L,
+                            CreatedOn = 1306431258624000120L,
                             Description = "",
                             Name = "M850i",
                             Price = 100045m
@@ -408,7 +408,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 18,
                             CategoryId = 4,
-                            CreatedOn = 1306422411264000270L,
+                            CreatedOn = 1306422411264000120L,
                             Description = "",
                             Name = "X7",
                             Price = 77980m
@@ -417,7 +417,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 19,
                             CategoryId = 4,
-                            CreatedOn = 1306413563904000270L,
+                            CreatedOn = 1306413563904000120L,
                             Description = "",
                             Name = "IX",
                             Price = 87000m
@@ -426,7 +426,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 20,
                             CategoryId = 5,
-                            CreatedOn = 1306466648064000270L,
+                            CreatedOn = 1306466648064000120L,
                             Description = "rapid acceleration and dynamic handling",
                             Name = "Model 3",
                             Price = 61990m
@@ -435,7 +435,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 21,
                             CategoryId = 5,
-                            CreatedOn = 1306457800704000270L,
+                            CreatedOn = 1306457800704000120L,
                             Description = "finishes near the top of our luxury electric car rankings.",
                             Name = "Model S",
                             Price = 135000m
@@ -444,7 +444,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 22,
                             CategoryId = 5,
-                            CreatedOn = 1306448953344000270L,
+                            CreatedOn = 1306448953344000120L,
                             Description = "Heart-pumping acceleration, long drive range",
                             Name = "Model X",
                             Price = 138890m
@@ -453,14 +453,14 @@ namespace Boilerplate.Server.Api.Data.Migrations
                         {
                             Id = 23,
                             CategoryId = 5,
-                            CreatedOn = 1306422411264000270L,
+                            CreatedOn = 1306422411264000120L,
                             Description = "extensive driving range, lots of standard safety features",
                             Name = "Model Y",
                             Price = 67790m
                         });
                 });
 
-            modelBuilder.Entity("Boilerplate.Server.Models.Todo.TodoItem", b =>
+            modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -602,9 +602,9 @@ namespace Boilerplate.Server.Api.Data.Migrations
                     b.ToTable("UserTokens", "identity");
                 });
 
-            modelBuilder.Entity("Boilerplate.Server.Models.Products.Product", b =>
+            modelBuilder.Entity("Boilerplate.Server.Api.Models.Products.Product", b =>
                 {
-                    b.HasOne("Boilerplate.Server.Models.Categories.Category", "Category")
+                    b.HasOne("Boilerplate.Server.Api.Models.Categories.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -613,9 +613,9 @@ namespace Boilerplate.Server.Api.Data.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("Boilerplate.Server.Models.Todo.TodoItem", b =>
+            modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
                 {
-                    b.HasOne("Boilerplate.Server.Models.Identity.User", "User")
+                    b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -626,7 +626,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("Boilerplate.Server.Models.Identity.Role", null)
+                    b.HasOne("Boilerplate.Server.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -635,7 +635,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("Boilerplate.Server.Models.Identity.User", null)
+                    b.HasOne("Boilerplate.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -644,7 +644,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("Boilerplate.Server.Models.Identity.User", null)
+                    b.HasOne("Boilerplate.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -653,13 +653,13 @@ namespace Boilerplate.Server.Api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("Boilerplate.Server.Models.Identity.Role", null)
+                    b.HasOne("Boilerplate.Server.Api.Models.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Boilerplate.Server.Models.Identity.User", null)
+                    b.HasOne("Boilerplate.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -668,14 +668,14 @@ namespace Boilerplate.Server.Api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("Boilerplate.Server.Models.Identity.User", null)
+                    b.HasOne("Boilerplate.Server.Api.Models.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Boilerplate.Server.Models.Categories.Category", b =>
+            modelBuilder.Entity("Boilerplate.Server.Api.Models.Categories.Category", b =>
                 {
                     b.Navigation("Products");
                 });

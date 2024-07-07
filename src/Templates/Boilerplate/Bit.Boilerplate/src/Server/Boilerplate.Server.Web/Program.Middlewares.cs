@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Boilerplate.Client.Core.Services;
 
-namespace Boilerplate.Server;
+namespace Boilerplate.Server.Web;
 
 public static partial class Program
 {

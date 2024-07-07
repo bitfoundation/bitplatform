@@ -2,7 +2,7 @@
 using Boilerplate.Server.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Boilerplate.Server;
+namespace Boilerplate.Server.Web;
 
 public static partial class Program
 {

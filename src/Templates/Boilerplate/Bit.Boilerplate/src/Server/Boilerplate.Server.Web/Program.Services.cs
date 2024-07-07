@@ -1,10 +1,10 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Server.Api;
 using Boilerplate.Client.Web;
-using Boilerplate.Server.Services;
+using Boilerplate.Server.Web.Services;
 using Boilerplate.Client.Core.Services.Contracts;
 
-namespace Boilerplate.Server;
+namespace Boilerplate.Server.Web;
 
 public static partial class Program
 {
