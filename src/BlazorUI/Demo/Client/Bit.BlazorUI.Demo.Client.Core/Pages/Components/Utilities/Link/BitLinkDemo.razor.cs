@@ -16,7 +16,7 @@ public partial class BitLinkDemo
         },
         new()
         {
-            Name = "HasUnderline",
+            Name = "Underlined",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the link is styled with an underline or not.",
@@ -75,7 +75,7 @@ Collapsed: [ <BitLink Visibility=""BitVisibility.Collapsed"">Collapsed Link</Bit
 <BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
 
     private readonly string example4RazorCode = @"
-<BitLink Href=""https://github.com/bitfoundation/bitplatform"" HasUnderline=""true"">Underlined link</BitLink>";
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" Underlined>Underlined link</BitLink>";
 
     private readonly string example5RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">Blank target link</BitLink>
