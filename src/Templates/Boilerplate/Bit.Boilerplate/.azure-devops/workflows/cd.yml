@@ -8,7 +8,7 @@ variables:
   AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   DataProtectionCertificatePassword: $(API_DATA_PROTECTION_CERTIFICATE_PASSWORD)
-  ApiServerAddress: 'https://use-your-server-url-here.com/'
+  ServerAddress: 'https://use-your-server-url-here.com/'
   WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
 
 jobs:

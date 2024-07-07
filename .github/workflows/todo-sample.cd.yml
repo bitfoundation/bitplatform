@@ -45,7 +45,7 @@ jobs:
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install wasm
@@ -159,7 +159,7 @@ jobs:
       with:
         files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Shared\appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
@@ -231,7 +231,7 @@ jobs:
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret
@@ -312,7 +312,7 @@ jobs:
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret
