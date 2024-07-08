@@ -12,7 +12,7 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
     }
 
     &.bit-rtl {
@@ -30,7 +30,7 @@
     justify-content: center;
     width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 }
 
 .bit-pgn-btn {
@@ -42,16 +42,16 @@
     justify-content: center;
     width: var(--bit-pgn-btn-size);
     height: var(--bit-pgn-btn-size);
-    border-style: $shape-border-style;
-    border-width: $shape-border-width;
-    border-radius: $shape-border-radius;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-radius: $shp-border-radius;
 
     &[disabled] {
         cursor: default;
         pointer-events: none;
-        color: $color-foreground-disabled;
-        border-color: $color-border-disabled;
-        background-color: $color-secondary-main;
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-sec;
     }
 }
 
@@ -59,11 +59,11 @@
     color: var(--bit-pgn-pri-clr);
     background-color: var(--bit-pgn-bg-clr);
     border-color: var(--bit-pgn-pri-brd-clr);
-    --bit-pgn-bg-clr: #{$color-primary-main};
-    --bit-pgn-pri-clr: #{$color-primary-text};
-    --bit-pgn-pri-brd-clr: #{$color-primary-main};
-    --bit-pgn-pri-hover-bg-clr: #{$color-action-hover-primary};
-    --bit-pgn-pri-active-bg-clr: #{$color-action-active-primary};
+    --bit-pgn-bg-clr: #{$clr-pri};
+    --bit-pgn-pri-clr: #{$clr-pri-text};
+    --bit-pgn-pri-brd-clr: #{$clr-pri};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-pri-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-pri-active};
 
     @media (hover: hover) {
         &:hover {
@@ -78,18 +78,18 @@
     }
 
     &[disabled] {
-        background-color: $color-background-disabled;
+        background-color: $clr-bg-dis;
     }
 }
 
 .bit-pgn-otl {
     color: var(--bit-pgn-sec-clr);
-    background-color: $color-secondary-main;
+    background-color: $clr-sec;
     border-color: var(--bit-pgn-sec-brd-clr);
-    --bit-pgn-sec-clr: #{$color-secondary-text};
-    --bit-pgn-sec-brd-clr: #{$color-secondary-text};
-    --bit-pgn-sec-hover-bg-clr: #{$color-action-hover-secondary};
-    --bit-pgn-sec-active-bg-clr: #{$color-action-active-secondary};
+    --bit-pgn-sec-clr: #{$clr-sec-text};
+    --bit-pgn-sec-brd-clr: #{$clr-sec-text};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-sec-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-sec-active};
 
     @media (hover: hover) {
         &:hover {
@@ -106,9 +106,9 @@
     border-color: transparent;
     color: var(--bit-pgn-sec-clr);
     background-color: transparent;
-    --bit-pgn-sec-clr: #{$color-secondary-text};
-    --bit-pgn-sec-hover-bg-clr: #{$color-action-hover-secondary};
-    --bit-pgn-sec-active-bg-clr: #{$color-action-active-secondary};
+    --bit-pgn-sec-clr: #{$clr-sec-text};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-sec-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-sec-active};
 
     @media (hover: hover) {
         &:hover {
@@ -121,7 +121,7 @@
     }
 
     &[disabled] {
-        border-color: $color-secondary-main;
+        border-color: $clr-sec;
     }
 }
 
@@ -129,11 +129,11 @@
     color: var(--bit-pgn-pri-clr);
     border-color: var(--bit-pgn-sec-bg-clr);
     background-color: var(--bit-pgn-sec-bg-clr);
-    --bit-pgn-pri-clr: #{$color-primary-text};
-    --bit-pgn-sec-bg-clr: #{$color-primary-dark};
-    --bit-pgn-pri-brd-clr: #{$color-primary-dark};
-    --bit-pgn-pri-hover-bg-clr: #{$color-action-hover-primary};
-    --bit-pgn-pri-active-bg-clr: #{$color-action-active-primary};
+    --bit-pgn-pri-clr: #{$clr-pri-text};
+    --bit-pgn-sec-bg-clr: #{$clr-pri-dark};
+    --bit-pgn-pri-brd-clr: #{$clr-pri-dark};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-pri-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-pri-active};
 
     @media (hover: hover) {
         &:hover {
@@ -149,68 +149,68 @@
 }
 
 .bit-pgn-inf {
-    --bit-pgn-bg-clr: #{$color-state-info-bg};
-    --bit-pgn-pri-clr: #{$color-foreground-primary};
-    --bit-pgn-pri-brd-clr: #{$color-state-info-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$color-action-hover-state-info-bg};
-    --bit-pgn-pri-active-bg-clr: #{$color-action-active-state-info-bg};
-    --bit-pgn-sec-bg-clr: #{$color-state-info-bg-sec};
-    --bit-pgn-sec-clr: #{$color-state-info};
-    --bit-pgn-sec-brd-clr: #{$color-state-info};
-    --bit-pgn-sec-hover-bg-clr: #{$color-action-hover-state-info-bg};
-    --bit-pgn-sec-active-bg-clr: #{$color-action-active-state-info-bg};
+    --bit-pgn-bg-clr: #{$clr-inf};
+    --bit-pgn-pri-clr: #{$clr-fg-pri};
+    --bit-pgn-pri-brd-clr: #{$clr-inf};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-inf-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-inf-active};
+    --bit-pgn-sec-bg-clr: #{$clr-inf};
+    --bit-pgn-sec-clr: #{$clr-inf};
+    --bit-pgn-sec-brd-clr: #{$clr-inf};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-inf-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-inf-active};
 }
 
 .bit-pgn-suc {
-    --bit-pgn-bg-clr: #{$color-state-success-bg};
-    --bit-pgn-pri-clr: #{$color-foreground-primary};
-    --bit-pgn-pri-brd-clr: #{$color-state-success-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$color-action-hover-state-success-bg};
-    --bit-pgn-pri-active-bg-clr: #{$color-action-active-state-success-bg};
-    --bit-pgn-sec-bg-clr: #{$color-state-success-bg-sec};
-    --bit-pgn-sec-clr: #{$color-state-success};
-    --bit-pgn-sec-brd-clr: #{$color-state-success};
-    --bit-pgn-sec-hover-bg-clr: #{$color-action-hover-state-success-bg};
-    --bit-pgn-sec-active-bg-clr: #{$color-action-active-state-success-bg};
+    --bit-pgn-bg-clr: #{$clr-suc};
+    --bit-pgn-pri-clr: #{$clr-fg-pri};
+    --bit-pgn-pri-brd-clr: #{$clr-suc};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-suc-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-suc-active};
+    --bit-pgn-sec-bg-clr: #{$clr-suc};
+    --bit-pgn-sec-clr: #{$clr-suc};
+    --bit-pgn-sec-brd-clr: #{$clr-suc};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-suc-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-suc-active};
 }
 
 .bit-pgn-wrn {
-    --bit-pgn-bg-clr: #{$color-state-warning-bg};
-    --bit-pgn-pri-clr: #{$color-foreground-primary};
-    --bit-pgn-pri-brd-clr: #{$color-state-warning-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$color-action-hover-state-warning-bg};
-    --bit-pgn-pri-active-bg-clr: #{$color-action-active-state-warning-bg};
-    --bit-pgn-sec-bg-clr: #{$color-state-warning-bg-sec};
-    --bit-pgn-sec-clr: #{$color-state-warning};
-    --bit-pgn-sec-brd-clr: #{$color-state-warning};
-    --bit-pgn-sec-hover-bg-clr: #{$color-action-hover-state-warning-bg};
-    --bit-pgn-sec-active-bg-clr: #{$color-action-active-state-warning-bg};
+    --bit-pgn-bg-clr: #{$clr-wrn};
+    --bit-pgn-pri-clr: #{$clr-fg-pri};
+    --bit-pgn-pri-brd-clr: #{$clr-wrn};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-wrn-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-wrn-active};
+    --bit-pgn-sec-bg-clr: #{$clr-wrn};
+    --bit-pgn-sec-clr: #{$clr-wrn};
+    --bit-pgn-sec-brd-clr: #{$clr-wrn};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-wrn-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-wrn-active};
 }
 
 .bit-pgn-swr {
-    --bit-pgn-bg-clr: #{$color-state-severe-warning-bg};
-    --bit-pgn-pri-clr: #{$color-foreground-primary};
-    --bit-pgn-pri-brd-clr: #{$color-state-severe-warning-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
-    --bit-pgn-pri-active-bg-clr: #{$color-action-active-state-severe-warning-bg};
-    --bit-pgn-sec-bg-clr: #{$color-state-severe-warning-bg-sec};
-    --bit-pgn-sec-clr: #{$color-state-severe-warning};
-    --bit-pgn-sec-brd-clr: #{$color-state-severe-warning};
-    --bit-pgn-sec-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
-    --bit-pgn-sec-active-bg-clr: #{$color-action-active-state-severe-warning-bg};
+    --bit-pgn-bg-clr: #{$clr-swr};
+    --bit-pgn-pri-clr: #{$clr-fg-pri};
+    --bit-pgn-pri-brd-clr: #{$clr-swr};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-swr-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-swr-active};
+    --bit-pgn-sec-bg-clr: #{$clr-swr};
+    --bit-pgn-sec-clr: #{$clr-swr};
+    --bit-pgn-sec-brd-clr: #{$clr-swr};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-swr-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-swr-active};
 }
 
 .bit-pgn-err {
-    --bit-pgn-bg-clr: #{$color-state-error-bg};
-    --bit-pgn-pri-clr: #{$color-foreground-primary};
-    --bit-pgn-pri-brd-clr: #{$color-state-error-bg};
-    --bit-pgn-pri-hover-bg-clr: #{$color-action-hover-state-error-bg};
-    --bit-pgn-pri-active-bg-clr: #{$color-action-active-state-error-bg};
-    --bit-pgn-sec-bg-clr: #{$color-state-error-bg-sec};
-    --bit-pgn-sec-clr: #{$color-state-error};
-    --bit-pgn-sec-brd-clr: #{$color-state-error};
-    --bit-pgn-sec-hover-bg-clr: #{$color-action-hover-state-error-bg};
-    --bit-pgn-sec-active-bg-clr: #{$color-action-active-state-error-bg};
+    --bit-pgn-bg-clr: #{$clr-err};
+    --bit-pgn-pri-clr: #{$clr-fg-pri};
+    --bit-pgn-pri-brd-clr: #{$clr-err};
+    --bit-pgn-pri-hover-bg-clr: #{$clr-err-hover};
+    --bit-pgn-pri-active-bg-clr: #{$clr-err-active};
+    --bit-pgn-sec-bg-clr: #{$clr-err};
+    --bit-pgn-sec-clr: #{$clr-err};
+    --bit-pgn-sec-brd-clr: #{$clr-err};
+    --bit-pgn-sec-hover-bg-clr: #{$clr-err-hover};
+    --bit-pgn-sec-active-bg-clr: #{$clr-err-active};
 }
 
 

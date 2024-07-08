@@ -10,7 +10,7 @@
     height: spacing(37.5);
     flex-direction: column;
     font-size: spacing(1.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 }
 
 .bit-clp-rec {
@@ -20,7 +20,7 @@
     box-sizing: border-box;
     margin-bottom: spacing(1);
     border-radius: spacing(0.25);
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-clp-des {
@@ -52,8 +52,8 @@
     width: spacing(2.5);
     height: spacing(2.5);
     transform: translate(-50%,-50%);
-    background: $color-background-secondary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    background: $clr-bg-sec;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
     box-shadow: rgb(0 0 0 / 13%) 0 spacing(0.375) spacing(0.875) 0, rgb(0 0 0 / 11%) 0 spacing(0.125) spacing(0.25) 0;
 
     &::before {
@@ -62,7 +62,7 @@
         position: absolute;
         border-radius: 50%;
         box-sizing: border-box;
-        border: $shape-border-width $shape-border-style $color-neutrals-white;
+        border: $shp-border-width $shp-border-style $clr-ntr-white;
     }
 }
 
@@ -84,7 +84,7 @@
     margin-bottom: spacing(1);
     forced-color-adjust: none;
     border-radius: spacing(0.25);
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-clp-hsd {
@@ -106,8 +106,8 @@
         width: spacing(2.5);
         height: spacing(2.5);
         -webkit-appearance: none;
-        background-color: $color-neutrals-white;
-        border: $shape-border-width $shape-border-style $color-border-primary;
+        background-color: $clr-ntr-white;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     &::-moz-range-thumb {
@@ -115,8 +115,8 @@
         border-radius: 50%;
         width: spacing(2.5);
         height: spacing(2.5);
-        background-color: $color-neutrals-white;
-        border: $shape-border-width $shape-border-style $color-border-primary;
+        background-color: $clr-ntr-white;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 }
 
@@ -124,5 +124,5 @@
 .bit-clp-pre {
     width: spacing(6);
     height: spacing(6);
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }

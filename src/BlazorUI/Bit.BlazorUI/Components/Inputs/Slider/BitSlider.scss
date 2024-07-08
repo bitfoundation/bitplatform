@@ -1,12 +1,12 @@
 ﻿@import "../../../Styles/functions.scss";
 
-$BgDefult: $color-background-secondary;
-$BgTrack: $color-foreground-secondary;
-$BgTrackHover: $color-primary-main;
-$BgHover: $color-primary-light;
+$BgDefult: $clr-bg-sec;
+$BgTrack: $clr-fg-sec;
+$BgTrackHover: $clr-pri;
+$BgHover: $clr-pri-light;
 
 .bit-sld {
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     input {
         --range: calc(var(--max) - var(--min));
@@ -29,8 +29,8 @@ $BgHover: $color-primary-light;
         -webkit-appearance: none;
         margin-top: spacing(-0.75);
         border-radius: spacing(1.25);
-        background-color: $color-background-primary;
-        border: spacing(0.25) $shape-border-style $BgTrack;
+        background-color: $clr-bg-pri;
+        border: spacing(0.25) $shp-border-style $BgTrack;
     }
 
     input::-webkit-slider-runnable-track {
@@ -52,9 +52,9 @@ $BgHover: $color-primary-light;
         pointer-events: auto;
         box-sizing: border-box;
         border-radius: spacing(1.25);
-        background-color: $color-background-secondary;
+        background-color: $clr-bg-sec;
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-        border: spacing(0.25) $shape-border-style $BgTrack;
+        border: spacing(0.25) $shp-border-style $BgTrack;
     }
 
     input::-moz-range-track {
@@ -86,7 +86,7 @@ $BgHover: $color-primary-light;
         pointer-events: auto;
         box-sizing: border-box;
         border-radius: spacing(1.25);
-        border: spacing(0.25) $shape-border-style $BgTrack;
+        border: spacing(0.25) $shp-border-style $BgTrack;
         margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
     }
 
@@ -111,7 +111,7 @@ $BgHover: $color-primary-light;
     }
 
     input:hover ~ .bit-sld-ztk {
-        background-color: $color-action-hover-background-primary;
+        background-color: $clr-bg-pri-hover;
     }
 
     input::-webkit-slider-thumb:hover,
@@ -168,11 +168,11 @@ $BgHover: $color-primary-light;
 
         .bit-sld-lbl,
         .bit-sld-vlb {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-sld-ztk {
-            background-color: $color-background-disabled;
+            background-color: $clr-bg-dis;
         }
     }
 
@@ -408,7 +408,7 @@ $BgHover: $color-primary-light;
     box-sizing: border-box;
     font-size: spacing(1.75);
     overflow-wrap: break-word;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-sld-cnt {
@@ -429,11 +429,11 @@ $BgHover: $color-primary-light;
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-sld-ztk {
     z-index: 2;
     position: absolute;
-    background-color: $color-background-secondary;
+    background-color: $clr-bg-sec;
 }

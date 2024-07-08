@@ -6,44 +6,44 @@
     align-items: center;
     font-size: spacing(5);
     column-gap: spacing(1.25);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         .bit-spb-lct {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-spb-lbl {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-spb-cnt {
             cursor: default;
-            color: $color-foreground-disabled;
-            border: none $color-border-disabled;
-            background: none $color-background-disabled;
+            color: $clr-fg-dis;
+            border: none $clr-brd-dis;
+            background: none $clr-bg-dis;
         }
 
         .bit-spb-inp {
             cursor: default;
-            color: $color-foreground-disabled;
-            border: none $color-border-disabled;
-            background: none $color-background-disabled;
+            color: $clr-fg-dis;
+            border: none $clr-brd-dis;
+            background: none $clr-bg-dis;
         }
 
         .bit-spb-btn,
         .bit-spb-sbn {
             cursor: default;
             pointer-events: none;
-            color: $color-foreground-disabled;
-            background: $color-background-disabled;
-            border: $shape-border-width $shape-border-style $color-border-disabled;
+            color: $clr-fg-dis;
+            background: $clr-bg-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
     }
 
     &.bit-inv {
         .bit-spb-cnt {
-            border-color: $color-state-error;
+            border-color: $clr-err;
         }
     }
 }
@@ -63,7 +63,7 @@
         font-size: spacing(1.75);
         padding: spacing(.0625) 0;
         line-height: spacing(2.5);
-        color: $color-foreground-primary;
+        color: $clr-fg-pri;
     }
 }
 
@@ -78,8 +78,8 @@
     height: spacing(4);
     position: relative;
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    border-radius: $shp-border-radius;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-spb-hdi {
@@ -103,10 +103,10 @@
     box-sizing: border-box;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
     padding: 0 spacing(1) 0 spacing(1.125);
-    background-color: $color-background-primary;
-    border-radius: $shape-border-radius 0 0 $shape-border-radius;
+    background-color: $clr-bg-pri;
+    border-radius: $shp-border-radius 0 0 $shp-border-radius;
 }
 
 .bit-spb-cin {
@@ -118,11 +118,11 @@
     flex-direction: column;
 
     &:first-child {
-        border-radius: 0 $shape-border-radius 0 0;
+        border-radius: 0 $shp-border-radius 0 0;
     }
 
     &:nth-child(2) {
-        border-radius: 0 0 $shape-border-radius 0;
+        border-radius: 0 0 $shp-border-radius 0;
     }
 }
 
@@ -141,13 +141,13 @@
     box-sizing: border-box;
     -webkit-user-select: none;
     background-color: transparent;
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
+    color: $clr-fg-pri;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-foreground-primary;
-            background-color: $color-action-hover-background-primary;
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
         }
     }
 }

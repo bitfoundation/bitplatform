@@ -8,35 +8,35 @@
     position: relative;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         .bit-txt-lbl {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-txt-fgp {
             border: none;
             cursor: default;
-            color: $color-foreground-disabled;
-            background: $color-background-disabled;
-            border: $shape-border-width $shape-border-style $color-border-disabled;
+            color: $clr-fg-dis;
+            background: $clr-bg-dis;
+            border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
 
         .bit-txt-inp {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-txt-pre,
         .bit-txt-suf {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         &.bit-txt-und {
             .bit-txt-wrp {
                 width: 100%;
                 display: flex;
-                border-bottom: $shape-border-width $shape-border-style $color-border-disabled;
+                border-bottom: $shp-border-width $shp-border-style $clr-brd-dis;
             }
 
             .bit-txt-lbl {
@@ -57,17 +57,17 @@
     &.bit-inv {
         .bit-txt-fgp,
         .bit-txt-wrp {
-            border-color: $color-state-error;
+            border-color: $clr-err;
         }
 
         &.bit-txt-fcs {
             .bit-txt-fgp::after {
-                border-color: $color-state-error;
+                border-color: $clr-err;
             }
 
             &.bit-txt-und {
                 .bit-txt-wrp::after {
-                    border-color: $color-state-error;
+                    border-color: $clr-err;
                 }
             }
         }
@@ -84,7 +84,7 @@
     line-height: spacing(2.5);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-txt-fgp {
@@ -98,9 +98,9 @@
     flex-flow: row nowrap;
     min-height: spacing(4);
     box-sizing: border-box;
-    border-radius: $shape-border-radius;
-    background-color: $color-background-primary;
-    border: $shape-border-width $shape-border-style $color-border-primary;
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-txt-inp {
@@ -119,8 +119,8 @@
     font-size: spacing(1.75);
     min-height: spacing(3.75);
     background: none transparent;
-    color: $color-foreground-primary;
-    font-family: $typography-font-family;
+    color: $clr-fg-pri;
+    font-family: $tg-font-family;
 
     &[type="password"]::-ms-reveal,
     &[type="password"]::-ms-clear {
@@ -137,12 +137,12 @@
     outline: transparent;
     padding: 0 spacing(0.5);
     min-height: spacing(3.75);
-    color: $color-primary-main;
+    color: $clr-pri;
     background-color: transparent;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
         }
     }
 }
@@ -155,11 +155,11 @@
 }
 
 .bit-txt-ric {
-    color: $color-primary-main;
+    color: $clr-pri;
 }
 
 .bit-txt-ico {
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-txt-ric,
@@ -172,7 +172,7 @@
 .bit-txt-des {
     span {
         font-size: spacing(1.25);
-        color: $color-foreground-primary;
+        color: $clr-fg-pri;
     }
 }
 
@@ -185,8 +185,8 @@
     white-space: nowrap;
     padding: 0 spacing(1.25);
     min-height: spacing(3.75);
-    color: $color-foreground-primary;
-    background: $color-background-secondary;
+    color: $clr-fg-pri;
+    background: $clr-bg-sec;
 
     span {
         font-size: spacing(1.75);
@@ -233,8 +233,8 @@
         position: absolute;
         pointer-events: none;
         inset: spacing(-0.125);
-        border-radius: $shape-border-radius;
-        border: spacing(0.25) $shape-border-style $color-primary-main;
+        border-radius: $shp-border-radius;
+        border: spacing(0.25) $shp-border-style $clr-pri;
     }
 
     &.bit-txt-und {
@@ -247,7 +247,7 @@
             position: absolute;
             pointer-events: none;
             inset: spacing(-0.125);
-            border-bottom: spacing(0.25) $shape-border-style $color-primary-main;
+            border-bottom: spacing(0.25) $shp-border-style $clr-pri;
         }
     }
 }
@@ -256,7 +256,7 @@
     .bit-txt-wrp {
         width: 100%;
         display: flex;
-        border-bottom: $shape-border-width $shape-border-style $color-border-primary;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
     .bit-txt-lbl {
@@ -276,7 +276,7 @@
 .bit-txt-req {
     .bit-txt-lbl::after {
         content: "*";
-        color: $color-state-required;
+        color: $clr-req;
         margin-left: spacing(0.625);
     }
 }
@@ -287,7 +287,7 @@
         position: absolute;
         top: spacing(-0.625);
         right: spacing(-1.25);
-        color: $color-state-required;
+        color: $clr-req;
     }
 }
 

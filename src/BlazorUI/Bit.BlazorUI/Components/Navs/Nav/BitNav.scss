@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-nav {
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     ul {
         margin: 0;
@@ -19,7 +19,7 @@
         background-color: transparent;
 
         .bit-nav-itm {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 }
@@ -31,7 +31,7 @@
     width: spacing(3.75);
     font-size: spacing(1.5);
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     i {
         transition: transform 0.1s linear 0s;
@@ -48,7 +48,7 @@
     gap: spacing(1.25);
     align-items: center;
     height: spacing(5.5);
-    border-bottom: $shape-border-width $shape-border-style $color-border-primary;
+    border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
 
     .bit-nav-iit {
         gap: spacing(1.25);
@@ -85,7 +85,7 @@
     padding: spacing(0.5) 0;
     background: transparent;
     text-overflow: ellipsis;
-    color: $color-foreground-disabled;
+    color: $clr-fg-dis;
     padding-inline-start: spacing(2.75);
 }
 
@@ -95,14 +95,14 @@
     flex-flow: column;
     box-sizing: border-box;
     min-height: spacing(5.5);
-    border-radius: $shape-border-radius;
+    border-radius: $shp-border-radius;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
 
             .bit-nav-itm {
-                color: $color-primary-main;
+                color: $clr-pri;
             }
         }
     }
@@ -126,7 +126,7 @@
     flex-flow: row nowrap;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
-    color: $color-foreground-secondary;
+    color: $clr-fg-sec;
 }
 
 .bit-nav-itm,
@@ -142,25 +142,25 @@
 }
 
 .bit-nav-iic {
-    color: $color-primary-main;
+    color: $clr-pri;
 }
 
 .bit-nav-sel {
-    background-color: $color-background-secondary;
-    border-inline-start: spacing(0.375) $shape-border-style $color-primary-main;
+    background-color: $clr-bg-sec;
+    border-inline-start: spacing(0.375) $shp-border-style $clr-pri;
 
     @media(hover:hover) {
         &:hover {
-            background-color: $color-action-hover-background-primary;
+            background-color: $clr-bg-pri-hover;
             /*.bit-nav-itm {
-                color: $color-primary-main;
+                color: $clr-pri;
             }*/
         }
     }
 
     .bit-nav-itm {
         font-weight: 600;
-        color: $color-foreground-primary;
+        color: $clr-fg-pri;
     }
 }
 
@@ -169,11 +169,11 @@
 
     .bit-nav-itm {
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
     }
 }
 
 .bit-nav-sep {
     height: 0;
-    border: 1px solid $color-border-secondary;
+    border: 1px solid $clr-brd-sec;
 }

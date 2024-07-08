@@ -21,9 +21,9 @@
     width: spacing(2.5);
     height: spacing(2.5);
     border-width: spacing(0.1875);
-    border-style: $shape-border-style;
-    border-color: $color-border-secondary;
-    border-top-color: $color-primary-main;
+    border-style: $shp-border-style;
+    border-color: $clr-brd-sec;
+    border-top-color: $clr-pri;
     animation: bit-spn-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
@@ -31,7 +31,7 @@
 .bit-spn-lbl {
     text-align: center;
     font-size: spacing(1.5);
-    color: $color-primary-main;
+    color: $clr-pri;
     margin: spacing(0.25) spacing(1);
 }
 

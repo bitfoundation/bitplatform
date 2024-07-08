@@ -513,7 +513,7 @@ public class MedalsModel
 <style>
     .grid {
         border: 1px solid;
-        border-color: var(--bit-clr-brd-primary);
+        border-color: var(--bit-clr-brd-pri);
     }
 
     .grid .grid-container {
@@ -539,8 +539,8 @@ public class MedalsModel
         display: table-cell;
         vertical-align: inherit;
         border-bottom: 1px solid;
-        background-color: var(--bit-clr-bg-secondary);
-        border-bottom-color: var(--bit-clr-brd-secondary);
+        background-color: var(--bit-clr-bg-sec);
+        border-bottom-color: var(--bit-clr-brd-sec);
     }
 
     .grid .col-options-button {
@@ -583,7 +583,7 @@ public class MedalsModel
 
     .grid th:not(:last-child) {
         border-right: 1px solid;
-        border-right-color: var(--bit-clr-brd-secondary);
+        border-right-color: var(--bit-clr-brd-sec);
     }
 
     .grid th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
@@ -598,11 +598,11 @@ public class MedalsModel
     }
 
     .grid tr:nth-child(even) {
-        background: var(--bit-clr-bg-secondary);
+        background: var(--bit-clr-bg-sec);
     }
 
     .grid tr:nth-child(odd) {
-        background: var(--bit-clr-bg-primary);
+        background: var(--bit-clr-bg-pri);
     }
 
     .grid tr:last-child > td {
@@ -614,11 +614,11 @@ public class MedalsModel
         white-space: nowrap;
         padding: 0.25rem 0.5rem;
         text-overflow: ellipsis;
-        border-bottom: 1px solid var(--bit-clr-brd-secondary);
+        border-bottom: 1px solid var(--bit-clr-brd-sec);
     }
 
     .grid td:not(:last-child) {
-        border-right: 1px solid var(--bit-clr-brd-secondary);
+        border-right: 1px solid var(--bit-clr-brd-sec);
     }
 
     .grid .sort-indicator {
@@ -737,7 +737,7 @@ public class MedalsModel
         top: 0;
         z-index: 1;
         position: sticky;
-        background-color: var(--bit-clr-bg-secondary);
+        background-color: var(--bit-clr-bg-sec);
     }
 
     .grid tbody td {
@@ -975,7 +975,7 @@ public class Openfda
         top: 0;
         z-index: 1;
         position: sticky;
-        background-color: var(--bit-clr-bg-secondary);
+        background-color: var(--bit-clr-bg-sec);
     }
 
     .grid tbody td {

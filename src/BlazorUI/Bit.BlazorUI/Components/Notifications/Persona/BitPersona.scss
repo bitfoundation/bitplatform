@@ -10,13 +10,13 @@
     align-items: center;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-foreground-primary;
-    font-family: $typography-font-family;
+    color: $clr-fg-pri;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         pointer-events: none;
-        color: $color-foreground-disabled;
-        background-color: $color-background-disabled;
+        color: $clr-fg-dis;
+        background-color: $clr-bg-dis;
     }
 }
 
@@ -34,7 +34,7 @@
     border-radius: 50%;
     align-items: center;
     justify-content: center;
-    background-color: $color-primary-main;
+    background-color: $clr-pri;
 }
 
 .bit-prs-imo {
@@ -47,7 +47,7 @@
     justify-content: center;
     font-size: spacing(1.75);
     transition: all 0.1s linear;
-    background-color: $color-primary-main;
+    background-color: $clr-pri;
 }
 
 .bit-prs-img {
@@ -73,14 +73,14 @@
     justify-content: center;
     forced-color-adjust: none;
     background-clip: border-box;
-    border: spacing(0.125) $shape-border-style $color-border-secondary;
+    border: spacing(0.125) $shp-border-style $clr-brd-sec;
 }
 
 .bit-prs-unk {
-    color: $color-state-error;
+    color: $clr-err;
 
     .bit-prs-imc {
-        background-color: $color-background-secondary;
+        background-color: $clr-bg-sec;
     }
 }
 
@@ -99,7 +99,7 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-prs-abt {
@@ -123,11 +123,11 @@
     font-size: spacing(1.75);
     transform: translateX(-50%);
     background-color: transparent;
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-foreground-primary;
+            color: $clr-fg-pri-hover;
         }
     }
 }
@@ -151,29 +151,29 @@
 }
 
 .bit-prs-off {
-    background-color: $color-neutrals-white;
-    border: spacing(0.25) $shape-border-style $color-neutrals-gray110;
+    background-color: $clr-ntr-white;
+    border: spacing(0.25) $shp-border-style $clr-ntr-gray110;
 }
 
 .bit-prs-onl {
-    background-color: $color-state-success;
+    background-color: $clr-suc;
 }
 
 .bit-prs-awy {
-    background-color: $color-state-warning;
+    background-color: $clr-wrn;
 }
 
 .bit-prs-dnd {
-    background-color: $color-state-error;
+    background-color: $clr-err;
 }
 
 .bit-prs-blk {
-    background-color: $color-neutrals-white;
-    border: spacing(0.25) $shape-border-style $color-state-error;
+    background-color: $clr-ntr-white;
+    border: spacing(0.25) $shp-border-style $clr-err;
 }
 
 .bit-prs-bsy {
-    background-color: $color-state-error;
+    background-color: $clr-err;
 }
 
 .bit-prs-s8 {

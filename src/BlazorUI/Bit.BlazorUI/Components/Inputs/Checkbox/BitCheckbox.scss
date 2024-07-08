@@ -2,14 +2,14 @@
 
 .bit-chb {
     width: fit-content;
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     @media (hover: hover) {
         &:hover {
             .bit-chb-box {
                 .bit-icon {
                     opacity: 1;
-                    color: $color-action-hover-foreground-secondary;
+                    color: $clr-fg-sec-hover;
                 }
             }
         }
@@ -17,19 +17,19 @@
 
     &.bit-inv {
         .bit-chb-box {
-            border-color: $color-state-error;
+            border-color: $clr-err;
         }
 
         &.bit-chb-ckd {
             .bit-chb-box {
-                background-color: $color-state-error;
+                background-color: $clr-err;
             }
         }
 
         &.bit-chb-ind {
             .bit-chb-box {
                 .bit-icon {
-                    background-color: $color-state-error;
+                    background-color: $clr-err;
                 }
             }
         }
@@ -43,26 +43,26 @@
         }
 
         .bit-chb-txt {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-chb-box {
-            border-color: $color-border-disabled;
+            border-color: $clr-brd-dis;
 
             .bit-icon {
                 opacity: 1;
-                color: $color-background-disabled;
-                background-color: $color-background-disabled;
+                color: $clr-bg-dis;
+                background-color: $clr-bg-dis;
             }
         }
 
         &.bit-chb-ckd {
             .bit-chb-box {
                 background-color: transparent;
-                border-color: $color-border-disabled;
+                border-color: $clr-brd-dis;
 
                 .bit-icon {
-                    color: $color-foreground-disabled;
+                    color: $clr-fg-dis;
                 }
             }
         }
@@ -80,10 +80,10 @@
     min-width: spacing(2.5);
     justify-content: center;
     transition-duration: 200ms;
-    border-style: $shape-border-style;
-    border-width: $shape-border-width;
-    border-color: $color-border-primary;
-    border-radius: $shape-border-radius;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-color: $clr-brd-pri;
+    border-radius: $shp-border-radius;
     transition-property: background, border, border-color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
 
@@ -133,24 +133,24 @@
 
 .bit-chb-ckd {
     .bit-chb-box {
-        border-color: $color-primary-main;
-        background-color: $color-primary-main;
+        border-color: $clr-pri;
+        background-color: $clr-pri;
 
         .bit-icon {
             opacity: 1;
-            color: $color-primary-text;
+            color: $clr-pri-text;
         }
     }
 
     @media (hover: hover) {
         &:hover {
             .bit-chb-box {
-                border-color: $color-action-hover-primary;
-                background-color: $color-action-hover-primary;
+                border-color: $clr-pri-hover;
+                background-color: $clr-pri-hover;
 
                 .bit-icon {
                     opacity: 1;
-                    color: $color-action-hover-secondary;
+                    color: $clr-sec-hover;
                 }
             }
         }
@@ -159,8 +159,8 @@
 
 .bit-chb-ind {
     .bit-chb-box {
-        border-color: $color-primary-main;
-        background-color: $color-background-primary;
+        border-color: $clr-pri;
+        background-color: $clr-bg-pri;
 
         .bit-icon {
             opacity: 1;
@@ -168,7 +168,7 @@
             height: spacing(1.25);
             display: inline-block;
             border-radius: spacing(0.375);
-            background-color: $color-primary-main;
+            background-color: $clr-pri;
 
             &:before {
                 content: '';
@@ -179,11 +179,11 @@
     @media (hover: hover) {
         &:hover {
             .bit-chb-box {
-                border-color: $color-action-hover-primary;
-                background-color: $color-background-primary;
+                border-color: $clr-pri-hover;
+                background-color: $clr-bg-pri;
 
                 .bit-icon {
-                    background-color: $color-action-hover-primary;
+                    background-color: $clr-pri-hover;
                 }
             }
         }

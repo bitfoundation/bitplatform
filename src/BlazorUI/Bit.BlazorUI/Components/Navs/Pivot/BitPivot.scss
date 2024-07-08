@@ -7,17 +7,17 @@
         .content-container {
             cursor: default;
             pointer-events: none;
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-pvti {
             cursor: default;
             pointer-events: none;
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
 
         .bit-pvti-sel::before {
-            background-color: $color-border-disabled;
+            background-color: $clr-brd-dis;
         }
     }
 }
@@ -40,7 +40,7 @@
     position: relative;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 }
 
 .bit-pvt-top {
@@ -72,15 +72,15 @@
         @media(hover:hover) {
             &:hover {
                 cursor: pointer;
-                color: $color-action-hover-foreground-primary;
-                background-color: $color-action-hover-background-primary;
+                color: $clr-fg-pri-hover;
+                background-color: $clr-bg-pri-hover;
             }
         }
     }
 
     .bit-pvti-sel {
         &:before {
-            background-color: $color-primary-main;
+            background-color: $clr-pri;
         }
 
         @media(hover:hover) {
@@ -98,16 +98,16 @@
     .bit-pvti {
         @media(hover:hover) {
             &:hover {
-                color: $color-primary-text;
-                background-color: $color-action-hover-primary;
+                color: $clr-pri-text;
+                background-color: $clr-pri-hover;
             }
         }
     }
 
     .bit-pvti-sel {
         font-weight: 400;
-        color: $color-primary-text;
-        background-color: $color-primary-main;
+        color: $clr-pri-text;
+        background-color: $clr-pri;
     }
 }
 
@@ -123,12 +123,12 @@
 
         &::-webkit-scrollbar-track {
             border-radius: spacing(1.25);
-            background-color: $color-background-secondary;
+            background-color: $clr-bg-sec;
         }
 
         &::-webkit-scrollbar-thumb {
             border-radius: spacing(1.25);
-            background-color: $color-foreground-secondary;
+            background-color: $clr-fg-sec;
         }
     }
 }
@@ -165,7 +165,7 @@
     margin-right: spacing(1);
     line-height: spacing(5.5);
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     > span {
         height: 100%;
@@ -179,10 +179,10 @@
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
 
         &.bit-pvti-sel::before {
-            background-color: $color-border-disabled;
+            background-color: $clr-brd-dis;
         }
     }
 }
@@ -204,7 +204,7 @@
     margin-right: spacing(1);
     line-height: spacing(5.5);
     background-color: transparent;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     &:before {
         bottom: 0;
