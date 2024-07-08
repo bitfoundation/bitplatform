@@ -7,8 +7,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 {
     private bool vertical;
     private BitSize? size;
+    private BitColor? color;
     private BitVariant? variant;
-    private BitSeverity? severity;
 
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
@@ -28,17 +28,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The severity of the button group.
+    /// Defines the general colors available in the bit BlazorUI.
     /// </summary>
     [Parameter]
-    public BitSeverity? Severity
+    public BitColor? Color
     {
-        get => severity;
+        get => color;
         set
         {
-            if (severity == value) return;
+            if (color == value) return;
 
-            severity = value;
+            color = value;
 
             ClassBuilder.Reset();
         }
@@ -121,6 +121,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     }
 
 
+
     internal void RegisterOption(BitButtonGroupOption option)
     {
         var item = (option as TItem)!;
@@ -137,6 +138,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     }
 
 
+
     protected override string RootElementClass => "bit-btg";
 
     protected override void RegisterCssClasses()
@@ -149,14 +151,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ => "bit-btg-fil"
         });
 
-        ClassBuilder.Register(() => Severity switch
+        ClassBuilder.Register(() => Color switch
         {
-            BitSeverity.Info => "bit-btg-inf",
-            BitSeverity.Success => "bit-btg-suc",
-            BitSeverity.Warning => "bit-btg-war",
-            BitSeverity.SevereWarning => "bit-btg-swa",
-            BitSeverity.Error => "bit-btg-err",
-            _ => string.Empty
+            BitColor.Primary => "bit-btg-pri",
+            BitColor.Secondary => "bit-btg-sec",
+            BitColor.Tertiary => "bit-btg-ter",
+            BitColor.Info => "bit-btg-inf",
+            BitColor.Success => "bit-btg-suc",
+            BitColor.Warning => "bit-btg-wrn",
+            BitColor.SevereWarning => "bit-btg-swr",
+            BitColor.Error => "bit-btg-err",
+            _ => "bit-btg-pri"
         });
 
         ClassBuilder.Register(() => Size switch
@@ -164,7 +169,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             BitSize.Small => "bit-btg-sm",
             BitSize.Medium => "bit-btg-md",
             BitSize.Large => "bit-btg-lg",
-            _ => string.Empty
+            _ => "bit-btg-md"
         });
 
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : "");
@@ -182,54 +187,6 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     }
 
 
-
-    private string? GetItemClass(int index, bool isEnabled)
-    {
-        StringBuilder className = new StringBuilder();
-
-        className.Append(Variant switch
-        {
-            BitVariant.Fill => " bit-btg-ifl",
-            BitVariant.Outline => " bit-btg-iot",
-            BitVariant.Text => " bit-btg-itx",
-            _ => " bit-btg-ifl"
-        });
-
-        className.Append(Severity switch
-        {
-            BitSeverity.Info => " bit-btg-iin",
-            BitSeverity.Success => " bit-btg-isu",
-            BitSeverity.Warning => " bit-btg-iwa",
-            BitSeverity.SevereWarning => " bit-btg-isw",
-            BitSeverity.Error => " bit-btg-ier",
-            _ => string.Empty
-        });
-
-        className.Append(Size switch
-        {
-            BitSize.Small => " bit-btg-ism",
-            BitSize.Medium => " bit-btg-imd",
-            BitSize.Large => " bit-btg-ilg",
-            _ => string.Empty
-        });
-
-        if (index == 0)
-        {
-            className.Append(" bit-btg-ift");
-        }
-
-        if (index == (_items.Count - 1))
-        {
-            className.Append(" bit-btg-ilt");
-        }
-
-        if (isEnabled is false)
-        {
-            className.Append(" bit-btg-ids");
-        }
-
-        return className.ToString();
-    }
 
     private async Task HandleOnItemClick(TItem item)
     {
@@ -259,7 +216,6 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
     }
-
 
     private string? GetClass(TItem? item)
     {
