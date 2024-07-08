@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
+﻿using Boilerplate.Server.Api;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -17,5 +16,15 @@ public static class HttpRequestExtensions
         }
 
         return uriBuilder.Uri;
+    }
+
+    internal static Uri GetWebClientUrl(this HttpRequest req)
+    {
+        var appSettings = req.HttpContext.RequestServices.GetRequiredService<AppSettings>();
+
+        if (string.IsNullOrEmpty(appSettings.WebClientUrl) is false)
+            return new Uri(appSettings.WebClientUrl);
+
+        return req.GetBaseUrl();
     }
 }

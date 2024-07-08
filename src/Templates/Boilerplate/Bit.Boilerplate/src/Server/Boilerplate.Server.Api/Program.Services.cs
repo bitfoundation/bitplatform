@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using Boilerplate.Server.Api.Models.Identity;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
+using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.DataProtection;
@@ -54,7 +55,18 @@ public static partial class Program
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
-        services.AddCors();
+        services.AddCors(builder =>
+        {
+            builder.AddDefaultPolicy(policy =>
+            {
+                // 0.0.0.0 origins are essential for the proper functioning of BlazorHybrid's WebView, while localhost:4030 is a prerequisite for BlazorWebAssemblyStandalone testing.
+                policy.WithOrigins("https://0.0.0.0", "app://0.0.0.0", string.IsNullOrEmpty(appSettings.WebClientUrl) ? "http://localhost:4030" : appSettings.WebClientUrl)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .WithExposedHeaders(HeaderNames.RequestId);
+            });
+        });
+
         services.AddAntiforgery();
 
         services
