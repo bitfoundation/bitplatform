@@ -351,15 +351,15 @@ public class BitLinkTests : BunitTestContext
         DataRow("#go-to-section", true),
         DataRow("#go-to-section", false)
     ]
-    public void BitLinkShouldRespectHasUnderline(string href, bool hasUnderline)
+    public void BitLinkShouldRespectUnderlined(string href, bool underlined)
     {
         var component = RenderComponent<BitLink>(parameters =>
         {
             parameters.Add(p => p.Href, href);
-            parameters.Add(p => p.HasUnderline, hasUnderline);
+            parameters.Add(p => p.Underlined, underlined);
         });
 
-        var cssClass = hasUnderline ? " bit-lnk-und" : null;
+        var cssClass = underlined ? " bit-lnk-und" : null;
 
         if (href.HasValue())
         {
@@ -391,6 +391,32 @@ public class BitLinkTests : BunitTestContext
         bitLinkButton.Click();
 
         Assert.AreEqual(isEnabled ? 1 : 0, currentCount);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitLinkScrollIntoViewTest(bool isEnabled)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Href, "#go-to-section");
+        });
+
+        var bitLinkButton = component.Find(".bit-lnk");
+
+        bitLinkButton.Click();
+
+        if (isEnabled)
+        {
+            Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.scrollElementIntoView");
+        }
+        else
+        {
+            Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.scrollElementIntoView");
+        }
     }
 
     [DataTestMethod,
