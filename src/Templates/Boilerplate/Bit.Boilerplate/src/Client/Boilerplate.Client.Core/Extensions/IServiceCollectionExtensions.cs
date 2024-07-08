@@ -56,8 +56,8 @@ public static class IServiceCollectionExtensions
                 // .UseModel(OfflineDbContextModel.Instance)
                 .UseSqlite($"Data Source={dbPath}");
 
-            options.EnableSensitiveDataLogging(BuildConfiguration.IsDebug())
-                    .EnableDetailedErrors(BuildConfiguration.IsDebug());
+            options.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
+                    .EnableDetailedErrors(AppEnvironment.IsDevelopment());
         });
         //#endif
 

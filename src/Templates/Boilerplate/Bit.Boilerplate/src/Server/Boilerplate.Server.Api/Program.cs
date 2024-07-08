@@ -8,10 +8,12 @@ public static partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        AppEnvironment.Name = builder.Environment.EnvironmentName;
+
         builder.Configuration.AddSharedConfigurations();
 
         // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
-        if (BuildConfiguration.IsDebug() && OperatingSystem.IsWindows())
+        if (AppEnvironment.IsDevelopment() && OperatingSystem.IsWindows())
         {
             builder.WebHost.UseUrls("http://localhost:5031", "http://*:5031");
         }
@@ -21,7 +23,7 @@ public static partial class Program
 
         var app = builder.Build();
 
-        if (BuildConfiguration.IsDebug())
+        if (AppEnvironment.IsDevelopment())
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();

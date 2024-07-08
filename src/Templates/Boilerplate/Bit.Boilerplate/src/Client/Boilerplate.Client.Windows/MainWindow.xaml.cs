@@ -24,7 +24,7 @@ public partial class MainWindow
         {
             await BlazorWebView.WebView.EnsureCoreWebView2Async();
             var settings = BlazorWebView.WebView.CoreWebView2.Settings;
-            if (BuildConfiguration.IsRelease())
+            if (AppEnvironment.IsDevelopment() is false)
             {
                 settings.IsZoomControlEnabled = false;
                 settings.AreBrowserAcceleratorKeysEnabled = false;

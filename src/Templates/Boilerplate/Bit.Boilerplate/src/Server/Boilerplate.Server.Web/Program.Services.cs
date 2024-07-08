@@ -14,7 +14,6 @@ public static partial class Program
 
         var services = builder.Services;
         var configuration = builder.Configuration;
-        var env = builder.Environment;
 
         AddBlazor(builder);
 

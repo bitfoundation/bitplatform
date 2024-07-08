@@ -7,6 +7,8 @@ public partial class AboutPage
     private string appName = default!;
     private string appVersion = default!;
     private string processId = default!;
+    private string os = default!;
+    private string oem = default!;
 
     protected async override Task OnInitAsync()
     {
@@ -20,6 +22,8 @@ public partial class AboutPage
         appVersion = AppInfo.Version.ToString();
 #endif
         processId = Environment.ProcessId.ToString();
+        os = $"{DeviceInfo.Current.Platform} {DeviceInfo.Current.VersionString}";
+        oem = DeviceInfo.Current.Manufacturer;
 
         await base.OnInitAsync();
     }

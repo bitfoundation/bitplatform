@@ -13,7 +13,7 @@ public static class AppRenderMode
     public static IComponentRenderMode NoPrerenderBlazorWebAssembly => new InteractiveWebAssemblyRenderMode(prerender: false);
 
     public static IComponentRenderMode Current =>
-        BuildConfiguration.IsDebug() 
+        AppEnvironment.IsDevelopment() 
         ? BlazorServer // For better development experience.
         : Auto; // For better production experience.
 

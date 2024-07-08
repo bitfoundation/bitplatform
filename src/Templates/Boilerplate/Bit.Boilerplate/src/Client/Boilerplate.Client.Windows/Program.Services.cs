@@ -28,7 +28,7 @@ public static partial class Program
         });
 
         services.AddWpfBlazorWebView();
-        if (BuildConfiguration.IsDebug())
+        if (AppEnvironment.IsDevelopment())
         {
             services.AddBlazorWebViewDeveloperTools();
         }
@@ -43,7 +43,7 @@ public static partial class Program
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
             loggingBuilder.AddEventLog();
             loggingBuilder.AddEventSourceLogger();
-            if (BuildConfiguration.IsDebug())
+            if (AppEnvironment.IsDevelopment())
             {
                 loggingBuilder.AddDebug();
             }

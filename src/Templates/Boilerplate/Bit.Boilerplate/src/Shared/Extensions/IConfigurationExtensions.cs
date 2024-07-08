@@ -6,7 +6,7 @@ public static class IConfigurationExtensions
     {
         var serverAddress = configuration.GetValue("ServerAddress", defaultValue: "/")!;
 
-        if (BuildConfiguration.IsDebug() &&
+        if (AppEnvironment.IsDevelopment() &&
             serverAddress.Contains("localhost", StringComparison.InvariantCultureIgnoreCase) &&
             OperatingSystem.IsAndroid())
         {

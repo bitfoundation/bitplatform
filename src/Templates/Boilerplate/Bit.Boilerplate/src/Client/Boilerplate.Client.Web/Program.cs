@@ -15,6 +15,8 @@ public static partial class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+        AppEnvironment.Name = builder.HostEnvironment.Environment;
+
 #if BlazorWebAssemblyStandalone
         builder.RootComponents.Add<Routes>("#app-container");
         builder.RootComponents.Add<HeadOutlet>("head::after");

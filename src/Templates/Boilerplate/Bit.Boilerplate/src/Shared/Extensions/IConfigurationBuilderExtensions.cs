@@ -9,21 +9,10 @@ public static class IConfigurationBuilderExtensions
         var assembly = Assembly.Load("Boilerplate.Shared");
         builder.AddJsonStream(assembly.GetManifestResourceStream("Boilerplate.Shared.appsettings.json")!);
 
-        if (BuildConfiguration.IsDebug())
+        var settings = assembly.GetManifestResourceStream($"Boilerplate.Shared.appsettings.{AppEnvironment.Name}.json");
+        if (settings is not null)
         {
-            var settings = assembly.GetManifestResourceStream("Boilerplate.Shared.appsettings.Debug.json");
-            if (settings is not null)
-            {
-                builder.AddJsonStream(settings);
-            }
-        }
-        else
-        {
-            var settings = assembly.GetManifestResourceStream("Boilerplate.Shared.appsettings.Release.json");
-            if (settings is not null)
-            {
-                builder.AddJsonStream(settings);
-            }
+            builder.AddJsonStream(settings);
         }
     }
 }

@@ -95,7 +95,7 @@ public static partial class MauiProgram
                 webView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
             }
 
-            if (BuildConfiguration.IsRelease())
+            if (AppEnvironment.IsDevelopment() is false)
             {
                 webView.EnsureCoreWebView2Async()
                     .AsTask()
@@ -118,7 +118,7 @@ public static partial class MauiProgram
             webView.ScrollView.Bounces = false;
             webView.Opaque = false;
 
-            if (BuildConfiguration.IsDebug())
+            if (AppEnvironment.IsDevelopment())
             {
                 if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
                     || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
@@ -143,7 +143,7 @@ public static partial class MauiProgram
                 settings.JavaScriptCanOpenWindowsAutomatically =
                 settings.DomStorageEnabled = true;
 
-            if (BuildConfiguration.IsDebug())
+            if (AppEnvironment.IsDevelopment())
             {
                 settings.MixedContentMode = Android.Webkit.MixedContentHandling.AlwaysAllow;
             }
