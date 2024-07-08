@@ -5,6 +5,8 @@ public partial class _BitButtonGroupCustomDemo
     private int clickCounter;
     private string? clickedCustom;
 
+    private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+
     private List<ButtonGroupActionItem> basicCustoms =
     [
         new() { Name = "Add" }, new() { Name = "Edit" }, new() { Name = "Delete" }
@@ -62,8 +64,10 @@ public partial class _BitButtonGroupCustomDemo
 
 
     private readonly string example1RazorCode = @"
-<BitButtonGroup Items=""basicCustoms"" NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />";
+<BitButtonGroup Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
     private readonly string example1CsharpCode = @"
+private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+
 public class ButtonGroupActionItem
 {
     public string? Name { get; set; }
@@ -75,27 +79,20 @@ private List<ButtonGroupActionItem> basicCustoms = new()
 };";
 
     private readonly string example2RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""disabledCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicCustoms"" IsEnabled=""false""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""disabledCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" IsEnabled=""false"" />
 
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""disabledCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicCustoms"" IsEnabled=""false""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""disabledCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" IsEnabled=""false"" />
 
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""disabledCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms"" IsEnabled=""false""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />";
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms""NameSelectors=""nameSelector"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""disabledCustoms""NameSelectors=""nameSelector"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" IsEnabled=""false"" />";
     private readonly string example2CsharpCode = @"
+private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+
 public class ButtonGroupActionItem
 {
     public string? Name { get; set; }
@@ -113,6 +110,51 @@ private List<ButtonGroupActionItem> disabledCustoms = new()
 };";
 
     private readonly string example3RazorCode = @"
+<BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup Color=""BitColor.Secondary"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Secondary"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup Color=""BitColor.Tertiary"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup Color=""BitColor.Info"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Info"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup Color=""BitColor.Success"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Success"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup Color=""BitColor.Warning"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Warning"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup Color=""BitColor.SevereWarning"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup Color=""BitColor.Error"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
+    private readonly string example3CsharpCode = @"
+private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+
+public class ButtonGroupActionItem
+{
+    public string? Name { get; set; }
+}
+
+private List<ButtonGroupActionItem> basicCustoms = new()
+{
+    new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
+};";
+
+    private readonly string example4RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""iconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />
@@ -124,7 +166,7 @@ private List<ButtonGroupActionItem> disabledCustoms = new()
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""iconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 public class ButtonGroupActionItem
 {
     public string? Name { get; set; }
@@ -138,16 +180,13 @@ private List<ButtonGroupActionItem> iconCustoms = new()
     new() { Name = ""Delete"", Icon = BitIconName.Delete }
 };";
 
-    private readonly string example4RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicCustoms"" Vertical
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+    private readonly string example5RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" Vertical />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" Vertical />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" Vertical />";
+    private readonly string example5CsharpCode = @"
+private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicCustoms"" Vertical
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms"" Vertical
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />";
-    private readonly string example4CsharpCode = @"
 public class ButtonGroupActionItem
 {
     public string? Name { get; set; }
@@ -158,82 +197,21 @@ private List<ButtonGroupActionItem> basicCustoms = new()
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 };";
 
-    private readonly string example5RazorCode = @"
-<BitButtonGroup Items=""basicCustoms""
-                OnItemClick=""(ButtonGroupActionItem item) => clickedCustom = item.Name""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<div>Clicked item: <b>@clickedCustom</b></div>
-
-<BitButtonGroup Items=""eventsCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Icon },
-                                         OnClick = { Selector = i => i.Clicked } })"" />
-<div>Click count: <b>@clickCounter</b></div>";
-    private readonly string example5CsharpCode = @"
-public class ButtonGroupActionItem
-{
-    public string? Name { get; set; }
-    public string? Icon { get; set; }
-    public Action<ButtonGroupActionItem>? Clicked { get; set; }
-}
-
-private int clickCounter;
-
-private List<ButtonGroupActionItem> basicCustoms = new()
-{
-    new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
-};
-
-private List<ButtonGroupActionItem> eventsCustoms = new()
-{
-    new() { Name = ""Increase"", Icon = BitIconName.Add },
-    new() { Name = ""Reset"", Icon = BitIconName.Reset },
-    new() { Name = ""Decrease"", Icon = BitIconName.Remove }
-};
-
-protected override void OnInitialized()
-{
-    eventsCustoms[0].Clicked = _ => { clickCounter++; StateHasChanged(); };
-    eventsCustoms[1].Clicked = _ => { clickCounter = 0; StateHasChanged(); };
-    eventsCustoms[2].Clicked = _ => { clickCounter--; StateHasChanged(); };
-}";
-
     private readonly string example6RazorCode = @"
-<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 
-<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 
-<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-
-<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />";
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
     private readonly string example6CsharpCode = @"
+private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+
 public class ButtonGroupActionItem
 {
     public string? Name { get; set; }
@@ -245,38 +223,6 @@ private List<ButtonGroupActionItem> basicCustoms = new()
 };";
 
     private readonly string example7RazorCode = @"
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""basicCustoms""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />";
-    private readonly string example7CsharpCode = @"
-public class ButtonGroupActionItem
-{
-    public string? Name { get; set; }
-}
-
-private List<ButtonGroupActionItem> basicCustoms = new()
-{
-    new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
-};";
-
-    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         padding: 2rem;
@@ -290,15 +236,15 @@ private List<ButtonGroupActionItem> basicCustoms = new()
     }
 </style>
 
-<BitButtonGroup Items=""basicCustoms"" Style=""padding:1rem;background:red""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
-<BitButtonGroup Items=""basicCustoms"" Class=""custom-class""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name } })"" />
+<BitButtonGroup Items=""basicCustoms"" Style=""padding:1rem;background:red"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Items=""basicCustoms"" Class=""custom-class"" NameSelectors=""nameSelector"" />
 
 <BitButtonGroup Items=""styleClassCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
+private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+
 public class ButtonGroupActionItem
 {
     public string? Name { get; set; }
@@ -327,6 +273,48 @@ private List<ButtonGroupActionItem> styleClassCustoms = new()
         Icon = BitIconName.FormatPainter,
     }
 };";
+
+    private readonly string example8RazorCode = @"
+<BitButtonGroup Items=""basicCustoms""
+                NameSelectors=""nameSelector""
+                OnItemClick=""(ButtonGroupActionItem item) => clickedCustom = item.Name"" />
+<div>Clicked item: <b>@clickedCustom</b></div>
+
+<BitButtonGroup Items=""eventsCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         IconName = { Selector = i => i.Icon },
+                                         OnClick = { Selector = i => i.Clicked } })"" />
+<div>Click count: <b>@clickCounter</b></div>";
+    private readonly string example8CsharpCode = @"
+private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+
+public class ButtonGroupActionItem
+{
+    public string? Name { get; set; }
+    public string? Icon { get; set; }
+    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+}
+
+private int clickCounter;
+
+private List<ButtonGroupActionItem> basicCustoms = new()
+{
+    new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
+};
+
+private List<ButtonGroupActionItem> eventsCustoms = new()
+{
+    new() { Name = ""Increase"", Icon = BitIconName.Add },
+    new() { Name = ""Reset"", Icon = BitIconName.Reset },
+    new() { Name = ""Decrease"", Icon = BitIconName.Remove }
+};
+
+protected override void OnInitialized()
+{
+    eventsCustoms[0].Clicked = _ => { clickCounter++; StateHasChanged(); };
+    eventsCustoms[1].Clicked = _ => { clickCounter = 0; StateHasChanged(); };
+    eventsCustoms[2].Clicked = _ => { clickCounter--; StateHasChanged(); };
+}";
 
     private readonly string example9RazorCode = @"
 <BitButtonGroup Dir=""BitDir.Rtl""
