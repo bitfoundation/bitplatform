@@ -56,7 +56,7 @@
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
-    <ItemGroup Condition=" ('$(sample)' == 'Admin' OR '$(sample)' == '') OR ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '')">
+    <ItemGroup Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
