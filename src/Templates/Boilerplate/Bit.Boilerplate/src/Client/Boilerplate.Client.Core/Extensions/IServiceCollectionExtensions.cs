@@ -27,7 +27,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
-        services.TryAddSessioned<HttpClientHandler>();
+        services.TryAddSessioned<HttpMessageHandler, HttpClientHandler>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
