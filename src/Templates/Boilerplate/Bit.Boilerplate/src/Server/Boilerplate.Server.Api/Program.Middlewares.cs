@@ -52,7 +52,7 @@ public static partial class Program
         });
 
         // 0.0.0.0 origins are essential for the proper functioning of BlazorHybrid's WebView, while localhost:4030 is a prerequisite for BlazorWebAssemblyStandalone testing.
-        app.UseCors(options => options.WithOrigins("https://0.0.0.0", "app://0.0.0.0", "http://localhost:4030", "http://localhost:5030")
+        app.UseCors(options => options.WithOrigins("https://0.0.0.0", "app://0.0.0.0", "http://localhost:4030", "http://localhost:5030", "https://use-your-server-url-here.com")
             .AllowAnyHeader().AllowAnyMethod().WithExposedHeaders(HeaderNames.RequestId));
 
         app.UseAuthentication();

@@ -3,7 +3,7 @@ name: Todo Sample CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
 env:
-  API_SERVER_ADDRESS: 'https://todo.bitplatform.dev'
+  SERVER_ADDRESS: 'https://todo.bitplatform.dev'
 
 on:
   workflow_dispatch:
@@ -38,14 +38,14 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --serverUrl ${{ env.API_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install wasm
@@ -70,23 +70,6 @@ jobs:
       with:
         name: server-bundle
         path: ${{env.DOTNET_ROOT}}/server
-
-    - name: Changes for static-todo.bitplatform.dev - Part 2
-      run:  sed -i 's/public static readonly bool PrerenderEnabled = true;/public static readonly bool PrerenderEnabled = false;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
-
-    - name: Configure bswup
-      run: |
-          sed -i 's/self.noPrerenderQuery/\/\/ self.noPrerenderQuery/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.js
-          sed -i 's/self.isPassive = self.disablePassiveFirstBoot = true;/self.isPassive = self.disablePassiveFirstBoot = false;/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.js
-
-    - name: Publish static todo
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true -o ${{env.DOTNET_ROOT}}/static
-
-    - name: Upload static artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: static-bundle
-        path: ${{env.DOTNET_ROOT}}/static
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -152,14 +135,14 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --appCenter --serverUrl ${{ env.API_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Shared\appsettings.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
@@ -217,7 +200,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.API_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -231,7 +214,7 @@ jobs:
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret
@@ -305,14 +288,14 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.API_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
       
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret

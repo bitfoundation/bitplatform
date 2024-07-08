@@ -47,8 +47,7 @@ The following apps are our open-source projects powered by the bit platform show
 1. [bitplatform.dev](https://bitplatform.dev): Pre-rendered SPA with Blazor WebAssembly
 2. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): Pre-rendered PWA with Blazor Auto
 3. [todo.bitplatform.dev](https://todo.bitplatform.dev): Pre-rendered PWA with Blazor WebAssembly
-4. [static-todo.bitplatform.dev](https://static-todo.bitplatform.dev): PWA with Blazor WebAssembly Standalone (Hosted on Cloudflare Pages)
-5. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): PWA with Blazor WebAssembly
+5. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): PWA with Blazor WebAssembly Standalone (Hosted on Cloudflare Pages)
 
 [Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram. 
 

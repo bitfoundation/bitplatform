@@ -3,7 +3,7 @@ name: Admin Sample CD
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
 env:
-  API_SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev'
+  SERVER_ADDRESS: 'https://adminpanel-api.bitplatform.dev'
   APP_SERVICE_NAME: 'bit-adminpanel'
 
 on:
@@ -35,14 +35,14 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --serverUrl ${{ env.API_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Shared/appsettings.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - uses: actions/setup-node@v4
@@ -64,13 +64,24 @@ jobs:
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
     - name: Publish
-      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Api/AdminPanel.Server.Api.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
       with:
         name: server-bundle
         path: ${{env.DOTNET_ROOT}}/server
+
+    - name: Publish adminpanel blazor wasm standalone
+      run: |
+          sed -i 's/adminpanel.bitplatform.dev/adminpanel-api.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/index.html
+          dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true -o ${{env.DOTNET_ROOT}}/static
+
+    - name: Upload static artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: static-bundle
+        path: ${{env.DOTNET_ROOT}}/static
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -136,14 +147,14 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --appCenter --serverUrl ${{ env.API_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json, AdminPanel\src\Shared\appsettings.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
@@ -197,7 +208,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.API_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
 
     - uses: actions/setup-node@v4
       with:
@@ -215,7 +226,7 @@ jobs:
       with:
         files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Shared/appsettings.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret
@@ -269,14 +280,14 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.API_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Shared/appsettings.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret

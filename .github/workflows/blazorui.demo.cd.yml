@@ -1,7 +1,7 @@
 name: Blazor UI Demo CD
 
 env:
-  API_SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
+  SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'bit-components'
 
 on:
@@ -33,7 +33,7 @@ jobs:
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - uses: actions/setup-node@v4
       with:
@@ -110,7 +110,7 @@ jobs:
       with:
         files: 'src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
   
     - name: Generate CSS/JS files
@@ -170,7 +170,7 @@ jobs:
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -217,7 +217,7 @@ jobs:
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - name: Install maui
       run: cd src && dotnet workload install maui
