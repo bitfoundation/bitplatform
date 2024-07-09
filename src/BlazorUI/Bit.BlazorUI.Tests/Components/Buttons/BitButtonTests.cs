@@ -243,7 +243,7 @@ public class BitButtonTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(5, bitButton.ClassList.Length);
+            Assert.AreEqual(4, bitButton.ClassList.Length);
         }
     }
 
@@ -280,7 +280,7 @@ public class BitButtonTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(5, bitButton.ClassList.Length);
+            Assert.AreEqual(4, bitButton.ClassList.Length);
         }
     }
 
