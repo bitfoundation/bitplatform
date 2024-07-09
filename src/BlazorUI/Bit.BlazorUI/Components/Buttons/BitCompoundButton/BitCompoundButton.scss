@@ -199,8 +199,8 @@
     --bit-cmb-minwidth: #{spacing(6)};
     --bit-cmb-minheight: #{spacing(3)};
     --bit-cmb-padding: #{spacing(1.75)} #{spacing(1.25)};
-    --bit-cmb-icn-fontsize: spacing(4.25);
-    --bit-cmb-sct-fontsize: spacing(1.25);
+    --bit-cmb-icn-fontsize: #{spacing(4.25)};
+    --bit-cmb-sct-fontsize: #{spacing(1.25)};
     --bit-cmb-prt-fontsize: #{spacing(1.50)};
 }
 
@@ -208,8 +208,8 @@
     --bit-cmb-minwidth: #{spacing(9)};
     --bit-cmb-minheight: #{spacing(4)};
     --bit-cmb-padding: #{spacing(2.00)} #{spacing(1.50)};
-    --bit-cmb-icn-fontsize: spacing(5.00);
-    --bit-cmb-sct-fontsize: spacing(1.50);
+    --bit-cmb-icn-fontsize: #{spacing(5.00)};
+    --bit-cmb-sct-fontsize: #{spacing(1.50)};
     --bit-cmb-prt-fontsize: #{spacing(1.75)};
 }
 
@@ -217,7 +217,7 @@
     --bit-cmb-minwidth: #{spacing(10)};
     --bit-cmb-minheight: #{spacing(5)};
     --bit-cmb-padding: #{spacing(2.25)} #{spacing(1.75)};
-    --bit-cmb-icn-fontsize: spacing(6.75);
-    --bit-cmb-sct-fontsize: spacing(2.00);
+    --bit-cmb-icn-fontsize: #{spacing(6.75)};
+    --bit-cmb-sct-fontsize: #{spacing(2.00)};
     --bit-cmb-prt-fontsize: #{spacing(2.50)};
 }

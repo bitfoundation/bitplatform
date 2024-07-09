@@ -36,7 +36,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example10RazorCode" Id="example10">
+    <ComponentExampleBox Title="Color" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div>
                 Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
@@ -87,11 +87,25 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>
                 Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
             </div>
+            <br />
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="buttons-container">
+                <BitCompoundButton SecondaryText="This is the secondary text" Style="color:darkblue;font-weight:bold">
+                    Styled Button
+                </BitCompoundButton>
+
+                <BitCompoundButton SecondaryText="This is the secondary text" Variant="BitVariant.Outline" Class="custom-class">
+                    Classed Button
+                </BitCompoundButton>
+            </div>
+            <br /><br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
             <br />
             <div class="buttons-container">
                 <BitCompoundButton SecondaryText="This is the secondary text"
@@ -112,7 +126,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icon" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div>
                 BitCompoundButton has an icon slot that, if specified, renders an icon that can be set at the start or end of component using IconPosition.
@@ -120,20 +134,43 @@
             <br />
             <div class="buttons-container">
                 <BitCompoundButton IconName="@BitIconName.Emoji" SecondaryText="IconPosition Start">
-                    Default (Start)
+                    Start
                 </BitCompoundButton>
-
+                <BitCompoundButton IconName="@BitIconName.Emoji"
+                                   SecondaryText="IconPosition Start"
+                                   Variant="BitVariant.Outline">
+                    Start
+                </BitCompoundButton>
+                <BitCompoundButton IconName="@BitIconName.Emoji"
+                                   SecondaryText="IconPosition Start"
+                                   Variant="BitVariant.Text">
+                    Start
+                </BitCompoundButton>
+            </div>
+            <br />
+            <div class="buttons-container">
+                <BitCompoundButton IconName="@BitIconName.Emoji2"
+                                   IconPosition="BitButtonIconPosition.End"
+                                   SecondaryText="IconPosition End">
+                    End
+                </BitCompoundButton>
                 <BitCompoundButton IconName="@BitIconName.Emoji2"
                                    IconPosition="BitButtonIconPosition.End"
                                    SecondaryText="IconPosition End"
                                    Variant="BitVariant.Outline">
                     End
                 </BitCompoundButton>
+                <BitCompoundButton IconName="@BitIconName.Emoji2"
+                                   IconPosition="BitButtonIconPosition.End"
+                                   SecondaryText="IconPosition End"
+                                   Variant="BitVariant.Text">
+                    End
+                </BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example11RazorCode" Id="example11">
+    <ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div>
                 Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.
@@ -141,25 +178,27 @@
             <br />
             <div class="buttons-container-grid">
                 <div>
-                    <BitCompoundButton Size="BitSize.Small" SecondaryText="This is the secondary text" Variant="BitVariant.Fill">Small</BitCompoundButton>
-                    <BitCompoundButton Size="BitSize.Medium" SecondaryText="This is the secondary text" Variant="BitVariant.Fill">Medium</BitCompoundButton>
-                    <BitCompoundButton Size="BitSize.Large" SecondaryText="This is the secondary text" Variant="BitVariant.Fill">Large</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Fill">Small</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Medium" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Fill">Medium</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Fill">Large</BitCompoundButton>
                 </div>
+                <br />
                 <div>
-                    <BitCompoundButton Size="BitSize.Small" SecondaryText="This is the secondary text" Variant="BitVariant.Outline">Small</BitCompoundButton>
-                    <BitCompoundButton Size="BitSize.Medium" SecondaryText="This is the secondary text" Variant="BitVariant.Outline">Medium</BitCompoundButton>
-                    <BitCompoundButton Size="BitSize.Large" SecondaryText="This is the secondary text" Variant="BitVariant.Outline">Large</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Outline">Small</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Medium" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Outline">Medium</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Outline">Large</BitCompoundButton>
                 </div>
+                <br />
                 <div>
-                    <BitCompoundButton Size="BitSize.Small" SecondaryText="This is the secondary text" Variant="BitVariant.Text">Small</BitCompoundButton>
-                    <BitCompoundButton Size="BitSize.Medium" SecondaryText="This is the secondary text" Variant="BitVariant.Text">Medium</BitCompoundButton>
-                    <BitCompoundButton Size="BitSize.Large" SecondaryText="This is the secondary text" Variant="BitVariant.Text">Large</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Small" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Text">Small</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Medium" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Text">Medium</BitCompoundButton>
+                    <BitCompoundButton Size="BitSize.Large" IconName="@BitIconName.Emoji2" SecondaryText="This is the secondary text" Variant="BitVariant.Text">Large</BitCompoundButton>
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Template" RazorCode="@example9RazorCode" Id="example9">
+    <ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div>
                 Here are some examples of customizing the button content.
@@ -189,7 +228,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div>
                 Managing button click event (OnClick).
@@ -201,7 +240,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Button Type" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div>
                 BitCompoundButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.
@@ -236,7 +275,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div class="buttons-container" dir="rtl">
                 <BitCompoundButton Dir="BitDir.Rtl"
@@ -257,28 +296,3 @@
     </ComponentExampleBox>
 
 </ComponentDemo>
-
-@code {
-    private int clickCounter;
-
-    private bool formIsValidSubmit;
-    private ButtonValidationModel buttonValidationModel = new();
-
-    private async Task HandleValidSubmit()
-    {
-        formIsValidSubmit = true;
-
-        await Task.Delay(2000);
-
-        buttonValidationModel = new();
-
-        formIsValidSubmit = false;
-
-        StateHasChanged();
-    }
-
-    private void HandleInvalidSubmit()
-    {
-        formIsValidSubmit = false;
-    }
-}
