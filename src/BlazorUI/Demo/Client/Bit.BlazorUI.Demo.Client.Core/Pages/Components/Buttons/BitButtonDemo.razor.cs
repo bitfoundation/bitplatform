@@ -82,10 +82,10 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitButtonIconPosition",
-            DefaultValue = "BitButtonIconPosition.Start",
-            Description = "Specifies Icon position which can be rendered either on start or end of the component.",
+            Name = "ReversedIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Specifies the Icon to be positioned at the end of the component.",
             LinkType = LinkType.Link,
             Href = "#button-icon-enum"
         },
@@ -352,27 +352,6 @@ public partial class BitButtonDemo
                     Name= "Reset",
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "button-icon-enum",
-            Name = "BitButtonIconPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Start",
-                    Description="Renders the icon at the start of component.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Renders the icon at the end of component.",
-                    Value="1",
                 }
             ]
         },

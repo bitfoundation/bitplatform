@@ -129,43 +129,19 @@
     <ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div>
-                BitCompoundButton has an icon slot that, if specified, renders an icon that can be set at the start or end of component using IconPosition.
+                BitCompoundButton has an icon slot that, if specified, renders an icon that can be set at the start (default) or reversed positioned at end of component.
             </div>
             <br />
             <div class="buttons-container">
-                <BitCompoundButton IconName="@BitIconName.Emoji" SecondaryText="IconPosition Start">
-                    Start
-                </BitCompoundButton>
-                <BitCompoundButton IconName="@BitIconName.Emoji"
-                                   SecondaryText="IconPosition Start"
-                                   Variant="BitVariant.Outline">
-                    Start
-                </BitCompoundButton>
-                <BitCompoundButton IconName="@BitIconName.Emoji"
-                                   SecondaryText="IconPosition Start"
-                                   Variant="BitVariant.Text">
-                    Start
-                </BitCompoundButton>
+                <BitCompoundButton IconName="@BitIconName.Emoji" SecondaryText="IconPosition Start">Start</BitCompoundButton>
+                <BitCompoundButton IconName="@BitIconName.Emoji" SecondaryText="IconPosition Start" Variant="BitVariant.Outline">Start</BitCompoundButton>
+                <BitCompoundButton IconName="@BitIconName.Emoji" SecondaryText="IconPosition Start" Variant="BitVariant.Text">Start</BitCompoundButton>
             </div>
             <br />
             <div class="buttons-container">
-                <BitCompoundButton IconName="@BitIconName.Emoji2"
-                                   IconPosition="BitButtonIconPosition.End"
-                                   SecondaryText="IconPosition End">
-                    End
-                </BitCompoundButton>
-                <BitCompoundButton IconName="@BitIconName.Emoji2"
-                                   IconPosition="BitButtonIconPosition.End"
-                                   SecondaryText="IconPosition End"
-                                   Variant="BitVariant.Outline">
-                    End
-                </BitCompoundButton>
-                <BitCompoundButton IconName="@BitIconName.Emoji2"
-                                   IconPosition="BitButtonIconPosition.End"
-                                   SecondaryText="IconPosition End"
-                                   Variant="BitVariant.Text">
-                    End
-                </BitCompoundButton>
+                <BitCompoundButton IconName="@BitIconName.Emoji2" ReversedIcon SecondaryText="IconPosition End">End</BitCompoundButton>
+                <BitCompoundButton IconName="@BitIconName.Emoji2" ReversedIcon SecondaryText="IconPosition End" Variant="BitVariant.Outline">End</BitCompoundButton>
+                <BitCompoundButton IconName="@BitIconName.Emoji2" ReversedIcon SecondaryText="IconPosition End" Variant="BitVariant.Text">End</BitCompoundButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -278,17 +254,11 @@
     <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div class="buttons-container" dir="rtl">
-                <BitCompoundButton Dir="BitDir.Rtl"
-                                   IconName="@BitIconName.Emoji"
-                                   SecondaryText="محل قرار گیری نماد در ابتدا">
+                <BitCompoundButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" SecondaryText="محل قرار گیری آیکون در ابتدا">
                     پیش فرض (ابتدا)
                 </BitCompoundButton>
 
-                <BitCompoundButton Dir="BitDir.Rtl"
-                                   IconName="@BitIconName.Emoji2"
-                                   Variant="BitVariant.Outline"
-                                   IconPosition="BitButtonIconPosition.End"
-                                   SecondaryText="محل قرار گیری نماد در انتها">
+                <BitCompoundButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" ReversedIcon SecondaryText="محل قرار گیری آیکون در انتها">
                     انتها
                 </BitCompoundButton>
             </div>

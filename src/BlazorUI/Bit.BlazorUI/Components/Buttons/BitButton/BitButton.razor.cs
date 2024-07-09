@@ -6,8 +6,8 @@ public partial class BitButton : BitComponentBase
 {
     private BitSize? size;
     private BitColor? color;
+    private bool reversedIcon;
     private BitVariant? variant;
-    private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -82,22 +82,6 @@ public partial class BitButton : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Specifies Icon position which can be rendered either at the start or end of the component.
-    /// </summary>
-    [Parameter]
-    public BitButtonIconPosition? IconPosition
-    {
-        get => iconPosition;
-        set
-        {
-            if (iconPosition == value) return;
-
-            iconPosition = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Determine whether the button is in loading mode or not.
     /// </summary>        
     [Parameter] public bool IsLoading { get; set; }
@@ -121,6 +105,23 @@ public partial class BitButton : BitComponentBase
     /// Callback for when the button clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Specifies the Icon to be positioned at the end of the component.
+    /// </summary>
+    [Parameter]
+    public bool ReversedIcon
+    {
+        get => reversedIcon;
+        set
+        {
+            if (reversedIcon == value) return;
+
+            reversedIcon = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The size of button, Possible values: Small | Medium | Large
@@ -207,12 +208,7 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-md"
         });
 
-        ClassBuilder.Register(() => IconPosition switch
-        {
-            BitButtonIconPosition.Start => "bit-btn-srt",
-            BitButtonIconPosition.End => "bit-btn-end",
-            _ => "bit-btn-srt"
-        });
+        ClassBuilder.Register(() => ReversedIcon ? "bit-btn-rvi" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

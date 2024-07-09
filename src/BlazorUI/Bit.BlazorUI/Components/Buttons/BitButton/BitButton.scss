@@ -4,6 +4,7 @@
     cursor: pointer;
     gap: spacing(0.5);
     align-items: center;
+    flex-direction: row;
     display: inline-flex;
     text-decoration: none;
     box-sizing: border-box;
@@ -34,6 +35,10 @@
             transform: rotate(360deg);
         }
     }
+}
+
+.bit-btn-rvi {
+    flex-direction: row-reverse;
 }
 
 .bit-btn-spn {
@@ -259,12 +264,4 @@
 
 .bit-btn-btm {
     flex-direction: column;
-}
-
-.bit-btn-srt {
-    flex-direction: row;
-}
-
-.bit-btn-end {
-    flex-direction: row-reverse;
 }
