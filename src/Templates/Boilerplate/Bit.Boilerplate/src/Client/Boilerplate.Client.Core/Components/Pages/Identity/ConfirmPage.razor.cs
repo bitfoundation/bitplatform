@@ -1,5 +1,5 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 

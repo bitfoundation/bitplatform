@@ -4,7 +4,6 @@ using Boilerplate.Client.Core.Data;
 using Microsoft.EntityFrameworkCore;
 //#endif
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -29,16 +28,12 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddSessioned<HttpClientHandler>();
-        services.TryAddTransient<HtmlRenderer>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.TryAddSessioned<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
-
-        services.TryAddTransient(sp => AppJsonContext.Default.Options);
-        services.AddTypedHttpClients();
 
         services.AddBitButilServices();
         services.AddBitBlazorUIServices();
@@ -61,10 +56,15 @@ public static class IServiceCollectionExtensions
                 // .UseModel(OfflineDbContextModel.Instance)
                 .UseSqlite($"Data Source={dbPath}");
 
-            options.EnableSensitiveDataLogging(BuildConfiguration.IsDebug())
-                    .EnableDetailedErrors(BuildConfiguration.IsDebug());
+            options.EnableSensitiveDataLogging(AppEnvironment.IsDev())
+                    .EnableDetailedErrors(AppEnvironment.IsDev());
         });
         //#endif
+
+        System.Reflection.Assembly.Load("Boilerplate.Shared")!
+            .GetType("Microsoft.Extensions.DependencyInjection.IHttpClientServiceCollectionExtensions")!
+            .GetMethod("AddTypedHttpClients")!
+            .Invoke(null, [services]);
 
         services.AddSharedProjectServices();
         return services;

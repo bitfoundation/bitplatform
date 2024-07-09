@@ -13,7 +13,7 @@ public partial class Footer
 
     protected override async Task OnInitAsync()
     {
-        if (AppRenderMode.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled)
         {
             cultures = CultureInfoManager.SupportedCultures
                               .Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })
@@ -42,7 +42,7 @@ public partial class Footer
                 Name = ".AspNetCore.Culture",
                 Value = Uri.EscapeDataString($"c={SelectedCulture}|uic={SelectedCulture}"),
                 MaxAge = 30 * 24 * 3600,
-                Secure = BuildConfiguration.IsRelease()
+                Secure = AppEnvironment.IsDev() is false
             });
         }
 

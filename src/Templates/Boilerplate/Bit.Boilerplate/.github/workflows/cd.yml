@@ -3,7 +3,7 @@ name: Boilerplate CD
 # https://bitplatform.dev/templates/dev-ops
 
 env:
-  API_SERVER_ADDRESS: 'https://use-your-server-url-here.com/'
+  SERVER_ADDRESS: 'https://use-your-server-url-here.com/'
   APP_SERVICE_NAME: 'app-service-bp-test'
   IOS_CODE_SIGN_PROVISION: 'Boilerplate'
 
@@ -41,9 +41,9 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools wasm-experimental
@@ -52,17 +52,17 @@ jobs:
       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+      run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
     - name: Build migrations bundle
       run: |
-        cd src/Boilerplate.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj
+        cd src/Server/Boilerplate.Server.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj
 
     - name: Upload ef migrations bundle
       uses: actions/upload-artifact@v4
       with:
         name: migrations-bundle
-        path: src/Boilerplate.Server/efbundle
+        path: src/Server/Boilerplate.Server.Api/efbundle
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
@@ -146,9 +146,9 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src\Client\Boilerplate.Client.Core\appsettings.json'
+        files: 'src\Client\Boilerplate.Client.Core\appsettings.json, src\Shared\appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
   
     - name: Generate CSS/JS files
@@ -207,9 +207,9 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -259,9 +259,9 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - name: Install maui
       run: cd src && dotnet workload install maui

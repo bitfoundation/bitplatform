@@ -8,7 +8,7 @@ variables:
   AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   DataProtectionCertificatePassword: $(API_DATA_PROTECTION_CERTIFICATE_PASSWORD)
-  ApiServerAddress: 'https://use-your-server-url-here.com/'
+  ServerAddress: 'https://use-your-server-url-here.com/'
   WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
 
 jobs:
@@ -50,7 +50,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -62,7 +62,7 @@ jobs:
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -c Release --self-contained -r linux-x64 -o server'
+      script: 'dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload server artifact
@@ -75,12 +75,12 @@ jobs:
     displayName: 'Build migrations bundle'
     inputs:
       targetType: 'inline'
-      script: 'cd src/Boilerplate.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj'
+      script: 'cd src/Server/Boilerplate.Server.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj'
   
   - task: PublishPipelineArtifact@1
     displayName: Upload ef migrations bundle
     inputs:
-      targetPath: 'src/Boilerplate.Server/efbundle'
+      targetPath: 'src/Boilerplate.Server.Api/efbundle'
       artifact: 'migrations-bundle'
       publishLocation: 'pipeline'
 
@@ -168,7 +168,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -250,7 +250,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
   
   - script: |
       dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release

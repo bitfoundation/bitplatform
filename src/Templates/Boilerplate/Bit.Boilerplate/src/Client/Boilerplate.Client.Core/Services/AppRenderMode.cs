@@ -13,7 +13,7 @@ public static class AppRenderMode
     public static IComponentRenderMode NoPrerenderBlazorWebAssembly => new InteractiveWebAssemblyRenderMode(prerender: false);
 
     public static IComponentRenderMode Current =>
-        BuildConfiguration.IsDebug() 
+        AppEnvironment.IsDev() 
         ? BlazorServer // For better development experience.
         : Auto; // For better production experience.
 
@@ -23,16 +23,6 @@ public static class AppRenderMode
     public static bool PwaEnabled { get; } =
 #if PwaEnabled
         true;
-#else
-    false;
-#endif
-
-    /// <summary>
-    /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the MultilingualEnabled flag.
-    /// </summary>
-    public static bool MultilingualEnabled { get; } =
-#if MultilingualEnabled
-    true;
 #else
     false;
 #endif

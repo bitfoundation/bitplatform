@@ -13,9 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{248D8229-BABD-4F0A-A9C6-0417B464507B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Shared", "src\Boilerplate.Shared\Boilerplate.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Shared", "src\Shared\Boilerplate.Shared.csproj", "{26430D8C-32CB-4142-AC1A-33486A58DA01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server", "src\Boilerplate.Server\Boilerplate.Server.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server.Web", "src\Server\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj", "{8CC3E410-B716-4F4D-89C7-3392CA624439}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Core", "src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj", "{FC60C68D-8E8D-494B-8D60-0C8D83A472E7}"
 EndProject
@@ -43,9 +43,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 #endif
 #if (windows == true)
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Boilerplate.Client.Windows", "src\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj", "{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Windows", "src\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj", "{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}"
 EndProject
 #endif
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server.Api", "src\Server\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj", "{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{723683EA-193C-45FD-A64D-7830A2867E4F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{EAB56593-7B10-4CC4-A3B8-E62ACDD1E6DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,11 +86,18 @@ Global
 		{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}.Release|Any CPU.Build.0 = Release|Any CPU
 #endif
+		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{26430D8C-32CB-4142-AC1A-33486A58DA01} = {EAB56593-7B10-4CC4-A3B8-E62ACDD1E6DD}
+		{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A} = {723683EA-193C-45FD-A64D-7830A2867E4F}
+		{8CC3E410-B716-4F4D-89C7-3392CA624439} = {723683EA-193C-45FD-A64D-7830A2867E4F}
 		{FC60C68D-8E8D-494B-8D60-0C8D83A472E7} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 		{13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 		{22816913-64D5-4AE8-9B34-6F188B71FAD1} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
@@ -96,12 +109,12 @@ Global
 		{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989} = {3E577755-186F-4E63-8153-B8DE890015C9}
 #endif
 #if (windows == true)
-        {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
+		{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
 #endif
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_NeutralResourcesLanguage = en-US
-		RESX_CodeReferences = {"Items":[{"Expression":"\\W($File.$Key)\\W","Extensions":".cs,.xaml,.cshtml,.razor","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"\\W($File.$Key)\\W","Extensions":".vbhtml","IsCaseSensitive":false,"SingleLineComment":null},{"Expression":"ResourceManager.GetString\\(\"($Key)\"\\)","Extensions":".cs","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"typeof\\((\\w+\\.)*($File)\\).+\"($Key)\"|\"($Key)\".+typeof\\((\\w+\\.)*($File)\\)","Extensions":".cs","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"\\W($Key)\\W","Extensions":".vb","IsCaseSensitive":false,"SingleLineComment":"'"},{"Expression":"\\W($File::$Key)\\W","Extensions":".cpp,.c,.hxx,.h","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"&lt;%\\$\\s+Resources:\\s*($File)\\s*,\\s*($Key)\\s*%&gt;","Extensions":".aspx,.ascx,.master","IsCaseSensitive":true,"SingleLineComment":null},{"Expression":"StringResourceKey\\.($Key)","Extensions":".cs","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"\\.($Key)","Extensions":".ts,.html","IsCaseSensitive":true,"SingleLineComment":"\/\/"}]}
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
+		RESX_CodeReferences = {"Items":[{"Expression":"\\W($File.$Key)\\W","Extensions":".cs,.xaml,.cshtml,.razor","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"\\W($File.$Key)\\W","Extensions":".vbhtml","IsCaseSensitive":false,"SingleLineComment":null},{"Expression":"ResourceManager.GetString\\(\"($Key)\"\\)","Extensions":".cs","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"typeof\\((\\w+\\.)*($File)\\).+\"($Key)\"|\"($Key)\".+typeof\\((\\w+\\.)*($File)\\)","Extensions":".cs","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"\\W($Key)\\W","Extensions":".vb","IsCaseSensitive":false,"SingleLineComment":"'"},{"Expression":"\\W($File::$Key)\\W","Extensions":".cpp,.c,.hxx,.h","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"&lt;%\\$\\s+Resources:\\s*($File)\\s*,\\s*($Key)\\s*%&gt;","Extensions":".aspx,.ascx,.master","IsCaseSensitive":true,"SingleLineComment":null},{"Expression":"StringResourceKey\\.($Key)","Extensions":".cs","IsCaseSensitive":true,"SingleLineComment":"\/\/"},{"Expression":"\\.($Key)","Extensions":".ts,.html","IsCaseSensitive":true,"SingleLineComment":"\/\/"}]}
+		RESX_NeutralResourcesLanguage = en-US
 	EndGlobalSection
 EndGlobal

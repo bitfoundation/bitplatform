@@ -1,5 +1,5 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
@@ -44,9 +44,9 @@ public partial class UserDataSection
 
         removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
 
-        var apiUri = Configuration.GetApiServerAddress();
-        profileImageUrl = $"{apiUri}/api/Attachment/GetProfileImage?access_token={access_token}";
-        profileImageUploadUrl = $"{apiUri}/api/Attachment/UploadProfileImage?access_token={access_token}";
+        var serverAddress = Configuration.GetServerAddress();
+        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
+        profileImageUploadUrl = $"{serverAddress}/api/Attachment/UploadProfileImage?access_token={access_token}";
 
         await base.OnInitAsync();
     }

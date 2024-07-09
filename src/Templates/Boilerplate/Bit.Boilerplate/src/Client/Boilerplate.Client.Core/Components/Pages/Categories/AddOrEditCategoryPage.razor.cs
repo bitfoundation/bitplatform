@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Controllers.Categories;
+﻿using Boilerplate.Shared.Controllers.Categories;
 using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Categories;

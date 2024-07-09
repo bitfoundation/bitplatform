@@ -32,29 +32,24 @@ jobs:
     - name: Release build todo sample + sqlite database
       run: |
         dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
-        dotnet new bit-bp --name TodoBPSqlite --database sqlite --sample todo --pipeline none --serverUrl todo.bitplatform.dev
+        dotnet new bit-bp --name TodoBPSqlite --database Sqlite --sample Todo --pipeline None --serverUrl todo.bitplatform.dev
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-        cd TodoBPSqlite/src/TodoBPSqlite.Server/
+        cd TodoBPSqlite/src/Server/TodoBPSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
-        cd ../../../
+        cd ../../../../
         dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
         dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Web/TodoBPSqlite.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true
 
     - name: Release build empty sample + offline db + Win exe + No reCaptcha
       run: |
-        dotnet new bit-bp --name EmptyBP --database other --sample none --pipeline azure --offlineDb --windows --captcha none
+        dotnet new bit-bp --name EmptyBP --database Other --sample None --pipeline Azure --offlineDb --windows --captcha None
         dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false
-
-    - name: Release build empty sample without api
-      run: |
-        dotnet new bit-bp --name ApiFalse --database other --sample none --pipeline azure --api false
-        dotnet build ApiFalse/ApiFalse.sln -c Release -p:RunAOTCompilation=false
 
     - name: Release build admin panel sample + PostgreSQL database
       run: |
-        dotnet new bit-bp --name AdminBPSqlServer --database PostgreSQL --sample admin --pipeline github --serverUrl adminpanel.bitplatform.dev --appInsights --appCenter
+        dotnet new bit-bp --name AdminBPSqlServer --database PostgreSQL --sample Admin --pipeline GitHub --serverUrl adminpanel.bitplatform.dev --appInsights --appCenter
         dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
 
     - name: Run BeforeBuildTasks

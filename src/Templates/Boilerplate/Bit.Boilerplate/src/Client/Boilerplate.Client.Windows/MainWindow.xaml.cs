@@ -11,7 +11,7 @@ public partial class MainWindow
         services.ConfigureServices();
         InitializeComponent();
         BlazorWebView.Services = services.BuildServiceProvider();
-        if (AppRenderMode.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled)
         {
             BlazorWebView.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(App.Current.Properties["Culture"]?.ToString() ?? CultureInfo.CurrentUICulture.Name);
         }
@@ -24,7 +24,7 @@ public partial class MainWindow
         {
             await BlazorWebView.WebView.EnsureCoreWebView2Async();
             var settings = BlazorWebView.WebView.CoreWebView2.Settings;
-            if (BuildConfiguration.IsRelease())
+            if (AppEnvironment.IsDev() is false)
             {
                 settings.IsZoomControlEnabled = false;
                 settings.AreBrowserAcceleratorKeysEnabled = false;

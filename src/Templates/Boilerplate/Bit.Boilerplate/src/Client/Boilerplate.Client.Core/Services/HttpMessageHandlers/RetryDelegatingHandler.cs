@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Boilerplate.Client.Core.Controllers;
+using Boilerplate.Shared.Controllers;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 

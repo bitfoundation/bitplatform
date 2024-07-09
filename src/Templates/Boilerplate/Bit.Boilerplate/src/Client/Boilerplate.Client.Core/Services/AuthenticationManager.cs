@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -114,7 +114,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 Value = response.AccessToken,
                 MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
                 SameSite = SameSite.Strict,
-                Secure = BuildConfiguration.IsRelease()
+                Secure = AppEnvironment.IsDev() is false
             });
         }
     }

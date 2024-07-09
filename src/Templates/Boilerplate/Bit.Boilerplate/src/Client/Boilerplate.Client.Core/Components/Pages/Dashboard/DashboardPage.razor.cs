@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
+﻿//+:cnd:noEmit
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 
@@ -15,7 +16,14 @@ public partial class DashboardPage
         {
             if (OperatingSystem.IsBrowser())
             {
-                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm"]);
+                await lazyAssemblyLoader.LoadAssembliesAsync([
+                    //#if (sample == "Admin" && offlineDb == false)
+                    "System.Private.Xml.wasm", "System.Data.Common.wasm",
+                    //#endif
+                    //#if (sample == "Admin")
+                    "Newtonsoft.Json.wasm"]
+                    //#endif
+                    );
             }
         }
         finally

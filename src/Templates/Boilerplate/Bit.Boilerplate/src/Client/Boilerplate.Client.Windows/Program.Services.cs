@@ -16,19 +16,19 @@ public static partial class Program
         var configuration = configurationBuilder.Build();
         services.TryAddTransient<IConfiguration>(sp => configuration);
 
-        Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
+        Uri.TryCreate(configuration.GetServerAddress(), UriKind.Absolute, out var serverAddress);
         services.TryAddSingleton(sp =>
         {
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
-                BaseAddress = apiServerAddress
+                BaseAddress = serverAddress
             };
             return httpClient;
         });
 
         services.AddWpfBlazorWebView();
-        if (BuildConfiguration.IsDebug())
+        if (AppEnvironment.IsDev())
         {
             services.AddBlazorWebViewDeveloperTools();
         }
@@ -43,7 +43,7 @@ public static partial class Program
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
             loggingBuilder.AddEventLog();
             loggingBuilder.AddEventSourceLogger();
-            if (BuildConfiguration.IsDebug())
+            if (AppEnvironment.IsDev())
             {
                 loggingBuilder.AddDebug();
             }
