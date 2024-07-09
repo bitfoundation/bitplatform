@@ -4,7 +4,7 @@ using System.Web;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Boilerplate.Client.Core.Services;
@@ -63,6 +63,15 @@ public static partial class Program
                     };
                 }
             }
+        });
+
+        // https://yurl.chayev.com/
+        app.UseStaticFiles(new StaticFileOptions()
+        {
+            FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, @".well-known")),
+            RequestPath = new PathString("/.well-known"),
+            DefaultContentType = "application/json",
+            ServeUnknownFileTypes = true
         });
 
         app.UseCors();

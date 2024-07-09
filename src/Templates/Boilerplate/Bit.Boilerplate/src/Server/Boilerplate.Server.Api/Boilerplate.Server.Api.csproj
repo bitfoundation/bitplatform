@@ -83,10 +83,6 @@
         </Content>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="App_Data\" />
-    </ItemGroup>
-
     <!--
     https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     https://learn.microsoft.com/en-us/visualstudio/containers/container-msbuild-properties
