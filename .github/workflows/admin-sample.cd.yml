@@ -4,7 +4,7 @@ name: Admin Sample CD
 
 env:
   API_SERVER_ADDRESS: 'https://adminpanel-api.bitplatform.dev'
-  WEB_SERVER_ADDRESS: 'https://adminpanel-api.bitplatform.dev'
+  WEB_SERVER_ADDRESS: 'https://adminpanel.bitplatform.dev'
   APP_SERVICE_NAME: 'bit-adminpanel'
 
 on:
