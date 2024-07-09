@@ -6,8 +6,8 @@ public partial class BitCompoundButton : BitComponentBase
 {
     private BitSize? size;
     private BitColor? color;
+    private bool reversedIcon;
     private BitVariant? variant;
-    private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
@@ -77,17 +77,17 @@ public partial class BitCompoundButton : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Specifies Icon position which can be rendered either at the start or end of the component.
+    /// Specifies the Icon to be positioned at the end of the component.
     /// </summary>
     [Parameter]
-    public BitButtonIconPosition? IconPosition
+    public bool ReversedIcon
     {
-        get => iconPosition;
+        get => reversedIcon;
         set
         {
-            if (iconPosition == value) return;
+            if (reversedIcon == value) return;
 
-            iconPosition = value;
+            reversedIcon = value;
 
             ClassBuilder.Reset();
         }
@@ -198,12 +198,7 @@ public partial class BitCompoundButton : BitComponentBase
             _ => "bit-cmb-md"
         });
 
-        ClassBuilder.Register(() => IconPosition switch
-        {
-            BitButtonIconPosition.Start => "bit-cmb-srt",
-            BitButtonIconPosition.End => "bit-cmb-end",
-            _ => "bit-cmb-srt"
-        });
+        ClassBuilder.Register(() => ReversedIcon ? "bit-cmb-rvi" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

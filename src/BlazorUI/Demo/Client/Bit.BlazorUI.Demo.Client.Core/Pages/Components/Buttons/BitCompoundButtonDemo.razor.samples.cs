@@ -97,38 +97,13 @@ public partial class BitCompoundButtonDemo
 </BitCompoundButton>";
 
     private readonly string example5RazorCode = @"
-<BitCompoundButton IconName=""@BitIconName.Emoji"" SecondaryText=""IconPosition Start"">
-    Start
-</BitCompoundButton>
-<BitCompoundButton IconName=""@BitIconName.Emoji""
-                   SecondaryText=""IconPosition Start""
-                   Variant=""BitVariant.Outline"">
-    Start
-</BitCompoundButton>
-<BitCompoundButton IconName=""@BitIconName.Emoji""
-                   SecondaryText=""IconPosition Start""
-                   Variant=""BitVariant.Text"">
-    Start
-</BitCompoundButton>
+<BitCompoundButton IconName=""@BitIconName.Emoji"" SecondaryText=""IconPosition Start"">Start</BitCompoundButton>
+<BitCompoundButton IconName=""@BitIconName.Emoji"" SecondaryText=""IconPosition Start"" Variant=""BitVariant.Outline"">Start</BitCompoundButton>
+<BitCompoundButton IconName=""@BitIconName.Emoji"" SecondaryText=""IconPosition Start"" Variant=""BitVariant.Text"">Start</BitCompoundButton>
 
-
-<BitCompoundButton IconName=""@BitIconName.Emoji2""
-                   IconPosition=""BitButtonIconPosition.End""
-                   SecondaryText=""IconPosition End"">
-    End
-</BitCompoundButton>
-<BitCompoundButton IconName=""@BitIconName.Emoji2""
-                   IconPosition=""BitButtonIconPosition.End""
-                   SecondaryText=""IconPosition End""
-                   Variant=""BitVariant.Outline"">
-    End
-</BitCompoundButton>
-<BitCompoundButton IconName=""@BitIconName.Emoji2""
-                   IconPosition=""BitButtonIconPosition.End""
-                   SecondaryText=""IconPosition End""
-                   Variant=""BitVariant.Text"">
-    End
-</BitCompoundButton>";
+<BitCompoundButton IconName=""@BitIconName.Emoji2"" ReversedIcon SecondaryText=""IconPosition End"">End</BitCompoundButton>
+<BitCompoundButton IconName=""@BitIconName.Emoji2"" ReversedIcon SecondaryText=""IconPosition End"" Variant=""BitVariant.Outline"">End</BitCompoundButton>
+<BitCompoundButton IconName=""@BitIconName.Emoji2"" ReversedIcon SecondaryText=""IconPosition End"" Variant=""BitVariant.Text"">End</BitCompoundButton>";
 
     private readonly string example6RazorCode = @"
 <BitCompoundButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" SecondaryText=""This is the secondary text"" Variant=""BitVariant.Fill"">Small</BitCompoundButton>
@@ -206,17 +181,11 @@ private async Task HandleValidSubmit()
 }";
 
     private readonly string example10RazorCode = @"
-<BitCompoundButton Dir=""BitDir.Rtl"" 
-                   IconName=""@BitIconName.Emoji"" 
-                   SecondaryText=""محل قرار گیری نماد در ابتدا"">
+<BitCompoundButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" SecondaryText=""محل قرار گیری آیکون در ابتدا"">
     پیش فرض (ابتدا)
 </BitCompoundButton>
 
-<BitCompoundButton Dir=""BitDir.Rtl""
-                   IconName=""@BitIconName.Emoji2""
-                   Variant=""BitVariant.Outline""
-                   IconPosition=""BitButtonIconPosition.End""
-                   SecondaryText=""محل قرار گیری نماد در انتها"">
+<BitCompoundButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"" ReversedIcon SecondaryText=""محل قرار گیری آیکون در انتها"">
     انتها
 </BitCompoundButton>";
 }
