@@ -221,11 +221,40 @@
                 ]
             },
             "replaces": "com.bitplatform.template"
+        },
+        "serverWebPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 5000,
+                "high": 5000
+            },
+            "replaces": "5030"
+        },
+        "serveApiPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 5001,
+                "high": 5300
+            },
+            "replaces": "5031"
+        },
+        "clientWebPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 4000,
+                "high": 4300
+            },
+            "replaces": "4030"
         }
     },
     "postActions": [],
     "primaryOutputs": [
-        { "path": "Boilerplate.sln" }
+        {
+            "path": "Boilerplate.sln"
+        }
     ],
     "sources": [
         {
