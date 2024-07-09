@@ -24,8 +24,8 @@ public partial class BitLinkDemo
         new()
         {
             Name = "Href",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "URL the link points to.",
         },
         new()
@@ -40,6 +40,51 @@ public partial class BitLinkDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "If Href provided, specifies how to open the link.",
+            LinkType = LinkType.Link,
+            Href = "#link-target-enum",
+        }
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "link-target-enum",
+            Name = "BitLinkTarget",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Self",
+                    Description="The current browsing context. (Default)",
+                    Value="_self",
+                },
+                new()
+                {
+                    Name= "Blank",
+                    Description="Usually a new tab, but users can configure browsers to open a new window instead.",
+                    Value="_blank",
+                },
+                new()
+                {
+                    Name= "Parent",
+                    Description="The parent browsing context of the current one. If no parent, behaves as _self.",
+                    Value="_parent",
+                },
+                new()
+                {
+                    Name= "Top",
+                    Description="The topmost browsing context. To be specific, this means the 'highest' context that's an ancestor of the current one. If no ancestors, behaves as _self.",
+                    Value="_top",
+                },
+                new()
+                {
+                    Name= "UnfencedTop",
+                    Description="Allows embedded fenced frames to navigate the top-level frame.",
+                    Value="_unfencedTop",
+                }
+            ]
         }
     ];
 
