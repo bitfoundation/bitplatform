@@ -32,7 +32,7 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
         }
         catch (Exception ex)
         {
-            if (AppEnvironment.IsDevelopment())
+            if (AppEnvironment.IsDev())
             {
                 Console.WriteLine(ex); // since we do not have access to any logger at this point!
             }

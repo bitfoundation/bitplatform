@@ -24,7 +24,7 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
     protected virtual void Handle(Exception exception, Dictionary<string, object> parameters)
     {
-        var isDebug = AppEnvironment.IsDevelopment();
+        var isDebug = AppEnvironment.IsDev();
 
         string exceptionMessage = (exception as KnownException)?.Message ??
             (isDebug ? exception.ToString() : Localizer[nameof(AppStrings.UnknownException)]);

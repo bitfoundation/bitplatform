@@ -42,7 +42,7 @@ public partial class Footer
                 Name = ".AspNetCore.Culture",
                 Value = Uri.EscapeDataString($"c={SelectedCulture}|uic={SelectedCulture}"),
                 MaxAge = 30 * 24 * 3600,
-                Secure = AppEnvironment.IsDevelopment() is false
+                Secure = AppEnvironment.IsDev() is false
             });
         }
 

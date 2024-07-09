@@ -11,7 +11,7 @@ public static class IConfigurationBuilderExtensions
         var assembly = Assembly.Load("Boilerplate.Client.Core");
         builder.AddJsonStream(assembly.GetManifestResourceStream("Boilerplate.Client.Core.appsettings.json")!);
 
-        var settings = assembly.GetManifestResourceStream($"Boilerplate.Client.Core.appsettings.{AppEnvironment.Name}.json");
+        var settings = assembly.GetManifestResourceStream($"Boilerplate.Client.Core.appsettings.{AppEnvironment.Current}.json");
         if (settings is not null)
         {
             builder.AddJsonStream(settings);

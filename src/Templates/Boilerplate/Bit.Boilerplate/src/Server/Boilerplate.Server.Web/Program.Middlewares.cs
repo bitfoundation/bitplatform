@@ -65,14 +65,17 @@ public static partial class Program
             }
         });
 
-        // https://yurl.chayev.com/
-        app.UseStaticFiles(new StaticFileOptions()
+        if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
         {
-            FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, @".well-known")),
-            RequestPath = new PathString("/.well-known"),
-            DefaultContentType = "application/json",
-            ServeUnknownFileTypes = true
-        });
+            // https://yurl.chayev.com/
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, @".well-known")),
+                RequestPath = new PathString("/.well-known"),
+                DefaultContentType = "application/json",
+                ServeUnknownFileTypes = true
+            });
+        }
 
         app.UseCors();
 

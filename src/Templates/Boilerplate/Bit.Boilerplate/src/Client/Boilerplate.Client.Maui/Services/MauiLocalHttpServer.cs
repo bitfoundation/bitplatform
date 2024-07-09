@@ -30,7 +30,7 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
         {
             ApplicationName = "LocalHttpServer",
             ContentRootPath = Directory.GetCurrentDirectory(),
-            EnvironmentName = AppEnvironment.Name,
+            EnvironmentName = AppEnvironment.Current,
             WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot")
         });
 

@@ -24,7 +24,7 @@ public static partial class MauiProgram
 
         services.AddMauiBlazorWebView();
 
-        if (AppEnvironment.IsDevelopment())
+        if (AppEnvironment.IsDev())
         {
             services.AddBlazorWebViewDeveloperTools();
         }
@@ -43,7 +43,7 @@ public static partial class MauiProgram
 
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
-        if (AppEnvironment.IsDevelopment())
+        if (AppEnvironment.IsDev())
         {
             builder.Logging.AddDebug();
         }

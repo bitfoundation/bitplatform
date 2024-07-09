@@ -11,32 +11,41 @@ namespace Boilerplate.Shared.Services;
 /// </summary>
 public static class AppEnvironment
 {
-    public static string Name { get; set; } =
-#if Development         // dotnet publish -c Debug
-        "Development";
-#elif Staging           // dotnet publish -c Release -p:Environment=Staging
-        "Staging";
-#else                   // dotnet publish -c Release
-        "Production";
+    const string DEV = "Development";
+    const string STAGING = "Staging";
+    const string PROD = "Production";
+
+    public static string Current { get; private set; } =
+#if Development     // dotnet publish -c Debug
+        DEV;
+#elif Staging       // dotnet publish -c Release -p:Environment=Staging
+        STAGING;
+#else               // dotnet publish -c Release
+        PROD;
 #endif
 
-    public static bool IsDevelopment()
+    public static bool IsDev()
     {
-        return Name == "Development";
+        return Is(DEV);
     }
 
-    public static bool IsProduction()
+    public static bool IsProd()
     {
-        return Name == "Production";
+        return Is(PROD);
     }
 
     public static bool IsStaging()
     {
-        return Name == "Staging";
+        return Is(STAGING);
     }
 
-    public static bool IsEnvironment(string name)
+    public static bool Is(string name)
     {
-        return Name == name;
+        return Current == name;
+    }
+
+    public static void Set(string name)
+    {
+        Current = name;
     }
 }

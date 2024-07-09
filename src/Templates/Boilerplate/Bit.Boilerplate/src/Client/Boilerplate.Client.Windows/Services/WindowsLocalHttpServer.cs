@@ -29,7 +29,7 @@ public partial class WindowsLocalHttpServer(IServiceCollection services) : ILoca
         {
             ApplicationName = "LocalHttpServer",
             ContentRootPath = Directory.GetCurrentDirectory(),
-            EnvironmentName = AppEnvironment.Name,
+            EnvironmentName = AppEnvironment.Current,
             WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot")
         });
 
