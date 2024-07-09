@@ -268,7 +268,7 @@ public static partial class Program
                 OnMessageReceived = async context =>
                 {
                     // The server accepts the access_token from either the authorization header, the cookie, or the request URL query string
-                    context.Token ??= context.Request.Cookies["access_token"] ?? context.Request.Query["access_token"];
+                    context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
                 }
             };
         });
