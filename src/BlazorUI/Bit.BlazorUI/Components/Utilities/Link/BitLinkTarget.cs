@@ -1,4 +1,5 @@
 ﻿namespace Bit.BlazorUI;
+
 public class BitLinkTarget
 {
     /// <summary>
