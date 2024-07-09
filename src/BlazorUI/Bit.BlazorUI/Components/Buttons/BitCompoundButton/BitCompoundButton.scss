@@ -5,6 +5,7 @@
     text-align: start;
     gap: spacing(1.5);
     position: relative;
+    flex-direction: row;
     display: inline-flex;
     text-decoration: none;
     box-sizing: border-box;
@@ -46,11 +47,7 @@
     font-size: var(--bit-cmb-icn-fontsize);
 }
 
-.bit-cmb-srt {
-    flex-direction: row;
-}
-
-.bit-cmb-end {
+.bit-cmb-rvi {
     flex-direction: row-reverse;
 }
 

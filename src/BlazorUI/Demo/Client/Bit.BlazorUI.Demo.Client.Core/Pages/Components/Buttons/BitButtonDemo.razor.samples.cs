@@ -121,37 +121,13 @@ private async Task LoadingClassesClick()
 }";
 
     private readonly string example5RazorCode = @"
-<BitButton IconName=""@BitIconName.Emoji"">
-    Start
-</BitButton>
+<BitButton IconName=""@BitIconName.Emoji"">Start</BitButton>
+<BitButton IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Outline"">Start</BitButton>
+<BitButton IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Text"">Start</BitButton>
 
-<BitButton IconName=""@BitIconName.Emoji""
-           Variant=""BitVariant.Outline"">
-    Start
-</BitButton>
-
-<BitButton IconName=""@BitIconName.Emoji""
-           Variant=""BitVariant.Text"">
-    Start
-</BitButton>
-
-
-<BitButton IconName=""@BitIconName.Emoji2""
-           IconPosition=""BitButtonIconPosition.End"">
-    End
-</BitButton>
-
-<BitButton IconName=""@BitIconName.Emoji2""
-           Variant=""BitVariant.Outline""
-           IconPosition=""BitButtonIconPosition.End"">
-    End
-</BitButton>
-
-<BitButton IconName=""@BitIconName.Emoji2""
-           Variant=""BitVariant.Text""
-           IconPosition=""BitButtonIconPosition.End"">
-    End
-</BitButton>";
+<BitButton IconName=""@BitIconName.Emoji2"" ReversedIcon>End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"" ReversedIcon>End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"" ReversedIcon>End</BitButton>";
 
     private readonly string example6RazorCode = @"
 <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Fill"">Fill</BitButton>

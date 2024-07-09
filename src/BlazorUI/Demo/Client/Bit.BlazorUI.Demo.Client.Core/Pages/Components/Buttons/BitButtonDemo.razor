@@ -134,42 +134,23 @@
     <ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div>
-                BitButton has an icon slot that, if specified, renders an icon that can be set at the start or end of component using IconPosition.
+                BitButton has an icon slot that, if specified, renders an icon that can be set at the start (default) or revered positioned at the end of component.
             </div>
             <br />
             <div class="buttons-container">
-                <BitButton IconName="@BitIconName.Emoji">
-                    Start
-                </BitButton>
+                <BitButton IconName="@BitIconName.Emoji">Start</BitButton>
 
-                <BitButton IconName="@BitIconName.Emoji"
-                           Variant="BitVariant.Outline">
-                    Start
-                </BitButton>
+                <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Outline">Start</BitButton>
 
-                <BitButton IconName="@BitIconName.Emoji"
-                           Variant="BitVariant.Text">
-                    Start
-                </BitButton>
+                <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Text">Start</BitButton>
             </div>
             <br />
             <div class="buttons-container">
-                <BitButton IconName="@BitIconName.Emoji2"
-                           IconPosition="BitButtonIconPosition.End">
-                    End
-                </BitButton>
+                <BitButton IconName="@BitIconName.Emoji2" ReversedIcon>End</BitButton>
 
-                <BitButton IconName="@BitIconName.Emoji2"
-                           Variant="BitVariant.Outline"
-                           IconPosition="BitButtonIconPosition.End">
-                    End
-                </BitButton>
+                <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
 
-                <BitButton IconName="@BitIconName.Emoji2"
-                           Variant="BitVariant.Text"
-                           IconPosition="BitButtonIconPosition.End">
-                    End
-                </BitButton>
+                <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

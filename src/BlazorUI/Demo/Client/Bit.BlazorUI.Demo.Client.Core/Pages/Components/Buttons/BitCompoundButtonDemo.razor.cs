@@ -75,15 +75,6 @@ public partial class BitCompoundButtonDemo
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitButtonIconPosition",
-            DefaultValue = "BitButtonIconPosition.Start",
-            Description = "Specifies Icon position which can be rendered either on start or end of the component.",
-            LinkType = LinkType.Link,
-            Href = "#button-icon-enum"
-        },
-        new()
-        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "The callback for the click event of the BitCompoundButton.",
@@ -94,6 +85,13 @@ public partial class BitCompoundButtonDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of primary section of the BitCompoundButton (alias of the ChildContent).",
+        },
+        new()
+        {
+            Name = "ReversedIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Specifies the Icon to be positioned at the end of the component.",
         },
         new()
         {
@@ -339,27 +337,6 @@ public partial class BitCompoundButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "button-icon-enum",
-            Name = "BitButtonIconPosition",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Start",
-                    Description="Renders the icon at the start of component.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Renders the icon at the end of component.",
-                    Value="1",
-                }
-            ]
-        }
     ];
 
 
