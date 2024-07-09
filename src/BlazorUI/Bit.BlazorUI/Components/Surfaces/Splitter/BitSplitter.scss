@@ -1,0 +1,89 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-spl {
+    height: 100%;
+    display: flex;
+    --gutter-size: #{spacing(1.25)};
+}
+
+.bit-spl-vrt {
+    flex-direction: column;
+
+    &.bit-spl-drg {
+        cursor: row-resize;
+    }
+
+    .bit-spl-gtr {
+        width: 100%;
+        cursor: row-resize;
+        height: var(--gutter-size);
+    }
+
+    .bit-spl-gti {
+        width: spacing(2);
+        height: spacing(0.25);
+    }
+
+    .bit-spl-pnl {
+        width: unset;
+        min-width: unset;
+        max-width: unset;
+    }
+
+    .bit-spl-fpn {
+        height: var(--first-panel);
+        max-height: var(--first-panel-max);
+        min-height: var(--first-panel-min);
+    }
+
+    .bit-spl-spn {
+        height: var(--second-panel);
+        max-height: var(--second-panel-max);
+        min-height: var(--second-panel-min);
+    }
+}
+
+.bit-spl-drg {
+    user-select: none;
+    cursor: col-resize;
+    -webkit-user-select: none;
+    overscroll-behavior: none;
+}
+
+.bit-spl-pnl {
+    flex-grow: 1;
+    overflow: auto;
+    height: unset;
+    max-height: unset;
+    min-height: unset;
+}
+
+.bit-spl-fpn {
+    width: var(--first-panel);
+    max-width: var(--first-panel-max);
+    min-width: var(--first-panel-min);
+}
+
+.bit-spl-spn {
+    width: var(--second-panel);
+    max-width: var(--second-panel-max);
+    min-width: var(--second-panel-min);
+}
+
+.bit-spl-gtr {
+    height: unset;
+    display: flex;
+    flex-shrink: 0;
+    cursor: col-resize;
+    touch-action: none;
+    align-items: center;
+    width: var(--gutter-size);
+    justify-content: center;
+    background-color: $clr-brd-sec;
+}
+
+.bit-spl-gti {
+    height: spacing(2);
+    width: spacing(0.25);
+    background-color: $clr-brd-pri;
+}

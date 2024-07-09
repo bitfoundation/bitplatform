@@ -5,8 +5,8 @@ namespace Bit.BlazorUI;
 public partial class BitCompoundButton : BitComponentBase
 {
     private BitSize? size;
+    private BitColor? color;
     private BitVariant? variant;
-    private BitSeverity? severity;
     private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
 
     private int? _tabIndex;
@@ -48,6 +48,23 @@ public partial class BitCompoundButton : BitComponentBase
     /// Custom CSS classes for different parts of the BitCompoundButton.
     /// </summary>
     [Parameter] public BitCompoundButtonClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the compound button.
+    /// </summary>
+    [Parameter]
+    public BitColor? Color
+    {
+        get => color;
+        set
+        {
+            if (color == value) return;
+
+            color = value;
+
+            ClassBuilder.Reset();
+        }
+    }
 
     /// <summary>
     /// The value of the href attribute of the link rendered by the BitCompoundButton. If provided, the component will be rendered as an anchor.
@@ -95,23 +112,6 @@ public partial class BitCompoundButton : BitComponentBase
     /// The RenderFragment for the secondary section of the BitCompoundButton.
     /// </summary>
     [Parameter] public RenderFragment? SecondaryTemplate { get; set; }
-
-    /// <summary>
-    /// The severity of the compound button.
-    /// </summary>
-    [Parameter]
-    public BitSeverity? Severity
-    {
-        get => severity;
-        set
-        {
-            if (severity == value) return;
-
-            severity = value;
-
-            ClassBuilder.Reset();
-        }
-    }
 
     /// <summary>
     /// The size of button, Possible values: Small | Medium | Large
@@ -177,14 +177,17 @@ public partial class BitCompoundButton : BitComponentBase
             _ => "bit-cmb-fil"
         });
 
-        ClassBuilder.Register(() => Severity switch
+        ClassBuilder.Register(() => Color switch
         {
-            BitSeverity.Info => "bit-cmb-inf",
-            BitSeverity.Success => "bit-cmb-suc",
-            BitSeverity.Warning => "bit-cmb-wrn",
-            BitSeverity.SevereWarning => "bit-cmb-swr",
-            BitSeverity.Error => "bit-cmb-err",
-            _ => string.Empty
+            BitColor.Primary => "bit-cmb-pri",
+            BitColor.Secondary => "bit-cmb-sec",
+            BitColor.Tertiary => "bit-cmb-ter",
+            BitColor.Info => "bit-cmb-inf",
+            BitColor.Success => "bit-cmb-suc",
+            BitColor.Warning => "bit-cmb-wrn",
+            BitColor.SevereWarning => "bit-cmb-swr",
+            BitColor.Error => "bit-cmb-err",
+            _ => "bit-cmb-pri"
         });
 
         ClassBuilder.Register(() => Size switch
@@ -192,7 +195,7 @@ public partial class BitCompoundButton : BitComponentBase
             BitSize.Small => "bit-cmb-sm",
             BitSize.Medium => "bit-cmb-md",
             BitSize.Large => "bit-cmb-lg",
-            _ => string.Empty
+            _ => "bit-cmb-md"
         });
 
         ClassBuilder.Register(() => IconPosition switch
@@ -223,9 +226,8 @@ public partial class BitCompoundButton : BitComponentBase
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
     }
 }

@@ -1,0 +1,132 @@
+﻿@page "/components/splitter"
+
+<PageOutlet Url="components/splitter"
+            Title="Splitter"
+            Description="splitter component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Splitter"
+               ComponentDescription="The BitSplitter component divides a container into two adjustable sections, either horizontally or vertically. Users can resize these sections by dragging the divider."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitSplitter>
+                <FirstPanel>
+                    <p style="padding: 4px;">
+                        First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </FirstPanel>
+                <SecondPanel>
+                    <p style="padding: 4px;">
+                        Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </SecondPanel>
+            </BitSplitter>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <BitSplitter Vertical>
+                <FirstPanel>
+                    <p style="padding: 4px;">
+                        First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </FirstPanel>
+                <SecondPanel>
+                    <p style="padding: 4px;">
+                        Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </SecondPanel>
+            </BitSplitter>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Panel Size" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <BitSplitter FirstPanelMinSize="128" FirstPanelSize="128" SecondPanelMinSize="64">
+                <FirstPanel>
+                    <p style="padding: 4px;">
+                        First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </FirstPanel>
+                <SecondPanel>
+                    <p style="padding: 4px;">
+                        Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </SecondPanel>
+            </BitSplitter>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Nested" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <BitSplitter>
+                <FirstPanel>
+                    <p style="padding: 4px;">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </FirstPanel>
+                <SecondPanel>
+                    <BitSplitter Vertical>
+                        <FirstPanel>
+                            <p style="padding: 4px;">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                            </p>
+                        </FirstPanel>
+                        <SecondPanel>
+                            <p style="padding: 4px;">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                            </p>
+                        </SecondPanel>
+                    </BitSplitter>
+                </SecondPanel>
+            </BitSplitter>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Gutter Size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div>
+                <BitSlider @bind-Value="gutterSize" Max="50" />
+                <br />
+                <BitSplitter GutterSize="@((int)gutterSize)">
+                    <FirstPanel>
+                        <p style="padding: 4px;">
+                            First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                        </p>
+                    </FirstPanel>
+                    <SecondPanel>
+                        <p style="padding: 4px;">
+                            Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                            Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                        </p>
+                    </SecondPanel>
+                </BitSplitter>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Gutter Icon" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <BitSplitter GutterIcon="@BitIconName.GripperDotsVertical">
+                <FirstPanel>
+                    <p style="padding: 4px;">
+                        First Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </FirstPanel>
+                <SecondPanel>
+                    <p style="padding: 4px;">
+                        Second Panel -  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Eget dolor morbi non arcu risus quis varius. Turpis tincidunt id aliquet risus feugiat in ante.
+                    </p>
+                </SecondPanel>
+            </BitSplitter>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
