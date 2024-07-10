@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public static class AppOperatingSystem
+public static class PlatformInfo
 {
     public static bool IsBlazorHybrid { get; set; }
 

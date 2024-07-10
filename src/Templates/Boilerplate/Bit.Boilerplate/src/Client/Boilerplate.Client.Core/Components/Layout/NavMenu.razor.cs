@@ -80,7 +80,7 @@ public partial class NavMenu
             }
         ];
 
-        if (AppOperatingSystem.IsBlazorHybrid)
+        if (PlatformInfo.IsBlazorHybrid)
         {
             // Presently, the About page is absent from the Client/Core project, rendering it inaccessible on the web platform.
             // In order to exhibit a sample page that grants direct access to native functionalities without dependence on dependency injection (DI) or publish-subscribe patterns,

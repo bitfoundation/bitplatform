@@ -14,7 +14,7 @@ public partial class DashboardPage
     {
         try
         {
-            if (AppOperatingSystem.IsBrowser)
+            if (PlatformInfo.IsBrowser)
             {
                 await lazyAssemblyLoader.LoadAssembliesAsync([
                     //#if (sample == "Admin" && offlineDb == false)
