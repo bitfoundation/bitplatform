@@ -257,7 +257,7 @@
     --bit-btn-sct-fontsize: #{spacing(1.25)};
     --bit-btn-icn-fontsize: #{spacing(1.50)};
     --bit-btn-icn-margintop: #{spacing(0.2)};
-    --bit-btn-padding: #{spacing(0.3)} #{spacing(1.5)};
+    --bit-btn-padding: #{spacing(0.5)} #{spacing(1.5)};
 }
 
 .bit-btn-md {
@@ -267,7 +267,7 @@
     --bit-btn-sct-fontsize: #{spacing(1.50)};
     --bit-btn-icn-fontsize: #{spacing(2.00)};
     --bit-btn-icn-margintop: #{spacing(0.25)};
-    --bit-btn-padding: #{spacing(0.5)} #{spacing(2.0)};
+    --bit-btn-padding: #{spacing(0.75)} #{spacing(2.0)};
 }
 
 .bit-btn-lg {
@@ -277,7 +277,7 @@
     --bit-btn-sct-fontsize: #{spacing(2.00)};
     --bit-btn-icn-fontsize: #{spacing(2.50)};
     --bit-btn-icn-margintop: #{spacing(0.5)};
-    --bit-btn-padding: #{spacing(0.7)} #{spacing(2.5)};
+    --bit-btn-padding: #{spacing(1.0)} #{spacing(2.5)};
 }
 
 .bit-btn-top {
