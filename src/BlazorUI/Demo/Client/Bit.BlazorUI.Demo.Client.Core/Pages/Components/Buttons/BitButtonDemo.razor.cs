@@ -82,15 +82,6 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "ReversedIcon",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Specifies the Icon to be positioned at the end of the component.",
-            LinkType = LinkType.Link,
-            Href = "#button-icon-enum"
-        },
-        new()
-        {
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
@@ -123,7 +114,36 @@ public partial class BitButtonDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "",
             Description = "Callback for when the button clicked.",
+        },
+        new()
+        {
+            Name = "PrimaryTemplate",
+            Type = "RenderFragment?",
+            DefaultValue="",
+            Description = "The content of primary section of the BitButton (alias of the ChildContent).",
+        },
+        new()
+        {
+            Name = "ReversedIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Specifies the Icon to be positioned at the end of the component.",
+        },
+        new()
+        {
+            Name = "SecondaryText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the secondary section of the BitButton.",
+        },
+        new()
+        {
+            Name = "SecondaryTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "The RenderFragment for the secondary section of the BitButton.",
         },
         new()
         {
