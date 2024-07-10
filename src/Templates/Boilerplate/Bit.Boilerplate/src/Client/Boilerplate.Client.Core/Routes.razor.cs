@@ -27,19 +27,19 @@ public partial class Routes
     {
         var cssClasses = new List<string> { };
 
-        if (AppOperatingSystem.IsRunningOnWindows)
+        if (AppOperatingSystem.IsWindows)
         {
             cssClasses.Add("bit-windows");
         }
-        else if (AppOperatingSystem.IsRunningOnMacOS)
+        else if (AppOperatingSystem.IsMacOS)
         {
             cssClasses.Add("bit-macos");
         }
-        else if (AppOperatingSystem.IsRunningOnIOS)
+        else if (AppOperatingSystem.IsIOS)
         {
             cssClasses.Add("bit-ios");
         }
-        else if (AppOperatingSystem.IsRunningOnAndroid)
+        else if (AppOperatingSystem.IsAndroid)
         {
             cssClasses.Add("bit-android");
         }
@@ -47,7 +47,7 @@ public partial class Routes
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = bitDeviceCoordinator.GetStatusBarHeight();
 
-        if (AppOperatingSystem.IsRunningOnMacOS is false)
+        if (AppOperatingSystem.IsMacOS is false)
         {
             //For iOS this is handled in css using safe-area env() variables
             //For Android there's an issue with keyboard in fullscreen mode. more info: https://github.com/bitfoundation/bitplatform/issues/5626

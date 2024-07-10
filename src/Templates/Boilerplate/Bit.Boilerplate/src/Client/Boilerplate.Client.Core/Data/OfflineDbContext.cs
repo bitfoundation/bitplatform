@@ -8,7 +8,7 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbCo
 {
     static OfflineDbContext()
     {
-        if (AppOperatingSystem.IsRunningOnBrowser)
+        if (AppOperatingSystem.IsBrowser)
         {
             AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
         }
