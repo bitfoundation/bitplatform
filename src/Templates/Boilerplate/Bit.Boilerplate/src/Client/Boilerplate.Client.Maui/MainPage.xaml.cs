@@ -76,7 +76,7 @@ public partial class MainPage
                 }
             }
         }
-        catch (InvalidOperationException) when ((OperatingSystem.IsIOS() || AppRenderMode.IsRunningOnMacOS) && AppEnvironment.IsDev()) { }
+        catch (InvalidOperationException) when ((OperatingSystem.IsIOS() || AppOperatingSystem.IsRunningOnMacOS) && AppEnvironment.IsDev()) { }
         catch (FileNotFoundException) { }
     }
 }

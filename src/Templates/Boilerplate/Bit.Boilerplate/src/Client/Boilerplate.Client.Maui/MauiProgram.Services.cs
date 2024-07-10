@@ -88,7 +88,7 @@ public static partial class MauiProgram
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
         services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
 
-        if (OperatingSystem.IsWindows() || AppRenderMode.IsRunningOnMacOS)
+        if (OperatingSystem.IsWindows() || AppOperatingSystem.IsRunningOnMacOS)
         {
             services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
         }

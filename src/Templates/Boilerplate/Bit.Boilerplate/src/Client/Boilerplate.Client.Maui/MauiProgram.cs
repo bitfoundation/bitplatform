@@ -26,8 +26,8 @@ public static partial class MauiProgram
         //#endif
         //-:cnd:noEmit
 
-        AppRenderMode.IsBlazorHybrid = true;
-        AppRenderMode.IsRunningOnMacOS = OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS()
+        AppOperatingSystem.IsBlazorHybrid = true;
+        AppOperatingSystem.IsRunningOnMacOS = OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS()
 #if iOS
             || NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac
 #endif
