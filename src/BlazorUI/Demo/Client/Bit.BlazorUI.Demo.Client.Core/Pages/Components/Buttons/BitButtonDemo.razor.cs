@@ -30,7 +30,7 @@ public partial class BitButtonDemo
             Name = "ButtonType",
             Type = "BitButtonType?",
             DefaultValue = "null",
-            Description = "The type of the button.",
+            Description = "The value of the type attribute of the button.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
         },
@@ -39,14 +39,14 @@ public partial class BitButtonDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of button, It can be Any custom tag or a text.",
+            Description = "The content of primary section of the button.",
         },
         new()
         {
             Name = "Classes",
             Type = "BitButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitButton.",
+            Description = "Custom CSS classes for different parts of the button.",
             LinkType = LinkType.Link,
             Href = "#button-class-styles",
         },
@@ -61,121 +61,114 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "Content",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Alias of ChildContent",
-        },
-        new()
-        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "URL the link points to, if provided, button renders as an anchor.",
+            Description = "The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.",
         },
         new()
         {
             Name = "IconName",
             Type = "string",
             DefaultValue = "null",
-            Description = "The icon to show inside the BitButton."
+            Description = "The name of the icon to render inside the button."
         },
         new()
         {
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determine whether the button is in loading mode or not."
+            Description = "Determines whether the button is in loading mode or not."
         },
         new()
         {
             Name = "LoadingLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The loading label to show next to the spinner."
+            Description = "The loading label text to show next to the spinner icon."
         },
         new()
         {
             Name = "LoadingLabelPosition",
             Type = "BitLabelPosition",
             DefaultValue = "BitLabelPosition.End",
-            Description = "The position of the loading Label in regards to the spinner animation.",
+            Description = "The position of the loading Label in regards to the spinner icon.",
             LinkType = LinkType.Link,
-            Href = "#button-labelPosition-enum"
+            Href = "#label-position-enum"
         },
         new()
         {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Used to customize the content inside the Button in the Loading state.",
+            Description = "The custom template used to replace the default loading text inside the button in the loading state.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             DefaultValue = "",
-            Description = "Callback for when the button clicked.",
+            Description = "The callback for the click event of the button.",
         },
         new()
         {
             Name = "PrimaryTemplate",
             Type = "RenderFragment?",
             DefaultValue="",
-            Description = "The content of primary section of the BitButton (alias of the ChildContent).",
+            Description = "The content of the primary section of the button (alias of the ChildContent).",
         },
         new()
         {
             Name = "ReversedIcon",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Specifies the Icon to be positioned at the end of the component.",
+            Description = "Reverses the positions of the icon and the main content of the button.",
         },
         new()
         {
             Name = "SecondaryText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the secondary section of the BitButton.",
+            Description = "The text of the secondary section of the button.",
         },
         new()
         {
             Name = "SecondaryTemplate",
             Type = "RenderFragment?",
             DefaultValue = "",
-            Description = "The RenderFragment for the secondary section of the BitButton.",
+            Description = "The custom template for the secondary section of the button.",
         },
         new()
         {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
+            Description = "The size of the button.",
             LinkType = LinkType.Link,
-            Href = "#button-size-enum",
+            Href = "#size-enum",
         },
         new()
         {
             Name = "Styles",
             Type = "BitButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitButton.",
+            Description = "Custom CSS styles for different parts of the button.",
             LinkType = LinkType.Link,
-            Href = "#class-styles",
+            Href = "#button-class-styles",
         },
         new()
         {
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "If Href provided, specifies how to open the link.",
+            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).",
         },
         new()
         {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The title to show when the mouse is placed on the button.",
+            Description = "The tooltip to show when the mouse is placed on the button.",
         },
         new()
         {
@@ -323,7 +316,7 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Id = "button-size-enum",
+            Id = "size-enum",
             Name = "BitSize",
             Description = "",
             Items =
@@ -377,7 +370,7 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Id = "button-labelPosition-enum",
+            Id = "label-position-enum",
             Name = "BitLabelPosition",
             Description = "",
             Items =

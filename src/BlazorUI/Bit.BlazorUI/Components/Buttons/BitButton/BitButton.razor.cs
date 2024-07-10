@@ -72,7 +72,7 @@ public partial class BitButton : BitComponentBase
     [Parameter] public string? Href { get; set; }
 
     /// <summary>
-    /// The icon to show inside the button.
+    /// The name of the icon to render inside the button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
@@ -134,7 +134,7 @@ public partial class BitButton : BitComponentBase
     [Parameter] public RenderFragment? SecondaryTemplate { get; set; }
 
     /// <summary>
-    /// The size of button.
+    /// The size of the button.
     /// </summary>
     [Parameter]
     public BitSize? Size
