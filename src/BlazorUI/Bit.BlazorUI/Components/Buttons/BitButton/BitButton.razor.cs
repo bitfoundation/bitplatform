@@ -67,11 +67,6 @@ public partial class BitButton : BitComponentBase
     }
 
     /// <summary>
-    /// Alias of ChildContent.
-    /// </summary>
-    [Parameter] public RenderFragment? Content { get; set; }
-
-    /// <summary>
     /// URL the link points to, if provided, button renders as an anchor
     /// </summary>
     [Parameter] public string? Href { get; set; }
@@ -107,6 +102,11 @@ public partial class BitButton : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
+    /// The content of primary section of the BitButton (alias of the ChildContent).
+    /// </summary>
+    [Parameter] public RenderFragment? PrimaryTemplate { get; set; }
+
+    /// <summary>
     /// Specifies the Icon to be positioned at the end of the component.
     /// </summary>
     [Parameter]
@@ -124,7 +124,17 @@ public partial class BitButton : BitComponentBase
     }
 
     /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large
+    /// The text of the secondary section of the BitButton.
+    /// </summary>
+    [Parameter] public string? SecondaryText { get; set; }
+
+    /// <summary>
+    /// The RenderFragment for the secondary section of the BitButton.
+    /// </summary>
+    [Parameter] public RenderFragment? SecondaryTemplate { get; set; }
+
+    /// <summary>
+    /// The size of button.
     /// </summary>
     [Parameter]
     public BitSize? Size
@@ -240,9 +250,8 @@ public partial class BitButton : BitComponentBase
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
     }
 }
