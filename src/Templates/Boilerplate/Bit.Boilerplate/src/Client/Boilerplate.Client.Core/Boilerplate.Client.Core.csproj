@@ -22,14 +22,14 @@
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.10.0-pre-03" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.10.0-pre-03" />
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
         <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.10.0-pre-03" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-03" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-03" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.6" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.7" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.0" />
 
         <Using Include="System.Net.Http.Json" />
@@ -71,10 +71,10 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <CallTarget Targets="InstallNodejsDependencies"/>
-        <CallTarget Targets="BuildJavaScript"/>
-        <CallTarget Targets="BuildIsolatedScssFiles"/>
-        <CallTarget Targets="BuildGlobalScssFiles"/>
+        <CallTarget Targets="InstallNodejsDependencies" />
+        <CallTarget Targets="BuildJavaScript" />
+        <CallTarget Targets="BuildIsolatedScssFiles" />
+        <CallTarget Targets="BuildGlobalScssFiles" />
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">

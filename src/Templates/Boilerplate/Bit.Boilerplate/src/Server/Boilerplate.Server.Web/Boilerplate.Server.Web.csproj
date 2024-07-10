@@ -9,7 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-03" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-03" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.7" />
     </ItemGroup>
 
     <ItemGroup>
