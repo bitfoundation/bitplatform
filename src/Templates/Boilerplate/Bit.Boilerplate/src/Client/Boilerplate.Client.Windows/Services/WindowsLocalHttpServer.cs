@@ -22,11 +22,12 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             .WithMode(HttpListenerMode.Microsoft))
             .WithModule(new ActionModule("/sign-in", HttpVerbs.Get, async ctx =>
             {
-                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
-
                 var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
 
                 ctx.Redirect(url);
+                ctx.Response.Close();
+
+                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
             }));
 
         _ = localHttpServer.RunAsync(cancellationToken)

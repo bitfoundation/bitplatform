@@ -22,11 +22,12 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             .WithMode(OperatingSystem.IsWindows() ? HttpListenerMode.Microsoft : HttpListenerMode.EmbedIO))
             .WithModule(new ActionModule("/sign-in", HttpVerbs.Get, async ctx =>
             {
-                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
-
                 var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
 
                 ctx.Redirect(url);
+                ctx.Response.Close();
+
+                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
             }));
 
         _ = localHttpServer.RunAsync(cancellationToken)
