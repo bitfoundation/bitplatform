@@ -27,8 +27,10 @@ public static class AppRenderMode
     false;
 #endif
 
-    /// <summary>
-    /// Is running under .NET MAUI?
-    /// </summary>
     public static bool IsBlazorHybrid { get; set; }
+
+    /// <summary>
+    /// Instead of checking <see cref="OperatingSystem.IsMacOS"/>, <see cref="OperatingSystem.IsMacCatalyst"/> and Foundation.NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac, you can easily check this property's value.
+    /// </summary>
+    public static bool IsRunningOnMacOS { get; set; }
 }

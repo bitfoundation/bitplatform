@@ -12,7 +12,7 @@ public static partial class MauiProgram
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-#if ANDROID
+#if Android
         services.AddClientMauiProjectAndroidServices();
 #elif iOS
         services.AddClientMauiProjectIosServices();
@@ -88,9 +88,10 @@ public static partial class MauiProgram
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
         services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
 
-#if LocalHttpServerEnabled
-        services.AddSingleton<ILocalHttpServer>(sp => new MauiLocalHttpServer(services));
-#endif
+        if (OperatingSystem.IsWindows() || AppRenderMode.IsRunningOnMacOS)
+        {
+            services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
+        }
 
         services.AddClientCoreProjectServices();
     }

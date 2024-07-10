@@ -1,61 +1,42 @@
-﻿using System.IO;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Extensions;
+using EmbedIO;
+using EmbedIO.Actions;
 using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Windows.Services;
 
-public partial class WindowsLocalHttpServer(IServiceCollection services) : ILocalHttpServer
+public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
-    private int port = -1;
-    private Task<int>? startTask;
-    private WebApplication? localHttpServer;
+    [AutoInject] private IConfiguration configuration;
+    [AutoInject] private IExceptionHandler exceptionHandler;
 
-    public Task<int> Start()
+    private WebServer? localHttpServer;
+
+    public int Start(CancellationToken cancellationToken)
     {
-        return startTask ??= StartImplementation();
-    }
+        var port = GetAvailableTcpPort();
 
-    public int Port => port;
+        localHttpServer = new WebServer(o => o
+            .WithUrlPrefix($"http://localhost:{port}")
+            .WithMode(HttpListenerMode.Microsoft))
+            .WithModule(new ActionModule("/sign-in", HttpVerbs.Get, async ctx =>
+            {
+                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
 
-    private async Task<int> StartImplementation()
-    {
-        var builder = WebApplication.CreateEmptyBuilder(options: new()
-        {
-            ApplicationName = "LocalHttpServer",
-            ContentRootPath = Directory.GetCurrentDirectory(),
-            EnvironmentName = AppEnvironment.Current,
-            WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot")
-        });
+                var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
 
-        port = GetAvailableTcpPort();
+                ctx.Redirect(url);
+            }));
 
-        builder.WebHost.UseKestrel(options => options.ListenLocalhost(port));
-
-        builder.Services.AddAuthorization();
-        builder.Services.AddRouting();
-        builder.Services.AddRange(services);
-
-        var app = localHttpServer = builder.Build();
-
-        app.UseStaticFiles(); // Put static files in wwwroot folder of the Client.Windows project.
-
-        app.MapGet("sign-in", async (HttpContext context, IConfiguration configuration) =>
-        {
-            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
-            
-            await App.Current.Dispatcher.InvokeAsync(() => App.Current.MainWindow.Activate());
-
-            var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
-            context.Response.Redirect(url);
-        });
-
-        await app.StartAsync();
+        _ = localHttpServer.RunAsync(cancellationToken)
+            .ContinueWith(task =>
+            {
+                if (task.Exception is not null)
+                {
+                    exceptionHandler.Handle(task.Exception);
+                }
+            }, cancellationToken);
 
         return port;
     }
@@ -64,7 +45,7 @@ public partial class WindowsLocalHttpServer(IServiceCollection services) : ILoca
     {
         using TcpListener l = new TcpListener(IPAddress.Loopback, 0);
         l.Start();
-        int port = ((IPEndPoint)l.LocalEndpoint).Port;
+        var port = ((IPEndPoint)l.LocalEndpoint).Port;
         l.Stop();
         return port;
     }
