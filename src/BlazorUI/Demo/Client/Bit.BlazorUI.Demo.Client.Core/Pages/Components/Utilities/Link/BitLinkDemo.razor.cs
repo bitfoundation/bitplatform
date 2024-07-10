@@ -41,48 +41,47 @@ public partial class BitLinkDemo
             DefaultValue = "null",
             Description = "If Href provided, specifies how to open the link.",
             LinkType = LinkType.Link,
-            Href = "#link-target-enum",
+            Href = "#link-target",
         }
     ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums =
+    private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
         {
-            Id = "link-target-enum",
-            Name = "BitLinkTarget",
-            Description = "",
-            Items =
+            Id = "link-target",
+            Title = "BitLinkTarget",
+            Parameters =
             [
                 new()
                 {
-                    Name= "Self",
-                    Description="The current browsing context. (Default)",
-                    Value="_self",
+                    Name = "Self",
+                    Description = "The current browsing context. (Default)",
+                    DefaultValue = "_self",
                 },
                 new()
                 {
-                    Name= "Blank",
-                    Description="Usually a new tab, but users can configure browsers to open a new window instead.",
-                    Value="_blank",
+                    Name = "Blank",
+                    Description = "Usually a new tab, but users can configure browsers to open a new window instead.",
+                    DefaultValue = "_blank",
                 },
                 new()
                 {
-                    Name= "Parent",
-                    Description="The parent browsing context of the current one. If no parent, behaves as _self.",
-                    Value="_parent",
+                    Name = "Parent",
+                    Description = "The parent browsing context of the current one. If no parent, behaves as _self.",
+                    DefaultValue = "_parent",
                 },
                 new()
                 {
-                    Name= "Top",
-                    Description="The topmost browsing context. To be specific, this means the 'highest' context that's an ancestor of the current one. If no ancestors, behaves as _self.",
-                    Value="_top",
+                    Name = "Top",
+                    Description = "The topmost browsing context. To be specific, this means the 'highest' context that's an ancestor of the current one. If no ancestors, behaves as _self.",
+                    DefaultValue = "_top",
                 },
                 new()
                 {
-                    Name= "UnfencedTop",
-                    Description="Allows embedded fenced frames to navigate the top-level frame.",
-                    Value="_unfencedTop",
+                    Name = "UnfencedTop",
+                    Description = "Allows embedded fenced frames to navigate the top-level frame.",
+                    DefaultValue = "_unfencedTop",
                 }
             ]
         }
