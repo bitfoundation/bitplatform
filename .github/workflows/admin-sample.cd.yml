@@ -177,7 +177,7 @@ jobs:
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
-          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net8.0.7-x86-desktop,net8.0.7-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
