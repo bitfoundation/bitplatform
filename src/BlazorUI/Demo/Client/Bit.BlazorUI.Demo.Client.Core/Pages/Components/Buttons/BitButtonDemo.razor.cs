@@ -205,10 +205,31 @@ public partial class BitButtonDemo
                },
                new()
                {
-                   Name = "LoadingContainer",
+                   Name = "Container",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the internal container of the BitButton."
+               },
+               new()
+               {
+                   Name = "Primary",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the primary section of the BitButton."
+               },
+               new()
+               {
+                   Name = "Secondary",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the secondary section of the BitButton."
+               },
+               new()
+               {
+                   Name = "LoadingContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the loading container of the BitButton."
                },
                new()
                {
@@ -222,7 +243,7 @@ public partial class BitButtonDemo
                    Name = "LoadingLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the label section of the BitButton."
+                   Description = "Custom CSS classes/styles for the loading label section of the BitButton."
                },
             ]
         }

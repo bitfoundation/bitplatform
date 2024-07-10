@@ -28,7 +28,7 @@ public class BitButtonClassStyles
     public string? Secondary { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the internal container of the BitButton.
+    /// Custom CSS classes/styles for the loading container of the BitButton.
     /// </summary>
     public string? LoadingContainer { get; set; }
 
@@ -38,7 +38,7 @@ public class BitButtonClassStyles
     public string? Spinner { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the label of the BitButton.
+    /// Custom CSS classes/styles for the loading label of the BitButton.
     /// </summary>
     public string? LoadingLabel { get; set; }
 }
