@@ -409,4 +409,80 @@ public partial class BitButtonDemo
             ]
         }
     ];
+
+
+
+    private bool fillIsLoading;
+    private bool outlineIsLoading;
+    private bool textIsLoading;
+
+    private bool stylesIsLoading;
+    private bool classesIsLoading;
+
+    private bool templateIsLoading;
+
+    private async Task LoadingFillClick()
+    {
+        fillIsLoading = true;
+        await Task.Delay(3000);
+        fillIsLoading = false;
+    }
+
+    private async Task LoadingOutlineClick()
+    {
+        outlineIsLoading = true;
+        await Task.Delay(3000);
+        outlineIsLoading = false;
+    }
+
+    private async Task LoadingTextClick()
+    {
+        textIsLoading = true;
+        await Task.Delay(3000);
+        textIsLoading = false;
+    }
+
+    private async Task LoadingStylesClick()
+    {
+        stylesIsLoading = true;
+        await Task.Delay(3000);
+        stylesIsLoading = false;
+    }
+
+    private async Task LoadingClassesClick()
+    {
+        classesIsLoading = true;
+        await Task.Delay(3000);
+        classesIsLoading = false;
+    }
+
+    private async Task LoadingTemplateClick()
+    {
+        templateIsLoading = true;
+        await Task.Delay(3000);
+        templateIsLoading = false;
+    }
+
+    private int clickCounter;
+
+    private bool formIsValidSubmit;
+    private ButtonValidationModel buttonValidationModel = new();
+
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
+
+        await Task.Delay(2000);
+
+        buttonValidationModel = new();
+
+        formIsValidSubmit = false;
+
+        StateHasChanged();
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
 }
