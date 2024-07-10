@@ -27,7 +27,7 @@ public partial class Routes
     {
         var cssClasses = new List<string> { };
 
-        if (OperatingSystem.IsWindows())
+        if (AppOperatingSystem.IsRunningOnWindows)
         {
             cssClasses.Add("bit-windows");
         }
@@ -35,11 +35,11 @@ public partial class Routes
         {
             cssClasses.Add("bit-macos");
         }
-        else if (OperatingSystem.IsIOS())
+        else if (AppOperatingSystem.IsRunningOnIOS)
         {
             cssClasses.Add("bit-ios");
         }
-        else if (OperatingSystem.IsAndroid())
+        else if (AppOperatingSystem.IsRunningOnAndroid)
         {
             cssClasses.Add("bit-android");
         }

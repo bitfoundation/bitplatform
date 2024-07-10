@@ -4,6 +4,8 @@ public static class AppOperatingSystem
 {
     public static bool IsBlazorHybrid { get; set; }
 
+    public static bool IsBlazorHybridOrBrowser => IsBlazorHybrid || IsRunningOnBrowser;
+
     /// <summary>
     /// Instead of checking <see cref="OperatingSystem.IsMacOS"/>, <see cref="OperatingSystem.IsMacCatalyst"/> and Foundation.NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac, you can easily check this property's value.
     /// </summary>
