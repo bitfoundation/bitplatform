@@ -19,7 +19,6 @@ public partial class NavMenu : IDisposable
                 new() { Text = "ActionButton", Url = "/components/actionbutton", AdditionalUrls = ["/components/action-button"] },
                 new() { Text = "Button", Url = "/components/button" },
                 new() { Text = "ButtonGroup", Url = "/components/button-group" },
-                new() { Text = "CompoundButton", Url = "/components/compoundbutton", AdditionalUrls = ["/components/compound-button"] },
                 new() { Text = "IconButton", Url = "/components/iconbutton", AdditionalUrls = ["/components/icon-button"] },
                 new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = ["/components/menu-button"] },
                 new() { Text = "ToggleButton", Url = "/components/togglebutton", AdditionalUrls = ["/components/toggle-button"] }
