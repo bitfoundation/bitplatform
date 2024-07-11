@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitTypography : BitComponentBase
 {
-    private static readonly IReadOnlyDictionary<BitTypographyVariant, string> variantMapping = new Dictionary<BitTypographyVariant, string>()
+    protected static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
     {
         { BitTypographyVariant.Body1, "p" },
         { BitTypographyVariant.Body2, "p" },
@@ -48,9 +48,7 @@ public partial class BitTypography : BitComponentBase
         set
         {
             if (gutter == value) return;
-
             gutter = value;
-
             ClassBuilder.Reset();
         }
     }
@@ -66,9 +64,7 @@ public partial class BitTypography : BitComponentBase
         set
         {
             if (noWrap == value) return;
-
             noWrap = value;
-
             ClassBuilder.Reset();
         }
     }
@@ -97,10 +93,14 @@ public partial class BitTypography : BitComponentBase
                     .Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty)
                     .Register(() => Gutter ? "bit-tpg-gutter" : string.Empty);
     }
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, Element ?? variantMapping[Variant]);
+        builder.OpenElement(0, Element ?? VariantMapping[Variant]);
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
         builder.AddAttribute(3, "style", StyleBuilder.Value);
