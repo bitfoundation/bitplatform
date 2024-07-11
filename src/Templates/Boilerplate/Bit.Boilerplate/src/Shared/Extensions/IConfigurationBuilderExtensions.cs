@@ -15,7 +15,7 @@ public static class IConfigurationBuilderExtensions
         appsettings.Add(sharedAssembly.GetManifestResourceStream($"Boilerplate.Shared.appsettings.{AppEnvironment.Current}.json"));
 
         var clonedConfigurations = builder.Sources.ToArray(); // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration#default-application-configuration-sources
-        if (builder.Sources.Any())
+        if (builder.Sources.IsReadOnly is false)
             builder.Sources.Clear();
 
         builder.Sources.AddRange(appsettings.Where(appsetting => appsetting is not null).Select(appsetting => new JsonStreamConfigurationSource { Stream = appsetting! }));
