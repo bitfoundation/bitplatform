@@ -28,9 +28,9 @@ public class BitElementTests : BunitTestContext
             parameters.Add(p => p.Element, element);
         });
 
-        var expectedElement = element ?? "div";
+        var el = element ?? "div";
 
-        component.MarkupMatches(@$"<{expectedElement} class=""bit-elm"" id:ignore></{expectedElement}>");
+        component.MarkupMatches(@$"<{el} class=""bit-elm"" id:ignore></{el}>");
     }
 
     [DataTestMethod,
