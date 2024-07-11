@@ -36,6 +36,7 @@ public partial class BitTypographyDemo
         {
             Name = "Variant",
             Type = "BitTypographyVariant",
+            DefaultValue = "BitTypographyVariant.Subtitle1",
             Description = "The variant of the Typography.",
             LinkType = LinkType.Link,
             Href = "#typography-variant-enum"
@@ -72,7 +73,7 @@ public partial class BitTypographyDemo
 
     private string example1RazorCode = @"
 <BitTypography>This is default (Subtitle1)</BitTypography>
-<br />
+
 <BitTypography Variant=""BitTypographyVariant.H1"">H1. Heading</BitTypography>
 <BitTypography Variant=""BitTypographyVariant.H2"">H2. Heading</BitTypography>
 <BitTypography Variant=""BitTypographyVariant.H3"">H3. Heading</BitTypography>
