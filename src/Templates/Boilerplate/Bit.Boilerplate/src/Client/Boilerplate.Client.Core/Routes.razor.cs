@@ -9,7 +9,7 @@ public partial class Routes
 
     protected override async Task OnInitializedAsync()
     {
-        if (AppRenderMode.IsBlazorHybrid)
+        if (AppPlatform.IsBlazorHybrid)
         {
             if (CultureInfoManager.MultilingualEnabled)
             {
@@ -27,19 +27,19 @@ public partial class Routes
     {
         var cssClasses = new List<string> { };
 
-        if (OperatingSystem.IsWindows())
+        if (AppPlatform.IsWindows)
         {
             cssClasses.Add("bit-windows");
         }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+        else if (AppPlatform.IsMacOS)
         {
             cssClasses.Add("bit-macos");
         }
-        else if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
+        else if (AppPlatform.IsIOS)
         {
             cssClasses.Add("bit-ios");
         }
-        else if (OperatingSystem.IsAndroid())
+        else if (AppPlatform.IsAndroid)
         {
             cssClasses.Add("bit-android");
         }
@@ -47,7 +47,7 @@ public partial class Routes
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = bitDeviceCoordinator.GetStatusBarHeight();
 
-        if (OperatingSystem.IsMacCatalyst() is false)
+        if (AppPlatform.IsMacOS is false)
         {
             //For iOS this is handled in css using safe-area env() variables
             //For Android there's an issue with keyboard in fullscreen mode. more info: https://github.com/bitfoundation/bitplatform/issues/5626

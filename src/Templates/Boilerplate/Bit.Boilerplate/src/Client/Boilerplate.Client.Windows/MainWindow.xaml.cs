@@ -6,7 +6,7 @@ public partial class MainWindow
 {
     public MainWindow()
     {
-        AppRenderMode.IsBlazorHybrid = true;
+        AppPlatform.IsBlazorHybrid = true;
         var services = new ServiceCollection();
         services.ConfigureServices();
         InitializeComponent();

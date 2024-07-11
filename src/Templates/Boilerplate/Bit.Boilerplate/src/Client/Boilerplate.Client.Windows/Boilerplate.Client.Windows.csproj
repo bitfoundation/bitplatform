@@ -25,6 +25,7 @@
 
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-03" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-03" PrivateAssets="all" />
+        <PackageReference Include="EmbedIO" Version="3.5.2" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
@@ -44,10 +45,6 @@
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
         <Content Include=".config\dotnet-tools.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>

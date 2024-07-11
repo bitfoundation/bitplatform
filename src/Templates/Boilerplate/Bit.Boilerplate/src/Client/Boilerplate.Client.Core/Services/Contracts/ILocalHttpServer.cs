@@ -2,7 +2,5 @@
 
 public interface ILocalHttpServer
 {
-    Task<int> Start();
-
-    int Port { get; }
+    int Start(CancellationToken cancellationToken);
 }

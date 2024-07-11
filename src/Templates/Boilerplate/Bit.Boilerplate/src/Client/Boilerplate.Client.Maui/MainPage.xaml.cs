@@ -54,7 +54,7 @@ public partial class MainPage
 
     private async Task CheckForUpdates()
     {
-        if (OperatingSystem.IsAndroid()) // We're using in app updates for android thanks to Oscore.Maui.Android.InAppUpdates
+        if (AppPlatform.IsAndroid) // We're using in app updates for android thanks to Oscore.Maui.Android.InAppUpdates
             return;
 
         await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
@@ -76,7 +76,7 @@ public partial class MainPage
                 }
             }
         }
-        catch (InvalidOperationException) when ((OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS()) && AppEnvironment.IsDev()) { }
+        catch (InvalidOperationException) when ((AppPlatform.IsIOS || AppPlatform.IsMacOS) && AppEnvironment.IsDev()) { }
         catch (FileNotFoundException) { }
     }
 }

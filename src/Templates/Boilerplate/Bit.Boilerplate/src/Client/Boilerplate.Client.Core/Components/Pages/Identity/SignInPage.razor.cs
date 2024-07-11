@@ -181,7 +181,7 @@ public partial class SignInPage
 
         try
         {
-            var port = await localHttpServer.Start();
+            var port = localHttpServer.Start(CurrentCancellationToken);
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port);
 

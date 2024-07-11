@@ -27,9 +27,6 @@
 
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
 
-        <LocalHttpServerEnabled Condition="$(TargetFramework.Contains('-windows'))">true</LocalHttpServerEnabled>
-        <DefineConstants Condition="'$(LocalHttpServerEnabled)' == 'true'">$(DefineConstants);LocalHttpServerEnabled</DefineConstants>
-
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -88,10 +85,6 @@
         <BundleResource Include="Platforms\iOS\PrivacyInfo.xcprivacy" LogicalName="PrivacyInfo.xcprivacy" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(LocalHttpServerEnabled)' == 'true'">
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    </ItemGroup>
-
     <ItemGroup>
 
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
@@ -135,6 +128,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="EmbedIO" Version="3.5.2" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.70" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.70" />
         <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.70" />

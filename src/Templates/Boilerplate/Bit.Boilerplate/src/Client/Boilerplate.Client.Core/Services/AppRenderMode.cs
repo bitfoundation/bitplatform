@@ -26,9 +26,4 @@ public static class AppRenderMode
 #else
     false;
 #endif
-
-    /// <summary>
-    /// Is running under .NET MAUI?
-    /// </summary>
-    public static bool IsBlazorHybrid { get; set; }
 }
