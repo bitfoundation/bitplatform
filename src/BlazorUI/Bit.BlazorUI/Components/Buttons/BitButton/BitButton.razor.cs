@@ -14,38 +14,38 @@ public partial class BitButton : BitComponentBase
 
 
     /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>.
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
 
 
     /// <summary>
-    /// Whether the button can have focus in disabled mode
+    /// Whether the button can have focus in disabled mode.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
 
     /// <summary>
-    /// Detailed description of the button for the benefit of screen readers
+    /// Detailed description of the button for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
+    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The type of the button
+    /// The value of the type attribute of the button.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// The content of button, It can be Any custom tag or a text
+    /// The content of primary section of the button.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitButton.
+    /// Custom CSS classes for different parts of the button.
     /// </summary>
     [Parameter] public BitButtonClassStyles? Classes { get; set; }
 
@@ -67,47 +67,47 @@ public partial class BitButton : BitComponentBase
     }
 
     /// <summary>
-    /// Alias of ChildContent.
-    /// </summary>
-    [Parameter] public RenderFragment? Content { get; set; }
-
-    /// <summary>
-    /// URL the link points to, if provided, button renders as an anchor
+    /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter] public string? Href { get; set; }
 
     /// <summary>
-    /// The icon to show inside the BitButton.
+    /// The name of the icon to render inside the button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Determine whether the button is in loading mode or not.
+    /// Determines whether the button is in loading mode or not.
     /// </summary>        
     [Parameter] public bool IsLoading { get; set; }
 
     /// <summary>
-    /// The loading label to show next to the spinner.
+    /// The loading label text to show next to the spinner icon.
     /// </summary>
     [Parameter] public string? LoadingLabel { get; set; }
 
     /// <summary>
-    /// The position of the loading Label in regards to the spinner animation.
+    /// The position of the loading Label in regards to the spinner icon.
     /// </summary>
     [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
 
     /// <summary>
-    /// Used to customize the content inside the Button in the Loading state.
+    /// The custom template used to replace the default loading text inside the button in the loading state.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// Callback for when the button clicked
+    /// The callback for the click event of the button.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Specifies the Icon to be positioned at the end of the component.
+    /// The content of the primary section of the button (alias of the ChildContent).
+    /// </summary>
+    [Parameter] public RenderFragment? PrimaryTemplate { get; set; }
+
+    /// <summary>
+    /// Reverses the positions of the icon and the main content of the button.
     /// </summary>
     [Parameter]
     public bool ReversedIcon
@@ -124,7 +124,17 @@ public partial class BitButton : BitComponentBase
     }
 
     /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large
+    /// The text of the secondary section of the button.
+    /// </summary>
+    [Parameter] public string? SecondaryText { get; set; }
+
+    /// <summary>
+    /// The custom template for the secondary section of the button.
+    /// </summary>
+    [Parameter] public RenderFragment? SecondaryTemplate { get; set; }
+
+    /// <summary>
+    /// The size of the button.
     /// </summary>
     [Parameter]
     public BitSize? Size
@@ -141,17 +151,17 @@ public partial class BitButton : BitComponentBase
     }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitButton.
+    /// Custom CSS styles for different parts of the button.
     /// </summary>
     [Parameter] public BitButtonClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// If Href provided, specifies how to open the link
+    /// Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).
     /// </summary>
     [Parameter] public string? Target { get; set; }
 
     /// <summary>
-    /// The title to show when the mouse is placed on the button
+    /// The tooltip to show when the mouse is placed on the button.
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
@@ -240,9 +250,8 @@ public partial class BitButton : BitComponentBase
 
     protected virtual async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
     }
 }

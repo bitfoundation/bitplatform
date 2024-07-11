@@ -294,7 +294,7 @@ public class BitButtonTests : BunitTestContext
 
         var com = RenderComponent<BitButton>(parameters =>
         {
-            parameters.Add(p => p.Content, textContent);
+            parameters.Add(p => p.PrimaryTemplate, textContent);
             parameters.Add(p => p.IsLoading, isLoading);
         });
 

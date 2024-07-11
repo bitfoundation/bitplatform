@@ -42,12 +42,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Buttons/BitCompoundButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitCompoundButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.scss",
         "minify": { "enabled": false },

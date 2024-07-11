@@ -3,11 +3,12 @@
 .bit-btn {
     cursor: pointer;
     gap: spacing(0.5);
-    align-items: center;
+    text-align: start;
     flex-direction: row;
     display: inline-flex;
     text-decoration: none;
     box-sizing: border-box;
+    align-items: flex-start;
     justify-content: center;
     color: var(--bit-btn-clr);
     font-family: $tg-font-family;
@@ -16,9 +17,6 @@
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
-    font-size: var(--bit-btn-fontsize);
-    min-width: var(--bit-btn-minwidth);
-    min-height: var(--bit-btn-minheight);
 
     &.bit-dis {
         cursor: default;
@@ -35,6 +33,27 @@
             transform: rotate(360deg);
         }
     }
+}
+
+.bit-btn-tcn {
+    display: block;
+}
+
+.bit-btn-prt {
+    display: block;
+    font-size: var(--bit-btn-prt-fontsize);
+}
+
+.bit-btn-sct {
+    display: block;
+    font-weight: 400;
+    margin-top: spacing(0.625);
+    font-size: var(--bit-btn-sct-fontsize);
+}
+
+.bit-btn-icn {
+    font-size: var(--bit-btn-icn-fontsize);
+    margin-top: var(--bit-btn-icn-margintop);
 }
 
 .bit-btn-rvi {
@@ -232,30 +251,33 @@
 }
 
 .bit-btn-sm {
-    --bit-btn-minwidth: #{spacing(6)};
-    --bit-btn-minheight: #{spacing(3)};
-    --bit-btn-fontsize: #{spacing(1.5)};
     --bit-btn-spn-size: #{spacing(1.75)};
     --bit-btn-lbl-fontsize: #{spacing(1.75)};
-    --bit-btn-padding: #{spacing(0.3)} #{spacing(1.5)};
+    --bit-btn-prt-fontsize: #{spacing(1.50)};
+    --bit-btn-sct-fontsize: #{spacing(1.25)};
+    --bit-btn-icn-fontsize: #{spacing(1.50)};
+    --bit-btn-icn-margintop: #{spacing(0.2)};
+    --bit-btn-padding: #{spacing(0.5)} #{spacing(1.5)};
 }
 
 .bit-btn-md {
-    --bit-btn-minwidth: #{spacing(8)};
-    --bit-btn-minheight: #{spacing(4)};
-    --bit-btn-fontsize: #{spacing(1.75)};
     --bit-btn-spn-size: #{spacing(2.5)};
-    --bit-btn-lbl-fontsize: #{spacing(1.5)};
-    --bit-btn-padding: #{spacing(0.5)} #{spacing(2.0)};
+    --bit-btn-lbl-fontsize: #{spacing(1.50)};
+    --bit-btn-prt-fontsize: #{spacing(1.75)};
+    --bit-btn-sct-fontsize: #{spacing(1.50)};
+    --bit-btn-icn-fontsize: #{spacing(2.00)};
+    --bit-btn-icn-margintop: #{spacing(0.25)};
+    --bit-btn-padding: #{spacing(0.75)} #{spacing(2.0)};
 }
 
 .bit-btn-lg {
-    --bit-btn-minwidth: #{spacing(10)};
-    --bit-btn-minheight: #{spacing(5)};
-    --bit-btn-fontsize: #{spacing(2.0)};
     --bit-btn-spn-size: #{spacing(3.25)};
     --bit-btn-lbl-fontsize: #{spacing(1.75)};
-    --bit-btn-padding: #{spacing(0.7)} #{spacing(2.5)};
+    --bit-btn-prt-fontsize: #{spacing(2.50)};
+    --bit-btn-sct-fontsize: #{spacing(2.00)};
+    --bit-btn-icn-fontsize: #{spacing(2.50)};
+    --bit-btn-icn-margintop: #{spacing(0.5)};
+    --bit-btn-padding: #{spacing(1.0)} #{spacing(2.5)};
 }
 
 .bit-btn-top {

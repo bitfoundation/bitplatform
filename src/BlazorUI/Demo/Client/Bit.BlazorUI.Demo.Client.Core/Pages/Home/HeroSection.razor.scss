@@ -42,16 +42,16 @@
     }
 
     .hero-section-components-col {
-        width: rem2(380px);
+        width: 19rem;
 
         &:last-child {
             margin-left: rem2(20px);
         }
 
         .component-box {
+            width: 19rem;
             display: flex;
             overflow: hidden;
-            width: rem2(360px);
             padding: rem2(10px);
             color: rgb(61, 71, 82);
             justify-content: center;

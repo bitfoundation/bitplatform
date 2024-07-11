@@ -1,48 +1,44 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@if (Href.HasValue() && IsEnabled)
-{
-    <a @ref="RootElement" @attributes="HtmlAttributes"
-       id="@_Id"
-       style="@StyleBuilder.Value"
-       class="@ClassBuilder.Value"
-       dir="@Dir?.ToString().ToLower()"
-       href="@Href"
-       title="@Title"
-       target="@Target"
-       tabindex="@_tabIndex"
-       aria-label="@AriaLabel"
-       aria-hidden="@AriaHidden"
-       aria-describedby="@AriaDescription">
-        @if (IconName.HasValue())
-        {
-            <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
-        }
-
-        @(Content ?? ChildContent)
-    </a>
-}
-else
+@if (Href.HasNoValue())
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
             id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
-            dir="@Dir?.ToString().ToLower()"
             type="@_buttonType.GetValue()"
+            dir="@Dir?.ToString().ToLower()"
+            disabled="@(IsEnabled is false)"
             title="@Title"
             tabindex="@_tabIndex"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription">
-        @if (IsLoading)
+        @if (IsLoading is false)
         {
-            if (LoadingTemplate is not null)
+            @if (IconName.HasValue())
             {
-                @LoadingTemplate
+                <i style="@Styles?.Icon" class="bit-btn-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
             }
-            else
+            <div style="@Styles?.Container" class="bit-btn-tcn @Classes?.Container">
+                <div style="@Styles?.Primary" class="bit-btn-prt @Classes?.Primary">
+                    @(PrimaryTemplate ?? ChildContent)
+                </div>
+
+                @if (SecondaryTemplate is not null)
+                {
+                    @SecondaryTemplate
+                }
+                else if (SecondaryText.HasValue())
+                {
+                    <span style="@Styles?.Secondary" class="bit-btn-sct @Classes?.Secondary">@SecondaryText</span>
+                }
+            </div>
+        }
+        else
+        {
+            if (LoadingTemplate is null)
             {
                 <div style="@Styles?.LoadingContainer" class="bit-btn-ldg @GetLabelPositionClass() @Classes?.LoadingContainer">
                     <div style="@Styles?.Spinner" class="bit-btn-spn @Classes?.Spinner"></div>
@@ -54,15 +50,45 @@ else
                     }
                 </div>
             }
-        }
-        else
-        {
-            @if (IconName.HasValue())
+            else
             {
-                <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+                @LoadingTemplate
             }
-
-            @(Content ?? ChildContent)
         }
     </button>
+}
+else
+{
+    <a @ref="RootElement" @attributes="HtmlAttributes"
+       id="@_Id"
+       style="@StyleBuilder.Value"
+       class="@ClassBuilder.Value"
+       dir="@Dir?.ToString().ToLower()"
+       disabled="@(IsEnabled is false)"
+       href="@(IsEnabled ? Href : null)"
+       title="@Title"
+       target="@Target"
+       tabindex="@_tabIndex"
+       aria-label="@AriaLabel"
+       aria-hidden="@AriaHidden"
+       aria-describedby="@AriaDescription">
+        @if (IconName.HasValue())
+        {
+            <i style="@Styles?.Icon" class="bit-btn-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+        }
+        <div style="@Styles?.Container" class="bit-btn-tcn @Classes?.Container">
+            <div style="@Styles?.Primary" class="bit-btn-prt @Classes?.Primary">
+                @(PrimaryTemplate ?? ChildContent)
+            </div>
+
+            @if (SecondaryTemplate is not null)
+            {
+                @SecondaryTemplate
+            }
+            else if (SecondaryText.HasValue())
+            {
+                <span style="@Styles?.Secondary" class="bit-btn-sct @Classes?.Secondary">@SecondaryText</span>
+            }
+        </div>
+    </a>
 }
