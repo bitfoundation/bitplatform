@@ -31,7 +31,7 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         if (isDebug)
         {
-            if (PlatformInfo.IsBlazorHybrid)
+            if (AppPlatform.IsBlazorHybrid)
             {
                 StringBuilder errorInfo = new();
                 errorInfo.AppendLine(exceptionMessage);

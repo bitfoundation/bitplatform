@@ -29,7 +29,7 @@ public partial class Footer
 
     private async Task OnCultureChanged()
     {
-        if (PlatformInfo.IsBlazorHybrid)
+        if (AppPlatform.IsBlazorHybrid)
         {
             await StorageService.SetItem("Culture", SelectedCulture, persistent: true);
             cultureInfoManager.SetCurrentCulture(SelectedCulture!);

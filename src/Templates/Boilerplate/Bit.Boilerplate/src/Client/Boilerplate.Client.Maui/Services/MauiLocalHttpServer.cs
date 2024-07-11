@@ -19,7 +19,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
         localHttpServer = new WebServer(o => o
             .WithUrlPrefix($"http://localhost:{port}")
-            .WithMode(PlatformInfo.IsWindows ? HttpListenerMode.Microsoft : HttpListenerMode.EmbedIO))
+            .WithMode(AppPlatform.IsWindows ? HttpListenerMode.Microsoft : HttpListenerMode.EmbedIO))
             .WithModule(new ActionModule("/sign-in", HttpVerbs.Get, async ctx =>
             {
                 try

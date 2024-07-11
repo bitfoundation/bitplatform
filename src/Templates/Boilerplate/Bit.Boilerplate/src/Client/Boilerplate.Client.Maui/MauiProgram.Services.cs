@@ -50,7 +50,7 @@ public static partial class MauiProgram
 
         builder.Logging.AddConsole();
 
-        if (PlatformInfo.IsWindows)
+        if (AppPlatform.IsWindows)
         {
             builder.Logging.AddEventLog();
         }
@@ -88,7 +88,7 @@ public static partial class MauiProgram
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
         services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
 
-        if (PlatformInfo.IsWindows || PlatformInfo.IsMacOS)
+        if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
         {
             services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
         }

@@ -26,8 +26,8 @@ public static partial class MauiProgram
         //#endif
         //-:cnd:noEmit
 
-        PlatformInfo.IsBlazorHybrid = true;
-        PlatformInfo.IsMacOS = OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS()
+        AppPlatform.IsBlazorHybrid = true;
+        AppPlatform.IsMacOS = OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS()
 #if iOS
             || NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac
 #endif
@@ -115,7 +115,7 @@ public static partial class MauiProgram
                     });
             }
 
-#elif IOS || MACCATALYST
+#elif iOS || Mac
             webView.NavigationDelegate = new CustomWKNavigationDelegate();
             webView.Configuration.AllowsInlineMediaPlayback = true;
 
@@ -131,7 +131,7 @@ public static partial class MauiProgram
                     webView.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
                 }
             }
-#elif ANDROID
+#elif Android
             webView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 
             webView.OverScrollMode = Android.Views.OverScrollMode.Never;
