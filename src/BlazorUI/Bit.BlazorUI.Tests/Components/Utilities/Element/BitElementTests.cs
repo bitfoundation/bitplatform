@@ -179,6 +179,6 @@ public class BitElementTests : BunitTestContext
     {
         var component = RenderComponent<BitElementHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<div data-val-test=""bit"" class=""bit-elm"" id:ignore></div>");
+        component.MarkupMatches(@"<div data-val-test=""bit"" class=""bit-elm"" id:ignore>I'm a element</div>");
     }
 }
