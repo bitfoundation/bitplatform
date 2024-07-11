@@ -63,8 +63,6 @@ public class BitTypographyTests : BunitTestContext
         component.MarkupMatches(@$"<{el} class=""bit-tpg {cssClass}"" id:ignore></{el}>");
     }
 
-
-
     [DataTestMethod,
         DataRow("h1"),
         DataRow("div"),
@@ -92,12 +90,27 @@ public class BitTypographyTests : BunitTestContext
     {
         var component = RenderComponent<BitTypography>(parameters =>
         {
-            parameters.Add(p => p.NoWrap, noWrap);
+            parameters.Add(p => p.NoWrap, true);
         });
 
         var cssClass = noWrap ? " bit-tpg-nowrap" : null;
 
         component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectNoWrapChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, true);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1 bit-tpg-nowrap"" id:ignore></h6>");
     }
 
     [DataTestMethod,
@@ -116,6 +129,21 @@ public class BitTypographyTests : BunitTestContext
         component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
     }
 
+    [DataTestMethod]
+    public void BitTypographyShouldRespectGutterChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Gutter, true);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1 bit-tpg-gutter"" id:ignore></h6>");
+    }
+
     [DataTestMethod,
         DataRow(true),
         DataRow(false)
@@ -130,6 +158,21 @@ public class BitTypographyTests : BunitTestContext
         var cssClass = isEnabled ? null : " bit-dis";
 
         component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectIsEnabledChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1 bit-dis"" id:ignore></h6>");
     }
 
     [DataTestMethod,
@@ -154,6 +197,22 @@ public class BitTypographyTests : BunitTestContext
         }
     }
 
+    [DataTestMethod]
+    public void BitTypographyShouldRespectStyleChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Style, "padding: 1rem;");
+        });
+
+        component.MarkupMatches(@$"<h6 style=""padding: 1rem;"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+    }
+
+
     [DataTestMethod,
         DataRow("test-class"),
         DataRow(null)
@@ -168,6 +227,21 @@ public class BitTypographyTests : BunitTestContext
         var cssClass = @class.HasValue() ? $" {@class}" : null;
 
         component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectClassChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Class, "test-class");
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1 test-class"" id:ignore></h6>");
     }
 
     [DataTestMethod,
@@ -210,6 +284,21 @@ public class BitTypographyTests : BunitTestContext
         }
     }
 
+    [DataTestMethod]
+    public void BitTypographyShouldRespectDirChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        component.MarkupMatches(@"<h6 dir=""ltr"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+    }
+
     [DataTestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
@@ -234,6 +323,21 @@ public class BitTypographyTests : BunitTestContext
                 component.MarkupMatches(@"<h6 style=""display: none;"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
                 break;
         }
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectVisibilityChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        component.MarkupMatches(@"<h6 style=""display: none;"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
     }
 
     [DataTestMethod,
