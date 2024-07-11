@@ -93,6 +93,8 @@ public partial class BitTypography : BitComponentBase
                     .Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty)
                     .Register(() => Gutter ? "bit-tpg-gutter" : string.Empty);
     }
+
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
