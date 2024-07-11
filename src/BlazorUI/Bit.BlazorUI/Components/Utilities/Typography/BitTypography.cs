@@ -107,8 +107,9 @@ public partial class BitTypography : BitComponentBase
         builder.AddAttribute(3, "style", StyleBuilder.Value);
         builder.AddAttribute(4, "class", ClassBuilder.Value);
         builder.AddAttribute(5, "dir", Dir?.ToString().ToLower());
-        builder.AddElementReferenceCapture(6, v => RootElement = v);
-        builder.AddContent(7, ChildContent);
+        builder.AddAttribute(6, "aria-label", AriaLabel);
+        builder.AddElementReferenceCapture(7, v => RootElement = v);
+        builder.AddContent(8, ChildContent);
         builder.CloseElement();
 
         base.BuildRenderTree(builder);
