@@ -90,7 +90,7 @@ public class BitTypographyTests : BunitTestContext
     {
         var component = RenderComponent<BitTypography>(parameters =>
         {
-            parameters.Add(p => p.NoWrap, true);
+            parameters.Add(p => p.NoWrap, noWrap);
         });
 
         var cssClass = noWrap ? " bit-tpg-nowrap" : null;
