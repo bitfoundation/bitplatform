@@ -1,17 +1,7 @@
-﻿.buttons-container {
+﻿.example-content {
     gap: 0.5rem;
     display: flex;
     flex-flow: row wrap;
-
-    &.column {
-        flex-flow: column;
-        max-width: max-content;
-    }
-}
-
-.buttons-container-grid {
-    gap: 0.5rem;
-    display: grid;
 }
 
 .form-container {
@@ -25,25 +15,15 @@
 
 ::deep {
     .custom-class {
-        border-radius: 1rem;
-        border: 2px solid #777;
+        color: burlywood;
     }
 
-    .custom-container {
-        gap: 5px;
-        color: gold;
-        padding: 8px;
-        display: flex;
-        flex-flow: column;
-        background-color: purple;
+    .custom-icon {
+        font-size: 1rem;
+        font-weight: bold;
     }
 
-    .validation-message {
-        color: red;
-    }
-
-    .custom-btn-ctn {
-        gap: 0.5rem;
-        display: flex;
+    .custom-content {
+        font-size: 1.5rem;
     }
 }
