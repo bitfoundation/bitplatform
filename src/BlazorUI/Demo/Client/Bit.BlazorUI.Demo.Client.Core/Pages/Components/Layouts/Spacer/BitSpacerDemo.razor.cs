@@ -17,11 +17,11 @@ public partial class BitSpacerDemo
 
     private readonly string example1RazorCode = @"
 <div style=""display: flex; width: 100%;"">
-    <BitIconButton IconName=""@BitIconName.GlobalNavButton"" />
+    <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.GlobalNavButton"" />
     <BitSpacer />
     <BitTypography Variant=""BitTypographyVariant.H6"">Title</BitTypography>
     <BitSpacer />
-    <BitIconButton IconName=""@BitIconName.Contact"" />
+    <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Contact"" />
 </div>";
 
     private readonly string example2RazorCode = @"

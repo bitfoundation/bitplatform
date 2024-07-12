@@ -657,7 +657,7 @@ private TimeSpan? selectedTime = new TimeSpan(5, 12, 15);";
     private readonly string example7RazorCode = @"
 <BitCircularTimePicker @ref=""circularTimePicker"">
     <LabelTemplate>
-        Custom label <BitIconButton IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
+        Custom label <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitButton>
     </LabelTemplate>
 </BitCircularTimePicker>
 

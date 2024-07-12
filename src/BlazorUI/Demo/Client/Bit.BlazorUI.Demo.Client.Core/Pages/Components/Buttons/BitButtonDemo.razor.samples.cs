@@ -5,7 +5,10 @@ public partial class BitButtonDemo
     private readonly string example1RazorCode = @"
 <BitButton>Button</BitButton>
 
-<BitButton SecondaryText=""this is the secondary text"">Button</BitButton>";
+<BitButton SecondaryText=""this is the secondary text"">Primary text</BitButton>
+
+<BitButton IconName=""@BitIconName.Calendar"" />
+<BitButton IconName=""@BitIconName.SecondaryNav"" SecondaryText=""secondary text"" />";
 
     private readonly string example2RazorCode = @"
 <BitButton Variant=""BitVariant.Fill"">Fill</BitButton>
@@ -25,6 +28,33 @@ public partial class BitButtonDemo
 <BitButton Variant=""BitVariant.Text"" SecondaryText=""this is the secondary text"" IsEnabled=""false"">Text</BitButton>";
 
     private readonly string example3RazorCode = @"
+<BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
+<BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
+<BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
+
+<BitButton Size=""BitSize.Small"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
+<BitButton Size=""BitSize.Small"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
+<BitButton Size=""BitSize.Small"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
+
+
+<BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
+<BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
+<BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
+
+<BitButton Size=""BitSize.Medium"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
+<BitButton Size=""BitSize.Medium"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
+<BitButton Size=""BitSize.Medium"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
+
+
+<BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
+<BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
+<BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
+
+<BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
+<BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
+<BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>";
+
+    private readonly string example4RazorCode = @"
 <BitButton Color=""BitColor.Primary"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Outline"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Text"">Primary</BitButton>
@@ -96,7 +126,7 @@ public partial class BitButtonDemo
 <BitButton Color=""BitColor.Error"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Error</BitButton>
 <BitButton Color=""BitColor.Error"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Error</BitButton>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         color: blueviolet;
@@ -151,7 +181,7 @@ public partial class BitButtonDemo
                               Spinner = ""custom-spinner"" })"">
     Outline
 </BitButton>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool stylesIsLoading;
 private bool classesIsLoading;
 
@@ -169,49 +199,26 @@ private async Task LoadingClassesClick()
     classesIsLoading = false;
 }";
 
-    private readonly string example5RazorCode = @"
-<BitButton IconName=""@BitIconName.Emoji"">Start</BitButton>
+    private readonly string example6RazorCode = @"
+<BitButton IconName=""@BitIconName.EmojiNeutral"" Variant=""BitVariant.Fill"" />
+<BitButton IconName=""@BitIconName.EmojiNeutral"" Variant=""BitVariant.Outline"" />
+<BitButton IconName=""@BitIconName.EmojiNeutral"" Variant=""BitVariant.Text"" />
+
+<BitButton IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">Start</BitButton>
 <BitButton IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Outline"">Start</BitButton>
 <BitButton IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Text"">Start</BitButton>
 
-<BitButton IconName=""@BitIconName.Emoji"" SecondaryText=""this is the secondary text"">Start</BitButton>
+<BitButton IconName=""@BitIconName.Emoji"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Fill"">Start</BitButton>
 <BitButton IconName=""@BitIconName.Emoji"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Start</BitButton>
 <BitButton IconName=""@BitIconName.Emoji"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Start</BitButton>
 
-<BitButton IconName=""@BitIconName.Emoji2"" ReversedIcon>End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"" ReversedIcon>End</BitButton>
 <BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"" ReversedIcon>End</BitButton>
 <BitButton IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"" ReversedIcon>End</BitButton>
 
-<BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" ReversedIcon>End</BitButton>
+<BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Fill"" ReversedIcon>End</BitButton>
 <BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"" ReversedIcon>End</BitButton>
 <BitButton IconName=""@BitIconName.Emoji2"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"" ReversedIcon>End</BitButton>";
-
-    private readonly string example6RazorCode = @"
-<BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
-<BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
-<BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
-
-<BitButton Size=""BitSize.Small"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
-<BitButton Size=""BitSize.Small"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
-<BitButton Size=""BitSize.Small"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
-
-
-<BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
-<BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
-<BitButton Size=""BitSize.Medium"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
-
-<BitButton Size=""BitSize.Medium"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
-<BitButton Size=""BitSize.Medium"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
-<BitButton Size=""BitSize.Medium"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
-
-
-<BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
-<BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
-<BitButton Size=""BitSize.Large"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
-
-<BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
-<BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
-<BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>";
 
     private readonly string example7RazorCode = @"
 <style>
@@ -367,22 +374,12 @@ private async Task LoadingTextClick()
 </BitButton>";
 
     private readonly string example11RazorCode = @"
-<style>
-    .custom-loading {
-        display: flex;
-        gap: 0.3125rem;
-        align-items: center;
-        justify-content: center;
-    }
-</style>
-
-
 <BitButton IsLoading=""templateIsLoading"" OnClick=""LoadingTemplateClick"">
     <PrimaryTemplate>
         Click me
     </PrimaryTemplate>
     <LoadingTemplate>
-        <div class=""custom-loading"">
+        <div style=""display:flex;align-items:center;"">
             <BitEllipsisLoading Size=""32"" />
             <span>Wait...</span>
         </div>
@@ -402,9 +399,8 @@ private async Task LoadingTemplateClick()
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
     <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
-    <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
+    <ValidationMessage For=""() => buttonValidationModel.RequiredText"" style=""color:red"" />
     <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
-    <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
     <div>
         <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
         <BitButton ButtonType=""BitButtonType.Reset"">Reset</BitButton>

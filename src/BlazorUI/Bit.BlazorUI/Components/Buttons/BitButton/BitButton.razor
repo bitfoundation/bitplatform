@@ -1,6 +1,11 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    var hasPrimary = (PrimaryTemplate ?? ChildContent) is not null;
+    var hasSecondary = SecondaryText.HasValue() || SecondaryTemplate is not null;
+}
+
 @if (Href.HasNoValue())
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
@@ -21,20 +26,31 @@
             {
                 <i style="@Styles?.Icon" class="bit-btn-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
             }
-            <div style="@Styles?.Container" class="bit-btn-tcn @Classes?.Container">
-                <div style="@Styles?.Primary" class="bit-btn-prt @Classes?.Primary">
-                    @(PrimaryTemplate ?? ChildContent)
-                </div>
+            @if (hasPrimary || hasSecondary)
+            {
+                <div style="@Styles?.Container" class="bit-btn-tcn @Classes?.Container">
+                    @if (hasPrimary)
+                    {
+                        <div style="@Styles?.Primary" class="bit-btn-prt @Classes?.Primary">
+                            @(PrimaryTemplate ?? ChildContent)
+                        </div>
+                    }
 
-                @if (SecondaryTemplate is not null)
-                {
-                    @SecondaryTemplate
-                }
-                else if (SecondaryText.HasValue())
-                {
-                    <span style="@Styles?.Secondary" class="bit-btn-sct @Classes?.Secondary">@SecondaryText</span>
-                }
-            </div>
+                    @if (hasSecondary)
+                    {
+                        <div style="@Styles?.Secondary" class="bit-btn-sct @Classes?.Secondary">
+                            @if (SecondaryTemplate is not null)
+                            {
+                                @SecondaryTemplate
+                            }
+                            else
+                            {
+                                @SecondaryText
+                            }
+                        </div>
+                    }
+                </div>
+            }
         }
         else
         {
@@ -76,19 +92,30 @@ else
         {
             <i style="@Styles?.Icon" class="bit-btn-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
         }
-        <div style="@Styles?.Container" class="bit-btn-tcn @Classes?.Container">
-            <div style="@Styles?.Primary" class="bit-btn-prt @Classes?.Primary">
-                @(PrimaryTemplate ?? ChildContent)
-            </div>
+        @if (hasPrimary || hasSecondary)
+        {
+            <div style="@Styles?.Container" class="bit-btn-tcn @Classes?.Container">
+                @if (hasPrimary)
+                {
+                    <div style="@Styles?.Primary" class="bit-btn-prt @Classes?.Primary">
+                        @(PrimaryTemplate ?? ChildContent)
+                    </div>
+                }
 
-            @if (SecondaryTemplate is not null)
-            {
-                @SecondaryTemplate
-            }
-            else if (SecondaryText.HasValue())
-            {
-                <span style="@Styles?.Secondary" class="bit-btn-sct @Classes?.Secondary">@SecondaryText</span>
-            }
-        </div>
+                @if (hasSecondary)
+                {
+                    <div style="@Styles?.Secondary" class="bit-btn-sct @Classes?.Secondary">
+                        @if (SecondaryTemplate is not null)
+                        {
+                            @SecondaryTemplate
+                        }
+                        else
+                        {
+                            @SecondaryText
+                        }
+                    </div>
+                }
+            </div>
+        }
     </a>
 }

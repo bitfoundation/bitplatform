@@ -189,6 +189,11 @@ public partial class BitButton : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        ClassBuilder.Register(() => (PrimaryTemplate ?? ChildContent) is null &&
+                                    SecondaryText.HasNoValue() &&
+                                    SecondaryTemplate is null
+                                        ? "bit-btn-ntx" : string.Empty);
+
         ClassBuilder.Register(() => Variant switch
         {
             BitVariant.Fill => "bit-btn-fil",

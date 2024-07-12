@@ -237,7 +237,7 @@ private bool AccordionToggleIsExpanded;";
 
 <BitAccordion>
     <HeaderTemplate Context=""isExpanded"">
-        <BitIconButton IconName=""@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)"" />
+        <BitButton Variant=""BitVariant.Text"" IconName=""@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)"" />
         <div class=""custom-header"">
             <span class=""custom-title"">Accordion 1</span>
             <span>I am an accordion</span>

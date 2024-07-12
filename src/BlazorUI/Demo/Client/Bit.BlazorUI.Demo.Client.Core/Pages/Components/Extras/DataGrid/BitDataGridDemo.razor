@@ -64,8 +64,8 @@
                             <BitDataGridPropertyColumn Property="@(c => c.Medals.Silver)" Sortable="true" />
                             <BitDataGridPropertyColumn Property="@(c => c.Medals.Bronze)" Sortable="true" />
                             <BitDataGridTemplateColumn Title="Action" Align="BitDataGridAlign.Center">
-                                <BitIconButton IconName="@BitIconName.Edit" Title="Edit" />
-                                <BitIconButton IconName="@BitIconName.Delete" Title="Delete" />
+                                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit" Title="Edit" />
+                                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Delete" Title="Delete" />
                             </BitDataGridTemplateColumn>
                         </BitDataGrid>
                     </div>

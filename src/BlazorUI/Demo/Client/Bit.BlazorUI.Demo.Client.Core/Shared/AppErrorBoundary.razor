@@ -8,7 +8,9 @@ else if (ErrorContent is null)
 {
     <div class="main">
         <div class="header">
-            <BitIconButton OnClick="Recover" IconName="@BitIconName.ChromeClose" />
+            <BitButton IconName="@BitIconName.ChromeClose"
+                       Variant="BitVariant.Text"
+                       OnClick="Recover" />
         </div>
         <div>
             <img src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/error-triangle.svg" />
