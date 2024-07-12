@@ -5,6 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitIconButton : BitComponentBase
 {
     private BitSize? size;
+    private BitColor? color;
 
     private int? _tabIndex;
     private BitButtonType _buttonType;
