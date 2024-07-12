@@ -68,14 +68,14 @@ public static partial class Program
                                                      currentRequest.HttpContext.Connection.RemoteIpAddress.ToString());
             }
 
-            if (currentRequest.Headers.TryGetValue(HeaderNames.UserAgent, out var header))
+            if (currentRequest.Headers.TryGetValue(HeaderNames.UserAgent, out var headerValues))
             {
-                httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, string.Join(',', header!));
+                httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, string.Join(',', headerValues!));
             }
 
-            if (currentRequest.Headers.TryGetValue(HeaderNames.Referer, out header))
+            if (currentRequest.Headers.TryGetValue(HeaderNames.Referer, out headerValues))
             {
-                httpClient.DefaultRequestHeaders.Add(HeaderNames.Referer, string.Join(',', header!));
+                httpClient.DefaultRequestHeaders.Add(HeaderNames.Referer, string.Join(',', headerValues!));
             }
 
             return httpClient;
