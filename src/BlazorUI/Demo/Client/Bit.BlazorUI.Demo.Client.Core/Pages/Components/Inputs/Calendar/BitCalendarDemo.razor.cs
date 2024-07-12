@@ -493,10 +493,10 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
-                    Name = "TimePickerDivider",
+                    Name = "TimePickerHourMinuteSeparator",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the time-picker's divider of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the time-picker's hour/minute separator of the BitCalendar."
                 },
                 new()
                 {
