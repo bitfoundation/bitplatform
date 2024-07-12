@@ -125,7 +125,7 @@ public class BitActionButtonTests : BunitTestContext
 
         var bitActionButton = component.Find(".bit-acb");
         var tagName = bitActionButton.TagName;
-        var expectedElement = href.HasValue() && isEnabled ? "a" : "button";
+        var expectedElement = href.HasValue() ? "a" : "button";
 
         Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
     }
