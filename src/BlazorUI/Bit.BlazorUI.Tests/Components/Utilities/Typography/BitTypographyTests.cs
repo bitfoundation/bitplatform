@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Typography;
 [TestClass]
 public class BitTypographyTests : BunitTestContext
 {
-    private static readonly IReadOnlyDictionary<BitTypographyVariant, string> variantMapping = new Dictionary<BitTypographyVariant, string>()
+    private static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
     {
         { BitTypographyVariant.Body1, "p" },
         { BitTypographyVariant.Body2, "p" },
