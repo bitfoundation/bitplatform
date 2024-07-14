@@ -15,6 +15,11 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
+    /// Circular mode of the BitProgressBar.
+    /// </summary>
+    [Parameter] public bool Circular { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitProgressBar.
     /// </summary>
     [Parameter] public BitProgressBarClassStyles? Classes { get; set; }
@@ -35,9 +40,9 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// Height of the BitProgressBar.
+    /// Thickness of the BitProgressBar.
     /// </summary>
-    [Parameter] public int Height { get; set; } = 2;
+    [Parameter] public int Thickness { get; set; } = 2;
 
     /// <summary>
     /// Whether or not to show indeterminate progress animation.
@@ -107,7 +112,7 @@ public partial class BitProgressBar : BitComponentBase
 
         if (Indeterminate is false)
         {
-            sb.Append($"width: {Normalize(Percent)}%;");
+            sb.Append($"{(Circular ? "--bit-prb-percent" : "width")}:{Normalize(Percent)}%;");
         }
 
         return sb.ToString();

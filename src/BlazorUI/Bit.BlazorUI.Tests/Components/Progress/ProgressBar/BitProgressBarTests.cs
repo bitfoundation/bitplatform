@@ -10,16 +10,16 @@ public class BitProgressBarTests : BunitTestContext
         DataRow(3),
         DataRow(12)
     ]
-    public void BitProgressBarHeightTest(int height)
+    public void BitProgressBarThicknessTest(int thickness)
     {
         var component = RenderComponent<BitProgressBar>(parameters =>
         {
-            parameters.Add(p => p.Height, height);
+            parameters.Add(p => p.Thickness, thickness);
         });
 
         var piWrapper = component.Find(".bit-prb-bcn");
         var piWrapperStyle = piWrapper.GetAttribute("style");
-        var expectedValue = $"height: {height}px";
+        var expectedValue = $"height: {thickness}px";
         Assert.IsTrue(piWrapperStyle.Contains(expectedValue));
     }
 

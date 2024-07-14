@@ -25,86 +25,137 @@ Bars moving backward reduce confidence in the service."
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Height" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Circular" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
-            <BitProgressBar Percent="69" Height="10" />
+            <BitProgressBar Circular
+                            Label="Basic Circular Progress"
+                            Description="Example description"
+                            Percent="42" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="ShowPercentNumber" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Thickness" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <BitSlider @bind-Value="barThickness" Max="50" />
+            <br /><br />
+            <BitProgressBar Percent="69" Thickness="(int)barThickness" />
+            <br />
+            <BitProgressBar Circular Percent="69" Thickness="(int)barThickness" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ShowPercentNumber" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <BitProgressBar Label="Show Percent Number"
                             Percent="85.69"
                             ShowPercentNumber />
-
             <br />
-
             <BitProgressBar Label="Percent Number Format"
+                            Percent="85.69"
+                            PercentNumberFormat="{0:F2} %"
+                            ShowPercentNumber />
+            <br /><br />
+            <BitProgressBar Circular
+                            Label="Show Percent Number"
+                            Percent="85.69"
+                            ShowPercentNumber />
+            <br />
+            <BitProgressBar Circular
+                            Label="Percent Number Format"
                             Percent="85.69"
                             PercentNumberFormat="{0:F2} %"
                             ShowPercentNumber />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Indeterminate" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <BitProgressBar Indeterminate />
+            <br />
+            <BitProgressBar Circular Indeterminate />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <BitProgressBar Color="#c10606" Percent="69" />
-
             <br />
-
             <BitProgressBar Color="#ffba17" Indeterminate />
+            <br /><br />
+            <BitProgressBar Color="#c10606" Circular Percent="69" />
+            <br />
+            <BitProgressBar Color="#ffba17" Circular Indeterminate />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div>
                 <div>Component's Style & Class:</div>
                 <br />
-                <BitProgressBar Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Height="10" Indeterminate />
-
+                <BitProgressBar Indeterminate Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Thickness="10" />
                 <br />
-
                 <BitProgressBar Class="custom-class"
                                 Percent="69"
-                                Height="10" />
+                                Thickness="10" />
+                <br /><br />
+                <BitProgressBar Circular Indeterminate Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Thickness="10" />
+                <br />
+                <BitProgressBar Circular
+                                Class="custom-class"
+                                Percent="69"
+                                Thickness="10" />
                 <br /><br /><br />
                 <div>Styles & Classes:</div>
                 <br />
-                <BitProgressBar Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);",
-                                                  Track = "background-color: green;" })"
-                                Height="10"
-                                Indeterminate />
-
+                <BitProgressBar Indeterminate
+                                Thickness="10"
+                                Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);",
+                                                  Track = "background-color: green;" })" />
                 <br />
-
                 <BitProgressBar Classes="@(new() { Bar = "custom-bar",
                                                    Track = "custom-tracker"})"
                                 Percent="69"
-                                Height="10" />
+                                Thickness="10" />
+                <br /><br />
+                <BitProgressBar Circular Indeterminate
+                                Thickness="10"
+                                Styles="@(new() { Bar = "stroke: greenyellow;",
+                                                  Track = "stroke: green;" })" />
+                <br />
+                <BitProgressBar Circular
+                                Percent="69"
+                                Thickness="10"
+                                Classes="@(new() { Bar = "custom-circle-bar",
+                                                   Track = "custom-circle-tracker"})" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <BitProgressBar Dir="BitDir.Rtl"
-                            Height="10"
+                            Thickness="10"
                             Indeterminate />
-
             <br />
-
             <BitProgressBar Label="لیبل تست"
                             Description="توضیحات تست"
                             Dir="BitDir.Rtl"
                             Percent="69"
-                            Height="10"
+                            Thickness="10"
+                            ShowPercentNumber />
+            <br /><br />
+            <BitProgressBar Circular
+                            Dir="BitDir.Rtl"
+                            Thickness="10"
+                            Indeterminate />
+            <br />
+            <BitProgressBar Circular
+                            Label="لیبل تست"
+                            Description="توضیحات تست"
+                            Dir="BitDir.Rtl"
+                            Percent="69"
+                            Thickness="10"
                             ShowPercentNumber />
         </ExamplePreview>
     </ComponentExampleBox>

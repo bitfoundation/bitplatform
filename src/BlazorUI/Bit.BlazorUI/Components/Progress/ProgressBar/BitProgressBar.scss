@@ -17,6 +17,16 @@
             transform: translateX(0%);
         }
     }
+
+    @keyframes bit-prb-cir-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }
 
 .bit-prb-lbl {
@@ -56,11 +66,10 @@
 }
 
 .bit-prb-des {
-    font-size: spacing(1.5);
-    line-height: spacing(2.25);
     color: $clr-fg-sec;
+    font-size: spacing(1.25);
+    line-height: spacing(2.25);
 }
-
 
 .bit-prb-ind {
     width: 0;
@@ -69,4 +78,45 @@
     transition: width 0.3s ease 0s;
     animation: 3s ease 0s infinite normal none running bit-prb-animation;
     background: linear-gradient(to right, $clr-bg-sec 0%, var(--bit-prb-bar-color) 50%, $clr-bg-sec 100%);
+}
+
+.bit-prb-crw {
+    display: flex;
+    position: relative;
+    align-items: center;
+    max-width: max-content;
+    justify-content: center;
+}
+
+.bit-prb-cir {
+    display: block;
+    min-width: spacing(6.25);
+    min-height: spacing(6.25);
+}
+
+.bit-prb-ctx {
+    color: $clr-fg-sec;
+    position: absolute;
+    font-size: spacing(1.125);
+}
+
+circle {
+    fill: none;
+    stroke: $clr-bg-sec;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.bit-prb-cbr {
+    stroke: var(--bit-prb-bar-color);
+    transition: stroke-dasharray 0.05s ease-in-out;
+    stroke-dasharray: calc(3.141 * var(--bit-prb-percent, 0%) * 0.8), 500%;
+}
+
+.bit-prb-cri {
+    stroke: var(--bit-prb-bar-color);
+    transition: stroke-dasharray 0.05s ease-in-out;
+    stroke-dasharray: calc(3.141 * 25% * 0.8), 500%;
+    animation: bit-prb-cir-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
