@@ -2,10 +2,6 @@
 
 public partial class BitLabel : BitComponentBase
 {
-    private bool required;
-
-
-
     /// <summary>
     /// The content of label, It can be Any custom tag or a text
     /// </summary>
@@ -19,18 +15,9 @@ public partial class BitLabel : BitComponentBase
     /// <summary>
     /// Whether the associated field is required or not, it shows a star above of it
     /// </summary>
-    [Parameter]
-    public bool Required
-    {
-        get => required;
-        set
-        {
-            if (required == value) return;
+    [Parameter, ResetClassBuilder]
+    public bool Required { get; set; }
 
-            required = value;
-            ClassBuilder.Reset();
-        }
-    }
 
 
     protected override string RootElementClass => "bit-lbl";

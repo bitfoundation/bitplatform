@@ -33,18 +33,8 @@ public partial class BitGrid : BitComponentBase
     /// <summary>
     /// Defines the columns of Grid.
     /// </summary>
-    [Parameter]
-    public int Columns
-    {
-        get => columns;
-        set
-        {
-            if (columns == value) return;
-
-            columns = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public int Columns { get; set; } = 12;
 
     /// <summary>
     /// Number of columns in the extra small breakpoint.
@@ -79,94 +69,39 @@ public partial class BitGrid : BitComponentBase
     /// <summary>
     /// Defines whether to render Grid children horizontally.
     /// </summary>
-    [Parameter]
-    public BitGridAlignment HorizontalAlign
-    {
-        get => horizontalAlign;
-        set
-        {
-            if (horizontalAlign == value) return;
-
-            horizontalAlign = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public BitGridAlignment HorizontalAlign { get; set; }
 
     /// <summary>
     /// Defines the horizontal spacing between Grid children.
     /// </summary>
-    [Parameter]
-    public string? HorizontalSpacing
-    {
-        get => horizontalSpacing;
-        set
-        {
-            if (horizontalSpacing == value) return;
-
-            horizontalSpacing = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public string? HorizontalSpacing { get; set; }
 
     /// <summary>
     /// Defines the spacing between Grid children.
     /// </summary>
-    [Parameter]
-    public string Spacing
-    {
-        get => spacing;
-        set
-        {
-            if (spacing == value) return;
-
-            spacing = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public string Spacing { get; set; } = "4px";
 
     /// <summary>
     /// Defines the span of Grid.
     /// </summary>
-    [Parameter]
-    public int Span
-    {
-        get => span;
-        set
-        {
-            if (span == value) return;
-
-            span = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public int Span { get; set; } = 1;
 
     /// <summary>
     /// Defines the vertical spacing between Grid children.
     /// </summary>
-    [Parameter]
-    public string? VerticalSpacing
-    {
-        get => verticalSpacing;
-        set
-        {
-            if (verticalSpacing == value) return;
-
-            verticalSpacing = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public string? VerticalSpacing { get; set; }
 
 
     protected override string RootElementClass => "bit-grd";
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(register =>
-        {
-            register($"justify-content:{_AlignmentMap[HorizontalAlign]}");
-
-            return string.Empty;
-        });
+        StyleBuilder.Register(() => $"justify-content:{_AlignmentMap[HorizontalAlign]}");
 
         StyleBuilder.Register(() => $"--span:{Span}");
         StyleBuilder.Register(() => $"--columns:{Columns}");

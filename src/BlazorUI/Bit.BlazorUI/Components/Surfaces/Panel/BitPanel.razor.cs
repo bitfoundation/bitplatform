@@ -4,7 +4,7 @@ public partial class BitPanel : BitComponentBase
 {
     private bool IsOpenHasBeenSet;
 
-    private bool isOpen;
+    
 
     private int _offsetTop;
     private bool _internalIsOpen;
@@ -59,19 +59,7 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Whether the Panel is displayed.
     /// </summary>
-    [Parameter]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (value == isOpen) return;
-
-            isOpen = value;
-
-            _ = IsOpenChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter] public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -88,8 +76,7 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Provides Height or Width for the Panel.
     /// </summary>
-    [Parameter]
-    public double Size { get; set; }
+    [Parameter] public double Size { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Panel disables its scroll if applicable.
@@ -117,15 +104,18 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public string? TitleAriaId { get; set; }
 
 
+
     public void Open()
     {
         IsOpen = true;
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
         StateHasChanged();
     }
 
     public void Close()
     {
         IsOpen = false;
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
         StateHasChanged();
     }
 
@@ -164,7 +154,7 @@ public partial class BitPanel : BitComponentBase
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, isOpen);
+        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
 
         StyleBuilder.Reset();
         StateHasChanged();
@@ -178,7 +168,7 @@ public partial class BitPanel : BitComponentBase
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
-
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
         _ = OnDismiss.InvokeAsync(e);
     }
 

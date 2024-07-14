@@ -4,7 +4,7 @@ public partial class BitOverlay : BitComponentBase
 {
     private bool IsVisibleHasBeenSet;
 
-    private bool isVisible;
+
 
     private int _offsetTop;
     private bool _internalIsVisible;
@@ -28,7 +28,8 @@ public partial class BitOverlay : BitComponentBase
     /// <summary>
     /// When true, the Overlay will be positioned absolute instead of fixed.
     /// </summary>
-    [Parameter] public bool AbsolutePosition { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool AbsolutePosition { get; set; }
 
     /// <summary>
     /// The content of the Overlay.
@@ -38,21 +39,9 @@ public partial class BitOverlay : BitComponentBase
     /// <summary>
     /// When true, the Overlay and its content will be shown.
     /// </summary>
-    [Parameter]
-    public bool IsVisible
-    {
-        get => isVisible;
-        set
-        {
-            if (isVisible == value) return;
+    [Parameter, ResetClassBuilder]
+    public bool IsVisible { get; set; }
 
-            isVisible = value;
-
-            _ = IsVisibleChanged.InvokeAsync(value);
-
-            ClassBuilder.Reset();
-        }
-    }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
 
     /// <summary>
@@ -61,14 +50,18 @@ public partial class BitOverlay : BitComponentBase
     [Parameter] public string ScrollerSelector { get; set; } = "body";
 
 
+
     protected override string RootElementClass => "bit-ovl";
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : "");
+    }
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => IsVisible ? $"{RootElementClass}-vis" : "");
         ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : "");
-
-        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : "");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -88,6 +81,7 @@ public partial class BitOverlay : BitComponentBase
         if (AbsolutePosition is false) return;
 
         StyleBuilder.Reset();
+
         StateHasChanged();
     }
 
@@ -98,5 +92,6 @@ public partial class BitOverlay : BitComponentBase
         if (IsVisibleHasBeenSet && IsVisibleChanged.HasDelegate is false) return;
 
         IsVisible = false;
+        _ = IsVisibleChanged.InvokeAsync(IsVisible);
     }
 }

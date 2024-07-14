@@ -2,8 +2,6 @@
 
 public partial class BitCarousel : BitComponentBase, IDisposable
 {
-    private int scrollItemsCount = 1;
-
     private bool _disposed;
     private int _pagesCount;
     private int _currentPage;
@@ -56,15 +54,7 @@ public partial class BitCarousel : BitComponentBase, IDisposable
     /// Number of items that is going to be changed on navigation
     /// </summary>
     [Parameter]
-    public int ScrollItemsCount
-    {
-        get => scrollItemsCount;
-        set
-        {
-            scrollItemsCount = value;
-            _internalScrollItemsCount = value;
-        }
-    }
+    public int ScrollItemsCount { get; set; } = 1;
 
     /// <summary>
     /// Enables/disables the auto scrolling of the slides.
@@ -129,6 +119,13 @@ public partial class BitCarousel : BitComponentBase, IDisposable
 
     protected override string RootElementClass => "bit-csl";
 
+    protected override void OnParametersSet()
+    {
+        _internalScrollItemsCount = ScrollItemsCount;
+
+        base.OnParametersSet();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
@@ -147,7 +144,7 @@ public partial class BitCarousel : BitComponentBase, IDisposable
             _autoPlayTimer.Start();
         }
 
-        if (scrollItemsCount > VisibleItemsCount)
+        if (ScrollItemsCount > VisibleItemsCount)
         {
             _internalScrollItemsCount = VisibleItemsCount;
         }

@@ -59,7 +59,7 @@ public abstract partial class BitComponentBase : ComponentBase
     /// Whether or not the component is enabled.
     /// </summary>
     [Parameter]
-    public bool IsEnabled { get; set; }
+    public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Custom CSS style for the root element of the component.
@@ -72,6 +72,7 @@ public abstract partial class BitComponentBase : ComponentBase
     /// </summary>
     [Parameter]
     public BitVisibility Visibility { get; set; }
+
 
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -139,6 +140,8 @@ public abstract partial class BitComponentBase : ComponentBase
         }
         return base.SetParametersAsync(ParameterView.Empty);
     }
+
+
 
     protected override void OnInitialized()
     {

@@ -2,9 +2,6 @@
 
 public partial class BitMessage : BitComponentBase
 {
-    private BitVariant variant = BitVariant.Fill;
-    private BitSeverity severity = BitSeverity.Info;
-
     private bool _isExpanded;
 
 
@@ -72,19 +69,8 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// The severity of the message. defaults to Info.
     /// </summary>
-    [Parameter]
-    public BitSeverity Severity
-    {
-        get => severity;
-        set
-        {
-            if (severity == value) return;
-
-            severity = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSeverity Severity { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitMessage.
@@ -101,19 +87,8 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// The variant of the message. defaults to Fill.
     /// </summary>
-    [Parameter]
-    public BitVariant Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
-
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitVariant Variant { get; set; }
 
 
 
@@ -149,7 +124,7 @@ public partial class BitMessage : BitComponentBase
 
     private void ToggleExpand() => _isExpanded = _isExpanded is false;
 
-    private string GetTextRole() => Role ?? (severity is BitSeverity.Success or BitSeverity.Info ? "status" : "alert");
+    private string GetTextRole() => Role ?? (Severity is BitSeverity.Success or BitSeverity.Info ? "status" : "alert");
 
     private string GetIconName() => IconName ?? _IconMap[Severity];
 

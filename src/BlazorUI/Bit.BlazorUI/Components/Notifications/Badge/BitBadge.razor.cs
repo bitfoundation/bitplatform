@@ -4,11 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitBadge : BitComponentBase
 {
-    private BitSize? size;
-    private BitVariant? variant;
-    private BitSeverity? severity;
-    private BitBadgePosition badgePosition = BitBadgePosition.TopRight;
-
     private string? _content;
 
 
@@ -61,53 +56,20 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// The position of the badge.
     /// </summary>
-    [Parameter]
-    public BitBadgePosition Position
-    {
-        get => badgePosition;
-        set
-        {
-            if (badgePosition == value) return;
-
-            badgePosition = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitBadgePosition Position { get; set; }
 
     /// <summary>
     /// The severity of the badge.
     /// </summary>
-    [Parameter]
-    public BitSeverity? Severity
-    {
-        get => severity;
-        set
-        {
-            if (severity == value) return;
-
-            severity = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSeverity? Severity { get; set; }
 
     /// <summary>
     /// The size of badge, Possible values: Small | Medium | Large
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitBadge.
@@ -117,19 +79,9 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// The visual variant of the badge.
     /// </summary>
-    [Parameter]
-    public BitVariant? Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
 
 
     protected override string RootElementClass => "bit-bdg";

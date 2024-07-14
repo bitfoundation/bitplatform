@@ -7,11 +7,8 @@ public partial class BitPagination : BitComponentBase
     private bool SelectedPageHasBeenSet;
 
     private int count = 1;
-    private BitSize? size;
     private int selectedPage;
     private int middleCount = 3;
-    private BitVariant? variant;
-    private BitSeverity? severity;
     private int boundaryCount = 2;
 
 
@@ -113,19 +110,8 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The severity of the pagination.
     /// </summary>
-    [Parameter]
-    public BitSeverity? Severity
-    {
-        get => severity;
-        set
-        {
-            if (severity == value) return;
-
-            severity = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSeverity? Severity { get; set; }
 
     /// <summary>
     /// If true, the navigate to first page button is shown.
@@ -150,19 +136,8 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The size of pagination buttons, Possible values: Small | Medium | Large
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitPagination.
@@ -172,19 +147,8 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The visual variant of the pagination.
     /// </summary>
-    [Parameter]
-    public BitVariant? Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
-
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
 
     protected override string RootElementClass => "bit-pgn";

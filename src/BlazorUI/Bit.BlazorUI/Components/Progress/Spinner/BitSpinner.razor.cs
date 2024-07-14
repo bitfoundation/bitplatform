@@ -2,10 +2,6 @@
 
 public partial class BitSpinner : BitComponentBase
 {
-    private BitSize? size;
-
-
-
     /// <summary>
     /// Politeness setting for label update announcement.
     /// </summary>
@@ -19,24 +15,15 @@ public partial class BitSpinner : BitComponentBase
     /// <summary>
     /// The size of spinner to render
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// The label to show next to the spinner. Label updates will be announced to the screen readers
     /// </summary>
     [Parameter] public string? Label { get; set; }
+
+
 
     protected override string RootElementClass => "bit-spn";
 

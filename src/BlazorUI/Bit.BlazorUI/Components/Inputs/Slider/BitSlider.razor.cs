@@ -9,18 +9,19 @@ public partial class BitSlider : BitComponentBase
     private bool LowerValueHasBeenSet;
     private bool RangeValueHasBeenSet;
 
-    private bool isRanged;
-    private bool isReadOnly;
-    private bool isVertical;
+
+
+    private double value;
     private double lowerValue;
     private double upperValue;
-    private double value;
 
-    private double _firstInputValue;
-    private double _secondInputValue;
+
+
+    private int _inputHeight;
     private string? _styleProgress;
     private string? _styleContainer;
-    private int _inputHeight;
+    private double _firstInputValue;
+    private double _secondInputValue;
     private string _sliderBoxId = default!;
     private string _minInputId = default!;
     private string _maxInputId = default!;
@@ -29,7 +30,11 @@ public partial class BitSlider : BitComponentBase
     private ElementReference _containerRef;
     private ElementReference _valueLabelRef;
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     ///  A text description of the Slider number value for the benefit of screen readers
@@ -65,50 +70,20 @@ public partial class BitSlider : BitComponentBase
     /// <summary>
     /// If ranged is true, display two thumbs that allow the lower and upper bounds of a range to be selected
     /// </summary>
-    [Parameter]
-    public bool IsRanged
-    {
-        get => isRanged;
-        set
-        {
-            if (isRanged == value) return;
-
-            isRanged = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsRanged { get; set; }
 
     /// <summary>
     /// Whether to render the Slider as readonly
     /// </summary>
-    [Parameter]
-    public bool IsReadOnly
-    {
-        get => isReadOnly;
-        set
-        {
-            if (isReadOnly == value) return;
-
-            isReadOnly = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsReadOnly { get; set; }
 
     /// <summary>
     /// Whether to render the slider vertically
     /// </summary>
-    [Parameter]
-    public bool IsVertical
-    {
-        get => isVertical;
-        set
-        {
-            if (isVertical == value) return;
-
-            isVertical = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsVertical { get; set; }
 
     /// <summary>
     /// Description label of the Slider
@@ -129,12 +104,13 @@ public partial class BitSlider : BitComponentBase
             lowerValue = value;
 
             SetInputValueOnRanged(value, UpperValue);
-            
+
             FillSlider();
-            
+
             _ = LowerValueChanged.InvokeAsync(value);
         }
     }
+
     [Parameter] public EventCallback<double> LowerValueChanged { get; set; }
 
     /// <summary>
@@ -171,6 +147,7 @@ public partial class BitSlider : BitComponentBase
             _ = RangeValueChanged.InvokeAsync(value);
         }
     }
+
     [Parameter] public EventCallback<BitSliderRangeValue?> RangeValueChanged { get; set; }
 
     /// <summary>
@@ -213,6 +190,7 @@ public partial class BitSlider : BitComponentBase
             _ = UpperValueChanged.InvokeAsync(value);
         }
     }
+
     [Parameter] public EventCallback<double> UpperValueChanged { get; set; }
 
     /// <summary>
@@ -231,12 +209,14 @@ public partial class BitSlider : BitComponentBase
             _ = ValueChanged.InvokeAsync(value);
         }
     }
+
     [Parameter] public EventCallback<double> ValueChanged { get; set; }
 
     /// <summary>
     /// Custom formatter for the Slider value
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
+
 
 
     protected override string RootElementClass => "bit-sld";
@@ -317,6 +297,8 @@ public partial class BitSlider : BitComponentBase
 
         FillSlider();
     }
+
+
 
     private async Task HandleOnInput(ChangeEventArgs e)
     {

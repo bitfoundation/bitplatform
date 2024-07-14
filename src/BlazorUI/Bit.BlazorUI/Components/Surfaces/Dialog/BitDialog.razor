@@ -9,7 +9,7 @@
          class="@ClassBuilder.Value"
          dir="@Dir?.ToString().ToLower()">
 
-        <div role=@(_isAlertRole ? "alertdialog": "dialog")
+        <div role=@(isAlertRole ? "alertdialog": "dialog")
              aria-modal="@((IsModeless is false).ToString())"
              aria-labelledby="@TitleAriaId"
              aria-describedby="@SubtitleAriaId"

@@ -80,7 +80,7 @@ namespace {namespaceName}
             }
             if (prop.ResetStyleBuilder)
             {
-                source.AppendLine("                       if ({propName} != {varName}) StyleBuilder.Reset();");
+                source.AppendLine($"                       if ({propName} != {varName}) StyleBuilder.Reset();");
             }
             source.AppendLine($"                       {propName} = {varName};");
             source.AppendLine("                       parametersDictionary.Remove(parameter.Key);");

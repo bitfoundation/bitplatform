@@ -93,6 +93,21 @@ public partial class BitToggle : BitInputBase<bool>
         base.OnInitialized();
     }
 
+    protected override string? FormatValueAsString(bool value) => value.ToString().ToLower(CultureInfo.CurrentUICulture);
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out bool result, [NotNullWhen(false)] out string? parsingErrorMessage)
+        => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            OnValueChanged -= HandleOnValueChanged;
+        }
+
+        base.Dispose(disposing);
+    }
+
 
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -102,7 +117,7 @@ public partial class BitToggle : BitInputBase<bool>
         ClassBuilder.Reset();
     }
 
-    protected virtual async Task HandleOnClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -117,21 +132,5 @@ public partial class BitToggle : BitInputBase<bool>
         if (AriaLabel.HasValue()) return;
 
         _labelledById = $"{(Label.HasValue() ? _labelId : "")} {(_stateText.HasValue() ? _stateTextId : "")}".Trim();
-    }
-
-    protected override string? FormatValueAsString(bool value) => value.ToString().ToLower(CultureInfo.CurrentUICulture);
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out bool result, [NotNullWhen(false)] out string? parsingErrorMessage)
-        => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
-
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
     }
 }

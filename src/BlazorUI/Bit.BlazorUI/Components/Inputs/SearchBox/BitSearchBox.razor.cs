@@ -4,14 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitSearchBox : BitInputBase<string?>
 {
-    private bool isOpen;
-    private bool hideIcon;
-    private bool fixedIcon;
-    private bool isUnderlined;
-    private bool inputHasFocus;
-    private bool showSearchButton;
-    private bool disableAnimation;
-
+    private bool _isOpen;
     private int _selectedIndex = -1;
     private string _inputId = string.Empty;
     private List<string> _searchItems = [];
@@ -20,6 +13,9 @@ public partial class BitSearchBox : BitInputBase<string?>
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
 
+
+
+    private bool inputHasFocus;
     private bool _inputHasFocus
     {
         get => inputHasFocus;
@@ -32,7 +28,10 @@ public partial class BitSearchBox : BitInputBase<string?>
         }
     }
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>
@@ -53,66 +52,26 @@ public partial class BitSearchBox : BitInputBase<string?>
     /// <summary>
     /// Whether or not to animate the search box icon on focus.
     /// </summary>
-    [Parameter]
-    public bool DisableAnimation
-    {
-        get => disableAnimation;
-        set
-        {
-            if (disableAnimation == value) return;
-
-            disableAnimation = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool DisableAnimation { get; set; }
 
     /// <summary>
     /// Whether or not to make the icon be always visible (it hides by default when the search box is focused).
     /// </summary>
-    [Parameter]
-    public bool FixedIcon
-    {
-        get => fixedIcon;
-        set
-        {
-            if (fixedIcon == value) return;
-
-            fixedIcon = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool FixedIcon { get; set; }
 
     /// <summary>
     /// Whether or not the icon is visible.
     /// </summary>
-    [Parameter]
-    public bool HideIcon
-    {
-        get => hideIcon;
-        set
-        {
-            if (hideIcon == value) return;
-
-            hideIcon = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool HideIcon { get; set; }
 
     /// <summary>
     /// Whether or not the SearchBox is underlined.
     /// </summary>
-    [Parameter]
-    public bool IsUnderlined
-    {
-        get => isUnderlined;
-        set
-        {
-            if (isUnderlined == value) return;
-
-            isUnderlined = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsUnderlined { get; set; }
 
     /// <summary>
     /// The icon name for the icon shown at the beginning of the search box.
@@ -187,23 +146,24 @@ public partial class BitSearchBox : BitInputBase<string?>
     /// <summary>
     /// Whether to show the search button.
     /// </summary>
-    [Parameter]
-    public bool ShowSearchButton
-    {
-        get => showSearchButton;
-        set
-        {
-            if (showSearchButton == value) return;
-
-            showSearchButton = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool ShowSearchButton { get; set; }
 
     /// <summary>
     /// Whether to hide the clear button when the BitSearchBox has value.
     /// </summary>
     [Parameter] public bool HideClearButton { get; set; }
+
+
+
+    [JSInvokable("CloseCallout")]
+    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        if (IsEnabled is false) return;
+
+        _isOpen = false;
+        StateHasChanged();
+    }
 
 
 
@@ -231,7 +191,7 @@ public partial class BitSearchBox : BitInputBase<string?>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         _calloutId = $"BitSearchBox-{UniqueId}-callout";
         _scrollContainerId = $"BitSearchBox-{UniqueId}-scroll-container";
@@ -239,15 +199,36 @@ public partial class BitSearchBox : BitInputBase<string?>
 
         if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
         {
-            SetCurrentValueAsStringAsync(DefaultValue);
+            await SetCurrentValueAsStringAsync(DefaultValue);
         }
 
         OnValueChanged += HandleOnValueChanged;
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        result = value;
+        parsingErrorMessage = null;
+        return true;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            OnValueChanged -= HandleOnValueChanged;
+            _dotnetObj.Dispose();
+            _cancellationTokenSource.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
 
@@ -321,7 +302,7 @@ public partial class BitSearchBox : BitInputBase<string?>
         await _js.ToggleCallout(_dotnetObj,
                                 _Id,
                                 _calloutId,
-                                isOpen,
+                                _isOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
                                 Dir is BitDir.Rtl,
@@ -337,7 +318,7 @@ public partial class BitSearchBox : BitInputBase<string?>
     {
         if (IsEnabled is false) return;
 
-        isOpen = false;
+        _isOpen = false;
         await ToggleCallout();
 
         StateHasChanged();
@@ -390,9 +371,9 @@ public partial class BitSearchBox : BitInputBase<string?>
         {
             _selectedIndex = _searchItems.FindIndex(i => i == CurrentValue);
 
-            if (isOpen is false)
+            if (_isOpen is false)
             {
-                isOpen = true;
+                _isOpen = true;
                 await ToggleCallout();
             }
         }
@@ -404,7 +385,7 @@ public partial class BitSearchBox : BitInputBase<string?>
 
     private async Task ChangeSelectedItem(bool isArrowUp)
     {
-        if (isOpen is false) return;
+        if (_isOpen is false) return;
         if (_searchItems.Any() is false) return;
 
         var count = _searchItems.Count;
@@ -464,33 +445,5 @@ public partial class BitSearchBox : BitInputBase<string?>
     private bool GetIsSelected(string item)
     {
         return _selectedIndex > -1 && _searchItems.IndexOf(item) == _selectedIndex;
-    }
-
-    [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened()
-    {
-        if (IsEnabled is false) return;
-
-        isOpen = false;
-        StateHasChanged();
-    }
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
-    {
-        result = value;
-        parsingErrorMessage = null;
-        return true;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-            _dotnetObj.Dispose();
-            _cancellationTokenSource.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 }

@@ -110,6 +110,8 @@ public partial class BitImage : BitComponentBase
         StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
     }
 
+
+
     private string GetImageClasses()
     {
         StringBuilder className = new StringBuilder();
@@ -145,7 +147,7 @@ public partial class BitImage : BitComponentBase
         return className.ToString();
     }
 
-    protected virtual async Task HandleOnClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled)
         {
@@ -153,21 +155,21 @@ public partial class BitImage : BitComponentBase
         }
     }
 
-    protected virtual void HandleOnError()
+    private void HandleOnError()
     {
         _loadingState = BitImageLoadingState.Error;
 
         OnLoadingStateChange.InvokeAsync(_loadingState);
     }
 
-    protected void HandleOnLoad()
+    private void HandleOnLoad()
     {
         _loadingState = BitImageLoadingState.Loaded;
 
         OnLoadingStateChange.InvokeAsync(_loadingState);
     }
 
-    protected void HandleOnLoadStart()
+    private void HandleOnLoadStart()
     {
         _loadingState = BitImageLoadingState.NotLoaded;
 

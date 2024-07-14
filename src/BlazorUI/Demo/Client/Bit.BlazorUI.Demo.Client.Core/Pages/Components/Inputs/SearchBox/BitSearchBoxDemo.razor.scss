@@ -1,4 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_colors.scss';
+﻿@import '../../../../Styles/abstracts/_functions.scss';
 
 ::deep {
     .example-content {
@@ -19,7 +19,7 @@
     }
 
     .validation-message {
-        color: $Red20;
+        color: red;
         font-size: rem2(12px);
     }
 

@@ -6,8 +6,11 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 {
     private bool IndeterminateHasBeenSet;
 
-    private bool reversed;
+
+
     private bool indeterminate;
+
+
 
     private string _inputId = string.Empty;
 
@@ -79,9 +82,13 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
         set
         {
             if (value == indeterminate) return;
+
             indeterminate = value;
+
             _ = _js.SetProperty(InputElement, "indeterminate", value);
+
             ClassBuilder.Reset();
+
             _ = IndeterminateChanged.InvokeAsync(value);
         }
     }
@@ -106,19 +113,8 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     /// <summary>
     /// Reverses the label and checkbox location.
     /// </summary>
-    [Parameter]
-    public bool Reversed
-    {
-        get => reversed;
-        set
-        {
-            if (value == reversed) return;
-
-            reversed = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitCheckbox.

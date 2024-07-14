@@ -3,9 +3,9 @@
 public partial class BitSplitter : BitComponentBase
 {
     private bool vertical;
-    private int? gutterSize;
-    private string? gutterIcon;
- 
+
+
+
     private bool _isDragging;
     private double _initialPosition;
     private double _initialFirstPanelWidth;
@@ -16,6 +16,8 @@ public partial class BitSplitter : BitComponentBase
     private ElementReference _secondPanelRef;
     private ElementReference _splitterGutterRef;
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -23,34 +25,14 @@ public partial class BitSplitter : BitComponentBase
     /// <summary>
     /// The size of BitSplitter gutter in pixels.
     /// </summary>
-    [Parameter]
-    public int? GutterSize
-    {
-        get => gutterSize;
-        set
-        {
-            if (gutterSize == value) return;
-
-            gutterSize = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public int? GutterSize { get; set; }
 
     /// <summary>
     /// The icon of BitSplitter gutter.
     /// </summary>
-    [Parameter]
-    public string? GutterIcon
-    {
-        get => gutterIcon;
-        set
-        {
-            if (gutterIcon == value) return;
-
-            gutterIcon = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public string? GutterIcon { get; set; }
 
     /// <summary>
     /// The content for the first panel.
@@ -60,17 +42,20 @@ public partial class BitSplitter : BitComponentBase
     /// <summary>
     /// The size of first panel.
     /// </summary>
-    [Parameter] public int? FirstPanelSize { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public int? FirstPanelSize { get; set; }
 
     /// <summary>
     /// The max size of first panel.
     /// </summary>
-    [Parameter] public int? FirstPanelMaxSize { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public int? FirstPanelMaxSize { get; set; }
 
     /// <summary>
     /// The min size of first panel.
     /// </summary>
-    [Parameter] public int? FirstPanelMinSize { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public int? FirstPanelMinSize { get; set; }
 
     /// <summary>
     /// The content for the second panel.
@@ -80,22 +65,26 @@ public partial class BitSplitter : BitComponentBase
     /// <summary>
     /// The size of second panel.
     /// </summary>
-    [Parameter] public int? SecondPanelSize { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public int? SecondPanelSize { get; set; }
 
     /// <summary>
     /// The max size of second panel.
     /// </summary>
-    [Parameter] public int? SecondPanelMaxSize { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public int? SecondPanelMaxSize { get; set; }
 
     /// <summary>
     /// The min size of second panel.
     /// </summary>
-    [Parameter] public int? SecondPanelMinSize { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public int? SecondPanelMinSize { get; set; }
 
     /// <summary>
     /// Sets the orientation of BitSplitter to vertical.
     /// </summary>
-    [Parameter] public bool Vertical
+    [Parameter]
+    public bool Vertical
     {
         get => vertical;
         set
@@ -107,6 +96,7 @@ public partial class BitSplitter : BitComponentBase
             _ = ResetPaneDimensions();
         }
     }
+
 
 
     protected override string RootElementClass => "bit-spl";
@@ -130,6 +120,7 @@ public partial class BitSplitter : BitComponentBase
         StyleBuilder.Register(() => SecondPanelMaxSize.HasValue ? $"--second-panel-max:{SecondPanelMaxSize}px" : string.Empty);
         StyleBuilder.Register(() => SecondPanelMinSize.HasValue ? $"--second-panel-min:{SecondPanelMinSize}px" : string.Empty);
     }
+
 
 
     private async Task ResetPaneDimensions()

@@ -76,9 +76,9 @@
                 <div class="bit-dtrp-sdt" aria-live="polite" aria-atomic="true">Selected date @CurrentValueAsString</div>
 
                 @{
-                    var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-                    var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-                    var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
+                    var todayYear = _culture.Calendar.GetYear(DateTime.Now);
+                    var todayMonth = _culture.Calendar.GetMonth(DateTime.Now);
+                    var todayDay = _culture.Calendar.GetDayOfMonth(DateTime.Now);
                     var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
                 }
 
@@ -191,7 +191,7 @@
 
                             @for (var index = 0; index < 7; index++)
                             {
-                                var dayOfWeekName = Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
+                                var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
                                 <div scope="col"
                                      title="@dayOfWeekName"
                                      style="@Styles?.WeekNumbersHeader"
@@ -343,7 +343,7 @@
                                         @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                                         {
                                             var month = (rowIndex * 4) + cellIndex;
-                                            var monthName = Culture.DateTimeFormat.GetMonthName(month);
+                                            var monthName = _culture.DateTimeFormat.GetMonthName(month);
                                             var disabled = IsMonthOutOfMinAndMaxDate(month);
                                             var selected = month == _currentMonth;
                                             <button @onclick="() => SelectMonth(month)"
@@ -364,7 +364,7 @@
                                                 }
                                                 else
                                                 {
-                                                    @Culture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                                                    @_culture.DateTimeFormat.GetAbbreviatedMonthName(month)
                                                 }
                                             </button>
                                         }
@@ -577,7 +577,7 @@
                                                 style="@Styles?.StartTimeAmButton"
                                                 class="bit-dtrp-tbt bit-dtrp-bam @(IsAm(_startTimeHour) is true ? "bit-dtrp-bns" : string.Empty) @Classes?.StartTimeAmButton"
                                                 disabled="@(IsAm(_startTimeHour) is true || IsAmPmButtonDisabled(true, true))">
-                                            @Culture.DateTimeFormat.AMDesignator
+                                            @_culture.DateTimeFormat.AMDesignator
                                         </button>
 
                                         <button @onclick="() => HandleOnPmClick(true)"
@@ -585,7 +585,7 @@
                                                 style="@Styles?.StartTimePmButton"
                                                 class="bit-dtrp-tbt bit-dtrp-bpm @(IsAm(_startTimeHour) is false ? "bit-dtrp-bns" : string.Empty) @Classes?.StartTimePmButton"
                                                 disabled="@(IsAm(_startTimeHour) is false || IsAmPmButtonDisabled(false, true))">
-                                            @Culture.DateTimeFormat.PMDesignator
+                                            @_culture.DateTimeFormat.PMDesignator
                                         </button>
                                     </div>
                                 }
@@ -668,7 +668,7 @@
                                                 style="@Styles?.EndTimeAmButton"
                                                 class="bit-dtrp-tbt bit-dtrp-bam @(IsAm(_endTimeHour) is true ? "bit-dtrp-bns" : string.Empty) @Classes?.EndTimeAmButton"
                                                 disabled="@(IsAm(_endTimeHour) is false || IsAmPmButtonDisabled(true, false))">
-                                            @Culture.DateTimeFormat.AMDesignator
+                                            @_culture.DateTimeFormat.AMDesignator
                                         </button>
 
                                         <button @onclick="() => HandleOnPmClick(false)"
@@ -676,7 +676,7 @@
                                                 style="@Styles?.EndTimePmButton"
                                                 class="bit-dtrp-tbt bit-dtrp-bpm @(IsAm(_endTimeHour) is false ? "bit-dtrp-bns" : string.Empty) @Classes?.EndTimePmButton"
                                                 disabled="@(IsAm(_endTimeHour) is false || IsAmPmButtonDisabled(false, false))">
-                                            @Culture.DateTimeFormat.PMDesignator
+                                            @_culture.DateTimeFormat.PMDesignator
                                         </button>
                                     </div>
                                 }

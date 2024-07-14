@@ -21,11 +21,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private string? _inputId;
     private bool _isPointerDown;
     private bool _showHourView = true;
+    private ElementReference _clockRef;
     private string _calloutId = string.Empty;
-    private string _circularTimePickerId = string.Empty;
     private string? _pointerUpAbortControllerId;
     private string? _pointerMoveAbortControllerId;
-    private ElementReference _clockRef;
+    private string _circularTimePickerId = string.Empty;
+    private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
 
 
@@ -246,6 +247,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     public Task OpenCallout() => HandleOnClick();
 
+
+
     protected override string RootElementClass => "bit-ctp";
 
     protected override void RegisterCssClasses()
@@ -283,6 +286,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         base.OnInitialized();
     }
 
+    protected override void OnParametersSet()
+    {
+        _culture = Culture ?? CultureInfo.CurrentUICulture;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -292,6 +300,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _pointerUpAbortControllerId = await _js.BitCircularTimePickerRegisterPointerUp(_dotnetObj, nameof(HandlePointerUp));
         _pointerMoveAbortControllerId = await _js.BitCircularTimePickerRegisterPointerMove(_dotnetObj, nameof(HandlePointerMove));
     }
+
+
 
     private async Task HandleOnFocusIn()
     {

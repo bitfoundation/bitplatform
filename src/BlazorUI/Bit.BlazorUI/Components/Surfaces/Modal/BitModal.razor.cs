@@ -4,11 +4,14 @@ public partial class BitModal : BitComponentBase, IDisposable
 {
     private bool IsOpenHasBeenSet;
 
-    private bool isOpen;
+
+
+    private bool isAlertRole;
+
+
 
     private int _offsetTop;
     private bool _disposed;
-    private bool _isAlertRole;
     private bool _internalIsOpen;
     private string _containerId = default!;
 
@@ -49,10 +52,10 @@ public partial class BitModal : BitComponentBase, IDisposable
     [Parameter]
     public bool? IsAlert
     {
-        get => _isAlertRole;
+        get => isAlertRole;
         set
         {
-            _isAlertRole = value ?? (IsBlocking && !IsModeless);
+            isAlertRole = value ?? (IsBlocking && !IsModeless);
         }
     }
 
@@ -74,19 +77,7 @@ public partial class BitModal : BitComponentBase, IDisposable
     /// <summary>
     /// Whether the Modal is displayed.
     /// </summary>
-    [Parameter]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (value == isOpen) return;
-
-            isOpen = value;
-
-            _ = IsOpenChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter] public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -171,7 +162,7 @@ public partial class BitModal : BitComponentBase, IDisposable
         _offsetTop = 0;
 
         if (AutoToggleScroll is false) return;
-        
+
         _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
 
         if (AbsolutePosition is false) return;
@@ -187,7 +178,7 @@ public partial class BitModal : BitComponentBase, IDisposable
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
-
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
         _ = OnDismiss.InvokeAsync(e);
     }
 
