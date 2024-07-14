@@ -219,7 +219,7 @@ public partial class BitModalDemo
 <BitModal @bind-IsOpen=""IsOpen"">
     <div class=""modal-header"">
         <span>Lorem Ipsum</span>
-        <BitIconButton OnClick=@(() => IsOpen = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=@(() => IsOpen = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -277,7 +277,7 @@ private bool IsOpen = false;";
 <BitModal @bind-IsOpen=""IsOpen1"" IsBlocking=""true"">
     <div class=""modal-header"">
         <span>IsBlocking = true</span>
-        <BitIconButton OnClick=@(()=> IsOpen1 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=@(()=> IsOpen1 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -296,7 +296,7 @@ private bool IsOpen = false;";
 <BitModal @bind-IsOpen=""IsOpen2"" AutoToggleScroll=""false"">
     <div class=""modal-header"">
         <span>AutoToggleScroll = false</span>
-        <BitIconButton OnClick=@(()=> IsOpen2 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=@(()=> IsOpen2 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -352,7 +352,7 @@ private bool IsOpen2 = false;";
     <BitModal @bind-IsOpen=""IsOpen3"" AbsolutePosition=""true"" AutoToggleScroll=""false"" IsModeless=""true"">
         <div class=""modal-header"">
             <span>AbsolutePosition=true & IsModeless=true</span>
-            <BitIconButton OnClick=@(()=> IsOpen3 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+            <BitButton Variant=""BitVariant.Text"" OnClick=@(()=> IsOpen3 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         </div>
         <div class=""modal-body"">
             <p>
@@ -370,7 +370,7 @@ private bool IsOpen2 = false;";
     <BitModal @bind-IsOpen=""IsOpen4"" AbsolutePosition=""true"" ScrollerSelector="".relative-container"">
         <div class=""modal-header"">
             <span>ScrollerSelector</span>
-            <BitIconButton OnClick=@(()=> IsOpen4 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+            <BitButton Variant=""BitVariant.Text"" OnClick=@(()=> IsOpen4 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         </div>
         <div class=""modal-body"">
             <p>
@@ -460,7 +460,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpenInPosition"" Position=""position"">
     <div class=""modal-header"">
         <span>Modal positioning</span>
-        <BitIconButton OnClick=@(() => IsOpenInPosition = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=@(() => IsOpenInPosition = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         BitModal with custom positioning. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -501,7 +501,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpen5"" IsDraggable=""IsDraggable"">
     <div class=""modal-header"">
         <span>Draggble Modal</span>
-        <BitIconButton OnClick=@(() => IsOpen5 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=@(() => IsOpen5 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -521,7 +521,7 @@ private void OpenModalInPosition(BitModalPosition positionValue)
 <BitModal @bind-IsOpen=""IsOpen6"" IsDraggable=""true"" DragElementSelector="".modal-header-drag"">
     <div class=""modal-header modal-header-drag"">
         <span>Draggble Modal with custom drag element</span>
-        <BitIconButton OnClick=@(() => IsOpen6 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=@(() => IsOpen6 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -591,7 +591,7 @@ private bool IsOpen6 = false;
 <BitModal @bind-IsOpen=""IsOpen7"" Style=""box-shadow: inset 0px 0px 1.5rem 1.5rem palevioletred;"">
     <div class=""modal-header"">
         <span>Styled modal</span>
-        <BitIconButton OnClick=""@(() => IsOpen7 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => IsOpen7 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -610,7 +610,7 @@ private bool IsOpen6 = false;
 <BitModal @bind-IsOpen=""IsOpen8"" Class=""custom-class"">
     <div class=""modal-header"">
         <span>Classed modal</span>
-        <BitIconButton OnClick=""@(() => IsOpen8 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => IsOpen8 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -629,7 +629,7 @@ private bool IsOpen6 = false;
 <BitModal @bind-IsOpen=""IsOpen9"" Styles=""@(new() { Overlay = ""background-color: #4776f433;"", Content = ""box-shadow: 0 0 1rem tomato;"" })"">
     <div class=""modal-header"">
         <span>Modal styles</span>
-        <BitIconButton OnClick=""@(() => IsOpen9 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => IsOpen9 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -648,7 +648,7 @@ private bool IsOpen6 = false;
 <BitModal @bind-IsOpen=""IsOpen10"" Classes=""@(new() { Container = ""custom-container"", Overlay = ""custom-overlay"", Content = ""custom-content"" })"">
     <div class=""modal-header"">
         <span>Modal classes</span>
-        <BitIconButton OnClick=""@(() => IsOpen10 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => IsOpen10 = false)"" IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
@@ -695,7 +695,7 @@ private bool IsOpen10 = false;
 <BitModal Dir=""BitDir.Rtl"" @bind-IsOpen=""IsOpen11"">
     <div class=""modal-header"">
         <span>لورم ایپسوم</span>
-        <BitIconButton OnClick=@(() => IsOpen11 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=@(() => IsOpen11 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>

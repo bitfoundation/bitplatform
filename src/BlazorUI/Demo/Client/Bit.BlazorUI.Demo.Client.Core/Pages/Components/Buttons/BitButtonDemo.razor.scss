@@ -1,13 +1,8 @@
-﻿.buttons-container {
+﻿.example-content {
     gap: 0.5rem;
     display: flex;
-    flex-flow: row wrap;
+    flex-wrap: wrap;
     align-items: flex-start;
-}
-
-.buttons-container-grid {
-    gap: 0.5rem;
-    display: grid;
 }
 
 .custom-loading {
@@ -31,10 +26,6 @@
         gap: 0.5rem;
         display: flex;
         align-items: center;
-    }
-
-    .validation-message {
-        color: red;
     }
 
     .custom-root {

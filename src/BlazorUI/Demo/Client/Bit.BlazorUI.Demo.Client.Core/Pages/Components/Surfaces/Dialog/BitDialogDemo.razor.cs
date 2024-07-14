@@ -551,7 +551,7 @@ private void OpenDialogInPosition(BitDialogPosition positionValue)
 <BitDialog IsDraggable @bind-IsOpen=""IsOpen9"" ShowCloseButton=""false"" DragElementSelector="".dialog-title-drag"">
     <div class=""dialog-title dialog-title-drag"">
         <span>Draggble Dialog with custom drag element</span>
-        <BitIconButton OnClick=@(() => IsOpen9 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Variant=""BitVariant.Text"" OnClick=@(() => IsOpen9 = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
     </div>
     <div class=""dialog-body"">
         <p>

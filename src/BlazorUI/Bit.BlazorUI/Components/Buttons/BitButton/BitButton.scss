@@ -35,19 +35,21 @@
     }
 }
 
+.bit-btn-ntx {
+    padding: var(--bit-btn-padding-no-text);
+}
+
 .bit-btn-tcn {
-    display: block;
+    display: flex;
+    gap: spacing(0.625);
+    flex-direction: column;
 }
 
 .bit-btn-prt {
-    display: block;
     font-size: var(--bit-btn-prt-fontsize);
 }
 
 .bit-btn-sct {
-    display: block;
-    font-weight: 400;
-    margin-top: spacing(0.625);
     font-size: var(--bit-btn-sct-fontsize);
 }
 
@@ -257,6 +259,7 @@
     --bit-btn-sct-fontsize: #{spacing(1.25)};
     --bit-btn-icn-fontsize: #{spacing(1.50)};
     --bit-btn-icn-margintop: #{spacing(0.2)};
+    --bit-btn-padding-no-text: #{spacing(0.5)};
     --bit-btn-padding: #{spacing(0.5)} #{spacing(1.5)};
 }
 
@@ -267,6 +270,7 @@
     --bit-btn-sct-fontsize: #{spacing(1.50)};
     --bit-btn-icn-fontsize: #{spacing(2.00)};
     --bit-btn-icn-margintop: #{spacing(0.25)};
+    --bit-btn-padding-no-text: #{spacing(0.75)};
     --bit-btn-padding: #{spacing(0.75)} #{spacing(2.0)};
 }
 
@@ -277,6 +281,7 @@
     --bit-btn-sct-fontsize: #{spacing(2.00)};
     --bit-btn-icn-fontsize: #{spacing(2.50)};
     --bit-btn-icn-margintop: #{spacing(0.5)};
+    --bit-btn-padding-no-text: #{spacing(1.0)};
     --bit-btn-padding: #{spacing(1.0)} #{spacing(2.5)};
 }
 

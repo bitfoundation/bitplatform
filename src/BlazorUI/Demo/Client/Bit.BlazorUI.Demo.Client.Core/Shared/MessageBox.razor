@@ -4,7 +4,9 @@
     <div class="main">
         <div class="header">
             <span class="title">@_title</span>
-            <BitIconButton IconName="@BitIconName.ChromeClose" OnClick="OnCloseClick" />
+            <BitButton IconName="@BitIconName.ChromeClose"
+                       Variant="BitVariant.Text"
+                       OnClick="OnCloseClick" />
         </div>
         <div class="body">
             @_body

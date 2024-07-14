@@ -42,12 +42,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.css",
-        "inputFile": "Pages/Components/Buttons/BitIconButtonDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.css",
         "inputFile": "Pages/Components/Buttons/BitToggleButtonDemo.razor.scss",
         "minify": { "enabled": false },

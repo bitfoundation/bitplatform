@@ -682,7 +682,7 @@ private async Task HandleValidSubmit()
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."">
    <LabelTemplate>
-       Custom label <BitIconButton IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitIconButton>
+       Custom label <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitButton>
    </LabelTemplate>
 </BitTimePicker>";
     private readonly string example9CsharpCode = @"
