@@ -112,7 +112,7 @@ public partial class BitProgressBar : BitComponentBase
 
         if (Indeterminate is false)
         {
-            sb.Append($"{(Circular ? "--bit-prb-percent" : "width")}:{Normalize(Percent)}%;");
+            sb.Append($"{(Circular ? "--bit-prb-percent" : "width")}: {Normalize(Percent)}%;");
         }
 
         return sb.ToString();
