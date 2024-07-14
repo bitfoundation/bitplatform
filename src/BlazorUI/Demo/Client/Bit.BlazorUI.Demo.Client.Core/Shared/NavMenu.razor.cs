@@ -110,7 +110,6 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Loading", Url = "/components/loading" },
                 new() { Text = "ProgressBar", Url = "/components/progressbar", AdditionalUrls = ["/components/progressindicator", "/components/progress-indicator"], Description = "ProgressIndicator" },
                 new() { Text = "Shimmer", Url = "/components/shimmer", Description = "Skeleton" },
-                new() { Text = "Spinner", Url = "/components/spinner", Description = "Busy, Waiting, Loading" },
             ],
         },
         new()
