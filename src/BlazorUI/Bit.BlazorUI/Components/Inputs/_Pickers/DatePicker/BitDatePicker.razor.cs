@@ -14,6 +14,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsOpenHasBeenSet;
 
+
+
     private bool isOpen;
     private bool isUnderlined;
     private bool hasBorder = true;
@@ -153,18 +155,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// CultureInfo for the DatePicker.
     /// </summary>
-    [Parameter]
-    public CultureInfo Culture
-    {
-        get => culture;
-        set
-        {
-            if (culture == value) return;
-
-            culture = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public CultureInfo? Culture { get; set; }
 
     /// <summary>
     /// The format of the date in the DatePicker.
@@ -234,18 +226,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Determines if the DatePicker has a border.
     /// </summary>
-    [Parameter]
-    public bool HasBorder
-    {
-        get => hasBorder;
-        set
-        {
-            if (value == hasBorder) return;
+    [Parameter, ResetClassBuilder]
+    public bool HasBorder { get; set; }
 
-            hasBorder = value;
-            ClassBuilder.Reset();
-        }
-    }
     /// <summary>
     /// Whether the month picker should highlight the current month.
     /// </summary>
@@ -264,18 +247,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Determines the location of the DatePicker's icon.
     /// </summary>
-    [Parameter]
-    public BitIconLocation IconLocation
-    {
-        get => iconLocation;
-        set
-        {
-            if (iconLocation == value) return;
-
-            iconLocation = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitIconLocation IconLocation { get; set; }
 
     /// <summary>
     /// The name of the DatePicker's icon.

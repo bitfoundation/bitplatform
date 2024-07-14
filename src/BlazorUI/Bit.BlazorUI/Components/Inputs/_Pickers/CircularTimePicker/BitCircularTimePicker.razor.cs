@@ -13,10 +13,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private bool IsOpenHasBeenSet;
 
-    private bool isOpen;
-    private string? focusClass;
-    private CultureInfo culture = CultureInfo.CurrentUICulture;
-    private BitIconLocation iconLocation = BitIconLocation.Right;
+
 
     private int? _hour;
     private int? _minute;
@@ -30,6 +27,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private string? _pointerMoveAbortControllerId;
     private ElementReference _clockRef;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
+
+
+
+    private string? focusClass;
     private string? _focusClass
     {
         get => focusClass;
@@ -39,6 +40,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             ClassBuilder.Reset();
         }
     }
+
+
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -77,18 +80,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// CultureInfo for the TimePicker
     /// </summary>
-    [Parameter]
-    public CultureInfo Culture
-    {
-        get => culture;
-        set
-        {
-            if (culture == value) return;
-
-            culture = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public CultureInfo? Culture { get; set; }
 
     /// <summary>
     /// Choose the edition mode. By default, you can edit hours and minutes.
@@ -103,18 +96,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// TimePicker icon location
     /// </summary>
-    [Parameter]
-    public BitIconLocation IconLocation
-    {
-        get => iconLocation;
-        set
-        {
-            if (iconLocation == value) return;
-
-            iconLocation = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitIconLocation IconLocation { get; set; }
 
     /// <summary>
     /// Optional TimePicker icon
@@ -134,20 +117,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Whether or not this TimePicker is open
     /// </summary>
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (isOpen == value) return;
-
-            isOpen = value;
-
-            ClassBuilder.Reset();
-
-            _ = IsOpenChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -239,6 +210,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
+
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
+
         StateHasChanged();
     }
 
@@ -349,6 +323,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
+
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
+
         await ToggleCallout();
 
         StateHasChanged();
@@ -370,7 +347,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         _showHourView = true;
+
         IsOpen = true;
+
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
+
         await ToggleCallout();
 
         await OnClick.InvokeAsync();
@@ -629,7 +610,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             return true;
         }
 
-        if (DateTime.TryParseExact(value, GetValueFormat() ?? Culture.DateTimeFormat.ShortTimePattern, Culture, DateTimeStyles.None, out DateTime parsedValue))
+        var culture = Culture ?? CultureInfo.CurrentUICulture;
+
+        if (DateTime.TryParseExact(value, GetValueFormat() ?? culture.DateTimeFormat.ShortTimePattern, culture, DateTimeStyles.None, out DateTime parsedValue))
         {
             result = parsedValue.TimeOfDay;
             _hour = result.Value.Hours;
@@ -648,7 +631,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (value.HasValue is false) return null;
 
         DateTime time = DateTime.Today.Add(value.Value);
-        return time.ToString(GetValueFormat() ?? Culture.DateTimeFormat.ShortTimePattern, Culture);
+
+        var culture = Culture ?? CultureInfo.CurrentUICulture;
+
+        return time.ToString(GetValueFormat() ?? culture.DateTimeFormat.ShortTimePattern, culture);
     }
 
     protected override void Dispose(bool disposing)

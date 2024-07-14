@@ -6,11 +6,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 {
     private bool SelectedItemHasBeenSet;
 
+
+
     private bool isCalloutOpen;
-    private BitVariant? variant;
-    private TItem selectedItem = default!;
-
-
     private bool _isCalloutOpen
     {
         get => isCalloutOpen;
@@ -24,12 +22,16 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         }
     }
 
+
+
     private bool _disposed;
     private List<TItem> _items = [];
     private BitButtonType _buttonType;
     private string _calloutId = default!;
     private IEnumerable<TItem> _oldItems = default!;
     private DotNetObjectReference<BitMenuButton<TItem>> _dotnetObj = default!;
+
+
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -125,21 +127,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// <summary>
     /// Determines the current selected item that acts as the main button.
     /// </summary>
-    [Parameter]
-    public TItem SelectedItem
-    {
-        get => selectedItem;
-        set
-        {
-            if (selectedItem == value) return;
-
-            selectedItem = value;
-
-            ClassBuilder.Reset();
-
-            _ = SelectedItemChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public TItem? SelectedItem { get; set; }
 
     [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
 
@@ -161,19 +150,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// <summary>
     /// The visual variant of the menu button.
     /// </summary>
-    [Parameter]
-    public BitVariant? Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
-
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
 
 
@@ -198,6 +176,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         }
 
         SelectedItem ??= _items.FirstOrDefault();
+
+        _ = SelectedItemChanged.InvokeAsync(SelectedItem);
 
         StateHasChanged();
     }
@@ -241,6 +221,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
         {
             SelectedItem = DefaultSelectedItem;
+            _ = SelectedItemChanged.InvokeAsync(SelectedItem);
         }
 
         base.OnInitialized();
@@ -485,6 +466,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             if (SelectedItemHasBeenSet is false || SelectedItemChanged.HasDelegate)
             {
                 SelectedItem = item;
+                _ = SelectedItemChanged.InvokeAsync(SelectedItem);
                 await OnChange.InvokeAsync(item);
             }
         }
