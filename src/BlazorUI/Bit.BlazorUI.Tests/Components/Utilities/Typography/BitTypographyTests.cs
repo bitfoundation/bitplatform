@@ -23,7 +23,7 @@ public class BitTypographyTests : BunitTestContext
         { BitTypographyVariant.Inherit, "p" },
         { BitTypographyVariant.Overline, "span" },
         { BitTypographyVariant.Subtitle1, "h6" },
-        { BitTypographyVariant.Subtitle2, "h6" },
+        { BitTypographyVariant.Subtitle2, "h6" }
     };
 
     [DataTestMethod]
