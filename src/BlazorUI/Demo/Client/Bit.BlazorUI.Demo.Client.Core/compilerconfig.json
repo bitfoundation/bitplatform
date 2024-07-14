@@ -300,12 +300,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Progress/Spinner/BitSpinnerDemo.razor.css",
-        "inputFile": "Pages/Components/Progress/Spinner/BitSpinnerDemo.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Components/Surfaces/Accordion/BitAccordionDemo.razor.css",
         "inputFile": "Pages/Components/Surfaces/Accordion/BitAccordionDemo.razor.scss",
         "minify": { "enabled": false },
