@@ -10,12 +10,12 @@ for csproj in $(find . -name '*.csproj'); do
 done
 
 # Deletes specified directories
-for dir in $(find . -type d \( -name "bin" -o -name "obj" -o -name "node_modules" -o -name "Packages" -o -name ".vs" -o -name "TestResults" -o -name "AppPackages" -o -name ".meteor" \)); do
+for dir in $(find . -type d \( -name "bin" -o -name "obj" -o -name "node_modules" -o -name "Packages" -o -name ".vs" -o -name "TestResults" -o -name "AppPackages" -o -name ".meteor" -o -name "App_Data" \)); do
     rm -rf $dir
 done
 
 # Deletes specified files
-for file in $(find . -type f \( -name "*.csproj.user" -o -name "Resources.designer.cs" -o -name "*.css" -o -name "*.min.css" -o -name "*.js" -o -name "*.min.js" -o -name "*.map" \)); do
+for file in $(find . -type f \( -name "*.csproj.user" -o -name "Resources.designer.cs" -o -name "*.css" -o -name "*.min.css" -o -name "*.js" -o -name "*.min.js" -o -name "*.map" -o -name "*.pubxml*" \)); do
     rm -f $file
 done
 
