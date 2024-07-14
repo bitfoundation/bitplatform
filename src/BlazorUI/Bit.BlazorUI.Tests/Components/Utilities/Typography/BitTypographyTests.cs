@@ -57,7 +57,7 @@ public class BitTypographyTests : BunitTestContext
             parameters.Add(p => p.Variant, variant);
         });
 
-        var el = variantMapping[variant];
+        var el = VariantMapping[variant];
         var cssClass = $"bit-tpg-{variant.ToString().ToLower(CultureInfo.InvariantCulture)}";
 
         component.MarkupMatches(@$"<{el} class=""bit-tpg {cssClass}"" id:ignore></{el}>");
@@ -76,7 +76,7 @@ public class BitTypographyTests : BunitTestContext
         });
 
         var defaultVariant = BitTypographyVariant.Subtitle1;
-        var el = element is null ? variantMapping[defaultVariant] : element;
+        var el = element is null ? VariantMapping[defaultVariant] : element;
 
         component.MarkupMatches(@$"<{el} class=""bit-tpg bit-tpg-subtitle1"" id:ignore></{el}>");
 
