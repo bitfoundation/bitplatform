@@ -187,7 +187,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Whether the month picker is shown or hidden.
     /// </summary>
-    [Parameter] public bool ShowMonthPicker { get; set; }
+    [Parameter] public bool ShowMonthPicker { get; set; } = true;
 
     /// <summary>
     /// The maximum allowable date of the calendar.

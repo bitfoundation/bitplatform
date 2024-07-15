@@ -5,7 +5,8 @@ public partial class BitSticky : BitComponentBase
     /// <summary>
     /// Specifying the vertical position of a positioned element from bottom.
     /// </summary>
-    [Parameter] public string? Bottom { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Bottom { get; set; }
 
     /// <summary>
     /// The content of the Sticky, it can be any custom tag or text.
@@ -15,7 +16,8 @@ public partial class BitSticky : BitComponentBase
     /// <summary>
     /// Specifying the horizontal position of a positioned element from left.
     /// </summary>
-    [Parameter] public string? Left { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Left { get; set; }
 
     /// <summary>
     /// Region to render sticky component in.
@@ -26,12 +28,14 @@ public partial class BitSticky : BitComponentBase
     /// <summary>
     /// Specifying the horizontal position of a positioned element from right.
     /// </summary>
-    [Parameter] public string? Right { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Right { get; set; }
 
     /// <summary>
     /// Specifying the vertical position of a positioned element from top.
     /// </summary>
-    [Parameter] public string? Top { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Top { get; set; }
 
 
 
