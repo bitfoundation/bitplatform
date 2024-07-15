@@ -36,14 +36,12 @@ public abstract partial class BitComponentBase : ComponentBase
     /// <summary>
     /// Custom CSS class for the root element of the component.
     /// </summary>
-    [Parameter]
-    public string? Class { get; set; }
+    [Parameter] public string? Class { get; set; }
 
     /// <summary>
     /// Determines the component direction.
     /// </summary>
-    [Parameter]
-    public BitDir? Dir { get; set; }
+    [Parameter] public BitDir? Dir { get; set; }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the component's parameters.
@@ -58,20 +56,17 @@ public abstract partial class BitComponentBase : ComponentBase
     /// <summary>
     /// Whether or not the component is enabled.
     /// </summary>
-    [Parameter]
-    public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Custom CSS style for the root element of the component.
     /// </summary>
-    [Parameter]
-    public string? Style { get; set; }
+    [Parameter] public string? Style { get; set; }
 
     /// <summary>
     /// Whether the component is visible, hidden or collapsed.
     /// </summary>
-    [Parameter]
-    public BitVisibility Visibility { get; set; }
+    [Parameter] public BitVisibility Visibility { get; set; }
 
 
 
@@ -121,14 +116,14 @@ public abstract partial class BitComponentBase : ComponentBase
 
                 case nameof(Style):
                     var style = (string?)parameter.Value;
-                    if (Style != style) ClassBuilder.Reset();
+                    if (Style != style) StyleBuilder.Reset();
                     Style = style;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Visibility):
                     var visibility = (BitVisibility)parameter.Value;
-                    if (Visibility != visibility) ClassBuilder.Reset();
+                    if (Visibility != visibility) StyleBuilder.Reset();
                     Visibility = visibility;
                     parametersDictionary.Remove(parameter.Key);
                     break;

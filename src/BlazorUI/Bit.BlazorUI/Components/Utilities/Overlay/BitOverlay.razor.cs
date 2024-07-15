@@ -60,8 +60,8 @@ public partial class BitOverlay : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsVisible ? $"{RootElementClass}-vis" : "");
-        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : "");
+        ClassBuilder.Register(() => IsVisible ? $"bit-ovl-vis" : "");
+        ClassBuilder.Register(() => AbsolutePosition ? $"bit-ovl-abs" : "");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -92,6 +92,12 @@ public partial class BitOverlay : BitComponentBase
         if (IsVisibleHasBeenSet && IsVisibleChanged.HasDelegate is false) return;
 
         IsVisible = false;
+        ClassBuilder.Reset();
         _ = IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
     }
 }

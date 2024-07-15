@@ -275,6 +275,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
+        ClassBuilder.Reset();
         await IsOpenChanged.InvokeAsync(IsOpen);
 
         StateHasChanged();
@@ -400,6 +401,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task CloseCallout()
     {
         IsOpen = false;
+        ClassBuilder.Reset();
         await IsOpenChanged.InvokeAsync(IsOpen);
 
         await ToggleCallout();
@@ -442,6 +444,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = true;
+        ClassBuilder.Reset();
         await IsOpenChanged.InvokeAsync(IsOpen);
 
         await ToggleCallout();

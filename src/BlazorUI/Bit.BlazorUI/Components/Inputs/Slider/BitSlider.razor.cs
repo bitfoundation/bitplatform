@@ -225,9 +225,9 @@ public partial class BitSlider : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
+        ClassBuilder.Register(() => IsReadOnly ? "bit-sld-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => $"{RootElementClass}-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
+        ClassBuilder.Register(() => $"bit-sld-{(IsRanged ? "rgd-" : null)}{(IsVertical ? "vrt" : "hrz")}");
     }
 
     protected override void RegisterCssStyles()

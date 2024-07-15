@@ -310,6 +310,7 @@ public partial class BitPersona : BitComponentBase
             BitPersonaSize.Size72 => "72px",
             BitPersonaSize.Size100 => "100px",
             BitPersonaSize.Size120 => "120px",
+            _ => "48px"
         };
     }
 

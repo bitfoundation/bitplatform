@@ -68,7 +68,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Defines whether to render ButtonGroup children vertically.
     /// </summary>
-    [Parameter] public bool Vertical { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
 
 
 

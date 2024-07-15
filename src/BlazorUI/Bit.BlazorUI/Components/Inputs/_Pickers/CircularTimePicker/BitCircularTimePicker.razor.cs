@@ -211,7 +211,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
-
+        ClassBuilder.Reset();
         _ = IsOpenChanged.InvokeAsync(IsOpen);
 
         StateHasChanged();
@@ -333,7 +333,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
-
+        ClassBuilder.Reset();
         _ = IsOpenChanged.InvokeAsync(IsOpen);
 
         await ToggleCallout();
@@ -359,7 +359,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _showHourView = true;
 
         IsOpen = true;
-
+        ClassBuilder.Reset();
         _ = IsOpenChanged.InvokeAsync(IsOpen);
 
         await ToggleCallout();

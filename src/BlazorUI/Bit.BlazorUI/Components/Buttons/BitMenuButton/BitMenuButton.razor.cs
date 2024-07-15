@@ -176,7 +176,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         }
 
         SelectedItem ??= _items.FirstOrDefault();
-
+        ClassBuilder.Reset();
         _ = SelectedItemChanged.InvokeAsync(SelectedItem);
 
         StateHasChanged();
@@ -221,6 +221,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
         {
             SelectedItem = DefaultSelectedItem;
+            ClassBuilder.Reset();
             _ = SelectedItemChanged.InvokeAsync(SelectedItem);
         }
 
@@ -238,6 +239,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
             SelectedItem ??= _items.LastOrDefault(GetIsSelected);
             SelectedItem ??= _items.FirstOrDefault();
+            ClassBuilder.Reset();
+            _ = SelectedItemChanged.InvokeAsync(SelectedItem);
         }
 
         return base.OnParametersSetAsync();
@@ -298,8 +301,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
-    private bool GetIsEnabled(TItem item)
+    private bool GetIsEnabled(TItem? item)
     {
+        if (item is null) return false;
+
         if (item is BitMenuButtonItem menuButtonItem)
         {
             return menuButtonItem.IsEnabled;
@@ -466,6 +471,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             if (SelectedItemHasBeenSet is false || SelectedItemChanged.HasDelegate)
             {
                 SelectedItem = item;
+                ClassBuilder.Reset();
                 _ = SelectedItemChanged.InvokeAsync(SelectedItem);
                 await OnChange.InvokeAsync(item);
             }

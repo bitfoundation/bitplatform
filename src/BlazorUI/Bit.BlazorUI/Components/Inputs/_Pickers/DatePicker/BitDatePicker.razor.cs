@@ -460,11 +460,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => (Dir is null && _culture.TextInfo.IsRightToLeft) ? "bit-rtl" : string.Empty);
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-dtp-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-dtp-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? "bit-dtp-nbd" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
     }
@@ -593,7 +593,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
+        _focusClass = $"bit-dtp-foc";
 
         await OnFocusIn.InvokeAsync();
     }
@@ -611,7 +611,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
+        _focusClass = $"bit-dtp-foc";
 
         await OnFocus.InvokeAsync();
     }

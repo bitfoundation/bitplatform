@@ -161,6 +161,8 @@ public partial class BitToggleButton : BitComponentBase
         if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
         {
             IsChecked = DefaultIsChecked.Value;
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
             _ = IsCheckedChanged.InvokeAsync(IsChecked);
         }
 
@@ -176,6 +178,8 @@ public partial class BitToggleButton : BitComponentBase
         if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
 
         IsChecked = !IsChecked;
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
         _ = IsCheckedChanged.InvokeAsync(IsChecked);
         await OnChange.InvokeAsync(IsChecked);
     }

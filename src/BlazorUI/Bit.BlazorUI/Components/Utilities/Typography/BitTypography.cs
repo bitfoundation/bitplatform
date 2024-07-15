@@ -32,7 +32,7 @@ public partial class BitTypography : BitComponentBase
     /// The variant of the Typography.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitTypographyVariant Variant { get; set; }
+    public BitTypographyVariant Variant { get; set; } = BitTypographyVariant.Subtitle1;
 
 
 

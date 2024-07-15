@@ -173,17 +173,17 @@ public partial class BitSearchBox : BitInputBase<string?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}hvl" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}hvl" : string.Empty);
 
-        ClassBuilder.Register(() => DisableAnimation ? $"{RootElementClass}-nan" : string.Empty);
+        ClassBuilder.Register(() => DisableAnimation ? "bit-srb-nan" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-srb-und" : string.Empty);
 
-        ClassBuilder.Register(() => _inputHasFocus ? $"{RootElementClass}-{(FixedIcon ? "fic-" : string.Empty)}foc" : string.Empty);
+        ClassBuilder.Register(() => _inputHasFocus ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}foc" : string.Empty);
 
-        ClassBuilder.Register(() => ShowSearchButton ? $"{RootElementClass}-ssb" : string.Empty);
+        ClassBuilder.Register(() => ShowSearchButton ? "bit-srb-ssb" : string.Empty);
 
-        ClassBuilder.Register(() => HideIcon ? $"{RootElementClass}-hic" : string.Empty);
+        ClassBuilder.Register(() => HideIcon ? "bit-srb-hic" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
