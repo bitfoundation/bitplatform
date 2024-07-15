@@ -26,104 +26,346 @@ public class BitTypographyTests : BunitTestContext
         { BitTypographyVariant.Subtitle2, "h6" }
     };
 
+    [DataTestMethod]
+    public void BitTypographyShouldRenderExpectedElement()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+    }
+
     [DataTestMethod,
-     DataRow(BitTypographyVariant.Body1),
-     DataRow(BitTypographyVariant.Body2),
-     DataRow(BitTypographyVariant.Button),
-     DataRow(BitTypographyVariant.Caption),
-     DataRow(BitTypographyVariant.H1),
-     DataRow(BitTypographyVariant.H2),
-     DataRow(BitTypographyVariant.H3),
-     DataRow(BitTypographyVariant.H4),
-     DataRow(BitTypographyVariant.H5),
-     DataRow(BitTypographyVariant.H6),
-     DataRow(BitTypographyVariant.Inherit),
-     DataRow(BitTypographyVariant.Overline),
-     DataRow(BitTypographyVariant.Subtitle1),
-     DataRow(BitTypographyVariant.Subtitle2),
-     DataRow(null)
+         DataRow(BitTypographyVariant.Body1),
+         DataRow(BitTypographyVariant.Body2),
+         DataRow(BitTypographyVariant.Button),
+         DataRow(BitTypographyVariant.Caption),
+         DataRow(BitTypographyVariant.H1),
+         DataRow(BitTypographyVariant.H2),
+         DataRow(BitTypographyVariant.H3),
+         DataRow(BitTypographyVariant.H4),
+         DataRow(BitTypographyVariant.H5),
+         DataRow(BitTypographyVariant.H6),
+         DataRow(BitTypographyVariant.Inherit),
+         DataRow(BitTypographyVariant.Overline),
+         DataRow(BitTypographyVariant.Subtitle1),
+         DataRow(BitTypographyVariant.Subtitle2),
     ]
-    [TestMethod]
-    public void BitTypographyVariantTest(BitTypographyVariant? variant)
+    public void BitTypographyShouldRespectVariant(BitTypographyVariant variant)
     {
-        var com = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitTypography>(parameters =>
         {
-            if (variant.HasValue)
-            {
-                parameters.Add(p => p.Variant, variant.Value);
-            }
+            parameters.Add(p => p.Variant, variant);
         });
 
-        var expectedVariant = variant ?? BitTypographyVariant.Subtitle1;
-        var expectedElement = VariantMapping[expectedVariant];
+        var el = VariantMapping[variant];
+        var cssClass = $"bit-tpg-{variant.ToString().ToLower(CultureInfo.InvariantCulture)}";
 
-        var expectedHtml = $"<{expectedElement} diff:ignore></{expectedElement}>";
-
-        com.MarkupMatches(expectedHtml);
-
-        var element = com.Find(expectedElement);
-
-        Assert.IsTrue(
-            element.ClassList.Contains($"bit-tpg-{expectedVariant.ToString().ToLower(CultureInfo.InvariantCulture)}"));
+        component.MarkupMatches(@$"<{el} class=""bit-tpg {cssClass}"" id:ignore></{el}>");
     }
 
-    [
-        DataRow(true),
-        DataRow(false)
-    ]
-    [TestMethod]
-    public void BitTypographyNoWrapTest(bool hasNoWrap)
-    {
-        var com = RenderComponent<BitTypography>(parameters =>
-        {
-            parameters.Add(p => p.NoWrap, hasNoWrap);
-        });
-
-        var defaultVariant = BitTypographyVariant.Subtitle1;
-        var defaultElement = VariantMapping[defaultVariant];
-
-        var element = com.Find(defaultElement);
-
-        Assert.AreEqual(hasNoWrap, element.ClassList.Contains("bit-tpg-nowrap"));
-    }
-
-    [
-        DataRow(true),
-        DataRow(false)
-    ]
-    [TestMethod]
-    public void BitTypographyGutterTest(bool hasGutter)
-    {
-        var com = RenderComponent<BitTypography>(parameters =>
-        {
-            parameters.Add(p => p.Gutter, hasGutter);
-        });
-
-        var defaultVariant = BitTypographyVariant.Subtitle1;
-        var defaultElement = VariantMapping[defaultVariant];
-
-        var element = com.Find(defaultElement);
-
-        Assert.AreEqual(hasGutter, element.ClassList.Contains("bit-tpg-gutter"));
-    }
-
-    [
+    [DataTestMethod,
+        DataRow("h1"),
         DataRow("div"),
         DataRow(null)
     ]
-    [TestMethod]
-    public void BitTypographyComponentTest(string element)
+    public void BitTypographyShouldRespectElement(string element)
     {
-        var com = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitTypography>(parameters =>
         {
             parameters.Add(p => p.Element, element);
         });
 
         var defaultVariant = BitTypographyVariant.Subtitle1;
-        var defaultElement = VariantMapping[defaultVariant];
+        var el = element is null ? VariantMapping[defaultVariant] : element;
 
-        var el = com.Find(element ?? defaultElement);
+        component.MarkupMatches(@$"<{el} class=""bit-tpg bit-tpg-subtitle1"" id:ignore></{el}>");
 
-        Assert.IsTrue(el.ClassList.Contains("bit-tpg"));
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTypographyShouldRespectNoWrap(bool noWrap)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, noWrap);
+        });
+
+        var cssClass = noWrap ? " bit-tpg-nowrap" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectNoWrapChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, true);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1 bit-tpg-nowrap"" id:ignore></h6>");
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTypographyShouldRespectGutter(bool gutter)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.Gutter, gutter);
+        });
+
+        var cssClass = gutter ? " bit-tpg-gutter" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectGutterChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Gutter, true);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1 bit-tpg-gutter"" id:ignore></h6>");
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTypographyShouldRespectIsEnabled(bool isEnabled)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        var cssClass = isEnabled ? null : " bit-dis";
+
+        component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectIsEnabledChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1 bit-dis"" id:ignore></h6>");
+    }
+
+    [DataTestMethod,
+        DataRow("font-size: 14px; color: red;"),
+        DataRow("padding: 1rem;"),
+        DataRow(null)
+    ]
+    public void BitTypographyShouldRespectStyle(string style)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.Style, style);
+        });
+
+        if (style.HasValue())
+        {
+            component.MarkupMatches(@$"<h6 style=""{style}"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+        }
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectStyleChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Style, "padding: 1rem;");
+        });
+
+        component.MarkupMatches(@$"<h6 style=""padding: 1rem;"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+    }
+
+
+    [DataTestMethod,
+        DataRow("test-class"),
+        DataRow(null)
+    ]
+    public void BitTypographyShouldRespectClass(string @class)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.Class, @class);
+        });
+
+        var cssClass = @class.HasValue() ? $" {@class}" : null;
+
+        component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectClassChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Class, "test-class");
+        });
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1 test-class"" id:ignore></h6>");
+    }
+
+    [DataTestMethod,
+        DataRow("test-id"),
+        DataRow(null)
+    ]
+    public void BitTypographyShouldRespectId(string id)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.Id, id);
+        });
+
+        var expectedId = id.HasValue() ? id : component.Instance.UniqueId.ToString();
+
+        component.MarkupMatches(@$"<h6 id=""{expectedId}"" class=""bit-tpg bit-tpg-subtitle1""></h6>");
+    }
+
+    [DataTestMethod,
+        DataRow(BitDir.Rtl),
+        DataRow(BitDir.Ltr),
+        DataRow(BitDir.Auto),
+        DataRow(null)
+    ]
+    public void BitTypographyShouldRespectDir(BitDir? dir)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        if (dir.HasValue)
+        {
+            var cssClass = dir is BitDir.Rtl ? " bit-rtl" : null;
+            component.MarkupMatches(@$"<h6 dir=""{dir.Value.ToString().ToLower()}"" class=""bit-tpg bit-tpg-subtitle1{cssClass}"" id:ignore></h6>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+        }
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectDirChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        component.MarkupMatches(@"<h6 dir=""ltr"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+    }
+
+    [DataTestMethod,
+        DataRow(BitVisibility.Visible),
+        DataRow(BitVisibility.Collapsed),
+        DataRow(BitVisibility.Hidden)
+    ]
+    public void BitTypographyShouldRespectVisibility(BitVisibility visibility)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        switch (visibility)
+        {
+            case BitVisibility.Visible:
+                component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+                break;
+            case BitVisibility.Hidden:
+                component.MarkupMatches(@"<h6 style=""visibility: hidden;"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+                break;
+            case BitVisibility.Collapsed:
+                component.MarkupMatches(@"<h6 style=""display: none;"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+                break;
+        }
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectVisibilityChangingAfterRender()
+    {
+        var component = RenderComponent<BitTypography>();
+
+        component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        component.MarkupMatches(@"<h6 style=""display: none;"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+    }
+
+    [DataTestMethod,
+        DataRow("Bit Blazor UI"),
+        DataRow(null)
+    ]
+    public void BitTypographyShouldRespectAriaLabel(string ariaLabel)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, ariaLabel);
+        });
+
+        if (ariaLabel.HasValue())
+        {
+            component.MarkupMatches(@$"<h6 aria-label=""{ariaLabel}"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
+        }
+    }
+
+    [DataTestMethod]
+    public void BitTypographyShouldRespectHtmlAttributes()
+    {
+        var component = RenderComponent<BitTypographyHtmlAttributesTest>();
+
+        component.MarkupMatches(@"<h6 data-val-test=""bit"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore>I'm a typography</h6>");
     }
 }
