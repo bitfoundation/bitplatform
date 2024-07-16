@@ -128,6 +128,13 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
         await base.OnInitializedAsync();
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await _js.SetProperty(InputElement, "indeterminate", Indeterminate);
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
