@@ -11,6 +11,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private IUserController userController = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
@@ -30,15 +31,22 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         return false;
     }
 
-    public async Task SignOut()
+    public async Task SignOut(CancellationToken cancellationToken)
     {
-        await storageService.RemoveItem("access_token");
-        await storageService.RemoveItem("refresh_token");
-        if (AppPlatform.IsBlazorHybrid is false)
+        try
         {
-            await cookie.Remove("access_token");
+            await userController.SignOut(cancellationToken);
         }
-        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        finally
+        {
+            await storageService.RemoveItem("access_token");
+            await storageService.RemoveItem("refresh_token");
+            if (AppPlatform.IsBlazorHybrid is false)
+            {
+                await cookie.Remove("access_token");
+            }
+            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        }
     }
 
     public async Task RefreshToken()

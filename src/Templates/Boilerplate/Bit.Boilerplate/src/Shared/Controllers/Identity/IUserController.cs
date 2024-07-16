@@ -9,6 +9,15 @@ public interface IUserController : IAppController
     [HttpGet]
     Task<UserDto> GetCurrentUser(CancellationToken cancellationToken = default);
 
+    [HttpGet]
+    Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task SignOut(CancellationToken cancellationToken);
+
+    [HttpPost("{sessionIdToBeRemoved}")]
+    Task RevokeSession(Guid sessionIdToBeRemoved, CancellationToken cancellationToken);
+
     [HttpPut]
     Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken = default);
 

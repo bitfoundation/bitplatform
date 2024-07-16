@@ -1,4 +1,6 @@
 ﻿//+:cnd:noEmit
+using Humanizer;
+using DeviceDetectorNET;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -22,6 +24,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private ILogger<IdentityController> logger = default!;
     [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
+    [AutoInject] private IUserClaimsPrincipalFactory<User> userClaimsPrincipalFactory = default!;
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -97,7 +100,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsEmailConfirmedAsync(user)) return;
 
         if (await userManager.IsLockedOutAsync(user))
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{request.Email},{user.EmailTokenRequestedOn}"), request.Token!);
 
@@ -139,7 +142,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         if (await userManager.IsLockedOutAsync(user))
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user)) return;
 
@@ -169,6 +172,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
+        var userSession = GenerateUserSession();
+
         var result = string.IsNullOrEmpty(request.Otp) is false
             ? await signInManager.OtpSignInAsync(user, request.Otp!)
             : await signInManager.PasswordSignInAsync(user!.UserName!, request.Password!, isPersistent: false, lockoutOnFailure: true);
@@ -177,7 +182,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
 
         if (result.IsLockedOut)
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         if (result.RequiresTwoFactor)
         {
@@ -211,7 +216,41 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
 
+        user.Sessions.Add(userSession);
+        var addUserSessionResult = await userManager.UpdateAsync(user);
+        if (addUserSessionResult.Succeeded is false)
+            throw new ResourceValidationException(addUserSessionResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
         return Empty;
+    }
+
+    /// <summary>
+    /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful.
+    /// </summary>
+    private UserSession GenerateUserSession()
+    {
+        var userAgentParseResult = DeviceDetector.GetInfoFromUserAgent(Request.Headers.UserAgent);
+
+        var device = userAgentParseResult.Success ?
+                                $"{userAgentParseResult.Match.BrowserFamily}, {userAgentParseResult.Match.OsFamily} {userAgentParseResult.Match.Os.Version}"
+                                : userAgentParseResult.ToString();
+
+        var userSession = new UserSession
+        {
+            SessionUniqueId = Guid.NewGuid(),
+            // Relying on Cloudflare cdn to retrieve address via IP
+            Address = string.Format("Country: {0}, Region: {1}, City: {2}, Postal Code: {3}, Lat: {4}, Lon: {5}",
+                Request.Headers["cf-ipcountry"], Request.Headers["cf-region"],
+                Request.Headers["cf-ipcity"], Request.Headers["cf-postal-code"],
+                Request.Headers["cf-iplatitude"], Request.Headers["cf-iplongitude"]),
+            Device = device,
+            IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
+            StartedOn = DateTimeOffset.UtcNow
+        };
+
+        ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", userSession.SessionUniqueId.ToString()));
+
+        return userSession;
     }
 
     [HttpPost]
@@ -220,14 +259,28 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
 
-        if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || DateTimeOffset.UtcNow >= expiresUtc ||
-                await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user)
+        UserSession? userSession = null;
+
+        if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
+            DateTimeOffset.UtcNow >= expiresUtc ||
+            await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user ||
+            Guid.TryParse(refreshTicket.Principal.FindFirstValue("session-id"), out var sessionId) is false ||
+            (userSession = user.Sessions.FirstOrDefault(s => s.SessionUniqueId == sessionId)) is null)
         {
             // Return 401 if refresh token is either invalid or expired.
             throw new UnauthorizedException();
         }
 
+        try
+        {
+            userSession.RenewedOn = DateTimeOffset.UtcNow;
+            await userManager.UpdateAsync(user);
+        }
+        catch (ConflictException) { /* When access_token gets expired and user navigates to the page that sends multiple requests in parallel, multiple concurrent refresh token api call happens and this will results into concurrency exception during updating session's renewed on. */ }
+
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);
+
+        ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", sessionId.ToString()));
 
         return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
     }
@@ -244,7 +297,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.Identity.ResetPasswordTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.ResetPasswordTokenRequestedOn = DateTimeOffset.Now;
 
@@ -291,7 +344,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.Identity.OtpRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         var (token, url) = await GenerateOtpTokenData(user, returnUrl);
 
@@ -320,7 +373,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         if (await userManager.IsLockedOutAsync(user))
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.ToString("mm\\:ss")]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         bool tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn}"), request.Token!);
 
@@ -350,7 +403,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.Identity.TwoFactorTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForTwoFactorTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForTwoFactorTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.TwoFactorTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -509,7 +562,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.EmailTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -529,7 +582,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var resendDelay = (DateTimeOffset.Now - user.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.PhoneNumberTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);

@@ -14,7 +14,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.6");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
 
             modelBuilder.Entity("Boilerplate.Server.Api.Models.Categories.Category", b =>
                 {
@@ -164,6 +164,10 @@ namespace Boilerplate.Server.Api.Data.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Sessions")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
 
@@ -212,6 +216,7 @@ namespace Boilerplate.Server.Api.Data.Migrations
                             PhoneNumber = "+31684207362",
                             PhoneNumberConfirmed = true,
                             SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
+                            Sessions = "[]",
                             TwoFactorEnabled = false,
                             UserName = "test"
                         });

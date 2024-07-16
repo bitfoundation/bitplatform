@@ -46,7 +46,7 @@ public partial class NotAuthorizedPage
 
     private async Task SignIn()
     {
-        await AuthenticationManager.SignOut();
+        await AuthenticationManager.SignOut(CurrentCancellationToken);
 
         RedirectToSignInPage();
     }

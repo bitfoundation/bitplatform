@@ -1159,6 +1159,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Online.
+        /// </summary>
+        public static string Online {
+            get {
+                return ResourceManager.GetString("Online", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to OR.
         /// </summary>
         public static string Or {
@@ -1452,6 +1461,15 @@ namespace Boilerplate.Shared.Resources {
         public static string RangeAttribute_ValidationError {
             get {
                 return ResourceManager.GetString("RangeAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recently.
+        /// </summary>
+        public static string Recently {
+            get {
+                return ResourceManager.GetString("Recently", resourceCulture);
             }
         }
         
@@ -2451,6 +2469,15 @@ namespace Boilerplate.Shared.Resources {
         public static string WaitForResetPasswordTokenRequestResendDelay {
             get {
                 return ResourceManager.GetString("WaitForResetPasswordTokenRequestResendDelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can&apos;t revoke other sessions right now. Try again in {0}.
+        /// </summary>
+        public static string WaitForRevokeSessionDelay {
+            get {
+                return ResourceManager.GetString("WaitForRevokeSessionDelay", resourceCulture);
             }
         }
         

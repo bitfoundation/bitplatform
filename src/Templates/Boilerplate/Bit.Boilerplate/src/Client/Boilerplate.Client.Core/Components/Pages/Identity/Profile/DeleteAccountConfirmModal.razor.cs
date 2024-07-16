@@ -21,7 +21,7 @@ public partial class DeleteAccountConfirmModal
     {
         await userController.Delete(CurrentCancellationToken);
 
-        await AuthenticationManager.SignOut();
+        await AuthenticationManager.SignOut(CurrentCancellationToken);
 
         await CloseModal();
     }
