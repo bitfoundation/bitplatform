@@ -593,7 +593,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"bit-dtp-foc";
+        _focusClass = "bit-dtp-foc";
 
         await OnFocusIn.InvokeAsync();
     }
@@ -611,7 +611,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"bit-dtp-foc";
+        _focusClass = "bit-dtp-foc";
 
         await OnFocus.InvokeAsync();
     }

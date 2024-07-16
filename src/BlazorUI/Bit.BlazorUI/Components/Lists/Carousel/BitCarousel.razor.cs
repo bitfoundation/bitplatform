@@ -53,8 +53,7 @@ public partial class BitCarousel : BitComponentBase, IDisposable
     /// <summary>
     /// Number of items that is going to be changed on navigation
     /// </summary>
-    [Parameter]
-    public int ScrollItemsCount { get; set; } = 1;
+    [Parameter] public int ScrollItemsCount { get; set; } = 1;
 
     /// <summary>
     /// Enables/disables the auto scrolling of the slides.
