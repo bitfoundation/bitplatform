@@ -2,29 +2,6 @@
 
 public partial class BitGrid : BitComponentBase
 {
-    private static readonly Dictionary<BitGridAlignment, string> _AlignmentMap = new()
-    {
-        { BitGridAlignment.Start, "flex-start" },
-        { BitGridAlignment.End, "flex-end" },
-        { BitGridAlignment.Center, "center" },
-        { BitGridAlignment.SpaceBetween, "space-between" },
-        { BitGridAlignment.SpaceAround, "space-around" },
-        { BitGridAlignment.SpaceEvenly, "space-evenly" },
-        { BitGridAlignment.Baseline, "baseline" },
-        { BitGridAlignment.Stretch, "stretch" },
-    };
-
-
-
-    private int span = 1;
-    private int columns = 12;
-    private string spacing = "4px";
-    private string? verticalSpacing;
-    private string? horizontalSpacing;
-    private BitGridAlignment horizontalAlign = BitGridAlignment.Start;
-
-
-
     /// <summary>
     /// The content of the Grid.
     /// </summary>
@@ -97,6 +74,7 @@ public partial class BitGrid : BitComponentBase
     public string? VerticalSpacing { get; set; }
 
 
+
     protected override string RootElementClass => "bit-grd";
 
     protected override void RegisterCssStyles()
@@ -110,4 +88,18 @@ public partial class BitGrid : BitComponentBase
         StyleBuilder.Register(() => VerticalSpacing.HasValue() ? $"row-gap:{VerticalSpacing}" : string.Empty);
         StyleBuilder.Register(() => HorizontalSpacing.HasValue() ? $"column-gap:{HorizontalSpacing}" : string.Empty);
     }
+
+
+
+    private static readonly Dictionary<BitGridAlignment, string> _AlignmentMap = new()
+    {
+        { BitGridAlignment.Start, "flex-start" },
+        { BitGridAlignment.End, "flex-end" },
+        { BitGridAlignment.Center, "center" },
+        { BitGridAlignment.SpaceBetween, "space-between" },
+        { BitGridAlignment.SpaceAround, "space-around" },
+        { BitGridAlignment.SpaceEvenly, "space-evenly" },
+        { BitGridAlignment.Baseline, "baseline" },
+        { BitGridAlignment.Stretch, "stretch" },
+    };
 }

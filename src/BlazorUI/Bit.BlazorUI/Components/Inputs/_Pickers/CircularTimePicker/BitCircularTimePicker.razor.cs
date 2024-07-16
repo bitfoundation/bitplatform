@@ -98,7 +98,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// TimePicker icon location
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitIconLocation IconLocation { get; set; }
+    public BitIconLocation IconLocation { get; set; } = BitIconLocation.Right;
 
     /// <summary>
     /// Optional TimePicker icon
