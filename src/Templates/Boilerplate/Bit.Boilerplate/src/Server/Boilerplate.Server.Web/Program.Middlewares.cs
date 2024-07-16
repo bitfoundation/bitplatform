@@ -51,10 +51,7 @@ public static partial class Program
 
         if (env.IsDevelopment())
         {
-            app.UseDirectoryBrowser(new DirectoryBrowserOptions
-            {
-                FileProvider = new PhysicalFileProvider(env.WebRootPath)
-            });
+            app.UseDirectoryBrowser();
         }
 
         app.UseStaticFiles(new StaticFileOptions
@@ -96,7 +93,7 @@ public static partial class Program
 
         app.UseSwaggerUI(options =>
         {
-            options.InjectJavascript($"/scripts/swagger-utils.js?v={Environment.TickCount64}");
+            options.InjectJavascript($"/_content/Boilerplate.Server.Api/scripts/swagger-utils.js?v={Environment.TickCount64}");
         });
 
         app.MapGet("/api/minimal-api-sample/{routeParameter}", (string routeParameter, [FromQuery] string queryStringParameter) => new
