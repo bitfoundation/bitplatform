@@ -6,10 +6,6 @@ public partial class BitModal : BitComponentBase, IDisposable
 
 
 
-    private bool isAlertRole;
-
-
-
     private int _offsetTop;
     private bool _disposed;
     private bool _internalIsOpen;
@@ -29,7 +25,8 @@ public partial class BitModal : BitComponentBase, IDisposable
     /// <summary>
     /// When true, the Modal will be positioned absolute instead of fixed.
     /// </summary>
-    [Parameter] public bool AbsolutePosition { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool AbsolutePosition { get; set; }
 
     /// <summary>
     /// The content of the Modal, it can be any custom tag or text.
@@ -49,15 +46,7 @@ public partial class BitModal : BitComponentBase, IDisposable
     /// <summary>
     /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
     /// </summary>
-    [Parameter]
-    public bool? IsAlert
-    {
-        get => isAlertRole;
-        set
-        {
-            isAlertRole = value ?? (IsBlocking && !IsModeless);
-        }
-    }
+    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the modal can be light dismissed by clicking outside the Modal (on the overlay).
@@ -112,13 +101,14 @@ public partial class BitModal : BitComponentBase, IDisposable
     [Parameter] public string? TitleAriaId { get; set; }
 
 
+
     protected override string RootElementClass => "bit-mdl";
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
+        ClassBuilder.Register(() => AbsolutePosition ? "bit-mdl-abs" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -201,6 +191,7 @@ public partial class BitModal : BitComponentBase, IDisposable
     };
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";
+
 
 
     public void Dispose()
