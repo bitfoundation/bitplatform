@@ -197,7 +197,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     public void ToggleRevealPassword()
     {
-        _isPasswordRevealed = !_isPasswordRevealed;
+        _isPasswordRevealed = _isPasswordRevealed is false;
         SetElementType();
     }
 

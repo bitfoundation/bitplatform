@@ -620,9 +620,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             return true;
         }
 
-        var culture = Culture ?? CultureInfo.CurrentUICulture;
-
-        if (DateTime.TryParseExact(value, GetValueFormat() ?? culture.DateTimeFormat.ShortTimePattern, culture, DateTimeStyles.None, out DateTime parsedValue))
+        if (DateTime.TryParseExact(value, GetValueFormat() ?? _culture.DateTimeFormat.ShortTimePattern, _culture, DateTimeStyles.None, out DateTime parsedValue))
         {
             result = parsedValue.TimeOfDay;
             _hour = result.Value.Hours;
@@ -642,9 +640,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         DateTime time = DateTime.Today.Add(value.Value);
 
-        var culture = Culture ?? CultureInfo.CurrentUICulture;
-
-        return time.ToString(GetValueFormat() ?? culture.DateTimeFormat.ShortTimePattern, culture);
+        return time.ToString(GetValueFormat() ?? _culture.DateTimeFormat.ShortTimePattern, _culture);
     }
 
     protected override void Dispose(bool disposing)
