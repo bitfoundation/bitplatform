@@ -4,10 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitTextField : BitTextInputBase<string?>
 {
-    private bool isMultiline;
-    private bool isUnderlined;
-    private bool hasBorder = true;
-    private bool isResizable = true;
     private BitTextFieldType type = BitTextFieldType.Text;
 
     private bool _hasFocus;
@@ -59,7 +55,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Whether or not the text field is borderless.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool HasBorder { get; set; }
+    public bool HasBorder { get; set; } = true;
 
     /// <summary>
     /// Whether or not the text field is a Multiline text field.
@@ -77,7 +73,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// For multiline text fields, whether or not the field is resizable.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool IsResizable { get; set; }
+    public bool IsResizable { get; set; } = true;
 
     /// <summary>
     /// The icon name for the icon shown in the far right end of the text field.

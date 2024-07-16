@@ -2,6 +2,10 @@
 
 public partial class BitSplitter : BitComponentBase
 {
+    private bool vertical;
+
+
+
     private bool _isDragging;
     private double _initialPosition;
     private double _initialFirstPanelWidth;
@@ -79,8 +83,19 @@ public partial class BitSplitter : BitComponentBase
     /// <summary>
     /// Sets the orientation of BitSplitter to vertical.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Vertical { get; set; }
+    [Parameter]
+    public bool Vertical
+    {
+        get => vertical;
+        set
+        {
+            if (vertical == value) return;
+
+            vertical = value;
+            ClassBuilder.Reset();
+            _ = ResetPaneDimensions();
+        }
+    }
 
 
 
@@ -104,13 +119,6 @@ public partial class BitSplitter : BitComponentBase
         StyleBuilder.Register(() => SecondPanelSize.HasValue ? $"--second-panel:{SecondPanelSize}px" : string.Empty);
         StyleBuilder.Register(() => SecondPanelMaxSize.HasValue ? $"--second-panel-max:{SecondPanelMaxSize}px" : string.Empty);
         StyleBuilder.Register(() => SecondPanelMinSize.HasValue ? $"--second-panel-min:{SecondPanelMinSize}px" : string.Empty);
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-
-        await ResetPaneDimensions();
     }
 
 
