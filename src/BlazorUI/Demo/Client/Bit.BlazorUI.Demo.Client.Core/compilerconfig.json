@@ -288,8 +288,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Progress/ProgressBar/BitProgressBarDemo.razor.css",
-        "inputFile": "Pages/Components/Progress/ProgressBar/BitProgressBarDemo.razor.scss",
+        "outputFile": "Pages/Components/Progress/ProgressBar/BitProgressDemo.razor.css",
+        "inputFile": "Pages/Components/Progress/ProgressBar/BitProgressDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitProgressBar : BitComponentBase
+public partial class BitProgress : BitComponentBase
 {
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
@@ -15,17 +15,17 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// Circular mode of the BitProgressBar.
+    /// Circular mode of the BitProgress.
     /// </summary>
     [Parameter] public bool Circular { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitProgressBar.
+    /// Custom CSS classes for different parts of the BitProgress.
     /// </summary>
-    [Parameter] public BitProgressBarClassStyles? Classes { get; set; }
+    [Parameter] public BitProgressClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Color of the BitProgressBar.
+    /// Color of the BitProgress.
     /// </summary>
     [Parameter] public string? Color { get; set; }
 
@@ -40,7 +40,7 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// Thickness of the BitProgressBar.
+    /// Thickness of the BitProgress.
     /// </summary>
     [Parameter] public int Thickness { get; set; } = 2;
 
@@ -50,12 +50,12 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public bool Indeterminate { get; set; }
 
     /// <summary>
-    /// Label to display above the BitProgressBar.
+    /// Label to display above the BitProgress.
     /// </summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>
-    /// Custom label template to display above the BitProgressBar.
+    /// Custom label template to display above the BitProgress.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
@@ -80,9 +80,9 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public bool ShowPercentNumber { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitProgressBar.
+    /// Custom CSS styles for different parts of the BitProgress.
     /// </summary>
-    [Parameter] public BitProgressBarClassStyles? Styles { get; set; }
+    [Parameter] public BitProgressClassStyles? Styles { get; set; }
 
 
     protected override string RootElementClass => "bit-prb";
@@ -99,15 +99,15 @@ public partial class BitProgressBar : BitComponentBase
 
     protected override Task OnInitializedAsync()
     {
-        _labelId = $"BitProgressBar-{UniqueId}-label";
-        _descriptionId = $"BitProgressBar-{UniqueId}-description";
+        _labelId = $"BitProgress-{UniqueId}-label";
+        _descriptionId = $"BitProgress-{UniqueId}-description";
 
         return base.OnInitializedAsync();
     }
 
     private static double Normalize(double? value) => Math.Clamp(value.GetValueOrDefault(), 0, 100);
 
-    private string GetProgressBarStyle()
+    private string GetProgressStyle()
     {
         StringBuilder sb = new();
 

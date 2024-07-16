@@ -1,18 +1,18 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
-namespace Bit.BlazorUI.Tests.Components.Progress.ProgressBar;
+namespace Bit.BlazorUI.Tests.Components.Progress.Progress;
 
 [TestClass]
-public class BitProgressBarTests : BunitTestContext
+public class BitProgressTests : BunitTestContext
 {
     [DataTestMethod,
         DataRow(3),
         DataRow(12)
     ]
-    public void BitProgressBarThicknessTest(int thickness)
+    public void BitProgressThicknessTest(int thickness)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Thickness, thickness);
         });
@@ -27,9 +27,9 @@ public class BitProgressBarTests : BunitTestContext
         DataRow(52),
         DataRow(43)
     ]
-    public void BitProgressBarBarWidthShouldBeEqualPercent(double percent)
+    public void BitProgressWidthShouldBeEqualPercent(double percent)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Percent, percent);
         });
@@ -44,9 +44,9 @@ public class BitProgressBarTests : BunitTestContext
         DataRow(520),
         DataRow(430)
     ]
-    public void BitProgressBarBarWidthCanNotBeBiggerThan100(double percent)
+    public void BitProgressWidthCanNotBeBiggerThan100(double percent)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Percent, percent);
         });
@@ -61,9 +61,9 @@ public class BitProgressBarTests : BunitTestContext
         DataRow(-5),
         DataRow(-265)
     ]
-    public void BitProgressBarBarWidthCanNotBeSmallerThan0(double percent)
+    public void BitProgressWidthCanNotBeSmallerThan0(double percent)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Percent, percent);
         });
@@ -79,9 +79,9 @@ public class BitProgressBarTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitProgressBarIndeterminateClassTest(bool indeterminate)
+    public void BitProgressIndeterminateClassTest(bool indeterminate)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Indeterminate, indeterminate);
         });
@@ -94,9 +94,9 @@ public class BitProgressBarTests : BunitTestContext
         DataRow("Label"),
         DataRow(null),
     ]
-    public void BitProgressBarLabelTest(string label)
+    public void BitProgressLabelTest(string label)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Label, label);
         });
@@ -119,9 +119,9 @@ public class BitProgressBarTests : BunitTestContext
         DataRow("Description"),
         DataRow(null),
     ]
-    public void BitProgressBarDescriptionTest(string description)
+    public void BitProgressDescriptionTest(string description)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.Description, description);
         });
@@ -144,9 +144,9 @@ public class BitProgressBarTests : BunitTestContext
         DataRow("Aria Value Text"),
         DataRow(null),
     ]
-    public void BitProgressBarAriaValueTextTest(string txt)
+    public void BitProgressAriaValueTextTest(string txt)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.AriaValueText, txt);
         });
@@ -165,9 +165,9 @@ public class BitProgressBarTests : BunitTestContext
     [DataTestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitProgressBarShowPercentNumberTest(bool showPercentNumber)
+    public void BitProgressShowPercentNumberTest(bool showPercentNumber)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.ShowPercentNumber, showPercentNumber);
         });
@@ -187,9 +187,9 @@ public class BitProgressBarTests : BunitTestContext
     [DataTestMethod,
         DataRow("<h1>this is a custom label</h1>")
     ]
-    public void BitProgressBarLabelTemplateTest(string labelTemplate)
+    public void BitProgressLabelTemplateTest(string labelTemplate)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
@@ -201,9 +201,9 @@ public class BitProgressBarTests : BunitTestContext
     [DataTestMethod,
         DataRow("<h1>this is a custom description</h1>"),
     ]
-    public void BitProgressBarDescriptionTemplateTest(string descriptionTemplate)
+    public void BitProgressDescriptionTemplateTest(string descriptionTemplate)
     {
-        var component = RenderComponent<BitProgressBar>(parameters =>
+        var component = RenderComponent<BitProgress>(parameters =>
         {
             parameters.Add(p => p.DescriptionTemplate, descriptionTemplate);
         });

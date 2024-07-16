@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Progress.ProgressBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Progress.Progress;
 
-public partial class BitProgressBarDemo
+public partial class BitProgressDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -14,25 +14,25 @@ public partial class BitProgressBarDemo
         new()
         {
             Name = "Classes",
-            Type = "BitProgressBarClassStyles?",
+            Type = "BitProgressClassStyles?",
             LinkType = LinkType.Link,
             Href = "#progressBar-class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitProgressBar.",
+            Description = "Custom CSS classes for different parts of the BitProgress.",
         },
         new()
         {
             Name = "Color",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Color of the BitProgressBar.",
+            Description = "Color of the BitProgress.",
         },
         new()
         {
             Name = "Circular",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Circular mode of the BitProgressBar.",
+            Description = "Circular mode of the BitProgress.",
         },
         new()
         {
@@ -60,14 +60,14 @@ public partial class BitProgressBarDemo
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Label to display above the BitProgressBar.",
+            Description = "Label to display above the BitProgress.",
         },
         new()
         {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom label template to display above the BitProgressBar.",
+            Description = "Custom label template to display above the BitProgress.",
         },
         new()
         {
@@ -100,18 +100,18 @@ public partial class BitProgressBarDemo
         new()
         {
             Name = "Styles",
-            Type = "BitProgressBarClassStyles?",
+            Type = "BitProgressClassStyles?",
             LinkType = LinkType.Link,
             Href = "#progressBar-class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS Styles for different parts of the BitProgressBar.",
+            Description = "Custom CSS Styles for different parts of the BitProgress.",
         },
         new()
         {
             Name = "Thickness",
             Type = "int",
             DefaultValue = "2",
-            Description = "Thickness of the BitProgressBar.",
+            Description = "Thickness of the BitProgress.",
         }
     ];
 
@@ -120,7 +120,7 @@ public partial class BitProgressBarDemo
         new()
         {
             Id = "progressBar-class-styles",
-            Title = "BitProgressBarClassStyles",
+            Title = "BitProgressClassStyles",
             Parameters =
             [
                new()
@@ -128,49 +128,49 @@ public partial class BitProgressBarDemo
                    Name = "Root",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the root element of the BitProgressBar."
+                   Description = "Custom CSS classes/styles for the root element of the BitProgress."
                },
                new()
                {
                    Name = "Label",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the label of the BitProgressBar."
+                   Description = "Custom CSS classes/styles for the label of the BitProgress."
                },
                new()
                {
                    Name = "PercentNumber",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the percent number of the BitProgressBar."
+                   Description = "Custom CSS classes/styles for the percent number of the BitProgress."
                },
                new()
                {
                    Name = "BarContainer",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the bar container of the BitProgressBar."
+                   Description = "Custom CSS classes/styles for the bar container of the BitProgress."
                },
                new()
                {
                    Name = "Track",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the track of the BitProgressBar."
+                   Description = "Custom CSS classes/styles for the track of the BitProgress."
                },
                new()
                {
                    Name = "Bar",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the bar of the BitProgressBar."
+                   Description = "Custom CSS classes/styles for the bar of the BitProgress."
                },
                new()
                {
                    Name = "Description",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the description of the BitProgressBar."
+                   Description = "Custom CSS classes/styles for the description of the BitProgress."
                }
             ]
         }
@@ -183,55 +183,55 @@ public partial class BitProgressBarDemo
 
 
     private readonly string example1RazorCode = @"
-<BitProgressBar Label=""Basic ProgressBar""
-                Description=""Example description""
-                Percent=""42"" />";
+<BitProgress Label=""Basic Progress""
+             Description=""Example description""
+             Percent=""42"" />";
     
     private readonly string example2RazorCode = @"
-<BitProgressBar Circular
-                Label=""Basic Circular Progress""
-                Description=""Example description""
-                Percent=""42"" />";
+<BitProgress Circular
+             Label=""Basic Circular Progress""
+             Description=""Example description""
+             Percent=""42"" />";
 
     private readonly string example3RazorCode = @"
-<BitProgressBar Label=""Show Percent Number""
-                Percent=""85.69""
-                ShowPercentNumber />
-<BitProgressBar Label=""Percent Number Format""
-                Percent=""85.69""
-                PercentNumberFormat=""{0:F2} %""
-                ShowPercentNumber />
+<BitProgress Label=""Show Percent Number""
+             Percent=""85.69""
+             ShowPercentNumber />
+<BitProgress Label=""Percent Number Format""
+             Percent=""85.69""
+             PercentNumberFormat=""{0:F2} %""
+             ShowPercentNumber />
 
-<BitProgressBar Circular
-                Label=""Show Percent Number""
-                Percent=""85.69""
-                ShowPercentNumber />
-<BitProgressBar Circular
-                Label=""Percent Number Format""
-                Percent=""85.69""
-                PercentNumberFormat=""{0:F2} %""
-                ShowPercentNumber />";
+<BitProgress Circular
+             Label=""Show Percent Number""
+             Percent=""85.69""
+             ShowPercentNumber />
+<BitProgress Circular
+             Label=""Percent Number Format""
+             Percent=""85.69""
+             PercentNumberFormat=""{0:F2} %""
+             ShowPercentNumber />";
 
     private readonly string example4RazorCode = @"
 <BitSlider @bind-Value=""barThickness"" Max=""50"" />
 
-<BitProgressBar ShowPercentNumber Percent=""69"" Thickness=""(int)barThickness"" />
+<BitProgress ShowPercentNumber Percent=""69"" Thickness=""(int)barThickness"" />
 
-<BitProgressBar Circular ShowPercentNumber Percent=""69"" Thickness=""(int)barThickness"" />";
+<BitProgress Circular ShowPercentNumber Percent=""69"" Thickness=""(int)barThickness"" />";
     private readonly string example4CsharpCode = @"
 private double barThickness = 10;";
 
     private readonly string example5RazorCode = @"
-<BitProgressBar Indeterminate />
+<BitProgress Indeterminate />
 
-<BitProgressBar Circular Indeterminate />";
+<BitProgress Circular Indeterminate />";
 
     private readonly string example6RazorCode = @"
-<BitProgressBar Color=""#c10606"" Percent=""69"" />
-<BitProgressBar Color=""#ffba17"" Indeterminate />
+<BitProgress Color=""#c10606"" Percent=""69"" />
+<BitProgress Color=""#ffba17"" Indeterminate />
 
-<BitProgressBar Color=""#c10606"" Circular Percent=""69"" />
-<BitProgressBar Color=""#ffba17"" Circular Indeterminate />";
+<BitProgress Color=""#c10606"" Circular Percent=""69"" />
+<BitProgress Color=""#ffba17"" Circular Indeterminate />";
 
     private readonly string example7RazorCode = @"
 <style>
@@ -260,52 +260,51 @@ private double barThickness = 10;";
 </style>
 
 
-<BitProgressBar Indeterminate Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" />
+<BitProgress Indeterminate Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" />
 
-<BitProgressBar Class=""custom-class""
-                Percent=""69""
-                Height=""10"" />
-
-
-<BitProgressBar Circular Indeterminate Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" />
-
-<BitProgressBar Circular
-                Class=""custom-class""
-                Percent=""69""
-                Height=""10"" />
+<BitProgress Class=""custom-class""
+             Percent=""69""
+             Height=""10"" />
 
 
-<BitProgressBar Indeterminate
-                Height=""10""
-                Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"",
-                                  Track = ""background-color: green;"" })"" />
+<BitProgress Circular Indeterminate Style=""background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;"" Height=""10"" />
 
-<BitProgressBar Classes=""@(new() { Bar = ""custom-bar"",
-                                   Track = ""custom-tracker""})""
-                Percent=""69""
-                Height=""10"" />
+<BitProgress Circular
+             Class=""custom-class""
+             Percent=""69""
+             Height=""10"" 
+
+<BitProgress Indeterminate
+             Height=""10""
+             Styles=""@(new() { Bar = ""background: linear-gradient(to right, green 0%, yellow 50%, green 100%);"",
+                                Track = ""background-color: green;"" })"" />
+
+<BitProgress Classes=""@(new() { Bar = ""custom-bar"",
+                                 Track = ""custom-tracker""})""
+             Percent=""69""
+             Height=""10"" />
 
 
-<BitProgressBar Circular Indeterminate
-                Height=""10""
-                Styles=""@(new() { Bar = ""stroke: greenyellow;"",
-                                  Track = ""stroke: green;"" })"" />
+<BitProgress Circular Indeterminate
+             Height=""10""
+             Styles=""@(new() { Bar = ""stroke: greenyellow;"",
+                               Track = ""stroke: green;"" })"" />
 
-<BitProgressBar Circular
-                Percent=""69""
-                Height=""10""
-                Classes=""@(new() { Bar = ""custom-circle-bar"",
-                                   Track = ""custom-circle-tracker""})"" />";
+<BitProgress Circular
+             Percent=""69""
+             Height=""10""
+             Classes=""@(new() { Bar = ""custom-circle-bar"",
+                                Track = ""custom-circle-tracker""})"" />";
 
     private readonly string example8RazorCode = @"
-<BitProgressBar Dir=""BitDir.Rtl""
-                Height=""10""
-                Indeterminate />
+<BitProgress Dir=""BitDir.Rtl""
+             Height=""10""
+             Indeterminate />
 
-<BitProgressBar Label=""لیبل تست""
-                Description=""توضیحات تست""
-                Dir=""BitDir.Rtl""
-                Percent=""69""
-                Height=""10""
-                ShowPercent />";
+<BitProgress Label=""لیبل تست""
+             Description=""توضیحات تست""
+             Dir=""BitDir.Rtl""
+             Percent=""69""
+             Height=""10""
+             ShowPercent />";
 }
