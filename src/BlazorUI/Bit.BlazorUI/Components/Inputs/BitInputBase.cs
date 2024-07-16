@@ -71,14 +71,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// <summary>
     /// Makes the input read-only.
     /// </summary>
-    [Parameter]
-    public bool ReadOnly { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
 
     /// <summary>
     /// Makes the input required.
     /// </summary>
-    [Parameter]
-    public bool Required { get; set; }
+    [Parameter] public bool Required { get; set; }
 
     /// <summary>
     /// Gets or sets the value of the input. This should be used with two-way binding.
