@@ -43,7 +43,7 @@
         else
         {
             <div style="height: @(Thickness)px; @Styles?.Track" class="bit-prb-trc @Classes?.Track"></div>
-            <div class="@(Indeterminate ? "bit-prb-ind" : "bit-prb-bar") @Classes?.Bar"
+            <div class="bit-prb-bar @(Indeterminate ? "bit-prb-ind" : null) @Classes?.Bar"
                  role="progressbar"
                  aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                  aria-valuetext="@AriaValueText"
