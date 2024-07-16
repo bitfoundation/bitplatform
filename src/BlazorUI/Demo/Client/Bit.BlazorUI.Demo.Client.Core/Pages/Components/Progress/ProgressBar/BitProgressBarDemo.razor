@@ -34,17 +34,7 @@ Bars moving backward reduce confidence in the service."
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Thickness" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <ExamplePreview>
-            <BitSlider @bind-Value="barThickness" Max="50" />
-            <br /><br />
-            <BitProgressBar Percent="69" Thickness="(int)barThickness" />
-            <br />
-            <BitProgressBar Circular Percent="69" Thickness="(int)barThickness" />
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="ShowPercentNumber" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="ShowPercentNumber" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <BitProgressBar Label="Show Percent Number"
                             Percent="85.69"
@@ -65,6 +55,16 @@ Bars moving backward reduce confidence in the service."
                             Percent="85.69"
                             PercentNumberFormat="{0:F2} %"
                             ShowPercentNumber />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Thickness" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <BitSlider @bind-Value="barThickness" Max="50" />
+            <br /><br />
+            <BitProgressBar ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
+            <br />
+            <BitProgressBar Circular ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
         </ExamplePreview>
     </ComponentExampleBox>
 

@@ -85,6 +85,13 @@ public partial class BitProgressBarDemo
         },
         new()
         {
+            Name = "Radius",
+            Type = "int",
+            DefaultValue = "6",
+            Description = "The radius of the circular progress.",
+        },
+        new()
+        {
             Name = "ShowPercentNumber",
             Type = "bool",
             DefaultValue = "false",
@@ -187,15 +194,6 @@ public partial class BitProgressBarDemo
                 Percent=""42"" />";
 
     private readonly string example3RazorCode = @"
-<BitSlider @bind-Value=""barThickness"" Max=""50"" />
-
-<BitProgressBar Percent=""69"" Thickness=""(int)barThickness"" />
-
-<BitProgressBar Circular Percent=""69"" Thickness=""(int)barThickness"" />";
-    private readonly string example3CsharpCode = @"
-private double barThickness = 10;";
-
-    private readonly string example4RazorCode = @"
 <BitProgressBar Label=""Show Percent Number""
                 Percent=""85.69""
                 ShowPercentNumber />
@@ -213,6 +211,15 @@ private double barThickness = 10;";
                 Percent=""85.69""
                 PercentNumberFormat=""{0:F2} %""
                 ShowPercentNumber />";
+
+    private readonly string example4RazorCode = @"
+<BitSlider @bind-Value=""barThickness"" Max=""50"" />
+
+<BitProgressBar ShowPercentNumber Percent=""69"" Thickness=""(int)barThickness"" />
+
+<BitProgressBar Circular ShowPercentNumber Percent=""69"" Thickness=""(int)barThickness"" />";
+    private readonly string example4CsharpCode = @"
+private double barThickness = 10;";
 
     private readonly string example5RazorCode = @"
 <BitProgressBar Indeterminate />

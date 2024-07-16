@@ -31,23 +31,21 @@
 
 .bit-prb-lbl {
     overflow: hidden;
+    color: $clr-fg-pri;
     white-space: nowrap;
     text-overflow: ellipsis;
     line-height: spacing(2.5);
     padding-bottom: spacing(1);
-    color: $clr-fg-pri;
 }
 
 .bit-prb-pct {
-    top: 0;
-    position: absolute;
-    inset-inline-end: 0;
+    text-align: end;
     color: $clr-fg-pri;
 }
 
 .bit-prb-bcn {
-    position: relative;
     overflow: hidden;
+    position: relative;
 }
 
 .bit-prb-trc {
@@ -80,7 +78,7 @@
     background: linear-gradient(to right, $clr-bg-sec 0%, var(--bit-prb-bar-color) 50%, $clr-bg-sec 100%);
 }
 
-.bit-prb-crw {
+.bit-prb-crp {
     display: flex;
     position: relative;
     align-items: center;
@@ -95,12 +93,17 @@
 }
 
 .bit-prb-ctx {
+    max-width: 60%;
+    overflow: hidden;
     color: $clr-fg-sec;
     position: absolute;
-    font-size: spacing(1.125);
+    white-space: nowrap;
+    font-size: spacing(1.5);
 }
 
-circle {
+.bit-prb-crt, 
+.bit-prb-cbr, 
+.bit-prb-cri {
     fill: none;
     stroke: $clr-bg-sec;
     transform: rotate(-90deg);

@@ -70,6 +70,11 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
 
     /// <summary>
+    /// The radius of the circular progress.
+    /// </summary>
+    [Parameter] public int Radius { get; set; } = 6;
+
+    /// <summary>
     /// Whether or not to percentage display.
     /// </summary>
     [Parameter] public bool ShowPercentNumber { get; set; }
@@ -105,6 +110,8 @@ public partial class BitProgressBar : BitComponentBase
     private string GetProgressBarStyle()
     {
         StringBuilder sb = new();
+
+        sb.Append($"{(Circular ? "stroke-width" : "height")}: {Thickness}px;");
 
         sb.Append($"--bit-prb-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-pri)")};");
 
