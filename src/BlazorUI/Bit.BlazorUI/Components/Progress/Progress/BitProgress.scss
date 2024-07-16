@@ -1,0 +1,125 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-prb {
+    font-weight: 400;
+    position: relative;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+
+    @keyframes bit-prb-animation {
+        0% {
+            inset-inline-start: -100%;
+            transform: translateX(100%);
+        }
+
+        100% {
+            inset-inline-start: 100%;
+            transform: translateX(0%);
+        }
+    }
+
+    @keyframes bit-prb-cir-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+}
+
+.bit-prb-lbl {
+    overflow: hidden;
+    color: $clr-fg-pri;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: spacing(2.5);
+    padding-bottom: spacing(1);
+}
+
+.bit-prb-pct {
+    text-align: end;
+    color: $clr-fg-pri;
+}
+
+.bit-prb-bcn {
+    overflow: hidden;
+    position: relative;
+}
+
+.bit-prb-trc {
+    width: 100%;
+    height: inherit;
+    position: absolute;
+    background-color: $clr-bg-sec;
+}
+
+.bit-prb-bar {
+    width: 0;
+    height: inherit;
+    position: absolute;
+    transition: width 0.15s linear 0s;
+    background-color: var(--bit-prb-bar-color);
+}
+
+.bit-prb-des {
+    color: $clr-fg-sec;
+    font-size: spacing(1.25);
+    line-height: spacing(2.25);
+}
+
+.bit-prb-ind {
+    width: 0;
+    min-width: 33%;
+    position: absolute;
+    transition: width 0.3s ease 0s;
+    animation: 3s ease 0s infinite normal none running bit-prb-animation;
+    background: linear-gradient(to right, $clr-bg-sec 0%, var(--bit-prb-bar-color) 50%, $clr-bg-sec 100%);
+}
+
+.bit-prb-crp {
+    display: flex;
+    position: relative;
+    align-items: center;
+    max-width: max-content;
+    justify-content: center;
+}
+
+.bit-prb-cir {
+    display: block;
+    min-width: spacing(6.25);
+    min-height: spacing(6.25);
+}
+
+.bit-prb-ctx {
+    max-width: 60%;
+    overflow: hidden;
+    color: $clr-fg-sec;
+    position: absolute;
+    white-space: nowrap;
+    font-size: spacing(1.5);
+}
+
+.bit-prb-crt, 
+.bit-prb-cbr, 
+.bit-prb-cri {
+    fill: none;
+    stroke: $clr-bg-sec;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.bit-prb-cbr {
+    stroke: var(--bit-prb-bar-color);
+    transition: stroke-dasharray 0.05s ease-in-out;
+    stroke-dasharray: calc(3.141 * var(--bit-prb-percent, 0%) * 0.8), 500%;
+}
+
+.bit-prb-cri {
+    stroke: var(--bit-prb-bar-color);
+    transition: stroke-dasharray 0.05s ease-in-out;
+    stroke-dasharray: calc(3.141 * 25% * 0.8), 500%;
+    animation: bit-prb-cir-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+}

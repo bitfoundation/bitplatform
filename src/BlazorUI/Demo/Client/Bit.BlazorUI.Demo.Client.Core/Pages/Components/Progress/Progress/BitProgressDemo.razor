@@ -1,0 +1,163 @@
+﻿@page "/components/progress"
+@page "/components/progressbar"
+@page "/components/progressindicator"
+@page "/components/progress-indicator"
+
+<PageOutlet Url="components/progress"
+            Title="Progress"
+            Description="progress component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Progress"
+               ComponentSubClasses="componentSubClasses"
+               ComponentDescription="BitProgresss are used to show the completion status of an operation lasting more than 2 seconds.
+If the state of progress cannot be determined, use a Spinner instead.
+Progresss can appear in a new panel, a flyout, under the UI initiating the operation, or even replace the initiating UI,
+as long as the UI can return if the operation is canceled or is stopped. Real-world examples include copying files to a storage location, saving edits to a file, and more.
+Use units that are informative and relevant to give the best idea to users of how long the operation will take to complete.
+Avoid time units as they are rarely accurate enough to be trustworthy. Also, combine steps of a complex operation into one total bar to avoid “rewinding” the bar.
+Instead, change the operation description to reflect the change if necessary.
+Bars moving backward reduce confidence in the service."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitProgress Label="Basic Progress"
+                         Description="Example description"
+                         Percent="42" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Circular" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <BitProgress Circular
+                         Label="Basic Circular Progress"
+                         Description="Example description"
+                         Percent="42" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ShowPercentNumber" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <BitProgress Label="Show Percent Number"
+                         Percent="85.69"
+                         ShowPercentNumber />
+            <br />
+            <BitProgress Label="Percent Number Format"
+                         Percent="85.69"
+                         PercentNumberFormat="{0:F2} %"
+                         ShowPercentNumber />
+            <br /><br />
+            <BitProgress Circular
+                         Label="Show Percent Number"
+                         Percent="85.69"
+                         ShowPercentNumber />
+            <br />
+            <BitProgress Circular
+                         Label="Percent Number Format"
+                         Percent="85.69"
+                         PercentNumberFormat="{0:F2} %"
+                         ShowPercentNumber />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Thickness" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <BitSlider @bind-Value="barThickness" Max="50" />
+            <br /><br />
+            <BitProgress ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
+            <br />
+            <BitProgress Circular ShowPercentNumber Percent="69" Thickness="(int)barThickness" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Indeterminate" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <BitProgress Indeterminate />
+            <br />
+            <BitProgress Circular Indeterminate />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <BitProgress Color="#c10606" Percent="69" />
+            <br />
+            <BitProgress Color="#ffba17" Indeterminate />
+            <br /><br />
+            <BitProgress Color="#c10606" Circular Percent="69" />
+            <br />
+            <BitProgress Color="#ffba17" Circular Indeterminate />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div>
+                <div>Component's Style & Class:</div>
+                <br />
+                <BitProgress Indeterminate Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Thickness="10" />
+                <br />
+                <BitProgress Class="custom-class"
+                             Percent="69"
+                             Thickness="10" />
+                <br /><br />
+                <BitProgress Circular Indeterminate Style="background-color: #e687dc; border-radius: 0.5rem; padding: 0.2rem;" Thickness="10" />
+                <br />
+                <BitProgress Circular
+                             Class="custom-class"
+                             Percent="69"
+                             Thickness="10" />
+                <br /><br /><br />
+                <div>Styles & Classes:</div>
+                <br />
+                <BitProgress Indeterminate
+                             Thickness="10"
+                             Styles="@(new() { Bar = "background: linear-gradient(to right, green 0%, yellow 50%, green 100%);",
+                                                  Track = "background-color: green;" })" />
+                <br />
+                <BitProgress Classes="@(new() { Bar = "custom-bar",
+                                                   Track = "custom-tracker"})"
+                             Percent="69"
+                             Thickness="10" />
+                <br /><br />
+                <BitProgress Circular Indeterminate
+                             Thickness="10"
+                             Styles="@(new() { Bar = "stroke: greenyellow;",
+                                                  Track = "stroke: green;" })" />
+                <br />
+                <BitProgress Circular
+                             Percent="69"
+                             Thickness="10"
+                             Classes="@(new() { Bar = "custom-circle-bar",
+                                                   Track = "custom-circle-tracker"})" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+        <ExamplePreview>
+            <BitProgress Dir="BitDir.Rtl"
+                         Thickness="10"
+                         Indeterminate />
+            <br />
+            <BitProgress Label="لیبل تست"
+                         Description="توضیحات تست"
+                         Dir="BitDir.Rtl"
+                         Percent="69"
+                         Thickness="10"
+                         ShowPercentNumber />
+            <br /><br />
+            <BitProgress Circular
+                         Dir="BitDir.Rtl"
+                         Thickness="10"
+                         Indeterminate />
+            <br />
+            <BitProgress Circular
+                         Label="لیبل تست"
+                         Description="توضیحات تست"
+                         Dir="BitDir.Rtl"
+                         Percent="69"
+                         Thickness="10"
+                         ShowPercentNumber />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

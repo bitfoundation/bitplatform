@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitProgressBar : BitComponentBase
+public partial class BitProgress : BitComponentBase
 {
     private string _labelId = string.Empty;
     private string _descriptionId = string.Empty;
@@ -15,12 +15,17 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public string? AriaValueText { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitProgressBar.
+    /// Circular mode of the BitProgress.
     /// </summary>
-    [Parameter] public BitProgressBarClassStyles? Classes { get; set; }
+    [Parameter] public bool Circular { get; set; }
 
     /// <summary>
-    /// Color of the BitProgressBar.
+    /// Custom CSS classes for different parts of the BitProgress.
+    /// </summary>
+    [Parameter] public BitProgressClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Color of the BitProgress.
     /// </summary>
     [Parameter] public string? Color { get; set; }
 
@@ -35,9 +40,9 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// Height of the BitProgressBar.
+    /// Thickness of the BitProgress.
     /// </summary>
-    [Parameter] public int Height { get; set; } = 2;
+    [Parameter] public int Thickness { get; set; } = 2;
 
     /// <summary>
     /// Whether or not to show indeterminate progress animation.
@@ -45,12 +50,12 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public bool Indeterminate { get; set; }
 
     /// <summary>
-    /// Label to display above the BitProgressBar.
+    /// Label to display above the BitProgress.
     /// </summary>
     [Parameter] public string? Label { get; set; }
 
     /// <summary>
-    /// Custom label template to display above the BitProgressBar.
+    /// Custom label template to display above the BitProgress.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
@@ -65,14 +70,19 @@ public partial class BitProgressBar : BitComponentBase
     [Parameter] public string PercentNumberFormat { get; set; } = "{0:F0} %";
 
     /// <summary>
+    /// The radius of the circular progress.
+    /// </summary>
+    [Parameter] public int Radius { get; set; } = 6;
+
+    /// <summary>
     /// Whether or not to percentage display.
     /// </summary>
     [Parameter] public bool ShowPercentNumber { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitProgressBar.
+    /// Custom CSS styles for different parts of the BitProgress.
     /// </summary>
-    [Parameter] public BitProgressBarClassStyles? Styles { get; set; }
+    [Parameter] public BitProgressClassStyles? Styles { get; set; }
 
 
     protected override string RootElementClass => "bit-prb";
@@ -89,17 +99,19 @@ public partial class BitProgressBar : BitComponentBase
 
     protected override Task OnInitializedAsync()
     {
-        _labelId = $"BitProgressBar-{UniqueId}-label";
-        _descriptionId = $"BitProgressBar-{UniqueId}-description";
+        _labelId = $"BitProgress-{UniqueId}-label";
+        _descriptionId = $"BitProgress-{UniqueId}-description";
 
         return base.OnInitializedAsync();
     }
 
     private static double Normalize(double? value) => Math.Clamp(value.GetValueOrDefault(), 0, 100);
 
-    private string GetProgressBarStyle()
+    private string GetProgressStyle()
     {
         StringBuilder sb = new();
+
+        sb.Append($"{(Circular ? "stroke-width" : "height")}: {Thickness}px;");
 
         sb.Append($"--bit-prb-bar-color:{(Color.HasValue() ? Color : "var(--bit-clr-pri)")};");
 
@@ -107,7 +119,7 @@ public partial class BitProgressBar : BitComponentBase
 
         if (Indeterminate is false)
         {
-            sb.Append($"width: {Normalize(Percent)}%;");
+            sb.Append($"{(Circular ? "--bit-prb-percent" : "width")}: {Normalize(Percent)}%;");
         }
 
         return sb.ToString();
