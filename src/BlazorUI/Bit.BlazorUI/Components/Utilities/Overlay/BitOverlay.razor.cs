@@ -55,13 +55,13 @@ public partial class BitOverlay : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : "");
+        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsVisible ? $"bit-ovl-vis" : "");
-        ClassBuilder.Register(() => AbsolutePosition ? $"bit-ovl-abs" : "");
+        ClassBuilder.Register(() => IsVisible ? "bit-ovl-vis" : string.Empty);
+        ClassBuilder.Register(() => AbsolutePosition ? "bit-ovl-abs" : string.Empty);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -85,6 +85,8 @@ public partial class BitOverlay : BitComponentBase
         StateHasChanged();
     }
 
+
+
     private void CloseOverlay()
     {
         if (IsEnabled is false) return;
@@ -94,10 +96,5 @@ public partial class BitOverlay : BitComponentBase
         IsVisible = false;
         ClassBuilder.Reset();
         _ = IsVisibleChanged.InvokeAsync(IsVisible);
-    }
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
     }
 }
