@@ -44,7 +44,7 @@ public partial class UserController : AppControllerBase, IUserController
             ?? throw new ResourceNotFoundException();
 
         return user.Sessions
-            .Select(s => s.Map(AppSettings.Identity.RefreshTokenExpiration))
+            .Select(s => s.Map(refreshTokenExpiresIn: AppSettings.Identity.RefreshTokenExpiration))
         .ToList();
     }
 
@@ -78,7 +78,9 @@ public partial class UserController : AppControllerBase, IUserController
         if (sessionIdToBeRemoved == currentSessionId)
             throw new InvalidOperationException("Call SignOut instead");
 
-        var currentSession = user.Sessions.Single(s => s.SessionUniqueId == currentSessionId);
+        var currentSession = user.Sessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId)
+            ?? throw new ResourceNotFoundException();
+
         var revokeUserSessionsDelay = (DateTimeOffset.Now - currentSession.StartedOn) - AppSettings.Identity.RevokeUserSessionsDelay;
 
         if (revokeUserSessionsDelay < TimeSpan.Zero)
