@@ -35,6 +35,11 @@ public static partial class Program
             app.UseResponseCompression();
         }
 
+        if (env.IsDevelopment())
+        {
+            app.UseDirectoryBrowser();
+        }
+
         app.UseStaticFiles(new StaticFileOptions
         {
             OnPrepareResponse = ctx =>
@@ -62,7 +67,7 @@ public static partial class Program
 
         app.UseSwaggerUI(options =>
         {
-            options.InjectJavascript($"/swagger/swagger-utils.js?v={Environment.TickCount64}");
+            options.InjectJavascript($"/scripts/swagger-utils.js?v={Environment.TickCount64}");
         });
 
         app.MapGet("/api/minimal-api-sample/{routeParameter}", (string routeParameter, [FromQuery] string queryStringParameter) => new

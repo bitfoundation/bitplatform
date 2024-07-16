@@ -6,11 +6,10 @@ public partial class BitTooltip : BitComponentBase
 {
     private bool IsShownHasBeenSet;
 
-    private bool isShown;
-    private BitTooltipPosition tooltipPosition = BitTooltipPosition.Top;
 
-    private CancellationTokenSource? _showDelayTokenSource = new CancellationTokenSource();
-    private CancellationTokenSource? _hideDelayTokenSource = new CancellationTokenSource();
+
+    private CancellationTokenSource? _showDelayTokenSource = new();
+    private CancellationTokenSource? _hideDelayTokenSource = new();
 
 
 
@@ -48,35 +47,15 @@ public partial class BitTooltip : BitComponentBase
     /// The visibility state of the tooltip.
     /// </summary>
     [Parameter]
-    public bool IsShown
-    {
-        get => isShown;
-        set
-        {
-            if (isShown == value) return;
-
-            isShown = value;
-            _ = IsShownChanged.InvokeAsync(isShown);
-        }
-    }
+    public bool IsShown { get; set; }
 
     [Parameter] public EventCallback<bool> IsShownChanged { get; set; }
 
     /// <summary>
     /// The position of tooltip around its anchor.
     /// </summary>
-    [Parameter]
-    public BitTooltipPosition Position
-    {
-        get => tooltipPosition;
-        set
-        {
-            if (tooltipPosition == value) return;
-
-            tooltipPosition = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitTooltipPosition Position { get; set; }
 
     /// <summary>
     /// The content you want inside the tooltip.
@@ -114,6 +93,7 @@ public partial class BitTooltip : BitComponentBase
     [Parameter] public BitTooltipClassStyles? Styles { get; set; }
 
 
+
     protected override string RootElementClass => "bit-ttp";
 
     protected override void RegisterCssClasses()
@@ -131,10 +111,12 @@ public partial class BitTooltip : BitComponentBase
         if (IsShownHasBeenSet is false && DefaultIsShown.HasValue)
         {
             IsShown = DefaultIsShown.Value;
+            await IsShownChanged.InvokeAsync(IsShown);
         }
 
         await base.OnInitializedAsync();
     }
+
 
 
     private async Task Show()
@@ -153,6 +135,7 @@ public partial class BitTooltip : BitComponentBase
         }
 
         IsShown = true;
+        await IsShownChanged.InvokeAsync(IsShown);
     }
 
     private async Task Hide()
@@ -171,6 +154,7 @@ public partial class BitTooltip : BitComponentBase
         }
 
         IsShown = false;
+        await IsShownChanged.InvokeAsync(IsShown);
     }
 
     private async Task HandlePointerEnter()

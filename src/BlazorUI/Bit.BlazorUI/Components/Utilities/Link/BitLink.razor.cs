@@ -24,12 +24,14 @@ public partial class BitLink : BitComponentBase
     /// <summary>
     /// Whether the link is styled with an underline or not.
     /// </summary>
-    [Parameter] public bool Underlined { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
 
     /// <summary>
     /// Callback for when the link clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
 
 
     protected override string RootElementClass => "bit-lnk";

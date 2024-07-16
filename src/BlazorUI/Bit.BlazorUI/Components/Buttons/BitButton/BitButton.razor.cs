@@ -4,15 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton : BitComponentBase
 {
-    private BitSize? size;
-    private BitColor? color;
-    private bool reversedIcon;
-    private BitVariant? variant;
-    private string? secondaryText;
-    private RenderFragment? childContent;
-    private RenderFragment? primaryTemplate;
-    private RenderFragment? secondaryTemplate;
-
     private int? _tabIndex;
     private BitButtonType _buttonType;
 
@@ -46,19 +37,8 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The content of primary section of the button.
     /// </summary>
-    [Parameter]
-    public RenderFragment? ChildContent
-    {
-        get => childContent;
-        set
-        {
-            if (childContent == value) return;
-
-            childContent = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the button.
@@ -68,19 +48,8 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The general color of the button.
     /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
@@ -120,87 +89,32 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The content of the primary section of the button (alias of the ChildContent).
     /// </summary>
-    [Parameter]
-    public RenderFragment? PrimaryTemplate
-    {
-        get => primaryTemplate;
-        set
-        {
-            if (PrimaryTemplate == value) return;
-
-            primaryTemplate = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? PrimaryTemplate { get; set; }
 
     /// <summary>
     /// Reverses the positions of the icon and the main content of the button.
     /// </summary>
-    [Parameter]
-    public bool ReversedIcon
-    {
-        get => reversedIcon;
-        set
-        {
-            if (reversedIcon == value) return;
-
-            reversedIcon = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool ReversedIcon { get; set; }
 
     /// <summary>
     /// The text of the secondary section of the button.
     /// </summary>
-    [Parameter]
-    public string? SecondaryText
-    {
-        get => secondaryText;
-        set
-        {
-            if (secondaryText == value) return;
-
-            secondaryText = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public string? SecondaryText { get; set; }
 
     /// <summary>
     /// The custom template for the secondary section of the button.
     /// </summary>
-    [Parameter]
-    public RenderFragment? SecondaryTemplate
-    {
-        get => secondaryTemplate;
-        set
-        {
-            if (secondaryTemplate == value) return;
-
-            secondaryTemplate = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? SecondaryTemplate { get; set; }
 
     /// <summary>
     /// The size of the button.
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the button.
@@ -220,19 +134,8 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The visual variant of the button.
     /// </summary>
-    [Parameter]
-    public BitVariant? Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
-
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
 
     protected override string RootElementClass => "bit-btn";

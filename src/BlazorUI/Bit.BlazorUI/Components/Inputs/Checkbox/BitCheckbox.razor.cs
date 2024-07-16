@@ -6,8 +6,7 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 {
     private bool IndeterminateHasBeenSet;
 
-    private bool reversed;
-    private bool indeterminate;
+
 
     private string _inputId = string.Empty;
 
@@ -72,19 +71,8 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     /// An indeterminate visual state for checkbox. 
     /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.
     /// </summary>
-    [Parameter]
-    public bool Indeterminate
-    {
-        get => indeterminate;
-        set
-        {
-            if (value == indeterminate) return;
-            indeterminate = value;
-            _ = _js.SetProperty(InputElement, "indeterminate", value);
-            ClassBuilder.Reset();
-            _ = IndeterminateChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool Indeterminate { get; set; }
 
     [Parameter] public EventCallback<bool> IndeterminateChanged { get; set; }
 
@@ -106,19 +94,8 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     /// <summary>
     /// Reverses the label and checkbox location.
     /// </summary>
-    [Parameter]
-    public bool Reversed
-    {
-        get => reversed;
-        set
-        {
-            if (value == reversed) return;
-
-            reversed = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitCheckbox.
@@ -145,10 +122,17 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 
         if (IndeterminateHasBeenSet is false && DefaultIndeterminate is not null)
         {
-            Indeterminate = DefaultIndeterminate.Value;
+            SetIndeterminate(DefaultIndeterminate.Value);
         }
 
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await _js.SetProperty(InputElement, "indeterminate", Indeterminate);
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -167,11 +151,11 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Indeterminate ? $"bit-chb-ind" : string.Empty);
+        ClassBuilder.Register(() => Indeterminate ? "bit-chb-ind" : string.Empty);
 
-        ClassBuilder.Register(() => CurrentValue ? $"bit-chb-ckd" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue ? "bit-chb-ckd" : string.Empty);
 
-        ClassBuilder.Register(() => Reversed ? $"bit-chb-end" : string.Empty);
+        ClassBuilder.Register(() => Reversed ? "bit-chb-end" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -204,7 +188,7 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
         {
             if (IndeterminateHasBeenSet && IndeterminateChanged.HasDelegate is false) return;
 
-            Indeterminate = false;
+            SetIndeterminate(false);
         }
 
         CurrentValue = CurrentValue is false;
@@ -213,5 +197,15 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         ClassBuilder.Reset();
+    }
+
+    private void SetIndeterminate(bool value)
+    {
+        Indeterminate = value;
+
+        ClassBuilder.Reset();
+
+        _ = IndeterminateChanged.InvokeAsync(value);
+        _ = _js.SetProperty(InputElement, "indeterminate", value);
     }
 }

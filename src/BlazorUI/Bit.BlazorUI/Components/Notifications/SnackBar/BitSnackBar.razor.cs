@@ -4,8 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitSnackBar : BitComponentBase
 {
-    private BitSnackBarPosition position = BitSnackBarPosition.BottomRight;
-
     private List<BitSnackBarItem> _items = [];
 
 
@@ -43,16 +41,8 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// The position of SnackBar to show.
     /// </summary>
-    [Parameter]
-    public BitSnackBarPosition Position
-    {
-        get => position;
-        set
-        {
-            position = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSnackBarPosition Position { get; set; } = BitSnackBarPosition.BottomRight;
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitSnackBar.
@@ -63,6 +53,7 @@ public partial class BitSnackBar : BitComponentBase
     /// Used to customize how content inside the Title is rendered. 
     /// </summary>
     [Parameter] public RenderFragment<string>? TitleTemplate { get; set; }
+
 
 
     public async Task Show(string title, string? body = "", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)

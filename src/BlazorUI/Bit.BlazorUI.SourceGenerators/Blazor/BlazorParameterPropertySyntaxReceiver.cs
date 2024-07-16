@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.SourceGenerators.Blazor;
 
 public class BlazorParameterPropertySyntaxReceiver : ISyntaxContextReceiver
 {
-    public IList<IPropertySymbol> Properties { get; } = new List<IPropertySymbol>();
+    public IList<BitProperty> Properties { get; } = [];
 
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
     {
@@ -32,11 +32,16 @@ public class BlazorParameterPropertySyntaxReceiver : ISyntaxContextReceiver
 
         if (type.GetMembers().Any(m => m.Name == "SetParametersAsync")) return;
 
+        var attributes = propertySymbol.GetAttributes();
 
-        if (propertySymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute"
-                                                  || ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute"))
+        if (attributes.Any(ad => ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute" ||
+                                 ad.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.CascadingParameterAttribute"))
         {
-            Properties.Add(propertySymbol);
+            var resetClassBuilder = attributes.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetClassBuilderAttribute");
+            var resetStyleBuilder = attributes.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetStyleBuilderAttribute");
+
+            var property = new BitProperty(propertySymbol, resetClassBuilder, resetStyleBuilder);
+            Properties.Add(property);
         }
     }
 }

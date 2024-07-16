@@ -3,10 +3,13 @@
 public partial class BitPivotItem : IDisposable
 {
     private bool IsSelectedHasBeenSet;
-    private bool isSelected;
+
+
 
     private bool _disposed;
     private bool _isEnabled;
+
+
 
     /// <summary>
     /// The content of the pivot item, It can be Any custom tag or a text (alias of ChildContent).
@@ -41,19 +44,9 @@ public partial class BitPivotItem : IDisposable
     /// <summary>
     /// Whether or not the item is selected.
     /// </summary>
-    [Parameter]
-    public bool IsSelected
-    {
-        get => isSelected;
-        set
-        {
-            if (value == isSelected) return;
+    [Parameter, ResetClassBuilder]
+    public bool IsSelected { get; set; }
 
-            isSelected = value;
-            _ = IsSelectedChanged.InvokeAsync(value);
-            ClassBuilder.Reset();
-        }
-    }
     [Parameter] public EventCallback<bool> IsSelectedChanged { get; set; }
 
     /// <summary>
@@ -61,7 +54,7 @@ public partial class BitPivotItem : IDisposable
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
-    
+
     [CascadingParameter] private BitPivot? Parent { get; set; }
 
 
@@ -106,6 +99,8 @@ public partial class BitPivotItem : IDisposable
     internal void SetIsSelected(bool value)
     {
         IsSelected = value;
+        ClassBuilder.Reset();
+        _ = IsSelectedChanged.InvokeAsync(IsSelected);
         StateHasChanged();
     }
 

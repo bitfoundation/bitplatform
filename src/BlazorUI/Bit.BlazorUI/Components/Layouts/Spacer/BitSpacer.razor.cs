@@ -2,25 +2,11 @@
 
 public partial class BitSpacer : BitComponentBase
 {
-    private int? width;
-
-
-
     /// <summary>
     /// Gets or sets the width of the spacer (in pixels).
     /// </summary>
-    [Parameter]
-    public int? Width
-    {
-        get => width;
-        set
-        {
-            if (width == value) return;
-
-            width = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public int? Width { get; set; }
 
 
 

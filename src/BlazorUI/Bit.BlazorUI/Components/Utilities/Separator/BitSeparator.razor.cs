@@ -2,26 +2,11 @@
 
 public partial class BitSeparator : BitComponentBase
 {
-    private bool isVertical;
-    private BitSeparatorAlignContent separatorAlignContent = BitSeparatorAlignContent.Center;
-
-
-
     /// <summary>
     /// Where the content should be aligned in the separator.
     /// </summary>
-    [Parameter]
-    public BitSeparatorAlignContent AlignContent
-    {
-        get => separatorAlignContent;
-        set
-        {
-            if (separatorAlignContent == value) return;
-
-            separatorAlignContent = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSeparatorAlignContent AlignContent { get; set; } = BitSeparatorAlignContent.Center;
 
     /// <summary>
     /// The content of the Separator, it can be any custom tag or text.
@@ -31,18 +16,8 @@ public partial class BitSeparator : BitComponentBase
     /// <summary>
     /// Whether the element is a vertical separator.
     /// </summary>
-    [Parameter]
-    public bool IsVertical
-    {
-        get => isVertical;
-        set
-        {
-            if (isVertical == value) return;
-
-            isVertical = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsVertical { get; set; }
 
 
 
@@ -50,13 +25,13 @@ public partial class BitSeparator : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsVertical ? $"{RootElementClass}-vrt" : $"{RootElementClass}-hrz");
+        ClassBuilder.Register(() => IsVertical ? "bit-spr-vrt" : "bit-spr-hrz");
 
         ClassBuilder.Register(() => AlignContent switch
         {
-            BitSeparatorAlignContent.Start => $"{RootElementClass}-srt",
-            BitSeparatorAlignContent.End => $"{RootElementClass}-end",
-            _ => $"{RootElementClass}-ctr"
+            BitSeparatorAlignContent.Start => "bit-spr-srt",
+            BitSeparatorAlignContent.End => "bit-spr-end",
+            _ => "bit-spr-ctr"
         });
     }
 }

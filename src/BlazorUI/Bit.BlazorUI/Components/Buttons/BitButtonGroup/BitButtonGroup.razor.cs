@@ -5,11 +5,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
-    private bool vertical;
-    private BitSize? size;
-    private BitColor? color;
-    private BitVariant? variant;
-
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
 
@@ -30,19 +25,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Defines the general colors available in the bit BlazorUI.
     /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     ///  List of Item, each of which can be a button with different action in the ButtonGroup.
@@ -72,53 +56,20 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The size of ButtonGroup, Possible values: Small | Medium | Large
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// The visual variant of the button group.
     /// </summary>
-    [Parameter]
-    public BitVariant? Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
-
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
     /// <summary>
     /// Defines whether to render ButtonGroup children vertically.
     /// </summary>
-    [Parameter]
-    public bool Vertical
-    {
-        get => vertical;
-        set
-        {
-            if (vertical == value) return;
-
-            vertical = value;
-
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
 
 
 

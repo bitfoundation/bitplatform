@@ -14,23 +14,23 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private bool IsOpenHasBeenSet;
 
-    private bool isOpen;
-    private CultureInfo culture = CultureInfo.CurrentUICulture;
-    private BitIconLocation iconLocation = BitIconLocation.Right;
 
-    private string focusClass = string.Empty;
 
     private int? _hour;
     private int? _minute;
     private string? _labelId;
     private string? _inputId;
-    private string _timePickerId = string.Empty;
     private string _calloutId = string.Empty;
+    private string _timePickerId = string.Empty;
+    private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
 
+
+
+    private string focusClass = string.Empty;
     private string _focusClass
     {
         get => focusClass;
@@ -105,6 +105,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         }
     }
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -137,18 +139,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// CultureInfo for the TimePicker
     /// </summary>
-    [Parameter]
-    public CultureInfo Culture
-    {
-        get => culture;
-        set
-        {
-            if (culture == value) return;
-
-            culture = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public CultureInfo? Culture { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -173,18 +165,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// TimePicker icon location
     /// </summary>
-    [Parameter]
-    public BitIconLocation IconLocation
-    {
-        get => iconLocation;
-        set
-        {
-            if (iconLocation == value) return;
-
-            iconLocation = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitIconLocation IconLocation { get; set; } = BitIconLocation.Right;
 
     /// <summary>
     /// Custom TimePicker icon template
@@ -199,19 +181,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Whether or not this TimePicker is open
     /// </summary>
-    [Parameter]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (isOpen == value) return;
-
-            isOpen = value;
-            _ = IsOpenChanged.InvokeAsync(value);
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -298,16 +269,21 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
 
     [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
+        ClassBuilder.Reset();
+        await IsOpenChanged.InvokeAsync(IsOpen);
+
         StateHasChanged();
     }
 
     public Task OpenCallout() => HandleOnClick();
+
+
 
     protected override string RootElementClass => "bit-tpc";
 
@@ -346,6 +322,58 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         base.OnInitialized();
     }
 
+    protected override void OnParametersSet()
+    {
+        _culture = Culture ?? CultureInfo.CurrentUICulture;
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        if (value.HasNoValue())
+        {
+            _hour = null;
+            _minute = null;
+            result = null;
+            validationErrorMessage = null;
+            return true;
+        }
+
+        if (DateTime.TryParseExact(value, GetValueFormat(), Culture, DateTimeStyles.None, out DateTime parsedValue))
+        {
+            result = parsedValue.TimeOfDay;
+            _hour = result.Value.Hours;
+            _minute = result.Value.Minutes;
+            validationErrorMessage = null;
+            return true;
+        }
+
+        result = default;
+        validationErrorMessage = InvalidErrorMessage.HasValue() ? InvalidErrorMessage! : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        return false;
+    }
+
+    protected override string? FormatValueAsString(TimeSpan? value)
+    {
+        if (value.HasValue is false) return null;
+
+        DateTime time = DateTime.Today.Add(value.Value);
+        return time.ToString(GetValueFormat(), Culture);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _dotnetObj.Dispose();
+            _cancellationTokenSource.Dispose();
+            OnValueChanged -= HandleOnValueChanged;
+        }
+
+        base.Dispose(disposing);
+    }
+
+
+
     private async Task HandleOnFocusIn()
     {
         if (IsEnabled is false) return;
@@ -373,6 +401,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task CloseCallout()
     {
         IsOpen = false;
+        ClassBuilder.Reset();
+        await IsOpenChanged.InvokeAsync(IsOpen);
+
         await ToggleCallout();
 
         StateHasChanged();
@@ -413,6 +444,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = true;
+        ClassBuilder.Reset();
+        await IsOpenChanged.InvokeAsync(IsOpen);
+
         await ToggleCallout();
 
         await OnClick.InvokeAsync();
@@ -580,51 +614,5 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private string GetValueFormat()
     {
         return ValueFormat.HasValue() ? ValueFormat! : (TimeFormat == BitTimeFormat.TwentyFourHours ? FORMAT_24_HOURS : FORMAT_12_HOURS);
-    }
-
-    /// <inheritdoc />
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)
-    {
-        if (value.HasNoValue())
-        {
-            _hour = null;
-            _minute = null;
-            result = null;
-            validationErrorMessage = null;
-            return true;
-        }
-
-        if (DateTime.TryParseExact(value, GetValueFormat(), Culture, DateTimeStyles.None, out DateTime parsedValue))
-        {
-            result = parsedValue.TimeOfDay;
-            _hour = result.Value.Hours;
-            _minute = result.Value.Minutes;
-            validationErrorMessage = null;
-            return true;
-        }
-
-        result = default;
-        validationErrorMessage = InvalidErrorMessage.HasValue() ? InvalidErrorMessage! : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
-        return false;
-    }
-
-    protected override string? FormatValueAsString(TimeSpan? value)
-    {
-        if (value.HasValue is false) return null;
-
-        DateTime time = DateTime.Today.Add(value.Value);
-        return time.ToString(GetValueFormat(), Culture);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _dotnetObj.Dispose();
-            _cancellationTokenSource.Dispose();
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
     }
 }

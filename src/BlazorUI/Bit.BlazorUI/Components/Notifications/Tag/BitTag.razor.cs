@@ -2,11 +2,6 @@
 
 public partial class BitTag : BitComponentBase
 {
-    private BitVariant? variant;
-    private BitSeverity? severity;
-
-
-
     /// <summary>
     /// Child content of component, the content that the tag will apply to.
     /// </summary>
@@ -35,19 +30,8 @@ public partial class BitTag : BitComponentBase
     /// <summary>
     /// The severity of the tag.
     /// </summary>
-    [Parameter]
-    public BitSeverity? Severity
-    {
-        get => severity;
-        set
-        {
-            if (severity == value) return;
-
-            severity = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSeverity? Severity { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitTag.
@@ -62,19 +46,9 @@ public partial class BitTag : BitComponentBase
     /// <summary>
     /// The visual variant of the tag.
     /// </summary>
-    [Parameter]
-    public BitVariant? Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
 
 
     protected override string RootElementClass => "bit-tag";
@@ -106,6 +80,8 @@ public partial class BitTag : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
     }
+
+
 
     private async Task HandleOnDismissClick(MouseEventArgs e)
     {

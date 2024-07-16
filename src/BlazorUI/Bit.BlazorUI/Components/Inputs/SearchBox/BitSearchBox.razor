@@ -57,7 +57,7 @@
     @if ((SuggestItems?.Any() ?? false) || SuggestItemProvider is not null)
     {
         <div @onclick="CloseCallout"
-             style="display:@(isOpen ? "block" : "none");@Styles?.Overlay"
+             style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay"
              class="bit-srb-ovl @Classes?.Overlay"></div>
 
         <div id="@_calloutId"

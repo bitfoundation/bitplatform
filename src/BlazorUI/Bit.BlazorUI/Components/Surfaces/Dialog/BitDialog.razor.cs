@@ -4,11 +4,10 @@ public partial class BitDialog : BitComponentBase, IDisposable
 {
     private bool IsOpenHasBeenSet;
 
-    private bool isOpen;
+
 
     private int _offsetTop;
     private bool _disposed;
-    private bool _isAlertRole;
     private bool _internalIsOpen;
     private string _containerId = default!;
     private TaskCompletionSource<BitDialogResult?>? _tcs = new();
@@ -62,15 +61,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
     /// <summary>
     /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
     /// </summary>
-    [Parameter]
-    public bool? IsAlert
-    {
-        get => _isAlertRole;
-        set
-        {
-            _isAlertRole = value ?? (IsBlocking && !IsModeless);
-        }
-    }
+    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the Dialog can be light dismissed by clicking outside the Dialog (on the overlay).
@@ -90,19 +81,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
     /// <summary>
     /// Whether the Dialog is displayed.
     /// </summary>
-    [Parameter]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (value == isOpen) return;
-
-            isOpen = value;
-
-            _ = IsOpenChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter] public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -182,11 +161,12 @@ public partial class BitDialog : BitComponentBase, IDisposable
     [Parameter] public string? TitleAriaId { get; set; }
 
 
+
     public BitDialogResult? Result { get; set; }
 
     public async Task<BitDialogResult?> Show()
     {
-        await InvokeAsync(() =>
+        await InvokeAsync(async () =>
         {
             _ = _js.ToggleOverflow(ScrollerSelector, true);
 
@@ -195,6 +175,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
             _tcs?.SetResult(null);
 
             IsOpen = true;
+            await IsOpenChanged.InvokeAsync(IsOpen);
 
             StateHasChanged();
         });
@@ -203,6 +184,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
 
         return await _tcs.Task;
     }
+
 
 
     protected override string RootElementClass => "bit-dlg";
@@ -264,13 +246,15 @@ public partial class BitDialog : BitComponentBase, IDisposable
         StateHasChanged();
     }
 
+
+
     private void DismissDialog(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
-
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
         _ = OnDismiss.InvokeAsync(e);
     }
 
@@ -331,6 +315,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
     };
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";
+
 
 
     public void Dispose()

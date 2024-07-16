@@ -4,10 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitTextField : BitTextInputBase<string?>
 {
-    private bool isMultiline;
-    private bool isUnderlined;
-    private bool hasBorder = true;
-    private bool isResizable = true;
     private BitTextFieldType type = BitTextFieldType.Text;
 
     private bool _hasFocus;
@@ -17,6 +13,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     private string _labelId = string.Empty;
     private string _inputType = string.Empty;
     private string _descriptionId = string.Empty;
+
+
 
     /// <summary>
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
@@ -56,66 +54,26 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Whether or not the text field is borderless.
     /// </summary>
-    [Parameter]
-    public bool HasBorder
-    {
-        get => hasBorder;
-        set
-        {
-            if (hasBorder == value) return;
-
-            hasBorder = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool HasBorder { get; set; } = true;
 
     /// <summary>
     /// Whether or not the text field is a Multiline text field.
     /// </summary>
-    [Parameter]
-    public bool IsMultiline
-    {
-        get => isMultiline;
-        set
-        {
-            if (isMultiline == value) return;
-
-            isMultiline = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsMultiline { get; set; }
 
     /// <summary>
     /// Whether or not the text field is underlined.
     /// </summary>
-    [Parameter]
-    public bool IsUnderlined
-    {
-        get => isUnderlined;
-        set
-        {
-            if (isUnderlined == value) return;
-
-            isUnderlined = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsUnderlined { get; set; }
 
     /// <summary>
     /// For multiline text fields, whether or not the field is resizable.
     /// </summary>
-    [Parameter]
-    public bool IsResizable
-    {
-        get => isResizable;
-        set
-        {
-            if (isResizable == value) return;
-
-            isResizable = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsResizable { get; set; } = true;
 
     /// <summary>
     /// The icon name for the icon shown in the far right end of the text field.
@@ -233,6 +191,14 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
 
+    public void ToggleRevealPassword()
+    {
+        _isPasswordRevealed = _isPasswordRevealed is false;
+        SetElementType();
+    }
+
+
+
     protected override string RootElementClass => "bit-txt";
 
     protected override void RegisterCssClasses()
@@ -285,6 +251,13 @@ public partial class BitTextField : BitTextInputBase<string?>
         {
             await InputElement.FocusAsync();
         }
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        result = IsTrimmed ? value?.Trim() : value;
+        parsingErrorMessage = null;
+        return true;
     }
 
 
@@ -353,18 +326,5 @@ public partial class BitTextField : BitTextInputBase<string?>
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
-    }
-
-    public void ToggleRevealPassword()
-    {
-        _isPasswordRevealed = !_isPasswordRevealed;
-        SetElementType();
-    }
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
-    {
-        result = IsTrimmed ? value?.Trim() : value;
-        parsingErrorMessage = null;
-        return true;
     }
 }

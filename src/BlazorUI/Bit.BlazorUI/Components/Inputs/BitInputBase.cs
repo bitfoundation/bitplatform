@@ -14,10 +14,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     protected bool IsDisposed;
     protected bool ValueHasBeenSet;
 
-    private bool readOnly;
-    private bool required;
+
+
     private TValue? value;
     private bool? valueInvalid;
+
+
 
     private bool _parsingFailed;
     private bool _isUnderlyingTypeNullable;
@@ -26,6 +28,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     private string? _incomingValueBeforeParsing;
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
+
+
 
     protected event EventHandler OnValueChanged = default!;
 
@@ -67,36 +71,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// <summary>
     /// Makes the input read-only.
     /// </summary>
-    [Parameter]
-    public bool ReadOnly
-    {
-        get => readOnly;
-        set
-        {
-            if (readOnly == value) return;
-
-            readOnly = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public bool ReadOnly { get; set; }
 
     /// <summary>
     /// Makes the input required.
     /// </summary>
-    [Parameter]
-    public bool Required
-    {
-        get => required;
-        set
-        {
-            if (required == value) return;
-
-            required = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public bool Required { get; set; }
 
     /// <summary>
     /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -187,12 +167,16 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     break;
 
                 case nameof(ReadOnly):
-                    ReadOnly = (bool)parameter.Value;
+                    var readOnly = (bool)parameter.Value;
+                    if (ReadOnly != readOnly) ClassBuilder.Reset();
+                    ReadOnly = readOnly;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Required):
-                    Required = (bool)parameter.Value;
+                    var required = (bool)parameter.Value;
+                    if (Required != required) ClassBuilder.Reset();
+                    Required = required;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
