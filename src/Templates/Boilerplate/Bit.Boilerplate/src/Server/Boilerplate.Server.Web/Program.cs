@@ -11,7 +11,8 @@ public static partial class Program
         var builder = WebApplication.CreateBuilder(options: new()
         {
             Args = args,
-            ContentRootPath = AppContext.BaseDirectory
+            ContentRootPath = AppContext.BaseDirectory,
+            WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot")
         });
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);

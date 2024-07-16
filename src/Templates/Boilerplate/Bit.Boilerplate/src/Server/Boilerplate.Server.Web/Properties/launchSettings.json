@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Boilerplate.Server": {
+        "Boilerplate.Server.Web": {
             "commandName": "Project",
             "launchBrowser": true,
             "environmentVariables": {
@@ -9,7 +9,7 @@
             "dotnetRunMessages": true,
             "applicationUrl": "http://localhost:5030"
         },
-        "Boilerplate.Server-Swagger": {
+        "Boilerplate.Server.Web-Swagger": {
             "commandName": "Project",
             "launchBrowser": true,
             "launchUrl": "swagger",
@@ -19,7 +19,7 @@
             "dotnetRunMessages": true,
             "applicationUrl": "http://localhost:5030"
         },
-        "Boilerplate.Server-BlazorWebAssembly": {
+        "Boilerplate.Server.Web-BlazorWebAssembly": {
             "commandName": "Project",
             "launchBrowser": true,
             "environmentVariables": {

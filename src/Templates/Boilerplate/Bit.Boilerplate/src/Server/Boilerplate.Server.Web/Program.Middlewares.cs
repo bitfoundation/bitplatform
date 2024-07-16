@@ -49,6 +49,14 @@ public static partial class Program
 
         Configure_401_403_404_Pages(app);
 
+        if (env.IsDevelopment())
+        {
+            app.UseDirectoryBrowser(new DirectoryBrowserOptions
+            {
+                FileProvider = new PhysicalFileProvider(env.WebRootPath)
+            });
+        }
+
         app.UseStaticFiles(new StaticFileOptions
         {
             OnPrepareResponse = ctx =>
@@ -88,7 +96,7 @@ public static partial class Program
 
         app.UseSwaggerUI(options =>
         {
-            options.InjectJavascript($"/swagger/swagger-utils.js?v={Environment.TickCount64}");
+            options.InjectJavascript($"/scripts/swagger-utils.js?v={Environment.TickCount64}");
         });
 
         app.MapGet("/api/minimal-api-sample/{routeParameter}", (string routeParameter, [FromQuery] string queryStringParameter) => new
