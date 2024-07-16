@@ -2,9 +2,9 @@
 
 public partial class BitPersona : BitComponentBase
 {
-    private bool unknown;
     private string? imageUrl;
-    private BitPersonaSize size = BitPersonaSize.Size48;
+
+
 
     private bool _isLoaded;
     private bool _hasError;
@@ -152,33 +152,14 @@ public partial class BitPersona : BitComponentBase
     /// If true, show the special coin for unknown persona. 
     /// It has '?' in place of initials, with static font and background colors.
     /// </summary>
-    [Parameter]
-    public bool Unknown
-    {
-        get => unknown; set
-        {
-            if (unknown == value) return;
-
-            unknown = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool Unknown { get; set; }
 
     /// <summary>
     /// Decides the size of the control.
     /// </summary>
-    [Parameter]
-    public BitPersonaSize Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitPersonaSize Size { get; set; } = BitPersonaSize.Size48;
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitPersona component.
@@ -227,6 +208,8 @@ public partial class BitPersona : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
     }
+
+
 
     private string? GetPresentationClass()
     {
@@ -327,6 +310,7 @@ public partial class BitPersona : BitComponentBase
             BitPersonaSize.Size72 => "72px",
             BitPersonaSize.Size100 => "100px",
             BitPersonaSize.Size120 => "120px",
+            _ => "48px"
         };
     }
 

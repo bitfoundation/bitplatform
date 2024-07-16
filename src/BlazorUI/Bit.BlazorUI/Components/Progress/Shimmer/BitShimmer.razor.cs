@@ -2,26 +2,11 @@
 
 public partial class BitShimmer : BitComponentBase
 {
-    private BitShimmerShape shape = BitShimmerShape.Line;
-    private BitShimmerAnimation animation = BitShimmerAnimation.Wave;
-
-
-
     /// <summary>
     /// The animation of the shimmer.
     /// </summary>
-    [Parameter]
-    public BitShimmerAnimation Animation
-    {
-        get => animation;
-        set
-        {
-            if (animation == value) return;
-
-            animation = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitShimmerAnimation Animation { get; set; }
 
     /// <summary>
     /// Child content of component, the content that the shimmer will apply to.
@@ -51,18 +36,8 @@ public partial class BitShimmer : BitComponentBase
     /// <summary>
     /// The shape of the shimmer.
     /// </summary>
-    [Parameter]
-    public BitShimmerShape Shape
-    {
-        get => shape;
-        set
-        {
-            if (shape == value) return;
-
-            shape = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitShimmerShape Shape { get; set; }
 
     /// <summary>
     /// The template of the shimmer.
@@ -80,6 +55,7 @@ public partial class BitShimmer : BitComponentBase
     [Parameter] public string? Width { get; set; }
 
 
+
     protected override string RootElementClass => "bit-smr";
 
     protected override void RegisterCssClasses()
@@ -94,6 +70,7 @@ public partial class BitShimmer : BitComponentBase
         StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
         StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
     }
+
 
 
     private string GetShapesClass() => Shape switch

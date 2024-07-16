@@ -10,6 +10,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private IEnumerable<TItem>? _oldItems;
 
 
+
     /// <summary>
     /// Id of an element to use as the aria label for the ChoiceGroup.
     /// </summary>
@@ -145,6 +146,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
+
 
 
     private void InitDefaultValue()

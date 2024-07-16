@@ -80,6 +80,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     [Parameter] public bool Vertical { get; set; }
 
 
+
     /// <summary>
     /// The ElementReferences to the input elements of the BitOtpInput.
     /// </summary>
@@ -89,6 +90,21 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     /// Gives focus to a specific input element of the BitOtpInput.
     /// </summary>
     public ValueTask FocusAsync(int index = 0) => _inputRefs[index].FocusAsync();
+
+    [JSInvokable]
+    public async Task SetPastedData(string pastedValue)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (pastedValue.HasNoValue()) return;
+        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
+
+        SetInputsValue(pastedValue);
+
+        CurrentValueAsString = string.Join(string.Empty, _inputValues);
+
+        await CallOnFill();
+    }
 
 
 
@@ -161,23 +177,6 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         }
 
         base.Dispose(disposing);
-    }
-
-
-
-    [JSInvokable]
-    public async Task SetPastedData(string pastedValue)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-        if (pastedValue.HasNoValue()) return;
-        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
-
-        SetInputsValue(pastedValue);
-
-        CurrentValueAsString = string.Join(string.Empty, _inputValues);
-
-        await CallOnFill();
     }
 
 

@@ -4,10 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitRating : BitInputBase<double>
 {
-    private BitSize? size;
-
-
-
     /// <summary>
     /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.
     /// </summary>
@@ -49,19 +45,8 @@ public partial class BitRating : BitInputBase<double>
     /// <summary>
     /// Size of rating elements.
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitRating.
@@ -72,6 +57,7 @@ public partial class BitRating : BitInputBase<double>
     /// Custom icon name for unselected rating elements, If unset, default will be the FavoriteStar icon.
     /// </summary>
     [Parameter] public string UnselectedIconName { get; set; } = "FavoriteStar";
+
 
 
     protected override async Task OnInitializedAsync()
@@ -113,6 +99,22 @@ public partial class BitRating : BitInputBase<double>
         base.OnParametersSet();
     }
 
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        if (double.TryParse(value, out var parsedValue))
+        {
+            result = parsedValue;
+            parsingErrorMessage = null;
+            return true;
+        }
+
+        result = default;
+        parsingErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        return false;
+    }
+
+
+
     private double GetPercentage(int index)
     {
         var fullRating = Math.Ceiling(CurrentValue);
@@ -139,19 +141,5 @@ public partial class BitRating : BitInputBase<double>
         if (index > Max || index < (AllowZeroStars ? 0 : 1)) return;
 
         CurrentValue = index;
-    }
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? parsingErrorMessage)
-    {
-        if (double.TryParse(value, out var parsedValue))
-        {
-            result = parsedValue;
-            parsingErrorMessage = null;
-            return true;
-        }
-
-        result = default;
-        parsingErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
-        return false;
     }
 }

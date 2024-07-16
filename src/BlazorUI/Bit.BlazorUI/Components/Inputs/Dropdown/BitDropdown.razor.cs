@@ -9,20 +9,21 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private bool IsOpenHasBeenSet;
     private bool ValuesHasBeenSet;
 
-    private bool chips;
+
+
     private bool isOpen;
     private ICollection<TValue?>? values = Array.Empty<TValue?>();
 
+
+
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShowItems = [];
-
-    private string _dropdownId = string.Empty;
-    private string _calloutId = string.Empty;
-    private string _scrollContainerId = string.Empty;
+    private string _labelId = string.Empty;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
-
-    private string _labelId = string.Empty;
+    private string _calloutId = string.Empty;
+    private string _dropdownId = string.Empty;
+    private string _scrollContainerId = string.Empty;
     private string _dropdownTextContainerId = string.Empty;
 
     private int? _totalItems;
@@ -34,6 +35,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private ElementReference _comboBoxInputResponsiveRef;
     private Virtualize<TItem>? _virtualizeElement;
     private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
+
+
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -107,11 +110,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             isOpen = value;
 
-            _ = IsOpenChanged.InvokeAsync(value);
-
             _ = ClearSearchBox();
         }
     }
+
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
@@ -122,8 +124,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Enables the responsive mode of the component for small screens.
     /// </summary>
-    [Parameter]
-    public bool IsResponsive { get; set; }
+    [Parameter] public bool IsResponsive { get; set; }
 
     /// <summary>
     /// The list of items to display in the callout.
@@ -281,18 +282,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Shows the selected items like chips in the BitDropdown.
     /// </summary>
-    [Parameter]
-    public bool Chips
-    {
-        get => chips;
-        set
-        {
-            if (chips == value) return;
-
-            chips = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool Chips { get; set; }
 
     /// <summary>
     /// The callback that is called when a new item is on added Dynamic ComboBox mode.
@@ -371,12 +362,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
 
     [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+
         StateHasChanged();
     }
 
@@ -683,6 +676,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsOpen is false) return;
 
         IsOpen = false;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+
         await ToggleCallout();
 
         StateHasChanged();
@@ -694,6 +689,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = true;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+
         await ToggleCallout();
 
         await OnClick.InvokeAsync(e);
@@ -1215,6 +1212,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = true;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+
         await ToggleCallout();
     }
 

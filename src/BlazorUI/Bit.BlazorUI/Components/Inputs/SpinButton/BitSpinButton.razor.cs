@@ -9,19 +9,22 @@ public partial class BitSpinButton : BitInputBase<double>
     private const int INITIAL_STEP_DELAY = 400;
     private const int STEP_DELAY = 75;
 
-    private BitLabelPosition labelPosition = BitLabelPosition.Top;
+
 
     private double _min;
     private double _max;
     private int _precision;
     private string? _intermediateValue;
     private string _inputId = default!;
-
     private ElementReference _incrementBtnRef;
     private ElementReference _decrementBtnRef;
     private CancellationTokenSource _cancellationTokenSource = new();
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// Detailed description of the input for the benefit of screen readers.
@@ -111,18 +114,8 @@ public partial class BitSpinButton : BitInputBase<double>
     /// <summary>
     /// The position of the label in regards to the spin button.
     /// </summary>
-    [Parameter]
-    public BitLabelPosition LabelPosition
-    {
-        get => labelPosition;
-        set
-        {
-            if (labelPosition == value) return;
-
-            labelPosition = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitLabelPosition LabelPosition { get; set; } = BitLabelPosition.Top;
 
     /// <summary>
     /// Custom Label content for spin button.
@@ -256,6 +249,30 @@ public partial class BitSpinButton : BitInputBase<double>
         SetDisplayValue();
 
         await base.OnParametersSetAsync();
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        if (double.TryParse(value, out var parsedValue))
+        {
+            result = Normalize(parsedValue);
+            validationErrorMessage = null;
+            return true;
+        }
+
+        result = default;
+        validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
+        return false;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _cancellationTokenSource.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
 
@@ -479,7 +496,6 @@ public partial class BitSpinButton : BitInputBase<double>
     private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
     private string GetLabelId => Label.HasValue() ? $"SpinButton-{UniqueId}-Label" : string.Empty;
 
-
     private static int CalculatePrecision(double value)
     {
         var regex = new Regex(@"[1-9]([0]+$)|\.([0-9]*)");
@@ -517,30 +533,5 @@ public partial class BitSpinButton : BitInputBase<double>
         }
 
         return value;
-    }
-
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? validationErrorMessage)
-    {
-        if (double.TryParse(value, out var parsedValue))
-        {
-            result = Normalize(parsedValue);
-            validationErrorMessage = null;
-            return true;
-        }
-
-        result = default;
-        validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
-        return false;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _cancellationTokenSource.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 }

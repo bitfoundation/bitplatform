@@ -4,11 +4,10 @@ public partial class BitModal : BitComponentBase, IDisposable
 {
     private bool IsOpenHasBeenSet;
 
-    private bool isOpen;
+
 
     private int _offsetTop;
     private bool _disposed;
-    private bool _isAlertRole;
     private bool _internalIsOpen;
     private string _containerId = default!;
 
@@ -26,7 +25,8 @@ public partial class BitModal : BitComponentBase, IDisposable
     /// <summary>
     /// When true, the Modal will be positioned absolute instead of fixed.
     /// </summary>
-    [Parameter] public bool AbsolutePosition { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool AbsolutePosition { get; set; }
 
     /// <summary>
     /// The content of the Modal, it can be any custom tag or text.
@@ -46,15 +46,7 @@ public partial class BitModal : BitComponentBase, IDisposable
     /// <summary>
     /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
     /// </summary>
-    [Parameter]
-    public bool? IsAlert
-    {
-        get => _isAlertRole;
-        set
-        {
-            _isAlertRole = value ?? (IsBlocking && !IsModeless);
-        }
-    }
+    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the modal can be light dismissed by clicking outside the Modal (on the overlay).
@@ -74,19 +66,7 @@ public partial class BitModal : BitComponentBase, IDisposable
     /// <summary>
     /// Whether the Modal is displayed.
     /// </summary>
-    [Parameter]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (value == isOpen) return;
-
-            isOpen = value;
-
-            _ = IsOpenChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter] public bool IsOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -121,13 +101,14 @@ public partial class BitModal : BitComponentBase, IDisposable
     [Parameter] public string? TitleAriaId { get; set; }
 
 
+
     protected override string RootElementClass => "bit-mdl";
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
+        ClassBuilder.Register(() => AbsolutePosition ? "bit-mdl-abs" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -171,7 +152,7 @@ public partial class BitModal : BitComponentBase, IDisposable
         _offsetTop = 0;
 
         if (AutoToggleScroll is false) return;
-        
+
         _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
 
         if (AbsolutePosition is false) return;
@@ -187,7 +168,7 @@ public partial class BitModal : BitComponentBase, IDisposable
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         IsOpen = false;
-
+        _ = IsOpenChanged.InvokeAsync(IsOpen);
         _ = OnDismiss.InvokeAsync(e);
     }
 
@@ -210,6 +191,7 @@ public partial class BitModal : BitComponentBase, IDisposable
     };
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";
+
 
 
     public void Dispose()

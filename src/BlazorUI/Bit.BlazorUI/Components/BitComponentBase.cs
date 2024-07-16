@@ -2,11 +2,6 @@
 
 public abstract partial class BitComponentBase : ComponentBase
 {
-    private BitDir? dir;
-    private string? style;
-    private string? @class;
-    private bool isEnabled = true;
-    private BitVisibility visibility;
     private string _uniqueId = BitShortId.NewId();
 
 
@@ -41,34 +36,12 @@ public abstract partial class BitComponentBase : ComponentBase
     /// <summary>
     /// Custom CSS class for the root element of the component.
     /// </summary>
-    [Parameter]
-    public string? Class
-    {
-        get => @class;
-        set
-        {
-            if (@class == value) return;
-
-            @class = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public string? Class { get; set; }
 
     /// <summary>
     /// Determines the component direction.
     /// </summary>
-    [Parameter]
-    public BitDir? Dir
-    {
-        get => dir ?? CascadingDir;
-        set
-        {
-            if (dir == value) return;
-
-            dir = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public BitDir? Dir { get; set; }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the component's parameters.
@@ -83,51 +56,18 @@ public abstract partial class BitComponentBase : ComponentBase
     /// <summary>
     /// Whether or not the component is enabled.
     /// </summary>
-    [Parameter]
-    public bool IsEnabled
-    {
-        get => isEnabled;
-        set
-        {
-            if (isEnabled == value) return;
-
-            isEnabled = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Custom CSS style for the root element of the component.
     /// </summary>
-    [Parameter]
-    public string? Style
-    {
-        get => style;
-        set
-        {
-            if (style == value) return;
-
-            style = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter] public string? Style { get; set; }
 
     /// <summary>
     /// Whether the component is visible, hidden or collapsed.
     /// </summary>
-    [Parameter]
-    public BitVisibility Visibility
-    {
-        get => visibility;
-        set
-        {
-            if (visibility == value) return;
+    [Parameter] public BitVisibility Visibility { get; set; }
 
-            visibility = value;
-            OnVisibilityChanged(value);
-            StyleBuilder.Reset();
-        }
-    }
 
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -149,12 +89,16 @@ public abstract partial class BitComponentBase : ComponentBase
                     break;
 
                 case nameof(Class):
-                    Class = (string?)parameter.Value;
+                    var @class = (string?)parameter.Value;
+                    if (Class != @class) ClassBuilder.Reset();
+                    Class = @class;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Dir):
-                    Dir = (BitDir?)parameter.Value;
+                    var dir = (BitDir?)parameter.Value;
+                    if (Dir != dir) ClassBuilder.Reset();
+                    Dir = dir;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -164,17 +108,23 @@ public abstract partial class BitComponentBase : ComponentBase
                     break;
 
                 case nameof(IsEnabled):
-                    IsEnabled = (bool)parameter.Value;
+                    var isEnabled = (bool)parameter.Value;
+                    if (IsEnabled != isEnabled) ClassBuilder.Reset();
+                    IsEnabled = isEnabled;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Style):
-                    Style = (string?)parameter.Value;
+                    var style = (string?)parameter.Value;
+                    if (Style != style) StyleBuilder.Reset();
+                    Style = style;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Visibility):
-                    Visibility = (BitVisibility)parameter.Value;
+                    var visibility = (BitVisibility)parameter.Value;
+                    if (Visibility != visibility) StyleBuilder.Reset();
+                    Visibility = visibility;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -186,13 +136,15 @@ public abstract partial class BitComponentBase : ComponentBase
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
+
+
     protected override void OnInitialized()
     {
         RegisterCssStyles();
 
         StyleBuilder
-            .Register(() => style)
-            .Register(() => visibility switch
+            .Register(() => Style)
+            .Register(() => Visibility switch
             {
                 BitVisibility.Hidden => "visibility:hidden",
                 BitVisibility.Collapsed => "display:none",
@@ -206,7 +158,7 @@ public abstract partial class BitComponentBase : ComponentBase
 
         RegisterCssClasses();
 
-        ClassBuilder.Register(() => @class);
+        ClassBuilder.Register(() => Class);
 
         base.OnInitialized();
     }

@@ -130,14 +130,14 @@
                             type="button"
                             style="@Styles?.AmButton"
                             class="bit-tpc-tbt bit-tpc-bam @(IsAm() is true ? "bit-tpc-bns" : string.Empty) @Classes?.AmButton">
-                        @Culture.DateTimeFormat.AMDesignator
+                        @_culture.DateTimeFormat.AMDesignator
                     </button>
 
                     <button @onclick="HandleOnPmClick"
                             type="button"
                             style="@Styles?.PmButton"
                             class="bit-tpc-tbt bit-tpc-bpm @(IsAm() is false ? "bit-tpc-bns" : string.Empty) @Classes?.PmButton">
-                        @Culture.DateTimeFormat.PMDesignator
+                        @_culture.DateTimeFormat.PMDesignator
                     </button>
                 </div>
             }

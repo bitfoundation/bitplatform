@@ -5,8 +5,6 @@ public partial class BitAccordion : BitComponentBase
 {
     private bool IsExpandedHasBeenSet;
 
-    private bool isExpanded;
-
 
 
     /// <summary>
@@ -37,17 +35,8 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Determines whether the accordion is expanding or collapses.
     /// </summary>
-    [Parameter]
-    public bool IsExpanded
-    {
-        get => isExpanded;
-        set
-        {
-            if (value == isExpanded) return;
-            isExpanded = value;
-            _ = IsExpandedChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool IsExpanded { get; set; }
 
     [Parameter] public EventCallback<bool> IsExpandedChanged { get; set; }
 
@@ -93,6 +82,9 @@ public partial class BitAccordion : BitComponentBase
         if (IsExpandedHasBeenSet is false && DefaultIsExpanded.HasValue)
         {
             IsExpanded = DefaultIsExpanded.Value;
+            await IsExpandedChanged.InvokeAsync(IsExpanded);
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
         }
 
         await base.OnInitializedAsync();
@@ -105,7 +97,11 @@ public partial class BitAccordion : BitComponentBase
         await OnClick.InvokeAsync(e);
         if (IsExpandedHasBeenSet && IsExpandedChanged.HasDelegate is false) return;
 
-        IsExpanded = !IsExpanded;
+        IsExpanded = IsExpanded is false;
+        await IsExpandedChanged.InvokeAsync(IsExpanded);
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+
         await OnChange.InvokeAsync(IsExpanded);
     }
 }

@@ -2,61 +2,23 @@
 
 public partial class BitIcon : BitComponentBase
 {
-    private BitSize? size;
-    private string? iconName;
-    private BitSeverity? severity;
-
-
-
     /// <summary>
     /// The icon name for the icon shown.
     /// </summary>
-    [Parameter]
-    public string? IconName
-    {
-        get => iconName;
-        set
-        {
-            if (iconName == value) return;
-
-            iconName = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public string? IconName { get; set; }
 
     /// <summary>
     /// The severity of the icon.
     /// </summary>
-    [Parameter]
-    public BitSeverity? Severity
-    {
-        get => severity;
-        set
-        {
-            if (severity == value) return;
-
-            severity = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSeverity? Severity { get; set; }
 
     /// <summary>
     /// The size of the icon.
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
 
 

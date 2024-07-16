@@ -2,12 +2,8 @@
 
 public partial class BitPivot : BitComponentBase
 {
-    private BitSize? linkSize;
     private string? selectedKey;
     private bool SelectedKeyHasBeenSet;
-    private BitPivotPosition position = BitPivotPosition.Top;
-    private BitPivotLinkFormat linkFormat = BitPivotLinkFormat.Links;
-    private BitPivotOverflowBehavior overflowBehavior = BitPivotOverflowBehavior.None;
 
     private BitPivotItem? _selectedItem;
     private List<BitPivotItem> _allItems = [];
@@ -37,51 +33,20 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Pivot link format, display mode for the pivot links
     /// </summary>
-    [Parameter]
-    public BitPivotLinkFormat LinkFormat
-    {
-        get => linkFormat;
-        set
-        {
-            if (value == linkFormat) return;
-
-            linkFormat = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitPivotLinkFormat LinkFormat { get; set; } = BitPivotLinkFormat.Links;
 
     /// <summary>
     /// The size of the pivot links.
     /// </summary>
-    [Parameter]
-    public BitSize? LinkSize
-    {
-        get => linkSize;
-        set
-        {
-            if (value == linkSize) return;
-
-            linkSize = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? LinkSize { get; set; }
 
     /// <summary>
     /// Overflow behavior when there is not enough room to display all of the links/tabs
     /// </summary>
-    [Parameter]
-    public BitPivotOverflowBehavior OverflowBehavior
-    {
-        get => overflowBehavior;
-        set
-        {
-            if (value == overflowBehavior) return;
-
-            overflowBehavior = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitPivotOverflowBehavior OverflowBehavior { get; set; }
 
     /// <summary>
     /// Callback for when the a pivot item is clicked.
@@ -91,18 +56,8 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Position of the pivot header
     /// </summary>
-    [Parameter]
-    public BitPivotPosition Position
-    {
-        get => position;
-        set
-        {
-            if (value == position) return;
-
-            position = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitPivotPosition Position { get; set; }
 
     /// <summary>
     /// Key of the selected pivot item. Updating this will override the Pivot's selected item state
@@ -125,6 +80,8 @@ public partial class BitPivot : BitComponentBase
     /// Custom CSS styles for different parts of the BitPivot component.
     /// </summary>
     [Parameter] public BitPivotClassStyles? Styles { get; set; }
+
+
 
     protected override string RootElementClass => "bit-pvt";
 
@@ -170,6 +127,8 @@ public partial class BitPivot : BitComponentBase
 
         return base.OnInitializedAsync();
     }
+
+
 
     internal string GetPivotItemId(BitPivotItem item) => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == item)}";
 

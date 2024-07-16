@@ -2,14 +2,11 @@
 
 public partial class BitSticky : BitComponentBase
 {
-    private BitStickyPosition? position;
-
-
-
     /// <summary>
     /// Specifying the vertical position of a positioned element from bottom.
     /// </summary>
-    [Parameter] public string? Bottom { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Bottom { get; set; }
 
     /// <summary>
     /// The content of the Sticky, it can be any custom tag or text.
@@ -19,33 +16,27 @@ public partial class BitSticky : BitComponentBase
     /// <summary>
     /// Specifying the horizontal position of a positioned element from left.
     /// </summary>
-    [Parameter] public string? Left { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Left { get; set; }
 
     /// <summary>
     /// Region to render sticky component in.
     /// </summary>
-    [Parameter]
-    public BitStickyPosition? Position
-    {
-        get => position;
-        set
-        {
-            if (position == value) return;
-
-            position = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitStickyPosition? Position { get; set; }
 
     /// <summary>
     /// Specifying the horizontal position of a positioned element from right.
     /// </summary>
-    [Parameter] public string? Right { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Right { get; set; }
 
     /// <summary>
     /// Specifying the vertical position of a positioned element from top.
     /// </summary>
-    [Parameter] public string? Top { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Top { get; set; }
+
 
 
     protected override string RootElementClass => "bit-stk";
@@ -54,14 +45,14 @@ public partial class BitSticky : BitComponentBase
     {
         ClassBuilder.Register(() => Position switch
         {
-            BitStickyPosition.Top => $"{RootElementClass}-top",
-            BitStickyPosition.Bottom => $"{RootElementClass}-btm",
-            BitStickyPosition.TopAndBottom => $"{RootElementClass}-tab",
-            BitStickyPosition.Start => $"{RootElementClass}-srt",
-            BitStickyPosition.End => $"{RootElementClass}-end",
-            BitStickyPosition.StartAndEnd => $"{RootElementClass}-sae",
+            BitStickyPosition.Top => "bit-stk-top",
+            BitStickyPosition.Bottom => "bit-stk-btm",
+            BitStickyPosition.TopAndBottom => "bit-stk-tab",
+            BitStickyPosition.Start => "bit-stk-srt",
+            BitStickyPosition.End => "bit-stk-end",
+            BitStickyPosition.StartAndEnd => "bit-stk-sae",
             _ => (Top is null && Bottom is null && Left is null && Right is null)
-                    ? $"{RootElementClass}-top"
+                    ? "bit-stk-top"
                     : string.Empty
         });
     }

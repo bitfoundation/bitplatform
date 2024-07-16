@@ -92,13 +92,13 @@
                                 type="button"
                                 style="@GetAmButtonStyle(isAm)"
                                 class="bit-ctp-apb @(isAm ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
-                            @Culture.DateTimeFormat.AMDesignator
+                            @_culture.DateTimeFormat.AMDesignator
                         </button>
                         <button @onclick="HandleOnPmClick"
                                 type="button"
                                 style="@GetPmButtonStyle(isAm)"
                                 class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
-                            @Culture.DateTimeFormat.PMDesignator
+                            @_culture.DateTimeFormat.PMDesignator
                         </button>
                     </div>
                 }

@@ -4,11 +4,8 @@ public partial class BitToggleButton : BitComponentBase
 {
     private bool IsCheckedHasBeenSet;
 
-    private BitSize? size;
-    private bool isChecked;
-    private BitVariant? variant;
-
     private int? _tabIndex;
+
 
 
     /// <summary>
@@ -49,21 +46,8 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Determine if the button is in checked state, default is true.
     /// </summary>        
-    [Parameter]
-    public bool IsChecked
-    {
-        get => isChecked;
-        set
-        {
-            if (value == isChecked) return;
-
-            isChecked = value;
-
-            ClassBuilder.Reset();
-
-            _ = IsCheckedChanged.InvokeAsync(value);
-        }
-    }
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public bool IsChecked { get; set; }
 
     [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
@@ -110,19 +94,8 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The size of button, Possible values: Small | Medium | Large
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitToggleButton component.
@@ -142,19 +115,8 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The visual variant of the toggle button.
     /// </summary>
-    [Parameter]
-    public BitVariant? Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
-
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
 
     protected override string RootElementClass => "bit-tgb";
@@ -199,6 +161,9 @@ public partial class BitToggleButton : BitComponentBase
         if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
         {
             IsChecked = DefaultIsChecked.Value;
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
+            _ = IsCheckedChanged.InvokeAsync(IsChecked);
         }
 
         await base.OnInitializedAsync();
@@ -213,8 +178,12 @@ public partial class BitToggleButton : BitComponentBase
         if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
 
         IsChecked = !IsChecked;
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+        _ = IsCheckedChanged.InvokeAsync(IsChecked);
         await OnChange.InvokeAsync(IsChecked);
     }
+
 
 
     private string? GetIconName()

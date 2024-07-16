@@ -5,10 +5,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitActionButton : BitComponentBase
 {
-    private BitSize? size;
     private int? _tabIndex;
-    private BitColor? color;
-    private bool reversedIcon;
     private BitButtonType _buttonType;
 
 
@@ -16,6 +13,7 @@ public partial class BitActionButton : BitComponentBase
     /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
+
 
 
     /// <summary>
@@ -51,19 +49,8 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// The general color of the button.
     /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The value of the href attribute of the link rendered by the button.
@@ -89,36 +76,14 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Reverses the positions of the icon and the content of the button.
     /// </summary>
-    [Parameter]
-    public bool ReversedIcon
-    {
-        get => reversedIcon;
-        set
-        {
-            if (reversedIcon == value) return;
-
-            reversedIcon = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool ReversedIcon { get; set; }
 
     /// <summary>
     /// The size of the button.
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).

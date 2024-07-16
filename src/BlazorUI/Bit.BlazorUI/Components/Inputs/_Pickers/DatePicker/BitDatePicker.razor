@@ -80,9 +80,9 @@
                 </div>
 
                 @{
-                    var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-                    var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-                    var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
+                    var todayYear = _culture.Calendar.GetYear(DateTime.Now);
+                    var todayMonth = _culture.Calendar.GetMonth(DateTime.Now);
+                    var todayDay = _culture.Calendar.GetDayOfMonth(DateTime.Now);
                     var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
                 }
 
@@ -195,7 +195,7 @@
 
                             @for (var index = 0; index < 7; index++)
                             {
-                                var dayOfWeekName = Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
+                                var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
                                 <div scope="col"
                                      title="@dayOfWeekName"
                                      style="@Styles?.WeekNumbersHeader"
@@ -346,7 +346,7 @@
                                         @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                                         {
                                             var month = (rowIndex * 4) + cellIndex;
-                                            var monthName = Culture.DateTimeFormat.GetMonthName(month);
+                                            var monthName = _culture.DateTimeFormat.GetMonthName(month);
                                             var disabled = IsMonthOutOfMinAndMaxDate(month);
                                             var selected = month == _currentMonth;
                                             <button @onclick="() => SelectMonth(month)"
@@ -367,7 +367,7 @@
                                                 }
                                                 else
                                                 {
-                                                    @Culture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                                                    @_culture.DateTimeFormat.GetAbbreviatedMonthName(month)
                                                 }
                                             </button>
                                         }
@@ -573,14 +573,14 @@
                                             type="button"
                                             style="@Styles?.TimePickerAmButton"
                                             class="bit-dtp-tbt bit-dtp-bam @(IsAm() is true ? "bit-dtp-bns" : string.Empty) @Classes?.TimePickerAmButton">
-                                        @Culture.DateTimeFormat.AMDesignator
+                                        @_culture.DateTimeFormat.AMDesignator
                                     </button>
 
                                     <button @onclick="HandleOnPmClick"
                                             type="button"
                                             style="@Styles?.TimePickerPmButton"
                                             class="bit-dtp-tbt bit-dtp-bpm @(IsAm() is false ? "bit-dtp-bns" : string.Empty) @Classes?.TimePickerPmButton">
-                                        @Culture.DateTimeFormat.PMDesignator
+                                        @_culture.DateTimeFormat.PMDesignator
                                     </button>
                                 </div>
                             }

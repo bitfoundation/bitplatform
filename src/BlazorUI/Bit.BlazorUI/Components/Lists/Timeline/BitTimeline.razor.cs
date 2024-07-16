@@ -5,11 +5,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 {
-    private BitSize? size;
-    private bool horizontal;
-    private BitVariant? variant;
-    private BitSeverity? severity;
-
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
 
@@ -33,21 +28,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitTimelineClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Defines whether to render timeline children horizontaly.
+    /// Defines whether to render timeline children horizontally.
     /// </summary>
-    [Parameter]
-    public bool Horizontal
-    {
-        get => horizontal;
-        set
-        {
-            if (horizontal == value) return;
-
-            horizontal = value;
-
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool Horizontal { get; set; }
 
     /// <summary>
     ///  List of Item, each can be with different contents in the timeline.
@@ -72,36 +56,14 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The severity of the timeline.
     /// </summary>
-    [Parameter]
-    public BitSeverity? Severity
-    {
-        get => severity;
-        set
-        {
-            if (severity == value) return;
-
-            severity = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSeverity? Severity { get; set; }
 
     /// <summary>
     /// The size of timeline, Possible values: Small | Medium | Large
     /// </summary>
-    [Parameter]
-    public BitSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitTimeline.
@@ -111,19 +73,8 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The visual variant of the timeline.
     /// </summary>
-    [Parameter]
-    public BitVariant? Variant
-    {
-        get => variant;
-        set
-        {
-            if (variant == value) return;
-
-            variant = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
 
 
 

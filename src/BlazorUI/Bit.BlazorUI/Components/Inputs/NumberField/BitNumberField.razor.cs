@@ -9,10 +9,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private const int STEP_DELAY = 75;
     private const int INITIAL_STEP_DELAY = 400;
 
+
+
     private TValue? min;
     private TValue? max;
     private TValue? step;
-    private bool inlineLabel;
+
+
 
     private bool _hasFocus;
     private TValue _min = default!;
@@ -25,6 +28,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
     private CancellationTokenSource _continuousChangeValueCts = new();
+
+
 
     public BitNumberField()
     {
@@ -115,19 +120,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// The position of the label in regards to the number field.
     /// </summary>
-    [Parameter]
-    public bool InlineLabel
-    {
-        get => inlineLabel;
-        set
-        {
-            if (inlineLabel == value) return;
-
-            inlineLabel = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool InlineLabel { get; set; }
 
     /// <summary>
     /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
@@ -149,7 +143,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         set
         {
             min = value;
-            _min = value is null ? _min : value;
+            _min = value is null ? GetTypeMinValue() : value;
         }
     }
 
@@ -162,7 +156,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         get => max; set
         {
             max = value;
-            _max = value is null ? _max : value;
+            _max = value is null ? GetTypeMaxValue() : value;
         }
     }
 
@@ -233,10 +227,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter]
     public TValue? Step
     {
-        get => step; set
+        get => step;
+        set
         {
             step = value;
-            _step = value is null ? _step : value;
+            _step = value is null ? ((TValue)(object)1) : value;
         }
     }
 
