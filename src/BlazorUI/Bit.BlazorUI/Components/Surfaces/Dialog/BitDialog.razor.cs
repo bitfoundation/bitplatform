@@ -6,10 +6,6 @@ public partial class BitDialog : BitComponentBase, IDisposable
 
 
 
-    private bool isAlertRole;
-
-
-
     private int _offsetTop;
     private bool _disposed;
     private bool _internalIsOpen;
@@ -65,15 +61,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
     /// <summary>
     /// Determines the ARIA role of the Dialog (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
     /// </summary>
-    [Parameter]
-    public bool? IsAlert
-    {
-        get => isAlertRole;
-        set
-        {
-            isAlertRole = value ?? (IsBlocking && !IsModeless);
-        }
-    }
+    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the Dialog can be light dismissed by clicking outside the Dialog (on the overlay).
