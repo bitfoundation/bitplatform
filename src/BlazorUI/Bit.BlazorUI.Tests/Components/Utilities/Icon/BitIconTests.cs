@@ -68,7 +68,7 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIcon>();
 
-        component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
+        component.MarkupMatches(@"<i class=""bit-ico"" role=""img"" id:ignore />");
 
         component.SetParametersAndRender(parameters =>
         {
