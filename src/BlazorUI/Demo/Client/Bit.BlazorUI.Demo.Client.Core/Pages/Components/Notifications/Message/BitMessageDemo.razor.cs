@@ -117,9 +117,9 @@ public partial class BitMessageDemo
         new()
         {
             Name = "Variant",
-            Type = "BitVariant",
-            DefaultValue = "BitVariant.Fill",
-            Description = "The variant of the message. defaults to Fill.",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The variant of the message.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
         },

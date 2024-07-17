@@ -104,7 +104,7 @@ private bool isDismissed;";
     .custom-class {
         padding: 1rem;
         color: deeppink;
-        font-size: 16px;
+        font-size: 1rem;
         font-style: italic;
     }
 

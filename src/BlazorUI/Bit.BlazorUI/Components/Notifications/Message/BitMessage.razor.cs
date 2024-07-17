@@ -85,10 +85,10 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public bool Truncate { get; set; }
 
     /// <summary>
-    /// The variant of the message. defaults to Fill.
+    /// The variant of the message.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitVariant Variant { get; set; }
+    public BitVariant? Variant { get; set; }
 
 
 
@@ -103,6 +103,14 @@ public partial class BitMessage : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-msg-fil",
+            BitVariant.Outline => "bit-msg-otl",
+            BitVariant.Text => "bit-msg-txt",
+            _ => "bit-msg-fil"
+        });
+
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-msg-pri",
@@ -114,14 +122,6 @@ public partial class BitMessage : BitComponentBase
             BitColor.SevereWarning => "bit-msg-swr",
             BitColor.Error => "bit-msg-err",
             _ => "bit-msg-inf"
-        });
-
-        ClassBuilder.Register(() => Variant switch
-        {
-            BitVariant.Fill => "bit-msg-fil",
-            BitVariant.Outline => "bit-msg-otl",
-            BitVariant.Text => "bit-msg-txt",
-            _ => "bit-msg-fill"
         });
     }
 
