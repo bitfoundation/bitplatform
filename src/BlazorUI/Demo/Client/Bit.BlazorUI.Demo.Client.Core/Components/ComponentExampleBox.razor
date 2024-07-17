@@ -13,7 +13,7 @@
                              Title="@(showCode ? "Hide code" : "Show code")">
             </BitToggleButton>
             <BitActionButton Class="@($"header-btn copy-link {(isLinkCopied ? "copied" : "")}")"
-                             Styles="@(new() { Content = (isLinkCopied ? "" : "margin: unset") })"
+                             Styles="@(new() { Content = (isLinkCopied ? "" : "display: none") })"
                              Title="@copyLinkMessage"
                              IconName="@linkIcon"
                              OnClick="@CopyLinkToClipboard">
@@ -29,7 +29,7 @@
         @if (showCode)
         {
             <BitActionButton Class="@($"copy-btn {(isCodeCopied ? "copied" : "")}")"
-                             Styles="@(new() { Content = (isCodeCopied ? "" : "margin: unset") })"
+                             Styles="@(new() { Content = (isCodeCopied ? "" : "display: none") })"
                              Title="@copyCodeMessage"
                              IconName="@codeIcon"
                              OnClick="@CopyCodeToClipboard">
