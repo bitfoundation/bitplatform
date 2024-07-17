@@ -52,5 +52,7 @@ public static class Urls
 
     public const string BoilerplateRepo = "https://github.com/bitfoundation/bitplatform";
 
+    public const string ContactUs = "https://bitplatform.dev/contact-us";
+
     public const string License = "https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE";
 }
