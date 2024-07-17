@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Services;
+﻿using System.Runtime.InteropServices;
+
+namespace Boilerplate.Client.Core.Services;
 
 public static class AppPlatform
 {
@@ -12,4 +14,6 @@ public static class AppPlatform
     public static bool IsBrowser => OperatingSystem.IsBrowser();
     public static bool IsMacOS => OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst() || IsIosOnMacOS;
     public static bool IsIosOnMacOS { get; set; }
+
+    public static string OSDescription { get; set; } = RuntimeInformation.OSDescription;
 }

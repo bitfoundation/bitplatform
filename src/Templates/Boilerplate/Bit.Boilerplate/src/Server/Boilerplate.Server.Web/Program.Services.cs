@@ -64,13 +64,16 @@ public static partial class Program
             if (httpClient.DefaultRequestHeaders.Contains(forwardedHeadersOptions.ForwardedForHeaderName) is false &&
                 currentRequest.HttpContext.Connection.RemoteIpAddress is not null)
             {
-                httpClient.DefaultRequestHeaders.Add(forwardedHeadersOptions.ForwardedForHeaderName, 
+                httpClient.DefaultRequestHeaders.Add(forwardedHeadersOptions.ForwardedForHeaderName,
                                                      currentRequest.HttpContext.Connection.RemoteIpAddress.ToString());
             }
 
             if (currentRequest.Headers.TryGetValue(HeaderNames.UserAgent, out var headerValues))
             {
-                httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, string.Join(',', headerValues!));
+                foreach (var ua in currentRequest.Headers.UserAgent)
+                {
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(ua);
+                }
             }
 
             if (currentRequest.Headers.TryGetValue(HeaderNames.Referer, out headerValues))
