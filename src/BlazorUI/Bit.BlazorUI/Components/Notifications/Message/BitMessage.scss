@@ -8,8 +8,10 @@
     box-sizing: border-box;
     font-size: spacing(1.5);
     justify-content: center;
-    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-radius: $shp-border-radius;
 }
 
 .bit-msg-con {
@@ -27,7 +29,6 @@
 
 .bit-msg-ico {
     font-size: spacing(2);
-    color: var(--bit-msg-clr);
 }
 
 .bit-msg-cnc {
@@ -83,6 +84,39 @@
     font-size: spacing(1.25);
 }
 
+.bit-msg-fil {
+    color: var(--bit-msg-clr);
+    border-color: var(--bit-msg-clr-bg);
+    background-color: var(--bit-msg-clr-bg);
+}
+
+.bit-msg-otl {
+    color: var(--bit-msg-clr-bg);
+    border-color: var(--bit-msg-clr-bg);
+    background-color: transparent;
+}
+
+.bit-msg-txt {
+    color: var(--bit-msg-clr-bg);
+    border-color: transparent;
+    background-color: transparent;
+}
+
+.bit-msg-pri {
+    --bit-msg-clr: #{$clr-pri-text};
+    --bit-msg-clr-bg: #{$clr-pri};
+}
+
+.bit-msg-sec {
+    --bit-msg-clr: #{$clr-sec-text};
+    --bit-msg-clr-bg: #{$clr-sec};
+}
+
+.bit-msg-ter {
+    --bit-msg-clr: #{$clr-ter-text};
+    --bit-msg-clr-bg: #{$clr-ter};
+}
+
 .bit-msg-inf {
     --bit-msg-clr: #{$clr-inf-text};
     --bit-msg-clr-bg: #{$clr-inf};
@@ -106,24 +140,4 @@
 .bit-msg-err {
     --bit-msg-clr: #{$clr-err-text};
     --bit-msg-clr-bg: #{$clr-err};
-}
-
-.bit-msg-fill {
-    color: $clr-fg-pri;
-    border-color: transparent;
-    background-color: var(--bit-msg-clr-bg);
-}
-
-.bit-msg-outline {
-    color: var(--bit-msg-clr);
-    border-color: var(--bit-msg-clr);
-    background-color: transparent;
-    border-width: $shp-border-width;
-    border-style: $shp-border-style;
-}
-
-.bit-msg-text {
-    color: var(--bit-msg-clr);
-    border-color: transparent;
-    background-color: transparent;
 }

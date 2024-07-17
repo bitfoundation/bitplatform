@@ -12,20 +12,21 @@
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <BitMessage>
-                This is a Message. <BitLink Href="https://bitplatform.dev">Visit our website.</BitLink>
-            </BitMessage>
+            <BitMessage>This is a Message.</BitMessage>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Severity" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Color" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="box">
-                <BitMessage Severity="BitSeverity.Info">Info (default).</BitMessage>
-                <BitMessage Severity="BitSeverity.Success">Success.</BitMessage>
-                <BitMessage Severity="BitSeverity.Warning">Warning.</BitMessage>
-                <BitMessage Severity="BitSeverity.SevereWarning">SevereWarning.</BitMessage>
-                <BitMessage Severity="BitSeverity.Error">Error.</BitMessage>
+                <BitMessage Color="BitColor.Primary">Primary.</BitMessage>
+                <BitMessage Color="BitColor.Secondary">Secondary.</BitMessage>
+                <BitMessage Color="BitColor.Tertiary">Tertiary.</BitMessage>
+                <BitMessage Color="BitColor.Info">Info (default).</BitMessage>
+                <BitMessage Color="BitColor.Success">Success.</BitMessage>
+                <BitMessage Color="BitColor.Warning">Warning.</BitMessage>
+                <BitMessage Color="BitColor.SevereWarning">SevereWarning.</BitMessage>
+                <BitMessage Color="BitColor.Error">Error.</BitMessage>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -33,39 +34,46 @@
     <ComponentExampleBox Title="Variant" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="box">
-                <div>Fill (default):</div>
-                <BitMessage Severity="BitSeverity.Info" Variant="BitVariant.Fill">Info.</BitMessage>
-                <BitMessage Severity="BitSeverity.Success" Variant="BitVariant.Fill">Success.</BitMessage>
-                <BitMessage Severity="BitSeverity.Warning" Variant="BitVariant.Fill">Warning.</BitMessage>
-                <BitMessage Severity="BitSeverity.SevereWarning" Variant="BitVariant.Fill">SevereWarning.</BitMessage>
-                <BitMessage Severity="BitSeverity.Error" Variant="BitVariant.Fill">Error.</BitMessage>
+                <div><b>Fill</b> (default):</div>
+                <BitMessage Color="BitColor.Primary" Variant="BitVariant.Fill">Primary.</BitMessage>
+                <BitMessage Color="BitColor.Secondary" Variant="BitVariant.Fill">Secondary.</BitMessage>
+                <BitMessage Color="BitColor.Tertiary" Variant="BitVariant.Fill">Tertiary.</BitMessage>
+                <BitMessage Color="BitColor.Info" Variant="BitVariant.Fill">Info.</BitMessage>
+                <BitMessage Color="BitColor.Success" Variant="BitVariant.Fill">Success.</BitMessage>
+                <BitMessage Color="BitColor.Warning" Variant="BitVariant.Fill">Warning.</BitMessage>
+                <BitMessage Color="BitColor.SevereWarning" Variant="BitVariant.Fill">SevereWarning.</BitMessage>
+                <BitMessage Color="BitColor.Error" Variant="BitVariant.Fill">Error.</BitMessage>
             </div>
-            <br />
-            <br />
+            <br /><br /><br />
             <div class="box">
-                <div>Outline:</div>
-                <BitMessage Severity="BitSeverity.Info" Variant="BitVariant.Outline">Info.</BitMessage>
-                <BitMessage Severity="BitSeverity.Success" Variant="BitVariant.Outline">Success.</BitMessage>
-                <BitMessage Severity="BitSeverity.Warning" Variant="BitVariant.Outline">Warning.</BitMessage>
-                <BitMessage Severity="BitSeverity.SevereWarning" Variant="BitVariant.Outline">SevereWarning.</BitMessage>
-                <BitMessage Severity="BitSeverity.Error" Variant="BitVariant.Outline">Error.</BitMessage>
+                <div><b>Outline</b>:</div>
+                <BitMessage Color="BitColor.Primary" Variant="BitVariant.Outline">Primary.</BitMessage>
+                <BitMessage Color="BitColor.Secondary" Variant="BitVariant.Outline">Secondary.</BitMessage>
+                <BitMessage Color="BitColor.Tertiary" Variant="BitVariant.Outline">Tertiary.</BitMessage>
+                <BitMessage Color="BitColor.Info" Variant="BitVariant.Outline">Info.</BitMessage>
+                <BitMessage Color="BitColor.Success" Variant="BitVariant.Outline">Success.</BitMessage>
+                <BitMessage Color="BitColor.Warning" Variant="BitVariant.Outline">Warning.</BitMessage>
+                <BitMessage Color="BitColor.SevereWarning" Variant="BitVariant.Outline">SevereWarning.</BitMessage>
+                <BitMessage Color="BitColor.Error" Variant="BitVariant.Outline">Error.</BitMessage>
             </div>
-            <br />
-            <br />
+            <br /><br /><br />
             <div class="box">
-                <div>Text:</div>
-                <BitMessage Severity="BitSeverity.Info" Variant="BitVariant.Text">Info.</BitMessage>
-                <BitMessage Severity="BitSeverity.Success" Variant="BitVariant.Text">Success.</BitMessage>
-                <BitMessage Severity="BitSeverity.Warning" Variant="BitVariant.Text">Warning.</BitMessage>
-                <BitMessage Severity="BitSeverity.SevereWarning" Variant="BitVariant.Text">SevereWarning.</BitMessage>
-                <BitMessage Severity="BitSeverity.Error" Variant="BitVariant.Text">Error.</BitMessage>
+                <div><b>Text</b>:</div>
+                <BitMessage Color="BitColor.Primary" Variant="BitVariant.Text">Primary.</BitMessage>
+                <BitMessage Color="BitColor.Secondary" Variant="BitVariant.Text">Secondary.</BitMessage>
+                <BitMessage Color="BitColor.Tertiary" Variant="BitVariant.Text">Tertiary.</BitMessage>
+                <BitMessage Color="BitColor.Info" Variant="BitVariant.Text">Info.</BitMessage>
+                <BitMessage Color="BitColor.Success" Variant="BitVariant.Text">Success.</BitMessage>
+                <BitMessage Color="BitColor.Warning" Variant="BitVariant.Text">Warning.</BitMessage>
+                <BitMessage Color="BitColor.SevereWarning" Variant="BitVariant.Text">SevereWarning.</BitMessage>
+                <BitMessage Color="BitColor.Error" Variant="BitVariant.Text">Error.</BitMessage>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Multiline" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
-            <BitMessage Multiline Severity="BitSeverity.Success">
+            <BitMessage Multiline Color="BitColor.Success">
                 <b>Multiline</b> parameter makes the content to be rendered in multiple lines.
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
             </BitMessage>
@@ -74,7 +82,7 @@
 
     <ComponentExampleBox Title="Truncate" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
-            <BitMessage Truncate Severity="BitSeverity.Warning">
+            <BitMessage Truncate Color="BitColor.Warning">
                 <b>Truncate</b> parameter cut the overflowed content at the end of the single line Message.
                 Truncation is not available if you use multiline and should be used sparingly.
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
@@ -86,7 +94,7 @@
         <ExamplePreview>
             @if (isDismissed is false)
             {
-                <BitMessage OnDismiss="() => isDismissed = true" Severity="BitSeverity.SevereWarning">
+                <BitMessage OnDismiss="() => isDismissed = true" Color="BitColor.SevereWarning">
                     Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
                 </BitMessage>
             }
@@ -101,9 +109,9 @@
         <ExamplePreview>
             <BitMessage>
                 <Actions>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.TriangleSolidUp12" />
+                    <BitButton Variant="BitVariant.Text" Color="BitColor.Tertiary" IconName="@BitIconName.Up" />
                     &nbsp;
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.TriangleSolidDown12" />
+                    <BitButton Variant="BitVariant.Text" Color="BitColor.Tertiary" IconName="@BitIconName.Down" />
                 </Actions>
                 <Content>
                     Message with single line and action buttons.
@@ -116,26 +124,26 @@
         <ExamplePreview>
             <div class="box">
                 <div>HideIcon parameter removes the icon:</div>
-                <BitMessage Severity="BitSeverity.Info" HideIcon>Info (default) Message.</BitMessage>
-                <BitMessage Severity="BitSeverity.Success" HideIcon>Success Message.</BitMessage>
-                <BitMessage Severity="BitSeverity.Warning" HideIcon>Warning Message.</BitMessage>
-                <BitMessage Severity="BitSeverity.SevereWarning" HideIcon>SevereWarning Message.</BitMessage>
-                <BitMessage Severity="BitSeverity.Error" HideIcon>Error Message.</BitMessage>
+                <BitMessage Color="BitColor.Info" HideIcon>Info (default) Message.</BitMessage>
+                <BitMessage Color="BitColor.Success" HideIcon>Success Message.</BitMessage>
+                <BitMessage Color="BitColor.Warning" HideIcon>Warning Message.</BitMessage>
+                <BitMessage Color="BitColor.SevereWarning" HideIcon>SevereWarning Message.</BitMessage>
+                <BitMessage Color="BitColor.Error" HideIcon>Error Message.</BitMessage>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Icons" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
-            <BitMessage Severity="BitSeverity.Success" IconName="@BitIconName.CheckMark">
+            <BitMessage Color="BitColor.Success" IconName="@BitIconName.CheckMark">
                 Message with a custom icon.
             </BitMessage>
             <br />
-            <BitMessage Severity="BitSeverity.Warning" OnDismiss="() => {}" DismissIconName="@BitIconName.Blocked2Solid">
+            <BitMessage Color="BitColor.Warning" OnDismiss="() => {}" DismissIconName="@BitIconName.Blocked2Solid">
                 Message with a custom dismiss icon.
             </BitMessage>
             <br />
-            <BitMessage Truncate Severity="BitSeverity.Warning"
+            <BitMessage Truncate Color="BitColor.Warning"
                         ExpandIconName="@BitIconName.ChevronDownEnd"
                         CollapseIconName="@BitIconName.ChevronUpEnd">
                 Message with custom expand and collapse icon.
@@ -150,13 +158,13 @@
             <div>
                 <div>Component's Style & Class:</div>
                 <br />
-                <BitMessage Severity="BitSeverity.Info" Multiline OnDismiss="() => {}"
+                <BitMessage Color="BitColor.Info" Multiline OnDismiss="() => {}"
                             Style="padding:8px;color:red;">
                     <b>Styled Message.</b>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
                 </BitMessage>
                 <br />
-                <BitMessage Severity="BitSeverity.Success" Truncate Class="custom-class">
+                <BitMessage Color="BitColor.Success" Truncate Class="custom-class">
                     <b>Classed Message.</b>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
                 </BitMessage>
@@ -165,7 +173,7 @@
                 <br />
                 <div><b>Styles</b> & <b>Classes</b>:</div>
                 <br />
-                <BitMessage Severity="BitSeverity.Warning" OnDismiss="() => {}" Multiline
+                <BitMessage Color="BitColor.Warning" OnDismiss="() => {}" Multiline
                             Styles="@(new() { Root="padding:1rem",
                                               IconContainer="line-height:1.25",
                                               Content="color:pink",
@@ -182,7 +190,7 @@
                     </Actions>
                 </BitMessage>
                 <br />
-                <BitMessage Severity="BitSeverity.SevereWarning" OnDismiss="() => {}" Truncate
+                <BitMessage Color="BitColor.SevereWarning" OnDismiss="() => {}" Truncate
                             Classes="@(new() { Icon="custom-icon",
                                                Content="custom-content",
                                                ExpanderIcon="custom-expander-icon",
@@ -198,7 +206,7 @@
         <ExamplePreview>
             @if (isWarningDismissed is false)
             {
-                <BitMessage Truncate OnDismiss="() => isWarningDismissed = true" Severity="BitSeverity.Warning">
+                <BitMessage Truncate OnDismiss="() => isWarningDismissed = true" Color="BitColor.Warning">
                     <Content>
                         <b>Truncate</b> with <b>OnDismiss</b> and <b>Actions</b>.
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
@@ -219,7 +227,7 @@
             <br />
             @if (isErrorDismissed is false)
             {
-                <BitMessage Multiline OnDismiss="() => isErrorDismissed = true" Severity="BitSeverity.Error">
+                <BitMessage Multiline OnDismiss="() => isErrorDismissed = true" Color="BitColor.Error">
                     <Content>
                         <b>Multiline</b> with <b>OnDismiss</b> and <b>Actions</b>.
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
@@ -241,25 +249,25 @@
     <ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div class="box">
-                <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Info">
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.Info">
                     پیام خبری (پیش فرض). <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
                 </BitMessage>
 
-                <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Success" Truncate OnDismiss="() => {}">
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.Success" Truncate OnDismiss="() => {}">
                     پیام موفق. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
                 </BitMessage>
 
-                <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Warning" Multiline OnDismiss="() => {}">
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.Warning" Multiline OnDismiss="() => {}">
                     پیام هشدار. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
                 </BitMessage>
 
-                <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.SevereWarning">
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.SevereWarning">
                     پیام هشدار شدید. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
                 </BitMessage>
 
-                <BitMessage Dir="BitDir.Rtl" Severity="BitSeverity.Error">
+                <BitMessage Dir="BitDir.Rtl" Color="BitColor.Error">
                     پیام خطا. <BitLink Href="https://bitplatform.dev">به وبسایت ما سر بزنید.</BitLink>
                 </BitMessage>
             </div>

@@ -8,28 +8,28 @@ namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
 public class BitMessageTests : BunitTestContext
 {
     [DataTestMethod,
-        DataRow(BitSeverity.Info),
-        DataRow(BitSeverity.Error),
-        DataRow(BitSeverity.SevereWarning),
-        DataRow(BitSeverity.Success),
-        DataRow(BitSeverity.Warning)
+        DataRow(BitColor.Info),
+        DataRow(BitColor.Error),
+        DataRow(BitColor.SevereWarning),
+        DataRow(BitColor.Success),
+        DataRow(BitColor.Warning)
     ]
-    public void BitMessageShouldTakeCorrectType(BitSeverity type)
+    public void BitMessageShouldTakeCorrectType(BitColor type)
     {
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.Severity, type);
+            parameters.Add(p => p.Color, type);
         });
 
         var bitMessage = component.Find(".bit-msg");
 
         var typeClass = type switch
         {
-            BitSeverity.Info => "bit-msg-inf",
-            BitSeverity.Success => "bit-msg-suc",
-            BitSeverity.Warning => "bit-msg-wrn",
-            BitSeverity.SevereWarning => "bit-msg-swr",
-            BitSeverity.Error => "bit-msg-err",
+            BitColor.Info => "bit-msg-inf",
+            BitColor.Success => "bit-msg-suc",
+            BitColor.Warning => "bit-msg-wrn",
+            BitColor.SevereWarning => "bit-msg-swr",
+            BitColor.Error => "bit-msg-err",
             _ => "bit-msg-inf"
         };
 
@@ -37,13 +37,13 @@ public class BitMessageTests : BunitTestContext
 
         var icon = component.Find(".bit-msg-ict > i");
 
-        Dictionary<BitSeverity, string> iconMap = new()
+        Dictionary<BitColor, string> iconMap = new()
         {
-            [BitSeverity.Info] = "Info",
-            [BitSeverity.Warning] = "Info",
-            [BitSeverity.Error] = "ErrorBadge",
-            [BitSeverity.SevereWarning] = "Warning",
-            [BitSeverity.Success] = "Completed"
+            [BitColor.Info] = "Info",
+            [BitColor.Warning] = "Info",
+            [BitColor.Error] = "ErrorBadge",
+            [BitColor.SevereWarning] = "Warning",
+            [BitColor.Success] = "Completed"
         };
 
         Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{iconMap[type]}"));
@@ -112,24 +112,24 @@ public class BitMessageTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow("alert", BitSeverity.Info),
-        DataRow("alert", BitSeverity.Success),
-        DataRow("alert", BitSeverity.Warning),
-        DataRow("alert", BitSeverity.SevereWarning),
-        DataRow("alert", BitSeverity.Error),
+        DataRow("alert", BitColor.Info),
+        DataRow("alert", BitColor.Success),
+        DataRow("alert", BitColor.Warning),
+        DataRow("alert", BitColor.SevereWarning),
+        DataRow("alert", BitColor.Error),
 
-        DataRow(null, BitSeverity.Info),
-        DataRow(null, BitSeverity.Success),
-        DataRow(null, BitSeverity.Warning),
-        DataRow(null, BitSeverity.SevereWarning),
-        DataRow(null, BitSeverity.Error),
+        DataRow(null, BitColor.Info),
+        DataRow(null, BitColor.Success),
+        DataRow(null, BitColor.Warning),
+        DataRow(null, BitColor.SevereWarning),
+        DataRow(null, BitColor.Error),
     ]
-    public void BitMessageRoleTest(string role, BitSeverity type)
+    public void BitMessageRoleTest(string role, BitColor type)
     {
         var component = RenderComponent<BitMessage>(parameter =>
         {
             parameter.Add(p => p.Role, role);
-            parameter.Add(p => p.Severity, type);
+            parameter.Add(p => p.Color, type);
         });
 
         var textEl = component.Find(".bit-msg-cnc");
@@ -138,10 +138,10 @@ public class BitMessageTests : BunitTestContext
         Assert.AreEqual(expectedRole, textEl.GetAttribute("role"));
     }
 
-    private static string GetRole(BitSeverity type)
+    private static string GetRole(BitColor type)
      => type switch
      {
-         BitSeverity.Error or BitSeverity.SevereWarning or BitSeverity.Warning => "alert",
+         BitColor.Error or BitColor.SevereWarning or BitColor.Warning => "alert",
          _ => "status",
      };
 }
