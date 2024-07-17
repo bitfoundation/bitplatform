@@ -30,6 +30,21 @@ public class BitIconTests : BunitTestContext
         component.MarkupMatches(@$"<i class=""bit-ico{cssClass}"" role=""img"" id:ignore />");
     }
 
+    [DataTestMethod]
+    public void BitIconShouldRespectIsEnabledChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.MarkupMatches(@"<i role=""img"" class=""bit-ico bit-dis"" id:ignore />");
+    }
+
     [DataTestMethod,
         DataRow("VisualStudioForWindows"),
         DataRow("AzureIcon"),
@@ -46,6 +61,21 @@ public class BitIconTests : BunitTestContext
         var icoClass = iconName.HasValue() ? $" bit-icon bit-icon--{iconName}" : null;
 
         component.MarkupMatches(@$"<i class=""bit-ico{icoClass}"" role=""img"" id:ignore />");
+    }
+
+    [DataTestMethod]
+    public void BitIconShouldRespectIconNameChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IconName, "AzureIcon");
+        });
+
+        component.MarkupMatches(@"<i class=""bit-ico bit-icon bit-icon--AzureIcon"" role=""img""  id:ignore />");
     }
 
     [DataTestMethod,
@@ -70,6 +100,21 @@ public class BitIconTests : BunitTestContext
         }
     }
 
+    [DataTestMethod]
+    public void BitIconShouldRespectStyleChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Style, "padding: 1rem;");
+        });
+
+        component.MarkupMatches(@"<i style=""padding: 1rem;"" role=""img"" class=""bit-ico"" id:ignore />");
+    }
+
     [DataTestMethod,
         DataRow("test-class"),
         DataRow(null)
@@ -84,6 +129,21 @@ public class BitIconTests : BunitTestContext
         var cssClass = @class.HasValue() ? $" {@class}" : null;
 
         component.MarkupMatches(@$"<i class=""bit-ico{cssClass}"" role=""img"" id:ignore />");
+    }
+
+    [DataTestMethod]
+    public void BitIconShouldRespectClassChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        component.MarkupMatches(@"<i class=""bit-ico"" role=""img"" id:ignore />");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Class, "test-class");
+        });
+
+        component.MarkupMatches(@"<i class=""bit-ico test-class"" role=""img""  id:ignore />");
     }
 
     [DataTestMethod,
@@ -126,6 +186,21 @@ public class BitIconTests : BunitTestContext
         }
     }
 
+    [DataTestMethod]
+    public void BitIconShouldRespectDirChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        component.MarkupMatches(@"<i dir=""ltr"" role=""img"" class=""bit-ico"" id:ignore />");
+    }
+
     [DataTestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
@@ -150,6 +225,21 @@ public class BitIconTests : BunitTestContext
                 component.MarkupMatches(@"<i style=""display: none;"" role=""img"" class=""bit-ico"" id:ignore />");
                 break;
         }
+    }
+
+    [DataTestMethod]
+    public void BitIconShouldRespectVisibilityChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        component.MarkupMatches(@"<i style=""display: none;"" role=""img"" class=""bit-ico"" id:ignore />");
     }
 
     [DataTestMethod,
@@ -197,6 +287,21 @@ public class BitIconTests : BunitTestContext
         component.MarkupMatches(@$"<i class=""bit-ico{sizeClass}"" role=""img"" id:ignore />");
     }
 
+    [DataTestMethod]
+    public void BitIconShouldRespectSizeChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        component.MarkupMatches(@"<i class=""bit-ico"" role=""img"" id:ignore />");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Large);
+        });
+
+        component.MarkupMatches(@"<i class=""bit-ico bit-ico-lg"" role=""img"" id:ignore />");
+    }
+
     [DataTestMethod,
         DataRow(BitSeverity.Info),
         DataRow(BitSeverity.Success),
@@ -223,6 +328,21 @@ public class BitIconTests : BunitTestContext
         };
 
         component.MarkupMatches(@$"<i class=""bit-ico{sizeClass}"" role=""img"" id:ignore />");
+    }
+
+    [DataTestMethod]
+    public void BitIconShouldRespectColorChangingAfterRender()
+    {
+        var component = RenderComponent<BitIcon>();
+
+        component.MarkupMatches(@"<i class=""bit-ico"" role=""img"" id:ignore />");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Severity, BitSeverity.Error);
+        });
+
+        component.MarkupMatches(@"<i class=""bit-ico bit-ico-err"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod]
