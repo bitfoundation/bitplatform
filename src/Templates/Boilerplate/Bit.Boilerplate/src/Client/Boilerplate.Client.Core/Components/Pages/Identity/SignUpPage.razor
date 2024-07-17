@@ -77,7 +77,7 @@
             <div class="form-input-container">
                 <BitCheckbox Class="form-checkbox" @bind-Value="signUpModel.TermsAccepted">
                     <LabelTemplate>
-                        <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="/terms">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
+                        <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="@Urls.TermsPage">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
                     </LabelTemplate>
                 </BitCheckbox>
                 <ValidationMessage For="@(() => signUpModel.TermsAccepted)" />
@@ -97,12 +97,12 @@
             <br />
             <br />
             <div>
-                @Localizer[nameof(AppStrings.SignInMessageInSignUp)] <BitLink Href="/sign-in">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                @Localizer[nameof(AppStrings.SignInMessageInSignUp)] <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
             </div>
             <br />
             <div>
                 @Localizer[nameof(AppStrings.ConfirmMessageInSignUp)]
-                <BitLink Href="@($"/confirm?email={Uri.EscapeDataString(signUpModel.Email??"")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber??"")}")">
+                <BitLink Href="@($"/{Urls.ConfirmPage}?email={Uri.EscapeDataString(signUpModel.Email??"")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber??"")}")">
                     @Localizer[nameof(AppStrings.Confirm)]
                 </BitLink>
             </div>

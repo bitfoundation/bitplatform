@@ -54,6 +54,6 @@ public partial class NotAuthorizedPage
     private void RedirectToSignInPage()
     {
         var returnUrl = ReturnUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.NavigateTo($"/sign-in{(string.IsNullOrEmpty(returnUrl) ? "" : $"?return-url={returnUrl}")}");
+        NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={returnUrl}"));
     }
 }

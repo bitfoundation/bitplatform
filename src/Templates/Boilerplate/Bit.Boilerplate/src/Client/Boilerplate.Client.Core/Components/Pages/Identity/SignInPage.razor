@@ -138,11 +138,11 @@
         </BitButton>
         <br />
         <div>
-            <BitLink Href="/forgot-password">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+            <BitLink Href="@Urls.ForgotPasswordPage">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
         </div>
         <br />
         <div>
-            @Localizer[nameof(AppStrings.DontHaveAccountMessage)] <BitLink Href="/sign-up">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+            @Localizer[nameof(AppStrings.DontHaveAccountMessage)] <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
         </div>
     </EditForm>
 </div>

@@ -49,7 +49,7 @@ public partial class SignUpPage
             {
                 queryParams.Add("phoneNumber", signUpModel.PhoneNumber);
             }
-            var confirmUrl = NavigationManager.GetUriWithQueryParameters("confirm", queryParams);
+            var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
             NavigationManager.NavigateTo(confirmUrl);
         }
         catch (KnownException e)

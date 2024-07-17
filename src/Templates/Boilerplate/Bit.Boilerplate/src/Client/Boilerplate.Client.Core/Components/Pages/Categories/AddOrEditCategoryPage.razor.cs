@@ -65,7 +65,7 @@ public partial class AddOrEditCategoryPage
                 await categoryController.Update(category, CurrentCancellationToken);
             }
 
-            NavigationManager.NavigateTo("categories");
+            NavigationManager.NavigateTo(Urls.CategoriesPage);
         }
         catch (ResourceValidationException e)
         {

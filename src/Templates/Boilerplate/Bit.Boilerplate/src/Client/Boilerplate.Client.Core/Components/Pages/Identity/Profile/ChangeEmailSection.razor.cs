@@ -84,7 +84,7 @@ public partial class ChangeEmailSection
         {
             await userController.ChangeEmail(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo("profile");
+            NavigationManager.NavigateTo(Urls.ProfilePage);
         }
         catch (KnownException e)
         {

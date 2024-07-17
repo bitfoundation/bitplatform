@@ -120,7 +120,7 @@ public partial class NavMenu
     private async Task GoToProfile()
     {
         await CloseMenu();
-        navManager.NavigateTo("profile");
+        navManager.NavigateTo(Urls.ProfilePage);
     }
 
     private async Task HandleNavItemClick(BitNavItem item)

@@ -10,6 +10,8 @@ public static class Urls
 
     public const string TermsPage = "terms";
 
+    public const string AddOrEditCategory = "add-edit-category";
+
     public const string AddOrEditCategoryPage = "add-edit-category/{Id:int?}";
 
     public const string CategoriesPage = "categories";
@@ -33,4 +35,22 @@ public static class Urls
     public const string ProductsPage = "products";
 
     public const string TodoPage = "todo";
+
+    public const string AboutPage = "about";
+
+    public const string GitHub = "https://github.com/bitfoundation/bitplatform";
+
+    public const string LinkedIn = "https://www.linkedin.com/company/bitplatformhq";
+
+    public const string Twitter = "https://twitter.com/bitplatformhq";
+
+    public const string YouTube = "https://www.youtube.com/@bitplatform";
+
+    public const string TodoSample = "https://todo.bitplatform.dev";
+
+    public const string AdminPanelSample = "https://adminpanel.bitplatform.dev";
+
+    public const string BoilerplateRepo = "https://github.com/bitfoundation/bitplatform";
+
+    public const string License = "https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE";
 }

@@ -84,7 +84,7 @@ public partial class ChangePhoneNumberSection
         {
             await userController.ChangePhoneNumber(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo("profile");
+            NavigationManager.NavigateTo(Urls.ProfilePage);
         }
         catch (KnownException e)
         {
