@@ -7,7 +7,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Twilio.Base;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -44,7 +43,21 @@ public partial class UserController : AppControllerBase, IUserController
             ?? throw new ResourceNotFoundException();
 
         return user.Sessions
-            .Select(s => s.Map(refreshTokenExpiresIn: AppSettings.Identity.RefreshTokenExpiration))
+            .Select(s =>
+            {
+                var dto = s.Map();
+
+                dto.LastSeenOn = s.RenewedOn is null ||
+                                 DateTimeOffset.UtcNow - s.RenewedOn < TimeSpan.FromMinutes(5)
+                                 ? Localizer[nameof(AppStrings.Online)]
+                                 : DateTimeOffset.UtcNow - s.RenewedOn < TimeSpan.FromMinutes(15)
+                                    ? Localizer[nameof(AppStrings.Recently)]
+                                    : s.RenewedOn.Humanize(culture: CultureInfo.CurrentUICulture);
+
+                dto.IsValid = DateTimeOffset.UtcNow - (s.RenewedOn ?? s.StartedOn) < AppSettings.Identity.RefreshTokenExpiration;
+
+                return dto;
+            })
         .ToList();
     }
 

@@ -172,7 +172,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var userSession = GenerateUserSession();
+        var userSession = CreateUserSession();
 
         var result = string.IsNullOrEmpty(request.Otp) is false
             ? await signInManager.OtpSignInAsync(user, request.Otp!)
@@ -227,7 +227,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful.
     /// </summary>
-    private UserSession GenerateUserSession()
+    private UserSession CreateUserSession()
     {
         var userAgentParseResult = DeviceDetector.GetInfoFromUserAgent(Request.Headers.UserAgent);
 
