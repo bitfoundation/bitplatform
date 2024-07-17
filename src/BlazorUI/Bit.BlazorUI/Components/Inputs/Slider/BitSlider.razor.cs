@@ -4,13 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitSlider : BitComponentBase
 {
-    private bool ValueHasBeenSet;
-    private bool UpperValueHasBeenSet;
-    private bool LowerValueHasBeenSet;
-    private bool RangeValueHasBeenSet;
-
-
-
     private double value;
     private double lowerValue;
     private double upperValue;

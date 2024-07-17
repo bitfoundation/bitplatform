@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitNavOption : IDisposable
+public partial class BitNavOption : ComponentBase, IDisposable
 {
     private bool _disposed;
 

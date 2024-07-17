@@ -6,11 +6,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
-    private bool IsOpenHasBeenSet;
-    private bool ValuesHasBeenSet;
-
-
-
     private bool isOpen;
     private ICollection<TValue?>? values = Array.Empty<TValue?>();
 

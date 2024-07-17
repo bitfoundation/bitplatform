@@ -2,23 +2,19 @@
 
 public partial class BitColorPicker : BitComponentBase, IDisposable
 {
-    private bool ColorHasBeenSet;
-    private bool AlphaHasBeenSet;
-
     private bool _disposed;
+    private double _selectedHue;
+    private double _selectedValue = 1;
+    private double _selectedSaturation = 1;
+    private string? _saturationPickerStyle;
     private BitInternalColor _color = new();
     private BitInternalColorType _colorType;
     private bool _saturationPickerPointerDown;
     private string? _pointerUpAbortControllerId;
     private string? _pointerMoveAbortControllerId;
     private ElementReference _saturationPickerRef;
-    private string? _saturationPickerStyle;
     private (double Left, double Top)? _saturationPickerThumbPosition;
     private DotNetObjectReference<BitColorPicker> _dotnetObj = default!;
-
-    private double _selectedHue;
-    private double _selectedSaturation = 1;
-    private double _selectedValue = 1;
 
 
 

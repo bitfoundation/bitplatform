@@ -4,8 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitPagination : BitComponentBase
 {
-    private bool SelectedPageHasBeenSet;
-
     private int count = 1;
     private int selectedPage;
     private int middleCount = 3;

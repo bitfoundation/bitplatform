@@ -4,9 +4,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem : class
 {
-    private bool SelectedItemHasBeenSet;
-
     private TItem? selectedItem;
+
+
 
     private bool _disposed;
     internal TItem? _currentItem;
@@ -140,7 +140,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
             }
         }
     }
-    [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     /// <summary>
     /// Enables the single-expand mode in the BitNav.

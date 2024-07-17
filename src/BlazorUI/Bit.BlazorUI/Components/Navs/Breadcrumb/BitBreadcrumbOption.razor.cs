@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitBreadcrumbOption : IDisposable
+public partial class BitBreadcrumbOption : BitComponentBase, IDisposable
 {
     private bool _disposed;
 

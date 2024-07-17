@@ -2,10 +2,6 @@
 
 public partial class BitModal : BitComponentBase, IDisposable
 {
-    private bool IsOpenHasBeenSet;
-
-
-
     private int _offsetTop;
     private bool _disposed;
     private bool _internalIsOpen;

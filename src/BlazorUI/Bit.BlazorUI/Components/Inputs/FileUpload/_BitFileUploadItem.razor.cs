@@ -1,5 +1,6 @@
 ﻿namespace Bit.BlazorUI;
-public partial class _BitFileUploadItem
+
+public partial class _BitFileUploadItem : ComponentBase
 {
     private const string ROOT_ELEMENT_CLASS = "bit-upl";
 

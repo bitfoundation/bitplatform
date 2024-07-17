@@ -6,14 +6,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 {
-    private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
-    private const int DEFAULT_WEEK_COUNT = 6;
     private const int STEP_DELAY = 75;
+    private const int DEFAULT_WEEK_COUNT = 6;
     private const int INITIAL_STEP_DELAY = 400;
-
-
-
-    private bool IsOpenHasBeenSet;
+    private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
 
 
 

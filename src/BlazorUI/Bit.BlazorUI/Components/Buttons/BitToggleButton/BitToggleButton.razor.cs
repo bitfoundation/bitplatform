@@ -2,8 +2,6 @@
 
 public partial class BitToggleButton : BitComponentBase
 {
-    private bool IsCheckedHasBeenSet;
-
     private int? _tabIndex;
 
 

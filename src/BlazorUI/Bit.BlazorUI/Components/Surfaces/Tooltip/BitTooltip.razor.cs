@@ -4,10 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitTooltip : BitComponentBase
 {
-    private bool IsShownHasBeenSet;
-
-
-
     private CancellationTokenSource? _showDelayTokenSource = new();
     private CancellationTokenSource? _hideDelayTokenSource = new();
 

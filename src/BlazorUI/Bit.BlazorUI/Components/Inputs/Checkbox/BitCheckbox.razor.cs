@@ -4,10 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 {
-    private bool IndeterminateHasBeenSet;
-
-
-
     private string _inputId = string.Empty;
 
 

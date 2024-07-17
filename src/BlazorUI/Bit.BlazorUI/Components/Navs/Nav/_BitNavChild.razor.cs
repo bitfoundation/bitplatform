@@ -3,7 +3,7 @@
 namespace Bit.BlazorUI;
 
 #pragma warning disable CA1707 // Identifiers should not contain underscores
-public partial class _BitNavChild<TItem> where TItem : class
+public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
 #pragma warning restore CA1707 // Identifiers should not contain underscores
 {
     private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
