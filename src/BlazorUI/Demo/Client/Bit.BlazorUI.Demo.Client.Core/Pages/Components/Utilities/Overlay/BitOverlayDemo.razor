@@ -24,7 +24,7 @@
                 <BitButton OnClick="() => AutoCloseIsVisible = true">Show Overlay</BitButton>
                 <BitOverlay @bind-IsVisible="AutoCloseIsVisible" Class="overlay" AutoClose="false">
                     <div class="content">
-                        <BitButton Class="close-button" OnClick="() => AutoCloseIsVisible = false">Close Overlay</BitButton>
+                        <BitButton Class="close-button" Variant="BitVariant.Text" OnClick=@(() => AutoCloseIsVisible = false) IconName="@BitIconName.ChromeClose" Title="Close" />
                         <h3>Lorem Ipsum</h3>
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
