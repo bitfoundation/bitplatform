@@ -67,31 +67,13 @@ public partial class BitOverlayDemo
         justify-content: center;
         background-color: rgba(0,0,0,.4);
     }
-
-    .content {
-        width: 85%;
-        height: 250px;
-        display: flex;
-        padding: 15px;
-        overflow: auto;
-        border-radius: 3px;
-        background-color: white;
-        flex-flow: column nowrap;
-    }
 </style>
+
 
 <BitButton OnClick=""() => BasicIsVisible = true"">Show Overlay</BitButton>
 
 <BitOverlay @bind-IsVisible=""BasicIsVisible"" Class=""overlay"">
-    <div class=""content"">
-        <h3>Lorem Ipsum</h3>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst.
-        </p>
-    </div>
+    <BitProgress Circular Indeterminate Thickness=""10"" />
 </BitOverlay>";
     private readonly string example1CsharpCode = @"
 private bool BasicIsVisible;";
@@ -122,6 +104,7 @@ private bool BasicIsVisible;";
     }
 </style>
 
+
 <BitButton OnClick=""() => AutoCloseIsVisible = true"">Show Overlay</BitButton>
 
 <BitOverlay @bind-IsVisible=""AutoCloseIsVisible"" Class=""overlay"" AutoClose=""false"">
@@ -148,41 +131,26 @@ private bool AutoCloseIsVisible;";
         background-color: rgba(0,0,0,.4);
     }
 
-    .content {
-        width: 85%;
-        height: 250px;
+    .show-button {
+        gap: 5px;
+        top: 15px;
+        left: 10px;
         display: flex;
-        padding: 15px;
-        overflow: auto;
-        border-radius: 3px;
-        background-color: white;
-        flex-flow: column nowrap;
-    }
-
-    .container {
-        height: 480px;
-        display: flex;
-        position: relative;
-        align-items: center;
-        border: 2px solid blue;
-        justify-content: center;
+        width: fit-content;
+        position: absolute;
+        flex-flow: row wrap;
     }
 </style>
 
-<BitButton Class=""show-overlay-btn"" OnClick=""() => AbsoluteIsVisible = true"">Show Overlay</BitButton>
+
+<BitButton Class=""show-button"" OnClick=""() => AbsoluteIsVisible = true"">Show Overlay</BitButton>
+
 <BitOverlay @bind-IsVisible=""AbsoluteIsVisible""
             Class=""overlay""
             AbsolutePosition=""true"">
-    <div class=""content"">
-        <h3>Lorem Ipsum</h3>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst.
-        </p>
-    </div>
+    <BitProgress Circular Indeterminate Thickness=""10"" />
 </BitOverlay>
+
 <h3>This is Container</h3>";
     private readonly string example3CsharpCode = @"
 private bool AbsoluteIsVisible;
@@ -196,31 +164,16 @@ private bool AbsoluteIsVisible;
         justify-content: center;
         background-color: rgba(0,0,0,.4);
     }
-
-    .content {
-        width: 85%;
-        height: 250px;
-        display: flex;
-        padding: 15px;
-        overflow: auto;
-        border-radius: 3px;
-        background-color: white;
-        flex-flow: column nowrap;
-    }
 </style>
+
 
 <BitButton OnClick=""() => AutoToggleIsVisible = true"">Show Overlay</BitButton>
 
 <BitOverlay @bind-IsVisible=""AutoToggleIsVisible"" Class=""overlay"" AutoToggleScroll=""false"">
-    <div class=""content"">
-        <h3>Lorem Ipsum</h3>
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-            turpis. In hac habitasse platea dictumst.
-        </p>
-    </div>
+    <BitStack HorizontalAlign=""BitStackAlignment.Stretch"">
+        <BitTypography Style=""color: dodgerblue;"" Variant=""BitTypographyVariant.H3"">Please wait...</BitTypography>
+        <BitProgress Indeterminate Thickness=""10""/>
+    </BitStack>
 </BitOverlay>";
     private readonly string example4CsharpCode = @"
 private bool AutoToggleIsVisible;";
@@ -248,7 +201,7 @@ private bool AutoToggleIsVisible;";
     }
 
     .scroller {
-        height: 480px;
+        height: 360px;
         padding: 15px;
         overflow: auto;
         margin-top: 15px;
@@ -258,6 +211,7 @@ private bool AutoToggleIsVisible;";
         border: 2px solid green;
     }
 </style>
+
 
 <BitButton OnClick=""() => EnabledScrollerIsVisible = true"">Show with Enabled scrolling</BitButton>
 <BitButton OnClick=""() => DisabledScrollerIsVisible = true"">Show with Disabled scrolling</BitButton>
@@ -284,15 +238,7 @@ private bool AutoToggleIsVisible;";
                 Class=""overlay""
                 ScrollerSelector="".scroller""
                 AbsolutePosition=""true"">
-        <div class=""content"">
-            <h3>Lorem Ipsum</h3>
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                turpis. In hac habitasse platea dictumst.
-            </p>
-        </div>
+        <BitProgress Circular Indeterminate Thickness=""10"" />
     </BitOverlay>
 
     <h3>Lorem Ipsum</h3>
