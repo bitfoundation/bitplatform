@@ -238,11 +238,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var userSession = new UserSession
         {
             SessionUniqueId = Guid.NewGuid(),
-            // Relying on Cloudflare cdn to retrieve address via IP
-            Address = string.Format("Country: {0}, Region: {1}, City: {2}, Postal Code: {3}, Lat: {4}, Lon: {5}",
+            // Relying on Cloudflare cdn to retrieve address.
+            // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
+            Address = string.Format("Country: {0}, Region: {1}, City: {2}",
                 Request.Headers["cf-ipcountry"], Request.Headers["cf-region"],
-                Request.Headers["cf-ipcity"], Request.Headers["cf-postal-code"],
-                Request.Headers["cf-iplatitude"], Request.Headers["cf-iplongitude"]),
+                Request.Headers["cf-ipcity"]),
             Device = device,
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
             StartedOn = DateTimeOffset.UtcNow
