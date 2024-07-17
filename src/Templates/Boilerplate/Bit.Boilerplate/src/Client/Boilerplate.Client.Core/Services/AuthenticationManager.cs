@@ -35,7 +35,10 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            await userController.SignOut(cancellationToken);
+            if (await storageService.GetItem("refresh_token") is not null)
+            {
+                await userController.SignOut(cancellationToken);
+            }
         }
         finally
         {

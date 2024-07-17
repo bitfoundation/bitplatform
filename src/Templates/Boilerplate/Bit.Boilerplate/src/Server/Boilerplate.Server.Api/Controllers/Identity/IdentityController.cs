@@ -259,28 +259,47 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
 
-        UserSession? userSession = null;
+        string? userId = null; User? user = null; Guid currentSessionId; UserSession? userSession = null;
 
-        if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
+        userId = refreshTicket?.Principal?.GetUserId().ToString();
+        if (string.IsNullOrEmpty(userId) is false)
+        {
+            user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException();
+        }
+        if (Guid.TryParse(refreshTicket?.Principal?.FindFirstValue("session-id"), out currentSessionId))
+        {
+            userSession = user!.Sessions.Find(s => s.SessionUniqueId == currentSessionId);
+        }
+
+        bool canRenewSession = refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
             DateTimeOffset.UtcNow >= expiresUtc ||
-            await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user ||
-            Guid.TryParse(refreshTicket.Principal.FindFirstValue("session-id"), out var sessionId) is false ||
-            (userSession = user.Sessions.FirstOrDefault(s => s.SessionUniqueId == sessionId)) is null)
+            await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _ ||
+            userSession is null;
+
+        if (canRenewSession is false && userSession is not null)
+        {
+            user!.Sessions.Remove(userSession);
+        }
+        else
+        {
+            userSession!.RenewedOn = DateTimeOffset.UtcNow;
+        }
+
+        try
+        {
+            await userManager.UpdateAsync(user!);
+        }
+        catch (ConflictException) { /* When access_token gets expired and user navigates to the page that sends multiple requests in parallel, multiple concurrent refresh token api call happens and this will results into concurrency exception during updating session's renewed on. */ }
+
+        if (canRenewSession is false)
         {
             // Return 401 if refresh token is either invalid or expired.
             throw new UnauthorizedException();
         }
 
-        try
-        {
-            userSession.RenewedOn = DateTimeOffset.UtcNow;
-            await userManager.UpdateAsync(user);
-        }
-        catch (ConflictException) { /* When access_token gets expired and user navigates to the page that sends multiple requests in parallel, multiple concurrent refresh token api call happens and this will results into concurrency exception during updating session's renewed on. */ }
+        var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
 
-        var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);
-
-        ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", sessionId.ToString()));
+        ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", currentSessionId.ToString()));
 
         return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
     }

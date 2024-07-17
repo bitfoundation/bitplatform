@@ -56,7 +56,9 @@ public partial class UserController : AppControllerBase, IUserController
         var user = await userManager.FindByIdAsync(userId.ToString())
             ?? throw new ResourceNotFoundException();
 
-        user.Sessions = user.Sessions.Where(s => s.SessionUniqueId != Guid.Parse(User.FindFirstValue("session-id")!)).ToList();
+        var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
+
+        user.Sessions = user.Sessions.Where(s => s.SessionUniqueId != currentSessionId).ToList();
 
         var result = await userManager.UpdateAsync(user);
         if (result.Succeeded is false)
