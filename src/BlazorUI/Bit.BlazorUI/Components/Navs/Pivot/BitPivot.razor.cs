@@ -3,7 +3,8 @@
 public partial class BitPivot : BitComponentBase
 {
     private string? selectedKey;
-    private bool SelectedKeyHasBeenSet;
+
+
 
     private BitPivotItem? _selectedItem;
     private List<BitPivotItem> _allItems = [];

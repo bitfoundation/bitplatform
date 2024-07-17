@@ -2,10 +2,6 @@
 
 public partial class BitPanel : BitComponentBase
 {
-    private bool IsOpenHasBeenSet;
-
-    
-
     private int _offsetTop;
     private bool _internalIsOpen;
     private string _containerId = default!;

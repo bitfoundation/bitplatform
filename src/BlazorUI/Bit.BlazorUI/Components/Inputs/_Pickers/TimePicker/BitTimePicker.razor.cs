@@ -12,10 +12,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
 
 
-    private bool IsOpenHasBeenSet;
-
-
-
     private int? _hour;
     private int? _minute;
     private string? _labelId;

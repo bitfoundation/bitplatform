@@ -1,11 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPivotItem : IDisposable
+public partial class BitPivotItem : BitComponentBase, IDisposable
 {
-    private bool IsSelectedHasBeenSet;
-
-
-
     private bool _disposed;
     private bool _isEnabled;
 

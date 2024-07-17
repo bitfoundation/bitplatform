@@ -46,14 +46,19 @@ namespace {namespaceName}
 {{
     public partial class {GetClassName(classSymbol)}
     {{
-        [global::System.Diagnostics.DebuggerNonUserCode]
+");
+        foreach (var prop in properties.Where(p => p.IsTwoWayBoundProperty))
+        {
+            source.AppendLine($"        private bool {prop.PropertySymbol.Name}HasBeenSet;");
+        }
+        source.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public override Task SetParametersAsync(ParameterView parameters)
         {{
 ");
-        foreach (var property in properties.Where(p => p.IsTwoWayBoundProperty))
+        foreach (var prop in properties.Where(p => p.IsTwoWayBoundProperty))
         {
-            source.AppendLine($"            {property.PropertySymbol.Name}HasBeenSet = false;");
+            source.AppendLine($"            {prop.PropertySymbol.Name}HasBeenSet = false;");
         }
         source.AppendLine("            var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;");
         source.AppendLine("            foreach (var parameter in parametersDictionary!)");

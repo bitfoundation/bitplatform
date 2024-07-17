@@ -4,10 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where TItem : class
 {
-    private bool SelectedItemHasBeenSet;
-
-
-
     private bool isCalloutOpen;
     private bool _isCalloutOpen
     {
@@ -130,7 +126,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     [Parameter, ResetClassBuilder]
     public TItem? SelectedItem { get; set; }
 
-    [Parameter] public EventCallback<TItem> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     /// <summary>
     /// If true, the button will render as a SplitButton.

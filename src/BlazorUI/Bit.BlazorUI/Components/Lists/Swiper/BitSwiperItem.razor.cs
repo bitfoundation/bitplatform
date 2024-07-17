@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitSwiperItem
+public partial class BitSwiperItem : BitComponentBase
 {
     private string internalStyle = string.Empty;
     private string internalTransformStyle = string.Empty;

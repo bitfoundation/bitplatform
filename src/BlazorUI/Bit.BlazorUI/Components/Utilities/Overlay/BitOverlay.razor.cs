@@ -2,10 +2,6 @@
 
 public partial class BitOverlay : BitComponentBase
 {
-    private bool IsVisibleHasBeenSet;
-
-
-
     private int _offsetTop;
     private bool _internalIsVisible;
 

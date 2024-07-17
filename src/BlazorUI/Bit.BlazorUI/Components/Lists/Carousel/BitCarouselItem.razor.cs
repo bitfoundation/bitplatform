@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitCarouselItem
+public partial class BitCarouselItem : BitComponentBase
 {
     private string internalStyle = string.Empty;
 

@@ -2,10 +2,6 @@
 
 public partial class BitDialog : BitComponentBase, IDisposable
 {
-    private bool IsOpenHasBeenSet;
-
-
-
     private int _offsetTop;
     private bool _disposed;
     private bool _internalIsOpen;
