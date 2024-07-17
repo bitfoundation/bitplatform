@@ -66,9 +66,9 @@ private bool isDismissed;";
     private readonly string example7RazorCode = @"
 <BitMessage>
     <Actions>
-        <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Up"" />
+        <BitButton Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Up"" />
         &nbsp;
-        <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Down"" />
+        <BitButton Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Down"" />
     </Actions>
     <Content>
         Message with single line and action buttons.
