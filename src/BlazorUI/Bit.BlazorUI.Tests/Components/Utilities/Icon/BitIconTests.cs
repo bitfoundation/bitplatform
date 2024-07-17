@@ -35,14 +35,14 @@ public class BitIconTests : BunitTestContext
     {
         var component = RenderComponent<BitIcon>();
 
-        component.MarkupMatches(@"<i role=""img"" class=""bit-ico"" id:ignore />");
+        component.MarkupMatches(@"<i class=""bit-ico"" role=""img"" id:ignore />");
 
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.IsEnabled, false);
         });
 
-        component.MarkupMatches(@"<i role=""img"" class=""bit-ico bit-dis"" id:ignore />");
+        component.MarkupMatches(@"<i class=""bit-ico bit-dis"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod,
