@@ -27,6 +27,12 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public string CollapseIconName { get; set; } = "DoubleChevronUp";
 
     /// <summary>
+    /// The general color of the message.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// The alias for ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Content { get; set; }
@@ -67,12 +73,6 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public string? Role { get; set; }
 
     /// <summary>
-    /// The severity of the message. defaults to Info.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitSeverity Severity { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the BitMessage.
     /// </summary>
     [Parameter] public BitMessageClassStyles? Styles { get; set; }
@@ -103,37 +103,43 @@ public partial class BitMessage : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Severity switch
+        ClassBuilder.Register(() => Color switch
         {
-            BitSeverity.Info => "bit-msg-inf",
-            BitSeverity.Success => "bit-msg-suc",
-            BitSeverity.Warning => "bit-msg-wrn",
-            BitSeverity.SevereWarning => "bit-msg-swr",
-            BitSeverity.Error => "bit-msg-err",
+            BitColor.Primary => "bit-msg-pri",
+            BitColor.Secondary => "bit-msg-sec",
+            BitColor.Tertiary => "bit-msg-ter",
+            BitColor.Info => "bit-msg-inf",
+            BitColor.Success => "bit-msg-suc",
+            BitColor.Warning => "bit-msg-wrn",
+            BitColor.SevereWarning => "bit-msg-swr",
+            BitColor.Error => "bit-msg-err",
             _ => "bit-msg-inf"
         });
 
         ClassBuilder.Register(() => Variant switch
         {
-            BitVariant.Fill => "bit-msg-fill",
-            BitVariant.Outline => "bit-msg-outline",
-            BitVariant.Text => "bit-msg-text",
+            BitVariant.Fill => "bit-msg-fil",
+            BitVariant.Outline => "bit-msg-otl",
+            BitVariant.Text => "bit-msg-txt",
             _ => "bit-msg-fill"
         });
     }
 
     private void ToggleExpand() => _isExpanded = _isExpanded is false;
 
-    private string GetTextRole() => Role ?? (Severity is BitSeverity.Success or BitSeverity.Info ? "status" : "alert");
+    private string GetTextRole() => Role ?? (Color is BitColor.Success or BitColor.Info ? "status" : "alert");
 
-    private string GetIconName() => IconName ?? _IconMap[Severity];
+    private string GetIconName() => IconName ?? _IconMap[Color ?? BitColor.Info];
 
-    private static Dictionary<BitSeverity, string> _IconMap = new()
+    private static Dictionary<BitColor, string> _IconMap = new()
     {
-        [BitSeverity.Info] = "Info",
-        [BitSeverity.Success] = "Completed",
-        [BitSeverity.Warning] = "Info",
-        [BitSeverity.SevereWarning] = "Warning",
-        [BitSeverity.Error] = "ErrorBadge",
+        [BitColor.Primary] = "Info",
+        [BitColor.Secondary] = "Info",
+        [BitColor.Tertiary] = "Info",
+        [BitColor.Info] = "Info",
+        [BitColor.Success] = "Completed",
+        [BitColor.Warning] = "Info",
+        [BitColor.SevereWarning] = "Warning",
+        [BitColor.Error] = "ErrorBadge"
     };
 }
