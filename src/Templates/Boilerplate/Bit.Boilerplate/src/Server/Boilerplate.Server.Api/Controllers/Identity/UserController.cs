@@ -91,7 +91,7 @@ public partial class UserController : AppControllerBase, IUserController
         var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
 
         if (id == currentSessionId)
-            throw new InvalidOperationException("Call SignOut instead");
+            throw new BadRequestException(); // "Call SignOut instead"
 
         var currentSession = user.Sessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId)
             ?? throw new ResourceNotFoundException();
