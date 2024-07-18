@@ -126,7 +126,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -144,7 +144,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
         var result = await userManager.SetUserNameAsync(user!, request.UserName);
@@ -153,7 +153,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken = default)
+    public async Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -174,7 +174,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -197,7 +197,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken = default)
+    public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -217,7 +217,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 

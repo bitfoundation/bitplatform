@@ -21,7 +21,7 @@ public static class ICollectionExtensions
         }
     }
 
-    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> items, CancellationToken cancellationToken = default)
+    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> items, CancellationToken cancellationToken)
     {
         var results = new List<T>();
         await foreach (var item in items.WithCancellation(cancellationToken))

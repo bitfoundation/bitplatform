@@ -451,7 +451,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpGet]
-    public async Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null)
+    public async Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
         var uri = Url.Action(nameof(SocialSignIn), new { provider, returnUrl, localHttpPort })!;
         return new Uri(Request.GetBaseUrl(), uri).ToString();

@@ -6,19 +6,19 @@ namespace Boilerplate.Shared.Controllers.Product;
 public interface IProductController : IAppController
 {
     [HttpGet("{id}")]
-    Task<ProductDto> Get(int id, CancellationToken cancellationToken = default);
+    Task<ProductDto> Get(int id, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken = default);
+    Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken);
 
     [HttpPut]
-    Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken = default);
+    Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken);
 
     [HttpDelete("{id}")]
-    Task Delete(int id, CancellationToken cancellationToken = default);
+    Task Delete(int id, CancellationToken cancellationToken);
 
     [HttpGet]
-    Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken = default) => default!;
+    Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
     Task<List<ProductDto>> Get(CancellationToken cancellationToken) => default!;

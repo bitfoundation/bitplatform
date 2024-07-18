@@ -80,7 +80,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
                     try
                     {
-                        var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token });
+                        var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, CancellationToken.None);
                         await StoreTokens(refreshTokenResponse!);
                         access_token = refreshTokenResponse!.AccessToken;
                     }
