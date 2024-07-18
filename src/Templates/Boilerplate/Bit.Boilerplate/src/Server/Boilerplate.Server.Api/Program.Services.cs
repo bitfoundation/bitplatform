@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.DataProtection;
 using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
+using Boilerplate.Server.Api.Controllers;
 
 namespace Boilerplate.Server.Api;
 
@@ -228,6 +229,7 @@ public static partial class Program
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
             .AddErrorDescriber<AppIdentityErrorDescriber>()
+            .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>()
             .AddApiEndpoints();
 
         var authenticationBuilder = services.AddAuthentication(options =>
@@ -262,6 +264,7 @@ public static partial class Program
             };
 
             options.BearerTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
+            options.RefreshTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
 
             options.Events = new()
             {

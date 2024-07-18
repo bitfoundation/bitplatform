@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
+using Humanizer;
 using QRCoder;
 using Boilerplate.Shared;
 using Boilerplate.Server.Api.Services;
@@ -33,6 +34,80 @@ public partial class UserController : AppControllerBase, IUserController
         return user.Map();
     }
 
+    [HttpGet]
+    public async Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var user = await userManager.FindByIdAsync(userId.ToString())
+            ?? throw new ResourceNotFoundException();
+
+        return user.Sessions
+            .Select(us =>
+            {
+                var dto = us.Map();
+
+                dto.LastSeenOn = us.RenewedOn is null ||
+                                 DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(5)
+                                 ? Localizer[nameof(AppStrings.Online)]
+                                 : DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(15)
+                                    ? Localizer[nameof(AppStrings.Recently)]
+                                    : us.RenewedOn.Humanize(culture: CultureInfo.CurrentUICulture);
+
+                dto.IsValid = DateTimeOffset.UtcNow - (us.RenewedOn ?? us.StartedOn) < AppSettings.Identity.RefreshTokenExpiration;
+
+                return dto;
+            })
+        .ToList();
+    }
+
+    [HttpPost]
+    public async Task SignOut(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var user = await userManager.FindByIdAsync(userId.ToString())
+            ?? throw new ResourceNotFoundException();
+
+        var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
+
+        user.Sessions = user.Sessions.Where(s => s.SessionUniqueId != currentSessionId).ToList();
+
+        var result = await userManager.UpdateAsync(user);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+
+        SignOut();
+    }
+
+    [HttpPost("{userSessionId}")]
+    public async Task RevokeSession(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+
+        var user = await userManager.FindByIdAsync(userId.ToString())
+            ?? throw new ResourceNotFoundException();
+
+        var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
+
+        if (id == currentSessionId)
+            throw new BadRequestException(); // "Call SignOut instead"
+
+        var currentSession = user.Sessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId)
+            ?? throw new ResourceNotFoundException();
+
+        var revokeUserSessionsDelay = (DateTimeOffset.Now - currentSession.StartedOn) - AppSettings.Identity.RevokeUserSessionsDelay;
+
+        if (revokeUserSessionsDelay < TimeSpan.Zero)
+            throw new BadRequestException(Localizer[nameof(AppStrings.WaitForRevokeSessionDelay), revokeUserSessionsDelay.Humanize(culture: CultureInfo.CurrentUICulture)]);
+
+        user.Sessions = user.Sessions.Where(s => s.SessionUniqueId != id).ToList();
+
+        var result = await userManager.UpdateAsync(user);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+    }
+
     [HttpPut]
     public async Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken)
     {
@@ -51,12 +126,12 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         if (await userManager.IsLockedOutAsync(user!))
-            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.ToString("mm\\:ss")]);
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user!.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         var result = await userManager.ChangePasswordAsync(user!, request.OldPassword!, request.NewPassword!);
 
@@ -69,7 +144,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
         var result = await userManager.SetUserNameAsync(user!, request.UserName);
@@ -78,14 +153,14 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken = default)
+    public async Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         var resendDelay = (DateTimeOffset.Now - user!.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.EmailTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -99,7 +174,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
@@ -122,14 +197,14 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken = default)
+    public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         var resendDelay = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenRequestResendDelay;
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.ToString("mm\\:ss")]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.PhoneNumberTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -142,7 +217,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken = default)
+    public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 

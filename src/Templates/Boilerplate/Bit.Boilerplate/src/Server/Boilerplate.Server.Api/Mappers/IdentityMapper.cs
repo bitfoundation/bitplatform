@@ -1,6 +1,6 @@
-﻿using Boilerplate.Server.Api.Models.Identity;
+﻿using Riok.Mapperly.Abstractions;
+using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Dtos.Identity;
-using Riok.Mapperly.Abstractions;
 
 namespace Boilerplate.Server.Api.Mappers;
 
@@ -12,4 +12,7 @@ public static partial class IdentityMapper
 {
     public static partial UserDto Map(this User source);
     public static partial void Patch(this EditUserDto source, User destination);
+
+    // https://mapperly.riok.app/docs/configuration/before-after-map/
+    public static partial UserSessionDto Map(this UserSession source);
 }

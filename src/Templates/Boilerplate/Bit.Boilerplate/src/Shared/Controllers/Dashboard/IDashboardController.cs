@@ -6,14 +6,14 @@ namespace Boilerplate.Shared.Controllers.Dashboard;
 public interface IDashboardController : IAppController
 {
     [HttpGet]
-    Task<OverallAnalyticsStatsDataResponseDto> GetOverallAnalyticsStatsData(CancellationToken cancellationToken = default);
+    Task<OverallAnalyticsStatsDataResponseDto> GetOverallAnalyticsStatsData(CancellationToken cancellationToken);
 
     [HttpGet]
-    Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken = default) => default!;
+    Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
-    Task<List<ProductSaleStatResponseDto>> GetProductsSalesStats(CancellationToken cancellationToken = default) => default!;
+    Task<List<ProductSaleStatResponseDto>> GetProductsSalesStats(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
-    Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken = default);
+    Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken);
 }

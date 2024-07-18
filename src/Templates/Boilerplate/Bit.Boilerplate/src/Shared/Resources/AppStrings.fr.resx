@@ -798,6 +798,15 @@
     <data name="ResetPasswordTokenSmsText" xml:space="preserve">
     <value>{0} est votre jeton de réinitialisation de mot de passe dans Boilerplate.</value>
   </data>
+    <data name="Online" xml:space="preserve">
+    <value>En ligne</value>
+  </data>
+    <data name="Recently" xml:space="preserve">
+    <value>Récemment</value>
+  </data>
+    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
+    <value>Vous ne pouvez pas révoquer d'autres sessions pour le moment. Réessayez dans {0}</value>
+  </data>
     <data name="Update" xml:space="preserve">
     <value>Mise à jour</value>
   </data>

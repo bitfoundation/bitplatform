@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using System.Text.Json;
 using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;
@@ -29,6 +30,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
             PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
         }]);
+
+        builder.Property(u => u.Sessions)
+               .HasConversion(v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                              v => JsonSerializer.Deserialize<List<UserSession>>(v, (JsonSerializerOptions?)null)!);
+        // You can also use builder.OwnsMany(u => u.Sessions, navBuilder => navBuilder.ToJson());
 
         //#if (database == "Sqlite" || database == "SqlServer")
         builder

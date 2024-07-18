@@ -95,7 +95,7 @@ public partial class SignUpPage
         {
             var port = localHttpServer.Start(CurrentCancellationToken);
 
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port);
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port, cancellationToken: CurrentCancellationToken);
 
             await externalNavigationService.NavigateToAsync(redirectUrl);
         }

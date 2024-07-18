@@ -7,33 +7,42 @@ namespace Boilerplate.Shared.Controllers.Identity;
 public interface IUserController : IAppController
 {
     [HttpGet]
-    Task<UserDto> GetCurrentUser(CancellationToken cancellationToken = default);
+    Task<UserDto> GetCurrentUser(CancellationToken cancellationToken);
+
+    [HttpGet]
+    Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken);
+
+    [HttpPost]
+    Task SignOut(CancellationToken cancellationToken);
+
+    [HttpPost("{id}")]
+    Task RevokeSession(Guid id, CancellationToken cancellationToken);
 
     [HttpPut]
-    Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken = default);
+    Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken = default);
+    Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken = default);
+    Task ChangeUserName(ChangeUserNameRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken = default);
+    Task SendChangeEmailToken(SendEmailTokenRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken = default);
+    Task ChangeEmail(ChangeEmailRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken = default);
+    Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken);
 
     [HttpPost]
-    Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken = default);
+    Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken);
 
     [HttpDelete]
-    Task Delete(CancellationToken cancellationToken = default);
+    Task Delete(CancellationToken cancellationToken);
 
     [HttpPost]
     [Route("~/api/[controller]/2fa")]
-    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken = default) => default!;
+    Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken) => default!;
 }

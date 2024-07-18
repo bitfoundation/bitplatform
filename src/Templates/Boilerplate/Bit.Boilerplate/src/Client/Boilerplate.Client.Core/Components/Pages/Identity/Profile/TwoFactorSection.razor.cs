@@ -81,7 +81,7 @@ public partial class TwoFactorSection
 
         try
         {
-            var response = await userController.TwoFactorAuth(request);
+            var response = await userController.TwoFactorAuth(request, CurrentCancellationToken);
 
             qrCode = response.QrCode;
             sharedKey = response.SharedKey;
