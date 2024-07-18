@@ -540,7 +540,6 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-
     [DataTestMethod,
         DataRow(null, true),
         DataRow(null, false),
