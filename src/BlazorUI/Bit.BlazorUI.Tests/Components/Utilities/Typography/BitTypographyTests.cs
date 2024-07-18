@@ -373,7 +373,7 @@ public class BitTypographyTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore>{childContent}</label>");
+        component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore>{childContent}</h6>");
     }
 
     [DataTestMethod]
