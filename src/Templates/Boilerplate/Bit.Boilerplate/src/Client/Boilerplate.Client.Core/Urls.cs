@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Client.Core;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Client.Core;
 
 public static class Urls
 {
@@ -9,14 +10,6 @@ public static class Urls
     public const string NotFoundPage = "not-found";
 
     public const string TermsPage = "terms";
-
-    public const string AddOrEditCategory = "add-edit-category";
-
-    public const string AddOrEditCategoryPage = "add-edit-category/{Id:int?}";
-
-    public const string CategoriesPage = "categories";
-
-    public const string DashboardPage = "dashboard";
 
     public const string ProfilePage = "profile";
 
@@ -30,11 +23,24 @@ public static class Urls
 
     public const string SignUpPage = "sign-up";
 
-    public const string OfflineEditProfilePage = "offline-edit-profile";
+    //#if (sample == "Admin")
+    public const string AddOrEditCategory = "add-edit-category";
+
+    public const string AddOrEditCategoryPage = "add-edit-category/{Id:int?}";
+
+    public const string CategoriesPage = "categories";
+
+    public const string DashboardPage = "dashboard";
 
     public const string ProductsPage = "products";
 
+    //#elif (sample == "Todo")
     public const string TodoPage = "todo";
+    //#endif
+
+    //#if (offlineDb == true)
+    public const string OfflineEditProfilePage = "offline-edit-profile";
+    //#endif
 
     public const string AboutPage = "about";
 
