@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -7,6 +6,7 @@ public partial class BitActionButton : BitComponentBase
 {
     private int? _tabIndex;
     private BitButtonType _buttonType;
+
 
 
     /// <summary>

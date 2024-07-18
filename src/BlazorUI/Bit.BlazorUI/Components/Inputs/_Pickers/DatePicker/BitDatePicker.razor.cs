@@ -6,27 +6,38 @@ namespace Bit.BlazorUI;
 
 public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 {
-    private const int STEP_DELAY = 75;
     private const int DEFAULT_WEEK_COUNT = 6;
-    private const int INITIAL_STEP_DELAY = 400;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
 
 
 
+    private int _currentDay;
+    private int _currentYear;
+    private int _currentMonth;
+    private int? _selectedDateWeek;
+    private int _yearPickerEndYear;
+    private int _yearPickerStartYear;
+    private int? _selectedDateDayOfWeek;
+    private bool _showMonthPicker = true;
+    private bool _isTimePickerOverlayOnTop;
+    private bool _isMonthPickerOverlayOnTop;
+    private string _focusClass = string.Empty;
+    private string _monthTitle = string.Empty;
+    private bool _showTimePickerAsOverlayInternal;
+    private bool _showMonthPickerAsOverlayInternal;
+    private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
+    private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
+    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
-    private string focusClass = string.Empty;
-    private string _focusClass
-    {
-        get => focusClass;
-        set
-        {
-            if (focusClass == value) return;
+    private string? _labelId;
+    private string? _inputId;
+    private string _calloutId = string.Empty;
+    private string _datePickerId = string.Empty;
+    private ElementReference _inputTimeHourRef = default!;
+    private ElementReference _inputTimeMinuteRef = default!;
 
-            focusClass = value;
-            ClassBuilder.Reset();
-        }
-    }
+
 
     private int _hour;
     private int _hourView
@@ -92,30 +103,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
 
-    private int _currentDay;
-    private int _currentYear;
-    private int _currentMonth;
-    private int? _selectedDateWeek;
-    private int _yearPickerEndYear;
-    private int _yearPickerStartYear;
-    private int? _selectedDateDayOfWeek;
-    private bool _showMonthPicker = true;
-    private bool _isTimePickerOverlayOnTop;
-    private bool _isMonthPickerOverlayOnTop;
-    private string _monthTitle = string.Empty;
-    private bool _showTimePickerAsOverlayInternal;
-    private bool _showMonthPickerAsOverlayInternal;
-    private CultureInfo _culture = CultureInfo.CurrentUICulture;
-    private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
-    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
-
-    private string _datePickerId = string.Empty;
-    private string _calloutId = string.Empty;
-    private string? _labelId;
-    private string? _inputId;
-    private ElementReference _inputTimeHourRef = default!;
-    private ElementReference _inputTimeMinuteRef = default!;
-
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -138,7 +125,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Capture and render additional html attributes for the DatePicker's callout.
     /// </summary>
-    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = new();
+    [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitDatePicker component.
@@ -225,12 +212,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Whether the month picker should highlight the current month.
     /// </summary>
-    [Parameter] public bool HighlightCurrentMonth { get; set; } = false;
+    [Parameter] public bool HighlightCurrentMonth { get; set; }
 
     /// <summary>
     /// Whether the month picker should highlight the selected month.
     /// </summary>
-    [Parameter] public bool HighlightSelectedMonth { get; set; } = false;
+    [Parameter] public bool HighlightSelectedMonth { get; set; }
 
     /// <summary>
     /// Custom template for the DatePicker's icon.
@@ -438,10 +425,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
     }
@@ -550,10 +535,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task HandleOnClick()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = true;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(true) is false) return;
 
         var result = await ToggleCallout();
 
@@ -590,7 +573,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (IsEnabled is false) return;
 
         _focusClass = "bit-dtp-foc";
-
+        ClassBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -599,7 +582,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (IsEnabled is false) return;
 
         _focusClass = string.Empty;
-
+        ClassBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -608,7 +591,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (IsEnabled is false) return;
 
         _focusClass = "bit-dtp-foc";
-
+        ClassBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 
@@ -675,8 +658,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (AutoClose)
         {
-            IsOpen = false;
-            await IsOpenChanged.InvokeAsync(IsOpen);
+            await AssignIsOpen(false);
 
             await ToggleCallout();
         }
@@ -1261,7 +1243,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             await InvokeAsync(async () =>
             {
-                await Task.Delay(INITIAL_STEP_DELAY);
+                await Task.Delay(400);
                 await ContinuousChangeTime(isNext, isHour, cts);
             });
         }, cts.Token);
@@ -1275,7 +1257,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         StateHasChanged();
 
-        await Task.Delay(STEP_DELAY);
+        await Task.Delay(75);
         await ContinuousChangeTime(isNext, isHour, cts);
     }
 
@@ -1352,10 +1334,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
 

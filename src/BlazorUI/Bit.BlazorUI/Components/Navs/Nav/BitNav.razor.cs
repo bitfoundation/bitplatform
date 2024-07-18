@@ -140,6 +140,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
             }
         }
     }
+
     [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     /// <summary>

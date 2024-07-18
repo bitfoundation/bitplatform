@@ -8,10 +8,12 @@ public partial class BitButton : BitComponentBase
     private BitButtonType _buttonType;
 
 
+
     /// <summary>
     /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>.
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
+
 
 
     /// <summary>
@@ -138,6 +140,7 @@ public partial class BitButton : BitComponentBase
     public BitVariant? Variant { get; set; }
 
 
+
     protected override string RootElementClass => "bit-btn";
 
     protected override void RegisterCssClasses()
@@ -198,6 +201,8 @@ public partial class BitButton : BitComponentBase
         base.OnParametersSet();
     }
 
+
+
     private string GetLabelPositionClass()
         => LoadingLabelPosition switch
         {
@@ -208,7 +213,7 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-end"
         };
 
-    protected virtual async Task HandleOnClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
 

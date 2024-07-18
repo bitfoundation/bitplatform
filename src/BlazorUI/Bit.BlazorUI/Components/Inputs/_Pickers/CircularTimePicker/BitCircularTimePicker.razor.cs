@@ -6,16 +6,12 @@ namespace Bit.BlazorUI;
 
 public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 {
-    private const string FORMAT_24_HOURS = "HH:mm";
-    private const string FORMAT_12_HOURS = "hh:mm tt";
-
-
-
     private int? _hour;
     private int? _minute;
     private string? _labelId;
     private string? _inputId;
     private bool _isPointerDown;
+    private string? _focusClass;
     private bool _showHourView = true;
     private ElementReference _clockRef;
     private string _calloutId = string.Empty;
@@ -24,19 +20,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private string _circularTimePickerId = string.Empty;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
-
-
-
-    private string? focusClass;
-    private string? _focusClass
-    {
-        get => focusClass;
-        set
-        {
-            focusClass = value;
-            ClassBuilder.Reset();
-        }
-    }
 
 
 
@@ -201,14 +184,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
 
     [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        ClassBuilder.Reset();
-        _ = IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
     }
@@ -304,6 +284,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsEnabled is false) return;
 
         _focusClass = "bit-ctp-foc";
+        ClassBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -312,6 +293,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsEnabled is false) return;
 
         _focusClass = null;
+        ClassBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -320,17 +302,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsEnabled is false) return;
 
         _focusClass = "bit-ctp-foc";
+        ClassBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        ClassBuilder.Reset();
-        _ = IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
 
@@ -350,14 +330,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private async Task HandleOnClick()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
+
+        if (await AssignIsOpen(true) is false) return;
 
         _showHourView = true;
-
-        IsOpen = true;
-        ClassBuilder.Reset();
-        _ = IsOpenChanged.InvokeAsync(IsOpen);
-
         await ToggleCallout();
 
         await OnClick.InvokeAsync();
@@ -484,7 +460,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private string GetValueFormat()
     {
-        return ValueFormat.HasValue() ? ValueFormat! : (TimeFormat == BitTimeFormat.TwentyFourHours ? FORMAT_24_HOURS : FORMAT_12_HOURS);
+        return ValueFormat.HasValue()
+            ? ValueFormat!
+            : TimeFormat == BitTimeFormat.TwentyFourHours
+                ? "HH:mm"
+                : "hh:mm tt";
     }
 
     private async Task ToggleCallout()

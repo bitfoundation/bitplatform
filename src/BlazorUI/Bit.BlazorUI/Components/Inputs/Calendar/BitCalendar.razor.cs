@@ -6,10 +6,27 @@ namespace Bit.BlazorUI;
 
 public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 {
-    private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
     private const int DEFAULT_WEEK_COUNT = 6;
-    private const int STEP_DELAY = 75;
-    private const int INITIAL_STEP_DELAY = 400;
+    private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
+
+
+
+    private int _currentDay;
+    private int _currentYear;
+    private int _currentMonth;
+    private bool _showYearPicker;
+    private bool _showTimePicker;
+    private bool _showMonthPicker;
+    private int? _selectedDateWeek;
+    private int _yearPickerEndYear;
+    private int _yearPickerStartYear;
+    private int? _selectedDateDayOfWeek;
+    private string _monthTitle = string.Empty;
+    private ElementReference _inputTimeHourRef = default!;
+    private ElementReference _inputTimeMinuteRef = default!;
+    private CultureInfo _culture = CultureInfo.CurrentUICulture;
+    private CancellationTokenSource _cancellationTokenSource = new();
+    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
 
 
@@ -76,23 +93,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     }
 
 
-
-    private int _currentDay;
-    private int _currentYear;
-    private int _currentMonth;
-    private bool _showYearPicker;
-    private bool _showTimePicker;
-    private bool _showMonthPicker;
-    private int? _selectedDateWeek;
-    private int _yearPickerEndYear;
-    private int _yearPickerStartYear;
-    private int? _selectedDateDayOfWeek;
-    private string _monthTitle = string.Empty;
-    private ElementReference _inputTimeHourRef = default!;
-    private ElementReference _inputTimeMinuteRef = default!;
-    private CultureInfo _culture = CultureInfo.CurrentUICulture;
-    private CancellationTokenSource _cancellationTokenSource = new();
-    private int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -974,7 +974,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         {
             await InvokeAsync(async () =>
             {
-                await Task.Delay(INITIAL_STEP_DELAY);
+                await Task.Delay(400);
                 await ContinuousChangeTime(isNext, isHour, cts);
             });
         }, cts.Token);
@@ -988,7 +988,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
         StateHasChanged();
 
-        await Task.Delay(STEP_DELAY);
+        await Task.Delay(75);
         await ContinuousChangeTime(isNext, isHour, cts);
     }
 

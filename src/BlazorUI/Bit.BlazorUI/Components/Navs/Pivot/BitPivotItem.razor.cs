@@ -94,9 +94,8 @@ public partial class BitPivotItem : BitComponentBase, IDisposable
 
     internal void SetIsSelected(bool value)
     {
-        IsSelected = value;
-        ClassBuilder.Reset();
-        _ = IsSelectedChanged.InvokeAsync(IsSelected);
+        _ = AssignIsSelected(value);
+
         StateHasChanged();
     }
 

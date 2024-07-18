@@ -6,11 +6,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
-    private const int STEP_DELAY = 75;
-    private const int INITIAL_STEP_DELAY = 400;
-
-
-
     private TValue? min;
     private TValue? max;
     private TValue? step;
@@ -430,7 +425,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         {
             await InvokeAsync(async () =>
             {
-                await Task.Delay(INITIAL_STEP_DELAY);
+                await Task.Delay(400);
                 await ContinuousChangeValue(isIncrement, cts);
             });
         }, cts.Token);
@@ -451,7 +446,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         StateHasChanged();
 
-        await Task.Delay(STEP_DELAY);
+        await Task.Delay(75);
         await ContinuousChangeValue(isIncrement, cts);
     }
 

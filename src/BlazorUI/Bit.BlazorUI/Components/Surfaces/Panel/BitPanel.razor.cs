@@ -101,17 +101,17 @@ public partial class BitPanel : BitComponentBase
 
 
 
-    public void Open()
+    public async Task Open()
     {
-        IsOpen = true;
-        _ = IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(true) is false) return;
+
         StateHasChanged();
     }
 
-    public void Close()
+    public async Task Close()
     {
-        IsOpen = false;
-        _ = IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
+
         StateHasChanged();
     }
 
@@ -158,42 +158,42 @@ public partial class BitPanel : BitComponentBase
 
 
 
-    private void ClosePanel(MouseEventArgs e)
+    private async Task ClosePanel(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        _ = IsOpenChanged.InvokeAsync(IsOpen);
-        _ = OnDismiss.InvokeAsync(e);
+        if (await AssignIsOpen(false) is false) return;
+
+        await OnDismiss.InvokeAsync(e);
     }
 
-    private void OnOverlayClicked(MouseEventArgs e)
+    private async Task OnOverlayClicked(MouseEventArgs e)
     {
         if (IsBlocking is not false) return;
 
-        ClosePanel(e);
+        await ClosePanel(e);
     }
 
-    private void OnCloseButtonClicked(MouseEventArgs e)
+    private async Task OnCloseButtonClicked(MouseEventArgs e)
     {
-        ClosePanel(e);
+        await ClosePanel(e);
     }
 
     private string GetPositionClass() => Position switch
     {
-        BitPanelPosition.Right => $"{RootElementClass}-right",
-        BitPanelPosition.Left => $"{RootElementClass}-left",
-        BitPanelPosition.Top => $"{RootElementClass}-top",
-        BitPanelPosition.Bottom => $"{RootElementClass}-bottom",
-
-        _ => $"{RootElementClass}-right"
+        BitPanelPosition.Right => "bit-pnl-right",
+        BitPanelPosition.Left => "bit-pnl-left",
+        BitPanelPosition.Top => "bit-pnl-top",
+        BitPanelPosition.Bottom => "bit-pnl-bottom",
+        _ => "bit-pnl-right"
     };
 
     private string GetPanelSizeStyle()
     {
         if (Size == 0) return string.Empty;
 
-        return FormattableString.Invariant($"{(Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width")}:{Size}px");
+        var style = Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width";
+
+        return FormattableString.Invariant($"{style}:{Size}px");
     }
 }

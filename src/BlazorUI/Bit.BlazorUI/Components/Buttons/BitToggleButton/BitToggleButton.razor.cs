@@ -117,6 +117,7 @@ public partial class BitToggleButton : BitComponentBase
     public BitVariant? Variant { get; set; }
 
 
+
     protected override string RootElementClass => "bit-tgb";
 
     protected override void RegisterCssClasses()
@@ -158,10 +159,7 @@ public partial class BitToggleButton : BitComponentBase
 
         if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
         {
-            IsChecked = DefaultIsChecked.Value;
-            ClassBuilder.Reset();
-            StyleBuilder.Reset();
-            _ = IsCheckedChanged.InvokeAsync(IsChecked);
+            await AssignIsChecked(DefaultIsChecked.Value);
         }
 
         await base.OnInitializedAsync();

@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Bit.BlazorUI.SourceGenerators.Blazor;
+namespace Bit.BlazorUI.SourceGenerators.Component;
 
-public class BitProperty(IPropertySymbol propertySymbol, bool resetClassBuilder, bool resetStyleBuilder)
+public class BlazorParameter(IPropertySymbol propertySymbol, bool resetClassBuilder, bool resetStyleBuilder)
 {
     public IPropertySymbol PropertySymbol { get; set; } = propertySymbol;
 

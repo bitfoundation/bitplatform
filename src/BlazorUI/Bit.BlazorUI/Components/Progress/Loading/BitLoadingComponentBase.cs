@@ -34,6 +34,8 @@ public class BitLoadingComponentBase : ComponentBase
     /// </summary>
     [Parameter] public string? ChildStyle { get; set; }
 
+
+
     protected virtual int OriginalSize { get; set; } = 80;
 
     protected string Convert(double value)

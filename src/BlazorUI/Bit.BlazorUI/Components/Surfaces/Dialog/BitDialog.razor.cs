@@ -114,7 +114,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
     /// <summary>
     /// Position of the Dialog on the screen.
     /// </summary>
-    [Parameter] public BitDialogPosition Position { get; set; } = BitDialogPosition.Center;
+    [Parameter] public BitDialogPosition Position { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Dialog disables its scroll if applicable.
@@ -170,8 +170,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
 
             _tcs?.SetResult(null);
 
-            IsOpen = true;
-            await IsOpenChanged.InvokeAsync(IsOpen);
+            await AssignIsOpen(true);
 
             StateHasChanged();
         });
@@ -189,7 +188,7 @@ public partial class BitDialog : BitComponentBase, IDisposable
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => AbsolutePosition ? $"{RootElementClass}-abs" : string.Empty);
+        ClassBuilder.Register(() => AbsolutePosition ? "bit-dlg-abs" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -244,31 +243,30 @@ public partial class BitDialog : BitComponentBase, IDisposable
 
 
 
-    private void DismissDialog(MouseEventArgs e)
+    private async Task DismissDialog(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        _ = IsOpenChanged.InvokeAsync(IsOpen);
-        _ = OnDismiss.InvokeAsync(e);
+        if (await AssignIsOpen(false) is false) return;
+
+        await OnDismiss.InvokeAsync(e);
     }
 
-    private void HandleOnOverlayClick(MouseEventArgs e)
+    private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
         if (IsBlocking) return;
 
-        DismissDialog(e);
+        await DismissDialog(e);
     }
 
-    private void HandleOnCloseClick(MouseEventArgs e)
+    private async Task HandleOnCloseClick(MouseEventArgs e)
     {
         _ = OnClose.InvokeAsync(e);
 
-        DismissDialog(e);
+        await DismissDialog(e);
     }
 
-    private void HandleOnCancelClick(MouseEventArgs e)
+    private async Task HandleOnCancelClick(MouseEventArgs e)
     {
         Result = BitDialogResult.Cancel;
 
@@ -277,10 +275,10 @@ public partial class BitDialog : BitComponentBase, IDisposable
 
         _ = OnCancel.InvokeAsync(e);
 
-        DismissDialog(e);
+        await DismissDialog(e);
     }
 
-    private void HandleOnOkClick(MouseEventArgs e)
+    private async Task HandleOnOkClick(MouseEventArgs e)
     {
         Result = BitDialogResult.Ok;
 
@@ -289,25 +287,21 @@ public partial class BitDialog : BitComponentBase, IDisposable
 
         _ = OnOk.InvokeAsync(e);
 
-        DismissDialog(e);
+        await DismissDialog(e);
     }
 
     private string GetPositionClass() => Position switch
     {
-        BitDialogPosition.Center => $"{RootElementClass}-ctr",
-
-        BitDialogPosition.TopLeft => $"{RootElementClass}-tl",
-        BitDialogPosition.TopCenter => $"{RootElementClass}-tc",
-        BitDialogPosition.TopRight => $"{RootElementClass}-tr",
-
-        BitDialogPosition.CenterLeft => $"{RootElementClass}-cl",
-        BitDialogPosition.CenterRight => $"{RootElementClass}-cr",
-
-        BitDialogPosition.BottomLeft => $"{RootElementClass}-bl",
-        BitDialogPosition.BottomCenter => $"{RootElementClass}-bc",
-        BitDialogPosition.BottomRight => $"{RootElementClass}-br",
-
-        _ => $"{RootElementClass}-ctr",
+        BitDialogPosition.Center => "bit-dlg-ctr",
+        BitDialogPosition.TopLeft => "bit-dlg-tl",
+        BitDialogPosition.TopCenter => "bit-dlg-tc",
+        BitDialogPosition.TopRight => "bit-dlg-tr",
+        BitDialogPosition.CenterLeft => "bit-dlg-cl",
+        BitDialogPosition.CenterRight => "bit-dlg-cr",
+        BitDialogPosition.BottomLeft => "bit-dlg-bl",
+        BitDialogPosition.BottomCenter => "bit-dlg-bc",
+        BitDialogPosition.BottomRight => "bit-dlg-br",
+        _ => "bit-dlg-ctr",
     };
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";

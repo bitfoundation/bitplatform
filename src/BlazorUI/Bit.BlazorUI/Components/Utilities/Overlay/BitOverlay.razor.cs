@@ -83,14 +83,11 @@ public partial class BitOverlay : BitComponentBase
 
 
 
-    private void CloseOverlay()
+    private async Task CloseOverlay()
     {
         if (IsEnabled is false) return;
         if (AutoClose is false) return;
-        if (IsVisibleHasBeenSet && IsVisibleChanged.HasDelegate is false) return;
 
-        IsVisible = false;
-        ClassBuilder.Reset();
-        _ = IsVisibleChanged.InvokeAsync(IsVisible);
+        await AssignIsVisible(false);
     }
 }

@@ -6,9 +6,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 {
-    private const int STEP_DELAY = 75;
     private const int DEFAULT_WEEK_COUNT = 6;
-    private const int INITIAL_STEP_DELAY = 400;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
 
 
@@ -17,18 +15,35 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
 
-    private string focusClass = string.Empty;
-    private string _focusClass
-    {
-        get => focusClass;
-        set
-        {
-            if (focusClass == value) return;
+    private int _currentYear;
+    private int _currentMonth;
+    private int _yearPickerEndYear;
+    private int _yearPickerStartYear;
+    private int? _selectedEndDateWeek;
+    private int? _selectedStartDateWeek;
+    private bool _showMonthPicker = true;
+    private int? _selectedEndDateDayOfWeek;
+    private bool _isTimePickerOverlayOnTop;
+    private bool _isMonthPickerOverlayOnTop;
+    private int? _selectedStartDateDayOfWeek;
+    private string _focusClass = string.Empty;
+    private string _monthTitle = string.Empty;
+    private bool _showTimePickerAsOverlayInternal;
+    private bool _showMonthPickerAsOverlayInternal;
+    private CultureInfo _culture = CultureInfo.CurrentUICulture;
+    private DotNetObjectReference<BitDateRangePicker> _dotnetObj = default!;
+    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
-            focusClass = value;
-            ClassBuilder.Reset();
-        }
-    }
+    private string? _labelId;
+    private string? _inputId;
+    private string _calloutId = string.Empty;
+    private string _dateRangePickerId = string.Empty;
+    private ElementReference _startTimeHourInputRef = default!;
+    private ElementReference _startTimeMinuteInputRef = default!;
+    private ElementReference _endTimeHourInputRef = default!;
+    private ElementReference _endTimeMinuteInputRef = default!;
+
+
 
     private int _startTimeHour;
     private int _startTimeHourView
@@ -157,33 +172,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
     }
 
-    private int _currentYear;
-    private int _currentMonth;
-    private int _yearPickerEndYear;
-    private int _yearPickerStartYear;
-    private int? _selectedEndDateWeek;
-    private int? _selectedStartDateWeek;
-    private bool _showMonthPicker = true;
-    private int? _selectedEndDateDayOfWeek;
-    private bool _isTimePickerOverlayOnTop;
-    private bool _isMonthPickerOverlayOnTop;
-    private int? _selectedStartDateDayOfWeek;
-    private string _monthTitle = string.Empty;
-    private bool _showTimePickerAsOverlayInternal;
-    private bool _showMonthPickerAsOverlayInternal;
-    private CultureInfo _culture = CultureInfo.CurrentUICulture;
-    private DotNetObjectReference<BitDateRangePicker> _dotnetObj = default!;
-    private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
-
-    private string? _labelId;
-    private string? _inputId;
-    private string _calloutId = string.Empty;
-    private string _dateRangePickerId = string.Empty;
-    private ElementReference _startTimeHourInputRef = default!;
-    private ElementReference _startTimeMinuteInputRef = default!;
-    private ElementReference _endTimeHourInputRef = default!;
-    private ElementReference _endTimeMinuteInputRef = default!;
-
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -290,12 +278,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Whether the month picker should highlight the current month.
     /// </summary>
-    [Parameter] public bool HighlightCurrentMonth { get; set; } = false;
+    [Parameter] public bool HighlightCurrentMonth { get; set; }
 
     /// <summary>
     /// Whether the month picker should highlight the selected month.
     /// </summary>
-    [Parameter] public bool HighlightSelectedMonth { get; set; } = false;
+    [Parameter] public bool HighlightSelectedMonth { get; set; }
 
     /// <summary>
     /// Custom template for the DateRangePicker's icon.
@@ -503,10 +491,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
     }
@@ -651,10 +637,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task HandleOnClick()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = true;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(true) is false) return;
 
         var result = await ToggleCallout();
 
@@ -695,8 +679,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
-
+        _focusClass = "bit-dtrp-foc";
+        ClassBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -705,7 +689,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (IsEnabled is false) return;
 
         _focusClass = string.Empty;
-
+        ClassBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -713,8 +697,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
-
+        _focusClass = "bit-dtrp-foc";
+        ClassBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 
@@ -793,8 +777,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             curValue.EndDate = selectedDate;
             if (AutoClose)
             {
-                IsOpen = false;
-                await IsOpenChanged.InvokeAsync(IsOpen);
+                await AssignIsOpen(false);
 
                 await ToggleCallout();
             }
@@ -1617,7 +1600,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             await InvokeAsync(async () =>
             {
-                await Task.Delay(INITIAL_STEP_DELAY);
+                await Task.Delay(400);
                 await ContinuousChangeTime(isNext, isHour, isStartTime, cts);
             });
         }, cts.Token);
@@ -1631,7 +1614,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         StateHasChanged();
 
-        await Task.Delay(STEP_DELAY);
+        await Task.Delay(75);
         await ContinuousChangeTime(isNext, isHour, isStartTime, cts);
     }
 
@@ -1736,10 +1719,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
 
