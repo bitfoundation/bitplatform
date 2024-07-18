@@ -611,8 +611,5 @@ public class BitLinkTests : BunitTestContext
         }
     }
 
-    private string GetHrefAttribute(string href)
-    {
-        return href.StartsWith('#') ? null : @$"href=""{href}""";
-    }
+    private string GetHrefAttribute(string href) => href.StartsWith('#') ? null : @$"href=""{href}""";
 }
