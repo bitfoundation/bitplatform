@@ -15,8 +15,8 @@ public interface IUserController : IAppController
     [HttpPost]
     Task SignOut(CancellationToken cancellationToken);
 
-    [HttpPost("{sessionIdToBeRemoved}")]
-    Task RevokeSession(Guid sessionIdToBeRemoved, CancellationToken cancellationToken);
+    [HttpPost("{id}")]
+    Task RevokeSession(Guid id, CancellationToken cancellationToken);
 
     [HttpPut]
     Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken = default);

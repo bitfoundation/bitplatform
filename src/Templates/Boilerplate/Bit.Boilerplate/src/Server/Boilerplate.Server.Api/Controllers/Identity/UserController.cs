@@ -43,18 +43,18 @@ public partial class UserController : AppControllerBase, IUserController
             ?? throw new ResourceNotFoundException();
 
         return user.Sessions
-            .Select(s =>
+            .Select(us =>
             {
-                var dto = s.Map();
+                var dto = us.Map();
 
-                dto.LastSeenOn = s.RenewedOn is null ||
-                                 DateTimeOffset.UtcNow - s.RenewedOn < TimeSpan.FromMinutes(5)
+                dto.LastSeenOn = us.RenewedOn is null ||
+                                 DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(5)
                                  ? Localizer[nameof(AppStrings.Online)]
-                                 : DateTimeOffset.UtcNow - s.RenewedOn < TimeSpan.FromMinutes(15)
+                                 : DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(15)
                                     ? Localizer[nameof(AppStrings.Recently)]
-                                    : s.RenewedOn.Humanize(culture: CultureInfo.CurrentUICulture);
+                                    : us.RenewedOn.Humanize(culture: CultureInfo.CurrentUICulture);
 
-                dto.IsValid = DateTimeOffset.UtcNow - (s.RenewedOn ?? s.StartedOn) < AppSettings.Identity.RefreshTokenExpiration;
+                dto.IsValid = DateTimeOffset.UtcNow - (us.RenewedOn ?? us.StartedOn) < AppSettings.Identity.RefreshTokenExpiration;
 
                 return dto;
             })
@@ -80,8 +80,8 @@ public partial class UserController : AppControllerBase, IUserController
         SignOut();
     }
 
-    [HttpPost("{sessionIdToBeRemoved}")]
-    public async Task RevokeSession(Guid sessionIdToBeRemoved, CancellationToken cancellationToken)
+    [HttpPost("{userSessionId}")]
+    public async Task RevokeSession(Guid id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
@@ -90,7 +90,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
 
-        if (sessionIdToBeRemoved == currentSessionId)
+        if (id == currentSessionId)
             throw new InvalidOperationException("Call SignOut instead");
 
         var currentSession = user.Sessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId)
@@ -101,7 +101,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (revokeUserSessionsDelay < TimeSpan.Zero)
             throw new BadRequestException(Localizer[nameof(AppStrings.WaitForRevokeSessionDelay), revokeUserSessionsDelay.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
-        user.Sessions = user.Sessions.Where(s => s.SessionUniqueId != sessionIdToBeRemoved).ToList();
+        user.Sessions = user.Sessions.Where(s => s.SessionUniqueId != id).ToList();
 
         var result = await userManager.UpdateAsync(user);
         if (result.Succeeded is false)
