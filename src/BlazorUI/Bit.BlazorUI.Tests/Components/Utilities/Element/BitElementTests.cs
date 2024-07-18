@@ -249,6 +249,21 @@ public class BitElementTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow("Bit Blazor UI"),
+        DataRow("<span>Bit Blazor UI</span>"),
+        DataRow(null)
+    ]
+    public void BitElementShouldRespectChildContent(string childContent)
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.AddChildContent(childContent);
+        });
+
+        component.MarkupMatches(@$"<div class=""bit-elm"" id:ignore>{childContent}</label>");
+    }
+
     [DataTestMethod]
     public void BitElementShouldRespectHtmlAttributes()
     {
