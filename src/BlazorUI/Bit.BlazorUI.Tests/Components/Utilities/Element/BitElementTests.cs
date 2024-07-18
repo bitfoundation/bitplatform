@@ -117,6 +117,21 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-elm{cssClass}"" id:ignore></div>");
     }
 
+    [DataTestMethod]
+    public void BitElementShouldRespectClassChangingAfterRender()
+    {
+        var component = RenderComponent<BitElement>();
+
+        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Class, "test-class");
+        });
+
+        component.MarkupMatches(@"<div class=""bit-elm test-class"" id:ignore></div>");
+    }
+
     [DataTestMethod,
         DataRow("test-id"),
         DataRow(null)
@@ -131,21 +146,6 @@ public class BitElementTests : BunitTestContext
         var expectedId = id.HasValue() ? id : component.Instance.UniqueId.ToString();
 
         component.MarkupMatches(@$"<div id=""{expectedId}"" class=""bit-elm""></div>");
-    }
-
-    [DataTestMethod]
-    public void BitElementShouldRespectClassChangingAfterRender()
-    {
-        var component = RenderComponent<BitElement>();
-
-        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
-
-        component.SetParametersAndRender(parameters =>
-        {
-            parameters.Add(p => p.Class, "test-class");
-        });
-
-        component.MarkupMatches(@"<div class=""bit-elm test-class"" id:ignore></div>");
     }
 
     [DataTestMethod,
