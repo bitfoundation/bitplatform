@@ -49,6 +49,21 @@ public class BitElementTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-elm{cssClass}"" id:ignore></div>");
     }
 
+    [DataTestMethod]
+    public void BitElementShouldRespectIsEnabledChangingAfterRender()
+    {
+        var component = RenderComponent<BitElement>();
+
+        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-elm bit-dis"" id:ignore></div>");
+    }
+
     [DataTestMethod,
         DataRow("font-size: 14px; color: red;"),
         DataRow("padding: 1rem;"),
@@ -71,6 +86,21 @@ public class BitElementTests : BunitTestContext
         }
     }
 
+    [DataTestMethod]
+    public void BitElementShouldRespectStyleChangingAfterRender()
+    {
+        var component = RenderComponent<BitElement>();
+
+        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Style, "padding: 1rem;");
+        });
+
+        component.MarkupMatches(@"<div style=""padding: 1rem;"" class=""bit-elm"" id:ignore></div>");
+    }
+
     [DataTestMethod,
         DataRow("test-class"),
         DataRow(null)
@@ -85,6 +115,21 @@ public class BitElementTests : BunitTestContext
         var cssClass = @class.HasValue() ? $" {@class}" : null;
 
         component.MarkupMatches(@$"<div class=""bit-elm{cssClass}"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitElementShouldRespectClassChangingAfterRender()
+    {
+        var component = RenderComponent<BitElement>();
+
+        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Class, "test-class");
+        });
+
+        component.MarkupMatches(@"<div class=""bit-elm test-class"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -127,6 +172,21 @@ public class BitElementTests : BunitTestContext
         }
     }
 
+    [DataTestMethod]
+    public void BitElementShouldRespectDirChangingAfterRender()
+    {
+        var component = RenderComponent<BitElement>();
+
+        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        component.MarkupMatches(@"<div dir=""ltr"" class=""bit-elm"" id:ignore></div>");
+    }
+
     [DataTestMethod,
         DataRow(BitVisibility.Visible),
         DataRow(BitVisibility.Collapsed),
@@ -153,6 +213,21 @@ public class BitElementTests : BunitTestContext
         }
     }
 
+    [DataTestMethod]
+    public void BitElementShouldRespectVisibilityChangingAfterRender()
+    {
+        var component = RenderComponent<BitElement>();
+
+        component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        component.MarkupMatches(@"<div style=""display: none;"" class=""bit-elm"" id:ignore></div>");
+    }
+
     [DataTestMethod,
         DataRow("Bit Blazor UI"),
         DataRow(null)
@@ -172,6 +247,21 @@ public class BitElementTests : BunitTestContext
         {
             component.MarkupMatches(@"<div class=""bit-elm"" id:ignore></div>");
         }
+    }
+
+    [DataTestMethod,
+        DataRow("Bit Blazor UI"),
+        DataRow("<span>Bit Blazor UI</span>"),
+        DataRow(null)
+    ]
+    public void BitElementShouldRespectChildContent(string childContent)
+    {
+        var component = RenderComponent<BitElement>(parameters =>
+        {
+            parameters.AddChildContent(childContent);
+        });
+
+        component.MarkupMatches(@$"<div class=""bit-elm"" id:ignore>{childContent}</label>");
     }
 
     [DataTestMethod]
