@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
+using System;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Link;
 
@@ -129,16 +130,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, href);
         });
 
-        if (href.HasValue())
-        {
-            var hrefAttribute = href.StartsWith('#') ? null : @$"href=""{href}""";
-
-            component.MarkupMatches(@$"<a {hrefAttribute} class=""bit-lnk"" id:ignore></a>");
-        }
-        else
-        {
-            component.MarkupMatches(@"<button class=""bit-lnk"" type=""button"" id:ignore></button>");
-        }
+        MarkupMatchesInBaseMode(component, href);
 
         component.SetParametersAndRender(parameters =>
         {
@@ -197,16 +189,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, href);
         });
 
-        if (href.HasValue())
-        {
-            var hrefAttribute = href.StartsWith('#') ? null : @$"href=""{href}""";
-
-            component.MarkupMatches(@$"<a {hrefAttribute} class=""bit-lnk"" id:ignore></a>");
-        }
-        else
-        {
-            component.MarkupMatches(@"<button class=""bit-lnk"" type=""button"" id:ignore></button>");
-        }
+        MarkupMatchesInBaseMode(component, href);
 
         component.SetParametersAndRender(parameters =>
         {
@@ -267,16 +250,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, href);
         });
 
-        if (href.HasValue())
-        {
-            var hrefAttribute = href.StartsWith('#') ? null : @$"href=""{href}""";
-
-            component.MarkupMatches(@$"<a {hrefAttribute} class=""bit-lnk"" id:ignore></a>");
-        }
-        else
-        {
-            component.MarkupMatches(@"<button class=""bit-lnk"" type=""button"" id:ignore></button>");
-        }
+        MarkupMatchesInBaseMode(component, href);
 
         component.SetParametersAndRender(parameters =>
         {
@@ -374,16 +348,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, href);
         });
 
-        if (href.HasValue())
-        {
-            var hrefAttribute = href.StartsWith('#') ? null : @$"href=""{href}""";
-
-            component.MarkupMatches(@$"<a {hrefAttribute} class=""bit-lnk"" id:ignore></a>");
-        }
-        else
-        {
-            component.MarkupMatches(@"<button class=""bit-lnk"" type=""button"" id:ignore></button>");
-        }
+        MarkupMatchesInBaseMode(component, href);
 
         component.SetParametersAndRender(parameters =>
         {
@@ -451,16 +416,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, href);
         });
 
-        if (href.HasValue())
-        {
-            var hrefAttribute = href.StartsWith('#') ? null : @$"href=""{href}""";
-
-            component.MarkupMatches(@$"<a {hrefAttribute} class=""bit-lnk"" id:ignore></a>");
-        }
-        else
-        {
-            component.MarkupMatches(@"<button class=""bit-lnk"" type=""button"" id:ignore></button>");
-        }
+        MarkupMatchesInBaseMode(component, href);
 
         component.SetParametersAndRender(parameters =>
         {
@@ -582,16 +538,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, href);
         });
 
-        if (href.HasValue())
-        {
-            var hrefAttribute = href.StartsWith('#') ? null : @$"href=""{href}""";
-
-            component.MarkupMatches(@$"<a {hrefAttribute} class=""bit-lnk"" id:ignore></a>");
-        }
-        else
-        {
-            component.MarkupMatches(@"<button class=""bit-lnk"" type=""button"" id:ignore></button>");
-        }
+        MarkupMatchesInBaseMode(component, href);
 
         component.SetParametersAndRender(parameters =>
         {
@@ -677,6 +624,20 @@ public class BitLinkTests : BunitTestContext
         else
         {
             component.MarkupMatches(@"<button data-val-test=""bit"" class=""bit-lnk"" type=""button"" id:ignore>I'm a link</button>");
+        }
+    }
+
+    private void MarkupMatchesInBaseMode(IRenderedComponent<BitLink> component, string href)
+    {
+        if (href.HasValue())
+        {
+            var hrefAttribute = href.StartsWith('#') ? null : @$"href=""{href}""";
+
+            component.MarkupMatches(@$"<a {hrefAttribute} class=""bit-lnk"" id:ignore></a>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<button class=""bit-lnk"" type=""button"" id:ignore></button>");
         }
     }
 }
