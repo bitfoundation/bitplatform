@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.DataProtection;
 using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
+using Boilerplate.Server.Api.Controllers;
 
 namespace Boilerplate.Server.Api;
 
@@ -71,6 +72,7 @@ public static partial class Program
 
         services
             .AddControllers()
+            .AddApplicationPart(typeof(AppControllerBase).Assembly)
             .AddOData(options => options.EnableQueryFeatures())
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
