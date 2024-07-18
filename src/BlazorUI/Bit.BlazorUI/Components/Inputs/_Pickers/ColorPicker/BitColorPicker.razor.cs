@@ -92,6 +92,20 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
     public string? Rgba => FormattableString.Invariant($"rgba({_color.R},{_color.G},{_color.B},{_color.A})");
     public (double Hue, double Saturation, double Value) Hsv => _color.Hsv;
 
+    [JSInvokable(nameof(HandlePointerUp))]
+    public void HandlePointerUp(MouseEventArgs e)
+    {
+        _saturationPickerPointerDown = false;
+    }
+
+    [JSInvokable(nameof(HandlePointerMove))]
+    public async Task HandlePointerMove(MouseEventArgs e)
+    {
+        if (_saturationPickerPointerDown is false) return;
+
+        await UpdateColor(e);
+    }
+
 
 
     protected override string RootElementClass => "bit-clp";
@@ -216,22 +230,6 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
         }
 
         return ariaLabel;
-    }
-
-
-
-    [JSInvokable(nameof(HandlePointerUp))]
-    public void HandlePointerUp(MouseEventArgs e)
-    {
-        _saturationPickerPointerDown = false;
-    }
-
-    [JSInvokable(nameof(HandlePointerMove))]
-    public async Task HandlePointerMove(MouseEventArgs e)
-    {
-        if (_saturationPickerPointerDown is false) return;
-
-        await UpdateColor(e);
     }
 
 

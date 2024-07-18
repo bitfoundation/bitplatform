@@ -76,10 +76,7 @@ public partial class BitAccordion : BitComponentBase
     {
         if (IsExpandedHasBeenSet is false && DefaultIsExpanded.HasValue)
         {
-            IsExpanded = DefaultIsExpanded.Value;
-            await IsExpandedChanged.InvokeAsync(IsExpanded);
-            ClassBuilder.Reset();
-            StyleBuilder.Reset();
+            await AssignIsExpanded(DefaultIsExpanded.Value);
         }
 
         await base.OnInitializedAsync();
@@ -90,12 +87,8 @@ public partial class BitAccordion : BitComponentBase
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
-        if (IsExpandedHasBeenSet && IsExpandedChanged.HasDelegate is false) return;
 
-        IsExpanded = IsExpanded is false;
-        await IsExpandedChanged.InvokeAsync(IsExpanded);
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
+        if (await AssignIsExpanded(IsExpanded is false) is false) return;
 
         await OnChange.InvokeAsync(IsExpanded);
     }

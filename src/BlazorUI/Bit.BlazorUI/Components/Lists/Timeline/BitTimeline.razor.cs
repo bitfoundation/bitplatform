@@ -36,7 +36,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     ///  List of Item, each can be with different contents in the timeline.
     /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Names and selectors of the custom input type properties.

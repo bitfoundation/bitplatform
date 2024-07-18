@@ -106,8 +106,7 @@ public partial class BitTooltip : BitComponentBase
     {
         if (IsShownHasBeenSet is false && DefaultIsShown.HasValue)
         {
-            IsShown = DefaultIsShown.Value;
-            await IsShownChanged.InvokeAsync(IsShown);
+            await AssignIsShown(DefaultIsShown.Value);
         }
 
         await base.OnInitializedAsync();
@@ -130,8 +129,7 @@ public partial class BitTooltip : BitComponentBase
             _showDelayTokenSource = null;
         }
 
-        IsShown = true;
-        await IsShownChanged.InvokeAsync(IsShown);
+        await AssignIsShown(true);
     }
 
     private async Task Hide()
@@ -149,8 +147,7 @@ public partial class BitTooltip : BitComponentBase
             _hideDelayTokenSource = null;
         }
 
-        IsShown = false;
-        await IsShownChanged.InvokeAsync(IsShown);
+        await AssignIsShown(false);
     }
 
     private async Task HandlePointerEnter()

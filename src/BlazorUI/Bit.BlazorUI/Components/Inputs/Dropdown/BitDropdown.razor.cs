@@ -11,25 +11,26 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
 
 
+    private int? _totalItems;
+    private string? _searchText;
+    private bool _isResponsiveMode;
+    private bool _inputSearchHasFocus;
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShowItems = [];
+    private Virtualize<TItem>? _virtualizeElement;
+    private string _scrollContainerId = string.Empty;
+    private string _dropdownTextContainerId = string.Empty;
+    private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
+
     private string _labelId = string.Empty;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
     private string _calloutId = string.Empty;
     private string _dropdownId = string.Empty;
-    private string _scrollContainerId = string.Empty;
-    private string _dropdownTextContainerId = string.Empty;
 
-    private int? _totalItems;
-    private string? _searchText;
-    private bool _isResponsiveMode;
-    private bool _inputSearchHasFocus;
     private ElementReference _searchInputRef;
     private ElementReference _comboBoxInputRef;
     private ElementReference _comboBoxInputResponsiveRef;
-    private Virtualize<TItem>? _virtualizeElement;
-    private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
 
 
 
@@ -360,10 +361,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
     }
@@ -666,12 +665,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         if (IsOpen is false) return;
 
-        IsOpen = false;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
 
@@ -681,10 +678,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = true;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(true) is false) return;
 
         await ToggleCallout();
 
@@ -1204,10 +1199,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsOpen) return;
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = true;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(true) is false) return;
 
         await ToggleCallout();
     }

@@ -79,7 +79,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
     /// <summary>
     /// Collection of BreadLists to render.
     /// </summary>
-    [Parameter] public IList<TItem> Items { get; set; } = new List<TItem>();
+    [Parameter] public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Display the item as a Selected item.

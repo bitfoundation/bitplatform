@@ -15,8 +15,8 @@ public partial class BitElement : BitComponentBase
     [Parameter] public string? Element { get; set; }
 
 
-    protected override string RootElementClass => "bit-elm";
 
+    protected override string RootElementClass => "bit-elm";
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {

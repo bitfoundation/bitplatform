@@ -136,7 +136,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? $"bit-chg-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -232,8 +232,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
                 ? "bit-chg-ilwi"
                 : "bit-chg-ilw";
     }
-
-
 
     private string? GetAriaLabel(TItem item)
     {
@@ -542,7 +540,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         return item.GetValueFromProperty<TValue?>(NameSelectors.Value.Name);
     }
-
 
     private void SetIndex(TItem item, int value)
     {

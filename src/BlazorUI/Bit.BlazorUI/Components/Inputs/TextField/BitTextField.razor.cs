@@ -6,6 +6,8 @@ public partial class BitTextField : BitTextInputBase<string?>
 {
     private BitTextFieldType type = BitTextFieldType.Text;
 
+
+
     private bool _hasFocus;
     private bool _isPasswordRevealed;
     private BitTextFieldType _elementType;

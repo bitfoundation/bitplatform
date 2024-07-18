@@ -5,6 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitSearchBox : BitInputBase<string?>
 {
     private bool _isOpen;
+    private bool _inputHasFocus;
     private int _selectedIndex = -1;
     private string _inputId = string.Empty;
     private List<string> _searchItems = [];
@@ -12,21 +13,6 @@ public partial class BitSearchBox : BitInputBase<string?>
     private string _scrollContainerId = string.Empty;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitSearchBox> _dotnetObj = default!;
-
-
-
-    private bool inputHasFocus;
-    private bool _inputHasFocus
-    {
-        get => inputHasFocus;
-        set
-        {
-            if (inputHasFocus == value) return;
-
-            inputHasFocus = value;
-            ClassBuilder.Reset();
-        }
-    }
 
 
 
@@ -232,9 +218,17 @@ public partial class BitSearchBox : BitInputBase<string?>
 
     private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
 
-    private void HandleInputFocusIn() => _inputHasFocus = true;
+    private void HandleInputFocusIn()
+    {
+        _inputHasFocus = true;
+        ClassBuilder.Reset();
+    }
 
-    private void HandleInputFocusOut() => _inputHasFocus = false;
+    private void HandleInputFocusOut()
+    {
+        _inputHasFocus = false;
+        ClassBuilder.Reset();
+    }
 
     private async Task HandleOnSearchButtonClick()
     {

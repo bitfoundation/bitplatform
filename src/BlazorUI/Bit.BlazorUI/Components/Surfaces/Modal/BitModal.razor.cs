@@ -157,33 +157,30 @@ public partial class BitModal : BitComponentBase, IDisposable
         StateHasChanged();
     }
 
-    private void CloseModal(MouseEventArgs e)
+
+
+    private async Task CloseModal(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (IsBlocking is not false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        _ = IsOpenChanged.InvokeAsync(IsOpen);
-        _ = OnDismiss.InvokeAsync(e);
+        if (await AssignIsOpen(false) is false) return;
+
+        await OnDismiss.InvokeAsync(e);
     }
 
     private string GetPositionClass() => Position switch
     {
-        BitModalPosition.Center => $"{RootElementClass}-ctr",
-
-        BitModalPosition.TopLeft => $"{RootElementClass}-tl",
-        BitModalPosition.TopCenter => $"{RootElementClass}-tc",
-        BitModalPosition.TopRight => $"{RootElementClass}-tr",
-
-        BitModalPosition.CenterLeft => $"{RootElementClass}-cl",
-        BitModalPosition.CenterRight => $"{RootElementClass}-cr",
-
-        BitModalPosition.BottomLeft => $"{RootElementClass}-bl",
-        BitModalPosition.BottomCenter => $"{RootElementClass}-bc",
-        BitModalPosition.BottomRight => $"{RootElementClass}-br",
-
-        _ => $"{RootElementClass}-ctr",
+        BitModalPosition.Center => "bit-mdl-ctr",
+        BitModalPosition.TopLeft => "bit-mdl-tl",
+        BitModalPosition.TopCenter => "bit-mdl-tc",
+        BitModalPosition.TopRight => "bit-mdl-tr",
+        BitModalPosition.CenterLeft => "bit-mdl-cl",
+        BitModalPosition.CenterRight => "bit-mdl-cr",
+        BitModalPosition.BottomLeft => "bit-mdl-bl",
+        BitModalPosition.BottomCenter => "bit-mdl-bc",
+        BitModalPosition.BottomRight => "bit-mdl-br",
+        _ => "bit-mdl-ctr",
     };
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";

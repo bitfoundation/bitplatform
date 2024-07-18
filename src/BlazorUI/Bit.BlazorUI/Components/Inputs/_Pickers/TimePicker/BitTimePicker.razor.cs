@@ -5,38 +5,20 @@ namespace Bit.BlazorUI;
 
 public partial class BitTimePicker : BitInputBase<TimeSpan?>
 {
-    private const int STEP_DELAY = 75;
-    private const int INITIAL_STEP_DELAY = 400;
-    private const string FORMAT_24_HOURS = "HH:mm";
-    private const string FORMAT_12_HOURS = "hh:mm tt";
+    private string? _labelId;
+    private string? _inputId;
+    private string _calloutId = string.Empty;
+    private string _focusClass = string.Empty;
+    private string _timePickerId = string.Empty;
+    private ElementReference _inputHourRef = default!;
+    private ElementReference _inputMinuteRef = default!;
+    private CultureInfo _culture = CultureInfo.CurrentUICulture;
+    private CancellationTokenSource _cancellationTokenSource = new();
+    private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
 
 
 
     private int? _hour;
-    private int? _minute;
-    private string? _labelId;
-    private string? _inputId;
-    private string _calloutId = string.Empty;
-    private string _timePickerId = string.Empty;
-    private CultureInfo _culture = CultureInfo.CurrentUICulture;
-    private CancellationTokenSource _cancellationTokenSource = new();
-    private DotNetObjectReference<BitTimePicker> _dotnetObj = default!;
-    private ElementReference _inputHourRef = default!;
-    private ElementReference _inputMinuteRef = default!;
-
-
-
-    private string focusClass = string.Empty;
-    private string _focusClass
-    {
-        get => focusClass;
-        set
-        {
-            focusClass = value;
-            ClassBuilder.Reset();
-        }
-    }
-
     private string? _hourView
     {
         get
@@ -77,6 +59,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         }
     }
 
+    private int? _minute;
     private string? _minuteView
     {
         get => _minute?.ToString("D2");
@@ -268,11 +251,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
-        ClassBuilder.Reset();
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
     }
@@ -287,11 +267,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
+        ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-tpc-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-tpc-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? "bit-tpc-nbd" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
     }
@@ -374,7 +354,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
+        _focusClass = "bit-tpc-foc";
+        ClassBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -383,6 +364,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (IsEnabled is false) return;
 
         _focusClass = string.Empty;
+        ClassBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -390,15 +372,14 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = $"{RootElementClass}-foc";
+        _focusClass = "bit-tpc-foc";
+        ClassBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 
     private async Task CloseCallout()
     {
-        IsOpen = false;
-        ClassBuilder.Reset();
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
 
@@ -437,11 +418,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task HandleOnClick()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = true;
-        ClassBuilder.Reset();
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        if (await AssignIsOpen(true) is false) return;
 
         await ToggleCallout();
 
@@ -565,7 +543,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         {
             await InvokeAsync(async () =>
             {
-                await Task.Delay(INITIAL_STEP_DELAY);
+                await Task.Delay(400);
                 await ContinuousChangeTime(isNext, isHour, cts);
             });
         }, cts.Token);
@@ -579,7 +557,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         StateHasChanged();
 
-        await Task.Delay(STEP_DELAY);
+        await Task.Delay(75);
         await ContinuousChangeTime(isNext, isHour, cts);
     }
 
@@ -609,6 +587,10 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private string GetValueFormat()
     {
-        return ValueFormat.HasValue() ? ValueFormat! : (TimeFormat == BitTimeFormat.TwentyFourHours ? FORMAT_24_HOURS : FORMAT_12_HOURS);
+        return ValueFormat.HasValue()
+            ? ValueFormat!
+            : TimeFormat == BitTimeFormat.TwentyFourHours
+                ? "HH:mm"
+                : "hh:mm tt";
     }
 }

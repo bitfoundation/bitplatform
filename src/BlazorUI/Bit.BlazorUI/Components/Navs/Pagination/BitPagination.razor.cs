@@ -149,6 +149,7 @@ public partial class BitPagination : BitComponentBase
     public BitVariant? Variant { get; set; }
 
 
+
     protected override string RootElementClass => "bit-pgn";
 
     protected override void RegisterCssClasses()
@@ -183,6 +184,7 @@ public partial class BitPagination : BitComponentBase
 
         await base.OnInitializedAsync();
     }
+
 
 
     private IEnumerable<int> GeneratePages()

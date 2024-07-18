@@ -2,16 +2,6 @@
 
 public partial class BitScrollablePane : BitComponentBase
 {
-    private static readonly Dictionary<BitOverflow, string> _OverflowMap = new()
-    {
-        { BitOverflow.Auto, "auto" },
-        { BitOverflow.Hidden, "hidden" },
-        { BitOverflow.Scroll, "scroll" },
-        { BitOverflow.Visible, "visible" },
-    };
-
-
-
     /// <summary>
     /// The content of the ScrollablePane, it can be any custom tag or text.
     /// </summary>
@@ -98,4 +88,14 @@ public partial class BitScrollablePane : BitComponentBase
                 ? $"scrollbar-gutter:stable{(Gutter is BitScrollbarGutter.BothEdges ? " both-edges" : "")}"
                 : string.Empty);
     }
+
+
+
+    private static readonly Dictionary<BitOverflow, string> _OverflowMap = new()
+    {
+        { BitOverflow.Auto, "auto" },
+        { BitOverflow.Hidden, "hidden" },
+        { BitOverflow.Scroll, "scroll" },
+        { BitOverflow.Visible, "visible" },
+    };
 }

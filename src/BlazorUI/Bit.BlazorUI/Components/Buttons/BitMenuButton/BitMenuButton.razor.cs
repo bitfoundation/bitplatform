@@ -4,19 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where TItem : class
 {
-    private bool isCalloutOpen;
-    private bool _isCalloutOpen
-    {
-        get => isCalloutOpen;
-        set
-        {
-            if (isCalloutOpen == value) return;
-
-            isCalloutOpen = value;
-
-            ClassBuilder.Reset();
-        }
-    }
+    private bool _isCalloutOpen;
 
 
 
@@ -155,6 +143,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     public void CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         _isCalloutOpen = false;
+        ClassBuilder.Reset();
         StateHasChanged();
     }
 
@@ -251,6 +240,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
         base.OnAfterRender(firstRender);
     }
+
 
 
     private string? GetClass(TItem item)
@@ -510,12 +500,14 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     private async Task OpenCallout()
     {
         _isCalloutOpen = true;
+        ClassBuilder.Reset();
         await ToggleCallout();
     }
 
     private async Task CloseCallout()
     {
         _isCalloutOpen = false;
+        ClassBuilder.Reset();
         await ToggleCallout();
     }
 
@@ -537,6 +529,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
                                 true,
                                 RootElementClass);
     }
+
 
 
     public void Dispose()

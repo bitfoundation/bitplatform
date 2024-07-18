@@ -118,7 +118,7 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 
         if (IndeterminateHasBeenSet is false && DefaultIndeterminate is not null)
         {
-            SetIndeterminate(DefaultIndeterminate.Value);
+            await SetIndeterminate(DefaultIndeterminate.Value);
         }
 
         await base.OnInitializedAsync();
@@ -184,7 +184,7 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
         {
             if (IndeterminateHasBeenSet && IndeterminateChanged.HasDelegate is false) return;
 
-            SetIndeterminate(false);
+            await SetIndeterminate(false);
         }
 
         CurrentValue = CurrentValue is false;
@@ -195,13 +195,10 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
         ClassBuilder.Reset();
     }
 
-    private void SetIndeterminate(bool value)
+    private async Task SetIndeterminate(bool value)
     {
-        Indeterminate = value;
+        if (await AssignIndeterminate(value) is false) return;
 
-        ClassBuilder.Reset();
-
-        _ = IndeterminateChanged.InvokeAsync(value);
-        _ = _js.SetProperty(InputElement, "indeterminate", value);
+        await _js.SetProperty(InputElement, "indeterminate", value);
     }
 }

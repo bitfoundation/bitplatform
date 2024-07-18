@@ -2,21 +2,8 @@
 
 namespace Bit.BlazorUI;
 
-#pragma warning disable CA1707 // Identifiers should not contain underscores
 public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
-#pragma warning restore CA1707 // Identifiers should not contain underscores
 {
-    private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
-    {
-        [BitNavAriaCurrent.Page] = "page",
-        [BitNavAriaCurrent.Step] = "step",
-        [BitNavAriaCurrent.Location] = "location",
-        [BitNavAriaCurrent.Time] = "time",
-        [BitNavAriaCurrent.Date] = "date",
-        [BitNavAriaCurrent.True] = "true"
-    };
-
-
     [CascadingParameter] protected BitNav<TItem> Nav { get; set; } = default!;
 
     [CascadingParameter] protected _BitNavChild<TItem>? Parent { get; set; }
@@ -130,4 +117,14 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
 
 
     private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);
+
+    private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
+    {
+        [BitNavAriaCurrent.Page] = "page",
+        [BitNavAriaCurrent.Step] = "step",
+        [BitNavAriaCurrent.Location] = "location",
+        [BitNavAriaCurrent.Time] = "time",
+        [BitNavAriaCurrent.Date] = "date",
+        [BitNavAriaCurrent.True] = "true"
+    };
 }

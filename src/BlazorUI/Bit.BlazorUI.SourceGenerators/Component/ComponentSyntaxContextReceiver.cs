@@ -4,11 +4,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Bit.BlazorUI.SourceGenerators.Blazor;
+namespace Bit.BlazorUI.SourceGenerators.Component;
 
-public class BlazorParameterPropertySyntaxReceiver : ISyntaxContextReceiver
+public class ComponentSyntaxContextReceiver : ISyntaxContextReceiver
 {
-    public IList<BitProperty> Properties { get; } = [];
+    public IList<BlazorParameter> Parameters { get; } = [];
 
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
     {
@@ -40,8 +40,8 @@ public class BlazorParameterPropertySyntaxReceiver : ISyntaxContextReceiver
             var resetClassBuilder = attributes.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetClassBuilderAttribute");
             var resetStyleBuilder = attributes.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetStyleBuilderAttribute");
 
-            var property = new BitProperty(propertySymbol, resetClassBuilder, resetStyleBuilder);
-            Properties.Add(property);
+            var parameter = new BlazorParameter(propertySymbol, resetClassBuilder, resetStyleBuilder);
+            Parameters.Add(parameter);
         }
     }
 }

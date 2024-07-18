@@ -111,7 +111,7 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Presence of the person to display - will not display presence if undefined.
     /// </summary>
-    [Parameter] public BitPersonaPresence Presence { get; set; } = BitPersonaPresence.None;
+    [Parameter] public BitPersonaPresence Presence { get; set; }
 
     /// <summary>
     /// The icons to be used for the presence status.
