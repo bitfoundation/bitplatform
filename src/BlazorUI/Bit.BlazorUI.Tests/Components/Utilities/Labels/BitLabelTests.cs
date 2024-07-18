@@ -30,6 +30,21 @@ public class BitLabelTests : BunitTestContext
         component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
     }
 
+    [DataTestMethod]
+    public void BitLabelShouldRespectIsEnabledChangingAfterRender()
+    {
+        var component = RenderComponent<BitLabel>();
+
+        component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.MarkupMatches(@"<label class=""bit-lbl bit-dis"" id:ignore></label>");
+    }
+
     [DataTestMethod,
         DataRow(true),
         DataRow(false)
@@ -44,6 +59,21 @@ public class BitLabelTests : BunitTestContext
         var cssClass = required ? "bit-lbl bit-lbl-req" : "bit-lbl";
 
         component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
+    }
+
+    [DataTestMethod]
+    public void BitLabelShouldRespectRequiredChangingAfterRender()
+    {
+        var component = RenderComponent<BitLabel>();
+
+        component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+        });
+
+        component.MarkupMatches(@"<label class=""bit-lbl bit-lbl-req"" id:ignore></label>");
     }
 
     [DataTestMethod,
@@ -68,6 +98,21 @@ public class BitLabelTests : BunitTestContext
         }
     }
 
+    [DataTestMethod]
+    public void BitLabelShouldRespectStyleChangingAfterRender()
+    {
+        var component = RenderComponent<BitLabel>();
+
+        component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Style, "padding: 1rem;");
+        });
+
+        component.MarkupMatches(@"<label style=""padding: 1rem;"" class=""bit-lbl"" id:ignore></label>");
+    }
+
     [DataTestMethod,
         DataRow("test-class"),
         DataRow(null)
@@ -82,6 +127,21 @@ public class BitLabelTests : BunitTestContext
         var cssClass = @class.HasValue() ? $"bit-lbl {@class}" : "bit-lbl";
 
         component.MarkupMatches(@$"<label class=""{cssClass}"" id:ignore></label>");
+    }
+
+    [DataTestMethod]
+    public void BitLabelShouldRespectClassChangingAfterRender()
+    {
+        var component = RenderComponent<BitLabel>();
+
+        component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Class, "test-class");
+        });
+
+        component.MarkupMatches(@"<label class=""bit-lbl test-class"" id:ignore></label>");
     }
 
     [DataTestMethod,
@@ -137,12 +197,27 @@ public class BitLabelTests : BunitTestContext
         if (dir.HasValue)
         {
             var cssClass = dir is BitDir.Rtl ? "bit-lbl bit-rtl" : "bit-lbl";
-            component.MarkupMatches(@$"<label class=""{cssClass}"" dir=""{dir.Value.ToString().ToLower()}"" id:ignore></label>");
+            component.MarkupMatches(@$"<label dir=""{dir.Value.ToString().ToLower()}"" class=""{cssClass}"" id:ignore></label>");
         }
         else
         {
             component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
         }
+    }
+
+    [DataTestMethod]
+    public void BitLabelShouldRespectDirChangingAfterRender()
+    {
+        var component = RenderComponent<BitLabel>();
+
+        component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        component.MarkupMatches(@"<label dir=""ltr"" class=""bit-lbl"" id:ignore></label>");
     }
 
     [DataTestMethod,
@@ -169,6 +244,21 @@ public class BitLabelTests : BunitTestContext
                 component.MarkupMatches(@"<label style=""display: none;"" class=""bit-lbl"" id:ignore></label>");
                 break;
         }
+    }
+
+    [DataTestMethod]
+    public void BitLabelShouldRespectVisibilityChangingAfterRender()
+    {
+        var component = RenderComponent<BitLabel>();
+
+        component.MarkupMatches(@"<label class=""bit-lbl"" id:ignore></label>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        component.MarkupMatches(@"<label style=""display: none;"" class=""bit-lbl"" id:ignore></label>");
     }
 
     [DataTestMethod,
