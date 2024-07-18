@@ -361,6 +361,21 @@ public class BitTypographyTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow("Bit Blazor UI"),
+        DataRow("<span>Bit Blazor UI</span>"),
+        DataRow(null)
+    ]
+    public void BitTypographyShouldRespectChildContent(string childContent)
+    {
+        var component = RenderComponent<BitTypography>(parameters =>
+        {
+            parameters.AddChildContent(childContent);
+        });
+
+        component.MarkupMatches(@$"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore>{childContent}</label>");
+    }
+
     [DataTestMethod]
     public void BitTypographyShouldRespectHtmlAttributes()
     {
