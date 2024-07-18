@@ -4,31 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitStack : BitComponentBase
 {
-    private static readonly Dictionary<BitStackAlignment, string> _AlignmentMap = new()
-    {
-        { BitStackAlignment.Start, "flex-start" },
-        { BitStackAlignment.End, "flex-end" },
-        { BitStackAlignment.Center, "center" },
-        { BitStackAlignment.SpaceBetween, "space-between" },
-        { BitStackAlignment.SpaceAround, "space-around" },
-        { BitStackAlignment.SpaceEvenly, "space-evenly" },
-        { BitStackAlignment.Baseline, "baseline" },
-        { BitStackAlignment.Stretch, "stretch" },
-    };
-
-
-    private string? gap;
-    private string? grow;
-    private bool wrap;
-    private bool grows;
-    private bool reversed;
-    private bool horizontal;
-    private bool disableShrink;
-    private BitStackAlignment verticalAlign = BitStackAlignment.Start;
-    private BitStackAlignment horizontalAlign = BitStackAlignment.Start;
-
-
-
     /// <summary>
     /// The content of the Typography.
     /// </summary>
@@ -42,130 +17,50 @@ public partial class BitStack : BitComponentBase
     /// <summary>
     /// Defines the spacing between Stack children.
     /// </summary>
-    [Parameter]
-    public string? Gap
-    {
-        get => gap;
-        set
-        {
-            if (gap == value) return;
-
-            gap = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public string? Gap { get; set; }
 
     /// <summary>
     /// Defines how much to grow the Stack in proportion to its siblings.
     /// </summary>
-    [Parameter]
-    public string? Grow
-    {
-        get => grow;
-        set
-        {
-            if (grow == value) return;
-
-            grow = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public string? Grow { get; set; }
 
     /// <summary>
     /// Defines how much to grow the Stack in proportion to its siblings.
     /// </summary>
-    [Parameter]
-    public bool Grows
-    {
-        get => grows;
-        set
-        {
-            if (grows == value) return;
-
-            grows = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public bool Grows { get; set; }
 
     /// <summary>
     /// Defines whether to render Stack children horizontally.
     /// </summary>
-    [Parameter]
-    public bool Horizontal
-    {
-        get => horizontal;
-        set
-        {
-            if (horizontal == value) return;
-
-            horizontal = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public bool Horizontal { get; set; }
 
     /// <summary>
     /// Defines whether to render Stack children horizontally.
     /// </summary>
-    [Parameter]
-    public BitStackAlignment HorizontalAlign
-    {
-        get => horizontalAlign;
-        set
-        {
-            if (horizontalAlign == value) return;
-
-            horizontalAlign = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public BitStackAlignment HorizontalAlign { get; set; }
 
     /// <summary>
     /// Defines whether to render Stack children in the opposite direction (bottom-to-top if it's a vertical Stack and right-to-left if it's a horizontal Stack).
     /// </summary>
-    [Parameter]
-    public bool Reversed
-    {
-        get => reversed;
-        set
-        {
-            if (reversed == value) return;
-
-            reversed = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// Defines whether to render Stack children vertically.
     /// </summary>
-    [Parameter]
-    public BitStackAlignment VerticalAlign
-    {
-        get => verticalAlign;
-        set
-        {
-            if (verticalAlign == value) return;
-
-            verticalAlign = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public BitStackAlignment VerticalAlign { get; set; }
 
     /// <summary>
     /// Defines whether Stack children should wrap onto multiple rows or columns when they are about to overflow the size of the Stack.
     /// </summary>
-    [Parameter]
-    public bool Wrap
-    {
-        get => wrap;
-        set
-        {
-            if (wrap == value) return;
-
-            wrap = value;
-            StyleBuilder.Reset();
-        }
-    }
+    [Parameter, ResetStyleBuilder]
+    public bool Wrap { get; set; }
 
 
 
@@ -204,4 +99,16 @@ public partial class BitStack : BitComponentBase
 
         base.BuildRenderTree(builder);
     }
+
+    private static readonly Dictionary<BitStackAlignment, string> _AlignmentMap = new()
+    {
+        { BitStackAlignment.Start, "flex-start" },
+        { BitStackAlignment.End, "flex-end" },
+        { BitStackAlignment.Center, "center" },
+        { BitStackAlignment.SpaceBetween, "space-between" },
+        { BitStackAlignment.SpaceAround, "space-around" },
+        { BitStackAlignment.SpaceEvenly, "space-evenly" },
+        { BitStackAlignment.Baseline, "baseline" },
+        { BitStackAlignment.Stretch, "stretch" },
+    };
 }
