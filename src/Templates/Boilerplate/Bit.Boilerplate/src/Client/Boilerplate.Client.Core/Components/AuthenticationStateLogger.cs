@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Components;
+
 public partial class AuthenticationStateLogger : AppComponentBase
 {
     [AutoInject] private ILogger<AuthenticationStateLogger> authLogger = default!;
@@ -30,6 +31,6 @@ public partial class AuthenticationStateLogger : AppComponentBase
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Authentication State: {IsUserAuthenticated}, {UserId}, {UserName}, {Email}, {SessionId}")]
-    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, string? sessionId);
+    [LoggerMessage(Level = LogLevel.Information, Message = "Authentication State: {IsUserAuthenticated}, {UserId}, {UserName}, {Email}, {UserSessionId}")]
+    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, string? userSessionId);
 }
