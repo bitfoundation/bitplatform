@@ -115,6 +115,7 @@ public partial class BitToggle : BitInputBase<bool>
         SetStateText();
 
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
