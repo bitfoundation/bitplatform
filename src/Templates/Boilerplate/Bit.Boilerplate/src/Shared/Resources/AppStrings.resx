@@ -205,6 +205,12 @@
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>Your sessions</value>
   </data>
+    <data name="CurrentSession" xml:space="preserve">
+    <value>Current session</value>
+  </data>
+    <data name="OtherSessions" xml:space="preserve">
+    <value>Other sessions</value>
+  </data>
     <data name="RemoveSession" xml:space="preserve">
     <value>Remove session</value>
   </data>

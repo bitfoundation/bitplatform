@@ -29,7 +29,7 @@
             @if (currentSession is not null)
             {
                 <BitStack Gap="0.5rem" Style="width:100%">
-                    <BitSeparator Style="width:100%">Current session</BitSeparator>
+                    <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.CurrentSession)]</BitSeparator>
                     <BitPersona PrimaryText="@currentSession.Device"
                                 SecondaryText="@currentSession.Address"
                                 TertiaryText="@currentSession.IP"
@@ -38,7 +38,7 @@
                                 Class="@BitCss.Class.Color.Background.Secondary" />
                 </BitStack>
             }
-            <BitSeparator Style="width:100%">Other sessions</BitSeparator>
+            <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.OtherSessions)]</BitSeparator>
             @foreach (var session in userSessions.Where(s => s.SessionUniqueId.ToString() != UserClaims?.SessionId))
             {
                 <BitStack Horizontal Style="width:100%;padding:8px" Class="@BitCss.Class.Color.Background.Secondary">

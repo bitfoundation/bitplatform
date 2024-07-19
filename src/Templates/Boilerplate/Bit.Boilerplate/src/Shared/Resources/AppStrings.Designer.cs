@@ -448,6 +448,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current session.
+        /// </summary>
+        public static string CurrentSession {
+            get {
+                return ResourceManager.GetString("CurrentSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom color.
         /// </summary>
         public static string CustomColor {
@@ -1173,6 +1182,15 @@ namespace Boilerplate.Shared.Resources {
         public static string Or {
             get {
                 return ResourceManager.GetString("Or", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Other sessions.
+        /// </summary>
+        public static string OtherSessions {
+            get {
+                return ResourceManager.GetString("OtherSessions", resourceCulture);
             }
         }
         
