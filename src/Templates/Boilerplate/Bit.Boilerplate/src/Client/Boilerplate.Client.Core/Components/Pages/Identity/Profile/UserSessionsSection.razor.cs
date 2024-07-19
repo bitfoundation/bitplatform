@@ -8,10 +8,11 @@ public partial class UserSessionsSection
     private bool isLoading;
     private bool isWaiting;
     private string? message;
+    private string? currentSessionId;
+    private UserSessionDto? currentSession;
     private ElementReference messageRef = default!;
-    private List<UserSessionDto> userSessions = [];
     private BitSeverity severity = BitSeverity.Error;
-
+    private IEnumerable<UserSessionDto> otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
 
@@ -26,6 +27,8 @@ public partial class UserSessionsSection
     private async Task LoadSessions()
     {
         isLoading = true;
+        List<UserSessionDto> userSessions = [];
+        currentSessionId = (await AuthenticationStateTask).User.GetSessionId();
 
         try
         {
@@ -34,12 +37,14 @@ public partial class UserSessionsSection
         finally
         {
             isLoading = false;
+            otherSessions = userSessions.Where(s => s.SessionUniqueId.ToString() != currentSessionId);
+            currentSession = userSessions.SingleOrDefault(s => s.SessionUniqueId.ToString() == currentSessionId);
         }
     }
 
     private async Task RevokeSession(UserSessionDto session)
     {
-        if (isWaiting || session.SessionUniqueId.ToString() == UserClaims?.SessionId) return;
+        if (isWaiting || session.SessionUniqueId.ToString() == currentSessionId) return;
 
         isWaiting = true;
         message = null;

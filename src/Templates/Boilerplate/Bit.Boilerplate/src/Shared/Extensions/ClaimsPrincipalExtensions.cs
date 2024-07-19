@@ -2,6 +2,11 @@
 
 public static class ClaimsPrincipalExtensions
 {
+    public static bool IsAuthenticated(this ClaimsPrincipal? claimsPrincipal)
+    {
+        return claimsPrincipal?.Identity?.IsAuthenticated is true;
+    }
+
     public static int GetUserId(this ClaimsPrincipal claimsPrincipal)
     {
         return int.Parse((claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("nameid"))!.Value);
@@ -22,8 +27,8 @@ public static class ClaimsPrincipalExtensions
         return claimsPrincipal.GetEmail() ?? claimsPrincipal.GetUserName();
     }
 
-    public static bool IsAuthenticated(this ClaimsPrincipal? claimsPrincipal)
+    public static string? GetSessionId(this ClaimsPrincipal claimsPrincipal)
     {
-        return claimsPrincipal?.Identity?.IsAuthenticated is true;
+        return claimsPrincipal.FindFirst("session-id")?.Value;
     }
 }
