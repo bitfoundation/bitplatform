@@ -189,45 +189,42 @@ private bool twoWayValue;";
 
     private readonly string example5RazorCode = @"
 <style>
-    .custom-class {
-        padding: 0.5rem;
-        width: max-content;
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
-    }
-
-    .custom-text {
-        color: lightskyblue;
-        text-shadow: 0 0 0.5rem red;
+    .custom-thumb {
+        background: #fff;
+        width: rem2(30px);
+        height: rem2(30px);
     }
 
     .custom-button {
-        border-radius: 1rem;
-        background-color: darkslategray;
+        padding: 0;
+        border: none;
+        background: #ccc;
+        width: rem2(52px);
+        height: rem2(22px);
+        border-radius: rem2(11px);
+    }
+
+    .custom-check .custom-thumb {
+        background: #ff6868;
     }
 
     .custom-check .custom-button {
-        border-radius: 1rem;
-        background-color: red;
+        background: #ffcece;
     }
 
-    .custom-check .custom-text {
-        color: rebeccapurple;
+    .custom-check .custom-button:hover .custom-thumb {
+        background: #ff6868;
     }
 </style>
 
-<BitToggle Label=""Styled"" Style=""width:fit-content;background:forestgreen;border-radius:1rem;padding:1rem"" />
-<BitToggle Label=""Classed"" Class=""custom-class"" />
-
 
 <BitToggle Label=""Styles""
-           Styles=""@(new() { Root = ""width:fit-content;background:pink;padding:1rem"",
-                             Thumb = ""background:darkorange"",
-                             Button = ""border-radius:0.5rem 0 0.5rem 0"",
-                             Label = ""color:blue;font-weight:900;font-size:1.25rem"" } )"" />
+           Styles=""@(new() { Root = ""--toggle-background: lightgray;"", Checked = ""--toggle-background: #2ecc71;"",
+                             Thumb = ""background: whitesmoke; height: 28px; width: 28px;"",
+                             Button = ""background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px;"" } )"" />
+
 <BitToggle Label=""Classes""
-           DefaultText=""GooGooLi""
-           Classes=""@(new() { Text = ""custom-text"",
+           Classes=""@(new() { Thumb = ""custom-thumb"",
                               Button = ""custom-button"",
                               Checked = ""custom-check"" } )"" />";
 
