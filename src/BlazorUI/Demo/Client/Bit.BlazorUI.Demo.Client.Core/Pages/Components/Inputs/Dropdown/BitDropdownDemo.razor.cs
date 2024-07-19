@@ -962,15 +962,27 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "InputElement",
+            Name = "ComboInputElement",
             Type = "ElementReference",
-            Description = "The ElementReference to the input element in combo-box mode.",
+            Description = "The ElementReference to the combo input element.",
         },
         new()
         {
-            Name = "FocusAsync",
+            Name = "FocusComboInputAsync",
             Type = "ValueTask",
-            Description = "Gives focus to the input element in combo-box mode.",
+            Description = "Gives focus to the combo input element.",
+        },
+        new()
+        {
+            Name = "SearchInputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the search input element.",
+        },
+        new()
+        {
+            Name = "FocusSearchInputAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the search input element.",
         }
     ];
 }
