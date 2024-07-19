@@ -1,26 +1,8 @@
 ﻿.example-box {
     gap: 0.5rem;
     display: flex;
-    width: fit-content;
     flex-flow: row wrap;
     align-items: center;
-
-    &.column {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-.buttons-container {
-    gap: 0.5rem;
-    display: flex;
-    flex-flow: row wrap;
-    align-items: flex-start;
-}
-
-.buttons-container-grid {
-    gap: 0.5rem;
-    display: grid;
 }
 
 ::deep {
