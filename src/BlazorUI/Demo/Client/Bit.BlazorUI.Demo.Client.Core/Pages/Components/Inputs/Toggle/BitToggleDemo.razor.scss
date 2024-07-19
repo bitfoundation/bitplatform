@@ -1,13 +1,6 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
 ::deep {
-    .custom-class {
-        padding: 0.5rem;
-        width: max-content;
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
-    }
-
     .custom-thumb {
         background: #fff;
         width: rem2(30px);

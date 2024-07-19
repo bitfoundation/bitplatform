@@ -191,17 +191,17 @@ private bool twoWayValue;";
 <style>
     .custom-thumb {
         background: #fff;
-        width: rem2(30px);
-        height: rem2(30px);
+        width: 30px;
+        height: 30px;
     }
 
     .custom-button {
         padding: 0;
+        width: 52px;
+        height: 22px;
         border: none;
         background: #ccc;
-        width: rem2(52px);
-        height: rem2(22px);
-        border-radius: rem2(11px);
+        border-radius: 11px;
     }
 
     .custom-check .custom-thumb {
