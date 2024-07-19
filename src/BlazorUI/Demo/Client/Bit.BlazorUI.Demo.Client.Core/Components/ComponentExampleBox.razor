@@ -4,14 +4,13 @@
     <div class="box-header">
         <BitTypography Variant="BitTypographyVariant.H5" Class="section-title">@Title</BitTypography>
         <div class="header-btn-group">
-            <BitToggleButton @bind-IsChecked="showCode"
-                             Class="header-btn show-code"
-                             Classes="@(new() { Text = "show-code-lbl" })"
+            <BitActionButton OnClick="() => showCode = !showCode"
+                             Class="@($"header-btn show-code{(showCode ? " code-shown":"")}")"
+                             Classes="@(new() { Content = "show-code-lbl" })"
                              IconName="@BitIconName.CodeEdit"
-                             Variant="BitVariant.Outline"
-                             Text="@(showCode ? "Hide code" : "Show code")"
                              Title="@(showCode ? "Hide code" : "Show code")">
-            </BitToggleButton>
+                @(showCode ? "Hide code" : "Show code")
+            </BitActionButton>
             <BitActionButton Class="@($"header-btn copy-link {(isLinkCopied ? "copied" : "")}")"
                              Styles="@(new() { Content = (isLinkCopied ? "" : "display: none") })"
                              Title="@copyLinkMessage"
@@ -40,16 +39,16 @@
             </BitActionButton>
 
             <pre class="code">
-                <code class="language-cshtml">@RazorCode.Trim()</code>
+            <code class="language-cshtml">@RazorCode.Trim()</code>
 
                 @if (CsharpCode.HasValue())
                 {
-                    <code class="language-csharp">
-&#64code {
-     @CsharpCode.Trim().Replace("\n", "\n     ")
-}</code>
+                <code class="language-csharp">
+                &#64code {
+                        @CsharpCode.Trim().Replace("\n", "\n     ")
+                }</code>
                 }
-            </pre>
+                    </pre>
         }
 
         <div class="example-container">

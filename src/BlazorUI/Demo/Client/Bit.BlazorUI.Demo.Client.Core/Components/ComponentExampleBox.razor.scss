@@ -66,13 +66,12 @@
         border: rem2(1px) solid $bit-color-border-secondary;
 
         &.show-code {
+            font-weight: normal;
             min-width: rem2(125px);
             padding: rem2(4px) rem2(12px);
 
             i {
                 font-size: 1.125rem;
-                margin-right: rem2(8px);
-                color: $bit-color-primary;
             }
 
             @include lt-lg {
@@ -84,6 +83,10 @@
                     display: none;
                 }
             }
+        }
+
+        &.code-shown {
+            background-color: $bit-color-background-secondary;
         }
 
         &.copy-link {
