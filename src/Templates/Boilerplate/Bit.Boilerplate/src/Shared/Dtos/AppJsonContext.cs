@@ -50,6 +50,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(ResetPasswordRequestDto))]
 [JsonSerializable(typeof(TwoFactorAuthRequestDto))]
 [JsonSerializable(typeof(TwoFactorAuthResponseDto))]
+[JsonSerializable(typeof(List<UserSessionDto>))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

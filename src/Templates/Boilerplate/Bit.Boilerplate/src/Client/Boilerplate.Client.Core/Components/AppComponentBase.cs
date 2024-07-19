@@ -45,6 +45,9 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     protected bool InPrerenderSession => JSRuntime.IsInitialized() is false;
 
+    protected ClaimsPrincipal? ClaimsPrincipal;
+    protected UserClaims? UserClaims;
+
 
     protected sealed override void OnInitialized()
     {
@@ -55,6 +58,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     {
         try
         {
+            ClaimsPrincipal = (await AuthenticationStateTask).User;
+            UserClaims = new(ClaimsPrincipal.Claims);
             await OnInitAsync();
             await base.OnInitializedAsync();
         }

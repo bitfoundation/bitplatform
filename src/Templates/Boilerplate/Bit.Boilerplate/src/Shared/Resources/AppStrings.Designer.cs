@@ -1492,6 +1492,24 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove session.
+        /// </summary>
+        public static string RemoveSession {
+            get {
+                return ResourceManager.GetString("RemoveSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Session removed successfully.
+        /// </summary>
+        public static string RemoveSessionSuccessMessage {
+            get {
+                return ResourceManager.GetString("RemoveSessionSuccessMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The {0} field is required..
         /// </summary>
         public static string RequiredAttribute_ValidationError {
@@ -2433,6 +2451,15 @@ namespace Boilerplate.Shared.Resources {
         public static string UserNotFound {
             get {
                 return ResourceManager.GetString("UserNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your sessions.
+        /// </summary>
+        public static string UserSessionsTitle {
+            get {
+                return ResourceManager.GetString("UserSessionsTitle", resourceCulture);
             }
         }
         
