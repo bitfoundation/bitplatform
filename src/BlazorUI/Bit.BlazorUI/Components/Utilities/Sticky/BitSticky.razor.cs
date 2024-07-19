@@ -5,7 +5,7 @@ public partial class BitSticky : BitComponentBase
     /// <summary>
     /// Specifying the vertical position of a positioned element from bottom.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Bottom { get; set; }
 
     /// <summary>
@@ -16,7 +16,7 @@ public partial class BitSticky : BitComponentBase
     /// <summary>
     /// Specifying the horizontal position of a positioned element from left.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Left { get; set; }
 
     /// <summary>
@@ -28,13 +28,13 @@ public partial class BitSticky : BitComponentBase
     /// <summary>
     /// Specifying the horizontal position of a positioned element from right.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Right { get; set; }
 
     /// <summary>
     /// Specifying the vertical position of a positioned element from top.
     /// </summary>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Top { get; set; }
 
 
@@ -51,7 +51,7 @@ public partial class BitSticky : BitComponentBase
             BitStickyPosition.Start => "bit-stk-srt",
             BitStickyPosition.End => "bit-stk-end",
             BitStickyPosition.StartAndEnd => "bit-stk-sae",
-            _ => (Top is null && Bottom is null && Left is null && Right is null)
+            _ => (Top.HasNoValue() && Bottom.HasNoValue() && Left.HasNoValue() && Right.HasNoValue())
                     ? "bit-stk-top"
                     : string.Empty
         });
