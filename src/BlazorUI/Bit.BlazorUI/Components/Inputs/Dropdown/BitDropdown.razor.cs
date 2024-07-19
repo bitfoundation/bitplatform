@@ -346,14 +346,32 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     public TItem? SelectedItem => IsMultiSelect ? default : _selectedItems.FirstOrDefault();
 
     /// <summary>
-    /// The ElementReference to the input element in combo-box mode.
+    /// The ElementReference to the combo input element.
     /// </summary>
-    public ElementReference? InputElement => Combo ? _comboBoxInputRef : null;
+    public ElementReference? ComboInputElement => Combo
+                                                    ? _isResponsiveMode
+                                                        ? _comboBoxInputResponsiveRef
+                                                        : _comboBoxInputRef
+                                                    : null;
 
     /// <summary>
-    /// Gives focus to the input element in combo-box mode.
+    /// Gives focus to the combo input element.
     /// </summary>
-    public ValueTask FocusAsync() => Combo ? _comboBoxInputRef.FocusAsync() : ValueTask.CompletedTask;
+    public ValueTask FocusComboInputAsync() => Combo 
+                                                ? (_isResponsiveMode
+                                                    ? _comboBoxInputResponsiveRef
+                                                    : _comboBoxInputRef).FocusAsync() 
+                                                : ValueTask.CompletedTask;
+
+    /// <summary>
+    /// The ElementReference to the search input element.
+    /// </summary>
+    public ElementReference? SearchInputElement => _searchInputRef;
+
+    /// <summary>
+    /// Gives focus to the search input element.
+    /// </summary>
+    public ValueTask FocusSearchInputAsync() => _searchInputRef.FocusAsync();
 
 
 
