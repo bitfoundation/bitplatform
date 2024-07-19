@@ -256,7 +256,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ResetPassword,{user.ResetPasswordTokenRequestedOn}"));
         var isEmail = string.IsNullOrEmpty(request.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
-        var url = $"reset-password?token={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
+        var url = $"{Urls.ResetPasswordPage}?token={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
         var link = new Uri(HttpContext.Request.GetWebClientUrl(), url);
 
         async Task SendEmail()
@@ -519,7 +519,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var email = user.Email!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{email},{user.EmailTokenRequestedOn}"));
-        var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"confirm?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+        var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"{Urls.ConfirmPage}?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await emailService.SendEmailToken(user, email, token, link, cancellationToken);
     }
@@ -539,7 +539,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var phoneNumber = user.PhoneNumber!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyPhoneNumber:{phoneNumber},{user.PhoneNumberTokenRequestedOn}"));
-        var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"confirm?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+        var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"{Urls.ConfirmPage}?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await smsService.SendSms(Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token], phoneNumber, cancellationToken);
     }
