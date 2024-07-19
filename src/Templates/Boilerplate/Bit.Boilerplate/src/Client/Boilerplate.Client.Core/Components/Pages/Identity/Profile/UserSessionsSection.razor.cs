@@ -8,6 +8,7 @@ public partial class UserSessionsSection
     private bool isLoading;
     private bool isWaiting;
     private string? message;
+    private ElementReference messageRef = default!;
     private List<UserSessionDto> userSessions = [];
     private BitSeverity severity = BitSeverity.Error;
 
@@ -47,6 +48,9 @@ public partial class UserSessionsSection
         {
             await userController.RevokeSession(session.SessionUniqueId, CurrentCancellationToken);
 
+            message = Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)];
+            severity = BitSeverity.Success;
+
             await LoadSessions();
         }
         catch (KnownException e)
@@ -57,8 +61,7 @@ public partial class UserSessionsSection
         finally
         {
             isWaiting = false;
-            message = Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)];
-            severity = BitSeverity.Success;
+            await messageRef.ScrollIntoView();
         }
     }
 }
