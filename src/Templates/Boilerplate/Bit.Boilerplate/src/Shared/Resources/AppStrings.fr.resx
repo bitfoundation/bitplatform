@@ -202,6 +202,21 @@
     <data name="ChangePhoneNumberTitle" xml:space="preserve">
     <value>Changer de numéro de téléphone</value>
   </data>
+    <data name="UserSessionsTitle" xml:space="preserve">
+    <value>Vos séances</value>
+  </data>
+    <data name="CurrentSession" xml:space="preserve">
+    <value>Session actuelle</value>
+  </data>
+    <data name="OtherSessions" xml:space="preserve">
+    <value>Autres séances</value>
+  </data>
+    <data name="RemoveSession" xml:space="preserve">
+    <value>Supprimer la session</value>
+  </data>
+    <data name="RemoveSessionSuccessMessage" xml:space="preserve">
+    <value>Session supprimée avec succès</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>Il n'y a rien ici.</value>
   </data>

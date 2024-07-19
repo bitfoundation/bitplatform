@@ -448,6 +448,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current session.
+        /// </summary>
+        public static string CurrentSession {
+            get {
+                return ResourceManager.GetString("CurrentSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom color.
         /// </summary>
         public static string CustomColor {
@@ -1177,6 +1186,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Other sessions.
+        /// </summary>
+        public static string OtherSessions {
+            get {
+                return ResourceManager.GetString("OtherSessions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to OTP.
         /// </summary>
         public static string Otp {
@@ -1488,6 +1506,24 @@ namespace Boilerplate.Shared.Resources {
         public static string Remove {
             get {
                 return ResourceManager.GetString("Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove session.
+        /// </summary>
+        public static string RemoveSession {
+            get {
+                return ResourceManager.GetString("RemoveSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Session removed successfully.
+        /// </summary>
+        public static string RemoveSessionSuccessMessage {
+            get {
+                return ResourceManager.GetString("RemoveSessionSuccessMessage", resourceCulture);
             }
         }
         
@@ -2433,6 +2469,15 @@ namespace Boilerplate.Shared.Resources {
         public static string UserNotFound {
             get {
                 return ResourceManager.GetString("UserNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your sessions.
+        /// </summary>
+        public static string UserSessionsTitle {
+            get {
+                return ResourceManager.GetString("UserSessionsTitle", resourceCulture);
             }
         }
         

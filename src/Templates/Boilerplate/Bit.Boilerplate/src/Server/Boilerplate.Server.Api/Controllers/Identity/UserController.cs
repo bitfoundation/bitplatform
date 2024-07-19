@@ -80,7 +80,7 @@ public partial class UserController : AppControllerBase, IUserController
         SignOut();
     }
 
-    [HttpPost("{userSessionId}")]
+    [HttpPost("{id}")]
     public async Task RevokeSession(Guid id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

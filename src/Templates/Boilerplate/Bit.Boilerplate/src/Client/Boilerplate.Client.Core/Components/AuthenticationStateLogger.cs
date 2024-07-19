@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Components;
+
 public partial class AuthenticationStateLogger : AppComponentBase
 {
     [AutoInject] private ILogger<AuthenticationStateLogger> authLogger = default!;
@@ -20,9 +21,9 @@ public partial class AuthenticationStateLogger : AppComponentBase
         {
             var user = (await AuthenticationStateTask).User;
 
-            var (userId, userName, email, isUserAuthenticated) = user.IsAuthenticated() ? (user.GetUserId().ToString(), user.GetUserName(), user.GetEmail(), user.IsAuthenticated()) : default;
+            var (isUserAuthenticated, userId, userName, email, sessionId) = user.IsAuthenticated() ? (user.IsAuthenticated(), user.GetUserId().ToString(), user.GetUserName(), user.GetEmail(), user.GetSessionId()) : default;
 
-            LogAuthenticationState(authLogger, userId, userName, email, isUserAuthenticated);
+            LogAuthenticationState(authLogger, isUserAuthenticated, userId, userName, email, sessionId);
         }
         catch (Exception exp)
         {
@@ -30,6 +31,6 @@ public partial class AuthenticationStateLogger : AppComponentBase
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Authentication State: {UserId}, {UserName}, {Email}, {IsUserAuthenticated}")]
-    private static partial void LogAuthenticationState(ILogger logger, string userId, string userName, string? email, bool isUserAuthenticated);
+    [LoggerMessage(Level = LogLevel.Information, Message = "Authentication State: {IsUserAuthenticated}, {UserId}, {UserName}, {Email}, {UserSessionId}")]
+    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, string? userSessionId);
 }

@@ -202,6 +202,21 @@
     <data name="ChangePhoneNumberTitle" xml:space="preserve">
     <value>تغییر شماره تلفن</value>
   </data>
+    <data name="UserSessionsTitle" xml:space="preserve">
+    <value>سشن‌های شما</value>
+  </data>
+    <data name="CurrentSession" xml:space="preserve">
+    <value>سشن جاری</value>
+  </data>
+    <data name="OtherSessions" xml:space="preserve">
+    <value>سایر سشن‌ها</value>
+  </data>
+    <data name="RemoveSession" xml:space="preserve">
+    <value>حذف سشن</value>
+  </data>
+    <data name="RemoveSessionSuccessMessage" xml:space="preserve">
+    <value>حذف سشن با موفقیت انجام شد</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>چیزی پیدا نشد.</value>
   </data>
