@@ -14,14 +14,14 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         // the following app links will be opened in app instead of browser if the app is installed on Android device.
                         DataPaths = ["/"],
                         DataPathPrefixes = [
-                            "/confirm", "/forgot-password","/profile", "/reset-password", "/sign-in", "/sign-up", "/not-authorized", "/not-found","/terms", "/about",
+                            Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.ProfilePage, Urls.ResetPasswordPage, Urls.SignInPage, Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage,
                             //#if (sample == "Admin")
-                            "/add-edit-category", "/categories", "/dashboard", "/products",
+                            Urls.AddOrEditCategoryPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
                             //#elif (sample == "Todo")
-                            "/todo",
+                            Urls.TodoPage,
                             //#endif
                             //#if (offlineDb == true)
-                            "/offline-edit-profile"
+                            Urls.OfflineEditProfilePage
                             //#endif
                             ],
                         AutoVerify = true,

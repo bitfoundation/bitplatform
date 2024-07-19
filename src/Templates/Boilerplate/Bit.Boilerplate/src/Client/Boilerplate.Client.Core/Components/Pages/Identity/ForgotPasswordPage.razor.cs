@@ -32,7 +32,7 @@ public partial class ForgotPasswordPage
             {
                 queryParams.Add("phoneNumber", model.PhoneNumber);
             }
-            var resetPasswordUrl = NavigationManager.GetUriWithQueryParameters("reset-password", queryParams);
+            var resetPasswordUrl = NavigationManager.GetUriWithQueryParameters(Urls.ResetPasswordPage, queryParams);
             NavigationManager.NavigateTo(resetPasswordUrl);
         }
         catch (KnownException e)

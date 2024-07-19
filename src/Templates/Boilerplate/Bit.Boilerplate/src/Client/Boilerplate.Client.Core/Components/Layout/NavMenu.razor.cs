@@ -38,15 +38,15 @@ public partial class NavMenu
                 [
                     new() {
                         Text = Localizer[nameof(AppStrings.Dashboard)],
-                        Url = "/dashboard",
+                        Url = Urls.DashboardPage,
                     },
                     new() {
                         Text = Localizer[nameof(AppStrings.Products)],
-                        Url = "/products",
+                        Url = Urls.ProductsPage,
                     },
                     new() {
                         Text = Localizer[nameof(AppStrings.Categories)],
-                        Url = "/categories",
+                        Url = Urls.CategoriesPage,
                     },
                 ]
             },
@@ -55,28 +55,28 @@ public partial class NavMenu
             {
                 Text = Localizer[nameof(AppStrings.TodoTitle)],
                 IconName = BitIconName.ToDoLogoOutline,
-                Url = "/todo",
+                Url = Urls.TodoPage,
             },
             //#endif
             new()
             {
                 Text = Localizer[nameof(AppStrings.ProfileTitle)],
                 IconName = BitIconName.EditContact,
-                Url = "/profile",
+                Url = Urls.ProfilePage,
             },
             //#if (offlineDb == true)
             new()
             {
                 Text = Localizer[nameof(AppStrings.OfflineEditProfileTitle)],
                 IconName = BitIconName.EditContact,
-                Url = "/offline-edit-profile",
+                Url = Urls.OfflineEditProfilePage,
             },
             //#endif
             new()
             {
                 Text = Localizer[nameof(AppStrings.TermsTitle)],
                 IconName = BitIconName.EntityExtraction,
-                Url = "/terms",
+                Url = Urls.TermsPage,
             }
         ];
 
@@ -90,7 +90,7 @@ public partial class NavMenu
             {
                 Text = Localizer[nameof(AppStrings.AboutTitle)],
                 IconName = BitIconName.HelpMirrored,
-                Url = "/about",
+                Url = Urls.AboutPage,
             });
         }
 
@@ -120,7 +120,7 @@ public partial class NavMenu
     private async Task GoToProfile()
     {
         await CloseMenu();
-        navManager.NavigateTo("profile");
+        navManager.NavigateTo(Urls.ProfilePage);
     }
 
     private async Task HandleNavItemClick(BitNavItem item)

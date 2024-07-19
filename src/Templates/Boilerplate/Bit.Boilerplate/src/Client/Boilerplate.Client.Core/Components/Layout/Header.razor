@@ -6,14 +6,14 @@
         {
             <BitIconButton Class="header-menu" IconName="@BitIconName.CollapseMenu" OnClick=ToggleMenu />
         }
-        <a class="logo-lnk" href="/"></a>
+        <a class="logo-lnk" href="@Urls.HomePage"></a>
     </div>
     <div class="header-contact">
         @if (!isUserAuthenticated)
         {
-            <BitActionButton Class="header-item" IconName="@BitIconName.EntityExtraction" Href="/terms" Target="_self">@Localizer[nameof(AppStrings.TermsTitle)]</BitActionButton>
-            <BitActionButton Class="header-item" IconName="@BitIconName.AddFriend" Href="/sign-up" Target="_self">@Localizer[nameof(AppStrings.SignUp)]</BitActionButton>
-            <BitActionButton Class="header-item" IconName="@BitIconName.Signin" Href="/sign-in" Target="_self">@Localizer[nameof(AppStrings.SignIn)]</BitActionButton>
+            <BitActionButton Class="header-item" IconName="@BitIconName.EntityExtraction" Href="@Urls.TermsPage" Target="_self">@Localizer[nameof(AppStrings.TermsTitle)]</BitActionButton>
+            <BitActionButton Class="header-item" IconName="@BitIconName.AddFriend" Href="@Urls.SignUpPage" Target="_self">@Localizer[nameof(AppStrings.SignUp)]</BitActionButton>
+            <BitActionButton Class="header-item" IconName="@BitIconName.Signin" Href="@Urls.SignInPage" Target="_self">@Localizer[nameof(AppStrings.SignIn)]</BitActionButton>
         }
     </div>
 </header>

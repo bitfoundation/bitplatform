@@ -20,7 +20,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
         localHttpServer = new WebServer(o => o
             .WithUrlPrefix($"http://localhost:{port}")
             .WithMode(HttpListenerMode.Microsoft))
-            .WithModule(new ActionModule("/sign-in", HttpVerbs.Get, async ctx =>
+            .WithModule(new ActionModule(Urls.SignInPage, HttpVerbs.Get, async ctx =>
             {
                 try
                 {
