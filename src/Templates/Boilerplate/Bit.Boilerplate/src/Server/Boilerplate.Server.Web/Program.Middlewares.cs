@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
-using Boilerplate.Client.Core;
+using Boilerplate.Shared;
 using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Web;

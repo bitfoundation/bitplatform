@@ -85,12 +85,12 @@ public partial class CategoriesPage
 
     private void CreateCategory()
     {
-        NavigationManager.NavigateTo(Urls.AddOrEditCategory);
+        NavigationManager.NavigateTo(Urls.AddOrEditCategoryPage);
     }
 
     private void EditCategory(CategoryDto category)
     {
-        NavigationManager.NavigateTo($"{Urls.AddOrEditCategory}/{category.Id}");
+        NavigationManager.NavigateTo($"{Urls.AddOrEditCategoryPage}/{category.Id}");
     }
 
     private async Task DeleteCategory(CategoryDto category)

@@ -16,7 +16,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         DataPathPrefixes = [
                             Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.ProfilePage, Urls.ResetPasswordPage, Urls.SignInPage, Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage,
                             //#if (sample == "Admin")
-                            Urls.AddOrEditCategory, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
+                            Urls.AddOrEditCategoryPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
                             //#elif (sample == "Todo")
                             Urls.TodoPage,
                             //#endif

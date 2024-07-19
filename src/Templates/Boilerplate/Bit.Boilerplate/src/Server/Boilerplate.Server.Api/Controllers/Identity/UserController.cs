@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
 using QRCoder;
-using Boilerplate.Shared;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;

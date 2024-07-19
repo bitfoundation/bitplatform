@@ -457,7 +457,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         catch (Exception exp)
         {
             LogSocialSignInCallbackFailed(logger, exp, info.LoginProvider, info.Principal.GetDisplayName());
-            url = $"sign-in?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
+            url = $"{Urls.SignInPage}?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
         finally
         {
@@ -499,7 +499,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             qs += $"&return-url={Uri.EscapeDataString(returnUrl)}";
         }
 
-        var url = $"sign-in?otp={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
+        var url = $"{Urls.SignInPage}?otp={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
 
         return (token, url);
     }
