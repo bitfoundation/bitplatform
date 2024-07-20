@@ -47,11 +47,11 @@ public partial class UserController : AppControllerBase, IUserController
                 var dto = us.Map();
 
                 dto.LastSeenOn = us.RenewedOn is null ||
-                                     DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(5)
-                                     ? Localizer[nameof(AppStrings.Online)]
-                                     : DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(15)
-                                        ? Localizer[nameof(AppStrings.Recently)]
-                                        : us.RenewedOn.Humanize(culture: CultureInfo.CurrentUICulture);
+                                 DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(5)
+                                 ? Localizer[nameof(AppStrings.Online)]
+                                 : DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(15)
+                                    ? Localizer[nameof(AppStrings.Recently)]
+                                    : us.RenewedOn.Humanize(culture: CultureInfo.CurrentUICulture);
 
                 dto.IsValid = DateTimeOffset.UtcNow - (us.RenewedOn ?? us.StartedOn) < AppSettings.Identity.RefreshTokenExpiration;
 
