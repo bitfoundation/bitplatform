@@ -69,4 +69,24 @@ public partial class UserSessionsSection
             await messageRef.ScrollIntoView();
         }
     }
+
+    private static string GetImageUrl(string? device)
+    {
+        var d = device?.ToLower() ?? "";
+
+        if (d.Contains("windows")) return "windows.png";
+
+        if (d.Contains("android")) return "android.png";
+
+        if (d.Contains("linux")) return "linux.png";
+
+        return "apple.png";
+    }
+
+    private static BitPersonaPresence GetPresence(string? lastSeenOn)
+    {
+        return lastSeenOn == AppStrings.Online ? BitPersonaPresence.Online
+             : lastSeenOn == AppStrings.Recently ? BitPersonaPresence.Away
+             : BitPersonaPresence.Offline;
+    }
 }
