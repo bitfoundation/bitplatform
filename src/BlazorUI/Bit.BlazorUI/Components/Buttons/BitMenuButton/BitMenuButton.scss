@@ -8,132 +8,144 @@
     min-height: spacing(4);
     box-sizing: border-box;
     font-size: spacing(1.75);
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
-    font-family: $tg-font-family;
-    font-weight: $tg-font-weight;
 
-    &.bit-dis,
-    .bit-mnb-opb.bit-dis {
+    &.bit-dis {
         cursor: default;
-        pointer-events: none;
         color: $clr-fg-dis;
+        pointer-events: none;
+        --bit-mnb-clr-spb: #{$clr-fg-dis};
+    }
 
-        .bit-mnb-spb {
-            background-color: $clr-fg-dis;
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-mnb-clr-hover);
         }
+    }
+
+    &:active {
+        border-color: var(--bit-mnb-clr-active);
     }
 }
 
+.bit-mnb-opb,
+.bit-mnb-chb {
+    display: flex;
+    color: inherit;
+    gap: spacing(1);
+    cursor: pointer;
+    font-size: inherit;
+    align-items: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: inherit;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-mnb-clr-txt);
+            background-color: var(--bit-mnb-clr-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-mnb-clr-txt);
+        background-color: var(--bit-mnb-clr-active);
+    }
+}
+
+.bit-mnb-spb {
+    background-color: var(--bit-mnb-clr-spb);
+}
+
 .bit-mnb-fil {
-    color: $clr-pri-text;
-    border-color: $clr-pri;
-    background-color: $clr-pri;
+    color: var(--bit-mnb-clr-txt);
+    border-color: var(--bit-mnb-clr);
+    background-color: var(--bit-mnb-clr);
+    --bit-mnb-clr-spb: var(--bit-mnb-clr-txt);
 
-    .bit-mnb-opb,
-    .bit-mnb-chb {
-        border-color: $clr-pri;
-        background-color: $clr-pri;
-
-        @media (hover: hover) {
-            &:hover {
-                border-color: $clr-pri-hover;
-                background-color: $clr-pri-hover;
-            }
-        }
-
-        &:active {
-            border-color: $clr-pri-active;
-            background-color: $clr-pri-active;
-        }
-    }
-
-    &.bit-mnb-omn {
-        .bit-mnb-chb {
-            border-color: $clr-pri-active;
-            background-color: $clr-pri-active;
-        }
-    }
-
-    .bit-mnb-spb {
-        background-color: $clr-pri-text;
-    }
-
-    &.bit-dis,
-    &.bit-dis .bit-mnb-opb {
+    &.bit-dis {
         border-color: $clr-brd-dis;
         background-color: $clr-bg-dis;
     }
 }
 
 .bit-mnb-otl {
-    color: $clr-sec-text;
-    border-color: $clr-brd-pri;
-    background-color: $clr-sec;
+    color: var(--bit-mnb-clr);
+    border-color: var(--bit-mnb-clr);
+    background-color: transparent;
+    --bit-mnb-clr-spb: var(--bit-mnb-clr);
 
-    .bit-mnb-opb,
-    .bit-mnb-chb {
-        border-color: $clr-brd-pri;
-        background-color: $clr-sec;
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: $clr-sec-hover;
-            }
-        }
-
-        &:active {
-            background-color: $clr-sec-active;
-        }
-    }
-
-    &.bit-mnb-omn {
-        .bit-mnb-chb {
-            background-color: $clr-sec-active;
-        }
-    }
-
-    .bit-mnb-spb {
-        background-color: $clr-sec-text;
-    }
-
-    &.bit-dis,
-    &.bit-dis .bit-mnb-opb {
+    &.bit-dis {
         border-color: $clr-brd-dis;
     }
 }
 
 .bit-mnb-txt {
+    color: var(--bit-mnb-clr);
     border-color: transparent;
-    color: $clr-sec-text;
-    background-color: $clr-sec;
+    background-color: transparent;
+    --bit-mnb-clr-spb: var(--bit-mnb-clr);
+}
 
-    .bit-mnb-opb,
-    .bit-mnb-chb {
-        border-color: transparent;
-        background-color: $clr-sec;
+.bit-mnb-pri {
+    --bit-mnb-clr: #{$clr-pri};
+    --bit-mnb-clr-txt: #{$clr-pri-text};
+    --bit-mnb-clr-hover: #{$clr-pri-hover};
+    --bit-mnb-clr-active: #{$clr-pri-active};
+}
 
-        @media (hover: hover) {
-            &:hover {
-                background-color: $clr-sec-hover;
-            }
-        }
+.bit-mnb-sec {
+    --bit-mnb-clr: #{$clr-sec};
+    --bit-mnb-clr-txt: #{$clr-sec-text};
+    --bit-mnb-clr-hover: #{$clr-sec-hover};
+    --bit-mnb-clr-active: #{$clr-sec-active};
+}
 
-        &:active {
-            background-color: $clr-sec-active;
-        }
-    }
+.bit-mnb-ter {
+    --bit-mnb-clr: #{$clr-ter};
+    --bit-mnb-clr-txt: #{$clr-ter-text};
+    --bit-mnb-clr-hover: #{$clr-ter-hover};
+    --bit-mnb-clr-active: #{$clr-ter-active};
+}
 
-    &.bit-mnb-omn {
-        .bit-mnb-chb {
-            background-color: $clr-sec-active;
-        }
-    }
+.bit-mnb-inf {
+    --bit-mnb-clr: #{$clr-inf};
+    --bit-mnb-clr-txt: #{$clr-inf-text};
+    --bit-mnb-clr-hover: #{$clr-inf-hover};
+    --bit-mnb-clr-active: #{$clr-inf-active};
+}
 
-    .bit-mnb-spb {
-        background-color: $clr-sec-text;
-    }
+.bit-mnb-suc {
+    --bit-mnb-clr: #{$clr-suc};
+    --bit-mnb-clr-txt: #{$clr-suc-text};
+    --bit-mnb-clr-hover: #{$clr-suc-hover};
+    --bit-mnb-clr-active: #{$clr-suc-active};
+}
+
+.bit-mnb-wrn {
+    --bit-mnb-clr: #{$clr-wrn};
+    --bit-mnb-clr-txt: #{$clr-wrn-text};
+    --bit-mnb-clr-hover: #{$clr-wrn-hover};
+    --bit-mnb-clr-active: #{$clr-wrn-active};
+}
+
+.bit-mnb-swr {
+    --bit-mnb-clr: #{$clr-swr};
+    --bit-mnb-clr-txt: #{$clr-swr-text};
+    --bit-mnb-clr-hover: #{$clr-swr-hover};
+    --bit-mnb-clr-active: #{$clr-swr-active};
+}
+
+.bit-mnb-err {
+    --bit-mnb-clr: #{$clr-err};
+    --bit-mnb-clr-txt: #{$clr-err-text};
+    --bit-mnb-clr-hover: #{$clr-err-hover};
+    --bit-mnb-clr-active: #{$clr-err-active};
 }
 
 .bit-mnb-cds {
@@ -159,20 +171,6 @@
     margin: auto 0;
     height: spacing(2);
     width: spacing(0.125);
-}
-
-.bit-mnb-opb,
-.bit-mnb-chb {
-    display: flex;
-    color: inherit;
-    gap: spacing(1);
-    cursor: pointer;
-    font-size: inherit;
-    align-items: center;
-    text-decoration: none;
-    box-sizing: border-box;
-    justify-content: center;
-    background-color: inherit;
 }
 
 .bit-mnb-opb {
@@ -208,6 +206,12 @@
 }
 
 .bit-mnb-omn {
+    &.bit-mnb-nsp .bit-mnb-opb,
+    .bit-mnb-chb {
+        color: var(--bit-mnb-clr-txt);
+        background-color: var(--bit-mnb-clr-active);
+    }
+
     .bit-mnb-cal {
         opacity: 1;
         transform: translate3d(0, 0, 0);
