@@ -21,6 +21,8 @@
     <ComponentExampleBox Title="Texts" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div class="example-box">
+                <div>Customize BitToggle On and Off texts, providing more context for its state.</div>
+                <br />
                 <BitToggle Label="DefaultText" DefaultText="This is a good toggle!" />
                 <br /><br />
                 <BitToggle Label="OnText & OffText" OnText="Toggle is On" OffText="Toggle is Off" />
@@ -31,6 +33,8 @@
     <ComponentExampleBox Title="Label" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="example-box">
+                <div>Use inline labels and custom label templates in BitToggle.</div>
+                <br /><br />
                 <div>IsInlineLabel:</div>
                 <br />
                 <BitToggle Label="This is an inline label" IsInlineLabel="true" />
@@ -52,6 +56,8 @@
     <ComponentExampleBox Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
             <div class="example-box">
+                <div>Bind value one-way and two-way in BitToggle</div>
+                <br />
                 <BitToggle Label="One-way" Value="oneWayValue" />
                 <br />
                 <BitToggleButton @bind-IsChecked="oneWayValue" OnText="On" OffText="Off" />
@@ -66,23 +72,15 @@
     <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
-                <div>Component's Style & Class:</div>
-                <br />
-                <BitToggle Label="Styled" Style="width:fit-content;background:forestgreen;border-radius:1rem;padding:1rem" />
-                <br />
-                <BitToggle Label="Classed" Class="custom-class" />
-                <br /><br /><br />
-                <div>Styles & Classes:</div>
+                <div>Customize the appearance of BitToggle using styles and CSS classes.</div>
                 <br />
                 <BitToggle Label="Styles"
-                           Styles="@(new() { Root = "width:fit-content;background:pink;padding:1rem",
-                                             Thumb = "background:darkorange",
-                                             Button = "border-radius:0.5rem 0 0.5rem 0",
-                                             Label = "color:blue;font-weight:900;font-size:1.25rem" } )" />
+                           Styles="@(new() { Root = "--toggle-background: lightgray;", Checked = "--toggle-background: #2ecc71;",
+                                             Thumb = "background: whitesmoke; height: 28px; width: 28px;",
+                                             Button = "background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px;" } )" />
                 <br />
                 <BitToggle Label="Classes"
-                           DefaultText="GooGooLi"
-                           Classes="@(new() { Text = "custom-text",
+                           Classes="@(new() { Thumb = "custom-thumb",
                                               Button = "custom-button",
                                               Checked = "custom-check" } )" />
             </div>
@@ -92,6 +90,8 @@
     <ComponentExampleBox Title="Validation" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div>
+                <div>Use BitToggle within a form and validate its state.</div>
+                <br />
                 @if (string.IsNullOrEmpty(SuccessMessage))
                 {
                     <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
@@ -107,7 +107,7 @@
                 }
                 else
                 {
-                    <BitMessage Severity="BitSeverity.Success">@SuccessMessage</BitMessage>
+                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
                 }
             </div>
         </ExamplePreview>
@@ -115,6 +115,8 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
+            <div>Use BitToggle in right-to-left (RTL).</div>
+            <br />
             <BitToggle Dir="BitDir.Rtl" OnText="روشن" OffText="خاموش" />
         </ExamplePreview>
     </ComponentExampleBox>
