@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <div @ref="messageRef" class="form-message-bar">
     @if (string.IsNullOrEmpty(message) is false)
@@ -34,6 +34,7 @@ else
                             Presence="@GetPresence(currentSession.LastSeenOn)"
                             Class="@BitCss.Class.Color.Background.Secondary"
                             Styles="@(new() { Image = "width:50%;height:50%" })"
+                            ImageInitials="✓"
                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
             </BitStack>
         }
@@ -48,6 +49,7 @@ else
                             Style="flex-grow:1"
                             Presence="@GetPresence(session.LastSeenOn)"
                             Styles="@(new() { Image = "width:50%;height:50%" })"
+                            ImageInitials="@(session.IsValid ? "✓" : "✘")"
                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />
                 <BitIconButton IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" OnClick="() => RevokeSession(session)" />
             </BitStack>
