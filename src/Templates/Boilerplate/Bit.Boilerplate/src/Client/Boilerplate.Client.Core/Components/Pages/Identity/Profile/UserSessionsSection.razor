@@ -1,55 +1,54 @@
 @inherits AppComponentBase
 
-<div>
-    <div @ref="messageRef" class="form-message-bar">
-        @if (string.IsNullOrEmpty(message) is false)
-        {
-            <BitMessage Multiline Severity="severity" OnDismiss="() => message = null">@message</BitMessage>
-        }
-    </div>
-
-    <BitTypography Variant="BitTypographyVariant.H2" Style="text-align:center">
-        @Localizer[nameof(AppStrings.UserSessionsTitle)]
-    </BitTypography>
-
-    <br />
-
-    @if (isLoading)
+<div @ref="messageRef" class="form-message-bar">
+    @if (string.IsNullOrEmpty(message) is false)
     {
-        <div class="loading-container">
-            <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>
-        </div>
-    }
-    else
-    {
-        <BitStack Gap="1.5rem">
-            @if (currentSession is not null)
-            {
-                <BitStack Gap="0.5rem" Style="width:100%">
-                    <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.CurrentSession)]</BitSeparator>
-                    <BitPersona PrimaryText="@currentSession.Device"
-                                SecondaryText="@currentSession.Address"
-                                TertiaryText="@currentSession.IP"
-                                Size="BitPersonaSize.Size72"
-                                Style="width:100%;padding:8px"
-                                Class="@BitCss.Class.Color.Background.Secondary" />
-                </BitStack>
-            }
-            <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.OtherSessions)]</BitSeparator>
-            @foreach (var session in otherSessions)
-            {
-                <BitStack Horizontal Style="width:100%;padding:8px" Class="@BitCss.Class.Color.Background.Secondary">
-                    <BitPersona PrimaryText="@session.Device"
-                                SecondaryText="@session.Address"
-                                TertiaryText="@session.IP"
-                                Size="BitPersonaSize.Size72"
-                                OnActionClick="() => RevokeSession(session)"
-                                ActionIconName="@BitIconName.Delete"
-                                ActionButtonTitle="@Localizer[nameof(AppStrings.RemoveSession)]"
-                                Style="flex-grow:1" />
-                    <BitIconButton IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" OnClick="() => RevokeSession(session)" />
-                </BitStack>
-            }
-        </BitStack>
+        <BitMessage Multiline Severity="severity" OnDismiss="() => message = null">@message</BitMessage>
     }
 </div>
+
+<BitTypography Variant="BitTypographyVariant.H2" Style="text-align:center">
+    @Localizer[nameof(AppStrings.UserSessionsTitle)]
+</BitTypography>
+
+<br />
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>
+    </div>
+}
+else
+{
+        <BitStack Gap="1.5rem" Style="width:100%">
+        @if (currentSession is not null)
+        {
+            <BitStack Gap="0.5rem" Style="width:100%">
+                <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.CurrentSession)]</BitSeparator>
+                <BitPersona PrimaryText="@currentSession.Device"
+                            SecondaryText="@currentSession.Address"
+                            TertiaryText="@currentSession.IP"
+                            Size="BitPersonaSize.Size72"
+                            Style="width:100%;padding:8px"
+                            ImageInitials=""
+                            Class="@BitCss.Class.Color.Background.Secondary" />
+            </BitStack>
+        }
+        <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.OtherSessions)]</BitSeparator>
+        @foreach (var session in otherSessions)
+        {
+            <BitStack Horizontal Style="width:100%;padding:8px" Class="@BitCss.Class.Color.Background.Secondary">
+                <BitPersona PrimaryText="@session.Device"
+                            SecondaryText="@session.Address"
+                            TertiaryText="@session.IP"
+                            Size="BitPersonaSize.Size72"
+                            OnActionClick="() => RevokeSession(session)"
+                            ActionIconName="@BitIconName.Delete"
+                            ActionButtonTitle="@Localizer[nameof(AppStrings.RemoveSession)]"
+                            Style="flex-grow:1" />
+                <BitIconButton IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" OnClick="() => RevokeSession(session)" />
+            </BitStack>
+        }
+    </BitStack>
+}
