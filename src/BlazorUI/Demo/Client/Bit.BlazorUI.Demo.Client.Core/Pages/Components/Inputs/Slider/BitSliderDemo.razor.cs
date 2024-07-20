@@ -354,6 +354,7 @@ Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" /> ]";
         width: 1.5rem;
         height: 1.5rem;
         border-radius: 50%;
+        margin-top: -0.75rem;
         border-color: whitesmoke;
         background-color: whitesmoke;
         box-shadow: 0 0 0.5rem 0 lightgray;
