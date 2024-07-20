@@ -10,9 +10,7 @@ public class UserSessionDto
 
     public string? Address { get; set; }
 
-    public int LastSeenOn { get; set; }
-
-    public string? LastSeenOnText { get; set; }
+    public string? LastSeenOn { get; set; }
 
     public bool IsValid { get; set; }
 }

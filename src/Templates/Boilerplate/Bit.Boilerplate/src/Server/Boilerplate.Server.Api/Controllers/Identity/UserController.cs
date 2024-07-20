@@ -46,10 +46,7 @@ public partial class UserController : AppControllerBase, IUserController
             {
                 var dto = us.Map();
 
-                dto.LastSeenOn = us.RenewedOn is null
-                                    ? 0
-                                    : (int)((DateTimeOffset.UtcNow - us.RenewedOn)?.TotalMinutes ?? 0);
-                dto.LastSeenOnText = us.RenewedOn is null ||
+                dto.LastSeenOn = us.RenewedOn is null ||
                                      DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(5)
                                      ? Localizer[nameof(AppStrings.Online)]
                                      : DateTimeOffset.UtcNow - us.RenewedOn < TimeSpan.FromMinutes(15)

@@ -21,18 +21,20 @@
 }
 else
 {
-        <BitStack Gap="1.5rem" Style="width:100%">
+    <BitStack Gap="1.5rem" Style="width:100%">
         @if (currentSession is not null)
         {
             <BitStack Gap="0.5rem" Style="width:100%">
                 <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.CurrentSession)]</BitSeparator>
                 <BitPersona PrimaryText="@currentSession.Device"
                             SecondaryText="@currentSession.Address"
-                            TertiaryText="@currentSession.IP"
+                            TertiaryText="@($"{currentSession.IP} - {currentSession.LastSeenOn}")"
                             Size="BitPersonaSize.Size72"
                             Style="width:100%;padding:8px"
-                            ImageInitials=""
-                            Class="@BitCss.Class.Color.Background.Secondary" />
+                            Presence="@GetPresence(currentSession.LastSeenOn)"
+                            Class="@BitCss.Class.Color.Background.Secondary"
+                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
             </BitStack>
         }
         <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.OtherSessions)]</BitSeparator>
@@ -41,12 +43,12 @@ else
             <BitStack Horizontal Style="width:100%;padding:8px" Class="@BitCss.Class.Color.Background.Secondary">
                 <BitPersona PrimaryText="@session.Device"
                             SecondaryText="@session.Address"
-                            TertiaryText="@session.IP"
+                            TertiaryText="@($"{session.IP} - {session.LastSeenOn}")"
                             Size="BitPersonaSize.Size72"
-                            OnActionClick="() => RevokeSession(session)"
-                            ActionIconName="@BitIconName.Delete"
-                            ActionButtonTitle="@Localizer[nameof(AppStrings.RemoveSession)]"
-                            Style="flex-grow:1" />
+                            Style="flex-grow:1"
+                            Presence="@GetPresence(session.LastSeenOn)"
+                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />
                 <BitIconButton IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" OnClick="() => RevokeSession(session)" />
             </BitStack>
         }
