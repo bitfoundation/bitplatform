@@ -87,6 +87,6 @@ public partial class UserSessionsSection
     {
         return lastSeenOn == AppStrings.Online ? BitPersonaPresence.Online
              : lastSeenOn == AppStrings.Recently ? BitPersonaPresence.Away
-             : BitPersonaPresence.Busy;
+             : BitPersonaPresence.Offline;
     }
 }
