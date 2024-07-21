@@ -14,8 +14,8 @@ public class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
     private readonly ConcurrentDictionary<string, object?> values = new();
 
     private static bool noPersistant = AppRenderMode.PrerenderEnabled is false ||
-                                       AppPlatform.IsBlazorHybrid ||
-                                       AppRenderMode.Current == AppRenderMode.StaticSsr;
+                                       AppRenderMode.Current == AppRenderMode.StaticSsr ||
+                                       AppPlatform.IsBlazorHybrid;
 
     public PrerenderStateService(PersistentComponentState? persistentComponentState = null)
     {
