@@ -31,7 +31,7 @@ public static partial class MauiProgram
         AppPlatform.IsIosOnMacOS = NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac;
 #endif
 
-        AppPlatform.OSDescription = $"{DeviceInfo.Current.Manufacturer} {DeviceInfo.Current.Platform} {DeviceInfo.Current.Version}";
+        AppPlatform.OSDescription = $"{DeviceInfo.Current.Manufacturer} {(AppPlatform.IsIosOnMacOS ? DevicePlatform.macOS : DeviceInfo.Current.Platform)} {DeviceInfo.Current.Version}";
 
         var builder = MauiApp.CreateBuilder();
 

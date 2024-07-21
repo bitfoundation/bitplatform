@@ -12,6 +12,7 @@ public partial class BitActionButtonDemo
 <BitActionButton IconName=""@BitIconName.Globe"" Href=""https://bitplatform.dev"" Target=""_blank"">
     Open bitplatform.dev
 </BitActionButton>
+
 <BitActionButton IconName=""@BitIconName.Globe"" Href=""https://github.com/bitfoundation/bitplatform"">
     Go to bitplatform GitHub
 </BitActionButton>";
@@ -48,36 +49,47 @@ public partial class BitActionButtonDemo
 
     private readonly string example5RazorCode = @"
 <style>
-    .custom-class {
-        color: burlywood;
-    }
-
     .custom-icon {
-        font-size: 1rem;
-        font-weight: bold;
+        color: hotpink;
     }
 
     .custom-content {
-        font-size: 1.5rem;
+        position: relative;
+    }
+
+    .custom-content::after {
+        content: '';
+        left: 0;
+        width: 0;
+        height: 2px;
+        bottom: -6px;
+        position: absolute;
+        transition: 0.3s ease;
+        background: linear-gradient(90deg, #ff00cc, #3333ff);
+    }
+
+    .custom-root:hover .custom-content {
+        color: blueviolet;
+    }
+
+    .custom-root:hover .custom-content::after {
+        width: 100%;
     }
 </style>
 
 
-<BitActionButton IconName=""@BitIconName.ThisPC"" Style=""color:brown"">
-    Styled Action Button
-</BitActionButton>
-<BitActionButton IconName=""@BitIconName.ThisPC"" Class=""custom-class"">
-    Classed Action Button
-</BitActionButton>
-
-
-<BitActionButton IconName=""@BitIconName.CustomActivity""
-                 Styles=""@(new() { Icon = ""font-size:1.5rem"", Content = ""font-size:1rem"" })"">
+<BitActionButton IconName=""@BitIconName.Brush""
+                 Styles=""@(new() { Root = ""font-size: 1.5rem;"",
+                                   Icon = ""color: blueviolet;"",
+                                   Content = ""text-shadow: aqua 0 0 1rem;"" })"">
     Action Button Styles
 </BitActionButton>
-<BitActionButton IconName=""@BitIconName.CustomActivity""
-                 Classes=""@(new() { Icon = ""custom-icon"", Content = ""custom-content"" })"">
-    Action Button Classes
+
+<BitActionButton IconName=""@BitIconName.FormatPainter""
+                 Classes=""@(new() { Root = ""custom-root"",
+                                    Icon = ""custom-icon"",
+                                    Content = ""custom-content"" })"">
+    Action Button Classes (Hover me)
 </BitActionButton>";
 
     private readonly string example6RazorCode = @"

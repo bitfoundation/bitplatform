@@ -55,21 +55,22 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        app.UseStaticFiles(new StaticFileOptions
+        if (env.IsDevelopment() is false)
         {
-            OnPrepareResponse = ctx =>
+            app.Use(async (context, next) =>
             {
-                if (env.IsDevelopment() is false)
+                if (context.Request.Query.Any(q => q.Key == "v"))
                 {
-                    // https://bitplatform.dev/templates/cache-mechanism
-                    ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+                    context.Response.GetTypedHeaders().CacheControl = new()
                     {
                         MaxAge = TimeSpan.FromDays(7),
                         Public = true
                     };
                 }
-            }
-        });
+                await next.Invoke();
+            });
+        }
+        app.UseStaticFiles();
 
         if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
         {
