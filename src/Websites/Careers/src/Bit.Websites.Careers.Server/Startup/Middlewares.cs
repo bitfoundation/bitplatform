@@ -28,18 +28,22 @@ public class Middlewares
 
         Configure_404_Page(app);
 
-        app.UseStaticFiles(new StaticFileOptions
+        if (env.IsDevelopment() is false)
         {
-            OnPrepareResponse = ctx =>
+            app.Use(async (context, next) =>
             {
-                // https://bitplatform.dev/templates/cache-mechanism
-                ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+                if (context.Request.Query.Any(q => q.Key == "v"))
                 {
-                    MaxAge = TimeSpan.FromDays(7),
-                    Public = true
-                };
-            }
-        });
+                    context.Response.GetTypedHeaders().CacheControl = new()
+                    {
+                        MaxAge = TimeSpan.FromDays(7),
+                        Public = true
+                    };
+                }
+                await next.Invoke();
+            });
+        }
+        app.UseStaticFiles();
 
         app.UseResponseCaching();
         app.UseAntiforgery();
