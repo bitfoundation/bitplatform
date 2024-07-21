@@ -350,84 +350,75 @@ Collapsed: [ <BitSlider Visibility=""BitVisibility.Collapsed"" /> ]";
 
     private readonly string example6RazorCode = @"
 <style>
-    .custom-class {
-        margin-left: 0.5rem;
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
-    }
-
-    .custom-container {
-        height: auto;
-        padding-left: 1rem;
-        border-radius: 1rem;
-        background-color: dodgerblue;
-    }
-
     .custom-input::-webkit-slider-thumb {
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        margin-top: -0.75rem;
+        border-color: whitesmoke;
+        background-color: whitesmoke;
+        box-shadow: 0 0 0.5rem 0 lightgray;
+    }
+
+    .custom-input:hover::-webkit-slider-thumb {
+        border-color: whitesmoke;
+        background-color: whitesmoke;
+    }
+
+    .custom-input::-webkit-slider-runnable-track {
+        height: 0.125rem;
+        background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
+    }
+
+    .custom-input:hover::-webkit-slider-runnable-track {
+        background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
+    }
+
+
+    .custom-slider-box {
+        background: linear-gradient(0deg, seagreen calc(0.5rem * 0.5), transparent 0);
+    }
+
+    .custom-slider-box:hover {
+        background: linear-gradient(0deg, seagreen calc(0.5rem * 0.5), transparent 0);
+    }
+
+    .custom-slider-box:hover::before {
+        background-color: darkgreen;
+    }
+
+    .custom-slider-box::before {
+        background-color: green;
+    }
+
+    .custom-range-input::-webkit-slider-thumb {
         background-color: white;
         border: 0.25rem solid green;
     }
 
-    .custom-input:hover::-webkit-slider-thumb {
+    .custom-range-input:hover::-webkit-slider-thumb {
         background-color: white;
         border: 0.25rem solid darkgreen;
     }
-
-    .custom-input::-webkit-slider-runnable-track {
-        background: linear-gradient(seagreen, seagreen) 0/var(--sx) 100% no-repeat, white;
-    }
-
-    .custom-input:hover::-webkit-slider-runnable-track {
-        background: linear-gradient(green, green) 0/var(--sx) 100% no-repeat, white;
-    }
-
-    .custom-slider-box {
-        background: linear-gradient(0deg, red calc(0.5rem * 0.5), transparent 0);
-    }
-
-    .custom-slider-box:hover {
-        background: linear-gradient(0deg, tomato calc(0.5rem * 0.5), transparent 0);
-    }
-
-    .custom-slider-box:hover::before {
-        background-color: brown;
-    }
-
-    .custom-slider-box::before {
-        background-color: darkred;
-    }
-
-    .custom-slider-box .custom-input::-webkit-slider-thumb {
-        background-color: white;
-        border: 0.25rem solid slategray;
-    }
-
-    .custom-slider-box .custom-input:hover::-webkit-slider-thumb {
-        background-color: white;
-        border: 0.25rem solid dimgray;
-    }
 </style>
 
-<BitSlider Style=""background-color: tomato; border-radius: 1rem; padding: 0.5rem;"" />
-<BitSlider Class=""custom-class"" />
 
-<BitSlider Label=""Custom label style""
-           Styles=""@(new() { Root = ""background-color: pink;"",
-                             ValueLabel = ""color: red;"",
-                             ValueInput = ""padding: 0.5rem; background-color: goldenrod;"",
-                             Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"" } )"" />
+<BitSlider DefaultValue=""3""
+           Label=""Custom styles""
+           Styles=""@(new() { Root = ""text-shadow: aqua 0 0 1rem;"",
+                             Label = ""font-weight: 900; font-size: 1.25rem;"" } )"" />
+
 <BitSlider DefaultValue=""5""
-           Classes=""@(new() { ValueInput = ""custom-input"",
-                              Container = ""custom-container"" } )"" />
+           Label=""Custom classes""
+           Classes=""@(new() { ValueInput = ""custom-input"" } )"" />
 
-<BitSlider IsRanged=""true"" 
+<BitSlider IsRanged=""true""
            Max=""100""
-           DefaultLowerValue=""63""
+           DefaultLowerValue=""54""
            DefaultUpperValue=""84""
-           Classes=""@(new() { LowerValueInput = ""custom-input"",
-                              UpperValueInput = ""custom-input"",
-                              SliderBox = ""custom-slider-box"",
-                              Container = ""custom-container"" } )"" />";
+           Classes=""@(new() { LowerValueInput = ""custom-range-input"",
+                              UpperValueInput = ""custom-range-input"",
+                              SliderBox = ""custom-slider-box"" } )"" />";
 
     private readonly string example7RazorCode = @"
 <BitSlider Label=""One-way"" Value=""oneWayBinding"" />
