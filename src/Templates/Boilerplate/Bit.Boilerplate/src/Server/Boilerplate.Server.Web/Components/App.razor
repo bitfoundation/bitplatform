@@ -20,7 +20,7 @@
     <script>
         // disable auto-zoom of iOS Safari when focusing an input
         (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
-        (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0')
+            (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0')
     </script>
 
     @*#if (captcha == "reCaptcha")*@
@@ -59,16 +59,26 @@
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
+        <Script src="_framework/blazor.web.js" autostart="false"></Script>
         @if (AppRenderMode.PwaEnabled)
         {
-            <Script src="_framework/blazor.web.js" autostart="false"></Script>
             <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
             <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
             <AppBswupProgressBar />
         }
         else
         {
-            <Script src="_framework/blazor.web.js"></Script>
+            <Script>
+                Blazor.start({
+                    webAssembly: {
+                        loadBootResource: function (type, name, defaultUri, integrity) {
+                            if (integrity != null && integrity != '')
+                                return `${defaultUri}?v=${integrity}`;
+                            return null; // default blazor asset loading mechanism.
+                        }
+                    }
+                });
+            </Script>
         }
         <Script src="_content/Bit.Butil/bit-butil.js"></Script>
         @*#if (offlineDb == true)*@
