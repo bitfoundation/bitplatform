@@ -59,6 +59,16 @@ public partial class Routes
         await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender && AppPlatform.IsBlazorHybrid is false)
+        {
+            AppPlatform.OSDescription = await jsRuntime.GetBrowserPlatform();
+        }
+    }
+
     [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }
     public static NavigationManager? universalLinksNavigationManager;
 

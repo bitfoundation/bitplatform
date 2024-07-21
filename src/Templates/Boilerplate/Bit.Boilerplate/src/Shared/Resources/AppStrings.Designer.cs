@@ -2392,6 +2392,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unknown device.
+        /// </summary>
+        public static string UnknwonDevice {
+            get {
+                return ResourceManager.GetString("UnknwonDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Update.
         /// </summary>
         public static string Update {
