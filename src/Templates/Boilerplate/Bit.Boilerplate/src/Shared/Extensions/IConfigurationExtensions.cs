@@ -2,9 +2,15 @@
 namespace Microsoft.Extensions.Configuration;
 public static class IConfigurationExtensions
 {
+    public static T GetRequiredValue<T>(this IConfiguration configuration, string name)
+    {
+        return (configuration ?? throw new ArgumentNullException(nameof(configuration)))
+            .GetValue<T>(name ?? throw new ArgumentNullException(nameof(name))) ?? throw new InvalidOperationException($"{name} config could not be found");
+    }
+
     public static string GetServerAddress(this IConfiguration configuration)
     {
-        var serverAddress = configuration.GetValue("ServerAddress", defaultValue: "/")!;
+        var serverAddress = configuration.GetRequiredValue<string>("ServerAddress");
 
         if (AppEnvironment.IsDev() &&
             serverAddress.Contains("localhost", StringComparison.InvariantCultureIgnoreCase) &&
