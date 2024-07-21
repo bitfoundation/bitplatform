@@ -1,495 +1,330 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
         <div class="example-content">
-            <BitMenuButton Text="MenuButton"
-                           Items="basicCustoms"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" />
+            <BitMenuButton Text="MenuButton" Items="basicCustoms" NameSelectors="nameSelectors" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Split" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div>Explore the Split behavior of BitMenuButton, demonstrating buttons divided into two sections. One section triggers an action on click, while the other section opens a callout to reveal additional options.</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="MenuButton" Items="basicCustoms" NameSelectors="nameSelectors" Split />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Variant" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <div>The MenuButton offers three variants: Fill (default), Outline, and Text.</div>
-        <br/>
+        <br />
         <div class="example-content">
-            <BitMenuButton Text="Fill"
-                           Items="basicCustoms"
-                           Variant="BitVariant.Fill"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-
-            <BitMenuButton Text="Outline"
-                           Items="basicCustoms"
-                           Variant="BitVariant.Outline"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-
-            <BitMenuButton Text="Text"
-                           Items="basicCustoms"
-                           Variant="BitVariant.Text"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" />
+            <BitMenuButton Text="Fill" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" />
+            <BitMenuButton Text="Outline" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" />
+            <BitMenuButton Text="Text" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Fill" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" IsEnabled="false" />
+            <BitMenuButton Text="Outline" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" IsEnabled="false" />
+            <BitMenuButton Text="Text" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" IsEnabled="false" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Fill" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Split />
+            <BitMenuButton Text="Outline" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Split />
+            <BitMenuButton Text="Text" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Split />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Fill" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" IsEnabled="false" Split />
+            <BitMenuButton Text="Outline" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" IsEnabled="false" Split />
+            <BitMenuButton Text="Text" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" IsEnabled="false" Split />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Fill button" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Color" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
-        <div>
-            Fill menu buttons are attention-grabbing, featuring a filled appearance. They're designed for essential actions at the core of your application.
+        <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Primary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Primary" />
+            <BitMenuButton Text="Primary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Primary" />
+            <BitMenuButton Text="Primary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Primary" />
         </div>
         <br />
         <div class="example-content">
-            <div>
-                <BitLabel>Default</BitLabel>
-                <BitMenuButton Text="Customs"
-                               Items="basicCustoms"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-            </div>
-            <div>
-                <BitLabel>Disabled</BitLabel>
-                <BitMenuButton Text="Customs"
-                               IsEnabled="false"
-                               Items="basicCustoms"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-            </div>
+            <BitMenuButton Text="Primary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Primary" Split />
+            <BitMenuButton Text="Primary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Primary" Split />
+            <BitMenuButton Text="Primary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Primary" Split />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitMenuButton Text="Secondary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Secondary" />
+            <BitMenuButton Text="Secondary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Secondary" />
+            <BitMenuButton Text="Secondary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Secondary" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Secondary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Secondary" Split />
+            <BitMenuButton Text="Secondary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Secondary" Split />
+            <BitMenuButton Text="Secondary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Secondary" Split />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitMenuButton Text="Tertiary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Tertiary" />
+            <BitMenuButton Text="Tertiary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Tertiary" />
+            <BitMenuButton Text="Tertiary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Tertiary" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Tertiary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Tertiary" Split />
+            <BitMenuButton Text="Tertiary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Tertiary" Split />
+            <BitMenuButton Text="Tertiary" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Tertiary" Split />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitMenuButton Text="Info" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Info" />
+            <BitMenuButton Text="Info" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Info" />
+            <BitMenuButton Text="Info" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Info" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Info" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Info" Split />
+            <BitMenuButton Text="Info" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Info" Split />
+            <BitMenuButton Text="Info" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Info" Split />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitMenuButton Text="Success" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Success" />
+            <BitMenuButton Text="Success" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Success" />
+            <BitMenuButton Text="Success" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Success" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Success" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Success" Split />
+            <BitMenuButton Text="Success" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Success" Split />
+            <BitMenuButton Text="Success" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Success" Split />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitMenuButton Text="Warning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Warning" />
+            <BitMenuButton Text="Warning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Warning" />
+            <BitMenuButton Text="Warning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Warning" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Warning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Warning" Split />
+            <BitMenuButton Text="Warning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Warning" Split />
+            <BitMenuButton Text="Warning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Warning" Split />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitMenuButton Text="SevereWarning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.SevereWarning" />
+            <BitMenuButton Text="SevereWarning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.SevereWarning" />
+            <BitMenuButton Text="SevereWarning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.SevereWarning" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="SevereWarning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.SevereWarning" Split />
+            <BitMenuButton Text="SevereWarning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.SevereWarning" Split />
+            <BitMenuButton Text="SevereWarning" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.SevereWarning" Split />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <BitMenuButton Text="Error" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Error" />
+            <BitMenuButton Text="Error" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Error" />
+            <BitMenuButton Text="Error" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Error" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Error" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Color="BitColor.Error" Split />
+            <BitMenuButton Text="Error" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Color="BitColor.Error" Split />
+            <BitMenuButton Text="Error" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Color="BitColor.Error" Split />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Outline button" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Sticky" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
-        <div>
-            Outline menu buttons offer a moderate level of emphasis, suitable for important actions that aren't central to the application. 
-            They serve as a middle ground between Text menu buttons and the more prominent Fill menu buttons, providing flexibility in emphasis.
+        <div>Experience the Sticky functionality of BitMenuButton, showcasing a button that remains sticky after an item selection. The button displays the selected item and retains its state for continuous user interaction.</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Sticky />
+            <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Split Sticky />
         </div>
         <br />
         <div class="example-content">
-            <div>
-                <BitLabel>Default</BitLabel>
-                <BitMenuButton Text="Customs"
-                               Items="basicCustoms"
-                               Variant="BitVariant.Outline"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-            </div>
-            <div>
-                <BitLabel>Disabled</BitLabel>
-                <BitMenuButton Text="Customs"
-                               IsEnabled="false"
-                               Items="basicCustoms"
-                               Variant="BitVariant.Outline"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-            </div>
+            <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Sticky />
+            <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Split Sticky />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Sticky />
+            <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" Split Sticky />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Text button" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Icons" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
-        <div>
-            Text menu buttons are best suited for understated actions, serving as a less prominent choice in various interface elements.
-        </div>
+        <div>Present BitMenuButton instances with customized icons, enriching the visual options for representing menu buttons.</div>
         <br />
         <div class="example-content">
-            <div>
-                <BitLabel>Default</BitLabel>
-                <BitMenuButton Text="Customs"
-                               Items="basicCustoms"
-                               Variant="BitVariant.Text"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-            </div>
-            <div>
-                <BitLabel>Disabled</BitLabel>
-                <BitMenuButton Text="Customs"
-                               IsEnabled="false"
-                               Items="basicCustoms"
-                               Variant="BitVariant.Text"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-            </div>
+            <BitMenuButton Text="IconName" Items="basicCustoms" NameSelectors="nameSelectors" IconName="@BitIconName.Edit" />
+            <BitMenuButton Text="ChevronDownIcon" Items="basicCustoms" NameSelectors="nameSelectors" ChevronDownIcon="@BitIconName.DoubleChevronDown" Split />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Split" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
-        <div>
-            Explore the Split behavior of BitMenuButton, demonstrating buttons divided into two sections. One section triggers an action on click, while the other section opens a callout to reveal additional options.
-        </div>
+        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+        <br />
+        <div>Component's Style & Class:</div>
         <br />
         <div class="example-content">
-            <BitMenuButton Split
-                           Text="Fill"
-                           Items="basicCustoms"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" />
+            <BitMenuButton Text="Styled Button" Items="basicCustoms" NameSelectors="nameSelectors" Style="width: 200px; height: 40px;" />
+            <BitMenuButton Text="Classed Button" Items="basicCustoms" NameSelectors="nameSelectors" Class="custom-class" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Item's Style & Class:</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Item Styled & Classed Button" Items="itemStyleClassCustoms" NameSelectors="nameSelectors" />
+        </div>
+        <br /><br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Text="Styles" Items="basicCustoms" IconName="@BitIconName.ExpandMenu" NameSelectors="nameSelectors"
+                           Styles="@(new() { Icon = "color: red;",
+                                             Text = "color: aqua;",
+                                             ItemText = "color: dodgerblue; font-size: 11px;",
+                                             Overlay = "background-color: var(--bit-clr-bg-overlay);" })" />
 
-            <BitMenuButton Split
-                           Text="Outline"
-                           Items="basicCustoms"
-                           Variant="BitVariant.Outline"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-
-            <BitMenuButton Split
-                           Text="Text"
-                           Items="basicCustoms"
-                           Variant="BitVariant.Text"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" />
+            <BitMenuButton Text="Classes" Items="basicCustoms" IconName="@BitIconName.ExpandMenu" NameSelectors="nameSelectors"
+                           Classes="@(new() { Icon = "custom-icon", Text = "custom-text" })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Sticky" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
-        <div>
-            Experience the Sticky functionality of BitMenuButton, showcasing a button that remains sticky after an item selection. The button displays the selected item and retains its state for continuous user interaction.
-        </div>
+        <div>Explore BitMenuButton's customization capabilities.</div>
+        <div>Note that if <strong>Sticky</strong> set to true, HeaderTemplate and Text will be ignored.</div>
         <br />
         <div class="example-content">
-            <div>
-                <BitLabel>Default</BitLabel>
-                <BitMenuButton Sticky
-                               Items="basicCustoms"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-            </div>
-            <div>
-                <BitLabel>Split</BitLabel>
-                <BitMenuButton Split Sticky
-                               Items="basicCustoms"
-                               Variant="BitVariant.Outline"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-            </div>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Icons" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-    <ExamplePreview>
-        <div>
-            Present BitMenuButton instances with customized icons, enriching the visual options for representing menu buttons.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitMenuButton Text="IconName"
-                           Items="basicIconCustoms"
-                           IconName="@BitIconName.Edit"
-                           NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                    Key = { Selector = item => item.Id },
-                                                    IconName = { Selector = item => item.Icon } })" />
-
-            <BitMenuButton Split
-                           Text="ChevronDownIcon"
-                           Items="basicIconCustoms"
-                           IconName="@BitIconName.Add"
-                           Variant="BitVariant.Outline"
-                           ChevronDownIcon="@BitIconName.DoubleChevronDown"
-                           NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                    Key = { Selector = item => item.Id },
-                                                    IconName = { Selector = item => item.Icon } })" />
+            <di>HeaderTemplate</di>
+            <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors">
+                <HeaderTemplate>
+                    <div style="font-weight: bold; color: #d13438;">
+                        Custom Header!
+                    </div>
+                </HeaderTemplate>
+            </BitMenuButton>
+            <br /><br />
+            <div>ItemTemplate</div>
+            <BitMenuButton Text="Customs" Items="itemTemplateCustoms" NameSelectors="nameSelectors" Split>
+                <ItemTemplate Context="item">
+                    <div class="item-template-box">
+                        <span style="color: @(item.Id == "add-key" ? "green" : item.Id == "edit-key" ? "yellow" : "red");">
+                            @item.Name (@item.Id)
+                        </span>
+                    </div>
+                </ItemTemplate>
+            </BitMenuButton>
+            <br /><br />
+            <div>Item's template</div>
+            <BitMenuButton Text="Customs" Items="itemTemplateCustoms2" NameSelectors="nameSelectors" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
-        <div>
-            Demonstrate BitMenuButton instances highlighting item click events, offering versatile interactions within the menu buttons.
-        </div>
+        <div>Demonstrate BitMenuButton instances highlighting item click events, offering versatile interactions within the menu buttons.</div>
         <br />
         <div>
-            <BitLabel>Non-Sticky</BitLabel>
+            <div>Non-Sticky</div>
             <div class="example-content">
-                <BitMenuButton Text="Customs"
-                               Items="itemDisabledCustoms"
-                               NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                        Key = { Selector = item => item.Id },
-                                                        IconName = { Selector = item => item.Icon } })"
-                               OnClick="(MenuActionItem item) => exampleSelectedCustom = item?.Id" />
+                <BitMenuButton Text="Customs" Items="basicCustoms" NameSelectors="nameSelectors"
+                               OnChange="(MenuActionItem item) => eventsChangedCustom = item?.Id"
+                               OnClick="(MenuActionItem item) => eventsClickedCustom = item?.Id" />
 
-                <BitMenuButton Split
-                               Text="Customs"
-                               Items="basicCustomsOnClick"
-                               Variant="BitVariant.Outline"
-                               NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                        Key = { Selector = item => item.Id },
-                                                        IconName = { Selector = item => item.Icon } })"
-                               OnClick="@((MenuActionItem item) => exampleSelectedCustom = "Main button clicked")" />
+                <BitMenuButton Split Text="Customs" Items="basicCustomsOnClick" NameSelectors="nameSelectors"
+                               OnChange="(MenuActionItem item) => eventsChangedCustom = item?.Id"
+                               OnClick="@((MenuActionItem item) => eventsClickedCustom = "Main button clicked")" />
             </div>
-
-            <BitLabel>Sticky</BitLabel>
+            <br /><br />
+            <div>Sticky</div>
             <div class="example-content">
-                <BitMenuButton Sticky
-                               Items="basicCustomsOnClick"
-                               NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                        Key = { Selector = item => item.Id },
-                                                        IconName = { Selector = item => item.Icon } })"
-                               OnClick="(MenuActionItem item) => exampleSelectedCustom = item?.Id" />
+                <BitMenuButton Sticky Items="basicCustoms" NameSelectors="nameSelectors"
+                               OnChange="(MenuActionItem item) => eventsChangedCustom = item?.Id"
+                               OnClick="(MenuActionItem item) => eventsClickedCustom = item?.Id" />
 
-                <BitMenuButton Split Sticky
-                               Items="itemDisabledCustoms"
-                               Variant="BitVariant.Outline"
-                               NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                        Key = { Selector = item => item.Id },
-                                                        IconName = { Selector = item => item.Icon } })"
-                               OnClick="(MenuActionItem item) => exampleSelectedCustom = item?.Id" />
-            </div>
-        </div>
-        <div class="clicked-item">Clicked custom item: @exampleSelectedCustom</div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Customization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-    <ExamplePreview>
-        <div>
-            Explore BitMenuButton's customization capabilities.
-            <br />
-            Note that if <strong>Sticky</strong> set to true, HeaderTemplate and Text will be ignored.
-        </div>
-        <br />
-        <div class="example-content">
-            <div>
-                <BitLabel>HeaderTemplate</BitLabel>
-                <BitMenuButton Items="basicCustoms"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })">
-                    <HeaderTemplate>
-                        <div style="font-weight: bold; color: #d13438;">
-                            Custom Header!
-                        </div>
-                    </HeaderTemplate>
-                </BitMenuButton>
-            </div>
-
-            <div>
-                <BitLabel>ItemTemplate</BitLabel>
-                <BitMenuButton Split
-                               Text="Customs"
-                               Items="itemTemplateCustoms"
-                               Variant="BitVariant.Outline"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) } })">
-                    <ItemTemplate Context="item">
-                        <div class="item-template-box">
-                            <span style="color: @(item.Id == "add-key" ? "green" : item.Id == "edit-key" ? "yellow" : "red");">
-                                @item.Name (@item.Id)
-                            </span>
-                        </div>
-                    </ItemTemplate>
-                </BitMenuButton>
-            </div>
-
-            <div>
-                <BitLabel>Item's template</BitLabel>
-                <BitMenuButton Text="Customs"
-                               Items="itemTemplateCustoms2"
-                               NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                        Key = { Name = nameof(MenuActionItem.Id) },
-                                                        IconName = { Name = nameof(MenuActionItem.Icon) },
-                                                        Template = { Name = nameof(MenuActionItem.Fragment)} })" />
-            </div>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-    <ExamplePreview>
-        <div>
-            Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
-        </div>
-        <br />
-        <div>Component's Style & Class:</div>
-        <br />
-        <div class="example-content">
-            <BitMenuButton Text="Styled Button"
-                           Items="basicCustoms"
-                           Style="width: 200px; height: 40px;"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })" />
-
-            <BitMenuButton Text="Classed Button"
-                           Items="basicCustoms"
-                           Class="custom-class"
-                           NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                    Key = { Selector = item => item.Id },
-                                                    IconName = { Selector = item => item.Icon } })" />
-        </div>
-        <br /><br /><br /><br />
-        <div>Item's Style & Class:</div>
-        <br />
-        <div class="example-content">
-            <BitMenuButton Text="Item Styled & Classed Button"
-                           Items="itemStyleClassCustoms"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) },
-                                                    Class = { Name = nameof(MenuActionItem.Class) },
-                                                    Style = { Name = nameof(MenuActionItem.Style) } })" />
-        </div>
-        <br /><br /><br /><br />
-        <div><b>Styles</b> & <b>Classes</b>:</div>
-        <br />
-        <div class="example-content">
-            <BitMenuButton Text="Styles"
-                           Items="basicCustoms"
-                           IconName="@BitIconName.ExpandMenu"
-                           NameSelectors="@(new() { Text = { Name = nameof(MenuActionItem.Name) },
-                                                    Key = { Name = nameof(MenuActionItem.Id) },
-                                                    IconName = { Name = nameof(MenuActionItem.Icon) } })"
-                           Styles="@(new() { Icon = "color: red;",
-                                             Text = "color: aqua;",
-                                             ItemText = "color: dodgerblue; font-size: 11px;",
-                                             Overlay = "background-color: var(--bit-clr-bg-overlay);" })" />
-
-            <BitMenuButton Text="Classes"
-                           Items="basicCustoms"
-                           IconName="@BitIconName.ExpandMenu"
-                           Variant="BitVariant.Outline"
-                           NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                    Key = { Selector = item => item.Id },
-                                                    IconName = { Selector = item => item.Icon } })"
-                           Classes="@(new() { Icon = "custom-icon", Text = "custom-text" })" />
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-    <ExamplePreview>
-        <div>
-            This example demonstrates different ways to handle item selection and changes within the component.
-        </div>
-        <br />
-        <div class="example-content">
-            <div>
-                <BitLabel>Default SelectedItem</BitLabel>
-                <BitMenuButton Split Sticky
-                               Items="basicCustoms"
-                               DefaultSelectedItem="basicCustoms[1]"
-                               NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                        Key = { Selector = item => item.Id },
-                                                        IconName = { Selector = item => item.Icon } })" />
+                <BitMenuButton Sticky Split Items="basicCustomsOnClick" NameSelectors="nameSelectors"
+                               OnChange="(MenuActionItem item) => eventsChangedCustom = item?.Id"
+                               OnClick="(MenuActionItem item) => eventsClickedCustom = item?.Id" />
             </div>
         </div>
         <br /><br />
-        <div class="example-content">
-            <div>
-                <BitLabel>Two-way SelectedItem</BitLabel>
-                <BitMenuButton Sticky
-                               Items="basicCustoms"
-                               @bind-SelectedItem="twoWaySelectedCustom"
-                               Variant="BitVariant.Outline"
-                               NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                        Key = { Selector = item => item.Id },
-                                                        IconName = { Selector = item => item.Icon } })" />
-                <br />
-                <div>Selected item: <b>@twoWaySelectedCustom.Name</b></div>
-            </div>
+        <div>Changed custom item: @eventsChangedCustom</div>
+        <div>Clicked custom item: @eventsClickedCustom</div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Binding" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ExamplePreview>
+        <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
+        <br />
+        <div>
+            <div>DefaultSelectedItem:</div>
+            <BitMenuButton Split Sticky Items="basicCustoms" DefaultSelectedItem="basicCustoms[1]" NameSelectors="nameSelectors" />
         </div>
-        <br /><br />
-        <div class="example-content">
-            <div>
-                <BitLabel>OnChange</BitLabel>
-                <BitMenuButton Split Sticky
-                               Items="basicCustoms"
-                               OnChange="(MenuActionItem item) => changedSelectedCustom = item"
-                               NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                        Key = { Selector = item => item.Id },
-                                                        IconName = { Selector = item => item.Icon } })" />
-                <br />
-                <div>Changed item: <b>@changedSelectedCustom?.Name</b></div>
-            </div>
+        <br /><br /><br />
+        <div>
+            <div>Two-way SelectedItem:</div>
+            <BitMenuButton Sticky Items="basicCustoms" NameSelectors="nameSelectors" @bind-SelectedItem="twoWaySelectedCustom" />
+            <BitChoiceGroup Horizontal Items="@choiceGroupCustoms" @bind-Value="@twoWaySelectedCustom" />
         </div>
-        <br /><br />
-        <div class="example-content">
-            <div>
-                <BitLabel>IsSelected</BitLabel>
-                <BitMenuButton Sticky
-                               Items="isSelectedCustoms"
-                               Variant="BitVariant.Outline"
-                               NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                        Key = { Selector = item => item.Id },
-                                                        IconName = { Selector = item => item.Icon } })" />
-            </div>
+        <br /><br /><br />
+        <div>
+            <div>Item's IsSelected:</div>
+            <BitMenuButton Sticky Items="isSelectedCustoms" NameSelectors="nameSelectors" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
-        <div class="example-content" style="direction:rtl">
-            <BitMenuButton Text="گزینه ها"
-                           Dir="BitDir.Rtl"
-                           Items="rtlCustoms"
-                           IconName="@BitIconName.Edit"
-                           NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                    Key = { Selector = item => item.Id },
-                                                    IconName = { Selector = item => item.Icon } })" />
-
-            <BitMenuButton Split
-                           Text="گرینه ها"
-                           Dir="BitDir.Rtl"
-                           Items="rtlCustoms"
-                           IconName="@BitIconName.Add"
-                           Variant="BitVariant.Outline"
-                           ChevronDownIcon="@BitIconName.DoubleChevronDown"
-                           NameSelectors="@(new() { Text = { Selector = item => item.Name },
-                                                    Key = { Selector = item => item.Id },
-                                                    IconName = { Selector = item => item.Icon } })" />
+        <div class="example-content" dir="rtl">
+            <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" Items="rtlCustoms" IconName="@BitIconName.Edit" NameSelectors="nameSelectors" />
+            <BitMenuButton Text="گرینه ها" Dir="BitDir.Rtl" Items="rtlCustoms" ChevronDownIcon="@BitIconName.DoubleChevronDown" NameSelectors="nameSelectors" Split />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 @code {
-    private List<MenuActionItem> itemTemplateCustoms2 = new()
-    {
+    private List<MenuActionItem> itemTemplateCustoms2 = 
+    [
         new()
         {
-            Name = "Add",
-            Id = "add-key",
-            Icon = BitIconName.Add,
+            Name = "Add", Id = "add-key", Icon = BitIconName.Add,
             Fragment = (item => @<div class="item-template-box" style="color:green">@item.Name (@item.Id)</div>)
         },
         new()
         {
-            Name = "Edit",
-            Id = "edit-key",
-            Icon = BitIconName.Edit,
+            Name = "Edit", Id = "edit-key", Icon = BitIconName.Edit,
             Fragment = (item => @<div class="item-template-box" style="color:yellow">@item.Name (@item.Id)</div>)
         },
         new()
         {
-            Name = "Delete",
-            Id = "delete-key",
-            Icon = BitIconName.Delete,
+            Name = "Delete", Id = "delete-key", Icon = BitIconName.Delete,
             Fragment = (item => @<div class="item-template-box" style="color:red">@item.Name (@item.Id)</div>)
         }
-    };
+    ];
 }

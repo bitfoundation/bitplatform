@@ -12,13 +12,12 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <button @onclick="() => HandleOnClick(Sticky ? SelectedItem : null)"
+    <button @onclick="() => HandleOnHeaderClick(Sticky ? SelectedItem : null)"
             type="button"
             tabindex="@(IsEnabled ? 0 : -1)"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
-            disabled="@(GetIsEnabled(SelectedItem) is false)"
             style="@GetStyle(SelectedItem);@Styles?.OperatorButton"
             class="bit-mnb-opb @GetClass(SelectedItem) @Classes?.OperatorButton">
         @if (Sticky)
@@ -90,7 +89,7 @@
     <div id="@_calloutId"
          style="@Styles?.Callout"
          class="bit-mnb-cal @Classes?.Callout">
-        <ul role="presentation">
+        <ul role="presentation" class="bit-mnb-cul">
             @foreach (TItem item in _items)
             {
                 if (Sticky && item == SelectedItem) continue;
@@ -119,7 +118,7 @@
                             var iconName = GetIconName(item);
                             @if (iconName.HasValue())
                             {
-                                <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                <i style="@Styles?.ItemIcon" class="bit-mnb-iic bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
                             }
                             <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
                                 @GetText(item)

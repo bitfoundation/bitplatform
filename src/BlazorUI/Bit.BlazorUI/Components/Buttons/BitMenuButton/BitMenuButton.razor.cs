@@ -166,7 +166,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             SelectedItem = item;
         }
 
-        SelectedItem ??= _items.FirstOrDefault();
+        SelectedItem ??= _items.FirstOrDefault(GetIsEnabled);
         ClassBuilder.Reset();
         _ = SelectedItemChanged.InvokeAsync(SelectedItem);
 
@@ -211,8 +211,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         });
 
         ClassBuilder.Register(() => _isCalloutOpen ? "bit-mnb-omn" : string.Empty);
-
-        ClassBuilder.Register(() => GetIsEnabled(SelectedItem) ? string.Empty : "bit-mnb-cds");
     }
 
     protected override void RegisterCssStyles()
@@ -244,7 +242,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             _items = Items.ToList();
 
             SelectedItem ??= _items.LastOrDefault(GetIsSelected);
-            SelectedItem ??= _items.FirstOrDefault();
+            SelectedItem ??= _items.FirstOrDefault(GetIsEnabled);
             ClassBuilder.Reset();
             _ = SelectedItemChanged.InvokeAsync(SelectedItem);
         }
@@ -454,7 +452,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-    private async Task HandleOnClick(TItem? item)
+    private async Task HandleOnHeaderClick(TItem? item)
     {
         if (IsEnabled is false) return;
 
