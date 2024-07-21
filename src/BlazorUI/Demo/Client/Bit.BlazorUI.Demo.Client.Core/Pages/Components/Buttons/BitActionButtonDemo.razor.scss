@@ -14,16 +14,30 @@
 }
 
 ::deep {
-    .custom-class {
-        color: burlywood;
-    }
-
     .custom-icon {
-        font-size: 1rem;
-        font-weight: bold;
+        color: hotpink;
     }
 
     .custom-content {
-        font-size: 1.5rem;
+        position: relative;
+    }
+
+    .custom-content::after {
+        content: '';
+        left: 0;
+        width: 0;
+        height: 2px;
+        bottom: -6px;
+        position: absolute;
+        transition: 0.3s ease;
+        background: linear-gradient(90deg, #ff00cc, #3333ff);
+    }
+
+    .custom-root:hover .custom-content {
+        color: blueviolet;
+    }
+
+    .custom-root:hover .custom-content::after {
+        width: 100%;
     }
 }

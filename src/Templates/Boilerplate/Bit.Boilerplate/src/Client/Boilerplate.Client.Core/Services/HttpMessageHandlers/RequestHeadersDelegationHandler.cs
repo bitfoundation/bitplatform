@@ -16,11 +16,6 @@ public class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
 
-        if (request.Headers.UserAgent.Any() is false)
-        {
-            request.Headers.UserAgent.ParseAdd(AppPlatform.OSDescription);
-        }
-
         return await base.SendAsync(request, cancellationToken);
     }
 }
