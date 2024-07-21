@@ -220,6 +220,9 @@
     <data name="NotFoundText" xml:space="preserve">
     <value>Il n'y a rien ici.</value>
   </data>
+    <data name="UnknwonDevice" xml:space="preserve">
+    <value>Périphérique inconnu</value>
+  </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Modifier le profil hors ligne</value>

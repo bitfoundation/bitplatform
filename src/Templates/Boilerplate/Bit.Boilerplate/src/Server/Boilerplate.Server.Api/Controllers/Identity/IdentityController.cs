@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using Humanizer;
-using DeviceDetectorNET;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -172,7 +171,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var userSession = CreateUserSession();
+        var userSession = CreateUserSession(request.DeviceInfo);
 
         var result = string.IsNullOrEmpty(request.Otp) is false
             ? await signInManager.OtpSignInAsync(user, request.Otp!)
@@ -227,21 +226,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful.
     /// </summary>
-    private UserSession CreateUserSession()
+    private UserSession CreateUserSession(string? device)
     {
-        var userAgentParseResult = DeviceDetector.GetInfoFromUserAgent(Request.Headers.UserAgent);
-
-        var device = userAgentParseResult.Success ?
-                                $"{userAgentParseResult.Match.BrowserFamily}, {userAgentParseResult.Match.OsFamily} {userAgentParseResult.Match.Os.Version}"
-                                : userAgentParseResult.ToString();
-
         var userSession = new UserSession
         {
             SessionUniqueId = Guid.NewGuid(),
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
             Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}",
-            Device = device,
+            Device = device ?? Localizer[nameof(AppStrings.UnknwonDevice)],
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
             StartedOn = DateTimeOffset.UtcNow
         };

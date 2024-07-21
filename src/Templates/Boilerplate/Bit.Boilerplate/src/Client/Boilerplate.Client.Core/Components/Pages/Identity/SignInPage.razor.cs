@@ -48,6 +48,7 @@ public partial class SignInPage
         model.UserName = UserNameQueryString;
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
+        model.DeviceInfo = AppPlatform.OSDescription;
 
         if (string.IsNullOrEmpty(OtpQueryString) is false)
         {
