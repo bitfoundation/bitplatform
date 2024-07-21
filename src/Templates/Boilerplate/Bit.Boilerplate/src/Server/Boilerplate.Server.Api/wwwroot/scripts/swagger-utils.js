@@ -200,7 +200,7 @@ const signIn = async (swagger, userName, email, phone, password) => {
     const response = await fetch('/api/Identity/SignIn', {
         headers: { "Content-Type": "application/json; charset=utf-8" },
         method: 'POST',
-        body: JSON.stringify({ "userName": userName, "email": email, "phoneNumber": phone, "password": password })
+        body: JSON.stringify({ "userName": userName, "email": email, "phoneNumber": phone, "password": password, deviceInfo: "SwaggerUI" })
     })
     if (response.ok) {
         const result = await response.json();

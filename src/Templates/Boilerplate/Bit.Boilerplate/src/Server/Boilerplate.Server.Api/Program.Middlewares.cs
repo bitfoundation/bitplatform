@@ -40,21 +40,7 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            OnPrepareResponse = ctx =>
-            {
-                if (env.IsDevelopment() is false)
-                {
-                    // https://bitplatform.dev/templates/cache-mechanism
-                    ctx.Context.Response.GetTypedHeaders().CacheControl = new()
-                    {
-                        MaxAge = TimeSpan.FromDays(7),
-                        Public = true
-                    };
-                }
-            }
-        });
+        app.UseStaticFiles();
 
         app.UseCors();
 

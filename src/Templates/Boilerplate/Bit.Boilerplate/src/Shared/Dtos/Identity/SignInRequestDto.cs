@@ -38,6 +38,9 @@ public class SignInRequestDto : IdentityRequestDto
     [Display(Name = nameof(AppStrings.TwoFactorRecoveryCode))]
     public string? TwoFactorRecoveryCode { get; set; }
 
+    /// <example>Samsung Android 14</example>
+    public string? DeviceInfo { get; set; }
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var result = base.Validate(validationContext).ToList();
