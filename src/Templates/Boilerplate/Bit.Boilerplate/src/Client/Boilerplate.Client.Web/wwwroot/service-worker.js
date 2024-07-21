@@ -15,7 +15,7 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        url: "_framework/blazor.web.js"
+        url: "_framework\/blazor.web.js?v=8.0.303"
     }
 ];
 
