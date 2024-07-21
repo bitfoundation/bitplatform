@@ -74,12 +74,13 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
+        var style = "padding: 1rem;";
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Style, "padding: 1rem;");
+            parameters.Add(p => p.Style, style);
         });
 
-        component.MarkupMatches(@"<div style=""padding: 1rem;"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""{style}"" class=""bit-stk bit-stk-top"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -98,8 +99,6 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top{cssClass}"" id:ignore></div>");
     }
 
-
-
     [DataTestMethod]
     public void BitStickyShouldRespectClassChangingAfterRender()
     {
@@ -107,12 +106,14 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
+        var cssClass = "test-class";
+
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Class, "test-class");
+            parameters.Add(p => p.Class, cssClass);
         });
 
-        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top test-class"" id:ignore></div>");
+        component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top {cssClass}"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -270,12 +271,14 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
+        var top = "20px";
+
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Top, "20px");
+            parameters.Add(p => p.Top, top);
         });
 
-        component.MarkupMatches(@"<div style=""top: 20px;"" class=""bit-stk"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""top: {top};"" class=""bit-stk"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -308,12 +311,14 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
+        var bottom = "20px";
+
         component.SetParametersAndRender(parameters =>
         {
             parameters.Add(p => p.Bottom, "20px");
         });
 
-        component.MarkupMatches(@"<div style=""bottom: 20px;"" class=""bit-stk"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""bottom: {bottom};"" class=""bit-stk"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -346,12 +351,14 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
+        var left = "20px";
+
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Left, "20px");
+            parameters.Add(p => p.Left, left);
         });
 
-        component.MarkupMatches(@"<div style=""left: 20px;"" class=""bit-stk"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""left: {left};"" class=""bit-stk"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -384,12 +391,38 @@ public class BitStickyTests : BunitTestContext
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
 
+        var right = "20px";
+
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Right, "20px");
+            parameters.Add(p => p.Right, right);
         });
 
-        component.MarkupMatches(@"<div style=""right: 20px;"" class=""bit-stk"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""right: {right};"" class=""bit-stk"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+       DataRow("14px", "15px", "16px", "17px"),
+       DataRow("1.5rem", "2.5rem", "3.5rem", "4.5rem")
+    ]
+    public void BitStickyShouldRespectTopBottomLeftRight(string top, string bottom, string left, string right)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Top, top);
+            parameters.Add(p => p.Bottom, bottom);
+            parameters.Add(p => p.Left, left);
+            parameters.Add(p => p.Right, right);
+        });
+
+        if (right.HasValue())
+        {
+            component.MarkupMatches(@$"<div style=""top: {top};bottom: {bottom};left: {left};right: {right};"" class=""bit-stk"" id:ignore></div>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+        }
     }
 
     [DataTestMethod,
