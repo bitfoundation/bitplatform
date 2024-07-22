@@ -262,7 +262,7 @@
                 {
                     "copyOnly": [
                         "global.json",
-                        "**.Web/Pages/Home.razor",
+                        "**/HomePage.razor",
                         "**/*.svg",
                         "**/*.png"
                     ],
