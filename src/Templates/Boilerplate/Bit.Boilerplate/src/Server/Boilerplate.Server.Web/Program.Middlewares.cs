@@ -104,6 +104,8 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
+        app.UseSiteMap();
+
         app.MapControllers().RequireAuthorization();
 
         // Handle the rest of requests with blazor
@@ -117,6 +119,36 @@ public static partial class Program
             blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
         }
     }
+
+    private static void UseSiteMap(this WebApplication app)
+    {
+        var urls = typeof(Urls)
+            .GetFields()
+            .Select(f => f.GetValue(null)!.ToString()!)
+            .ToList()!;
+
+        urls = CultureInfoManager.MultilingualEnabled ?
+            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{url}?culture={sc.Culture.Name}"))).ToList() :
+            urls;
+
+        const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
+
+        app.MapGet("/sitemap.xml", async context =>
+        {
+            if (siteMap is null)
+            {
+                var baseUrl = context.Request.GetBaseUrl();
+
+                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+            }
+
+            context.Response.Headers.ContentType = "application/xml";
+
+            await context.Response.WriteAsync(siteMap, context.RequestAborted);
+        });
+    }
+
+    private static string? siteMap;
 
     /// <summary>
     /// Prior to the introduction of .NET 8, the Blazor router effectively managed NotFound and NotAuthorized components during pre-rendering.
