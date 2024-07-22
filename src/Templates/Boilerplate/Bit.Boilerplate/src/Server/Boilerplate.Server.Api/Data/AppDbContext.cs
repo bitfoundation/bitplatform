@@ -57,16 +57,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         }
     }
 
-    //#if (database == "Sqlite")
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
         if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
         {
         //#endif
+        //#if (database == "Sqlite")
         // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type:
         configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
         configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        //#endif
         //#if (IsInsideProjectTemplate == true)
         }
         //#endif
@@ -75,16 +76,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         if (Database.ProviderName.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
         {
             //#endif
-            // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type:
+            //#if (database == "PostgreSQL")
+            // PostgreSQL does not support DateTimeOffset with offset other than Utc.
             configurationBuilder.Properties<DateTimeOffset>().HaveConversion<PostgresDateTimeOffsetConverter>();
             configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<NullablePostgresDateTimeOffsetConverter>();
+            //#endif
             //#if (IsInsideProjectTemplate == true)
         }
         //#endif
 
         base.ConfigureConventions(configurationBuilder);
     }
-    //#endif
 
     private void ConfigureIdentityTables(ModelBuilder builder)
     {
