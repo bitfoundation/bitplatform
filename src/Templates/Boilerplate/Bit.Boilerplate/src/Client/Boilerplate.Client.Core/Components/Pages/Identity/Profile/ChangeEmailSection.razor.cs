@@ -7,8 +7,10 @@ public partial class ChangeEmailSection
 {
     private bool isWaiting;
     private string? message;
+    private BitSeverity severity;
     private bool showConfirmation;
     private bool isEmailUnavailable = true;
+    private ElementReference messageRef = default!;
     private readonly ChangeEmailRequestDto changeModel = new();
     private readonly SendEmailTokenRequestDto sendModel = new();
 
@@ -62,10 +64,16 @@ public partial class ChangeEmailSection
             showConfirmation = true;
             isEmailUnavailable = false;
             changeModel.Email = sendModel.Email;
+
+            severity = BitSeverity.Success;
+            message = Localizer[nameof(AppStrings.SuccessfulSendChangeEmailTokenMessage)];
+            await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
+            severity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
@@ -89,6 +97,8 @@ public partial class ChangeEmailSection
         catch (KnownException e)
         {
             message = e.Message;
+            severity = BitSeverity.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {

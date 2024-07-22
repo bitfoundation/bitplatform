@@ -1852,6 +1852,24 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Change email token has been sent to you.
+        /// </summary>
+        public static string SuccessfulSendChangeEmailTokenMessage {
+            get {
+                return ResourceManager.GetString("SuccessfulSendChangeEmailTokenMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Change phone number token has been sent to you.
+        /// </summary>
+        public static string SuccessfulSendChangePhoneNumberTokenMessage {
+            get {
+                return ResourceManager.GetString("SuccessfulSendChangePhoneNumberTokenMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Is accept terms?.
         /// </summary>
         public static string TermsAccepted {
