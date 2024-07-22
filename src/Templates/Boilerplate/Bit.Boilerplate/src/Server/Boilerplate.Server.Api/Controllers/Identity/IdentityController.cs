@@ -533,7 +533,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
         }
 
-        if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), url).ToString());
+        if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
         if (string.IsNullOrEmpty(AppSettings.WebClientUrl) is false) return Redirect(new Uri(new Uri(AppSettings.WebClientUrl), url).ToString());
         return LocalRedirect($"~{url}");
     }
