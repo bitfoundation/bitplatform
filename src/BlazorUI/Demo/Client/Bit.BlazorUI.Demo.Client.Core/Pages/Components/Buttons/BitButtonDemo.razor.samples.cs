@@ -129,35 +129,55 @@ public partial class BitButtonDemo
     private readonly string example5RazorCode = @"
 <style>
     .custom-class {
-        color: blueviolet;
         border-radius: 1rem;
+        border-color: blueviolet;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, magenta, transparent) blue;
+    }
+
+    .custom-class:hover {
+        border-color: magenta;
+        background-color: magenta;
+    }
+
+    .custom-content {
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
     }
 
     .custom-root {
+        color: aqua;
         min-width: 7.2rem;
+        font-weight: bold;
+        border-radius: 1rem;
+        border-color: aqua;
         box-shadow: aqua 0 0 0.5rem;
     }
 
-    .custom-container {
-        text-shadow: aqua 0 0 0.5rem;
+    .custom-root:hover {
+        color: black;
+        background-color: aqua;
     }
 
-    .custom-label {
-        color: goldenrod;
+    .custom-container {
+        text-shadow: tomato 0 0 0.5rem;
     }
 
     .custom-spinner {
-        border-color: aqua;
+        border-color: red;
         border-top-color: goldenrod;
     }
 </style>
 
 
-<BitButton Style=""color:darkblue; font-weight:bold"" SecondaryText=""this is the secondary text"">
+<BitButton Style=""background-color: transparent; border-color: blueviolet; color: blueviolet;""
+           SecondaryText=""this is the secondary text""
+           Variant=""BitVariant.Outline"">
     Styled Button
 </BitButton>
 
-<BitButton Class=""custom-class"" Variant=""BitVariant.Outline"">
+<BitButton Class=""custom-class"">
     Classed Button
 </BitButton>
 
@@ -165,21 +185,20 @@ public partial class BitButtonDemo
 <BitButton IsLoading=""stylesIsLoading""
            LoadingLabel=""Wait...""
            OnClick=""LoadingStylesClick""
-           Styles=""@(new() { Root = ""border-radius: 1rem; min-width: 6rem;"",
-                             LoadingLabel = ""color: tomato;"",
-                             Spinner = ""border-color: goldenrod; border-top-color: tomato;"" })"">
-    Fill
+           Styles=""@(new() { Root = ""background-color: peachpuff; border-color: peachpuff; min-width: 6rem;"",
+                             LoadingLabel = ""color: tomato; font-weight: bold;"",
+                             Spinner = ""border-color: tomato; border-top-color: goldenrod;"" })"">
+    Click me
 </BitButton>
 
 <BitButton IsLoading=""classesIsLoading""
            LoadingLabel=""Sending...""
-           OnClick=""LoadingClassesClick"" 
+           OnClick=""LoadingClassesClick""
            Variant=""BitVariant.Outline""
            Classes=""@(new() { Root = ""custom-root"",
                               LoadingContainer = ""custom-container"",
-                              LoadingLabel = ""custom-label"",
                               Spinner = ""custom-spinner"" })"">
-    Outline
+    Click me
 </BitButton>";
     private readonly string example5CsharpCode = @"
 private bool stylesIsLoading;
@@ -396,6 +415,15 @@ private async Task LoadingTemplateClick()
 }";
 
     private readonly string example12RazorCode = @"
+<BitButton Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+    Open bitplatform.dev
+</BitButton>
+
+<BitButton Href=""https://github.com/bitfoundation/bitplatform"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+    Go to bitplatform GitHub
+</BitButton>";
+
+    private readonly string example13RazorCode = @"
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
     <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
@@ -407,7 +435,7 @@ private async Task LoadingTemplateClick()
         <BitButton ButtonType=""BitButtonType.Button"">Button</BitButton>
     </div>
 </EditForm>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -426,25 +454,25 @@ private async Task HandleValidSubmit()
     StateHasChanged();
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">
-    دکمه با آیکون
+    دکمه با آیکن
 </BitButton>
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Outline"">
-    دکمه با آیکون
+    دکمه با آیکن
 </BitButton>
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Text"">
-    دکمه با آیکون
+    دکمه با آیکن
 </BitButton>
 
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"" SecondaryText=""این متن ثانویه است"">
-    دکمه با آیکون
+    دکمه با آیکن
 </BitButton>
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Outline"" SecondaryText=""این متن ثانویه است"">
-    دکمه با آیکون
+    دکمه با آیکن
 </BitButton>
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Text"" SecondaryText=""این متن ثانویه است"">
-    دکمه با آیکون
+    دکمه با آیکن
 </BitButton>
 
 <BitButton IsLoading Dir=""BitDir.Rtl"" LoadingLabel=""در حال بارگذاری"" Variant=""BitVariant.Fill"" />

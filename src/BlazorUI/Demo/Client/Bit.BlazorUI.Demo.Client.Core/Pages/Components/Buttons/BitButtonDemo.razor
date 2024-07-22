@@ -207,14 +207,17 @@
     <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
-            <br />
+            <br /><br />
             <div>Component's Style & Class:</div>
             <br />
             <div class="example-content">
-                <BitButton Style="color:darkblue; font-weight:bold" SecondaryText="this is the secondary text">
+                <BitButton Style="background-color: transparent; border-color: blueviolet; color: blueviolet;"
+                           SecondaryText="this is the secondary text"
+                           Variant="BitVariant.Outline">
                     Styled Button
                 </BitButton>
-                <BitButton Class="custom-class" Variant="BitVariant.Outline">
+
+                <BitButton Class="custom-class">
                     Classed Button
                 </BitButton>
             </div>
@@ -225,9 +228,9 @@
                 <BitButton IsLoading="stylesIsLoading"
                            LoadingLabel="Wait..."
                            OnClick="LoadingStylesClick"
-                           Styles="@(new() { Root = "border-radius: 1rem; min-width: 6rem;",
-                                             LoadingLabel = "color: tomato;",
-                                             Spinner = "border-color: goldenrod; border-top-color: tomato;" })">
+                           Styles="@(new() { Root = "background-color: peachpuff; border-color: peachpuff; min-width: 6rem;",
+                                             LoadingLabel = "color: tomato; font-weight: bold;",
+                                             Spinner = "border-color: tomato; border-top-color: goldenrod;" })">
                     Click me
                 </BitButton>
 
@@ -237,7 +240,6 @@
                            Variant="BitVariant.Outline"
                            Classes="@(new() { Root = "custom-root",
                                               LoadingContainer = "custom-container",
-                                              LoadingLabel = "custom-label",
                                               Spinner = "custom-spinner" })">
                     Click me
                 </BitButton>
@@ -403,6 +405,7 @@
                            LoadingLabelPosition="BitLabelPosition.End">
                     End
                 </BitButton>
+
                 <BitButton IsLoading="true"
                            LoadingLabel="Start..."
                            Style="min-width: 6.5rem;"
@@ -420,6 +423,7 @@
                            LoadingLabelPosition="BitLabelPosition.Bottom">
                     Bottom
                 </BitButton>
+
                 <BitButton IsLoading="true"
                            LoadingLabel="Top..."
                            Style="min-width: 6.5rem;"
@@ -451,7 +455,23 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <ComponentExampleBox Title="Href" RazorCode="@example12RazorCode" Id="example12">
+        <ExamplePreview>
+            <div>Use BitButton as a hyperlink to external URLs, opening either in a new tab or the same tab.</div>
+            <br />
+            <div class="example-content">
+                <BitButton Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+                    Open bitplatform.dev
+                </BitButton>
+
+                <BitButton Href="https://github.com/bitfoundation/bitplatform" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+                    Go to bitplatform GitHub
+                </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Button Type" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <ExamplePreview>
             <div>BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.</div>
             <br />
@@ -483,29 +503,31 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+    <ComponentExampleBox Title="RTL" RazorCode="@example14RazorCode" Id="example14">
         <ExamplePreview>
+            <div>Use BitButton in right-to-left (RTL).</div>
+            <br />
             <div class="example-content" dir="rtl">
                 <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Fill">
-                    دکمه با آیکون
+                    دکمه با آیکن
                 </BitButton>
                 <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Outline">
-                    دکمه با آیکون
+                    دکمه با آیکن
                 </BitButton>
                 <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Text">
-                    دکمه با آیکون
+                    دکمه با آیکن
                 </BitButton>
             </div>
             <br />
             <div class="example-content" dir="rtl">
                 <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Fill" SecondaryText="این متن ثانویه است">
-                    دکمه با آیکون
+                    دکمه با آیکن
                 </BitButton>
                 <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Outline" SecondaryText="این متن ثانویه است">
-                    دکمه با آیکون
+                    دکمه با آیکن
                 </BitButton>
                 <BitButton Dir="BitDir.Rtl" IconName="@BitIconName.Emoji" Variant="BitVariant.Text" SecondaryText="این متن ثانویه است">
-                    دکمه با آیکون
+                    دکمه با آیکن
                 </BitButton>
             </div>
             <br /><br />
