@@ -29,7 +29,8 @@ self.serverHandledUrls = [
     /\/healthz/,
     /\/swagger/,
     /\/signin-/,
-    /\/.well-known/
+    /\/.well-known/,
+    /\/sitemap.xml/,
 ];
 
 self.defaultUrl = "/";
