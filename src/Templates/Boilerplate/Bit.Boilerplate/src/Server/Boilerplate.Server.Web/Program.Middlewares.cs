@@ -128,7 +128,7 @@ public static partial class Program
             .ToList()!;
 
         urls = CultureInfoManager.MultilingualEnabled ?
-            CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{url}?culture={sc.Culture.Name}")).ToList() :
+            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{url}?culture={sc.Culture.Name}"))).ToList() :
             urls;
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
