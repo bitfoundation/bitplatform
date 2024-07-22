@@ -202,6 +202,12 @@
     <data name="ChangePhoneNumberTitle" xml:space="preserve">
     <value>Change phone number</value>
   </data>
+    <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
+    <value>Change email token has been sent to you</value>
+  </data>
+    <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
+    <value>Change phone number token has been sent to you</value>
+  </data>
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>Your sessions</value>
   </data>
