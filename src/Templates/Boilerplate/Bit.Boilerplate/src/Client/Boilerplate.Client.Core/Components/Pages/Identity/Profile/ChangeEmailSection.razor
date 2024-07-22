@@ -1,14 +1,12 @@
 @inherits AppComponentBase
 
-<div>
-    @if (string.IsNullOrEmpty(message) is false)
-    {
-        <BitMessage Class="form-message-bar"
-                    Severity="BitSeverity.Error"
-                    OnDismiss="() => message = null">
-            @message
-        </BitMessage>
-    }
+<div style="width:100%">
+    <div @ref="messageRef" class="form-message-bar">
+        @if (string.IsNullOrEmpty(message) is false)
+        {
+            <BitMessage Severity="severity" OnDismiss="() => message = null">@message</BitMessage>
+        }
+    </div>
 
     <BitTypography Variant="BitTypographyVariant.H2">
         @Localizer[nameof(AppStrings.ChangeEmailTitle)]

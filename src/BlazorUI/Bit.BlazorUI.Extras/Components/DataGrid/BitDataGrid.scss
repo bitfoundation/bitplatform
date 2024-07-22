@@ -5,6 +5,10 @@
 */
 
 .bitdatagrid {
+    /*========================================================*/
+    /*default theme*/
+    /*========================================================*/
+    --col-gap: 1rem;
 
     th {
         position: relative; /* So that col-options appears next to it */
@@ -134,10 +138,6 @@
         white-space: nowrap;
         text-overflow: ellipsis;
     }
-    /*========================================================*/
-    /*default theme*/
-    /*========================================================*/
-    --col-gap: 1rem;
 
     .col-header-content {
         padding-right: var(--col-gap);
