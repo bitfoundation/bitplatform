@@ -72,7 +72,7 @@ public static partial class Program
             {
                 foreach (var ua in currentRequest.Headers.UserAgent)
                 {
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(ua);
+                    httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(ua);
                 }
             }
 

@@ -353,6 +353,12 @@
                         "src/Client/Boilerplate.Client.Maui/Services/MauiTelemetryInitializer.cs",
                         "src/Client/Boilerplate.Client.Windows/Services/WindowsTelemetryInitializer.cs"
                     ]
+                },
+                {
+                    "condition": "(database != PostgreSQL)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/PostgresDateTimeOffsetConverter.cs"
+                    ]
                 }
             ]
         }
