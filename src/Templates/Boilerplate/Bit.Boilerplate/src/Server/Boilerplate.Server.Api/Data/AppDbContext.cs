@@ -5,9 +5,10 @@ using Boilerplate.Server.Api.Models.Products;
 //#elif (sample == "Todo")
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
-using Boilerplate.Server.Api.Models.Identity;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Data.Configurations;
 
 namespace Boilerplate.Server.Api.Data;
 
@@ -67,6 +68,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
         configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
         //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+        {
+            //#endif
+            // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type:
+            configurationBuilder.Properties<DateTimeOffset>().HaveConversion<PostgresDateTimeOffsetConverter>();
+            configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<NullablePostgresDateTimeOffsetConverter>();
+            //#if (IsInsideProjectTemplate == true)
         }
         //#endif
 
