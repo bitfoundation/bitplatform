@@ -26,7 +26,7 @@ public partial class NavMenu
             {
                 Text = Localizer[nameof(AppStrings.Home)],
                 IconName = BitIconName.Home,
-                Url = "/",
+                Url = Urls.HomePage,
             },
             //#if (sample == "Admin")
             new()
