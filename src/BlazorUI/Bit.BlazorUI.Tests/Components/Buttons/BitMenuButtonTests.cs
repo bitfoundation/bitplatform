@@ -130,7 +130,7 @@ public class BitMenuButtonTests : BunitTestContext
         var lastItem = com.Find("li:last-child .bit-mnb-itm");
         lastItem.Click();
 
-        Assert.AreEqual(itemIsEnabled, lastItem.ClassList.Contains("bit-dis") is false);
+        Assert.AreEqual(itemIsEnabled, lastItem.HasAttribute("disabled") is false);
 
         if (itemIsEnabled)
         {

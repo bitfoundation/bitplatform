@@ -635,6 +635,7 @@
                 <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" OnClick="@(_ => exampleClickedOption = $"Option C")" />
             </BitMenuButton>
         </div>
+        <br /><br />
         <div>Changed option: @exampleChangedOption</div>
         <div>Clicked option: @exampleClickedOption</div>
     </ExamplePreview>
@@ -683,7 +684,7 @@
                 <BitMenuButtonOption Text="گزینه ج" Key="C" IconName="@BitIconName.Emoji2" />
             </BitMenuButton>
 
-            <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" TItem="BitMenuButtonOption" ChevronDownIcon="@BitIconName.DoubleChevronDown">
+            <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" TItem="BitMenuButtonOption" ChevronDownIcon="@BitIconName.DoubleChevronDown" Split>
                 <BitMenuButtonOption Text="گزینه الف" Key="A" IconName="@BitIconName.Emoji" />
                 <BitMenuButtonOption Text="گزینه ب" Key="B" IconName="@BitIconName.Emoji" />
                 <BitMenuButtonOption Text="گزینه ج" Key="C" IconName="@BitIconName.Emoji2" />
