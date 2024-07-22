@@ -29,7 +29,7 @@ private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
 };";
 
     private readonly string example2RazorCode = @"
-<BitMenuButton Text=""MenuButton"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split />";
+<BitMenuButton Text=""Split"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split />";
     private readonly string example2CsharpCode = @"
 public class MenuActionItem
 {
@@ -310,6 +310,14 @@ private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
 };";
 
     private readonly string example8RazorCode = @"
+<style>
+    .item-template-box {
+        display: flex;
+        width: 100%;
+    }
+</style>
+
+
 <BitMenuButton Items=""basicCustoms"" NameSelectors=""nameSelectors"">
     <HeaderTemplate>
         <div style=""font-weight: bold; color: #d13438;"">
@@ -321,9 +329,7 @@ private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
 <BitMenuButton Text=""Customs"" Items=""itemTemplateCustoms"" NameSelectors=""nameSelectors"" Split>
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
-            <span style=""color: @(item.Id == ""add-key"" ? ""green"" : item.Id == ""edit-key"" ? ""yellow"" : ""red"");"">
-                @item.Name (@item.Id)
-            </span>
+            <span style=""color:brown"">@item.Name (@item.Id)</span>
         </div>
     </ItemTemplate>
 </BitMenuButton>

@@ -44,7 +44,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// the icon name of the chevron down part of the menu button.
+    /// The icon name of the chevron down part of the menu button.
     /// </summary>
     [Parameter] public string ChevronDownIcon { get; set; } = "ChevronDown";
 
@@ -68,11 +68,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// Default value of the SelectedItem.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
-
-    /// <summary>
-    /// If true, the selected item is going to change the header item.
-    /// </summary>
-    [Parameter] public bool Sticky { get; set; }
 
     /// <summary>
     /// The content inside the header of menu button can be customized.
@@ -126,6 +121,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// If true, the menu button renders as a split button.
     /// </summary>
     [Parameter, ResetClassBuilder] public bool Split { get; set; }
+
+    /// <summary>
+    /// If true, the selected item is going to change the header item.
+    /// </summary>
+    [Parameter] public bool Sticky { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the menu button.

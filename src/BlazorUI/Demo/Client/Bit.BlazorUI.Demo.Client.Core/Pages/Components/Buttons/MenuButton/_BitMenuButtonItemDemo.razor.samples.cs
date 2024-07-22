@@ -176,18 +176,13 @@ private List<BitMenuButtonItem> basicItemsIcon =
 <BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassItems"" />
 
 
-<BitMenuButton Text=""Styles""
-               Items=""basicItems""
-               IconName=""@BitIconName.ExpandMenu""
+<BitMenuButton Text=""Styles"" Items=""basicItems"" IconName=""@BitIconName.ExpandMenu""
                Styles=""@(new() { Icon = ""color: red;"",
                                  Text = ""color: aqua;"",
                                  ItemText = ""color: dodgerblue; font-size: 11px;"",
                                  Overlay = ""background-color: var(--bit-clr-bg-overlay);"" })"" />
 
-<BitMenuButton Text=""Classes""
-               Items=""basicItems""
-               IconName=""@BitIconName.ExpandMenu""
-               Variant=""BitVariant.Outline""
+<BitMenuButton Text=""Classes"" Items=""basicItems"" IconName=""@BitIconName.ExpandMenu""
                Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
     private readonly string example7CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
@@ -224,9 +219,7 @@ private List<BitMenuButtonItem> itemStyleClassItems =
 <BitMenuButton Text=""Items"" Items=""itemTemplateItems"" Split>
     <ItemTemplate Context=""item"">
         <div class=""item-template-box"">
-            <span style=""color: @(item.Key == ""add-key"" ? ""green"" : item.Key == ""edit-key"" ? ""yellow"" : ""red"");"">
-                @item.Text (@item.Key)
-            </span>
+            <span style=""color:brown"">@item.Text (@item.Key)</span>
         </div>
     </ItemTemplate>
 </BitMenuButton>

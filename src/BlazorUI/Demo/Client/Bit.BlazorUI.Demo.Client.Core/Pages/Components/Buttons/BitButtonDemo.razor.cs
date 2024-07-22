@@ -55,7 +55,7 @@ public partial class BitButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the button.",
+            Description = "The general color of the menu button.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },

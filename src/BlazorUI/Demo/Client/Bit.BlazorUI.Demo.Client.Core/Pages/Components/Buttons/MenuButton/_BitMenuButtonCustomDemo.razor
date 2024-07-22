@@ -11,7 +11,7 @@
         <div>Explore the Split behavior of BitMenuButton, demonstrating buttons divided into two sections. One section triggers an action on click, while the other section opens a callout to reveal additional options.</div>
         <br />
         <div class="example-content">
-            <BitMenuButton Text="MenuButton" Items="basicCustoms" NameSelectors="nameSelectors" Split />
+            <BitMenuButton Text="Split" Items="basicCustoms" NameSelectors="nameSelectors" Split />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -31,7 +31,7 @@
             <BitMenuButton Text="Outline" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" IsEnabled="false" />
             <BitMenuButton Text="Text" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" IsEnabled="false" />
         </div>
-        <br />
+        <br /><br />
         <div class="example-content">
             <BitMenuButton Text="Fill" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" Split />
             <BitMenuButton Text="Outline" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" Split />
@@ -217,30 +217,26 @@
         <div>Explore BitMenuButton's customization capabilities.</div>
         <div>Note that if <strong>Sticky</strong> set to true, HeaderTemplate and Text will be ignored.</div>
         <br />
-        <div class="example-content">
-            <di>HeaderTemplate</di>
-            <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors">
-                <HeaderTemplate>
-                    <div style="font-weight: bold; color: #d13438;">
-                        Custom Header!
-                    </div>
-                </HeaderTemplate>
-            </BitMenuButton>
-            <br /><br />
-            <div>ItemTemplate</div>
-            <BitMenuButton Text="Customs" Items="itemTemplateCustoms" NameSelectors="nameSelectors" Split>
-                <ItemTemplate Context="item">
-                    <div class="item-template-box">
-                        <span style="color: @(item.Id == "add-key" ? "green" : item.Id == "edit-key" ? "yellow" : "red");">
-                            @item.Name (@item.Id)
-                        </span>
-                    </div>
-                </ItemTemplate>
-            </BitMenuButton>
-            <br /><br />
-            <div>Item's template</div>
-            <BitMenuButton Text="Customs" Items="itemTemplateCustoms2" NameSelectors="nameSelectors" />
-        </div>
+        <div>HeaderTemplate</div>
+        <BitMenuButton Items="basicCustoms" NameSelectors="nameSelectors">
+            <HeaderTemplate>
+                <div style="font-weight: bold; color: #d13438;">
+                    Custom Header!
+                </div>
+            </HeaderTemplate>
+        </BitMenuButton>
+        <br /><br />
+        <div>ItemTemplate</div>
+        <BitMenuButton Text="Customs" Items="itemTemplateCustoms" NameSelectors="nameSelectors" Split>
+            <ItemTemplate Context="item">
+                <div class="item-template-box">
+                    <span style="color:brown">@item.Name (@item.Id)</span>
+                </div>
+            </ItemTemplate>
+        </BitMenuButton>
+        <br /><br />
+        <div>Item's template</div>
+        <BitMenuButton Text="Customs" Items="itemTemplateCustoms2" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -309,19 +305,19 @@
 </ComponentExampleBox>
 
 @code {
-    private List<MenuActionItem> itemTemplateCustoms2 = 
+    private List<MenuActionItem> itemTemplateCustoms2 =
     [
         new()
         {
             Name = "Add", Id = "add-key", Icon = BitIconName.Add,
             Fragment = (item => @<div class="item-template-box" style="color:green">@item.Name (@item.Id)</div>)
         },
-        new()
+    new()
         {
             Name = "Edit", Id = "edit-key", Icon = BitIconName.Edit,
             Fragment = (item => @<div class="item-template-box" style="color:yellow">@item.Name (@item.Id)</div>)
         },
-        new()
+    new()
         {
             Name = "Delete", Id = "delete-key", Icon = BitIconName.Delete,
             Fragment = (item => @<div class="item-template-box" style="color:red">@item.Name (@item.Id)</div>)
