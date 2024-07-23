@@ -178,13 +178,14 @@
         <br /><br />
         <div class="example-content">
             <div>Component's style & class:</div>
-            <BitButtonGroup Items="basicCustoms" Style="padding:1rem;background:red" NameSelectors="nameSelector" />
-            <BitButtonGroup Items="basicCustoms" Class="custom-class" NameSelectors="nameSelector" />
+            <BitButtonGroup Items="basicCustoms" Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;" NameSelectors="nameSelector" />
+            <BitButtonGroup Items="basicCustoms" Class="custom-class" Variant="BitVariant.Outline" NameSelectors="nameSelector" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Item's style & class:</div>
             <BitButtonGroup Items="styleClassCustoms"
+                            Variant="BitVariant.Text"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      IconName = { Selector = i => i.Icon } })" />
         </div>
@@ -216,24 +217,26 @@
 
 <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
+        <div>Use BitButtonGroup in right-to-left (RTL).</div>
+        <br />
         <div dir="rtl">
             <BitButtonGroup Dir="BitDir.Rtl"
                             Items="rtlCustoms"
                             Variant="BitVariant.Fill"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                     IconName = { Selector = i => i.Icon } })" />
             <br /><br />
             <BitButtonGroup Dir="BitDir.Rtl"
                             Items="rtlCustoms"
                             Variant="BitVariant.Outline"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                     IconName = { Selector = i => i.Icon } })" />
             <br /><br />
             <BitButtonGroup Dir="BitDir.Rtl"
                             Items="rtlCustoms"
                             Variant="BitVariant.Text"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Icon } })" />
+                                                     IconName = { Selector = i => i.Icon } })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

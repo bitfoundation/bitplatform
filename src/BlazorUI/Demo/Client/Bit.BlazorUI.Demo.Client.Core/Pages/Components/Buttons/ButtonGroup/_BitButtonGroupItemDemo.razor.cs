@@ -34,7 +34,7 @@ public partial class _BitButtonGroupItemDemo
         new()
         {
             Text = "Styled",
-            Style = "color:darkred",
+            Style = "color: tomato; border-color: brown; background-color: peachpuff;",
             IconName = BitIconName.Brush,
         },
         new()
@@ -173,21 +173,33 @@ private List<BitButtonGroupItem> basicItems = new()
     private readonly string example7RazorCode = @"
 <style>
     .custom-class {
-        padding: 2rem;
-        border-radius:1rem;
-        background-color: blueviolet;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
+    }
+
+    .custom-class button {
+        color: tomato;
+        border-color: tomato;
+    }
+
+    .custom-class button:hover {
+        color: unset;
+        background-color: lightcoral;
     }
 
     .custom-item {
-        color: blueviolet;
-        background-color: goldenrod;
+        color: peachpuff;
+        background-color: tomato;
     }
 </style>
 
-<BitButtonGroup Items=""basicItems"" Style=""padding:1rem;background:red"" />
-<BitButtonGroup Items=""basicItems"" Class=""custom-class"" />
 
-<BitButtonGroup Items=""styleClassItems"" />";
+<BitButtonGroup Items=""basicItems"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"" />
+<BitButtonGroup Items=""basicItems"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
+
+<BitButtonGroup Items=""styleClassItems"" Variant=""BitVariant.Text"" />";
     private readonly string example7CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = new()
 {
@@ -199,7 +211,7 @@ private List<BitButtonGroupItem> styleClassItems = new()
     new()
     {
         Text = ""Styled"",
-        Style = ""color:darkred"",
+        Style = ""color: tomato; border-color: brown; background-color: peachpuff;"",
         IconName = BitIconName.Brush,
     },
     new()

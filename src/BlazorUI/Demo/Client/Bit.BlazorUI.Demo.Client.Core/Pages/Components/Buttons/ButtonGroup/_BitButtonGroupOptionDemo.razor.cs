@@ -190,26 +190,40 @@ public partial class _BitButtonGroupOptionDemo
     private readonly string example7RazorCode = @"
 <style>
     .custom-class {
-        padding: 2rem;
-        border-radius:1rem;
-        background-color: blueviolet;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
+    }
+
+    .custom-class button {
+        color: tomato;
+        border-color: tomato;
+    }
+
+    .custom-class button:hover {
+        color: unset;
+        background-color: lightcoral;
     }
 
     .custom-item {
-        color: blueviolet;
-        background-color: goldenrod;
+        color: peachpuff;
+        background-color: tomato;
     }
 </style>
 
-<BitButtonGroup Style=""padding:1rem;background:red"" TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>
-<BitButtonGroup Class=""custom-class"" TItem=""BitButtonGroupOption"">
+
+<BitButtonGroup Style=""border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
 
-<BitButtonGroup TItem=""BitButtonGroupOption"">
-    <BitButtonGroupOption Text=""Styled"" IconName=""@BitIconName.Brush"" Style=""color:darkred"" />
+<BitButtonGroup Class=""custom-class"" Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+
+
+<BitButtonGroup Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Styled"" IconName=""@BitIconName.Brush"" Style=""color: tomato; border-color: brown; background-color: peachpuff;"" />
     <BitButtonGroupOption Text=""Classed"" IconName=""@BitIconName.FormatPainter"" Class=""custom-item"" />
 </BitButtonGroup>";
 
