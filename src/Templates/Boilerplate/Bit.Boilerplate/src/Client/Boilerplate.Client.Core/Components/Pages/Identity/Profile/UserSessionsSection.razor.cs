@@ -28,7 +28,7 @@ public partial class UserSessionsSection
     {
         isLoading = true;
         List<UserSessionDto> userSessions = [];
-        currentSessionId = (await AuthenticationStateTask).User.GetSessionId();
+        currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
 
         try
         {
