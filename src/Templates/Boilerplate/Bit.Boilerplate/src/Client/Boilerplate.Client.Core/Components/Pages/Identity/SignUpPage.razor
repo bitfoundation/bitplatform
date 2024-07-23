@@ -102,7 +102,7 @@
             <br />
             <div>
                 @Localizer[nameof(AppStrings.ConfirmMessageInSignUp)]
-                <BitLink Href="@($"/{Urls.ConfirmPage}?email={Uri.EscapeDataString(signUpModel.Email??"")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber??"")}")">
+                <BitLink Href="@($"{Urls.ConfirmPage}?email={Uri.EscapeDataString(signUpModel.Email??"")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber??"")}")">
                     @Localizer[nameof(AppStrings.Confirm)]
                 </BitLink>
             </div>

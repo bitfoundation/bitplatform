@@ -6,7 +6,10 @@
 
     <ItemGroup>
         <Content Remove="appsettings*.json" />
-        <EmbeddedResource Include="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json"/>
+        <EmbeddedResource Update="appsettings.*.json">
+            <DependentUpon>appsettings.json</DependentUpon>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

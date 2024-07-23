@@ -1,7 +1,8 @@
 ﻿//+:cnd:noEmit
 using System.Net.Http;
-using Boilerplate.Client.Windows.Services;
 using Microsoft.Extensions.Logging;
+using Boilerplate.Client.Windows.Services;
+using Boilerplate.Client.Windows.Configuration;
 
 namespace Boilerplate.Client.Windows;
 
@@ -69,6 +70,10 @@ public static partial class Program
             });
             //#endif
         });
+
+        services.AddOptions<WindowsUpdateSettings>()
+            .Bind(configuration.GetRequiredSection(nameof(WindowsUpdateSettings)))
+            .ValidateOnStart();
 
         services.AddClientCoreProjectServices();
     }

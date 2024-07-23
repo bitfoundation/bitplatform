@@ -55,21 +55,22 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        app.UseStaticFiles(new StaticFileOptions
+        if (env.IsDevelopment() is false)
         {
-            OnPrepareResponse = ctx =>
+            app.Use(async (context, next) =>
             {
-                if (env.IsDevelopment() is false)
+                if (context.Request.Query.Any(q => q.Key == "v"))
                 {
-                    // https://bitplatform.dev/templates/cache-mechanism
-                    ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+                    context.Response.GetTypedHeaders().CacheControl = new()
                     {
                         MaxAge = TimeSpan.FromDays(7),
                         Public = true
                     };
                 }
-            }
-        });
+                await next.Invoke();
+            });
+        }
+        app.UseStaticFiles();
 
         if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
         {
@@ -103,6 +104,8 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
+        app.UseSiteMap();
+
         app.MapControllers().RequireAuthorization();
 
         // Handle the rest of requests with blazor
@@ -116,6 +119,36 @@ public static partial class Program
             blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
         }
     }
+
+    private static void UseSiteMap(this WebApplication app)
+    {
+        var urls = typeof(Urls)
+            .GetFields()
+            .Select(f => f.GetValue(null)!.ToString()!)
+            .ToList()!;
+
+        urls = CultureInfoManager.MultilingualEnabled ?
+            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{url}?culture={sc.Culture.Name}"))).ToList() :
+            urls;
+
+        const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
+
+        app.MapGet("/sitemap.xml", async context =>
+        {
+            if (siteMap is null)
+            {
+                var baseUrl = context.Request.GetBaseUrl();
+
+                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+            }
+
+            context.Response.Headers.ContentType = "application/xml";
+
+            await context.Response.WriteAsync(siteMap, context.RequestAborted);
+        });
+    }
+
+    private static string? siteMap;
 
     /// <summary>
     /// Prior to the introduction of .NET 8, the Blazor router effectively managed NotFound and NotAuthorized components during pre-rendering.
@@ -158,12 +191,12 @@ public static partial class Program
                     var qs = HttpUtility.ParseQueryString(httpContext.Request.QueryString.Value ?? string.Empty);
                     qs.Remove("try_refreshing_token");
                     var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString(qs.ToString()));
-                    httpContext.Response.Redirect($"/{Urls.NotAuthorizedPage}?return-url={returnUrl}&isForbidden={(is403 ? "true" : "false")}");
+                    httpContext.Response.Redirect($"{Urls.NotAuthorizedPage}?return-url={returnUrl}&isForbidden={(is403 ? "true" : "false")}");
                 }
                 else if (httpContext.Response.StatusCode is 404 &&
                     httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)
                 {
-                    httpContext.Response.Redirect($"/{Urls.NotFoundPage}?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                    httpContext.Response.Redirect($"{Urls.NotFoundPage}?url={httpContext.Request.GetEncodedPathAndQuery()}");
                 }
                 else
                 {

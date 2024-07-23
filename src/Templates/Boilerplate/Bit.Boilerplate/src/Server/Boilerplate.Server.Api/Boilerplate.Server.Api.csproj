@@ -9,7 +9,6 @@
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-03" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-03" PrivateAssets="all" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-        <PackageReference Include="DeviceDetector.NET" Version="6.3.3" />
         <PackageReference Include="Humanizer" Version="2.14.1" />
     </ItemGroup>
 
@@ -23,7 +22,7 @@
 
     <ItemGroup>
         <PackageReference Include="QRCoder" Version="1.6.0" />
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.9.1" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.10.0" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageReference Include="FluentStorage" Version="5.4.3" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.2.3" />

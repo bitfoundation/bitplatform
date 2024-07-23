@@ -5,9 +5,10 @@ using Boilerplate.Server.Api.Models.Products;
 //#elif (sample == "Todo")
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
-using Boilerplate.Server.Api.Models.Identity;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Data.Configurations;
 
 namespace Boilerplate.Server.Api.Data;
 
@@ -56,23 +57,36 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         }
     }
 
-    //#if (database == "Sqlite")
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
         if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
         {
         //#endif
+        //#if (database == "Sqlite")
         // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type:
         configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
         configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
+        //#endif
         //#if (IsInsideProjectTemplate == true)
+        }
+        //#endif
+
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+        {
+            //#endif
+            //#if (database == "PostgreSQL")
+            // PostgreSQL does not support DateTimeOffset with offset other than Utc.
+            configurationBuilder.Properties<DateTimeOffset>().HaveConversion<PostgresDateTimeOffsetConverter>();
+            configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<NullablePostgresDateTimeOffsetConverter>();
+            //#endif
+            //#if (IsInsideProjectTemplate == true)
         }
         //#endif
 
         base.ConfigureConventions(configurationBuilder);
     }
-    //#endif
 
     private void ConfigureIdentityTables(ModelBuilder builder)
     {

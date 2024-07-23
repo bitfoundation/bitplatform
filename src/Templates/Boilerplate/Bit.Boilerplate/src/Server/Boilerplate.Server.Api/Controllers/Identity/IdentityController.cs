@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using Humanizer;
-using DeviceDetectorNET;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -172,7 +171,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var userSession = CreateUserSession();
+        var userSession = CreateUserSession(request.DeviceInfo);
 
         var result = string.IsNullOrEmpty(request.Otp) is false
             ? await signInManager.OtpSignInAsync(user, request.Otp!)
@@ -227,23 +226,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful.
     /// </summary>
-    private UserSession CreateUserSession()
+    private UserSession CreateUserSession(string? device)
     {
-        var userAgentParseResult = DeviceDetector.GetInfoFromUserAgent(Request.Headers.UserAgent);
-
-        var device = userAgentParseResult.Success ?
-                                $"{userAgentParseResult.Match.BrowserFamily}, {userAgentParseResult.Match.OsFamily} {userAgentParseResult.Match.Os.Version}"
-                                : userAgentParseResult.ToString();
-
         var userSession = new UserSession
         {
             SessionUniqueId = Guid.NewGuid(),
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
-            Address = string.Format("Country: {0}, Region: {1}, City: {2}",
-                Request.Headers["cf-ipcountry"], Request.Headers["cf-region"],
-                Request.Headers["cf-ipcity"]),
-            Device = device,
+            Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}",
+            Device = device ?? Localizer[nameof(AppStrings.UnknwonDevice)],
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
             StartedOn = DateTimeOffset.UtcNow
         };
@@ -259,47 +250,53 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
         var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
 
-        string? userId = null; User? user = null; Guid currentSessionId; UserSession? userSession = null;
+        if (refreshTicket?.Principal.IsAuthenticated() is false)
+            throw new UnauthorizedException();
+
+        string? userId = null; User? user = null; UserSession? userSession = null;
 
         userId = refreshTicket?.Principal?.GetUserId().ToString();
         if (string.IsNullOrEmpty(userId) is false)
         {
             user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException();
         }
-        if (Guid.TryParse(refreshTicket?.Principal?.FindFirstValue("session-id"), out currentSessionId))
+        if (Guid.TryParse(refreshTicket?.Principal?.FindFirstValue("session-id"), out var currentSessionId))
         {
             userSession = user!.Sessions.Find(s => s.SessionUniqueId == currentSessionId);
         }
 
-        bool canRenewSession = refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
+        bool isExpiredSession = refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
             DateTimeOffset.UtcNow >= expiresUtc ||
             await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _ ||
             userSession is null;
 
-        if (canRenewSession is false && userSession is not null)
+        if (userSession is not null)
         {
-            user!.Sessions.Remove(userSession);
-        }
-        else
-        {
-            userSession!.RenewedOn = DateTimeOffset.UtcNow;
+            if (isExpiredSession)
+            {
+                user!.Sessions.Remove(userSession);
+            }
+            else
+            {
+                userSession!.RenewedOn = DateTimeOffset.UtcNow;
+            }
+
+            try
+            {
+                await userManager.UpdateAsync(user!);
+            }
+            catch (ConflictException) { /* When access_token gets expired and user navigates to the page that sends multiple requests in parallel, multiple concurrent refresh token api call happens and this will results into concurrency exception during updating session's renewed on. */ }
         }
 
-        try
-        {
-            await userManager.UpdateAsync(user!);
-        }
-        catch (ConflictException) { /* When access_token gets expired and user navigates to the page that sends multiple requests in parallel, multiple concurrent refresh token api call happens and this will results into concurrency exception during updating session's renewed on. */ }
-
-        if (canRenewSession is false)
+        if (isExpiredSession)
         {
             // Return 401 if refresh token is either invalid or expired.
             throw new UnauthorizedException();
         }
+        
+        ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", currentSessionId.ToString()));
 
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
-
-        ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", currentSessionId.ToString()));
 
         return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
     }
@@ -536,9 +533,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme); // We'll handle sign-in with the following redirects, so no external identity cookie is needed.
         }
 
-        if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}/"), url).ToString());
+        if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
         if (string.IsNullOrEmpty(AppSettings.WebClientUrl) is false) return Redirect(new Uri(new Uri(AppSettings.WebClientUrl), url).ToString());
-        return LocalRedirect($"~/{url}");
+        return LocalRedirect($"~{url}");
     }
 
     [HttpGet]

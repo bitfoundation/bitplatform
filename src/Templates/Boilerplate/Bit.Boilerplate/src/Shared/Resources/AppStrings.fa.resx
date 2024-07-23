@@ -202,6 +202,12 @@
     <data name="ChangePhoneNumberTitle" xml:space="preserve">
     <value>تغییر شماره تلفن</value>
   </data>
+    <data name="SuccessfulSendChangeEmailTokenMessage" xml:space="preserve">
+    <value>توکن تغییر ایمیل برای شما ارسال شد</value>
+  </data>
+    <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
+    <value>توکن تغییر شماره تلفن برای شما ارسال شد</value>
+  </data>
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>سشن‌های شما</value>
   </data>
@@ -219,6 +225,9 @@
   </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>چیزی پیدا نشد.</value>
+  </data>
+    <data name="UnknwonDevice" xml:space="preserve">
+    <value>دستگاه نامشخص</value>
   </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
