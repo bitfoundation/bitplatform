@@ -14,7 +14,7 @@
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
     --bit-mnb-cal-opa: 0;
-    --bit-mnb-cal-tra: translate3d(0, spacing(-1.25), 0);
+    --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
 
     &.bit-dis {
         cursor: default;
@@ -73,7 +73,7 @@
 
 .bit-mnb-omn {
     --bit-mnb-cal-opa: 1;
-    --bit-mnb-cal-tra: translate3d(0, 0, 0);
+    --bit-mnb-cal-tra: translateY(0);
     --bit-mnb-clr-opb-txt: var(--bit-mnb-clr-opb-txt-nsp);
     --bit-mnb-clr-opb-bg: var(--bit-mnb-clr-opb-bg-nsp);
     --bit-mnb-clr-chb-txt: var(--bit-mnb-clr-txt);
