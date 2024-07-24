@@ -495,6 +495,9 @@
     <data name="HomeTitle" xml:space="preserve">
     <value>Accueil Boilerplate</value>
   </data>
+    <data name="AppDescription" xml:space="preserve">
+    <value>Le Boilerplate est construit avec ASP.NET Core, Identity, Web API, EF Core et Blazor.</value>
+  </data>
     <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
     <value>Il semble que le lien de confirmation soit invalide ou ait expiré.</value>
   </data>

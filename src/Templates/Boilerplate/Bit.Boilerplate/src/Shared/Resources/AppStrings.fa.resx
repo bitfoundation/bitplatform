@@ -492,6 +492,9 @@
     <data name="HomeMessage" xml:space="preserve">
     <value>برنامه blazor مالتی مد (WASM, Server, Hybrid, pre-rendering) خود را به آسانی و در سریع‌ترین زمان بسازید</value>
   </data>
+    <data name="AppDescription" xml:space="preserve">
+    <value>پروژه Boilerplate با ASP.NET Core, Identity, Web API, EF Core و Blazor ساخته شده</value>
+  </data>
     <data name="HomeTitle" xml:space="preserve">
     <value>صفحه اصلی Boilerplate</value>
   </data>
