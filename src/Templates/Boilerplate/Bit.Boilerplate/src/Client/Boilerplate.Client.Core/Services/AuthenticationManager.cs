@@ -15,6 +15,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private IPrerenderStateService prerenderStateService;
 
     public async Task<bool> SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
@@ -66,7 +67,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            var access_token = await tokenProvider.GetAccessTokenAsync();
+            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessTokenAsync());
 
             if (string.IsNullOrEmpty(access_token) && tokenProvider.IsInitialized)
             {
