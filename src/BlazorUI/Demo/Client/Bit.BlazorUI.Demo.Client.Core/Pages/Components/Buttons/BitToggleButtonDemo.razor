@@ -122,12 +122,12 @@
             <div>Component's Style & Class:</div>
             <br />
             <div class="example-box">
-                <BitToggleButton Style="color:darkblue; font-weight:bold"
+                <BitToggleButton Style="background-color: transparent; border-color: blueviolet; color: blueviolet;"
+                                 Variant="BitVariant.Outline"
                                  OffText="Styled Button: Unmuted" OffIconName="@BitIconName.Microphone"
                                  OnText="Styled Button: Muted" OnIconName="@BitIconName.MicOff" />
 
                 <BitToggleButton Class="custom-class"
-                                 Variant="BitVariant.Outline"
                                  OffText="Classed Button: Unmuted" OffIconName="@BitIconName.Microphone"
                                  OnText="Classed Button: Muted" OnIconName="@BitIconName.MicOff" />
             </div>
@@ -137,12 +137,19 @@
             <div class="example-box">
                 <BitToggleButton OffText="Styled Button: Unmuted" OffIconName="@BitIconName.Microphone"
                                  OnText="Styled Button: Muted" OnIconName="@BitIconName.MicOff"
-                                 Styles="@(new() { Container = "font-size: 18px;", Icon = "color: red;", Text = "color: blue;" })" />
+                                 Styles="@(new() { Root = "--toggle-background: pink; background: var(--toggle-background); border: none;",
+                                                   Checked = "--toggle-background: peachpuff;",
+                                                   Icon = "color: red;",
+                                                   Text = "color: tomato;" })" />
 
-                <BitToggleButton Variant="BitVariant.Outline"
+                <BitToggleButton Variant="BitVariant.Text"
                                  OffText="Classed Button: Unmuted" OffIconName="@BitIconName.Microphone"
                                  OnText="Classed Button: Muted" OnIconName="@BitIconName.MicOff"
-                                 Classes="@(new() { Container = "custom-container", Icon = "custom-icon", Text = "custom-text" })" />
+                                 Classes="@(new() { Root = "custom-root",
+                                                    Checked = "custom-checked",
+                                                    Container = "custom-content",
+                                                    Icon = "custom-icon",
+                                                    Text = "custom-text" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -183,6 +190,8 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
+            <div>Use BitToggleButton in right-to-left (RTL).</div>
+            <br />
             <div class="example-box" dir="rtl">
                 <BitToggleButton Dir="BitDir.Rtl" Variant="BitVariant.Fill"
                                  OffText="صدا وصل" OffIconName="@BitIconName.Microphone"

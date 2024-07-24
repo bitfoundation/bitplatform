@@ -64,42 +64,87 @@ public partial class BitToggleButtonDemo
     private readonly string example5RazorCode = @"
 <style>
     .custom-class {
-        color: aqua;
         border-radius: 1rem;
+        border-color: blueviolet;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, magenta, transparent) blue;
     }
 
-    .custom-container {
-        font-size: 12px;
+    .custom-class:hover {
+        border-color: magenta;
+        background-color: magenta;
     }
 
-    .custom-icon {
-        color: blue;
+
+    .custom-root {
+        border: none;
+        color: blueviolet;
+        background: transparent;
     }
 
     .custom-text {
-        color: red;
+        position: relative;
+    }
+
+    .custom-root:hover .custom-text {
+        color: darkviolet;
+    }
+
+    .custom-text::after {
+        content: '';
+        left: 0;
+        width: 0;
+        height: 2px;
+        bottom: -6px;
+        position: absolute;
+        transition: 0.3s ease;
+        background: linear-gradient(90deg, #ff00cc, #3333ff);
+    }
+
+    .custom-icon {
+        color: hotpink;
+    }
+
+    .custom-checked {
+        border: none;
+        background-color: transparent;
+    }
+
+    .custom-checked .custom-text::after {
+        width: 100%;
+    }
+
+    .custom-checked .custom-icon {
+        color: hotpink;
     }
 </style>
 
 
-<BitToggleButton Style=""color:darkblue; font-weight:bold""
+<BitToggleButton Style=""background-color: transparent; border-color: blueviolet; color: blueviolet;""
+                 Variant=""BitVariant.Outline""
                  OffText=""Styled Button: Unmuted"" OffIconName=""@BitIconName.Microphone""
                  OnText=""Styled Button: Muted"" OnIconName=""@BitIconName.MicOff"" />
 
 <BitToggleButton Class=""custom-class""
-                 Variant=""BitVariant.Outline""
                  OffText=""Classed Button: Unmuted"" OffIconName=""@BitIconName.Microphone""
                  OnText=""Classed Button: Muted"" OnIconName=""@BitIconName.MicOff"" />
 
 
 <BitToggleButton OffText=""Styled Button: Unmuted"" OffIconName=""@BitIconName.Microphone""
                  OnText=""Styled Button: Muted"" OnIconName=""@BitIconName.MicOff""
-                 Styles=""@(new() { Container = ""font-size: 18px;"", Icon = ""color: red;"", Text = ""color: blue;"" })"" />
+                 Styles=""@(new() { Root = ""--toggle-background: pink; background: var(--toggle-background); border: none;"",
+                                   Checked = ""--toggle-background: peachpuff;"",
+                                   Icon = ""color: red;"",
+                                   Text = ""color: tomato;"" })"" />
 
-<BitToggleButton Variant=""BitVariant.Outline""
+<BitToggleButton Variant=""BitVariant.Text""
                  OffText=""Classed Button: Unmuted"" OffIconName=""@BitIconName.Microphone""
                  OnText=""Classed Button: Muted"" OnIconName=""@BitIconName.MicOff""
-                 Classes=""@(new() { Container = ""custom-container"", Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
+                 Classes=""@(new() { Root = ""custom-root"",
+                                    Checked = ""custom-checked"",
+                                    Container = ""custom-content"",
+                                    Icon = ""custom-icon"",
+                                    Text = ""custom-text"" })"" />";
 
     private readonly string example6RazorCode = @"
 <BitToggleButton DefaultIsChecked=""true""
