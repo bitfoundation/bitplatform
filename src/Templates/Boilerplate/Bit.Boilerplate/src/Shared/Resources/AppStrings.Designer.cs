@@ -556,6 +556,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Boilerplate is built with ASP.NET Core, Identity, Web API, EF Core and Blazor..
+        /// </summary>
+        public static string DescriptionMetaTagValue {
+            get {
+                return ResourceManager.GetString("DescriptionMetaTagValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don’t have an account?.
         /// </summary>
         public static string DontHaveAccountMessage {

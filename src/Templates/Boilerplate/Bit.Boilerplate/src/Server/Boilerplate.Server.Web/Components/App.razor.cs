@@ -8,6 +8,8 @@ public partial class App
 {
     [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
 
+    [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
