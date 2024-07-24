@@ -9,21 +9,21 @@ public partial class BitMenuButtonDemo
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Detailed description of the button for the benefit of screen readers."
+            Description = "Detailed description of the menu button for the benefit of screen readers."
         },
         new()
         {
             Name = "AriaHidden",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element."
+            Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the menu button."
         },
         new()
         {
             Name = "ButtonType",
             Type = "BitButtonType",
             DefaultValue = "null",
-            Description = "The type of the button.",
+            Description = "The value of the type attribute of the menu button.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum"
         },
@@ -32,23 +32,32 @@ public partial class BitMenuButtonDemo
             Name = "ChevronDownIcon",
             Type = "string",
             DefaultValue = "ChevronDown",
-            Description = "Icon name of the chevron down part of the BitMenuButton.",
+            Description = "The icon name of the chevron down part of the menu button.",
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the BitMenuButton, that are BitMenuButtonOption components.",
+            Description = "The content of the menu button, that are BitMenuButtonOption components.",
         },
         new()
         {
             Name = "Classes",
             Type = "BitMenuButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitMenuButton.",
+            Description = "Custom CSS classes for different parts of the menu button.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the menu button.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -62,21 +71,21 @@ public partial class BitMenuButtonDemo
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content inside the header of BitMenuButton can be customized.",
+            Description = "The content inside the header of menu button can be customized.",
         },
         new()
         {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name to show inside the header of BitMenuButton.",
+            Description = "The icon to show inside the header of menu button.",
         },
         new()
         {
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
-            Description = "List of Item, each of which can be a Button with different action in the BitMenuButton.",
+            Description = "List of items to show in the menu button.",
             LinkType = LinkType.Link,
             Href = "#menu-button-items"
         },
@@ -85,7 +94,7 @@ public partial class BitMenuButtonDemo
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
-            Description = "The custom content to render each item.",
+            Description = "The custom template content to render each item.",
         },
         new()
         {
@@ -100,48 +109,48 @@ public partial class BitMenuButtonDemo
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "The callback is called when the BitMenuButton header is clicked."
+            Description = "The callback is called when the menu button header is clicked."
         },
         new()
         {
-            Name = "OnItemClick",
+            Name = "OnChange",
             Type = "EventCallback<TItem>",
-            Description = "OnClick of each item returns that item with its property."
+            Description = "The callback that is called when the selected item has changed."
         },
         new()
         {
             Name = "Options",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Alias of ChildContent.",
+            Description = "Alias of the ChildContent.",
         },
         new()
         {
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
-            Description = "Determines the current selected item that acts as the main button."
+            Description = "Determines the current selected item that acts as the header item."
         },
         new()
         {
             Name = "Split",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the button will render as a SplitButton."
+            Description = "If true, the menu button renders as a split button."
         },
         new()
         {
             Name = "Sticky",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the current item is going to be change selected item."
+            Description = "If true, the selected item is going to change the header item."
         },
         new()
         {
             Name = "Styles",
             Type = "BitMenuButtonClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitMenuButton.",
+            Description = "Custom CSS styles for different parts of the menu button.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
         },
@@ -150,7 +159,7 @@ public partial class BitMenuButtonDemo
             Name = "Text",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text to show inside the header of BitMenuButton."
+            Description = "The text to show inside the header of menu button."
         },
         new()
         {
@@ -519,6 +528,90 @@ public partial class BitMenuButtonDemo
     [
         new()
         {
+            Id = "button-type-enum",
+            Name = "BitButtonType",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Button",
+                    Description="The button is a clickable button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Submit",
+                    Description="The button is a submit button (submits form-data).",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Reset",
+                    Description="The button is a reset button (resets the form-data to its initial values).",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Info Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                }
+            ]
+        },
+        new()
+        {
             Id = "variant-enum",
             Name = "BitVariant",
             Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
@@ -544,32 +637,5 @@ public partial class BitMenuButtonDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "button-type-enum",
-            Name = "BitButtonType",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Button",
-                    Description="The button is a clickable button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Submit",
-                    Description="The button is a submit button (submits form-data).",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Reset",
-                    Description="The button is a reset button (resets the form-data to its initial values).",
-                    Value="2",
-                }
-            ]
-        }
     ];
 }

@@ -12,14 +12,14 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <button @onclick="() => HandleOnClick(Sticky ? SelectedItem : null)"
+    <button @onclick="() => HandleOnHeaderClick(Sticky ? SelectedItem : null)"
             type="button"
             tabindex="@(IsEnabled ? 0 : -1)"
             aria-label="@AriaLabel"
             aria-hidden="@AriaHidden"
             aria-describedby="@AriaDescription"
             style="@GetStyle(SelectedItem);@Styles?.OperatorButton"
-            class="bit-mnb-opb @(GetIsEnabled(SelectedItem) ? "" : "bit-dis") @GetClass(SelectedItem) @Classes?.OperatorButton">
+            class="bit-mnb-opb @GetClass(SelectedItem) @Classes?.OperatorButton">
         @if (Sticky)
         {
             var template = GetTemplate(SelectedItem);
@@ -89,7 +89,7 @@
     <div id="@_calloutId"
          style="@Styles?.Callout"
          class="bit-mnb-cal @Classes?.Callout">
-        <ul role="presentation">
+        <ul role="presentation" class="bit-mnb-cul">
             @foreach (TItem item in _items)
             {
                 if (Sticky && item == SelectedItem) continue;
@@ -99,11 +99,12 @@
                 <li role="presentation" @key="GetKey(item)">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
-                            aria-disabled="@(isEnabled is false)"
                             type="@_buttonType.GetValue()"
                             tabindex="@(isEnabled ? 0 : -1)"
+                            disabled="@(isEnabled is false)"
+                            aria-disabled="@(isEnabled is false)"
                             style="@GetStyle(item);@Styles?.ItemButton"
-                            class="bit-mnb-itm @(isEnabled ? "" : "bit-dis") @GetClass(item) @Classes?.ItemButton">
+                            class="bit-mnb-itm @GetClass(item) @Classes?.ItemButton">
                         @if (template is not null)
                         {
                             @template(item)
@@ -117,7 +118,7 @@
                             var iconName = GetIconName(item);
                             @if (iconName.HasValue())
                             {
-                                <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                <i style="@Styles?.ItemIcon" class="bit-mnb-iic bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
                             }
                             <span style="@Styles?.ItemText" class="bit-mnb-btx @Classes?.ItemText">
                                 @GetText(item)

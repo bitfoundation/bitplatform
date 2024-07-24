@@ -4,17 +4,6 @@
         display: flex;
         flex-flow: row wrap;
         align-items: center;
-        margin-bottom: 30px;
-
-        &.column {
-            flex-flow: column wrap;
-            align-items: flex-start;
-        }
-    }
-
-    .clicked-item {
-        font-weight: 600;
-        margin-top: 0.5rem;
     }
 
     .item-template-box {

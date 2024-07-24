@@ -22,41 +22,47 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
 
     /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// The EditContext, which is set if the menu button is inside an <see cref="EditForm"/>
     /// </summary>
-    [CascadingParameter] private EditContext? _editContext { get; set; }
+    [CascadingParameter] protected EditContext? EditContext { get; set; }
 
 
 
     /// <summary>
-    /// Detailed description of the button for the benefit of screen readers.
+    /// Detailed description of the menu button for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
+    /// If true, add an aria-hidden attribute instructing screen readers to ignore the menu button.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    ///  List of Item, each of which can be a Button with different action in the BitMenuButton.
+    ///  The value of the type attribute of the menu button.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// Icon name of the chevron down part of the BitMenuButton.
+    /// The icon name of the chevron down part of the menu button.
     /// </summary>
     [Parameter] public string ChevronDownIcon { get; set; } = "ChevronDown";
 
     /// <summary>
-    /// The content of the BitMenuButton, that are BitMenuButtonOption components.
+    /// The content of the menu button, that are BitMenuButtonOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitMenuButton.
+    /// Custom CSS classes for different parts of the menu button.
     /// </summary>
     [Parameter] public BitMenuButtonClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the menu button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// Default value of the SelectedItem.
@@ -64,27 +70,22 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
-    /// If true, the current item is going to be change selected item.
-    /// </summary>
-    [Parameter] public bool Sticky { get; set; }
-
-    /// <summary>
-    /// The content inside the header of BitMenuButton can be customized.
+    /// The content inside the header of menu button can be customized.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// The icon to show inside the header of BitMenuButton.
+    /// The icon to show inside the header of menu button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    ///  List of BitMenuButtonItem to show as a item in BitMenuButton.
+    ///  List of items to show in the menu button.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
-    /// The custom content to render each item.
+    /// The custom template content to render each item.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
@@ -94,7 +95,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     [Parameter] public BitMenuButtonNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback is called when the BitMenuButton header is clicked.
+    /// The callback is called when the menu button header is clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem?> OnClick { get; set; }
 
@@ -104,12 +105,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     [Parameter] public EventCallback<TItem> OnChange { get; set; }
 
     /// <summary>
-    /// Alias of ChildContent.
+    /// Alias of the ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// Determines the current selected item that acts as the main button.
+    /// Determines the current selected item that acts as the header item.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public TItem? SelectedItem { get; set; }
@@ -117,17 +118,22 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     /// <summary>
-    /// If true, the button will render as a SplitButton.
+    /// If true, the menu button renders as a split button.
     /// </summary>
-    [Parameter] public bool Split { get; set; }
+    [Parameter, ResetClassBuilder] public bool Split { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitMenuButton.
+    /// If true, the selected item is going to change the header item.
+    /// </summary>
+    [Parameter] public bool Sticky { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the menu button.
     /// </summary>
     [Parameter] public BitMenuButtonClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The text to show inside the header of BitMenuButton.
+    /// The text to show inside the header of menu button.
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
@@ -160,7 +166,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             SelectedItem = item;
         }
 
-        SelectedItem ??= _items.FirstOrDefault();
+        SelectedItem ??= _items.FirstOrDefault(GetIsEnabled);
         ClassBuilder.Reset();
         _ = SelectedItemChanged.InvokeAsync(SelectedItem);
 
@@ -181,6 +187,21 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-mnb-pri",
+            BitColor.Secondary => "bit-mnb-sec",
+            BitColor.Tertiary => "bit-mnb-ter",
+            BitColor.Info => "bit-mnb-inf",
+            BitColor.Success => "bit-mnb-suc",
+            BitColor.Warning => "bit-mnb-wrn",
+            BitColor.SevereWarning => "bit-mnb-swr",
+            BitColor.Error => "bit-mnb-err",
+            _ => "bit-mnb-pri"
+        });
+
+        ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
+
         ClassBuilder.Register(() => Variant switch
         {
             BitVariant.Fill => "bit-mnb-fil",
@@ -190,8 +211,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         });
 
         ClassBuilder.Register(() => _isCalloutOpen ? "bit-mnb-omn" : string.Empty);
-
-        ClassBuilder.Register(() => GetIsEnabled(SelectedItem) ? string.Empty : "bit-mnb-cds");
     }
 
     protected override void RegisterCssStyles()
@@ -215,7 +234,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
     protected override Task OnParametersSetAsync()
     {
-        _buttonType = ButtonType ?? (_editContext is null ? BitButtonType.Button : BitButtonType.Submit);
+        _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
         if (ChildContent is null && Items.Any() && Items != _oldItems)
         {
@@ -223,7 +242,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             _items = Items.ToList();
 
             SelectedItem ??= _items.LastOrDefault(GetIsSelected);
-            SelectedItem ??= _items.FirstOrDefault();
+            SelectedItem ??= _items.FirstOrDefault(GetIsEnabled);
             ClassBuilder.Reset();
             _ = SelectedItemChanged.InvokeAsync(SelectedItem);
         }
@@ -243,8 +262,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
 
 
-    private string? GetClass(TItem item)
+    private string? GetClass(TItem? item)
     {
+        if (item is null) return null;
+
         if (item is BitMenuButtonItem menuButtonItem)
         {
             return menuButtonItem.Class;
@@ -265,8 +286,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
-    private string? GetIconName(TItem item)
+    private string? GetIconName(TItem? item)
     {
+        if (item is null) return null;
+
         if (item is BitMenuButtonItem menuButtonItem)
         {
             return menuButtonItem.IconName;
@@ -357,8 +380,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
     }
 
-    private string? GetStyle(TItem item)
+    private string? GetStyle(TItem? item)
     {
+        if (item is null) return null;
+
         if (item is BitMenuButtonItem bitMenuButtonItem)
         {
             return bitMenuButtonItem.Style;
@@ -379,8 +404,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
-    private RenderFragment<TItem>? GetTemplate(TItem item)
+    private RenderFragment<TItem>? GetTemplate(TItem? item)
     {
+        if (item is null) return null;
+
         if (item is BitMenuButtonItem bitMenuButtonItem)
         {
             return bitMenuButtonItem.Template as RenderFragment<TItem>;
@@ -401,8 +428,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
-    private string? GetText(TItem item)
+    private string? GetText(TItem? item)
     {
+        if (item is null) return null;
+
         if (item is BitMenuButtonItem bitMenuButtonItem)
         {
             return bitMenuButtonItem.Text;
@@ -423,7 +452,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
-    private async Task HandleOnClick(TItem? item)
+    private async Task HandleOnHeaderClick(TItem? item)
     {
         if (IsEnabled is false) return;
 
