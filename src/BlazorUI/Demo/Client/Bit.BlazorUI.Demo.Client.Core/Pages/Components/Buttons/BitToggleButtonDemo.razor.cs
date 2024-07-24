@@ -329,4 +329,6 @@ public partial class BitToggleButtonDemo
 
     private bool example51Value;
     private bool example52Value;
+
+    private int clickCounter;
 }

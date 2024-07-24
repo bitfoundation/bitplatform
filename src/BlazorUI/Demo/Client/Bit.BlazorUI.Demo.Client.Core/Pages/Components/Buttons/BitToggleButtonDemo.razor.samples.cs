@@ -167,6 +167,29 @@ private bool example51Value;
 private bool example52Value;";
 
     private readonly string example7RazorCode = @"
+<style>
+    .custom-content {
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+</style>
+
+
+<BitToggleButton>
+    <div class=""custom-content"">
+        <BitIcon IconName=""@BitIconName.Airplane"" />
+        <span>Custom template</span>
+        <BitRollerLoading Size=""20"" />
+    </div>
+</BitToggleButton>";
+
+    private readonly string example8RazorCode = @"
+<BitToggleButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitToggleButton>";
+    private readonly string example8CsharpCode = @"
+private int clickCounter;";
+
+    private readonly string example9RazorCode = @"
 <BitToggleButton Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill""
                  OffText=""صدا وصل"" OffIconName=""@BitIconName.Microphone""
                  OnText=""صدا قطع"" OnIconName=""@BitIconName.MicOff"" />

@@ -187,7 +187,36 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div>Here are some examples of customizing the BitToggleButton content.</div>
+            <br />
+            <div>
+                <BitToggleButton>
+                    <div class="custom-content">
+                        <BitIcon IconName="@BitIconName.Airplane" />
+                        <span>Custom template</span>
+                        <BitRollerLoading Size="20" />
+                    </div>
+                </BitToggleButton>
+                <br />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ExamplePreview>
+            <div>
+                Managing BitToggleButton click event (OnClick).
+            </div>
+            <br />
+            <div class="example-content">
+                <BitToggleButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitToggleButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div>Use BitToggleButton in right-to-left (RTL).</div>
             <br />

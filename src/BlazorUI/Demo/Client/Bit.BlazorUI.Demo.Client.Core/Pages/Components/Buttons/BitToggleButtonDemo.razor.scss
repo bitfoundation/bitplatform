@@ -6,6 +6,12 @@
 }
 
 ::deep {
+    .custom-content {
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
     .custom-class {
         border-radius: 1rem;
         border-color: blueviolet;
