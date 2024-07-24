@@ -495,7 +495,7 @@
     <data name="HomeTitle" xml:space="preserve">
     <value>Boilerplate Home</value>
   </data>
-    <data name="AppDescription" xml:space="preserve">
+    <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>The Boilerplate is built with ASP.NET Core, Identity, Web API, EF Core and Blazor.</value>
   </data>
     <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
