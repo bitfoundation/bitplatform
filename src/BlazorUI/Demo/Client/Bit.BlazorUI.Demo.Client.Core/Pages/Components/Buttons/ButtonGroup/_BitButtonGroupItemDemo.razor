@@ -172,13 +172,13 @@
         <br /><br />
         <div class="example-content">
             <div>Component's style & class:</div>
-            <BitButtonGroup Items="basicItems" Style="padding:1rem;background:red" />
-            <BitButtonGroup Items="basicItems" Class="custom-class" />
+            <BitButtonGroup Items="basicItems" Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;" />
+            <BitButtonGroup Items="basicItems" Class="custom-class" Variant="BitVariant.Outline" />
         </div>
         <br /><br />
         <div class="example-content">
             <div>Item's style & class:</div>
-            <BitButtonGroup Items="styleClassItems" />
+            <BitButtonGroup Items="styleClassItems" Variant="BitVariant.Text" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -203,6 +203,8 @@
 
 <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
+        <div>Use BitButtonGroup in right-to-left (RTL).</div>
+        <br />
         <div dir="rtl">
             <BitButtonGroup Dir="BitDir.Rtl" Variant="BitVariant.Fill" Items="rtlItems" />
             <br /><br />

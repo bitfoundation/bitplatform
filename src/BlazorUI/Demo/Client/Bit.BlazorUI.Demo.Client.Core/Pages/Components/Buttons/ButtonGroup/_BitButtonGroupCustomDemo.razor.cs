@@ -36,7 +36,7 @@ public partial class _BitButtonGroupCustomDemo
         new()
         {
             Name = "Styled",
-            Style = "color:darkred",
+            Style = "color: tomato; border-color: brown; background-color: peachpuff;",
             Icon = BitIconName.Brush,
         },
         new()
@@ -225,21 +225,34 @@ private List<ButtonGroupActionItem> basicCustoms = new()
     private readonly string example7RazorCode = @"
 <style>
     .custom-class {
-        padding: 2rem;
-        border-radius:1rem;
-        background-color: blueviolet;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
+    }
+
+    .custom-class button {
+        color: tomato;
+        border-color: tomato;
+    }
+
+    .custom-class button:hover {
+        color: unset;
+        background-color: lightcoral;
     }
 
     .custom-item {
-        color: blueviolet;
-        background-color: goldenrod;
+        color: peachpuff;
+        background-color: tomato;
     }
 </style>
 
-<BitButtonGroup Items=""basicCustoms"" Style=""padding:1rem;background:red"" NameSelectors=""nameSelector"" />
-<BitButtonGroup Items=""basicCustoms"" Class=""custom-class"" NameSelectors=""nameSelector"" />
+
+<BitButtonGroup Items=""basicCustoms"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"" NameSelectors=""nameSelector"" />
+<BitButtonGroup Items=""basicCustoms"" Class=""custom-class"" Variant=""BitVariant.Outline"" NameSelectors=""nameSelector"" />
 
 <BitButtonGroup Items=""styleClassCustoms""
+                Variant=""BitVariant.Text""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />";
     private readonly string example7CsharpCode = @"
@@ -263,7 +276,7 @@ private List<ButtonGroupActionItem> styleClassCustoms = new()
     new()
     {
         Name = ""Styled"",
-        Style = ""color:darkred"",
+        Style = ""color: tomato; border-color: brown; background-color: peachpuff;"",
         Icon = BitIconName.Brush,
     },
     new()
