@@ -193,13 +193,6 @@ public partial class BitToggleButtonDemo
                },
                new()
                {
-                   Name = "Container",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon and label container of the BitToggleButton.",
-               },
-               new()
-               {
                    Name = "Text",
                    Type = "string?",
                    DefaultValue = "null",

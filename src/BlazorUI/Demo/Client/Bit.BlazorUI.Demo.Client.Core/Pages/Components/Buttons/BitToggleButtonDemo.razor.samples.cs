@@ -176,12 +176,10 @@ private bool example52Value;";
 </style>
 
 
-<BitToggleButton>
-    <div class=""custom-content"">
-        <BitIcon IconName=""@BitIconName.Airplane"" />
-        <span>Custom template</span>
-        <BitRollerLoading Size=""20"" />
-    </div>
+<BitToggleButton Class=""custom-content"">
+    <BitIcon IconName=""@BitIconName.Airplane"" />
+    <span>Custom template</span>
+    <BitRollerLoading Size=""20"" />
 </BitToggleButton>";
 
     private readonly string example8RazorCode = @"

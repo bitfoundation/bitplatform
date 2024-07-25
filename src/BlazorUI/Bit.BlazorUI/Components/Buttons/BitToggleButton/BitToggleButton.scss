@@ -7,7 +7,7 @@
     align-items: center;
     display: inline-flex;
     text-decoration: none;
-    
+
     box-sizing: border-box;
     justify-content: center;
     font-family: $tg-font-family;
@@ -21,13 +21,6 @@
         pointer-events: none;
         color: $clr-fg-dis;
     }
-}
-
-.bit-tgb-con {
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
-    justify-content: center;
 }
 
 .bit-tgb-ico {

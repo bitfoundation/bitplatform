@@ -41,19 +41,19 @@
         <ExamplePreview>
             <div>Varying sizes for BitToggleButton tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
             <br />
-            <div>
+            <div class="example-box">
                 <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill">Small</BitToggleButton>
                 <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill">Medium</BitToggleButton>
                 <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill">Large</BitToggleButton>
             </div>
             <br />
-            <div>
+            <div class="example-box">
                 <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline">Small</BitToggleButton>
                 <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline">Medium</BitToggleButton>
                 <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline">Large</BitToggleButton>
             </div>
             <br />
-            <div>
+            <div class="example-box">
                 <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text">Small</BitToggleButton>
                 <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text">Medium</BitToggleButton>
                 <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text">Large</BitToggleButton>
@@ -192,12 +192,10 @@
             <div>Here are some examples of customizing the BitToggleButton content.</div>
             <br />
             <div>
-                <BitToggleButton>
-                    <div class="custom-content">
-                        <BitIcon IconName="@BitIconName.Airplane" />
-                        <span>Custom template</span>
-                        <BitRollerLoading Size="20" />
-                    </div>
+                <BitToggleButton Class="custom-content">
+                    <BitIcon IconName="@BitIconName.Airplane" />
+                    <span>Custom template</span>
+                    <BitRollerLoading Size="20" />
                 </BitToggleButton>
                 <br />
             </div>
