@@ -690,13 +690,7 @@ public partial class BitDropdownDemo
                    Name = "ValueSetter",
                    Type = "Action<TItem, TItem>?",
                    Description = "The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.",
-               },
-               new()
-               {
-                   Name = "IsSelectedSetter",
-                   Type = "Action<bool, TValue>",
-                   Description = "The setter function for updating IsSelected property of custom item in Dynamic ComboBox mode upon new item addition.",
-               },
+               }
             },
         },
         new()
