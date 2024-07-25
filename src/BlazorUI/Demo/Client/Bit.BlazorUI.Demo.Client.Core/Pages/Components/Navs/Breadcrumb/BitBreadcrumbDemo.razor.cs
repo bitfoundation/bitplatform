@@ -1,6 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
-
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public partial class BitBreadcrumbDemo
 {
@@ -92,8 +90,8 @@ public partial class BitBreadcrumbDemo
         {
             Id = "bit-breadcrumb-item",
             Title = "BitBreadcrumbItem",
-            Parameters = new List<ComponentParameter>()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Key",
@@ -143,14 +141,14 @@ public partial class BitBreadcrumbDemo
                    Type = "Action<BitBreadcrumbItem>?",
                    Description = "Click event handler of the breadcrumb item.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "bit-breadcrumb-option",
             Title = "BitBreadcrumbOption",
-            Parameters = new List<ComponentParameter>()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Key",
@@ -200,14 +198,14 @@ public partial class BitBreadcrumbDemo
                    Type = "EventCallback<BitBreadcrumbOption>",
                    Description = "Click event handler of the breadcrumb option.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "name-selectors",
             Title = "BitBreadcrumbNameSelectors<TItem>",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Key",
@@ -277,14 +275,14 @@ public partial class BitBreadcrumbDemo
                    Type = "Action<TItem>?",
                    Description = "Click event handler of the item.",
                }
-            },
+            ],
         },
         new()
         {
             Id = "name-selector-pair",
             Title = "BitNameSelectorPair<TItem, TProp>",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Name",
@@ -297,7 +295,7 @@ public partial class BitBreadcrumbDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
-            }
+            ]
         },
     ];
 
