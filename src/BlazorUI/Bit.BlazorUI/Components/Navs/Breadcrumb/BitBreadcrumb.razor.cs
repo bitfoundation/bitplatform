@@ -120,13 +120,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
         _overflowAnchorId = $"BitBreadcrumb-{UniqueId}-overflow-anchor";
         _scrollContainerId = $"BitBreadcrumb-{UniqueId}-scroll-container";
 
-        //_internalClassField = ClassFieldSelector?.GetName() ?? ClassField;
-        //_internalHrefField = HrefFieldSelector?.GetName() ?? HrefField;
-        //_internalIsSelectedField = IsSelectedFieldSelector?.GetName() ?? IsSelectedField;
-        //_internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
-        //_internalTextField = TextFieldSelector?.GetName() ?? TextField;
-        //_internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
-
         _dotnetObj = DotNetObjectReference.Create(this);
 
         return base.OnInitializedAsync();
