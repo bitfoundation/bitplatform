@@ -4,24 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where TItem : class
 {
-    private const string KEY_FIELD = nameof(BitBreadcrumbItem.Key);
-    private const string CLASS_FIELD = nameof(BitBreadcrumbItem.Class);
-    private const string HREF_FIELD = nameof(BitBreadcrumbItem.Href);
-    private const string IS_SELECTED_FIELD = nameof(BitBreadcrumbItem.IsSelected);
-    private const string IS_ENABLED_FIELD = nameof(BitBreadcrumbItem.IsEnabled);
-    private const string TEXT_FIELD = nameof(BitBreadcrumbItem.Text);
-    private const string STYLE_FIELD = nameof(BitBreadcrumbItem.Style);
-    private const string ONCLICK_FIELD = nameof(BitBreadcrumbItem.OnClick);
-
-    private string _internalKeyField = KEY_FIELD;
-    private string _internalClassField = CLASS_FIELD;
-    private string _internalHrefField = HREF_FIELD;
-    private string _internalIsSelectedField = IS_SELECTED_FIELD;
-    private string _internalIsEnabledField = IS_ENABLED_FIELD;
-    private string _internalTextField = TEXT_FIELD;
-    private string _internalStyleField = STYLE_FIELD;
-    private string _internalOnClickField = ONCLICK_FIELD;
-
     private bool _disposed;
     private bool _isCalloutOpen;
     private uint _internalOverflowIndex;
@@ -44,16 +26,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
 
 
     /// <summary>
-    /// class HTML attribute for BreadList item.
-    /// </summary>
-    [Parameter] public string ClassField { get; set; } = CLASS_FIELD;
-
-    /// <summary>
-    /// Class HTML attribute for BreadList item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? ClassFieldSelector { get; set; }
-
-    /// <summary>
     /// The content of the BitBreadcrumb, that are BitBreadOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -64,48 +36,20 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
     [Parameter] public string? DividerIconName { get; set; }
 
     /// <summary>
-    /// URL to navigate to when this BreadList item is clicked.
-    /// If provided, the BreadList will be rendered as a link.
-    /// </summary>
-    [Parameter]
-    public string HrefField { get; set; } = HREF_FIELD;
-
-    /// <summary>
-    /// URL to navigate to when this BreadList item is clicked.
-    /// If provided, the BreadList will be rendered as a link.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? HrefFieldSelector { get; set; }
-
-    /// <summary>
     /// Collection of BreadLists to render.
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = [];
-
-    /// <summary>
-    /// Display the item as a Selected item.
-    /// </summary>
-    [Parameter] public string IsSelectedField { get; set; } = IS_SELECTED_FIELD;
-
-    /// <summary>
-    /// Display the item as a Selected item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsSelectedFieldSelector { get; set; }
-
-    /// <summary>
-    /// Whether an item is enabled or not.
-    /// </summary>
-    [Parameter] public string IsEnabledField { get; set; } = IS_ENABLED_FIELD;
-
-    /// <summary>
-    /// Whether an item is enabled or not.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, bool>>? IsEnabledFieldSelector { get; set; }
-
+    
     /// <summary>
     /// The maximum number of BreadLists to display before coalescing.
     /// If not specified, all BreadLists will be rendered.
     /// </summary>
     [Parameter] public uint MaxDisplayedItems { get; set; }
+
+    /// <summary>
+    /// Names and selectors of the custom input type properties.
+    /// </summary>
+    [Parameter] public BitBreadcrumbNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -128,16 +72,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// Style HTML attribute for BreadList item.
-    /// </summary>
-    [Parameter] public string StyleField { get; set; } = STYLE_FIELD;
-
-    /// <summary>
-    /// Style HTML attribute for BreadList item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? StyleFieldSelector { get; set; }
-
-    /// <summary>
     /// The class HTML attribute for Selected Item.
     /// </summary>
     [Parameter] public string? SelectedItemClass { get; set; }
@@ -146,16 +80,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
     /// The style HTML attribute for Selected Item.
     /// </summary>
     [Parameter] public string? SelectedItemStyle { get; set; }
-
-    /// <summary>
-    /// Text to display in the BreadList item.
-    /// </summary>
-    [Parameter] public string TextField { get; set; } = TEXT_FIELD;
-
-    /// <summary>
-    /// Text to display in the BreadList item.
-    /// </summary>
-    [Parameter] public Expression<Func<TItem, object>>? TextFieldSelector { get; set; }
 
 
 
@@ -196,12 +120,12 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
         _overflowAnchorId = $"BitBreadcrumb-{UniqueId}-overflow-anchor";
         _scrollContainerId = $"BitBreadcrumb-{UniqueId}-scroll-container";
 
-        _internalClassField = ClassFieldSelector?.GetName() ?? ClassField;
-        _internalHrefField = HrefFieldSelector?.GetName() ?? HrefField;
-        _internalIsSelectedField = IsSelectedFieldSelector?.GetName() ?? IsSelectedField;
-        _internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
-        _internalTextField = TextFieldSelector?.GetName() ?? TextField;
-        _internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
+        //_internalClassField = ClassFieldSelector?.GetName() ?? ClassField;
+        //_internalHrefField = HrefFieldSelector?.GetName() ?? HrefField;
+        //_internalIsSelectedField = IsSelectedFieldSelector?.GetName() ?? IsSelectedField;
+        //_internalIsEnabledField = IsEnabledFieldSelector?.GetName() ?? IsEnabledField;
+        //_internalTextField = TextFieldSelector?.GetName() ?? TextField;
+        //_internalStyleField = StyleFieldSelector?.GetName() ?? StyleField;
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
@@ -256,9 +180,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
         {
             await bitBreadcrumbOption.OnClick.InvokeAsync(bitBreadcrumbOption);
         }
-        else
+        else if (NameSelectors?.OnClick is not null)
         {
-            item.GetValueFromProperty<Action<TItem>?>(_internalOnClickField)?.Invoke(item);
+            NameSelectors.OnClick(item);
         }
     }
 
@@ -332,7 +256,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
             return bitBreadcrumbOption.Key;
         }
 
-        return item.GetValueFromProperty<string?>(_internalKeyField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Key.Selector is not null)
+        {
+            return NameSelectors.Key.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
     }
 
     private string GetStyles(TItem item)
@@ -364,7 +295,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
             return bitBreadcrumbOption.Href;
         }
 
-        return item.GetValueFromProperty<string?>(_internalHrefField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Href.Selector is not null)
+        {
+            return NameSelectors.Href.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Href.Name);
     }
 
     private string? GetItemClass(TItem item)
@@ -379,7 +317,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
             return bitBreadcrumbOption.Class;
         }
 
-        return item.GetValueFromProperty<string?>(_internalClassField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Class.Selector is not null)
+        {
+            return NameSelectors.Class.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
     }
 
     private string? GetItemStyle(TItem item)
@@ -394,7 +339,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
             return bitBreadcrumbOption.Style;
         }
 
-        return item.GetValueFromProperty<string?>(_internalStyleField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
     }
 
     private string? GetItemText(TItem item)
@@ -409,7 +361,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
             return bitBreadcrumbOption.Text;
         }
 
-        return item.GetValueFromProperty<string?>(_internalTextField);
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Text.Selector is not null)
+        {
+            return NameSelectors.Text.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
     private bool GetIsSelected(TItem item)
@@ -424,7 +383,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
             return bitBreadcrumbOption.IsSelected;
         }
 
-        return item.GetValueFromProperty(_internalIsSelectedField, false);
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.IsSelected.Selector is not null)
+        {
+            return NameSelectors.IsSelected.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsSelected.Name, false);
     }
 
     private bool GetIsEnabled(TItem item)
@@ -439,7 +405,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
             return bitBreadcrumbOption.IsEnabled;
         }
 
-        return item.GetValueFromProperty(_internalIsEnabledField, true);
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.IsEnabled.Selector is not null)
+        {
+            return NameSelectors.IsEnabled.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
 
     private async Task OpenCallout()

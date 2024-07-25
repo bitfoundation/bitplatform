@@ -1,23 +1,11 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
+﻿using Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public partial class BitBreadcrumbDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
-        new()
-        {
-            Name = "ClassField",
-            Type = "string",
-            DefaultValue = "Class",
-            Description = "Class HTML attribute for BreadList item."
-        },
-        new()
-        {
-            Name = "ClassFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
-            DefaultValue = "null",
-            Description = "Class HTML attribute for BreadList item."
-        },
         new()
         {
             Name = "ChildContent",
@@ -34,20 +22,6 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "HrefField",
-            Type = "string",
-            DefaultValue = "Href",
-            Description = "URL to navigate to when this BreadList item is clicked. If provided, the BreadList will be rendered as a link."
-        },
-        new()
-        {
-            Name = "HrefFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
-            DefaultValue = "null",
-            Description = "URL to navigate to when this BreadList item is clicked. If provided, the BreadList will be rendered as a link."
-        },
-        new()
-        {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "new List<TItem>()",
@@ -55,38 +29,19 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "IsSelectedField",
-            Type = "string",
-            DefaultValue = "IsSelected",
-            Description = "Display the item as a Selected item."
-        },
-        new()
-        {
-            Name = "IsSelectedFieldSelector",
-            Type = "Expression<Func<TItem, bool>>?",
-            DefaultValue = "null",
-            Description = "Display the item as a Selected item."
-        },
-        new()
-        {
-            Name = "IsEnabledField",
-            Type = "string",
-            DefaultValue = "IsEnabled",
-            Description = "Whether an item is enabled or not."
-        },
-        new()
-        {
-            Name = "IsEnabledFieldSelector",
-            Type = "Expression<Func<TItem, bool>>?",
-            DefaultValue = "null",
-            Description = "Whether an item is enabled or not."
-        },
-        new()
-        {
             Name = "MaxDisplayedItems",
             Type = "uint",
             DefaultValue = "0",
             Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
+        },
+        new()
+        {
+            Name = "NameSelectors",
+            Type = "BitBreadcrumbNameSelectors<TItem>?",
+            DefaultValue = "null",
+            Description = "Names and selectors of the custom input type properties.",
+            LinkType = LinkType.Link,
+            Href = "#name-selectors"
         },
         new()
         {
@@ -128,35 +83,7 @@ public partial class BitBreadcrumbDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The style attribute for selected item."
-        },
-        new()
-        {
-            Name = "StyleField",
-            Type = "string",
-            DefaultValue = "Style",
-            Description = "Style HTML attribute for BreadList item."
-        },
-        new()
-        {
-            Name = "StyleFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
-            DefaultValue = "null",
-            Description = "Style HTML attribute for BreadList item."
-        },
-        new()
-        {
-            Name = "TextField",
-            Type = "string",
-            DefaultValue = "Text",
-            Description = "Text to display in the BreadList item."
-        },
-        new()
-        {
-            Name = "TextFieldSelector",
-            Type = "Expression<Func<TItem, object>>?",
-            DefaultValue = "null",
-            Description = "Text to display in the BreadList item."
-        },
+        }
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -272,6 +199,103 @@ public partial class BitBreadcrumbDemo
                    Name = "OnClick",
                    Type = "EventCallback<BitBreadcrumbOption>",
                    Description = "Click event handler of the breadcrumb option.",
+               }
+            }
+        },
+        new()
+        {
+            Id = "name-selectors",
+            Title = "BitBreadcrumbNameSelectors<TItem>",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Key",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Key))",
+                   Description = "The Id field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Text",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Text))",
+                   Description = "The Text field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Href",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Href))",
+                   Description = "The Href field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Class",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Class))",
+                   Description = "The CSS Class field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Style",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Style))",
+                   Description = "The CSS Style field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "BitNameSelectorPair<TItem, bool>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IsSelected))",
+                   Description = "The IsSelected field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "IsEnabled",
+                   Type = "BitNameSelectorPair<TItem, bool>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IsEnabled))",
+                   Description = "The IsEnabled field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "OnClick",
+                   Type = "Action<TItem>?",
+                   Description = "Click event handler of the item.",
+               }
+            },
+        },
+        new()
+        {
+            Id = "name-selector-pair",
+            Title = "BitNameSelectorPair<TItem, TProp>",
+            Parameters = new()
+            {
+               new()
+               {
+                   Name = "Name",
+                   Type = "string",
+                   Description = "Custom class property name."
+               },
+               new()
+               {
+                   Name = "Selector",
+                   Type = "Func<TItem, TProp?>?",
+                   Description = "Custom class property selector."
                }
             }
         },
@@ -410,6 +434,15 @@ public partial class BitBreadcrumbDemo
         new() { Name = "پوشه ششم" },
     ];
 
+    private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+    {
+        Text = { Selector = c => c.Name },
+        Href = { Selector = c => c.Address },
+        IsSelected = { Selector = c => c.IsCurrent },
+        Class = { Selector = c => c.HtmlClass },
+        Style = { Selector = c => c.HtmlStyle }
+    };
+
 
 
     private void HandleOnItemClick(BitBreadcrumbItem item)
@@ -502,30 +535,17 @@ public partial class BitBreadcrumbDemo
 <div>
     <BitLabel>Basic</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
+                   NameSelectors=""nameSelectors"" />
 </div>
 <div>
     <BitLabel>Disabled</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    IsEnabled=""false"" />
+                   NameSelectors=""nameSelectors"" />
 </div>
 <div>
     <BitLabel>Item Disabled</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItemsDisabled""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
+                   NameSelectors=""nameSelectors"" />
 </div>
 ";
     private readonly string example1BreadcrumbOptionRazorCode = @"
@@ -590,65 +610,41 @@ public partial class BitBreadcrumbDemo
 <div>
     <BitLabel>MaxDisplayedItems (1)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""1"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""1"" />
 </div>
 <div>
     <BitLabel>MaxDisplayedItems (2)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""2"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""2"" />
 </div>
 <div>
     <BitLabel>MaxDisplayedItems (3)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""3"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""3"" />
 </div>
 <div>
     <BitLabel>MaxDisplayedItems (3), OverflowIndex (0)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""3""
-                    OverflowIndex=""0"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""3""
+                   OverflowIndex=""0"" />
 </div>
 <div>
     <BitLabel>MaxDisplayedItems (3), OverflowIndex (1)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""3""
-                    OverflowIndex=""1"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""3""
+                   OverflowIndex=""1"" />
 </div>
 <div>
     <BitLabel>MaxDisplayedItems (3), OverflowIndex (2)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""3""
-                    OverflowIndex=""2"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""3""
+                   OverflowIndex=""2"" />
 </div>
 ";
     private readonly string example2BreadcrumbOptionRazorCode = @"
@@ -728,26 +724,18 @@ public partial class BitBreadcrumbDemo
 <div>
     <BitLabel>BitIconName (ChevronDown)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""3""
-                    OverflowIndex=""2""
-                    OverflowIcon=""@BitIconName.ChevronDown"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""3""
+                   OverflowIndex=""2""
+                   OverflowIcon=""@BitIconName.ChevronDown"" />
 </div>
 <div>
     <BitLabel>BitIconName (CollapseMenu)</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""3""
-                    OverflowIndex=""2""
-                    OverflowIcon=""@BitIconName.CollapseMenu"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""3""
+                   OverflowIndex=""2""
+                   OverflowIcon=""@BitIconName.CollapseMenu"" />
 </div>
 ";
     private readonly string example3BreadcrumbOptionRazorCode = @"
@@ -844,40 +832,24 @@ public partial class BitBreadcrumbDemo
 <div>
     <BitLabel>Items Class</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItemsWithClass""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
+                   NameSelectors=""nameSelectors"" />
 </div>
 <div>
     <BitLabel>Items Style</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItemsWithStyle""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)"" />
+                   NameSelectors=""nameSelectors"" />
 </div>
 <div>
     <BitLabel>Selected Item Class</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    SelectedItemClass=""custom-selected-item"" />
+                   NameSelectors=""nameSelectors""
+                   SelectedItemClass=""custom-selected-item"" />
 </div>
 <div>
     <BitLabel>Selected Item Style</BitLabel>
     <BitBreadcrumb Items=""CustomBreadcrumbItems""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    SelectedItemStyle=""color:red;background:lightgreen"" />
+                   NameSelectors=""nameSelectors""
+                   SelectedItemStyle=""color:red;background:lightgreen"" />
 </div>
 ";
     private readonly string example4BreadcrumbOptionRazorCode = @"
@@ -945,22 +917,18 @@ public partial class BitBreadcrumbDemo
 
     private readonly string example5BreadcrumbItemRazorCode = @"
 <BitBreadcrumb Items=""@BreadcrumbItemsWithControlled""
-                MaxDisplayedItems=""3""
-                OverflowIndex=""2""
-                OnItemClick=""(BitBreadcrumbItem item) => HandleOnItemClick(item)""
-                SelectedItemStyle=""color:red;background:lightgreen"" />
+               MaxDisplayedItems=""3""
+               OverflowIndex=""2""
+               OnItemClick=""(BitBreadcrumbItem item) => HandleOnItemClick(item)""
+               SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
     private readonly string example5CustomItemRazorCode = @"
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithControlled""
-                TextField=""@nameof(PageInfoModel.Name)""
-                HrefField=""@nameof(PageInfoModel.Address)""
-                IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                MaxDisplayedItems=""3""
-                OverflowIndex=""2""
-                OnItemClick=""(PageInfoModel model) => HandleOnCustomClick(model)""
-                SelectedItemStyle=""color:red;background:lightgreen"" />
+               NameSelectors=""nameSelectors""
+               MaxDisplayedItems=""3""
+               OverflowIndex=""2""
+               OnItemClick=""(PageInfoModel model) => HandleOnCustomClick(model)""
+               SelectedItemStyle=""color:red;background:lightgreen"" />
 ";
     private readonly string example5BreadcrumbOptionRazorCode = @"
 <BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" SelectedItemStyle=""color:red; background:lightgreen;"">
@@ -994,14 +962,10 @@ public partial class BitBreadcrumbDemo
     private readonly string example6CustomItemRazorCode = @"
 <div>
     <BitBreadcrumb Items=""CustomBreadcrumbItemsWithCustomized""
-                    TextField=""@nameof(PageInfoModel.Name)""
-                    HrefField=""@nameof(PageInfoModel.Address)""
-                    IsSelectedField=""@nameof(PageInfoModel.IsCurrent)""
-                    ClassField=""@nameof(PageInfoModel.HtmlClass)""
-                    StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-                    MaxDisplayedItems=""@MaxDisplayedItems""
-                    OverflowIndex=""@OverflowIndex""
-                    OnItemClick=""(PageInfoModel model) => HandleOnCustomizedCustomClick(model)"" />
+                   NameSelectors=""nameSelectors""
+                   MaxDisplayedItems=""@MaxDisplayedItems""
+                   OverflowIndex=""@OverflowIndex""
+                   OnItemClick=""(PageInfoModel model) => HandleOnCustomizedCustomClick(model)"" />
 </div>
 <div class=""operators"">
     <div>
@@ -1044,11 +1008,7 @@ public partial class BitBreadcrumbDemo
                OverflowIndex=""2""
                MaxDisplayedItems=""3""
                Items=""RtlCustomBreadcrumbItems""
-               TextField=""@nameof(PageInfoModel.Name)""
-               HrefField=""@nameof(PageInfoModel.Address)""
-               ClassField=""@nameof(PageInfoModel.HtmlClass)""
-               StyleField=""@nameof(PageInfoModel.HtmlStyle)""
-               IsSelectedField=""@nameof(PageInfoModel.IsCurrent)"" />
+               NameSelectors=""nameSelectors"" />
 ";
     private readonly string example7BreadcrumbOptionRazorCode = @"
 <BitBreadcrumb Dir=""BitDir.Rtl"" TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
@@ -1110,6 +1070,15 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsDisabled = new()
     new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"" },
     new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 };
+
+private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    IsSelected = { Selector = c => c.IsCurrent },
+    Class = { Selector = c => c.HtmlClass },
+    Style = { Selector = c => c.HtmlStyle }
+};
 ";
 
     private readonly string example2BreadcrumbItemCsharpCode = @"
@@ -1144,6 +1113,15 @@ private readonly List<PageInfoModel> CustomBreadcrumbItems = new()
     new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"" },
     new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 };
+
+private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    IsSelected = { Selector = c => c.IsCurrent },
+    Class = { Selector = c => c.HtmlClass },
+    Style = { Selector = c => c.HtmlStyle }
+};
 ";
 
     private readonly string example3BreadcrumbItemCsharpCode = @"
@@ -1177,6 +1155,15 @@ private readonly List<PageInfoModel> CustomBreadcrumbItems = new()
     new() { Name = ""Folder 2"", Address = ""/components/breadcrumb"" },
     new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"" },
     new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+};
+
+private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    IsSelected = { Selector = c => c.IsCurrent },
+    Class = { Selector = c => c.HtmlClass },
+    Style = { Selector = c => c.HtmlStyle }
 };
 ";
 
@@ -1244,6 +1231,15 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsWithStyle = new()
     new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"", HtmlStyle = ""color:red;background:greenyellow"" },
     new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", HtmlStyle = ""color:red;background:greenyellow"", IsCurrent = true }
 };
+
+private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    IsSelected = { Selector = c => c.IsCurrent },
+    Class = { Selector = c => c.HtmlClass },
+    Style = { Selector = c => c.HtmlStyle }
+};
 ";
 
     private readonly string example5BreadcrumbItemCsharpCode = @"
@@ -1287,6 +1283,15 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsWithControlled = new()
     new() { Name = ""Folder 4"" },
     new() { Name = ""Folder 5"" },
     new() { Name = ""Folder 6"", IsCurrent = true }
+};
+
+private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    IsSelected = { Selector = c => c.IsCurrent },
+    Class = { Selector = c => c.HtmlClass },
+    Style = { Selector = c => c.HtmlStyle }
 };
 
 private void HandleOnCustomClick(PageInfoModel model)
@@ -1371,6 +1376,15 @@ private readonly List<PageInfoModel> CustomBreadcrumbItemsWithCustomized = new()
     new() { Name = ""Folder 4"", IsCurrent = true }
 };
 
+private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    IsSelected = { Selector = c => c.IsCurrent },
+    Class = { Selector = c => c.HtmlClass },
+    Style = { Selector = c => c.HtmlStyle }
+};
+
 private void HandleOnCustomizedCustomClick(PageInfoModel model)
 {
     CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
@@ -1444,5 +1458,14 @@ private readonly List<PageInfoModel> RtlCustomBreadcrumbItems = new()
     new() { Name = ""پوشه چهارم"" },
     new() { Name = ""پوشه پنجم"" },
     new() { Name = ""پوشه ششم"" },
+};
+
+private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    IsSelected = { Selector = c => c.IsCurrent },
+    Class = { Selector = c => c.HtmlClass },
+    Style = { Selector = c => c.HtmlStyle }
 };";
 }
