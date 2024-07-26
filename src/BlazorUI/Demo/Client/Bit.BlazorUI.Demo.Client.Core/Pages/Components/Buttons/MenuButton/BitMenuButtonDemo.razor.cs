@@ -133,6 +133,15 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the menu button.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
             Name = "Split",
             Type = "bool",
             DefaultValue = "false",
@@ -607,6 +616,33 @@ public partial class BitMenuButtonDemo
                     Name= "Error",
                     Description="Error general color.",
                     Value="7",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size.",
+                    Value="2",
                 }
             ]
         },

@@ -5,9 +5,7 @@
     width: fit-content;
     position: relative;
     outline: transparent;
-    min-height: spacing(4);
     box-sizing: border-box;
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
     border-width: $shp-border-width;
@@ -36,6 +34,7 @@
     box-sizing: border-box;
     justify-content: center;
     background-color: inherit;
+    padding: var(--bit-mnb-padding);
 
     @media (hover: hover) {
         &:hover {
@@ -52,7 +51,6 @@
 
 .bit-mnb-opb {
     flex-grow: 1;
-    padding: spacing(0.5) spacing(2);
     color: var(--bit-mnb-clr-opb-txt);
     background-color: var(--bit-mnb-clr-opb-bg);
 }
@@ -133,11 +131,11 @@
     gap: spacing(1);
     cursor: pointer;
     text-align: start;
+    color: $clr-fg-pri;
     font-size: inherit;
     padding: spacing(1);
     align-items: center;
     line-height: inherit;
-    color: $clr-fg-pri;
     background-color: transparent;
 
     &[disabled] {
@@ -267,4 +265,19 @@
     --bit-mnb-clr-txt: #{$clr-err-text};
     --bit-mnb-clr-hover: #{$clr-err-hover};
     --bit-mnb-clr-active: #{$clr-err-active};
+}
+
+.bit-mnb-sm {
+    font-size: spacing(1.5);
+    --bit-mnb-padding: #{spacing(0.5)} #{spacing(1.0)};
+}
+
+.bit-mnb-md {
+    font-size: spacing(1.75);
+    --bit-mnb-padding: #{spacing(0.75)} #{spacing(1.5)};
+}
+
+.bit-mnb-lg {
+    font-size: spacing(2.0);
+    --bit-mnb-padding: #{spacing(1.0)} #{spacing(2.0)};
 }

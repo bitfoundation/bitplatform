@@ -118,9 +118,16 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     /// <summary>
+    /// The size of the menu button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// If true, the menu button renders as a split button.
     /// </summary>
-    [Parameter, ResetClassBuilder] public bool Split { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Split { get; set; }
 
     /// <summary>
     /// If true, the selected item is going to change the header item.
@@ -198,6 +205,14 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             BitColor.SevereWarning => "bit-mnb-swr",
             BitColor.Error => "bit-mnb-err",
             _ => "bit-mnb-pri"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-mnb-sm",
+            BitSize.Medium => "bit-mnb-md",
+            BitSize.Large => "bit-mnb-lg",
+            _ => "bit-mnb-md"
         });
 
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
