@@ -225,6 +225,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             _ => "bit-mnb-pri"
         });
 
+        ClassBuilder.Register(() => IsOpen ? "bit-mnb-omn" : string.Empty);
+        ClassBuilder.Register(() => IsOpen ? Classes?.Opened : string.Empty);
+
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-mnb-sm",
@@ -242,13 +245,13 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             BitVariant.Text => "bit-mnb-txt",
             _ => "bit-mnb-fil"
         });
-
-        ClassBuilder.Register(() => IsOpen ? "bit-mnb-omn" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => IsOpen ? Styles?.Opened : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
