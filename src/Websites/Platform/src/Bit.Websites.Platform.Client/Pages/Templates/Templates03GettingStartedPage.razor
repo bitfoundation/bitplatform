@@ -1,0 +1,91 @@
+﻿@page "/todo-template/getting-started"
+@page "/admin-panel/getting-started"
+@page "/templates/getting-started"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/getting-started"
+            Title="Getting started - Templates"
+            Description="Getting started with the project templates on the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Getting started</BitTypography>
+    <br />
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Setup development environment</BitTypography>
+
+            To begin, the initial steps involve installing .NET SDK version .NET SDK <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.303</a>
+            , along with the latest versions of <a href="https://nodejs.org/en/download" target="_blank">NodeJS</a> and <a href="https://www.nuget.org/packages/Boilerplate.Templates" target="_blank">Boilerplate Project Template</a>.
+            This setup enables compatibility with your preferred IDE and operating system.
+            <br />
+            <br />
+            For Windows users, start by installing <a href="https://aka.ms/getwinget" target="_blank">winget</a> (Windows Package Manager).
+            You can then select from a range of options provided, with Core dependencies pre-selected by default.
+            Proceed by copying the commands provided, and execute them in Command Prompt (CMD) running with Administrator privileges.
+            This process will automate the installation of Visual Studio and additional tools, significantly enhancing your development environment.
+            <br />
+            <br />
+            <br />
+        </div>
+        <BitCheckbox Label="Core dependencies (Facilitate the execution of backend APIs, web applications, and Windows versions of your software solutions.)" IsEnabled="false" Value="true" />
+        <br />
+        <BitCheckbox Label="Additional dependencies (Enable you to run Android, iOS and macOS versions of your application)" @bind-Value="isAdditionalSelected" />
+        <br />
+        <BitCheckbox Label="Visual Studio" @bind-Value="isVSSelected" />
+        <br />
+        <BitCheckbox Label="Visual Studio Code" @bind-Value="isVSCodeSelected" />
+        <br />
+        <br />
+        <ol>
+            @foreach (var commandInfo in GetCommandsInfo())
+            {
+                <li>
+                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>@commandInfo.text</BitTypography>
+                    <CodeBox>
+                        @commandInfo.command
+                    </CodeBox>
+                </li>
+            }
+        </ol>
+
+        <br />
+        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Copy all the commands here</BitTypography>
+        <CodeBox>
+            @GetCommands()
+        </CodeBox>
+
+
+        <div class="section-card-txt">
+            After executing the commands, proceed to install the following extensions for Visual Studio:
+            <ol>
+                <li>
+                    <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
+                </li>
+                <li>
+                    <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">SQLite and SQL Server Compact Toolbox extension </a>
+                </li>
+            </ol>
+        </div>
+
+        <div class="section-card-txt">
+            To verify successful project compilation, download <a href="/files/my-first-project.bat" download>my-first-project.bat</a> file for Windows or <a href="/files/my-first-project.sh" download>my-first-project.sh</a> file for macOS and Linux, then execute it.
+            This file initializes a project and an SQLite database, performs EF Core migration, and subsequently launches the application.
+            Once launched, you can access it via a web browser and log in using the credentials test@bitplatform.dev with the password set to 123456.
+            <br />
+            <br />
+            In the following sections, we will delve into the specifics of these commands.
+            If you encounter any errors, please submit an <a href="https://github.com/bitfoundation/bitplatform/issues/new" target="_blank">issue</a> for assistance.
+            <br />
+            <br />
+            To open the project in Visual Studio, navigate to the MyFirstProject folder.
+            Inside the "src" folder, if your focus is solely on running the Web project, open MyFirstProject.Web.slnf.
+            This option provides faster access. Alternatively, if you wish to work on the Android, Windows, or other versions of your application, open MyFirstProject.sln.
+            <br />
+            <br />
+            Once opened, press F5 to launch the application.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Overview" PrevUrl="/templates/overview" Next="Create project" NextUrl="/templates/create-project" />

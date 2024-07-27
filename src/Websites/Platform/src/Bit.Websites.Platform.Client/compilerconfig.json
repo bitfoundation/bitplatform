@@ -96,8 +96,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates03DevelopmentPrerequisitesPage.razor.css",
-        "inputFile": "Pages/Templates/Templates03DevelopmentPrerequisitesPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates03GettingStartedPage.razor.css",
+        "inputFile": "Pages/Templates/Templates03GettingStartedPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
