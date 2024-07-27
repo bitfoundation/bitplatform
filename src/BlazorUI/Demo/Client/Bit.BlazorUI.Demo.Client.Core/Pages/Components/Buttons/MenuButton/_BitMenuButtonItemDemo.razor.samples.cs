@@ -197,6 +197,10 @@ private List<BitMenuButtonItem> basicItemsIcon =
         background: transparent;
     }
 
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
     .custom-callout {
         border-radius: 1rem;
         border-color: lightgray;
@@ -228,6 +232,7 @@ private List<BitMenuButtonItem> basicItemsIcon =
 
 <BitMenuButton Text=""Classes"" Items=""basicItems"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
                Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Opened = ""custom-opened"",
                                   Callout = ""custom-callout"",
                                   ItemButton = ""custom-item-button"" })"" />
 

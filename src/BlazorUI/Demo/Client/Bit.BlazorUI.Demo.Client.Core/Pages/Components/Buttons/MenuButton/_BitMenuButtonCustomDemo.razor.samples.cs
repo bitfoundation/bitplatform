@@ -316,6 +316,10 @@ private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
         background: transparent;
     }
 
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
     .custom-callout {
         border-radius: 1rem;
         border-color: lightgray;
@@ -347,6 +351,7 @@ private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
 
 <BitMenuButton Text=""Classes"" Items=""basicCustoms"" IconName=""@BitIconName.FormatPainter"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text""
                Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Opened = ""custom-opened"",
                                   Callout = ""custom-callout"",
                                   ItemButton = ""custom-item-button"" })"" />
 

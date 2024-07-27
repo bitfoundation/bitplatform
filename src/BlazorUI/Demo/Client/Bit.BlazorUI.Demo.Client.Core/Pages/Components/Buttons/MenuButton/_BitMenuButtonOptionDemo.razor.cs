@@ -487,6 +487,10 @@ public partial class _BitMenuButtonOptionDemo
         background: transparent;
     }
 
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
     .custom-callout {
         border-radius: 1rem;
         border-color: lightgray;
@@ -531,6 +535,7 @@ public partial class _BitMenuButtonOptionDemo
 
 <BitMenuButton Text=""Classes"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
                Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Opened = ""custom-opened"",
                                   Callout = ""custom-callout"",
                                   ItemButton = ""custom-item-button"" })"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
