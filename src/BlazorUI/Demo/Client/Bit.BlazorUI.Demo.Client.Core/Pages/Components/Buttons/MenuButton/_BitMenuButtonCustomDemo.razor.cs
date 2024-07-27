@@ -50,9 +50,9 @@ public partial class _BitMenuButtonCustomDemo
 
     private static List<MenuActionItem> itemStyleClassCustoms =
     [
-        new() { Name = "Custom A", Id = "A", Icon = BitIconName.Emoji, Style = "color:red" },
-        new() { Name = "Custom B", Id = "B", Icon = BitIconName.Emoji, Class = "custom-item" },
-        new() { Name = "Custom C", Id = "C", Icon = BitIconName.Emoji2, Style = "background:blue" }
+        new() { Name = "Custom A (Default)", Id = "A", Icon = BitIconName.Emoji },
+        new() { Name = "Custom B (Styled)", Id = "B", Icon = BitIconName.Emoji, Style = "color: tomato; border-color: brown; background-color: peachpuff;" },
+        new() { Name = "Custom C (Classed)", Id = "C", Icon = BitIconName.Emoji2, Class = "custom-item" },
     ];
 
     private static List<MenuActionItem> isSelectedCustoms =

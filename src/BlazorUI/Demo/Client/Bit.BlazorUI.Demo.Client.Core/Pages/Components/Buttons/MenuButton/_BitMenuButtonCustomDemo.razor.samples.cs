@@ -288,39 +288,74 @@ private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
     private readonly string example8RazorCode = @"
 <style>
     .custom-class {
-        color: aqua;
-        overflow: hidden;
+        margin-inline: 1rem;
         border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
     }
+
+    .custom-class > button {
+        color: tomato;
+        border-color: tomato;
+        background: transparent;
+    }
+
+    .custom-class > button:hover {
+        background-color: #ff63473b;
+    }
+
 
     .custom-item {
-        color: aqua;
-        background-color: darkgoldenrod;
+        color: peachpuff;
+        background-color: tomato;
     }
 
-    .custom-icon {
-        color: red;
+
+    .custom-button {
+        color: deepskyblue;
+        background: transparent;
     }
 
-    .custom-text {
-        color: aqua;
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-callout li:last-child .custom-item-button {
+        border-bottom: none;
     }
 </style>
 
 
-<BitMenuButton Text=""Styled Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Style=""width: 200px; height: 40px;"" />
-<BitMenuButton Text=""Classed Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Class=""custom-class"" />
+<BitMenuButton Text=""Styled Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"" />
+<BitMenuButton Text=""Classed Button"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
 
-<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitMenuButton Text=""Styles"" Items=""basicCustoms"" IconName=""@BitIconName.ExpandMenu"" NameSelectors=""nameSelectors""
-               Styles=""@(new() { Icon = ""color: red;"",
-                                 Text = ""color: aqua;"",
-                                 ItemText = ""color: dodgerblue; font-size: 11px;"",
-                                 Overlay = ""background-color: var(--bit-clr-bg-overlay);"" })"" />
+<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
 
-<BitMenuButton Text=""Classes"" Items=""basicCustoms"" IconName=""@BitIconName.ExpandMenu"" NameSelectors=""nameSelectors""
-               Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
+
+<BitMenuButton Text=""Classes"" Items=""basicCustoms"" IconName=""@BitIconName.FormatPainter"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text""
+               Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Callout = ""custom-callout"",
+                                  ItemButton = ""custom-item-button"" })"" />
+
+<BitMenuButton Text=""Styles"" Items=""basicCustoms"" IconName=""@BitIconName.Brush"" NameSelectors=""nameSelectors""
+               Styles=""@(new() { Root = ""--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;"",
+                                 Opened = ""--button-background: orangered;"",
+                                 OperatorButton = ""background: var(--button-background);"",
+                                 ItemButton = ""background: lightcoral;"",
+                                 Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"" />";
     private readonly string example8CsharpCode = @"
 public class MenuActionItem
 {
@@ -330,11 +365,11 @@ public class MenuActionItem
     public bool Disabled { get; set; }
 }
 
-private List<MenuActionItem> basicCustoms =
+private static List<MenuActionItem> itemStyleClassCustoms =
 [
-    new() { Name = ""Custom A"", Id = ""A"" },
-    new() { Name = ""Custom B"", Id = ""B"", Disabled = true },
-    new() { Name = ""Custom C"", Id = ""C"" }
+    new() { Name = ""Custom A (Default)"", Id = ""A"", Icon = BitIconName.Emoji },
+    new() { Name = ""Custom B (Styled)"", Id = ""B"", Icon = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
+    new() { Name = ""Custom C (Classed)"", Id = ""C"", Icon = BitIconName.Emoji2, Class = ""custom-item"" },
 ];
 
 private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
