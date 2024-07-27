@@ -80,7 +80,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// <summary>
     /// Determines the opening state of the callout.
     /// </summary>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen
     {
         get => isOpen;
@@ -93,8 +93,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             _ = ToggleCallout();
         }
     }
-
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
     ///  List of items to show in the menu button.
@@ -129,10 +127,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// <summary>
     /// Determines the current selected item that acts as the header item.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public TItem? SelectedItem { get; set; }
-
-    [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     /// <summary>
     /// The size of the menu button.

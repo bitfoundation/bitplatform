@@ -2,12 +2,12 @@
 
 namespace Bit.BlazorUI.SourceGenerators.Component;
 
-public class BlazorParameter(IPropertySymbol propertySymbol, bool resetClassBuilder, bool resetStyleBuilder)
+public class BlazorParameter(IPropertySymbol propertySymbol, bool resetClassBuilder, bool resetStyleBuilder, bool isTwoWayBound)
 {
     public IPropertySymbol PropertySymbol { get; set; } = propertySymbol;
 
     public bool ResetClassBuilder { get; set; } = resetClassBuilder;
     public bool ResetStyleBuilder { get; set; } = resetStyleBuilder;
 
-    public bool IsTwoWayBoundProperty { get; set; }
+    public bool IsTwoWayBound { get; set; } = isTwoWayBound;
 }

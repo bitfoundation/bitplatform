@@ -123,7 +123,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// <summary>
     /// Selected item to show in the BitNav.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public TItem? SelectedItem
     {
         get => selectedItem;
@@ -140,8 +140,6 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
             }
         }
     }
-
-    [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
     /// <summary>
     /// Enables the single-expand mode in the BitNav.

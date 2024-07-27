@@ -314,10 +314,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Whether or not the DateRangePicker's callout is open.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public bool IsOpen { get; set; }
-
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
     /// Enables the responsive mode in small screens.
