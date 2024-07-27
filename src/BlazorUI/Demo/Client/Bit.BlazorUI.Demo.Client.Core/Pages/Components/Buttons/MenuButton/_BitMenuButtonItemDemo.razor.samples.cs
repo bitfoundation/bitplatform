@@ -169,41 +169,79 @@ private List<BitMenuButtonItem> basicItemsIcon =
     private readonly string example8RazorCode = @"
 <style>
     .custom-class {
-        color: aqua;
-        overflow: hidden;
+        margin-inline: 1rem;
         border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
     }
+
+    .custom-class > button {
+        color: tomato;
+        border-color: tomato;
+        background: transparent;
+    }
+
+    .custom-class > button:hover {
+        background-color: #ff63473b;
+    }
+
 
     .custom-item {
-        color: aqua;
-        background-color: darkgoldenrod;
+        color: peachpuff;
+        background-color: tomato;
     }
 
-    .custom-icon {
-        color: red;
+
+    .custom-button {
+        color: deepskyblue;
+        background: transparent;
     }
 
-    .custom-text {
-        color: aqua;
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-callout li:last-child .custom-item-button {
+        border-bottom: none;
     }
 </style>
 
 
-<BitMenuButton Text=""Styled Button"" Items=""basicItems"" Style=""width: 200px; height: 40px;"" />
-<BitMenuButton Text=""Classed Button"" Items=""basicItems"" Class=""custom-class"" />
+<BitMenuButton Text=""Styled Button"" Items=""basicItems"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"" />
+<BitMenuButton Text=""Classed Button"" Items=""basicItems"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
 
 
-<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassItems"" />
+<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassItems"" Variant=""BitVariant.Text"" />
 
 
-<BitMenuButton Text=""Styles"" Items=""basicItems"" IconName=""@BitIconName.ExpandMenu""
-               Styles=""@(new() { Icon = ""color: red;"",
-                                 Text = ""color: aqua;"",
-                                 ItemText = ""color: dodgerblue; font-size: 11px;"",
-                                 Overlay = ""background-color: var(--bit-clr-bg-overlay);"" })"" />
+<BitMenuButton Text=""Classes"" Items=""basicItems"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
+               Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Opened = ""custom-opened"",
+                                  Callout = ""custom-callout"",
+                                  ItemButton = ""custom-item-button"" })"" />
 
-<BitMenuButton Text=""Classes"" Items=""basicItems"" IconName=""@BitIconName.ExpandMenu""
-               Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
+<BitMenuButton Text=""Styles"" Items=""basicItems"" IconName=""@BitIconName.Brush""
+               Styles=""@(new() { { Root = ""--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;"",
+                                   Opened = ""--button-background: orangered;"",
+                                   OperatorButton = ""background: var(--button-background);"",
+                                   ItemButton = ""background: lightcoral;"",
+                                   Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"" />";
     private readonly string example8CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
@@ -212,11 +250,11 @@ private List<BitMenuButtonItem> basicItems = new()
     new() { Text = ""Item C"", Key = ""C"" }
 };
 
-private List<BitMenuButtonItem> itemStyleClassItems =
+private static List<BitMenuButtonItem> itemStyleClassItems =
 [
-    new() { Text = ""Item A"", Key = ""A"", IconName = BitIconName.Emoji, Style = ""color:red"" },
-    new() { Text = ""Item B"", Key = ""B"", IconName = BitIconName.Emoji, Class = ""custom-item"" },
-    new() { Text = ""Item C"", Key = ""C"", IconName = BitIconName.Emoji2, Style = ""background:blue"" }
+    new() { Text = ""Item A (Default)"", Key = ""A"", IconName = BitIconName.Emoji },
+    new() { Text = ""Item C (Styled)"", Key = ""B"", IconName = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
+    new() { Text = ""Item B (Classed)"", Key = ""C"", IconName = BitIconName.Emoji2, Class = ""custom-item"" }
 ];";
 
     private readonly string example9RazorCode = @"

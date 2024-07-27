@@ -211,27 +211,31 @@
         <div>Component's Style & Class:</div>
         <br />
         <div class="example-content">
-            <BitMenuButton Text="Styled Button" Items="basicItems" Style="width: 200px; height: 40px;" />
-            <BitMenuButton Text="Classed Button" Items="basicItems" Class="custom-class" />
+            <BitMenuButton Text="Styled Button" Items="basicItems" Style="border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;" />
+            <BitMenuButton Text="Classed Button" Items="basicItems" Class="custom-class" Variant="BitVariant.Outline" />
         </div>
         <br /><br /><br /><br />
         <div>Item's Style & Class:</div>
         <br />
         <div class="example-content">
-            <BitMenuButton Text="Item Styled & Classed Button" Items="itemStyleClassItems" />
+            <BitMenuButton Text="Item Styled & Classed Button" Items="itemStyleClassItems" Variant="BitVariant.Text" />
         </div>
         <br /><br /><br /><br />
         <div><b>Styles</b> & <b>Classes</b>:</div>
         <br />
-        <div class="example-content">
-            <BitMenuButton Text="Styles" Items="basicItems" IconName="@BitIconName.ExpandMenu"
-                           Styles="@(new() { Icon = "color: red;",
-                                             Text = "color: aqua;",
-                                             ItemText = "color: dodgerblue; font-size: 11px;",
-                                             Overlay = "background-color: var(--bit-clr-bg-overlay);" })" />
-
-            <BitMenuButton Text="Classes" Items="basicItems" IconName="@BitIconName.ExpandMenu"
-                           Classes="@(new() { Icon = "custom-icon", Text = "custom-text" })" />
+        <div>
+            <BitMenuButton Text="Classes" Items="basicItems" IconName="@BitIconName.FormatPainter" Variant="BitVariant.Text"
+                           Classes="@(new() { OperatorButton = "custom-button",
+                                              Opened = "custom-opened",
+                                              Callout = "custom-callout",
+                                              ItemButton = "custom-item-button" })" />
+            <br />
+            <BitMenuButton Text="Styles" Items="basicItems" IconName="@BitIconName.Brush"
+                           Styles="@(new() { Root = "--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;",
+                                             Opened = "--button-background: orangered;",
+                                             OperatorButton = "background: var(--button-background);",
+                                             ItemButton = "background: lightcoral;",
+                                             Callout = "border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;" })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -336,6 +340,8 @@
 
 <ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <ExamplePreview>
+        <div>Use BitMenuButton in right-to-left (RTL).</div>
+        <br />
         <div class="example-content" dir="rtl">
             <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" Items="rtlItemsIcon" IconName="@BitIconName.Edit" />
             <BitMenuButton Text="گزینه ها" Dir="BitDir.Rtl" Items="rtlItemsIcon" ChevronDownIcon="@BitIconName.DoubleChevronDown" Split />
