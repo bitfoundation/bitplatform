@@ -77,9 +77,8 @@ public partial class BitDialog : BitComponentBase, IDisposable
     /// <summary>
     /// Whether the Dialog is displayed.
     /// </summary>
-    [Parameter] public bool IsOpen { get; set; }
-
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter, TwoWayBound]
+    public bool IsOpen { get; set; }
 
     /// <summary>
     /// The message to display in the dialog.

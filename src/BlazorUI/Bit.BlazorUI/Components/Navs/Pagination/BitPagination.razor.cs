@@ -89,7 +89,7 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The selected page number.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public int SelectedPage
     {
         get => selectedPage;
@@ -102,8 +102,6 @@ public partial class BitPagination : BitComponentBase
             _ = SelectedPageChanged.InvokeAsync(selectedPage);
         }
     }
-
-    [Parameter] public EventCallback<int> SelectedPageChanged { get; set; }
 
     /// <summary>
     /// The severity of the pagination.

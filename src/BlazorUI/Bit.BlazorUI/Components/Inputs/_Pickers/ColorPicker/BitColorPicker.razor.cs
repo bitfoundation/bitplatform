@@ -25,7 +25,7 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
     /// <summary>
     /// Indicates the Alpha value.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public double Alpha
     {
         get => _color.A;
@@ -38,12 +38,10 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
         }
     }
 
-    [Parameter] public EventCallback<double> AlphaChanged { get; set; }
-
     /// <summary>
     /// CSS-compatible string to describe the color.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public string Color
     {
         get => _colorType == BitInternalColorType.Hex ? _color.Hex! : _color.Rgb!;
@@ -67,8 +65,6 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
             ColorChanged.InvokeAsync(value);
         }
     }
-
-    [Parameter] public EventCallback<string> ColorChanged { get; set; }
 
     /// <summary>
     /// Callback for when the value changed.

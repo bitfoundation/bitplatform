@@ -55,9 +55,8 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Whether the Panel is displayed.
     /// </summary>
-    [Parameter] public bool IsOpen { get; set; }
-
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter, TwoWayBound]
+    public bool IsOpen { get; set; }
 
     /// <summary>
     /// A callback function for when the Panel is dismissed light dismiss, before the animation completes.

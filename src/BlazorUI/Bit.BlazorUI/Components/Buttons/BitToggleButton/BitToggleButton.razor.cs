@@ -50,10 +50,8 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Determines if the toggle button is in the checked state.
     /// </summary>        
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsChecked { get; set; }
-
-    [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
 
     /// <summary>
     /// Callback for when the IsChecked value has changed.

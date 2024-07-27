@@ -86,7 +86,7 @@ public partial class BitSlider : BitComponentBase
     /// <summary>
     /// The lower value of the ranged Slider.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public double LowerValue
     {
         get => lowerValue;
@@ -103,8 +103,6 @@ public partial class BitSlider : BitComponentBase
             _ = LowerValueChanged.InvokeAsync(value);
         }
     }
-
-    [Parameter] public EventCallback<double> LowerValueChanged { get; set; }
 
     /// <summary>
     /// The min value of the Slider
@@ -124,7 +122,7 @@ public partial class BitSlider : BitComponentBase
     /// <summary>
     /// The initial range value of the Slider. Use this parameter to set value for both LowerValue and UpperValue.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public BitSliderRangeValue? RangeValue
     {
         get => new() { Lower = lowerValue, Upper = upperValue };
@@ -140,8 +138,6 @@ public partial class BitSlider : BitComponentBase
             _ = RangeValueChanged.InvokeAsync(value);
         }
     }
-
-    [Parameter] public EventCallback<BitSliderRangeValue?> RangeValueChanged { get; set; }
 
     /// <summary>
     /// Whether to show the value on the right of the Slider
@@ -166,7 +162,7 @@ public partial class BitSlider : BitComponentBase
     /// <summary>
     /// The upper value of the ranged Slider.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public double UpperValue
     {
         get => upperValue;
@@ -184,12 +180,10 @@ public partial class BitSlider : BitComponentBase
         }
     }
 
-    [Parameter] public EventCallback<double> UpperValueChanged { get; set; }
-
     /// <summary>
     /// The value of the Slider
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public double Value
     {
         get => value;
@@ -202,8 +196,6 @@ public partial class BitSlider : BitComponentBase
             _ = ValueChanged.InvokeAsync(value);
         }
     }
-
-    [Parameter] public EventCallback<double> ValueChanged { get; set; }
 
     /// <summary>
     /// Custom formatter for the Slider value

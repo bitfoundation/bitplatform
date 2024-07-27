@@ -96,7 +96,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public bool IsOpen
     {
         get => isOpen;
@@ -109,8 +109,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             _ = ClearSearchBox();
         }
     }
-
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
     /// Enables calling the select events when the same item is selected in single select mode.
@@ -240,7 +238,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// The values of the selected items in multi select mode. (two-way bound)
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public ICollection<TValue?>? Values
     {
         get => values;
@@ -257,7 +255,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             EditContext?.NotifyFieldChanged(FieldIdentifier);
         }
     }
-    [Parameter] public EventCallback<ICollection<TValue?>?> ValuesChanged { get; set; }
+
     [Parameter] public Expression<Func<ICollection<TValue?>?>>? ValuesExpression { get; set; }
 
     /// <summary>
