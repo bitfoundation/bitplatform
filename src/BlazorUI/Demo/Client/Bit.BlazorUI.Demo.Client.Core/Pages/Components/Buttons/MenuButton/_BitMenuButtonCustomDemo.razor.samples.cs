@@ -479,9 +479,17 @@ private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
 <BitMenuButton Sticky Items=""basicCustoms"" NameSelectors=""nameSelectors"" @bind-SelectedItem=""twoWaySelectedCustom"" />
 <BitChoiceGroup Horizontal Items=""@choiceGroupCustoms"" @bind-Value=""@twoWaySelectedCustom"" />
 
-<BitMenuButton Sticky Items=""isSelectedCustoms"" NameSelectors=""nameSelectors"" />";
+<BitMenuButton Sticky Items=""isSelectedCustoms"" NameSelectors=""nameSelectors"" />
+
+<BitMenuButton Sticky Items=""basicCustoms"" NameSelectors=""nameSelectors"" IsOpen=""oneWayIsOpen"" />
+<BitCheckbox Label=""One-way IsOpen"" @bind-Value=""oneWayIsOpen"" OnChange=""async _ => { await Task.Delay(2000); oneWayIsOpen = false; }"" />
+
+<BitMenuButton Sticky Items=""basicCustoms"" NameSelectors=""nameSelectors"" @bind-IsOpen=""twoWayIsOpen"" />
+<BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
     private readonly string example11CsharpCode = @"
 private MenuActionItem twoWaySelectedCustom = default!;
+private bool oneWayIsOpen;
+private bool twoWayIsOpen;
 
 public class MenuActionItem
 {

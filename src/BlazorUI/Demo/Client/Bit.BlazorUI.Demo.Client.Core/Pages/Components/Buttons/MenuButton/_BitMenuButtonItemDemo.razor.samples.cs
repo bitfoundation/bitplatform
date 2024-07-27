@@ -335,9 +335,17 @@ protected override void OnInitialized()
 <BitMenuButton Sticky Items=""basicItems"" @bind-SelectedItem=""twoWaySelectedItem"" />
 <BitChoiceGroup Horizontal Items=""@choiceGroupItems"" @bind-Value=""@twoWaySelectedItem"" />
 
-<BitMenuButton Sticky Items=""isSelectedItems"" />";
+<BitMenuButton Sticky Items=""isSelectedItems"" />
+
+<BitMenuButton Sticky Items=""basicItems"" IsOpen=""oneWayIsOpen"" />
+<BitCheckbox Label=""One-way IsOpen"" @bind-Value=""oneWayIsOpen"" OnChange=""async _ => { await Task.Delay(2000); oneWayIsOpen = false; }"" />
+
+<BitMenuButton Sticky Items=""basicItems"" @bind-IsOpen=""twoWayIsOpen"" />
+<BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
     private readonly string example11CsharpCode = @"
 private BitMenuButtonItem twoWaySelectedItem = default!;
+private bool oneWayIsOpen;
+private bool twoWayIsOpen;
 
 private static List<BitMenuButtonItem> basicItems =
 [

@@ -7,6 +7,9 @@ public partial class _BitMenuButtonItemDemo
 
     private BitMenuButtonItem twoWaySelectedItem = default!;
 
+    private bool oneWayIsOpen;
+    private bool twoWayIsOpen;
+
     private static List<BitMenuButtonItem> basicItems =
     [
         new() { Text = "Item A", Key = "A" },

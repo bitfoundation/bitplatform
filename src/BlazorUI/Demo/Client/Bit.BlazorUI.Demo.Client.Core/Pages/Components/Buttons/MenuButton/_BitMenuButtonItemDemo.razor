@@ -298,21 +298,38 @@
 <ComponentExampleBox Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
-        <br />
+        <br /><br /><br /><br />
         <div>
             <div>DefaultSelectedItem:</div>
+            <br />
             <BitMenuButton Split Sticky Items="basicItems" DefaultSelectedItem="basicItems[1]" />
         </div>
-        <br /><br /><br />
+        <br /><br /><br /><br />
         <div>
             <div>Two-way SelectedItem:</div>
+            <br />
             <BitMenuButton Sticky Items="basicItems" @bind-SelectedItem="twoWaySelectedItem" />
             <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
         </div>
-        <br /><br /><br />
+        <br /><br /><br /><br />
         <div>
             <div>Item's IsSelected:</div>
+            <br />
             <BitMenuButton Sticky Items="isSelectedItems" />
+        </div>
+        <br /><br /><br /><br />
+        <div>One-way IsOpen (closes after 2 seconds):</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Sticky Items="basicItems" IsOpen="oneWayIsOpen" />
+            <BitCheckbox Label="One-way IsOpen" @bind-Value="oneWayIsOpen" OnChange="async _ => { await Task.Delay(2000); oneWayIsOpen = false; }" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Two-way IsOpen:</div>
+        <br />
+        <div class="example-content">
+            <BitMenuButton Sticky Items="basicItems" @bind-IsOpen="twoWayIsOpen" />
+            <BitCheckbox Label="Two-way IsOpen" @bind-Value="twoWayIsOpen" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

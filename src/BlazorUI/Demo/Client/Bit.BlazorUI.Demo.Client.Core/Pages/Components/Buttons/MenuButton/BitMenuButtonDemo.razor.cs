@@ -82,6 +82,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "IsOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines the opening state of the callout.",
+        },
+        new()
+        {
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
@@ -337,6 +344,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the root element of the BitMenuButton.",
+               },
+               new()
+               {
+                   Name = "Opened",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the opened callout state of the BitMenuButton.",
                },
                new()
                {
