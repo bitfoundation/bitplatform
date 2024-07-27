@@ -7,6 +7,9 @@ public partial class _BitMenuButtonOptionDemo
 
     private BitMenuButtonOption twoWaySelectedOption = default!;
 
+    private bool oneWayIsOpen;
+    private bool twoWayIsOpen;
+
     private BitMenuButtonOption optionA = default!;
     private BitMenuButtonOption optionB = default!;
     private BitMenuButtonOption optionC = default!;
@@ -622,9 +625,27 @@ private string? exampleClickedOption;";
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" IsSelected=""true"" />
-</BitMenuButton>";
+</BitMenuButton>
+
+
+<BitMenuButton Sticky IsOpen=""oneWayIsOpen"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" @ref=""optionA"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" @ref=""optionB"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" @ref=""optionC"" />
+</BitMenuButton>
+<BitCheckbox Label=""One-way IsOpen"" @bind-Value=""oneWayIsOpen"" OnChange=""async _ => { await Task.Delay(2000); oneWayIsOpen = false; }"" />
+
+
+<BitMenuButton Sticky @bind-IsOpen=""twoWayIsOpen"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" @ref=""optionA"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" @ref=""optionB"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" @ref=""optionC"" />
+</BitMenuButton>
+<BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
     private readonly string example11CsharpCode = @"
-private BitMenuButtonOption twoWaySelectedOption = default!;";
+private BitMenuButtonOption twoWaySelectedOption = default!;
+private bool oneWayIsOpen;
+private bool twoWayIsOpen;";
 
     private readonly string example12RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">

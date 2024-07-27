@@ -7,6 +7,9 @@ public partial class _BitMenuButtonCustomDemo
 
     private MenuActionItem twoWaySelectedCustom = default!;
 
+    private bool oneWayIsOpen;
+    private bool twoWayIsOpen;
+
     private static BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
     {
         Text = { Name = nameof(MenuActionItem.Name) },
