@@ -347,6 +347,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Opened",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the opened callout state of the BitMenuButton.",
+               },
+               new()
+               {
                    Name = "OperatorButton",
                    Type = "string?",
                    DefaultValue = "null",
