@@ -444,18 +444,41 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void ChangeValue(int factor)
     {
-        var result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(factor) * Convert.ToByte(_step)))
+        TValue result;
+
+        if (_typeOfValue == typeof(ushort))
+        {
+            var r = factor > 0
+                        ? (Convert.ToInt16(CurrentValue) + Convert.ToInt16(_step))
+                        : (Convert.ToInt16(CurrentValue) - Convert.ToInt16(_step));
+            result = (TValue)(object)Convert.ToUInt16(r < 0 ? 0 : r);
+        }
+        else if (_typeOfValue == typeof(uint))
+        {
+            var r = factor > 0
+                        ? (Convert.ToInt32(CurrentValue) + Convert.ToInt32(_step))
+                        : (Convert.ToInt32(CurrentValue) - Convert.ToInt32(_step));
+            result = (TValue)(object)Convert.ToUInt32(r < 0 ? 0 : r);
+        }
+        else if (_typeOfValue == typeof(ulong))
+        {
+            var r = factor > 0
+                        ? (Convert.ToInt64(CurrentValue) + Convert.ToInt64(_step))
+                        : (Convert.ToInt64(CurrentValue) - Convert.ToInt64(_step));
+            result = (TValue)(object)Convert.ToUInt64(r < 0 ? 0 : r);
+        }
+        else
+        {
+            result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(factor) * Convert.ToByte(_step)))
                    : _typeOfValue == typeof(sbyte) ? (TValue)(object)(Convert.ToSByte(CurrentValue) + (Convert.ToSByte(factor) * Convert.ToSByte(_step)))
                    : _typeOfValue == typeof(short) ? (TValue)(object)(Convert.ToInt16(CurrentValue) + (Convert.ToInt16(factor) * Convert.ToInt16(_step)))
-                   : _typeOfValue == typeof(ushort) ? (TValue)(object)(Convert.ToUInt16(CurrentValue) + (Convert.ToUInt16(factor) * Convert.ToUInt16(_step)))
                    : _typeOfValue == typeof(int) ? (TValue)(object)(Convert.ToInt32(CurrentValue) + (Convert.ToInt32(factor) * Convert.ToInt32(_step)))
-                   : _typeOfValue == typeof(uint) ? (TValue)(object)(Convert.ToUInt32(CurrentValue) + (Convert.ToUInt32(factor) * Convert.ToUInt32(_step)))
                    : _typeOfValue == typeof(long) ? (TValue)(object)(Convert.ToInt64(CurrentValue) + (Convert.ToInt64(factor) * Convert.ToInt64(_step)))
-                   : _typeOfValue == typeof(ulong) ? (TValue)(object)(Convert.ToUInt64(CurrentValue) + (Convert.ToUInt64(factor) * Convert.ToUInt64(_step)))
                    : _typeOfValue == typeof(float) ? (TValue)(object)(Convert.ToSingle(CurrentValue) + (Convert.ToSingle(factor) * Convert.ToSingle(_step)))
                    : _typeOfValue == typeof(decimal) ? (TValue)(object)(Convert.ToDecimal(CurrentValue) + (Convert.ToDecimal(factor) * Convert.ToDecimal(_step)))
                    : _typeOfValue == typeof(double) ? (TValue)(object)(Convert.ToDouble(CurrentValue) + (Convert.ToDouble(factor) * Convert.ToDouble(_step)))
                    : _zeroValue;
+        }
 
         result = CheckMinAndMax(result);
 
