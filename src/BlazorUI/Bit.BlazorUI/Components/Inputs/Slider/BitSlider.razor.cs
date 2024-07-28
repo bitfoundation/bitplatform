@@ -4,12 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitSlider : BitComponentBase
 {
-    private double value;
-    private double lowerValue;
-    private double upperValue;
-
-
-
     private int _inputHeight;
     private string? _styleProgress;
     private string? _styleContainer;
@@ -87,22 +81,8 @@ public partial class BitSlider : BitComponentBase
     /// The lower value of the ranged Slider.
     /// </summary>
     [Parameter, TwoWayBound]
-    public double LowerValue
-    {
-        get => lowerValue;
-        set
-        {
-            if (value == lowerValue) return;
-
-            lowerValue = value;
-
-            SetInputValueOnRanged(value, UpperValue);
-
-            FillSlider();
-
-            _ = LowerValueChanged.InvokeAsync(value);
-        }
-    }
+    [CallOnSet("OnSetValues")]
+    public double LowerValue { get; set; }
 
     /// <summary>
     /// The min value of the Slider
@@ -125,17 +105,19 @@ public partial class BitSlider : BitComponentBase
     [Parameter, TwoWayBound]
     public BitSliderRangeValue? RangeValue
     {
-        get => new() { Lower = lowerValue, Upper = upperValue };
+        get => new() { Lower = LowerValue, Upper = UpperValue };
         set
         {
             if (value is null) return;
-            if (value.Lower == lowerValue && value.Upper == upperValue) return;
+            if (value.Lower == LowerValue && value.Upper == UpperValue) return;
 
-            lowerValue = value.Lower;
-            upperValue = value.Upper;
-            SetInputValueOnRanged(value.Lower, value.Upper);
-            FillSlider();
+            _ = AssignLowerValue(value.Lower);
+            _ = AssignUpperValue(value.Upper);
             _ = RangeValueChanged.InvokeAsync(value);
+
+            SetInputValueOnRanged(value.Lower, value.Upper);
+
+            FillSlider();
         }
     }
 
@@ -163,39 +145,15 @@ public partial class BitSlider : BitComponentBase
     /// The upper value of the ranged Slider.
     /// </summary>
     [Parameter, TwoWayBound]
-    public double UpperValue
-    {
-        get => upperValue;
-        set
-        {
-            if (value == upperValue) return;
-
-            upperValue = value;
-
-            SetInputValueOnRanged(LowerValue, value);
-
-            FillSlider();
-
-            _ = UpperValueChanged.InvokeAsync(value);
-        }
-    }
+    [CallOnSet("OnSetValues")]
+    public double UpperValue { get; set; }
 
     /// <summary>
     /// The value of the Slider
     /// </summary>
     [Parameter, TwoWayBound]
-    public double Value
-    {
-        get => value;
-        set
-        {
-            if (value == this.value) return;
-
-            this.value = value;
-            FillSlider();
-            _ = ValueChanged.InvokeAsync(value);
-        }
-    }
+    [CallOnSet("OnSetValues")]
+    public double Value { get; set; }
 
     /// <summary>
     /// Custom formatter for the Slider value
@@ -220,7 +178,7 @@ public partial class BitSlider : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _sliderBoxId = $"BitSlider-{UniqueId}-box";
         _minInputId = $"BitSlider-{UniqueId}-min-input";
@@ -228,12 +186,12 @@ public partial class BitSlider : BitComponentBase
 
         if (LowerValueHasBeenSet is false && DefaultLowerValue.HasValue)
         {
-            LowerValue = DefaultLowerValue.Value;
+            await AssignLowerValue(DefaultLowerValue.Value);
         }
 
         if (UpperValueHasBeenSet is false && DefaultUpperValue.HasValue)
         {
-            UpperValue = DefaultUpperValue.Value;
+            await AssignUpperValue(DefaultUpperValue.Value);
         }
 
         if (IsRanged)
@@ -242,7 +200,7 @@ public partial class BitSlider : BitComponentBase
         }
         else if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            Value = DefaultValue.Value;
+            await AssignValue(DefaultValue.Value);
         }
 
         if (IsVertical is false)
@@ -250,7 +208,7 @@ public partial class BitSlider : BitComponentBase
             FillSlider();
         }
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -288,9 +246,7 @@ public partial class BitSlider : BitComponentBase
     private async Task HandleOnInput(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-        Value = Convert.ToDouble(e.Value, CultureInfo.InvariantCulture);
+        if (await AssignValue(Convert.ToDouble(e.Value, CultureInfo.InvariantCulture)) is false) return;
         FillSlider();
 
         await OnChange.InvokeAsync(e);
@@ -313,13 +269,13 @@ public partial class BitSlider : BitComponentBase
 
         if (_firstInputValue < _secondInputValue)
         {
-            LowerValue = _firstInputValue;
-            UpperValue = _secondInputValue;
+            await AssignLowerValue(_firstInputValue);
+            await AssignUpperValue(_secondInputValue);
         }
         else
         {
-            LowerValue = _secondInputValue;
-            UpperValue = _firstInputValue;
+            await AssignLowerValue(_secondInputValue);
+            await AssignUpperValue(_firstInputValue);
         }
 
         FillSlider();
@@ -377,4 +333,11 @@ public partial class BitSlider : BitComponentBase
     private string GetAriaValueText(double value) => AriaValueText != null ? AriaValueText(value) : value.ToString(CultureInfo.InvariantCulture);
 
     private int? GetTabIndex => IsEnabled ? 0 : null;
+
+    private void OnSetValues()
+    {
+        SetInputValueOnRanged(LowerValue, UpperValue);
+
+        FillSlider();
+    }
 }

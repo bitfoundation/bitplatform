@@ -2,19 +2,19 @@
 
 public partial class BitCarouselItem : BitComponentBase
 {
-    private string internalStyle = string.Empty;
+    [CascadingParameter] protected BitCarousel? Carousel { get; set; }
 
-    private string internalTransformStyle = string.Empty;
 
-    private string internalTransitionStyle = string.Empty;
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    [CascadingParameter] protected BitCarousel? Carousel { get; set; }
 
 
     internal int Index;
 
+
+
+    private string internalStyle = string.Empty;
     internal string InternalStyle
     {
         get => internalStyle;
@@ -27,6 +27,7 @@ public partial class BitCarouselItem : BitComponentBase
         }
     }
 
+    private string internalTransformStyle = string.Empty;
     internal string InternalTransformStyle
     {
         get => internalTransformStyle;
@@ -39,6 +40,7 @@ public partial class BitCarouselItem : BitComponentBase
         }
     }
 
+    private string internalTransitionStyle = string.Empty;
     internal string InternalTransitionStyle
     {
         get => internalTransitionStyle;
@@ -52,22 +54,20 @@ public partial class BitCarouselItem : BitComponentBase
     }
 
 
-    protected override Task OnInitializedAsync()
-    {
-        if (Carousel is not null)
-        {
-            Carousel.RegisterItem(this);
-        }
-
-        return base.OnInitializedAsync();
-    }
 
     protected override string RootElementClass => "bit-crsi";
 
     protected override void RegisterCssClasses()
     {
-        StyleBuilder.Register(() => internalStyle);
-        StyleBuilder.Register(() => internalTransformStyle);
-        StyleBuilder.Register(() => internalTransitionStyle);
+        StyleBuilder.Register(() => InternalStyle);
+        StyleBuilder.Register(() => InternalTransformStyle);
+        StyleBuilder.Register(() => InternalTransitionStyle);
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        Carousel?.RegisterItem(this);
+
+        return base.OnInitializedAsync();
     }
 }

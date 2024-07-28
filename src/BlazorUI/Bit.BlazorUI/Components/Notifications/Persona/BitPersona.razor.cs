@@ -2,10 +2,6 @@
 
 public partial class BitPersona : BitComponentBase
 {
-    private string? imageUrl;
-
-
-
     private bool _isLoaded;
     private bool _hasError;
 
@@ -75,17 +71,8 @@ public partial class BitPersona : BitComponentBase
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
     [Parameter]
-    public string? ImageUrl
-    {
-        get => imageUrl;
-        set
-        {
-            if (imageUrl == value) return;
-
-            imageUrl = value;
-            _hasError = false;
-        }
-    }
+    [CallOnSet("OnSetImageUrl")]
+    public string? ImageUrl { get; set; }
 
     /// <summary>
     /// Callback for the persona custom action.
@@ -356,5 +343,10 @@ public partial class BitPersona : BitComponentBase
     {
         _isLoaded = true;
         StateHasChanged();
+    }
+
+    private void OnSetImageUrl()
+    {
+        _hasError = false;
     }
 }

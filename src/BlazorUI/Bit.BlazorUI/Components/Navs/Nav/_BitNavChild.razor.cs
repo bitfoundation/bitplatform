@@ -9,9 +9,11 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
     [CascadingParameter] protected _BitNavChild<TItem>? Parent { get; set; }
 
 
+
     [Parameter] public TItem Item { get; set; } = default!;
 
     [Parameter] public int Depth { get; set; }
+
 
 
     private async Task HandleOnClick()
@@ -33,7 +35,6 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
             await Nav.OnItemClick.InvokeAsync(Item);
         }
     }
-
     private async Task ToggleItem()
     {
         if (Nav is null) return;
@@ -42,7 +43,6 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
 
         await Nav.ToggleItem(Item);
     }
-
     private string GetItemContainerClasses()
     {
         var classes = new List<string>();
@@ -83,7 +83,6 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
 
         return string.Join(" ", classes);
     }
-
     private string GetItemClasses()
     {
         var classes = new List<string>();
@@ -114,9 +113,9 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
 
         return string.Join(" ", classes);
     }
-
-
     private static bool IsRelativeUrl(string? url) => url.HasValue() && new Regex("!/^[a-z0-9+-.]+:\\/\\//i").IsMatch(url!);
+
+
 
     private static readonly Dictionary<BitNavAriaCurrent, string> _AriaCurrentMap = new()
     {

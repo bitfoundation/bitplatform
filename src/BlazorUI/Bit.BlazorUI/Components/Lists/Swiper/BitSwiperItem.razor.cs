@@ -2,16 +2,19 @@
 
 public partial class BitSwiperItem : BitComponentBase
 {
-    private string internalStyle = string.Empty;
-    private string internalTransformStyle = string.Empty;
-    private string internalTransitionStyle = string.Empty;
+    [CascadingParameter] protected BitSwiper? Swiper { get; set; }
+
+
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    [CascadingParameter] protected BitSwiper? Swiper { get; set; }
+
 
     internal int Index;
 
+
+
+    private string internalStyle = string.Empty;
     internal string InternalStyle
     {
         get => internalStyle;
@@ -24,6 +27,7 @@ public partial class BitSwiperItem : BitComponentBase
         }
     }
 
+    private string internalTransformStyle = string.Empty;
     internal string InternalTransformStyle
     {
         get => internalTransformStyle;
@@ -36,6 +40,7 @@ public partial class BitSwiperItem : BitComponentBase
         }
     }
 
+    private string internalTransitionStyle = string.Empty;
     internal string InternalTransitionStyle
     {
         get => internalTransitionStyle;
@@ -53,9 +58,9 @@ public partial class BitSwiperItem : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        StyleBuilder.Register(() => internalStyle);
-        StyleBuilder.Register(() => internalTransformStyle);
-        StyleBuilder.Register(() => internalTransitionStyle);
+        StyleBuilder.Register(() => InternalStyle);
+        StyleBuilder.Register(() => InternalTransformStyle);
+        StyleBuilder.Register(() => InternalTransitionStyle);
     }
 
     protected override Task OnInitializedAsync()

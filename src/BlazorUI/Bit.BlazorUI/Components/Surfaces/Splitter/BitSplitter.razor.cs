@@ -2,10 +2,6 @@
 
 public partial class BitSplitter : BitComponentBase
 {
-    private bool vertical;
-
-
-
     private bool _isDragging;
     private double _initialPosition;
     private double _initialFirstPanelWidth;
@@ -83,19 +79,9 @@ public partial class BitSplitter : BitComponentBase
     /// <summary>
     /// Sets the orientation of BitSplitter to vertical.
     /// </summary>
-    [Parameter]
-    public bool Vertical
-    {
-        get => vertical;
-        set
-        {
-            if (vertical == value) return;
-
-            vertical = value;
-            ClassBuilder.Reset();
-            _ = ResetPaneDimensions();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    [CallOnSet("ResetPaneDimensions")]
+    public bool Vertical { get; set; }
 
 
 

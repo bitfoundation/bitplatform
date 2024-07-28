@@ -4,16 +4,14 @@ namespace Bit.BlazorUI;
 
 public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where TItem : class
 {
-    private bool isOpen;
-
-
-
     private bool _disposed;
     private List<TItem> _items = [];
     private BitButtonType _buttonType;
     private string _calloutId = default!;
     private IEnumerable<TItem> _oldItems = default!;
     private DotNetObjectReference<BitMenuButton<TItem>> _dotnetObj = default!;
+
+
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -80,19 +78,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// <summary>
     /// Determines the opening state of the callout.
     /// </summary>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            isOpen = value;
-
-            if (isOpen != value) return;
-
-            _ = ToggleCallout();
-        }
-    }
+    [Parameter]
+    [CallOnSet("ToggleCallout")]
+    [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
+    public bool IsOpen { get; set; }
 
     /// <summary>
     ///  List of items to show in the menu button.

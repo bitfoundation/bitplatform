@@ -13,10 +13,6 @@ public partial class BitFileUpload : BitComponentBase, IDisposable
 
 
 
-    private long? chunkSize;
-
-
-
     private bool _disposed;
     private ElementReference _inputRef;
     private long _internalChunkSize = MIN_CHUNK_SIZE;
@@ -60,25 +56,8 @@ public partial class BitFileUpload : BitComponentBase, IDisposable
     /// The size of each chunk of file upload in bytes.
     /// </summary>
     [Parameter]
-    public long? ChunkSize
-    {
-        get => chunkSize;
-        set
-        {
-            if (value == chunkSize) return;
-
-            chunkSize = value;
-
-            if (chunkSize.HasValue is false || AutoChunkSizeEnabled)
-            {
-                _internalChunkSize = MIN_CHUNK_SIZE;
-            }
-            else
-            {
-                _internalChunkSize = chunkSize.Value;
-            }
-        }
-    }
+    [CallOnSet("OnSetChunkSize")]
+    public long? ChunkSize { get; set; }
 
     /// <summary>
     /// The message shown for failed file uploads.
@@ -684,6 +663,13 @@ public partial class BitFileUpload : BitComponentBase, IDisposable
 
         sb.Append(anchorText);
         return sb.ToString();
+    }
+
+    private void OnSetChunkSize()
+    {
+        _internalChunkSize = ChunkSize.HasValue is false || AutoChunkSizeEnabled
+                                ? MIN_CHUNK_SIZE
+                                : ChunkSize.Value;
     }
 
 

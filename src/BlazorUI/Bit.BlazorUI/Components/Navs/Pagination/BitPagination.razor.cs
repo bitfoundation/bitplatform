@@ -4,10 +4,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitPagination : BitComponentBase
 {
-    private int count = 1;
-    private int selectedPage;
-    private int middleCount = 3;
-    private int boundaryCount = 2;
+    private int _count = 1;
+    private int _middleCount = 3;
+    private int _boundaryCount = 2;
 
 
 
@@ -15,14 +14,8 @@ public partial class BitPagination : BitComponentBase
     /// The number of items at the start and end of the pagination.
     /// </summary>
     [Parameter]
-    public int BoundaryCount
-    {
-        get => boundaryCount;
-        set
-        {
-            boundaryCount = Math.Max(1, value);
-        }
-    }
+    [CallOnSet("OnSetBoundaryCount")]
+    public int BoundaryCount { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitPagination.
@@ -33,15 +26,8 @@ public partial class BitPagination : BitComponentBase
     /// The number of pages.
     /// </summary>
     [Parameter]
-    public int Count
-    {
-        get => count;
-        set
-        {
-            count = Math.Max(1, value);
-            SelectedPage = Math.Min(SelectedPage, count);
-        }
-    }
+    [CallOnSet("OnSetCount")]
+    public int Count { get; set; }
 
     /// <summary>
     /// The default selected page number.
@@ -62,14 +48,8 @@ public partial class BitPagination : BitComponentBase
     /// The number of items in the middle of the pagination.
     /// </summary>
     [Parameter]
-    public int MiddleCount
-    {
-        get => middleCount;
-        set
-        {
-            middleCount = Math.Max(1, value);
-        }
-    }
+    [CallOnSet("OnSetMiddleCount")]
+    public int MiddleCount { get; set; }
 
     /// <summary>
     /// Icon of next button.
@@ -90,18 +70,7 @@ public partial class BitPagination : BitComponentBase
     /// The selected page number.
     /// </summary>
     [Parameter, TwoWayBound]
-    public int SelectedPage
-    {
-        get => selectedPage;
-        set
-        {
-            if (selectedPage == value) return;
-
-            selectedPage = value;
-
-            _ = SelectedPageChanged.InvokeAsync(selectedPage);
-        }
-    }
+    public int SelectedPage { get; set; }
 
     /// <summary>
     /// The severity of the pagination.
@@ -172,12 +141,12 @@ public partial class BitPagination : BitComponentBase
     {
         if (SelectedPageHasBeenSet is false && DefaultSelectedPage != 0)
         {
-            SelectedPage = DefaultSelectedPage;
+            await AssignSelectedPage(DefaultSelectedPage);
         }
 
         if (SelectedPage == 0)
         {
-            SelectedPage = 1;
+            await AssignSelectedPage(1);
         }
 
         await base.OnInitializedAsync();
@@ -187,46 +156,46 @@ public partial class BitPagination : BitComponentBase
 
     private IEnumerable<int> GeneratePages()
     {
-        if (Count <= 4 || Count <= 2 * BoundaryCount + MiddleCount + 2)
+        if (_count <= 4 || _count <= 2 * _boundaryCount + _middleCount + 2)
         {
-            return Enumerable.Range(1, Count).ToArray();
+            return Enumerable.Range(1, _count).ToArray();
         }
 
-        var length = 2 * BoundaryCount + MiddleCount + 2;
+        var length = 2 * _boundaryCount + _middleCount + 2;
         var pages = new int[length];
 
-        for (var i = 0; i < BoundaryCount; i++)
+        for (var i = 0; i < _boundaryCount; i++)
         {
             pages[i] = i + 1;
         }
 
-        for (var i = 0; i < BoundaryCount; i++)
+        for (var i = 0; i < _boundaryCount; i++)
         {
-            pages[length - i - 1] = Count - i;
+            pages[length - i - 1] = _count - i;
         }
 
         int startValue;
-        if (SelectedPage <= BoundaryCount + MiddleCount / 2 + 1)
+        if (SelectedPage <= _boundaryCount + _middleCount / 2 + 1)
         {
-            startValue = BoundaryCount + 2;
+            startValue = _boundaryCount + 2;
         }
-        else if (SelectedPage >= Count - BoundaryCount - MiddleCount / 2)
+        else if (SelectedPage >= _count - _boundaryCount - _middleCount / 2)
         {
-            startValue = Count - BoundaryCount - MiddleCount;
+            startValue = _count - _boundaryCount - _middleCount;
         }
         else
         {
-            startValue = SelectedPage - MiddleCount / 2;
+            startValue = SelectedPage - _middleCount / 2;
         }
 
-        for (var i = 0; i < MiddleCount; i++)
+        for (var i = 0; i < _middleCount; i++)
         {
-            pages[BoundaryCount + 1 + i] = startValue + i;
+            pages[_boundaryCount + 1 + i] = startValue + i;
         }
 
-        pages[BoundaryCount] = (BoundaryCount + MiddleCount / 2 + 1 < SelectedPage) ? -1 : BoundaryCount + 1;
+        pages[_boundaryCount] = (_boundaryCount + _middleCount / 2 + 1 < SelectedPage) ? -1 : _boundaryCount + 1;
 
-        pages[length - BoundaryCount - 1] = (Count - BoundaryCount - MiddleCount / 2 > SelectedPage) ? -1 : Count - BoundaryCount;
+        pages[length - _boundaryCount - 1] = (_count - _boundaryCount - _middleCount / 2 > SelectedPage) ? -1 : _count - _boundaryCount;
 
         for (var i = 0; i < length - 2; i++)
         {
@@ -243,11 +212,11 @@ public partial class BitPagination : BitComponentBase
     {
         if (SelectedPageHasBeenSet && SelectedPageChanged.HasDelegate is false) return;
 
-        if (page > Count) page = Count;
+        if (page > _count) page = _count;
 
         if (page < 1) page = 1;
 
-        SelectedPage = page;
+        await AssignSelectedPage(page);
 
         await OnChange.InvokeAsync(page);
     }
@@ -275,5 +244,21 @@ public partial class BitPagination : BitComponentBase
         });
 
         return className.ToString();
+    }
+
+    private void OnSetBoundaryCount()
+    {
+        _boundaryCount = Math.Max(1, BoundaryCount);
+    }
+
+    private void OnSetCount()
+    {
+        _count = Math.Max(1, Count);
+        _ = AssignSelectedPage(Math.Min(SelectedPage, Count));
+    }
+
+    private void OnSetMiddleCount()
+    {
+        _middleCount = Math.Max(1, MiddleCount);
     }
 }

@@ -6,12 +6,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
-    private TValue? min;
-    private TValue? max;
-    private TValue? step;
-
-
-
     private bool _hasFocus;
     private TValue _min = default!;
     private TValue _max = default!;
@@ -132,28 +126,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Min value of the number field. If not provided, the number field has minimum value.
     /// </summary>
     [Parameter]
-    public TValue? Min
-    {
-        get => min;
-        set
-        {
-            min = value;
-            _min = value is null ? GetTypeMinValue() : value;
-        }
-    }
+    [CallOnSet("OnSetMin")]
+    public TValue? Min { get; set; }
 
     /// <summary>
     /// Max value of the number field. If not provided, the number field has max value.
     /// </summary>
     [Parameter]
-    public TValue? Max
-    {
-        get => max; set
-        {
-            max = value;
-            _max = value is null ? GetTypeMaxValue() : value;
-        }
-    }
+    [CallOnSet("OnSetMax")]
+    public TValue? Max { get; set; }
 
     /// <summary>
     /// The format of the number in the number field.
@@ -220,15 +201,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Difference between two adjacent values of the number field.
     /// </summary>
     [Parameter]
-    public TValue? Step
-    {
-        get => step;
-        set
-        {
-            step = value;
-            _step = value is null ? ((TValue)(object)1) : value;
-        }
-    }
+    [CallOnSet("OnSetStep")]
+    public TValue? Step { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitNumberField.
@@ -550,5 +524,20 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         var matchCollection = pattern.Matches(value!);
 
         return matchCollection is null ? value : string.Join("", matchCollection.Select(m => m.Value));
+    }
+
+    private void OnSetMin()
+    {
+        _min = Min ?? GetTypeMinValue();
+    }
+
+    private void OnSetMax()
+    {
+        _max = Max ?? GetTypeMaxValue();
+    }
+
+    private void OnSetStep()
+    {
+        _step = Step ?? (TValue)(object)1;
     }
 }

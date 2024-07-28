@@ -4,10 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitTextField : BitTextInputBase<string?>
 {
-    private BitTextFieldType type = BitTextFieldType.Text;
-
-
-
     private bool _hasFocus;
     private bool _isPasswordRevealed;
     private BitTextFieldType _elementType;
@@ -177,19 +173,9 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Input type.
     /// </summary>
-    [Parameter]
-    public BitTextFieldType Type
-    {
-        get => type;
-        set
-        {
-            if (type == value) return;
-
-            type = value;
-            SetElementType();
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    [CallOnSet("SetElementType")]
+    public BitTextFieldType Type { get; set; }
 
 
 
@@ -266,9 +252,9 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private void SetElementType()
     {
-        _elementType = type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
+        _elementType = Type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
                          ? BitTextFieldType.Text
-                         : type;
+                         : Type;
 
         _inputType = _elementType switch
         {
