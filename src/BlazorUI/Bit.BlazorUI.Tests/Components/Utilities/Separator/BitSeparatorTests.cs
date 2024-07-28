@@ -278,16 +278,16 @@ public class BitSeparatorTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitSeparatorShouldRespectIsVertical(bool isVertical)
+    public void BitSeparatorShouldRespectVertical(bool vertical)
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
-            parameters.Add(p => p.IsVertical, isVertical);
+            parameters.Add(p => p.Vertical, vertical);
             parameters.AddChildContent("Bit Blazor UI");
         });
 
-        var cssClass = isVertical ? "bit-spr-vrt" : "bit-spr-hrz";
-        var ariaOrientation = isVertical ? "vertical" : "horizontal";
+        var cssClass = vertical ? "bit-spr-vrt" : "bit-spr-hrz";
+        var ariaOrientation = vertical ? "vertical" : "horizontal";
 
         component.MarkupMatches(@$"<div class=""bit-spr {cssClass} bit-spr-ctr"" id:ignore>
                                       <div class=""bit-spr-cnt"" role=""separator"" aria-orientation=""{ariaOrientation}"">

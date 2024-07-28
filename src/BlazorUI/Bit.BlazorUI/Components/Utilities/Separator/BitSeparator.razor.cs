@@ -17,7 +17,7 @@ public partial class BitSeparator : BitComponentBase
     /// Whether the element is a vertical separator.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool IsVertical { get; set; }
+    public bool Vertical { get; set; }
 
 
 
@@ -25,7 +25,7 @@ public partial class BitSeparator : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsVertical ? "bit-spr-vrt" : "bit-spr-hrz");
+        ClassBuilder.Register(() => Vertical ? "bit-spr-vrt" : "bit-spr-hrz");
 
         ClassBuilder.Register(() => AlignContent switch
         {

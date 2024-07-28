@@ -9,7 +9,7 @@
      dir="@Dir?.ToString().ToLower()">
      @if (ChildContent is not null)
      {
-        <div class="bit-spr-cnt" role="separator" aria-orientation="@(IsVertical ? "vertical" : "horizontal")">
+        <div class="bit-spr-cnt" role="separator" aria-orientation="@(Vertical ? "vertical" : "horizontal")">
             @ChildContent
         </div>
      }

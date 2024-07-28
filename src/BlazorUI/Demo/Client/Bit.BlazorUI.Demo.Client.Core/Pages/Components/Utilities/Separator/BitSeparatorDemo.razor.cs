@@ -22,7 +22,7 @@ public partial class BitSeparatorDemo
         },
         new()
         {
-            Name = "IsVertical",
+            Name = "Vertical",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the element is a vertical separator."
@@ -78,13 +78,13 @@ public partial class BitSeparatorDemo
 
 <div class=""custom-horizontal-layout"">
     <span>Item 1</span>
-    <BitSeparator IsVertical=""true"" />
+    <BitSeparator Vertical />
     <span>Item 2</span>
-    <BitSeparator IsVertical=""true"" />
+    <BitSeparator Vertical />
     <span>Item 3</span>
-    <BitSeparator IsVertical=""true"" />
+    <BitSeparator Vertical />
     <span>Item 4</span>
-    <BitSeparator IsVertical=""true"" />
+    <BitSeparator Vertical />
     <span>Item 5</span>
 </div>
 ";
@@ -94,9 +94,9 @@ public partial class BitSeparatorDemo
 <BitSeparator AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
 <BitSeparator AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>
 
-<BitSeparator IsVertical=""true"" AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
-<BitSeparator IsVertical=""true"" AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
-<BitSeparator IsVertical=""true"" AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>";
+<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
+<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
+<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>";
 }
 
 
