@@ -13,8 +13,9 @@ public partial class CodeBox
     [AutoInject] private Clipboard clipboard = default!;
 
 
-    [Parameter] public bool HideCopyButton { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool HideCopyButton { get; set; }
+    [Parameter] public string? MaxHeight { get; set; }
 
 
 

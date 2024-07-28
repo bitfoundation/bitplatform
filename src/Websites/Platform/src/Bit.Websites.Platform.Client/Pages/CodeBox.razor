@@ -17,6 +17,8 @@
             </BitActionButton>
         }
 
-        <pre @ref="preElementRefrence" class="code-box-content">@ChildContent</pre>
+        <pre @ref="preElementRefrence"
+             class="code-box-content"
+             style="@(string.IsNullOrWhiteSpace(MaxHeight) ? null : $"max-height:{MaxHeight}")">@ChildContent</pre>
     </div>
 }

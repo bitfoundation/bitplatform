@@ -9,15 +9,12 @@
 
 .code-box-content {
     width: 100%;
-    display: flex;
     overflow: auto;
     font-weight: 400;
-    align-items: center;
     font-size: rem2(16px);
     min-height: rem2(48px);
     line-height: rem2(24px);
     margin-bottom: rem2(32px);
-    justify-content: flex-start;
     padding: rem2(12px) rem2(48px) rem2(12px) rem2(16px);
     background-color: $bit-color-background-secondary;
     border-left: rem2(2px) solid $bit-color-primary-main;

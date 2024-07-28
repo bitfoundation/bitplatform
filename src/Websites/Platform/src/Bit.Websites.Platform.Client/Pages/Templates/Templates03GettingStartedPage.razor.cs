@@ -6,10 +6,55 @@ public partial class Templates03GettingStartedPage
 {
     [Inject] private Clipboard clipboard { get; set; } = default!;
 
-    private bool isAdditionalSelected = true;
-    private bool isVSSelected = true;
-    private bool isVSCodeSelected = true;
-    private string copyCommandsText = "Copy Commands";
+    private bool installVs;
+    private bool installVsCode;
+    private bool enableCrossPlatform;
+    private string copyButtonText = "Copy commands";
+    private bool showCrossPlatform;
+
+
+
+    private List<(string text, string command)> GetSelectedComands()
+    {
+        List<(string text, string command)> selectedCommandGroups = [.. commandGroups[CommandGroup.Core]];
+
+        if (enableCrossPlatform)
+            selectedCommandGroups.AddRange(commandGroups[CommandGroup.Additional]);
+        if (installVsCode)
+            selectedCommandGroups.AddRange(commandGroups[CommandGroup.VSCode]);
+        if (installVs)
+        {
+            if (enableCrossPlatform)
+                selectedCommandGroups.AddRange(commandGroups[CommandGroup.AdditionalVS]);
+            else
+                selectedCommandGroups.AddRange(commandGroups[CommandGroup.VS]);
+        }
+
+        selectedCommandGroups.Add((":: Done", "echo Done!"));
+
+        return selectedCommandGroups;
+    }
+
+    private string GetReadyToRunSelectedCommands()
+    {
+        return string.Join(" && ", GetSelectedComands().Select(c => c.command));
+    }
+
+    private string GetDisplayableSelectedCommands()
+    {
+        return string.Join($"{Environment.NewLine}{Environment.NewLine}", GetSelectedComands()[..^1].Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"))
+            .Replace("\"%ProgramFiles%\\dotnet\\dotnet.exe\"", "dotnet")
+            .Replace("\"%LocalAppData%\\Programs\\Microsoft VS Code\\bin\\code.cmd\"", "code");
+    }
+
+    private async Task CopyCommandsToClipboard()
+    {
+        var commands = GetReadyToRunSelectedCommands();
+        await clipboard.WriteText(commands);
+        copyButtonText = "Now paste commands in Windows CMD!";
+    }
+
+
 
     private Dictionary<CommandGroup, List<(string text, string command)>> commandGroups = new()
     {
@@ -87,45 +132,5 @@ public partial class Templates03GettingStartedPage
         AdditionalVS,
         VS,
         VSCode,
-    }
-
-    private List<(string text, string command)> GetSelectedComands()
-    {
-        List<(string text, string command)> selectedCommandGroups = [.. commandGroups[CommandGroup.Core]];
-
-        if (isAdditionalSelected)
-            selectedCommandGroups.AddRange(commandGroups[CommandGroup.Additional]);
-        if (isVSCodeSelected)
-            selectedCommandGroups.AddRange(commandGroups[CommandGroup.VSCode]);
-        if (isVSSelected)
-        {
-            if (isAdditionalSelected)
-                selectedCommandGroups.AddRange(commandGroups[CommandGroup.AdditionalVS]);
-            else
-                selectedCommandGroups.AddRange(commandGroups[CommandGroup.VS]);
-        }
-
-        selectedCommandGroups.Add((":: Done", "echo Done!"));
-
-        return selectedCommandGroups;
-    }
-
-    private string GetReadyToRunSelectedCommands()
-    {
-        return string.Join(" && ", GetSelectedComands().Select(c => c.command));
-    }
-
-    private string GetDisplayableSelectedCommands()
-    {
-        return string.Join(Environment.NewLine, GetSelectedComands().Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"))
-            .Replace("\"%ProgramFiles%\\dotnet\\dotnet.exe\"", "dotnet")
-            .Replace("\"%LocalAppData%\\Programs\\Microsoft VS Code\\bin\\code.cmd\"", "code");
-    }
-
-    private async Task CopyCommandsToClipboard()
-    {
-        var commands = GetReadyToRunSelectedCommands();
-        await clipboard.WriteText(commands);
-        copyCommandsText = "Now paste commands in Windows CMD!";
     }
 }
