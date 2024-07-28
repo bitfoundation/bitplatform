@@ -22,8 +22,6 @@ public class ComponentSourceGenerator : ISourceGenerator
         {
             var parameters = parametersGroup.ToList();
 
-            CheckTwoWayBoundParameter(parameters);
-
             if (parametersGroup.Key == null) continue;
 
             string classSource = GeneratePartialClass((INamedTypeSymbol)parametersGroup.Key, parameters);
@@ -35,7 +33,7 @@ public class ComponentSourceGenerator : ISourceGenerator
     {
         var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
         var className = GetClassName(classSymbol);
-        var twoWayParameters = parameters.Where(p => p.IsTwoWayBoundProperty).ToArray();
+        var twoWayParameters = parameters.Where(p => p.IsTwoWayBound).ToArray();
         var isBaseTypeComponentBase = classSymbol.BaseType?.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase";
 
         StringBuilder builder = new StringBuilder($@"using System;
@@ -51,7 +49,9 @@ namespace {namespaceName}
 ");
         foreach (var par in twoWayParameters)
         {
-            builder.AppendLine($"        private bool {par.PropertySymbol.Name}HasBeenSet;");
+            var sym = par.PropertySymbol;
+            builder.AppendLine($"        private bool {sym.Name}HasBeenSet;");
+            builder.AppendLine($"        [Parameter] public EventCallback<{sym.Type.ToDisplayString()}> {sym.Name}Changed {{ get; set; }}");
         }
         if (twoWayParameters.Length > 0) builder.AppendLine("");
         builder.AppendLine($@"        [global::System.Diagnostics.DebuggerNonUserCode]
@@ -69,14 +69,15 @@ namespace {namespaceName}
         builder.AppendLine("                {");
         foreach (var par in parameters)
         {
-            var paramName = par.PropertySymbol.Name;
-            var varName = $"@{par.PropertySymbol.Name.ToLower()}";
+            var sym = par.PropertySymbol;
+            var paramName = sym.Name;
+            var varName = $"@{paramName.ToLower()}";
             builder.AppendLine($"                    case nameof({paramName}):");
-            if (par.IsTwoWayBoundProperty)
+            if (par.IsTwoWayBound)
             {
                 builder.AppendLine($"                       {paramName}HasBeenSet = true;");
             }
-            builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : ({par.PropertySymbol.Type.ToDisplayString()})parameter.Value;");
+            builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : ({sym.Type.ToDisplayString()})parameter.Value;");
             if (par.ResetClassBuilder)
             {
                 builder.AppendLine($"                       if ({paramName} != {varName}) ClassBuilder.Reset();");
@@ -88,6 +89,16 @@ namespace {namespaceName}
             builder.AppendLine($"                       {paramName} = {varName};");
             builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             builder.AppendLine("                       break;");
+            if (par.IsTwoWayBound)
+            {
+                paramName = $"{paramName}Changed";
+                varName = $"@{paramName.ToLower()}";
+                builder.AppendLine($"                    case nameof({paramName}):");
+                builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : (EventCallback<{sym.Type.ToDisplayString()}>)parameter.Value;");
+                builder.AppendLine($"                       {paramName} = {varName};");
+                builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
+                builder.AppendLine("                       break;");
+            }
         }
         builder.AppendLine("                }");
         builder.AppendLine("            }");
@@ -137,15 +148,5 @@ namespace {namespaceName}
         }
 
         return sbName.ToString();
-    }
-
-    private static void CheckTwoWayBoundParameter(List<BlazorParameter> properties)
-    {
-        foreach (var property in properties)
-        {
-            var propName = $"{property.PropertySymbol.Name}Changed";
-            var propType = $"Microsoft.AspNetCore.Components.EventCallback<{property.PropertySymbol.Type.ToDisplayString()}>";
-            property.IsTwoWayBoundProperty = properties.Any(p => p.PropertySymbol.Name == propName && p.PropertySymbol.Type.ToDisplayString() == propType);
-        }
     }
 }

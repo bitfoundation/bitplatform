@@ -248,10 +248,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Whether or not the DatePicker's callout is open
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public bool IsOpen { get; set; }
-
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
     /// Enables the responsive mode in small screens.

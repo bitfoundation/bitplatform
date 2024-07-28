@@ -83,7 +83,7 @@
     }
 
     <div @onclick="CloseCallout" @onclick:stopPropagation
-         style="display:@(_isCalloutOpen ? "block" : "none");@Styles?.Overlay"
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
          class="bit-mnb-ovl @Classes?.Overlay"></div>
 
     <div id="@_calloutId"

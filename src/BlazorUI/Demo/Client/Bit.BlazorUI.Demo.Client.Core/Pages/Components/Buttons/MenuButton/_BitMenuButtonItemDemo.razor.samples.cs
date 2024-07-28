@@ -119,14 +119,17 @@ private List<BitMenuButtonItem> basicItems =
 ];";
 
     private readonly string example5RazorCode = @"
-<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Fill"" Sticky />
-<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Fill"" Split Sticky />
+<BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"" />
+<BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Outline"" Size=""BitSize.Small"" />
+<BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Text"" Size=""BitSize.Small"" />
 
-<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Outline"" Sticky />
-<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Outline"" Split Sticky />
+<BitMenuButton Text=""Medium"" Items=""basicItems"" Variant=""BitVariant.Fill"" Size=""BitSize.Medium"" />
+<BitMenuButton Text=""Medium"" Items=""basicItems"" Variant=""BitVariant.Outline"" Size=""BitSize.Medium"" />
+<BitMenuButton Text=""Medium"" Items=""basicItems"" Variant=""BitVariant.Text"" Size=""BitSize.Medium"" />
 
-<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Text"" Sticky />
-<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Text"" Split Sticky />";
+<BitMenuButton Text=""Large"" Items=""basicItems"" Variant=""BitVariant.Fill"" Size=""BitSize.Large"" />
+<BitMenuButton Text=""Large"" Items=""basicItems"" Variant=""BitVariant.Outline"" Size=""BitSize.Large"" />
+<BitMenuButton Text=""Large"" Items=""basicItems"" Variant=""BitVariant.Text"" Size=""BitSize.Large"" />";
     private readonly string example5CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =
 [
@@ -136,9 +139,26 @@ private List<BitMenuButtonItem> basicItems =
 ];";
 
     private readonly string example6RazorCode = @"
+<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Fill"" Sticky />
+<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Fill"" Split Sticky />
+
+<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Outline"" Sticky />
+<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Outline"" Split Sticky />
+
+<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Text"" Sticky />
+<BitMenuButton Items=""basicItems"" Variant=""BitVariant.Text"" Split Sticky />";
+    private readonly string example6CsharpCode = @"
+private List<BitMenuButtonItem> basicItems =
+[
+    new() { Text = ""Item A"", Key = ""A"" },
+    new() { Text = ""Item B"", Key = ""B"", IsEnabled = false },
+    new() { Text = ""Item C"", Key = ""C"" }
+];";
+
+    private readonly string example7RazorCode = @"
 <BitMenuButton Text=""IconName"" Items=""basicItemsIcon"" IconName=""@BitIconName.Edit"" />
 <BitMenuButton Text=""ChevronDownIcon"" Items=""basicItemsIcon"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" Split />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private List<BitMenuButtonItem> basicItemsIcon =
 [
     new() { Text = ""Item A"", Key = ""A"", IconName = BitIconName.Emoji },
@@ -146,45 +166,83 @@ private List<BitMenuButtonItem> basicItemsIcon =
     new() { Text = ""Item C"", Key = ""C"", IconName = BitIconName.Emoji2 }
 ];";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
-        color: aqua;
-        overflow: hidden;
+        margin-inline: 1rem;
         border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
     }
+
+    .custom-class > button {
+        color: tomato;
+        border-color: tomato;
+        background: transparent;
+    }
+
+    .custom-class > button:hover {
+        background-color: #ff63473b;
+    }
+
 
     .custom-item {
-        color: aqua;
-        background-color: darkgoldenrod;
+        color: peachpuff;
+        background-color: tomato;
     }
 
-    .custom-icon {
-        color: red;
+
+    .custom-button {
+        color: deepskyblue;
+        background: transparent;
     }
 
-    .custom-text {
-        color: aqua;
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-callout li:last-child .custom-item-button {
+        border-bottom: none;
     }
 </style>
 
 
-<BitMenuButton Text=""Styled Button"" Items=""basicItems"" Style=""width: 200px; height: 40px;"" />
-<BitMenuButton Text=""Classed Button"" Items=""basicItems"" Class=""custom-class"" />
+<BitMenuButton Text=""Styled Button"" Items=""basicItems"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"" />
+<BitMenuButton Text=""Classed Button"" Items=""basicItems"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
 
 
-<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassItems"" />
+<BitMenuButton Text=""Item Styled & Classed Button"" Items=""itemStyleClassItems"" Variant=""BitVariant.Text"" />
 
 
-<BitMenuButton Text=""Styles"" Items=""basicItems"" IconName=""@BitIconName.ExpandMenu""
-               Styles=""@(new() { Icon = ""color: red;"",
-                                 Text = ""color: aqua;"",
-                                 ItemText = ""color: dodgerblue; font-size: 11px;"",
-                                 Overlay = ""background-color: var(--bit-clr-bg-overlay);"" })"" />
+<BitMenuButton Text=""Classes"" Items=""basicItems"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
+               Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Opened = ""custom-opened"",
+                                  Callout = ""custom-callout"",
+                                  ItemButton = ""custom-item-button"" })"" />
 
-<BitMenuButton Text=""Classes"" Items=""basicItems"" IconName=""@BitIconName.ExpandMenu""
-               Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"" />";
-    private readonly string example7CsharpCode = @"
+<BitMenuButton Text=""Styles"" Items=""basicItems"" IconName=""@BitIconName.Brush""
+               Styles=""@(new() { { Root = ""--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;"",
+                                   Opened = ""--button-background: orangered;"",
+                                   OperatorButton = ""background: var(--button-background);"",
+                                   ItemButton = ""background: lightcoral;"",
+                                   Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"" />";
+    private readonly string example8CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
     new() { Text = ""Item A"", Key = ""A"" },
@@ -192,14 +250,14 @@ private List<BitMenuButtonItem> basicItems = new()
     new() { Text = ""Item C"", Key = ""C"" }
 };
 
-private List<BitMenuButtonItem> itemStyleClassItems =
+private static List<BitMenuButtonItem> itemStyleClassItems =
 [
-    new() { Text = ""Item A"", Key = ""A"", IconName = BitIconName.Emoji, Style = ""color:red"" },
-    new() { Text = ""Item B"", Key = ""B"", IconName = BitIconName.Emoji, Class = ""custom-item"" },
-    new() { Text = ""Item C"", Key = ""C"", IconName = BitIconName.Emoji2, Style = ""background:blue"" }
+    new() { Text = ""Item A (Default)"", Key = ""A"", IconName = BitIconName.Emoji },
+    new() { Text = ""Item C (Styled)"", Key = ""B"", IconName = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
+    new() { Text = ""Item B (Classed)"", Key = ""C"", IconName = BitIconName.Emoji2, Class = ""custom-item"" }
 ];";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -225,7 +283,7 @@ private List<BitMenuButtonItem> itemStyleClassItems =
 </BitMenuButton>
 
 <BitMenuButton Text=""Items"" Items=""itemTemplateItems2"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =
 [
     new() { Text = ""Item A"", Key = ""A"" },
@@ -259,7 +317,7 @@ private List<BitMenuButtonItem> itemTemplateItems2 =
     }
 ];";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitMenuButton Text=""Items"" Items=""basicItems""
                OnChange=""(BitMenuButtonItem item) => eventsChangedItem = item?.Key""
                OnClick=""(BitMenuButtonItem item) => eventsClickedItem = item?.Key"" />
@@ -280,7 +338,7 @@ private List<BitMenuButtonItem> itemTemplateItems2 =
 
 <div>Clicked item: @eventsClickedItem</div>
 <div>Changed item: @eventsChangedItem</div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string? eventsClickedItem;
 private string? eventsChangedItem;
 
@@ -309,15 +367,23 @@ protected override void OnInitialized()
     basicItemsOnClick.ForEach(i => i.OnClick = onClick);
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMenuButton Split Sticky Items=""basicItems"" DefaultSelectedItem=""basicItems[1]"" />
 
 <BitMenuButton Sticky Items=""basicItems"" @bind-SelectedItem=""twoWaySelectedItem"" />
 <BitChoiceGroup Horizontal Items=""@choiceGroupItems"" @bind-Value=""@twoWaySelectedItem"" />
 
-<BitMenuButton Sticky Items=""isSelectedItems"" />";
-    private readonly string example10CsharpCode = @"
+<BitMenuButton Sticky Items=""isSelectedItems"" />
+
+<BitMenuButton Sticky Items=""basicItems"" IsOpen=""oneWayIsOpen"" />
+<BitCheckbox Label=""One-way IsOpen"" @bind-Value=""oneWayIsOpen"" OnChange=""async _ => { await Task.Delay(2000); oneWayIsOpen = false; }"" />
+
+<BitMenuButton Sticky Items=""basicItems"" @bind-IsOpen=""twoWayIsOpen"" />
+<BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
+    private readonly string example11CsharpCode = @"
 private BitMenuButtonItem twoWaySelectedItem = default!;
+private bool oneWayIsOpen;
+private bool twoWayIsOpen;
 
 private static List<BitMenuButtonItem> basicItems =
 [
@@ -341,10 +407,10 @@ protected override void OnInitialized()
     twoWaySelectedItem = basicItems[2];
 }";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" IconName=""@BitIconName.Edit"" />
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"" Split />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
  private static List<BitMenuButtonItem> rtlItemsIcon =
 [
     new() { Text = ""گزینه الف"", Key = ""A"", IconName = BitIconName.Emoji },

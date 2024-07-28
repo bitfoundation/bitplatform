@@ -7,6 +7,9 @@ public partial class _BitMenuButtonItemDemo
 
     private BitMenuButtonItem twoWaySelectedItem = default!;
 
+    private bool oneWayIsOpen;
+    private bool twoWayIsOpen;
+
     private static List<BitMenuButtonItem> basicItems =
     [
         new() { Text = "Item A", Key = "A" },
@@ -23,9 +26,9 @@ public partial class _BitMenuButtonItemDemo
 
     private static List<BitMenuButtonItem> itemStyleClassItems =
     [
-        new() { Text = "Item A", Key = "A", IconName = BitIconName.Emoji, Style = "color:red" },
-        new() { Text = "Item B", Key = "B", IconName = BitIconName.Emoji, Class = "custom-item" },
-        new() { Text = "Item C", Key = "C", IconName = BitIconName.Emoji2, Style = "background:blue" }
+        new() { Text = "Item A (Default)", Key = "A", IconName = BitIconName.Emoji },
+        new() { Text = "Item C (Styled)", Key = "B", IconName = BitIconName.Emoji, Style = "color: tomato; border-color: brown; background-color: peachpuff;" },
+        new() { Text = "Item B (Classed)", Key = "C", IconName = BitIconName.Emoji2, Class = "custom-item" }
     ];
 
     private static List<BitMenuButtonItem> basicItemsOnClick =

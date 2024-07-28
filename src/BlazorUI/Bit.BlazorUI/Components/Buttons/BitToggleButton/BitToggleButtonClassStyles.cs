@@ -18,11 +18,6 @@ public class BitToggleButtonClassStyles
     public string? Checked { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the label and icon container of the BitToggleButton.
-    /// </summary>
-    public string? Container { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the text element of the BitToggleButton.
     /// </summary>
     public string? Text { get; set; }

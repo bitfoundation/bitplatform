@@ -35,10 +35,8 @@ public partial class BitOverlay : BitComponentBase
     /// <summary>
     /// When true, the Overlay and its content will be shown.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsVisible { get; set; }
-
-    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
 
     /// <summary>
     /// Set the selector of the Selector element for the Overlay to disable its scroll if applicable.

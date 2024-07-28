@@ -233,6 +233,21 @@ public class BitStickyTests : BunitTestContext
         }
     }
 
+    [DataTestMethod,
+        DataRow("Bit Blazor UI"),
+        DataRow("<span>Bit Blazor UI</span>"),
+        DataRow(null)
+    ]
+    public void BitStickyShouldRespectChildContent(string childContent)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.AddChildContent(childContent);
+        });
+
+        component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top"" id:ignore>{childContent}</label>");
+    }
+
     [DataTestMethod]
     public void BitStickyShouldRespectHtmlAttributes()
     {

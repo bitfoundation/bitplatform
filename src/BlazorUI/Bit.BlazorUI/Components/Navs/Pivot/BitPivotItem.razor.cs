@@ -40,10 +40,8 @@ public partial class BitPivotItem : BitComponentBase, IDisposable
     /// <summary>
     /// Whether or not the item is selected.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsSelected { get; set; }
-
-    [Parameter] public EventCallback<bool> IsSelectedChanged { get; set; }
 
     /// <summary>
     /// A required key to uniquely identify a pivot item.

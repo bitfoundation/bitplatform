@@ -63,7 +63,7 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Key of the selected pivot item. Updating this will override the Pivot's selected item state
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public string? SelectedKey
     {
         get => selectedKey;
@@ -74,8 +74,6 @@ public partial class BitPivot : BitComponentBase
             SelectItemByKey(value);
         }
     }
-
-    [Parameter] public EventCallback<string?> SelectedKeyChanged { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitPivot component.

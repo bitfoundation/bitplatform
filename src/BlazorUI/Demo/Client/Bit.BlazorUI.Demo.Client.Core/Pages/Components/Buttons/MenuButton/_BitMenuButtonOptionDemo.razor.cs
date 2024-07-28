@@ -7,6 +7,9 @@ public partial class _BitMenuButtonOptionDemo
 
     private BitMenuButtonOption twoWaySelectedOption = default!;
 
+    private bool oneWayIsOpen;
+    private bool twoWayIsOpen;
+
     private BitMenuButtonOption optionA = default!;
     private BitMenuButtonOption optionB = default!;
     private BitMenuButtonOption optionC = default!;
@@ -358,6 +361,55 @@ public partial class _BitMenuButtonOptionDemo
 </BitMenuButton>";
 
     private readonly string example5RazorCode = @"
+<BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Size=""BitSize.Small"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Size=""BitSize.Small"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""Medium"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Medium"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""Medium"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Size=""BitSize.Medium"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""Medium"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Size=""BitSize.Medium"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""Large"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Large"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""Large"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Size=""BitSize.Large"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""Large"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Size=""BitSize.Large"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>";
+
+    private readonly string example6RazorCode = @"
 <BitMenuButton TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Sticky>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -391,7 +443,7 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitMenuButton Text=""IconName"" IconName=""@BitIconName.Edit"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
@@ -404,67 +456,105 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
-        color: aqua;
-        overflow: hidden;
+        margin-inline: 1rem;
         border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
     }
+
+    .custom-class > button {
+        color: tomato;
+        border-color: tomato;
+        background: transparent;
+    }
+
+    .custom-class > button:hover {
+        background-color: #ff63473b;
+    }
+
 
     .custom-item {
-        color: aqua;
-        background-color: darkgoldenrod;
+        color: peachpuff;
+        background-color: tomato;
     }
 
-    .custom-icon {
-        color: red;
+
+    .custom-button {
+        color: deepskyblue;
+        background: transparent;
     }
 
-    .custom-text {
-        color: aqua;
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-callout li:last-child .custom-item-button {
+        border-bottom: none;
     }
 </style>
 
 
-<BitMenuButton Text=""Styled Button"" TItem=""BitMenuButtonOption"" Style=""width: 200px; height: 40px;"">
+<BitMenuButton Text=""Styled Button"" TItem=""BitMenuButtonOption"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""Classed Button"" TItem=""BitMenuButtonOption"" Class=""custom-class"">
+<BitMenuButton Text=""Classed Button"" TItem=""BitMenuButtonOption"" Class=""custom-class"" Variant=""BitVariant.Outline"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""Option Styled & Classed Button"" TItem=""BitMenuButtonOption"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" Style=""color:red"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" Class=""custom-item"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" Style=""background:blue"" />
+<BitMenuButton Text=""Option Styled & Classed Button"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
+    <BitMenuButtonOption Text=""Option A (Default)"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B (Styled)"" Key=""B"" IconName=""@BitIconName.Emoji"" Style=""color: tomato; border-color: brown; background-color: peachpuff;"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C (Classed)"" Key=""C"" IconName=""@BitIconName.Emoji2"" Class=""custom-item"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""Styles"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.ExpandMenu""
-               Styles=""@(new() { Icon = ""color: red;"",
-                                 Text = ""color: aqua;"",
-                                 ItemText = ""color: dodgerblue; font-size: 11px;"",
-                                 Overlay = ""background-color: var(--bit-clr-bg-overlay);"" })"">
+<BitMenuButton Text=""Classes"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.FormatPainter"" Variant=""BitVariant.Text""
+               Classes=""@(new() { OperatorButton = ""custom-button"",
+                                  Opened = ""custom-opened"",
+                                  Callout = ""custom-callout"",
+                                  ItemButton = ""custom-item-button"" })"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""Classes"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.ExpandMenu""
-               Classes=""@(new() { Icon = ""custom-icon"", Text = ""custom-text"" })"">
+<BitMenuButton Text=""Styles"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Brush""
+               Styles=""@(new() { Root = ""--button-background: tomato; background: var(--button-background); border-color: var(--button-background); border-radius: 0.25rem;"",
+                                 Opened = ""--button-background: orangered;"",
+                                 OperatorButton = ""background: var(--button-background);"",
+                                 ItemButton = ""background: lightcoral;"",
+                                 Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .item-template-box {
         display: flex;
@@ -513,7 +603,7 @@ public partial class _BitMenuButtonOptionDemo
     </BitMenuButtonOption>
 </BitMenuButton>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitMenuButton Text=""Options""
                OnChange=""(BitMenuButtonOption item) => exampleChangedOption = item?.Key""
                OnClick=""(BitMenuButtonOption item) => exampleClickedOption = item?.Key"">
@@ -549,11 +639,11 @@ public partial class _BitMenuButtonOptionDemo
 
 <div>Changed option: @exampleChangedOption</div>
 <div>Clicked option: @exampleClickedOption</div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string? exampleChangedOption;
 private string? exampleClickedOption;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMenuButton Text=""Coming soon..."" TItem=""BitMenuButtonOption"" IsEnabled=""false"" />
 
 
@@ -573,11 +663,29 @@ private string? exampleClickedOption;";
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" IsSelected=""true"" />
-</BitMenuButton>";
-    private readonly string example10CsharpCode = @"
-private BitMenuButtonOption twoWaySelectedOption = default!;";
+</BitMenuButton>
 
-    private readonly string example11RazorCode = @"
+
+<BitMenuButton Sticky IsOpen=""oneWayIsOpen"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" @ref=""optionA"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" @ref=""optionB"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" @ref=""optionC"" />
+</BitMenuButton>
+<BitCheckbox Label=""One-way IsOpen"" @bind-Value=""oneWayIsOpen"" OnChange=""async _ => { await Task.Delay(2000); oneWayIsOpen = false; }"" />
+
+
+<BitMenuButton Sticky @bind-IsOpen=""twoWayIsOpen"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" @ref=""optionA"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" @ref=""optionB"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" @ref=""optionC"" />
+</BitMenuButton>
+<BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
+    private readonly string example11CsharpCode = @"
+private BitMenuButtonOption twoWaySelectedOption = default!;
+private bool oneWayIsOpen;
+private bool twoWayIsOpen;";
+
+    private readonly string example12RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">
     <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />

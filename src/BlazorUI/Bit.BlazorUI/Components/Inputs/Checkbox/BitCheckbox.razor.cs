@@ -67,10 +67,8 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     /// An indeterminate visual state for checkbox. 
     /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public bool Indeterminate { get; set; }
-
-    [Parameter] public EventCallback<bool> IndeterminateChanged { get; set; }
 
     /// <summary>
     /// Descriptive label for the checkbox.

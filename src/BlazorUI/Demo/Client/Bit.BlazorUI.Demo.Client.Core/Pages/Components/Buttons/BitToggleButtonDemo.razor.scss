@@ -6,20 +6,63 @@
 }
 
 ::deep {
+    .custom-content {
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
     .custom-class {
-        color: aqua;
         border-radius: 1rem;
+        border-color: blueviolet;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, magenta, transparent) blue;
     }
 
-    .custom-container {
-        font-size: 12px;
+    .custom-class:hover {
+        border-color: magenta;
+        background-color: magenta;
     }
 
-    .custom-icon {
-        color: blue;
+    .custom-root {
+        border: none;
+        color: blueviolet;
+        background: transparent;
     }
 
     .custom-text {
-        color: red;
+        position: relative;
+    }
+
+    .custom-root:hover .custom-text {
+        color: darkviolet;
+    }
+
+    .custom-text::after {
+        content: '';
+        left: 0;
+        width: 0;
+        height: 2px;
+        bottom: -6px;
+        position: absolute;
+        transition: 0.3s ease;
+        background: linear-gradient(90deg, #ff00cc, #3333ff);
+    }
+
+    .custom-icon {
+        color: hotpink;
+    }
+
+    .custom-checked {
+        border: none;
+        background-color: transparent;
+    }
+
+    .custom-checked .custom-text::after {
+        width: 100%;
+    }
+
+    .custom-checked .custom-icon {
+        color: hotpink;
     }
 }

@@ -39,8 +39,10 @@ public class ComponentSyntaxContextReceiver : ISyntaxContextReceiver
         {
             var resetClassBuilder = attributes.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetClassBuilderAttribute");
             var resetStyleBuilder = attributes.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.ResetStyleBuilderAttribute");
+            var isTwoWayBound = attributes.Any(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.TwoWayBoundAttribute");
 
-            var parameter = new BlazorParameter(propertySymbol, resetClassBuilder, resetStyleBuilder);
+            var parameter = new BlazorParameter(propertySymbol, resetClassBuilder, resetStyleBuilder, isTwoWayBound);
+
             Parameters.Add(parameter);
         }
     }

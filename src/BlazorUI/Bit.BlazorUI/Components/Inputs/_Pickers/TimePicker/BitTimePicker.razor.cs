@@ -160,10 +160,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Whether or not this TimePicker is open
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
-
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
     /// Enables the responsive mode in small screens

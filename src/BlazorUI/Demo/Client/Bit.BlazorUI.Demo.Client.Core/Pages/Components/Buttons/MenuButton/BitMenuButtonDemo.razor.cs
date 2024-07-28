@@ -82,6 +82,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "IsOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines the opening state of the callout.",
+        },
+        new()
+        {
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
@@ -130,6 +137,15 @@ public partial class BitMenuButtonDemo
             Type = "TItem?",
             DefaultValue = "null",
             Description = "Determines the current selected item that acts as the header item."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the menu button.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -328,6 +344,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the root element of the BitMenuButton.",
+               },
+               new()
+               {
+                   Name = "Opened",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the opened callout state of the BitMenuButton.",
                },
                new()
                {
@@ -607,6 +630,33 @@ public partial class BitMenuButtonDemo
                     Name= "Error",
                     Description="Error general color.",
                     Value="7",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size.",
+                    Value="2",
                 }
             ]
         },

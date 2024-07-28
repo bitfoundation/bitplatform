@@ -164,30 +164,18 @@
                             <div>
                                 <BitLabel>Basic</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)" />
+                                               NameSelectors="nameSelectors" />
                             </div>
                             <div>
                                 <BitLabel>Disabled</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                IsEnabled="false" />
                             </div>
                             <div>
                                 <BitLabel>Item Disabled</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItemsDisabled"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)" />
+                                               NameSelectors="nameSelectors" />
                             </div>
                         </div>
                     </ExamplePreview>
@@ -203,63 +191,39 @@
                             <div>
                                 <BitLabel>MaxDisplayedItems (1)</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="1" />
                             </div>
                             <div>
                                 <BitLabel>MaxDisplayedItems (2)</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="2" />
                             </div>
                             <div>
                                 <BitLabel>MaxDisplayedItems (3)</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="3" />
                             </div>
                             <div>
                                 <BitLabel>MaxDisplayedItems (3), OverflowIndex (0)</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="0" />
                             </div>
                             <div>
                                 <BitLabel>MaxDisplayedItems (3), OverflowIndex (1)</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="1" />
                             </div>
                             <div>
                                 <BitLabel>MaxDisplayedItems (3), OverflowIndex (2)</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="2" />
                             </div>
@@ -273,11 +237,7 @@
                             <div>
                                 <BitLabel>BitIconName (ChevronDown)</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="2"
                                                OverflowIconName="@BitIconName.ChevronDown" />
@@ -285,11 +245,7 @@
                             <div>
                                 <BitLabel>BitIconName (CollapseMenu)</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="3"
                                                OverflowIndex="2"
                                                OverflowIconName="@BitIconName.CollapseMenu" />
@@ -304,39 +260,23 @@
                             <div>
                                 <BitLabel>Items Class</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)" />
+                                               NameSelectors="nameSelectors" />
                             </div>
                             <div>
                                 <BitLabel>Items Style</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithStyle"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)" />
+                                               NameSelectors="nameSelectors" />
                             </div>
                             <div>
                                 <BitLabel>Selected Item Class</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                SelectedItemClass="custom-selected-item" />
                             </div>
                             <div>
                                 <BitLabel>Selected Item Style</BitLabel>
                                 <BitBreadcrumb Items="CustomBreadcrumbItems"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                SelectedItemStyle="color:red;background:lightgreen" />
                             </div>
                         </div>
@@ -348,11 +288,7 @@
                         <div class="example-desc">By clicking on the items, the selected item will change and match the SelectedItemStyle.</div>
                         <div class="example-box">
                             <BitBreadcrumb Items="CustomBreadcrumbItemsWithControlled"
-                                           TextField="@nameof(PageInfoModel.Name)"
-                                           HrefField="@nameof(PageInfoModel.Address)"
-                                           IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                           ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                           StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                           NameSelectors="nameSelectors"
                                            MaxDisplayedItems="3"
                                            OverflowIndex="2"
                                            OnItemClick="(PageInfoModel model) => HandleOnCustomClick(model)"
@@ -366,11 +302,7 @@
                         <div class="example-box">
                             <div>
                                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithCustomized"
-                                               TextField="@nameof(PageInfoModel.Name)"
-                                               HrefField="@nameof(PageInfoModel.Address)"
-                                               IsSelectedField="@nameof(PageInfoModel.IsCurrent)"
-                                               ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                               StyleField="@nameof(PageInfoModel.HtmlStyle)"
+                                               NameSelectors="nameSelectors"
                                                MaxDisplayedItems="@MaxDisplayedItems"
                                                OverflowIndex="@OverflowIndex"
                                                OnItemClick="(PageInfoModel model) => HandleOnCustomizedCustomClick(model)" />
@@ -396,11 +328,7 @@
                                            OverflowIndex="2"
                                            MaxDisplayedItems="3"
                                            Items="RtlCustomBreadcrumbItems"
-                                           TextField="@nameof(PageInfoModel.Name)"
-                                           HrefField="@nameof(PageInfoModel.Address)"
-                                           ClassField="@nameof(PageInfoModel.HtmlClass)"
-                                           StyleField="@nameof(PageInfoModel.HtmlStyle)"
-                                           IsSelectedField="@nameof(PageInfoModel.IsCurrent)" />
+                                           NameSelectors="nameSelectors" />
                         </div>
                     </ExamplePreview>
                 </ComponentExampleBox>
