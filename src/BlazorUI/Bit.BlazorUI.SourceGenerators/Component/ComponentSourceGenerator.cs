@@ -83,6 +83,7 @@ namespace {namespaceName}
             {
                 builder.AppendLine($"                       var notEquals{paramName} = EqualityComparer<{paramType}>.Default.Equals({paramName}, {varName}) is false;");
             }
+            builder.AppendLine($"                       {paramName} = {varName};");
             if (par.ResetClassBuilder)
             {
                 builder.AppendLine($"                       if (notEquals{paramName}) ClassBuilder.Reset();");
@@ -95,7 +96,6 @@ namespace {namespaceName}
             {
                 builder.AppendLine($"                       if (notEquals{paramName}) {par.CallOnSetMethodName}();");
             }
-            builder.AppendLine($"                       {paramName} = {varName};");
             builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             builder.AppendLine("                       break;");
             if (par.IsTwoWayBound)
