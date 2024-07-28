@@ -1,6 +1,6 @@
-﻿@page "/todo-template/getting-started"
-@page "/admin-panel/getting-started"
-@page "/templates/getting-started"
+﻿@page "/templates/getting-started"
+@page "/templates/development-prerequisites"
+
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/getting-started"
@@ -15,75 +15,204 @@
         <div class="section-card-txt">
             <BitTypography Variant="BitTypographyVariant.H5" Gutter>Setup development environment</BitTypography>
 
-            To begin, the initial steps involve installing .NET SDK version .NET SDK <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.303</a>
-            , along with the latest versions of <a href="https://nodejs.org/en/download" target="_blank">NodeJS</a> and <a href="https://www.nuget.org/packages/Boilerplate.Templates" target="_blank">Boilerplate Project Template</a>.
-            This setup enables compatibility with your preferred IDE and operating system.
-            <br />
-            <br />
-            For Windows users, start by installing <a href="https://aka.ms/getwinget" target="_blank">winget</a> (Windows Package Manager).
-            You can then select from a range of options provided, with Core dependencies pre-selected by default.
-            Proceed by copying the commands provided, and execute them in Command Prompt (CMD) running with Administrator privileges.
-            This process will automate the installation of Visual Studio and additional tools, significantly enhancing your development environment.
-            <br />
-            <br />
-            <br />
-        </div>
-        <BitCheckbox Label="Core dependencies (Facilitate the execution of backend APIs, web applications, and Windows versions of your software solutions.)" IsEnabled="false" Value="true" />
-        <br />
-        <BitCheckbox Label="Additional dependencies (Enable you to run Android, iOS and macOS versions of your application)" @bind-Value="isAdditionalSelected" />
-        <br />
-        <BitCheckbox Label="Visual Studio" @bind-Value="isVSSelected" />
-        <br />
-        <BitCheckbox Label="Visual Studio Code" @bind-Value="isVSCodeSelected" />
-        <br />
-        <br />
-        <ol>
-            @foreach (var commandInfo in GetCommandsInfo())
-            {
-                <li>
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>@commandInfo.text</BitTypography>
-                    <CodeBox>
-                        @commandInfo.command
-                    </CodeBox>
-                </li>
-            }
-        </ol>
+            <BitPivot>
+                <BitPivotItem HeaderText="Automatic (Windows - Visual Studio & Visual Studio Code)">
+                    <br />
+                    For the best developer experience, we've streamlined the installation process for components like the .NET SDK and essential Windows settings into a single, easy-to-use command relying on <a href="https://aka.ms/getwinget" target="_blank">Windows Package Manager (WinGet)</a>. Simply select your desired options, click copy commands button, then paste them in windows CDM that is Run as Administrator.
+                    <br />
+                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>Options:</BitTypography>
+                    <BitToggle Label="Install core dependencies (Facilitate building backend APIs, Web and Windows versions of your Boilerplate powered project.)" IsEnabled="false" Value="true" />
+                    <BitToggle Label="Install additional dependencies (Enable you to run Android, iOS and macOS versions of your Boilerplate powered project.)" @bind-Value="isAdditionalSelected" />
+                    <BitToggle Label="Install Visual Studio" @bind-Value="isVSSelected" />
+                    <BitToggle Label="Install Visual Studio Code" @bind-Value="isVSCodeSelected" />
+                    <br />
+                    <BitButton IconName="BitIconName.Copy" OnClick="() => CopyCommandsToClipboard()">@copyCommandsText</BitButton>
+                    <ol>
+                        <BitAccordion Title="Below is a list of commands along with their descriptions">
+                            <CodeBox HideCopyButton>
+                                @GetDisplayableSelectedCommands()
+                            </CodeBox>
+                        </BitAccordion>
+                    </ol>
 
-        <br />
-        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Copy all the commands here</BitTypography>
-        <CodeBox>
-            @GetCommands()
-        </CodeBox>
+                    <div class="section-card-txt">
+                        After executing the commands, proceed to install the following extensions for Visual Studio:
+                        <ol>
+                            <li>
+                                <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
+                            </li>
+                            <li>
+                                <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">SQLite and SQL Server Compact Toolbox extension </a>
+                            </li>
+                        </ol>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Manual (Windows, macOS, Linux - Any IDE)">
+                    <div class="section-card-txt">
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Show instructions for:</BitTypography>
+                        <BitToggle Label="Install core dependencies (Facilitate building backend APIs, Web and Windows versions of your Boilerplate powered project.)" IsEnabled="false" Value="true" />
+                        <BitToggle Label="Install additional dependencies (Enable you to run Android, iOS and macOS versions of your Boilerplate powered project.)" @bind-Value="isAdditionalSelected" />
+                        <ol>
+                            <li style="margin-bottom:8px">
+                                Install .NET Sdk <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.303</a>
+                            </li>
+                            <BitAccordion Title=".NET 8 Sdk on Linux instructions">
+                                <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
+                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+mkdir -p $HOME/.dotnet
+tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+dotnet dev-certs https --trust
+rm dotnet.tar.gz</CodeBox>
+                            </BitAccordion>
+                            <br />
+                            <li>Install <a href="https://nodejs.org/en/download/" title="Node.js" rel="nofollow">Node.js</a></li>
+                            <br />
+                            <li>
+                                <div style="margin-bottom:8px">Install .NET workloads</div>
+                                <BitPivot>
+                                    <BitPivotItem HeaderText="Windows">
+                                        @if (isAdditionalSelected)
+                                        {
+                                            <CodeBox>dotnet workload install maui <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                        }
+                                        else
+                                        {
+                                            <CodeBox>dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                        }
+                                    </BitPivotItem>
+                                    <BitPivotItem HeaderText="Linux">
+                                        @if (isAdditionalSelected)
+                                        {
+                                            <CodeBox>dotnet workload update <br />dotnet workload install maui-android <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                        }
+                                        else
+                                        {
+                                            <CodeBox>dotnet workload update <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                        }
+                                    </BitPivotItem>
+                                    <BitPivotItem HeaderText="macOS">
+                                        @if (isAdditionalSelected)
+                                        {
+                                            <CodeBox>sudo dotnet workload install maui <br />sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                        }
+                                        else
+                                        {
+                                            <CodeBox>sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                        }
+                                    </BitPivotItem>
+                                </BitPivot>
+                            </li>
+                            <li>
+                                <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
+                                <CodeBox>dotnet new install Bit.Boilerplate::8.10.0-pre-03 <BitIconButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" /></CodeBox>
+                            </li>
+                            @if (isAdditionalSelected)
+                            {
+                                <li>
+                                    Enable long paths files in Windows
+                                    <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitIconButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" /></CodeBox>
+                                </li>
+                                <li>
+                                    Enable Windows developer mode
+                                    <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitIconButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" /></CodeBox>
+                                </li>
+                            }
+                        </ol>
+                    </div>
+                    <br />
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>IDE specific requirements</BitTypography>
+                    <br />
+                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>Visual Studio</BitTypography>
+                    <div class="section-card-txt">
+                        <ul>
+                            <li>
+                                <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.8.0 or higher
+                                <ul dir="auto">
+                                    <li>
+                                        Workloads:
+                                        <ul dir="auto">
+                                            <li>ASP.NET and web development</li>
+                                            @if (isAdditionalSelected)
+                                            {
+                                                <li>.NET Multi-Platform App UI development + Android Sdk setup</li>
+                                            }
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        Extensions:
+                                        <ul dir="auto">
+                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" title="Web Compiler 2022+" rel="nofollow">Web Compiler 2022+</a> extension</li>
+                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" title="SQLite and SQL Server Compact Toolbox" rel="nofollow">SQLite and SQL Server Compact Toolbox</a> extension</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>VS Code</BitTypography>
+                    <div class="section-card-txt">
+                        <ul>
+                            <li>
+                                <a href="https://code.visualstudio.com/#alt-downloads" title="VS Code" rel="nofollow">Visual Studio Code</a> with following extensions:
+                                <ul dir="auto">
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit" title="C# Dev Kit" rel="nofollow">C# Dev Kit</a></li>
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" title="Live Sass Compiler" rel="nofollow">Live Sass Compiler</a></li>
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=kevin-chatham.aspnetcorerazor-html-css-class-completion" title="Razor/Blazor CSS IntelliSense" rel="nofollow">Razor/Blazor CSS IntelliSense</a></li>
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion" title="BlazorWasmDebugging" rel="nofollow">BlazorWasmDebugging</a></li>
+                                    @if (isAdditionalSelected)
+                                    {
+                                        <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui" title=".NET MAUI" rel="nofollow">.NET MAUI</a></li>
+                                    }
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" title="SQLite3 Editor" rel="nofollow">SQLite3 Editor</a></li>
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor" title="RESX Editor" rel="nofollow">RESX Editor</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <BitAccordion Title="Install extensions commands">
+                            @if (isAdditionalSelected)
+                            {
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension ms-dotnettools.dotnet-maui
+code --install-extension yy0931.vscode-sqlite3-editor
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+                            }
+                            else
+                            {
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension yy0931.vscode-sqlite3-editor
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+                            }
+                        </BitAccordion>
+                    </div>
+                </BitPivotItem>
+            </BitPivot>
 
-
-        <div class="section-card-txt">
-            After executing the commands, proceed to install the following extensions for Visual Studio:
-            <ol>
-                <li>
-                    <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
-                </li>
-                <li>
-                    <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">SQLite and SQL Server Compact Toolbox extension </a>
-                </li>
-            </ol>
-        </div>
-
-        <div class="section-card-txt">
-            To verify successful project compilation, download <a href="/files/my-first-project.bat" download>my-first-project.bat</a> file for Windows or <a href="/files/my-first-project.sh" download>my-first-project.sh</a> file for macOS and Linux, then execute it.
-            This file initializes a project and an SQLite database, performs EF Core migration, and subsequently launches the application.
-            Once launched, you can access it via a web browser and log in using the credentials test@bitplatform.dev with the password set to 123456.
-            <br />
-            <br />
-            In the following sections, we will delve into the specifics of these commands.
-            If you encounter any errors, please submit an <a href="https://github.com/bitfoundation/bitplatform/issues/new" target="_blank">issue</a> for assistance.
-            <br />
-            <br />
-            To open the project in Visual Studio, navigate to the MyFirstProject folder.
-            Inside the "src" folder, if your focus is solely on running the Web project, open MyFirstProject.Web.slnf.
-            This option provides faster access. Alternatively, if you wish to work on the Android, Windows, or other versions of your application, open MyFirstProject.sln.
-            <br />
-            <br />
-            Once opened, press F5 to launch the application.
+            <div class="section-card-txt">
+                <BitTypography Variant="BitTypographyVariant.H5" Gutter>Run first project</BitTypography>
+                To verify successful project compilation, download <a href="/files/my-first-project.bat" download>my-first-project.bat</a> file for Windows or <a href="/files/my-first-project.sh" download>my-first-project.sh</a> file for macOS and Linux, then execute it.
+                This file initializes a project and an SQLite database, performs EF Core migration, and subsequently launches the application.
+                Once launched, you can access it via a web browser and log in using the credentials test@bitplatform.dev with the password set to 123456.
+                <br />
+                <br />
+                In the following sections, we will delve into the specifics of these commands.
+                If you encounter any errors, please submit an <a href="https://github.com/bitfoundation/bitplatform/issues/new" target="_blank">issue</a> for assistance.
+                <br />
+                <br />
+                To open the project in Visual Studio, navigate to the MyFirstProject folder.
+                Inside the "src" folder, if your focus is solely on running the Web project, open MyFirstProject.Web.slnf.
+                This option provides faster access. Alternatively, if you wish to work on the Android, Windows, or other versions of your application, open MyFirstProject.sln.
+                <br />
+                <br />
+                Once opened, press F5 to launch the application.
+            </div>
         </div>
     </section>
 </div>
