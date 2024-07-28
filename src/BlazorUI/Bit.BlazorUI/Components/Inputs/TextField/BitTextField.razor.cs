@@ -274,6 +274,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync(e);
     }
 
@@ -283,6 +284,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
 
@@ -292,6 +294,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocus.InvokeAsync(e);
     }
 
