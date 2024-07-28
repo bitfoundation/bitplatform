@@ -105,7 +105,7 @@ public partial class Templates03GettingStartedPage
                 selectedCommandGroups.AddRange(commandGroups[CommandGroup.VS]);
         }
 
-        selectedCommandGroups.Add(("Done", "echo Done!"));
+        selectedCommandGroups.Add((":: Done", "echo Done!"));
 
         return selectedCommandGroups;
     }
