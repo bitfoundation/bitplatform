@@ -353,6 +353,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await _js.SelectText(InputElement);
         await OnFocusIn.InvokeAsync(e);
     }
@@ -363,6 +364,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
 
@@ -372,6 +374,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await _js.SelectText(InputElement);
         await OnFocus.InvokeAsync(e);
     }
