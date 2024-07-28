@@ -1,1 +1,0 @@
-dotnet new bit-bp --name MyFirstProject --sample Admin --database Sqlite && cd MyFirstProject/src/Server/MyFirstProject.Server.Api && dotnet tool restore && dotnet ef migrations add InitialMigration --output-dir Data/Migrations && cd ../MyFirstProject.Server.Web && dotnet workload restore && dotnet build && dotnet watch run
