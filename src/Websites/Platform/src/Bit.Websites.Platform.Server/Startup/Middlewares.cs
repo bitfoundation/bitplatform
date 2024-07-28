@@ -1,12 +1,10 @@
-﻿using System.Reflection;
+﻿using System.Net;
+using System.Reflection;
+using System.Runtime.Loader;
+using Bit.Websites.Platform.Server.Components;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Net.Http.Headers;
-using Bit.Websites.Platform.Server.Components;
-using System.Net;
-using Microsoft.AspNetCore.Components.Endpoints;
-using System.Runtime.Loader;
 
 namespace Bit.Websites.Platform.Server.Startup;
 
