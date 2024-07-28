@@ -30,10 +30,8 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Determines whether the accordion is expanding or collapses.
     /// </summary>
-    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsExpanded { get; set; }
-
-    [Parameter] public EventCallback<bool> IsExpandedChanged { get; set; }
 
     /// <summary>
     /// Callback that is called when the header is clicked.

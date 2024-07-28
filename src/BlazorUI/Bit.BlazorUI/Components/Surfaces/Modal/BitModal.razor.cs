@@ -62,9 +62,8 @@ public partial class BitModal : BitComponentBase, IDisposable
     /// <summary>
     /// Whether the Modal is displayed.
     /// </summary>
-    [Parameter] public bool IsOpen { get; set; }
-
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter, TwoWayBound]
+    public bool IsOpen { get; set; }
 
     /// <summary>
     /// A callback function for when the Modal is dismissed light dismiss, before the animation completes.

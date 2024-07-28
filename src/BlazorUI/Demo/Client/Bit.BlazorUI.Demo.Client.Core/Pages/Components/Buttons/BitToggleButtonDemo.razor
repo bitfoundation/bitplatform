@@ -21,7 +21,7 @@
 
     <ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
-            <div>The ToggleButton offers three variants: Fill (default), Outline, and Text.</div>
+            <div>The BitToggleButton offers three variants: Fill (default), Outline, and Text.</div>
             <br />
             <div class="example-box">
                 <BitToggleButton Variant="BitVariant.Fill">Fill</BitToggleButton>
@@ -39,21 +39,21 @@
 
     <ComponentExampleBox Title="Size" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
-            <div>Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+            <div>Varying sizes for BitToggleButton tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
             <br />
-            <div>
+            <div class="example-box">
                 <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Fill">Small</BitToggleButton>
                 <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Fill">Medium</BitToggleButton>
                 <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Fill">Large</BitToggleButton>
             </div>
             <br />
-            <div>
+            <div class="example-box">
                 <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Outline">Small</BitToggleButton>
                 <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Outline">Medium</BitToggleButton>
                 <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Outline">Large</BitToggleButton>
             </div>
             <br />
-            <div>
+            <div class="example-box">
                 <BitToggleButton Size="BitSize.Small" Variant="BitVariant.Text">Small</BitToggleButton>
                 <BitToggleButton Size="BitSize.Medium" Variant="BitVariant.Text">Medium</BitToggleButton>
                 <BitToggleButton Size="BitSize.Large" Variant="BitVariant.Text">Large</BitToggleButton>
@@ -122,12 +122,12 @@
             <div>Component's Style & Class:</div>
             <br />
             <div class="example-box">
-                <BitToggleButton Style="color:darkblue; font-weight:bold"
+                <BitToggleButton Style="background-color: transparent; border-color: blueviolet; color: blueviolet;"
+                                 Variant="BitVariant.Outline"
                                  OffText="Styled Button: Unmuted" OffIconName="@BitIconName.Microphone"
                                  OnText="Styled Button: Muted" OnIconName="@BitIconName.MicOff" />
 
                 <BitToggleButton Class="custom-class"
-                                 Variant="BitVariant.Outline"
                                  OffText="Classed Button: Unmuted" OffIconName="@BitIconName.Microphone"
                                  OnText="Classed Button: Muted" OnIconName="@BitIconName.MicOff" />
             </div>
@@ -137,12 +137,18 @@
             <div class="example-box">
                 <BitToggleButton OffText="Styled Button: Unmuted" OffIconName="@BitIconName.Microphone"
                                  OnText="Styled Button: Muted" OnIconName="@BitIconName.MicOff"
-                                 Styles="@(new() { Container = "font-size: 18px;", Icon = "color: red;", Text = "color: blue;" })" />
+                                 Styles="@(new() { Root = "--toggle-background: pink; background: var(--toggle-background); border: none;",
+                                                   Checked = "--toggle-background: peachpuff;",
+                                                   Icon = "color: red;",
+                                                   Text = "color: tomato;" })" />
 
-                <BitToggleButton Variant="BitVariant.Outline"
+                <BitToggleButton Variant="BitVariant.Text"
                                  OffText="Classed Button: Unmuted" OffIconName="@BitIconName.Microphone"
                                  OnText="Classed Button: Muted" OnIconName="@BitIconName.MicOff"
-                                 Classes="@(new() { Container = "custom-container", Icon = "custom-icon", Text = "custom-text" })" />
+                                 Classes="@(new() { Root = "custom-root",
+                                                    Checked = "custom-checked",
+                                                    Icon = "custom-icon",
+                                                    Text = "custom-text" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -181,8 +187,37 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
+            <div>Here are some examples of customizing the BitToggleButton content.</div>
+            <br />
+            <div>
+                <BitToggleButton Class="custom-content">
+                    <BitIcon IconName="@BitIconName.Airplane" />
+                    <span>Custom template</span>
+                    <BitRollerLoading Size="20" />
+                </BitToggleButton>
+                <br />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ExamplePreview>
+            <div>
+                Managing BitToggleButton click event (OnClick).
+            </div>
+            <br />
+            <div class="example-content">
+                <BitToggleButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitToggleButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+        <ExamplePreview>
+            <div>Use BitToggleButton in right-to-left (RTL).</div>
+            <br />
             <div class="example-box" dir="rtl">
                 <BitToggleButton Dir="BitDir.Rtl" Variant="BitVariant.Fill"
                                  OffText="صدا وصل" OffIconName="@BitIconName.Microphone"

@@ -42,10 +42,8 @@ public partial class BitTooltip : BitComponentBase
     /// <summary>
     /// The visibility state of the tooltip.
     /// </summary>
-    [Parameter]
+    [Parameter, TwoWayBound]
     public bool IsShown { get; set; }
-
-    [Parameter] public EventCallback<bool> IsShownChanged { get; set; }
 
     /// <summary>
     /// The position of tooltip around its anchor.

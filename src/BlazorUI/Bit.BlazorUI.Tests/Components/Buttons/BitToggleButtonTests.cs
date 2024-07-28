@@ -24,8 +24,8 @@ public class BitToggleButtonTests : BunitTestContext
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
-        var bitIconTag = component.Find(".bit-tgb > span > i");
-        var bitLabelTag = component.Find(".bit-tgb > span > span");
+        var bitIconTag = component.Find(".bit-tgb > i");
+        var bitLabelTag = component.Find(".bit-tgb > span");
 
         if (isEnabled)
         {
