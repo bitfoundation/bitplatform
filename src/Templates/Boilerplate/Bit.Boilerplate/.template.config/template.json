@@ -168,7 +168,7 @@
             "displayName": "Add Windows project?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "false",
+            "defaultValue": "true",
             "description": "WPF-based Windows project supporting Windows 7 SP1 and above."
         },
         "appInsights": {
