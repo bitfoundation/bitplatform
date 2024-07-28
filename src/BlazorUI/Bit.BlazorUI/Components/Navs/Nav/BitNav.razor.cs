@@ -827,10 +827,9 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
     private void OnSetSelectedItem()
     {
-        if (SelectedItem is not null)
-        {
-            ToggleItemAndParents(_items, SelectedItem, true);
-        }
+        if (SelectedItem is null) return;
+
+        ToggleItemAndParents(_items, SelectedItem, true);
     }
 
 
