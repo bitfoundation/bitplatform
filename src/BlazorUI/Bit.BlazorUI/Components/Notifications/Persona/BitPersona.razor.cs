@@ -71,7 +71,7 @@ public partial class BitPersona : BitComponentBase
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
     [Parameter]
-    [CallOnSet("OnSetImageUrl")]
+    [CallOnSet(nameof(OnSetImageUrl))]
     public string? ImageUrl { get; set; }
 
     /// <summary>

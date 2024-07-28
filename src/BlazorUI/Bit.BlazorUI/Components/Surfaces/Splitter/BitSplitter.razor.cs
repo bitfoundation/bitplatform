@@ -80,7 +80,7 @@ public partial class BitSplitter : BitComponentBase
     /// Sets the orientation of BitSplitter to vertical.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet("ResetPaneDimensions")]
+    [CallOnSet(nameof(ResetPaneDimensions))]
     public bool Vertical { get; set; }
 
 

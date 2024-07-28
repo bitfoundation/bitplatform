@@ -56,7 +56,7 @@ public partial class BitFileUpload : BitComponentBase, IDisposable
     /// The size of each chunk of file upload in bytes.
     /// </summary>
     [Parameter]
-    [CallOnSet("OnSetChunkSize")]
+    [CallOnSet(nameof(OnSetChunkSize))]
     public long? ChunkSize { get; set; }
 
     /// <summary>

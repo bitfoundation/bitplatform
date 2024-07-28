@@ -92,7 +92,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet("ClearSearchBox")]
+    [CallOnSet(nameof(ClearSearchBox))]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -224,7 +224,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The values of the selected items in multi select mode. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet("OnSetValues")]
+    [CallOnSet(nameof(OnSetValues))]
     public ICollection<TValue?>? Values { get; set; }
 
     [Parameter] public Expression<Func<ICollection<TValue?>?>>? ValuesExpression { get; set; }

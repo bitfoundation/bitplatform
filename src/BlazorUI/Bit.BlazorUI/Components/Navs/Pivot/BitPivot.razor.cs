@@ -60,7 +60,7 @@ public partial class BitPivot : BitComponentBase
     /// Key of the selected pivot item. Updating this will override the Pivot's selected item state
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet("OnSetSelectedKey")]
+    [CallOnSet(nameof(OnSetSelectedKey))]
     public string? SelectedKey { get; set; }
 
     /// <summary>

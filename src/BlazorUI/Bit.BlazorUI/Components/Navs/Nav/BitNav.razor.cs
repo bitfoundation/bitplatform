@@ -120,7 +120,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// Selected item to show in the BitNav.
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet("OnSetSelectedItem")]
+    [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
 
     /// <summary>

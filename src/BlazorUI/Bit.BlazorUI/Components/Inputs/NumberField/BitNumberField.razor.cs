@@ -126,14 +126,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Min value of the number field.
     /// </summary>
     [Parameter]
-    [CallOnSet("OnSetMin")]
+    [CallOnSet(nameof(OnSetMin))]
     public string? Min { get; set; }
 
     /// <summary>
     /// Max value of the number field.
     /// </summary>
     [Parameter]
-    [CallOnSet("OnSetMax")]
+    [CallOnSet(nameof(OnSetMax))]
     public string? Max { get; set; }
 
     /// <summary>
@@ -201,7 +201,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Difference between two adjacent values of the number field.
     /// </summary>
     [Parameter]
-    [CallOnSet("OnSetStep")]
+    [CallOnSet(nameof(OnSetStep))]
     public string? Step { get; set; }
 
     /// <summary>

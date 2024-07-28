@@ -174,7 +174,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Input type.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet("SetElementType")]
+    [CallOnSet(nameof(SetElementType))]
     public BitTextFieldType Type { get; set; }
 
 

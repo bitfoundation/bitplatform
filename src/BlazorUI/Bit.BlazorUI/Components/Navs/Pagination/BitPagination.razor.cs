@@ -14,7 +14,7 @@ public partial class BitPagination : BitComponentBase
     /// The number of items at the start and end of the pagination.
     /// </summary>
     [Parameter]
-    [CallOnSet("OnSetBoundaryCount")]
+    [CallOnSet(nameof(OnSetBoundaryCount))]
     public int BoundaryCount { get; set; }
 
     /// <summary>
@@ -26,7 +26,7 @@ public partial class BitPagination : BitComponentBase
     /// The number of pages.
     /// </summary>
     [Parameter]
-    [CallOnSet("OnSetCount")]
+    [CallOnSet(nameof(OnSetCount))]
     public int Count { get; set; }
 
     /// <summary>
@@ -48,7 +48,7 @@ public partial class BitPagination : BitComponentBase
     /// The number of items in the middle of the pagination.
     /// </summary>
     [Parameter]
-    [CallOnSet("OnSetMiddleCount")]
+    [CallOnSet(nameof(OnSetMiddleCount))]
     public int MiddleCount { get; set; }
 
     /// <summary>

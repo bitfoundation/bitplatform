@@ -81,7 +81,7 @@ public partial class BitSlider : BitComponentBase
     /// The lower value of the ranged Slider.
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet("OnSetValues")]
+    [CallOnSet(nameof(OnSetValues))]
     public double LowerValue { get; set; }
 
     /// <summary>
@@ -145,14 +145,14 @@ public partial class BitSlider : BitComponentBase
     /// The upper value of the ranged Slider.
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet("OnSetValues")]
+    [CallOnSet(nameof(OnSetValues))]
     public double UpperValue { get; set; }
 
     /// <summary>
     /// The value of the Slider
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet("OnSetValues")]
+    [CallOnSet(nameof(OnSetValues))]
     public double Value { get; set; }
 
     /// <summary>

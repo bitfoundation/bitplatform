@@ -79,7 +79,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
-    [CallOnSet("ToggleCallout")]
+    [CallOnSet(nameof(ToggleCallout))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
