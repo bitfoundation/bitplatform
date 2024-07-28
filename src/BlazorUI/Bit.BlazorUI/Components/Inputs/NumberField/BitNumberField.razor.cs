@@ -123,18 +123,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Min value of the number field. If not provided, the number field has minimum value.
+    /// Min value of the number field.
     /// </summary>
     [Parameter]
     [CallOnSet("OnSetMin")]
-    public TValue? Min { get; set; }
+    public string? Min { get; set; }
 
     /// <summary>
-    /// Max value of the number field. If not provided, the number field has max value.
+    /// Max value of the number field.
     /// </summary>
     [Parameter]
     [CallOnSet("OnSetMax")]
-    public TValue? Max { get; set; }
+    public string? Max { get; set; }
 
     /// <summary>
     /// The format of the number in the number field.
@@ -202,7 +202,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     [Parameter]
     [CallOnSet("OnSetStep")]
-    public TValue? Step { get; set; }
+    public string? Step { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitNumberField.
@@ -528,16 +528,37 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void OnSetMin()
     {
-        _min = Min ?? GetTypeMinValue();
+        if (BindConverter.TryConvertTo(Min, CultureInfo.InvariantCulture, out TValue? result))
+        {
+            _min = result ?? GetTypeMinValue();
+        }
+        else
+        {
+            _min = GetTypeMinValue();
+        }
     }
 
     private void OnSetMax()
     {
-        _max = Max ?? GetTypeMaxValue();
+        if (BindConverter.TryConvertTo(Max, CultureInfo.InvariantCulture, out TValue? result))
+        {
+            _max = result ?? GetTypeMaxValue();
+        }
+        else
+        {
+            _max = GetTypeMaxValue();
+        }
     }
 
     private void OnSetStep()
     {
-        _step = Step ?? (TValue)(object)1;
+        if (BindConverter.TryConvertTo(Step, CultureInfo.InvariantCulture, out TValue? result))
+        {
+            _step = result ?? ((TValue)(object)1);
+        }
+        else
+        {
+            _step = (TValue)(object)1;
+        }
     }
 }
