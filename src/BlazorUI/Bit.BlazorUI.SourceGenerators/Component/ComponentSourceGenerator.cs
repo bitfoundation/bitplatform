@@ -72,21 +72,30 @@ namespace {namespaceName}
             var sym = par.PropertySymbol;
             var paramName = sym.Name;
             var varName = $"@{paramName.ToLower()}";
+            var paramType = sym.Type.ToDisplayString();
             builder.AppendLine($"                    case nameof({paramName}):");
             if (par.IsTwoWayBound)
             {
                 builder.AppendLine($"                       {paramName}HasBeenSet = true;");
             }
-            builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : ({sym.Type.ToDisplayString()})parameter.Value;");
+            builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : ({paramType})parameter.Value;");
+            if (par.ResetClassBuilder || par.ResetStyleBuilder || string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
+            {
+                builder.AppendLine($"                       var notEquals{paramName} = EqualityComparer<{paramType}>.Default.Equals({paramName}, {varName}) is false;");
+            }
+            builder.AppendLine($"                       {paramName} = {varName};");
             if (par.ResetClassBuilder)
             {
-                builder.AppendLine($"                       if ({paramName} != {varName}) ClassBuilder.Reset();");
+                builder.AppendLine($"                       if (notEquals{paramName}) ClassBuilder.Reset();");
             }
             if (par.ResetStyleBuilder)
             {
-                builder.AppendLine($"                       if ({paramName} != {varName}) StyleBuilder.Reset();");
+                builder.AppendLine($"                       if (notEquals{paramName}) StyleBuilder.Reset();");
             }
-            builder.AppendLine($"                       {paramName} = {varName};");
+            if (string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
+            {
+                builder.AppendLine($"                       if (notEquals{paramName}) {par.CallOnSetMethodName}();");
+            }
             builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             builder.AppendLine("                       break;");
             if (par.IsTwoWayBound)
@@ -122,10 +131,23 @@ namespace {namespaceName}
         public async Task<bool> Assign{paramName}({paramType} value)
         {{");
             builder.AppendLine($"            if ({paramName}HasBeenSet && {paramName}Changed.HasDelegate is false) return false;");
-            builder.AppendLine($"            {paramName} = value;");
-            builder.AppendLine($"            await {paramName}Changed.InvokeAsync(value);");
-            if (par.ResetClassBuilder) builder.AppendLine($"            ClassBuilder.Reset();");
-            if (par.ResetStyleBuilder) builder.AppendLine($"            StyleBuilder.Reset();");
+            builder.AppendLine($"            if (EqualityComparer<{paramType}>.Default.Equals({paramName}, value) is false)");
+            builder.AppendLine("            {");
+            builder.AppendLine($"                {paramName} = value;");
+            builder.AppendLine($"                await {paramName}Changed.InvokeAsync(value);");
+            if (par.ResetClassBuilder)
+            {
+                builder.AppendLine($"                ClassBuilder.Reset();");
+            }
+            if (par.ResetStyleBuilder)
+            {
+                builder.AppendLine($"                StyleBuilder.Reset();");
+            }
+            if (string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false)
+            {
+                builder.AppendLine($"                {par.CallOnSetMethodName}();");
+            }
+            builder.AppendLine("            }");
             builder.AppendLine($"            return true;");
             builder.AppendLine("        }");
         }

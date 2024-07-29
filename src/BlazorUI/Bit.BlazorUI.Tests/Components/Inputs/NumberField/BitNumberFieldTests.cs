@@ -289,12 +289,16 @@ public class BitNumberFieldTests : BunitTestContext
 
     [DataTestMethod,
          DataRow(null, null),
-         DataRow(5, null),
-         DataRow(null, 100),
-         DataRow(0, 100),
-         DataRow(50, 1)
+         DataRow("0", null),
+         DataRow("10", null),
+         DataRow(null, "0"),
+         DataRow(null, "10"),
+         DataRow("0", "10"),
+         DataRow("-10", "0"),
+         DataRow("10", "0"),
+         DataRow("0", "-10"),
     ]
-    public void BitNumberFieldShouldHaveCorrectMaxMin(int? min, int? max)
+    public void BitNumberFieldShouldHaveCorrectMaxMin(string min, string max)
     {
         var component = RenderComponent<BitNumberField<int?>>(parameters =>
         {
@@ -306,14 +310,14 @@ public class BitNumberFieldTests : BunitTestContext
         int? expectedMinValue = int.MinValue;
         int? expectedMaxValue = int.MaxValue;
 
-        if (max.HasValue)
+        if (max is not null)
         {
-            expectedMaxValue = max.Value;
+            expectedMaxValue = int.Parse(max);
         }
 
-        if (min.HasValue)
+        if (min is not null)
         {
-            expectedMinValue = min.Value;
+            expectedMinValue = int.Parse(min);
         }
 
         Assert.AreEqual(expectedMinValue.HasValue ? expectedMinValue.ToString() : null, input.GetAttribute("aria-valuemin"));
@@ -500,13 +504,13 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(3, 1, 12),
-         DataRow(8, 2, 10),
-         DataRow(8, 1, 8),
-         DataRow(8, 2, 9),
-         DataRow(8, 5, 9)
+         DataRow(3, "1", "12"),
+         DataRow(8, "2", "10"),
+         DataRow(8, "1", "8"),
+         DataRow(8, "2", "9"),
+         DataRow(8, "5", "9")
     ]
-    public void BitNumberFieldIncrementButtonClickTest(int defaultValue, int step, int max)
+    public void BitNumberFieldIncrementButtonClickTest(int defaultValue, string step, string max)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -520,21 +524,21 @@ public class BitNumberFieldTests : BunitTestContext
         var incrementButton = component.Find("button.bit-nfl-aup");
         incrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
-        var expectedResult = defaultValue + step <= max
-            ? defaultValue + step
-            : max;
+        var expectedResult = defaultValue + int.Parse(step) <= int.Parse(max)
+            ? defaultValue + int.Parse(step)
+            : int.Parse(max);
 
         Assert.AreEqual(inputValue, expectedResult.ToString());
     }
 
     [DataTestMethod,
-         DataRow(3, 1, 12),
-         DataRow(8, 2, 10),
-         DataRow(8, 1, 8),
-         DataRow(8, 2, 9),
-         DataRow(8, 5, 9)
+         DataRow(3, "1", "12"),
+         DataRow(8, "2", "10"),
+         DataRow(8, "1", "8"),
+         DataRow(8, "2", "9"),
+         DataRow(8, "5", "9")
     ]
-    public void BitNumberFieldArrowUpKeyDownTest(int defaultValue, int step, int max)
+    public void BitNumberFieldArrowUpKeyDownTest(int defaultValue, string step, string max)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -550,20 +554,20 @@ public class BitNumberFieldTests : BunitTestContext
         };
         input.KeyDown(args);
         var inputValue = input.GetAttribute("value");
-        var expectedResult = defaultValue + step <= max
-            ? defaultValue + step
-            : max;
+        var expectedResult = defaultValue + int.Parse(step) <= int.Parse(max)
+            ? defaultValue + int.Parse(step)
+            : int.Parse(max);
 
         Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
     [DataTestMethod,
-         DataRow(3, 1, 0),
-         DataRow(2, 2, 0),
-         DataRow(3, 4, 0),
-         DataRow(0, 1, 0)
+         DataRow(3, "1", "0"),
+         DataRow(2, "2", "0"),
+         DataRow(3, "4", "0"),
+         DataRow(0, "1", "0")
     ]
-    public void BitNumberFieldDecrementButtonClickTest(int defaultValue, int step, int min)
+    public void BitNumberFieldDecrementButtonClickTest(int defaultValue, string step, string min)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -577,20 +581,20 @@ public class BitNumberFieldTests : BunitTestContext
         var decrementButton = component.Find("button.bit-nfl-adn");
         decrementButton.PointerDown();
         var inputValue = input.GetAttribute("value");
-        var expectedResult = defaultValue - step >= min
-            ? defaultValue - step
-            : min;
+        var expectedResult = defaultValue - int.Parse(step) >= int.Parse(min)
+            ? defaultValue - int.Parse(step)
+            : int.Parse(min);
 
         Assert.AreEqual(inputValue, expectedResult.ToString());
     }
 
     [DataTestMethod,
-         DataRow(3, 1, 0),
-         DataRow(2, 2, 0),
-         DataRow(3, 4, 0),
-         DataRow(0, 1, 0)
+         DataRow(3, "1", "0"),
+         DataRow(2, "2", "0"),
+         DataRow(3, "4", "0"),
+         DataRow(0, "1", "0")
     ]
-    public void BitNumberFieldArrowDownKeyDownTest(int defaultValue, int step, int min)
+    public void BitNumberFieldArrowDownKeyDownTest(int defaultValue, string step, string min)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -606,21 +610,21 @@ public class BitNumberFieldTests : BunitTestContext
         };
         input.KeyDown(args);
         var inputValue = input.GetAttribute("value");
-        var expectedResult = defaultValue - step >= min
-            ? defaultValue - step
-            : min;
+        var expectedResult = defaultValue - int.Parse(step) >= int.Parse(min)
+            ? defaultValue - int.Parse(step)
+            : int.Parse(min);
 
         Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
     [DataTestMethod,
-         DataRow(50.02, 0, 100, "25"),
-         DataRow(50.02, 0, 100, "112.2"),
-         DataRow(50.02, 0, 100, "62.72"),
-         DataRow(50.02, 0, 100, "-5"),
-         DataRow(50.02, 0, 100, "text123")
+         DataRow(50.02, "0", "100", "25"),
+         DataRow(50.02, "0", "100", "112.2"),
+         DataRow(50.02, "0", "100", "62.72"),
+         DataRow(50.02, "0", "100", "-5"),
+         DataRow(50.02, "0", "100", "text123")
     ]
-    public void BitNumberFieldEnterKeyDownTest(double defaultValue, int min, int max, string userInput)
+    public void BitNumberFieldEnterKeyDownTest(double defaultValue, string min, string max, string userInput)
     {
         var component = RenderComponent<BitNumberField<double>>(parameters =>
         {
@@ -646,8 +650,8 @@ public class BitNumberFieldTests : BunitTestContext
         if (isNumber)
         {
             expectedResult = numericValue;
-            if (expectedResult > max) expectedResult = max;
-            if (expectedResult < min) expectedResult = min;
+            if (expectedResult > int.Parse(max)) expectedResult = int.Parse(max);
+            if (expectedResult < int.Parse(min)) expectedResult = int.Parse(min);
         }
         else
         {
@@ -658,12 +662,15 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(5, 0, 100, "25"),
-         DataRow(5, 0, 100, "112"),
-         DataRow(5, 0, 100, "-5"),
-         DataRow(5, 0, 100, "text123")
+         DataRow(5, "0", "100", "25"),
+         DataRow(5, "0", "100", "112"),
+         DataRow(5, "0", "100", "-5"),
+         DataRow(5, "-100", "0", "-25"),
+         DataRow(5, "-100", "0", "-112"),
+         DataRow(5, "-100", "0", "5"),
+         DataRow(5, "10", "20", "text123")
     ]
-    public void BitNumberFieldOnBlurTest(double defaultValue, int min, int max, string userInput)
+    public void BitNumberFieldOnBlurTest(double defaultValue, string min, string max, string userInput)
     {
         var component = RenderComponent<BitNumberField<double>>(parameters =>
         {
@@ -684,8 +691,8 @@ public class BitNumberFieldTests : BunitTestContext
         if (isNumber)
         {
             expectedResult = numericValue;
-            if (expectedResult > max) expectedResult = max;
-            if (expectedResult < min) expectedResult = min;
+            if (expectedResult > int.Parse(max)) expectedResult = int.Parse(max);
+            if (expectedResult < int.Parse(min)) expectedResult = int.Parse(min);
         }
         else
         {
@@ -696,13 +703,13 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(0, 100, 1, "25"),
-         DataRow(0, 100, 2, "25"),
-         DataRow(0, 100, 25, "12"),
-         DataRow(0, 10, 52, "12"),
-         DataRow(13, 100, 523, "12")
+         DataRow("0", "100", "1", "25"),
+         DataRow("0", "100", "2", "25"),
+         DataRow("0", "100", "25", "12"),
+         DataRow("0", "10", "52", "12"),
+         DataRow("13", "100", "523", "12")
     ]
-    public void BitNumberFieldPrecisionTest(int min, int max, int step, string userInput)
+    public void BitNumberFieldPrecisionTest(string min, string max, string step, string userInput)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -719,17 +726,17 @@ public class BitNumberFieldTests : BunitTestContext
         input.Change(changeArgs);
         var inputValue = component.Instance.Value;
         var expectedResult = int.Parse(userInput);
-        if (expectedResult > max) expectedResult = max;
-        if (expectedResult < min) expectedResult = min;
+        if (expectedResult > int.Parse(max)) expectedResult = int.Parse(max);
+        if (expectedResult < int.Parse(min)) expectedResult = int.Parse(min);
 
         Assert.AreEqual(expectedResult, inputValue);
     }
 
     [DataTestMethod,
-         DataRow(5, 2, 4),
-         DataRow(1, 15, 1)
+         DataRow(5, 2, "4"),
+         DataRow(1, 15, "1")
     ]
-    public async Task BitNumberFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(int value, int countOfIncrements, int step)
+    public async Task BitNumberFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(int value, int countOfIncrements, string step)
     {
         BitNumberFieldTwoWayBoundValue = value;
 
@@ -749,7 +756,7 @@ public class BitNumberFieldTests : BunitTestContext
             await Task.Delay(1);
         }
 
-        var expectedValue = value + step * countOfIncrements;
+        var expectedValue = value + int.Parse(step) * countOfIncrements;
 
         Assert.AreEqual(expectedValue, BitNumberFieldTwoWayBoundValue);
     }
@@ -768,10 +775,10 @@ public class BitNumberFieldTests : BunitTestContext
 
     [Ignore]
     [DataTestMethod,
-         DataRow(3, 1, 100, 475),
-         DataRow(3, 1, 100, 550)
+         DataRow(3, "1", "100", 475),
+         DataRow(3, "1", "100", 550)
     ]
-    public void BitNumberFieldContinuousIncrementOnPointerDownTest(int defaultValue, int step, int max, int timeout)
+    public void BitNumberFieldContinuousIncrementOnPointerDownTest(int defaultValue, string step, string max, int timeout)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -785,7 +792,7 @@ public class BitNumberFieldTests : BunitTestContext
         var incrementButton = component.Find("button.bit-nfl-aup");
         var initialIncrementCount = timeout / 400;
         var continuousIncrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
-        var expectedResult = defaultValue + step * (initialIncrementCount + continuousIncrementCount);
+        var expectedResult = defaultValue + int.Parse(step) * (initialIncrementCount + continuousIncrementCount);
         incrementButton.PointerDown();
 
         component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")),
@@ -794,10 +801,10 @@ public class BitNumberFieldTests : BunitTestContext
 
     [Ignore]
     [DataTestMethod,
-         DataRow(50, 1, 0, 475),
-         DataRow(50, 1, 0, 550)
+         DataRow(50, "1", "0", 475),
+         DataRow(50, "1", "0", 550)
     ]
-    public void BitNumberFieldContinuousDecrementOnPointerDownTest(int defaultValue, int step, int min, int timeout)
+    public void BitNumberFieldContinuousDecrementOnPointerDownTest(int defaultValue, string step, string min, int timeout)
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -811,7 +818,7 @@ public class BitNumberFieldTests : BunitTestContext
         var incrementButton = component.Find("button.bit-nfl-aup");
         var initialDecrementCount = timeout / 400;
         var continuousDecrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
-        var expectedResult = defaultValue - step * (initialDecrementCount + continuousDecrementCount);
+        var expectedResult = defaultValue - int.Parse(step) * (initialDecrementCount + continuousDecrementCount);
         incrementButton.PointerDown();
 
         component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")),

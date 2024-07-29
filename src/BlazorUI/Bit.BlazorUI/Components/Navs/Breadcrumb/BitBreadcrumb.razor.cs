@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where TItem : class
 {
@@ -8,10 +6,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
     private bool _isCalloutOpen;
     private uint _internalOverflowIndex;
     private uint _internalMaxDisplayedItems;
-    private List<TItem> _items = new();
-    private List<TItem> _internalItems = new();
-    private List<TItem> _displayItems = new();
-    private List<TItem> _overflowItems = new();
+    private List<TItem> _items = [];
+    private List<TItem> _internalItems = [];
+    private List<TItem> _displayItems = [];
+    private List<TItem> _overflowItems = [];
     private string _internalDividerIconName = default!;
     private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
 

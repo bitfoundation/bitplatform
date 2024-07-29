@@ -2,10 +2,6 @@
 
 public partial class BitPivot : BitComponentBase
 {
-    private string? selectedKey;
-
-
-
     private BitPivotItem? _selectedItem;
     private List<BitPivotItem> _allItems = [];
 
@@ -64,16 +60,8 @@ public partial class BitPivot : BitComponentBase
     /// Key of the selected pivot item. Updating this will override the Pivot's selected item state
     /// </summary>
     [Parameter, TwoWayBound]
-    public string? SelectedKey
-    {
-        get => selectedKey;
-        set
-        {
-            if (value == selectedKey) return;
-
-            SelectItemByKey(value);
-        }
-    }
+    [CallOnSet(nameof(OnSetSelectedKey))]
+    public string? SelectedKey { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitPivot component.
@@ -120,11 +108,14 @@ public partial class BitPivot : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        selectedKey ??= DefaultSelectedKey;
+        if (SelectedKeyHasBeenSet is false && DefaultSelectedKey is not null)
+        {
+            await AssignSelectedKey(DefaultSelectedKey);
+        }
 
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
 
@@ -141,16 +132,14 @@ public partial class BitPivot : BitComponentBase
         item.SetIsSelected(true);
 
         _selectedItem = item;
-        selectedKey = item.Key;
-
-        _ = SelectedKeyChanged.InvokeAsync(selectedKey);
+        _ = AssignSelectedKey(item.Key);
 
         StateHasChanged();
     }
 
     internal void RegisterItem(BitPivotItem item)
     {
-        if (selectedKey is null)
+        if (SelectedKey is null)
         {
             if (_allItems.Count == 0)
             {
@@ -159,7 +148,7 @@ public partial class BitPivot : BitComponentBase
                 StateHasChanged();
             }
         }
-        else if (selectedKey == item.Key)
+        else if (SelectedKey == item.Key)
         {
             item.SetIsSelected(true);
             _selectedItem = item;
@@ -179,13 +168,15 @@ public partial class BitPivot : BitComponentBase
         StateHasChanged();
     }
 
+
+
     private void SelectItemByKey(string? key)
     {
         var newItem = _allItems.FirstOrDefault(i => i.Key == key);
 
         if (newItem == null || newItem == _selectedItem || newItem.IsEnabled is false)
         {
-            _ = SelectedKeyChanged.InvokeAsync(selectedKey);
+            _ = SelectedKeyChanged.InvokeAsync(SelectedKey);
             return;
         }
 
@@ -203,4 +194,9 @@ public partial class BitPivot : BitComponentBase
     }
 
     private string GetAriaLabelledby => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == _selectedItem)}";
+
+    private void OnSetSelectedKey()
+    {
+        SelectItemByKey(SelectedKey);
+    }
 }

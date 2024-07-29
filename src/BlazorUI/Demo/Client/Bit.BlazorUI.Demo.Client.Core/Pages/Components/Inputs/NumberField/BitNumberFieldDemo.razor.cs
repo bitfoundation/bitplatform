@@ -121,16 +121,16 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "Min",
-            Type = "TValue?",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "Min value of the number field. If not provided, the number field has minimum value.",
+            Description = "Min value of the number field.",
         },
         new()
         {
             Name = "Max",
-            Type = "TValue?",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "Max value of the number field. If not provided, the number field has max value.",
+            Description = "Max value of the number field.",
         },
         new()
         {
@@ -213,7 +213,7 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "Step",
-            Type = "TValue?",
+            Type = "string?",
             DefaultValue = "null",
             Description = "Difference between two adjacent values of the number field.",
         },
@@ -410,7 +410,7 @@ public partial class BitNumberFieldDemo
 
 <BitNumberField Label=""Placeholder"" TValue=""int?"" Placeholder=""Enter a number..."" />
 
-<BitNumberField Label=""Step(5) & Buttons"" Step=""5"" ShowButtons />
+<BitNumberField Label=""Step(5) & Buttons"" TValue=""int"" Step=""5"" ShowButtons />
 
 <BitNumberField Label=""Required"" TValue=""int?"" Required />";
 

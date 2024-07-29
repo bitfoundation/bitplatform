@@ -6,11 +6,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
-    private bool isOpen;
-    private ICollection<TValue?>? values = Array.Empty<TValue?>();
-
-
-
     private int? _totalItems;
     private string? _searchText;
     private bool _isResponsiveMode;
@@ -97,18 +92,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (isOpen == value) return;
-
-            isOpen = value;
-
-            _ = ClearSearchBox();
-        }
-    }
+    [CallOnSet(nameof(ClearSearchBox))]
+    public bool IsOpen { get; set; }
 
     /// <summary>
     /// Enables calling the select events when the same item is selected in single select mode.
@@ -239,22 +224,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The values of the selected items in multi select mode. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
-    public ICollection<TValue?>? Values
-    {
-        get => values;
-        set
-        {
-            if (values == value) return;
-            if (value is not null && values!.All(value.Contains) && values!.Count == value.Count) return;
-
-            values = value;
-            _ = ValuesChanged.InvokeAsync(value);
-
-            UpdateSelectedItemsFromValues();
-
-            EditContext?.NotifyFieldChanged(FieldIdentifier);
-        }
-    }
+    [CallOnSet(nameof(OnSetValues))]
+    public ICollection<TValue?>? Values { get; set; }
 
     [Parameter] public Expression<Func<ICollection<TValue?>?>>? ValuesExpression { get; set; }
 
@@ -355,10 +326,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Gives focus to the combo input element.
     /// </summary>
-    public ValueTask FocusComboInputAsync() => Combo 
+    public ValueTask FocusComboInputAsync() => Combo
                                                 ? (_isResponsiveMode
                                                     ? _comboBoxInputResponsiveRef
-                                                    : _comboBoxInputRef).FocusAsync() 
+                                                    : _comboBoxInputRef).FocusAsync()
                                                 : ValueTask.CompletedTask;
 
     /// <summary>
@@ -451,7 +422,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 tempValue.Remove(GetValue(item));
             }
 
-            Values = tempValue;
+            await AssignValues(tempValue);
 
             if (addDynamic && Combo && Dynamic && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item))) is false)
             {
@@ -593,7 +564,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             if (ValuesHasBeenSet is false && DefaultValues is not null)
             {
-                Values = DefaultValues;
+                await AssignValues(DefaultValues);
             }
         }
         else
@@ -812,7 +783,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
-            Values = Array.Empty<TValue?>();
+            await AssignValues(Array.Empty<TValue?>());
             await OnValuesChange.InvokeAsync();
         }
         else
@@ -1332,5 +1303,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private string? GetText()
     {
         return IsMultiSelect ? string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText)) : GetText(_selectedItems.FirstOrDefault());
+    }
+
+    private void OnSetValues()
+    {
+        UpdateSelectedItemsFromValues();
+
+        EditContext?.NotifyFieldChanged(FieldIdentifier);
     }
 }

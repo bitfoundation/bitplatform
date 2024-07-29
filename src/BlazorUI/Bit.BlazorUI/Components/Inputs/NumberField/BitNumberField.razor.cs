@@ -6,12 +6,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
-    private TValue? min;
-    private TValue? max;
-    private TValue? step;
-
-
-
     private bool _hasFocus;
     private TValue _min = default!;
     private TValue _max = default!;
@@ -129,31 +123,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Min value of the number field. If not provided, the number field has minimum value.
+    /// Min value of the number field.
     /// </summary>
     [Parameter]
-    public TValue? Min
-    {
-        get => min;
-        set
-        {
-            min = value;
-            _min = value is null ? GetTypeMinValue() : value;
-        }
-    }
+    [CallOnSet(nameof(OnSetMin))]
+    public string? Min { get; set; }
 
     /// <summary>
-    /// Max value of the number field. If not provided, the number field has max value.
+    /// Max value of the number field.
     /// </summary>
     [Parameter]
-    public TValue? Max
-    {
-        get => max; set
-        {
-            max = value;
-            _max = value is null ? GetTypeMaxValue() : value;
-        }
-    }
+    [CallOnSet(nameof(OnSetMax))]
+    public string? Max { get; set; }
 
     /// <summary>
     /// The format of the number in the number field.
@@ -220,15 +201,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Difference between two adjacent values of the number field.
     /// </summary>
     [Parameter]
-    public TValue? Step
-    {
-        get => step;
-        set
-        {
-            step = value;
-            _step = value is null ? ((TValue)(object)1) : value;
-        }
-    }
+    [CallOnSet(nameof(OnSetStep))]
+    public string? Step { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitNumberField.
@@ -379,6 +353,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await _js.SelectText(InputElement);
         await OnFocusIn.InvokeAsync(e);
     }
@@ -389,6 +364,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
 
@@ -398,6 +374,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await _js.SelectText(InputElement);
         await OnFocus.InvokeAsync(e);
     }
@@ -467,18 +444,41 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void ChangeValue(int factor)
     {
-        var result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(factor) * Convert.ToByte(_step)))
+        TValue result;
+
+        if (_typeOfValue == typeof(ushort))
+        {
+            var r = factor > 0
+                        ? (Convert.ToInt16(CurrentValue) + Convert.ToInt16(_step))
+                        : (Convert.ToInt16(CurrentValue) - Convert.ToInt16(_step));
+            result = (TValue)(object)Convert.ToUInt16(r < 0 ? 0 : r);
+        }
+        else if (_typeOfValue == typeof(uint))
+        {
+            var r = factor > 0
+                        ? (Convert.ToInt32(CurrentValue) + Convert.ToInt32(_step))
+                        : (Convert.ToInt32(CurrentValue) - Convert.ToInt32(_step));
+            result = (TValue)(object)Convert.ToUInt32(r < 0 ? 0 : r);
+        }
+        else if (_typeOfValue == typeof(ulong))
+        {
+            var r = factor > 0
+                        ? (Convert.ToInt64(CurrentValue) + Convert.ToInt64(_step))
+                        : (Convert.ToInt64(CurrentValue) - Convert.ToInt64(_step));
+            result = (TValue)(object)Convert.ToUInt64(r < 0 ? 0 : r);
+        }
+        else
+        {
+            result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(factor) * Convert.ToByte(_step)))
                    : _typeOfValue == typeof(sbyte) ? (TValue)(object)(Convert.ToSByte(CurrentValue) + (Convert.ToSByte(factor) * Convert.ToSByte(_step)))
                    : _typeOfValue == typeof(short) ? (TValue)(object)(Convert.ToInt16(CurrentValue) + (Convert.ToInt16(factor) * Convert.ToInt16(_step)))
-                   : _typeOfValue == typeof(ushort) ? (TValue)(object)(Convert.ToUInt16(CurrentValue) + (Convert.ToUInt16(factor) * Convert.ToUInt16(_step)))
                    : _typeOfValue == typeof(int) ? (TValue)(object)(Convert.ToInt32(CurrentValue) + (Convert.ToInt32(factor) * Convert.ToInt32(_step)))
-                   : _typeOfValue == typeof(uint) ? (TValue)(object)(Convert.ToUInt32(CurrentValue) + (Convert.ToUInt32(factor) * Convert.ToUInt32(_step)))
                    : _typeOfValue == typeof(long) ? (TValue)(object)(Convert.ToInt64(CurrentValue) + (Convert.ToInt64(factor) * Convert.ToInt64(_step)))
-                   : _typeOfValue == typeof(ulong) ? (TValue)(object)(Convert.ToUInt64(CurrentValue) + (Convert.ToUInt64(factor) * Convert.ToUInt64(_step)))
                    : _typeOfValue == typeof(float) ? (TValue)(object)(Convert.ToSingle(CurrentValue) + (Convert.ToSingle(factor) * Convert.ToSingle(_step)))
                    : _typeOfValue == typeof(decimal) ? (TValue)(object)(Convert.ToDecimal(CurrentValue) + (Convert.ToDecimal(factor) * Convert.ToDecimal(_step)))
                    : _typeOfValue == typeof(double) ? (TValue)(object)(Convert.ToDouble(CurrentValue) + (Convert.ToDouble(factor) * Convert.ToDouble(_step)))
                    : _zeroValue;
+        }
 
         result = CheckMinAndMax(result);
 
@@ -550,5 +550,41 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         var matchCollection = pattern.Matches(value!);
 
         return matchCollection is null ? value : string.Join("", matchCollection.Select(m => m.Value));
+    }
+
+    private void OnSetMin()
+    {
+        if (BindConverter.TryConvertTo(Min, CultureInfo.InvariantCulture, out TValue? result))
+        {
+            _min = result ?? GetTypeMinValue();
+        }
+        else
+        {
+            _min = GetTypeMinValue();
+        }
+    }
+
+    private void OnSetMax()
+    {
+        if (BindConverter.TryConvertTo(Max, CultureInfo.InvariantCulture, out TValue? result))
+        {
+            _max = result ?? GetTypeMaxValue();
+        }
+        else
+        {
+            _max = GetTypeMaxValue();
+        }
+    }
+
+    private void OnSetStep()
+    {
+        if (BindConverter.TryConvertTo(Step, CultureInfo.InvariantCulture, out TValue? result))
+        {
+            _step = result ?? ((TValue)(object)1);
+        }
+        else
+        {
+            _step = (TValue)(object)1;
+        }
     }
 }

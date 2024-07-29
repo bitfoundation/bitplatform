@@ -4,10 +4,6 @@ namespace Bit.BlazorUI;
 
 public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem : class
 {
-    private TItem? selectedItem;
-
-
-
     private bool _disposed;
     internal TItem? _currentItem;
     internal List<TItem> _items = [];
@@ -124,22 +120,8 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// Selected item to show in the BitNav.
     /// </summary>
     [Parameter, TwoWayBound]
-    public TItem? SelectedItem
-    {
-        get => selectedItem;
-        set
-        {
-            if (value == selectedItem) return;
-
-            selectedItem = value;
-            _ = SelectedItemChanged.InvokeAsync(value);
-
-            if (value is not null)
-            {
-                ToggleItemAndParents(_items, value, true);
-            }
-        }
-    }
+    [CallOnSet(nameof(OnSetSelectedItem))]
+    public TItem? SelectedItem { get; set; }
 
     /// <summary>
     /// Enables the single-expand mode in the BitNav.
@@ -662,7 +644,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
     internal async Task SetSelectedItem(TItem item)
     {
-        SelectedItem = item;
+        if (await AssignSelectedItem(item) is false) return;
 
         if (item != SelectedItem || Reselectable)
         {
@@ -775,7 +757,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         {
             if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
             {
-                SelectedItem = DefaultSelectedItem;
+                await AssignSelectedItem(DefaultSelectedItem);
             }
         }
 
@@ -812,7 +794,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
         if (currentItem is not null)
         {
-            SelectedItem = currentItem;
+            _ = AssignSelectedItem(currentItem);
         }
     }
 
@@ -842,6 +824,14 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
             CollapseItemAndChildren(child);
         }
     }
+
+    private void OnSetSelectedItem()
+    {
+        if (SelectedItem is null) return;
+
+        ToggleItemAndParents(_items, SelectedItem, true);
+    }
+
 
 
     public void Dispose()

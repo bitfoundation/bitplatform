@@ -6,8 +6,10 @@ public class BlazorParameter(IPropertySymbol propertySymbol, bool resetClassBuil
 {
     public IPropertySymbol PropertySymbol { get; set; } = propertySymbol;
 
+    public bool IsTwoWayBound { get; set; } = isTwoWayBound;
+
     public bool ResetClassBuilder { get; set; } = resetClassBuilder;
     public bool ResetStyleBuilder { get; set; } = resetStyleBuilder;
 
-    public bool IsTwoWayBound { get; set; } = isTwoWayBound;
+    public string? CallOnSetMethodName { get; set; }
 }

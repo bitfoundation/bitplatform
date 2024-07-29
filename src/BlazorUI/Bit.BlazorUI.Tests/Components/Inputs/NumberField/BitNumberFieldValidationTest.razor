@@ -44,9 +44,9 @@
     [Parameter] public int? AriaValueNow { get; set; }
     [Parameter] public string AriaValueText { get; set; }
     [Parameter] public string AriaLabel { get; set; }
-    [Parameter] public int? Step { get; set; } = 1;
-    [Parameter] public int? Min { get; set; }
-    [Parameter] public int? Max { get; set; }
+    [Parameter] public string Min { get; set; }
+    [Parameter] public string Max { get; set; }
+    [Parameter] public string Step { get; set; } = "1";
     [Parameter] public BitNumberFieldTestModel TestModel { get; set; }
     [Parameter] public EventCallback<int> ValueChanged { get; set; }
     [Parameter] public string Suffix { get; set; } = string.Empty;
