@@ -424,6 +424,8 @@ public partial class BitTextFieldDemo
     private string? trimmedValue;
     private string? notTrimmedValue;
 
+    private string? classesValue;
+
     private ValidationTextFieldModel validationTextFieldModel = new();
     public bool formIsValidSubmit;
 
@@ -553,57 +555,121 @@ private string notTrimmedValue;";
     private readonly string example11RazorCode = @"
 <style>
     .custom-class {
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid brown;
+    }
+
+    .custom-class *, .custom-class *::after {
+        border: none;
+    }
+
+    .custom-class::after {
+        content: '';
+        width: 0;
+        left: 50%;
+        bottom: 0;
+        height: 2px;
+        position: absolute;
+        background-color: red;
+        transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .custom-class:focus::after {
+        left: 0;
+        width: 100%;
+    }
+
+
+    .custom-root {
+        height: 3rem;
+        display: flex;
+        align-items: end;
+        position: relative;
+        margin-inline: 1rem;
+    }
+
+    .custom-label {
+        top: 0;
+        left: 0;
+        z-index: 1;
+        padding: 0;
+        font-size: 1rem;
+        color: darkgray;
+        position: absolute;
+        transform-origin: top left;
+        transform: translate(0, 22px) scale(1);
+        transition: color 200ms cubic-bezier(0, 0, 0.2, 1) 0ms, transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+    }
+
+    .custom-label-top {
+        transform: translate(0, 1.5px) scale(0.75);
     }
 
     .custom-input {
-        color: darkgreen;
-        font-weight: 900;
+        padding: 0;
         font-size: 1rem;
-        padding: 1rem;
-        height: 3rem;
+        font-weight: 900;
     }
 
     .custom-field {
-        margin-top: 0.5rem;
-        border-radius: 1rem;
-        background-color: tomato;
+        border-radius: 0;
+        position: relative;
+        border-width: 0 0 1px 0;
     }
 
-    .custom-focus .custom-field::after {
-        border-radius: 1rem;
-        border-width: 0.25rem;
-        border-color: rebeccapurple;
+    .custom-field::after {
+        content: '';
+        width: 0;
+        height: 2px;
+        border: none;
+        position: absolute;
+        inset: 100% 0 0 50%;
+        background-color: blueviolet;
+        transition: width 0.3s ease, left 0.3s ease;
     }
 
-    .custom-focus .custom-label {
-        color: chartreuse;
+    .custom-focus {
+        .custom-field::after {
+            left: 0;
+            width: 100%;
+        }
+
+        .custom-label {
+            color: blueviolet;
+            transform: translate(0, 1.5px) scale(0.75);
+        }
     }
 </style>
 
-<BitTextField Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem;"" />
+
+<BitTextField Style=""box-shadow: aqua 0 0 1rem; margin-inline: 1rem;"" />
 
 <BitTextField Class=""custom-class"" />
 
 
-
 <BitTextField Label=""Custom label style""
               IconName=""@BitIconName.Microphone""
-              Styles=""@(new() { Root = ""background-color: pink;"",
-                                Icon = ""color: darkorange;"",
-                                Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
-                                Input = ""padding: 0.5rem; background-color: goldenrod;"" })"" />
+              Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+                                Focused = ""--focused-background: #b2b2b25a;"",
+                                FieldGroup = ""background: var(--focused-background);"",
+                                Label = ""text-shadow: aqua 0 0 1rem; font-weight: 900; font-size: 1.25rem;"",
+                                Input = ""padding: 0.5rem;"" })"" />
 
-<BitTextField Label=""Custom label class""
-              DefaultValue=""Custom input class""
-              Classes=""@(new() { FieldGroup = ""custom-field"",
+<BitTextField @bind-Value=""classesValue""
+              Label=""Custom label class""
+              Classes=""@(new() { Root = ""custom-root"",
+                                 FieldGroup = ""custom-field"",
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
-                                 Label = ""custom-label"" })"" />";
+                                 Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
+    private readonly string example11CsharpCode = @"
+private string? classesValue;
+";
 
     private readonly string example12RazorCode = @"
-<style>
+< style>
     .validation-message {
         color: red;
     }
