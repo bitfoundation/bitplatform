@@ -703,7 +703,7 @@ private async Task OpenCallout()
 
 @if (string.IsNullOrEmpty(successMessage) is false)
 {
-    <BitMessage Severity=""BitSeverity.Success"">@successMessage</BitMessage>
+    <BitMessage Color=""BitColor.Success"">@successMessage</BitMessage>
 }
 
 
