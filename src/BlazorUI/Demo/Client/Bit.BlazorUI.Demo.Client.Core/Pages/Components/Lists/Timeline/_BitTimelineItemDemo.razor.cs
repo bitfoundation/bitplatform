@@ -196,25 +196,25 @@ private List<BitTimelineItem> templateItems = new()
 };";
 
     private readonly string example6RazorCode = @"
-<BitTimeline Horizontal Severity=""BitSeverity.Info"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Info"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Info"" Variant=""BitVariant.Text"" Items=""iconItems"" />
 
-<BitTimeline Horizontal Severity=""BitSeverity.Success"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Success"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Success"" Variant=""BitVariant.Text"" Items=""iconItems"" />
 
-<BitTimeline Horizontal Severity=""BitSeverity.Warning"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Warning"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Warning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
 
-<BitTimeline Horizontal Severity=""BitSeverity.SevereWarning"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.SevereWarning"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" Items=""iconItems"" />
 
-<BitTimeline Horizontal Severity=""BitSeverity.Error"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitTimeline Horizontal Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"" Items=""iconItems"" />";
+<BitTimeline Horizontal Color=""BitColor.Error"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconItems"" />";
     private readonly string example6CsharpCode = @"
 private List<BitTimelineItem> iconItems = new()
 {
