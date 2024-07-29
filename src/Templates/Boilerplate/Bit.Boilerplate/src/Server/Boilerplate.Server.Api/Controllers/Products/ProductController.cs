@@ -1,5 +1,6 @@
-﻿using Boilerplate.Shared.Controllers.Product;
-using Boilerplate.Shared.Dtos.Products;
+﻿using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Server.Api.Models.Products;
+using Boilerplate.Shared.Controllers.Product;
 
 namespace Boilerplate.Server.Api.Controllers;
 
@@ -9,7 +10,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
     {
-        return DbContext.Products
+        return DbContext.Set<Product>()
             .Project();
     }
 
@@ -30,7 +31,7 @@ public partial class ProductController : AppControllerBase, IProductController
     }
 
     [HttpGet("{id}")]
-    public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
+    public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
@@ -45,7 +46,7 @@ public partial class ProductController : AppControllerBase, IProductController
     {
         var entityToAdd = dto.Map();
 
-        await DbContext.Products.AddAsync(entityToAdd, cancellationToken);
+        await DbContext.Set<Product>().AddAsync(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
@@ -55,7 +56,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = await DbContext.Set<Product>().FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (entityToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
@@ -68,9 +69,9 @@ public partial class ProductController : AppControllerBase, IProductController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
-        DbContext.Products.Remove(new() { Id = id });
+        DbContext.Set<Product>().Remove(new() { Id = id });
 
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 

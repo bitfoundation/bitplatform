@@ -31,9 +31,12 @@ public static partial class Program
         if(env.IsDevelopment() is false)
         {
             app.UseHttpsRedirection();
-            app.UseResponseCaching();
             app.UseResponseCompression();
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
         }
+
+        app.UseResponseCaching();
 
         if (env.IsDevelopment())
         {

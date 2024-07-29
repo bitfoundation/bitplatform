@@ -16,6 +16,7 @@ using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
 using Boilerplate.Server.Api.Controllers;
+using Microsoft.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api;
 
@@ -83,7 +84,10 @@ public static partial class Program
                 };
             });
 
-        services.AddDbContextPool<AppDbContext>(options =>
+        services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
+        services.AddDbContextPool<AppDbContext>(AddDbContext);
+
+        void AddDbContext(DbContextOptionsBuilder options)
         {
             options.EnableSensitiveDataLogging(env.IsDevelopment())
                 .EnableDetailedErrors(env.IsDevelopment());
@@ -107,10 +111,25 @@ public static partial class Program
             {
 
             });
+            //#elif (database == "Cosmos")
+            options.UseCosmos(configuration.GetConnectionString("CosmosConnectionString")!, "BoilerplateDb", options =>
+            {
+
+            });
+            //#elif (database == "MongoDB")
+            options.UseMongoDB(configuration.GetConnectionString("MongoDBConnectionString"), "BoilerplateDb", dbOptions =>
+            {
+
+            });
+            //#elif (database == "MySql")
+            options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
+            {
+
+            });
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
-        });
+        };
 
         services.AddOptions<AppSettings>()
             .Bind(configuration.GetRequiredSection(nameof(AppSettings)))

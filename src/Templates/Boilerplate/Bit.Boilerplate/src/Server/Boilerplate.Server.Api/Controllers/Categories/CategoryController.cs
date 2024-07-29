@@ -1,5 +1,7 @@
-﻿using Boilerplate.Shared.Controllers.Categories;
-using Boilerplate.Shared.Dtos.Categories;
+﻿using Boilerplate.Shared.Dtos.Categories;
+using Boilerplate.Server.Api.Models.Products;
+using Boilerplate.Server.Api.Models.Categories;
+using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Server.Api.Controllers;
 
@@ -9,7 +11,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     [HttpGet, EnableQuery]
     public IQueryable<CategoryDto> Get()
     {
-        return DbContext.Categories
+        return DbContext.Set<Category>()
             .Project();
     }
 
@@ -30,7 +32,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpGet("{id}")]
-    public async Task<CategoryDto> Get(int id, CancellationToken cancellationToken)
+    public async Task<CategoryDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
@@ -45,7 +47,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     {
         var entityToAdd = dto.Map();
 
-        await DbContext.Categories.AddAsync(entityToAdd, cancellationToken);
+        await DbContext.Set<Category>().AddAsync(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
@@ -55,7 +57,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     [HttpPut]
     public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = await DbContext.Set<Category>().FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (entityToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
@@ -68,14 +70,14 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
-        if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
+        if (await DbContext.Set<Product>().AnyAsync(p => p.CategoryId == id, cancellationToken))
         {
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
-        DbContext.Categories.Remove(new() { Id = id });
+        DbContext.Set<Category>().Remove(new() { Id = id });
 
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 

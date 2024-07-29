@@ -1,5 +1,6 @@
-﻿using Boilerplate.Shared.Controllers.Todo;
-using Boilerplate.Shared.Dtos.Todo;
+﻿using Boilerplate.Shared.Dtos.Todo;
+using Boilerplate.Server.Api.Models.Todo;
+using Boilerplate.Shared.Controllers.Todo;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;
 
@@ -11,7 +12,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     {
         var userId = User.GetUserId();
 
-        return DbContext.TodoItems
+        return DbContext.Set<TodoItem>()
             .Where(t => t.UserId == userId)
             .Project();
     }
@@ -33,7 +34,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpGet("{id}")]
-    public async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
@@ -52,7 +53,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
 
         entityToAdd.Date = DateTimeOffset.UtcNow;
 
-        await DbContext.TodoItems.AddAsync(entityToAdd, cancellationToken);
+        await DbContext.Set<TodoItem>().AddAsync(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
@@ -62,7 +63,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpPut]
     public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = await DbContext.Set<TodoItem>().FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (entityToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
@@ -75,9 +76,9 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
-        DbContext.TodoItems.Remove(new() { Id = id });
+        DbContext.Set<TodoItem>().Remove(new() { Id = id });
 
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 

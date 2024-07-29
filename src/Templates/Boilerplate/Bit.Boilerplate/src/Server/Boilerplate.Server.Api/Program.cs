@@ -1,5 +1,8 @@
 ﻿//+:cnd:noEmit
 
+using System;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
@@ -27,7 +30,7 @@ public static partial class Program
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await dbContext.Database.MigrateAsync();
+            await dbContext.Database.EnsureCreatedAsync();
         }
 
         app.ConfiureMiddlewares();

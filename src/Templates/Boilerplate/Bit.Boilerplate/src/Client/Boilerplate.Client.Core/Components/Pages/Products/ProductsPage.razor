@@ -20,8 +20,6 @@
     <div class="grid">
         <div class="grid-container">
             <BitDataGrid @ref="dataGrid" ItemsProvider="productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="pagination">
-                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="p => p!.Id" Sortable="true" Class="id-col"
-                                           Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" />
                 <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]" Property="p => p!.Name" Sortable="true" Class="column1">
                     <ColumnOptions>
                         <BitSearchBox @bind-Value="ProductNameFilter"

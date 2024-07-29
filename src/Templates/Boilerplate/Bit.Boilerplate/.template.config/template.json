@@ -52,6 +52,18 @@
                     "description": "PostgreSQL"
                 },
                 {
+                    "choice": "Cosmos",
+                    "description": "Azure Cosmos DB"
+                },
+                {
+                    "choice": "MongoDB",
+                    "description": "MongoDB"
+                },
+                {
+                    "choice": "MySql",
+                    "description": "MySql"
+                },
+                {
                     "choice": "Other",
                     "description": "You can install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)"
                 }
@@ -358,6 +370,12 @@
                     "condition": "(database != PostgreSQL)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/PostgresDateTimeOffsetConverter.cs"
+                    ]
+                },
+                {
+                    "condition": "(database != SqlServer)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/SqlServerPrimaryKeySequentialGuidDefaultValueConvention.cs"
                     ]
                 }
             ]

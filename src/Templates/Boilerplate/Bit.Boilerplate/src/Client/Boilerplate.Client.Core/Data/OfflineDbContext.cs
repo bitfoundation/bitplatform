@@ -21,7 +21,7 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbCo
         modelBuilder.Entity<UserDto>()
             .HasData([new()
             {
-                Id = 1,
+                Id = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"),
                 Email = "test@bitplatform.dev",
                 UserName = "test",
                 PhoneNumber = "+31684207362",
