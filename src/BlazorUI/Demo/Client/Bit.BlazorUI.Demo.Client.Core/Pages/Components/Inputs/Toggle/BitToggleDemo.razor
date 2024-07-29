@@ -37,7 +37,7 @@
                 <br /><br />
                 <div>IsInlineLabel:</div>
                 <br />
-                <BitToggle Label="This is an inline label" IsInlineLabel="true" />
+                <BitToggle Label="This is an inline label" IsInlineLabel />
                 <br /><br /><br /><br />
                 <div>LabelTemplate:</div>
                 <br />
@@ -53,7 +53,23 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Reversed" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-box">
+                <div>Reverse the label and input position of BitToggle.</div>
+                <br /><br />
+                <div>Default:</div>
+                <br />
+                <BitToggle Reversed Label="This is a reversed label" />
+                <br /><br />
+                <div>IsInlineLabel:</div>
+                <br />
+                <BitToggle Reversed IsInlineLabel Label="This is a reversed inline label" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div class="example-box">
                 <div>Bind value one-way and two-way in BitToggle</div>
@@ -69,7 +85,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="example-box">
                 <div>Customize the appearance of BitToggle using styles and CSS classes.</div>
@@ -87,7 +103,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div>
                 <div>Use BitToggle within a form and validate its state.</div>
@@ -113,7 +129,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div>Use BitToggle in right-to-left (RTL).</div>
             <br />

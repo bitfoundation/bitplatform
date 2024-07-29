@@ -1,5 +1,11 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
+.example-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 ::deep {
     .custom-thumb {
         background: #fff;

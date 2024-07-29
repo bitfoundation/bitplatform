@@ -158,9 +158,16 @@
 
 .bit-tgl-inl {
     display: flex;
+    gap: spacing(2);
     align-items: center;
+    flex-direction: row;
+}
 
-    .bit-tgl-lbl {
-        margin: 0 spacing(2) 0 0;
+.bit-tgl-rvs {
+    display: flex;
+    flex-direction: column-reverse;
+
+    &.bit-tgl-inl {
+        flex-direction: row-reverse;
     }
 }
