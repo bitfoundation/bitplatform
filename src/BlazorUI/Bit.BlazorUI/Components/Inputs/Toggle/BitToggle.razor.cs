@@ -51,6 +51,12 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? OffText { get; set; }
 
     /// <summary>
+    /// Reverses the positions of the label and input of the toggle.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
+
+    /// <summary>
     /// Denotes role of the toggle, default is switch.        
     /// </summary>
     [Parameter] public string? Role { get; set; } = "switch";
@@ -68,9 +74,11 @@ public partial class BitToggle : BitInputBase<bool>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk {Classes?.Checked}" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue ? $"bit-tgl-chk {Classes?.Checked}" : string.Empty);
 
-        ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inl" : string.Empty);
+        ClassBuilder.Register(() => Reversed ? "bit-tgl-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => IsInlineLabel ? "bit-tgl-inl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

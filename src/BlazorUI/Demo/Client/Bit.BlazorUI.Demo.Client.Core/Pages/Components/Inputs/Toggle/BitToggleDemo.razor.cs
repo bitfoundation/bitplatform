@@ -166,7 +166,7 @@ public partial class BitToggleDemo
 <BitToggle Label=""OnText & OffText"" OnText=""Toggle is On"" OffText=""Toggle is Off"" />";
 
     private readonly string example3RazorCode = @"
-<BitToggle Label=""This is an inline label"" IsInlineLabel=""true"" />
+<BitToggle Label=""This is an inline label"" IsInlineLabel />
 
 <BitToggle>
     <LabelTemplate>
@@ -178,16 +178,21 @@ public partial class BitToggleDemo
 </BitToggle>";
 
     private readonly string example4RazorCode = @"
+<BitToggle Reversed Label=""This is a reversed label"" />
+
+<BitToggle Reversed IsInlineLabel Label=""This is a reversed inline label"" />";
+
+    private readonly string example5RazorCode = @"
 <BitToggle Label=""One-way"" Value=""oneWayValue"" />
 <BitToggleButton @bind-IsChecked=""oneWayValue"" OnText=""On"" OffText=""Off"" />
 
 <BitToggle Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitToggleButton @bind-IsChecked=""twoWayValue"" OnText=""On"" OffText=""Off"" />";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool oneWayValue;
 private bool twoWayValue;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .custom-thumb {
         background: #fff;
@@ -228,7 +233,7 @@ private bool twoWayValue;";
                               Button = ""custom-button"",
                               Checked = ""custom-check"" } )"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -243,7 +248,7 @@ private bool twoWayValue;";
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class BitToggleValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
@@ -255,6 +260,6 @@ public BitToggleValidationModel validationModel { get; set; } = new();
 private async Task HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitToggle Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />";
 }
