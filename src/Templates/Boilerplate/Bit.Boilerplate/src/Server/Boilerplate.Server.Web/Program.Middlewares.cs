@@ -59,7 +59,8 @@ public static partial class Program
         {
             app.Use(async (context, next) =>
             {
-                if (context.Request.Query.Any(q => string.Equals(q.Key, "assetVer", StringComparison.InvariantCultureIgnoreCase)))
+                if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
+                    env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                 {
                     context.Response.OnStarting(async () =>
                     {
