@@ -1,6 +1,4 @@
 ﻿using Boilerplate.Shared.Dtos.Categories;
-using Boilerplate.Server.Api.Models.Products;
-using Boilerplate.Server.Api.Models.Categories;
 using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Server.Api.Controllers;

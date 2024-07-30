@@ -1,5 +1,4 @@
 ﻿using Boilerplate.Shared.Dtos.Products;
-using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Product;
 
 namespace Boilerplate.Server.Api.Controllers;
