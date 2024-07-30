@@ -62,13 +62,17 @@ public static partial class Program
         {
             app.Use(async (context, next) =>
             {
-                if (context.Request.Query.Any(q => q.Key == "v"))
+                if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
+                    env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                 {
-                    context.Response.GetTypedHeaders().CacheControl = new()
+                    context.Response.OnStarting(async () =>
                     {
-                        MaxAge = TimeSpan.FromDays(7),
-                        Public = true
-                    };
+                        context.Response.GetTypedHeaders().CacheControl = new()
+                        {
+                            MaxAge = TimeSpan.FromDays(7),
+                            Public = true
+                        };
+                    });
                 }
                 await next.Invoke();
             });
