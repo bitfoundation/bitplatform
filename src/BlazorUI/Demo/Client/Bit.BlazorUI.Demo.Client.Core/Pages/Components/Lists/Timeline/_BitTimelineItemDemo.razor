@@ -4,7 +4,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Horizontal" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<ComponentExampleBox Title="Horizontal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
         <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
         <br />
@@ -12,7 +12,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Disabled" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<ComponentExampleBox Title="Disabled" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
         <br /><br /><br />
@@ -26,7 +26,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+<ComponentExampleBox Title="Variant" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div>The Timeline has three variants: Fill (default), Outline, and Text.</div>
         <br /><br /><br />
@@ -44,7 +44,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
         <div>Each item in the Timeline can have an icon.</div>
         <br /><br />
@@ -62,7 +62,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Reversed" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Reversed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
         <div>Each item in the Timeline can be reversed and be on the opposite side.</div>
         <br /><br /><br />
@@ -81,7 +81,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
         <div>Here are some examples of customizing the Timeline content.</div>
         <br /><br />
@@ -95,7 +95,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Color" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br /><br />
@@ -165,7 +165,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
         <div>Different sizes for Timelines to meet design needs, ensuring flexibility within your application.</div>
         <br /><br /><br />
@@ -195,7 +195,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br /><br />
@@ -225,7 +225,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div>Vertical (default)</div>
         <br />
@@ -239,49 +239,49 @@
 
 
 @code {
-    private List<BitTimelineItem> templateItems = new()
-    {
+    private List<BitTimelineItem> templateItems =
+    [
         new()
-        {
-            PrimaryContent = (item => @<BitPersona PrimaryText="Annie Lindqvist"
+    {
+        PrimaryContent = (item => @<BitPersona PrimaryText="Annie Lindqvist"
             Size="@BitPersonaSize.Size32"
             Presence="@BitPersonaPresence.Online"
             ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png" />),
 
-            DotTemplate = (item => @<div class="dot-template"><BitRingLoading Size="30" /></div>),
+        DotTemplate = (item => @<div class="dot-template"><BitRingLoading Size="30" /></div>),
 
-            SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
+        SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
         <BitIcon IconName="Accept" Style="color: limegreen;" />
         <BitLabel>Software Engineer</BitLabel>
     </div>)
-        },
-        new()
-        {
-            PrimaryContent = (item => @<BitPersona PrimaryText="Saleh Khafan"
+    },
+    new()
+    {
+        PrimaryContent = (item => @<BitPersona PrimaryText="Saleh Khafan"
             Size="@BitPersonaSize.Size32"
             Presence="@BitPersonaPresence.Online" />),
 
-            DotTemplate = (item => @<div class="dot-template"><BitSpinnerLoading Size="30" /></div>),
+        DotTemplate = (item => @<div class="dot-template"><BitSpinnerLoading Size="30" /></div>),
 
-            SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
+        SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
         <BitIcon IconName="Accept" Style="color: limegreen;" />
         <BitLabel>Co-Founder & CTO</BitLabel>
     </div>),
-            Reversed = true
-        },
-        new()
-        {
-            PrimaryContent = (item => @<BitPersona PrimaryText="Ted Randall"
+        Reversed = true
+    },
+    new()
+    {
+        PrimaryContent = (item => @<BitPersona PrimaryText="Ted Randall"
             Size="@BitPersonaSize.Size32"
             Presence="@BitPersonaPresence.Online"
             ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png" />),
 
-            DotTemplate = (item => @<div class="dot-template"><BitRollerLoading Size="30" /></div>),
+        DotTemplate = (item => @<div class="dot-template"><BitRollerLoading Size="30" /></div>),
 
-            SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
+        SecondaryContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
         <BitIcon IconName="Accept" Style="color: limegreen;" />
         <BitLabel>Project Manager</BitLabel>
     </div>)
-        },
-    };
+    },
+];
 }

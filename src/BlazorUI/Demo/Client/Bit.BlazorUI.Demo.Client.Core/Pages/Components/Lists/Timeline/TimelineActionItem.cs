@@ -12,9 +12,9 @@ public class TimelineActionItem
 
     public string? Icon { get; set; }
 
-    public bool IsEnabled { get; set; } = true;
+    public bool Disabled { get; set; }
 
-    public bool Opposite { get; set; }
+    public bool Reversed { get; set; }
 
     public RenderFragment<TimelineActionItem>? SecondContent { get; set; }
 
