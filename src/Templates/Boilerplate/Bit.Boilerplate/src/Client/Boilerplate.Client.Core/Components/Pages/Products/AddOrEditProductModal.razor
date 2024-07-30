@@ -40,6 +40,7 @@
                 <BitNumberField @bind-Value="product.Price"
                                 Precision="2"
                                 Suffix="$"
+                                NumberFormat="C2"
                                 Label="@Localizer[(nameof(AppStrings.Price))]" />
                 <ValidationMessage For="() => product.Price" />
             </div>

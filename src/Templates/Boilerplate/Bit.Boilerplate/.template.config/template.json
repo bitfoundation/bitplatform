@@ -56,10 +56,6 @@
                     "description": "Azure Cosmos DB"
                 },
                 {
-                    "choice": "MongoDB",
-                    "description": "MongoDB"
-                },
-                {
                     "choice": "MySql",
                     "description": "MySql"
                 },

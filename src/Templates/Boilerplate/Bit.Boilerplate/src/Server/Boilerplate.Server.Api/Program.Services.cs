@@ -16,7 +16,6 @@ using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
 using Boilerplate.Server.Api.Controllers;
-using Microsoft.EntityFrameworkCore;
 
 namespace Boilerplate.Server.Api;
 
@@ -113,11 +112,6 @@ public static partial class Program
             });
             //#elif (database == "Cosmos")
             options.UseCosmos(configuration.GetConnectionString("CosmosConnectionString")!, "BoilerplateDb", options =>
-            {
-
-            });
-            //#elif (database == "MongoDB")
-            options.UseMongoDB(configuration.GetConnectionString("MongoDBConnectionString"), "BoilerplateDb", dbOptions =>
             {
 
             });

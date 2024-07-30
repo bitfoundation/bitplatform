@@ -31,7 +31,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         //#if (database != "Cosmos")
-        ConfigureTables(builder);
+        ConfigureIdentityTableNames(builder);
         //#else
         ConfigureContainers(builder);
         //#endif
@@ -104,43 +104,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     }
 
     //#if (database != "Cosmos")
-    private void ConfigureTables(ModelBuilder builder)
+    private void ConfigureIdentityTableNames(ModelBuilder builder)
     {
         builder.Entity<User>()
-            .ToTable("Users", "identity");
+            .ToTable("Users");
 
         builder.Entity<Role>()
-            .ToTable("Roles", "identity");
+            .ToTable("Roles");
 
         builder.Entity<IdentityUserRole<Guid>>()
-            .ToTable("UserRoles", "identity");
+            .ToTable("UserRoles");
 
         builder.Entity<IdentityUserLogin<Guid>>()
-            .ToTable("UserLogins", "identity");
+            .ToTable("UserLogins");
 
         builder.Entity<IdentityUserToken<Guid>>()
-            .ToTable("UserTokens", "identity");
+            .ToTable("UserTokens");
 
         builder.Entity<IdentityRoleClaim<Guid>>()
-            .ToTable("RoleClaims", "identity");
+            .ToTable("RoleClaims");
 
         builder.Entity<IdentityUserClaim<Guid>>()
-            .ToTable("UserClaims", "identity");
-
-        builder.Entity<DataProtectionKey>()
-            .ToTable("DataProtectionKeys");
-
-        //#if (sample == "Todo")
-        builder.Entity<TodoItem>()
-            .ToTable("TodoItems");
-
-        //#elif (sample == "Admin")
-        builder.Entity<Product>()
-            .ToTable("Products");
-
-        builder.Entity<Category>()
-            .ToTable("Categories");
-        //#endif    
+            .ToTable("UserClaims");
     }
     //#endif
 

@@ -9,7 +9,6 @@ public class Product
     [Required, MaxLength(64)]
     public string? Name { get; set; }
 
-    [Column(TypeName = "money")]
     [Range(0, double.MaxValue)]
     public decimal Price { get; set; }
 
