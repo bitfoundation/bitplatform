@@ -23,8 +23,6 @@ public static class Services
 
         services.AddExceptionHandler<ApiExceptionHandler>();
 
-        services.TryAddSingleton(env.WebRootFileProvider);
-
         services.AddBlazor(configuration);
 
         services

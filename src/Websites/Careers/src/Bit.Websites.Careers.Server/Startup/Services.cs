@@ -23,8 +23,6 @@ public static class Services
 
         services.AddBlazor(configuration);
 
-        services.TryAddSingleton(env.WebRootFileProvider);
-
         services
             .AddControllers();
 

@@ -19,8 +19,6 @@ public static class Services
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
-        services.TryAddSingleton(env.WebRootFileProvider);
-
         services.AddBlazor(configuration);
 
         services.AddClientSharedServices();

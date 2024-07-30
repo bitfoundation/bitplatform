@@ -10,7 +10,7 @@ public partial class FileVersionProvider
     private const string VersionKey = "assetVer";
     private static readonly char[] QueryStringAndFragmentTokens = ['?', '#'];
 
-    [AutoInject] private readonly IFileProvider fileProvider = default!;
+    [AutoInject] private readonly IWebHostEnvironment webHostEnv = default!;
     [AutoInject] private readonly IMemoryCache cache = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
@@ -36,16 +36,16 @@ public partial class FileVersionProvider
 
         return cache.GetOrCreate(path, cacheEntryOptions =>
         {
-            cacheEntryOptions.AddExpirationToken(fileProvider.Watch(resolvedPath));
-            var fileInfo = fileProvider.GetFileInfo(resolvedPath);
+            cacheEntryOptions.AddExpirationToken(webHostEnv.WebRootFileProvider.Watch(resolvedPath));
+            var fileInfo = webHostEnv.WebRootFileProvider.GetFileInfo(resolvedPath);
 
             if (fileInfo.Exists is false &&
                 requestPathBase.HasValue &&
                 resolvedPath.StartsWith(requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
             {
                 var requestPathBaseRelativePath = resolvedPath.Substring(requestPathBase.Value.Length);
-                cacheEntryOptions.AddExpirationToken(fileProvider.Watch(requestPathBaseRelativePath));
-                fileInfo = fileProvider.GetFileInfo(requestPathBaseRelativePath);
+                cacheEntryOptions.AddExpirationToken(webHostEnv.WebRootFileProvider.Watch(requestPathBaseRelativePath));
+                fileInfo = webHostEnv.WebRootFileProvider.GetFileInfo(requestPathBaseRelativePath);
             }
 
             if (fileInfo.Exists)
