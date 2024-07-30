@@ -343,7 +343,7 @@ function createNewAssetRequest(asset) {
     if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
         assetUrl = `${asset.url}?${self.noPrerenderQuery}&v=${asset.hash || self.assetsManifest.version}`;
     } else {
-        assetUrl = `${asset.url}?v=${asset.hash || self.assetsManifest.version}`;
+        assetUrl = `${asset.url}?assetVer=${asset.hash || self.assetsManifest.version}`;
     }
     const requestInit: RequestInit = asset.hash && self.enableIntegrityCheck
         ? { cache: 'no-store', integrity: asset.hash, headers: [['cache-control', 'public, max-age=3153600']] }

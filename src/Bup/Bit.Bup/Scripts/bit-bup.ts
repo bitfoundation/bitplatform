@@ -78,7 +78,7 @@ declare const Blazor: any;
             if (type === 'manifest') return url; // since this is the file containing the resources list lets the blazor itself handle it
             if (type === 'dotnetjs') return url; // blazor itself handles this specific resource and needs to have its url
 
-            const resourceUrl = `${url}?v=${integrity}`;
+            const resourceUrl = `${url}?assetVer=${integrity}`;
             const requestInit: RequestInit = options.integrityCheck
                 ? { cache: 'no-store', integrity: integrity, headers: [['cache-control', 'public, max-age=3153600']] }
                 : { cache: 'no-store', headers: [['cache-control', 'public, max-age=3153600']] };
