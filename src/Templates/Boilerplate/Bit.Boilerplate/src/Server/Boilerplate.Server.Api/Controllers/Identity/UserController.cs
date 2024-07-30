@@ -167,7 +167,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"));
+        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn}"));
         var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"{Urls.ProfilePage}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
@@ -178,7 +178,7 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user!.EmailTokenRequestedOn?.ToUniversalTime()}"), request.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user!.EmailTokenRequestedOn}"), request.Token!);
 
         if (tokenIsValid is false)
             throw new BadRequestException();
