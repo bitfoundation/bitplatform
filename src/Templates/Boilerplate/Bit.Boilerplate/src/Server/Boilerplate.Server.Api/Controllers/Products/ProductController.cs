@@ -10,7 +10,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
     {
-        return DbContext.Set<Product>()
+        return DbContext.Products
             .Project();
     }
 
@@ -46,7 +46,7 @@ public partial class ProductController : AppControllerBase, IProductController
     {
         var entityToAdd = dto.Map();
 
-        await DbContext.Set<Product>().AddAsync(entityToAdd, cancellationToken);
+        await DbContext.Products.AddAsync(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
@@ -56,7 +56,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.Set<Product>().FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = await DbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (entityToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
@@ -71,7 +71,7 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpDelete("{id}")]
     public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
-        DbContext.Set<Product>().Remove(new() { Id = id });
+        DbContext.Products.Remove(new() { Id = id });
 
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 

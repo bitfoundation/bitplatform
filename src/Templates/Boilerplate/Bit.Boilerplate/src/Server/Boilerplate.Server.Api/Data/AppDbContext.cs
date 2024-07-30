@@ -5,7 +5,6 @@ using Boilerplate.Server.Api.Models.Products;
 //#elif (sample == "Todo")
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Identity;
@@ -18,13 +17,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
+    //#if (sample == "Todo")
+    public DbSet<TodoItem> TodoItems { get; set; }
+    //#elif (sample == "Admin")
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Product> Products { get; set; }
+    //#endif
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-        ConfigureDatabaseStorageNames(builder);
+        //#if (database != "Cosmos")
+        ConfigureTables(builder);
+        //#else
+        ConfigureContainers(builder);
+        //#endif
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -93,87 +103,95 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         base.ConfigureConventions(configurationBuilder);
     }
 
-    private void ConfigureDatabaseStorageNames(ModelBuilder builder)
+    //#if (database != "Cosmos")
+    private void ConfigureTables(ModelBuilder builder)
     {
         builder.Entity<User>()
-            //#if (database != "Cosmos")
-            .ToContainer("Users").HasPartitionKey(e => e.Id)
-            //#endif
             .ToTable("Users", "identity");
 
         builder.Entity<Role>()
-            //#if (database != "Cosmos")
-            .ToContainer("Roles").HasPartitionKey(e => e.Id)
-            //#endif
             .ToTable("Roles", "identity");
 
         builder.Entity<IdentityUserRole<Guid>>()
-            //#if (database != "Cosmos")
-            .ToContainer("UserRoles").HasPartitionKey(e => e.RoleId)
-            //#endif
             .ToTable("UserRoles", "identity");
 
-        builder.Entity<IdentityRoleClaim<Guid>>()
-            //#if (database != "Cosmos")
-            .ToContainer("RoleClaims").HasPartitionKey(e => e.RoleId)
-            //#endif
-            .ToTable("RoleClaims", "identity");
-
         builder.Entity<IdentityUserLogin<Guid>>()
-            //#if (database != "Cosmos")
-            .ToContainer("UserLogins").HasPartitionKey(e => e.ProviderKey)
-            //#endif
             .ToTable("UserLogins", "identity");
 
         builder.Entity<IdentityUserToken<Guid>>()
-            //#if (database != "Cosmos")
-            .ToContainer("UserTokens").HasPartitionKey(e => e.UserId)
-            //#endif
             .ToTable("UserTokens", "identity");
 
+        builder.Entity<IdentityRoleClaim<Guid>>()
+            .ToTable("RoleClaims", "identity");
+
         builder.Entity<IdentityUserClaim<Guid>>()
-            //#if (database != "Cosmos")
-            .ToContainer("UserClaims").HasPartitionKey(e => e.UserId)
-            //#endif
             .ToTable("UserClaims", "identity");
 
         builder.Entity<DataProtectionKey>()
-            //#if (database != "Cosmos")
-            .ToContainer("DataProtectionKeys").HasPartitionKey(e => e.Id)
-            //#endif
             .ToTable("DataProtectionKeys");
+
+        //#if (sample == "Todo")
+        builder.Entity<TodoItem>()
+            .ToTable("TodoItems");
+
+        //#elif (sample == "Admin")
+        builder.Entity<Product>()
+            .ToTable("Products");
+
+        builder.Entity<Category>()
+            .ToTable("Categories");
+        //#endif    
+    }
+    //#endif
+
+    //#if (database == "Cosmos")
+    private void ConfigureContainers(ModelBuilder builder)
+    {
+        builder.Entity<User>()
+            .ToContainer("Users").HasPartitionKey(e => e.Id);
+
+        builder.Entity<Role>()
+            .ToContainer("Roles").HasPartitionKey(e => e.Id);
+
+        builder.Entity<IdentityUserRole<Guid>>()
+            .ToContainer("UserRoles").HasPartitionKey(e => e.RoleId);
+
+        builder.Entity<IdentityUserLogin<Guid>>()
+            .ToContainer("UserLogins").HasPartitionKey(e => e.ProviderKey);
+
+        builder.Entity<IdentityUserToken<Guid>>()
+            .ToContainer("UserTokens").HasPartitionKey(e => e.UserId);
+
+        builder.Entity<IdentityRoleClaim<Guid>>()
+            .ToContainer("RoleClaims").HasPartitionKey(e => e.RoleId);
+
+        builder.Entity<IdentityUserClaim<Guid>>()
+            .ToContainer("UserClaims").HasPartitionKey(e => e.UserId);
+
+        builder.Entity<DataProtectionKey>()
+            .ToContainer("DataProtectionKeys").HasPartitionKey(e => e.Id);
 
         //#if (IsInsideProjectTemplate == true)
         if (Database.ProviderName!.EndsWith("Cosmos", StringComparison.InvariantCulture))
         {
             //#endif
-            //#if (database != "Cosmos")
             builder.Entity<DataProtectionKey>()
                 .Property(p => p.Id).HasConversion(typeof(string));
-            //#endif
             //#if (IsInsideProjectTemplate == true)
         }
         //#endif
 
         //#if (sample == "Todo")
         builder.Entity<TodoItem>()
-            //#if (database != "Cosmos")
-            .ToContainer("TodoItems").HasPartitionKey(e => e.Id)
-            //#endif
-            .ToTable("TodoItems");
+            .ToContainer("TodoItems").HasPartitionKey(e => e.Id);
 
         //#elif (sample == "Admin")
         builder.Entity<Product>()
-            //#if (database != "Cosmos")
-            .ToContainer("Products").HasPartitionKey(e => e.CategoryId)
-            //#endif
-            .ToTable("Products");
+            .ToContainer("Products").HasPartitionKey(e => e.CategoryId);
 
         builder.Entity<Category>()
-            //#if (database != "Cosmos")
-            .ToContainer("Categories").HasPartitionKey(e => e.Id)
-            //#endif
-            .ToTable("Categories");
+            .ToContainer("Categories").HasPartitionKey(e => e.Id);
         //#endif    
     }
+    //#endif
 }

@@ -12,7 +12,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     {
         var userId = User.GetUserId();
 
-        return DbContext.Set<TodoItem>()
+        return DbContext.TodoItems
             .Where(t => t.UserId == userId)
             .Project();
     }
@@ -53,7 +53,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
 
         entityToAdd.Date = DateTimeOffset.UtcNow;
 
-        await DbContext.Set<TodoItem>().AddAsync(entityToAdd, cancellationToken);
+        await DbContext.TodoItems.AddAsync(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
@@ -63,7 +63,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpPut]
     public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.Set<TodoItem>().FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
 
         if (entityToUpdate is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
@@ -78,7 +78,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpDelete("{id}")]
     public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
-        DbContext.Set<TodoItem>().Remove(new() { Id = id });
+        DbContext.TodoItems.Remove(new() { Id = id });
 
         var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
 

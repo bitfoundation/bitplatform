@@ -15,9 +15,9 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
 
         var last30DaysDate = DateTimeOffset.UtcNow.AddDays(-30);
 
-        result.TotalProducts = await DbContext.Set<Product>().CountAsync(cancellationToken);
-        result.Last30DaysProductCount = await DbContext.Set<Product>().CountAsync(p => p.CreatedOn > last30DaysDate, cancellationToken);
-        result.TotalCategories = await DbContext.Set<Category>().CountAsync(cancellationToken);
+        result.TotalProducts = await DbContext.Products.CountAsync(cancellationToken);
+        result.Last30DaysProductCount = await DbContext.Products.CountAsync(p => p.CreatedOn > last30DaysDate, cancellationToken);
+        result.TotalCategories = await DbContext.Categories.CountAsync(cancellationToken);
 
         return result;
     }
@@ -25,7 +25,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     [HttpGet]
     public IQueryable<ProductsCountPerCategoryResponseDto> GetProductsCountPerCategoryStats()
     {
-        return DbContext.Set<Category>()
+        return DbContext.Categories
             .Select(c => new ProductsCountPerCategoryResponseDto()
             {
                 CategoryName = c.Name,
@@ -38,7 +38,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     public IQueryable<ProductSaleStatResponseDto> GetProductsSalesStats()
     {
         Random rand = new Random();
-        return DbContext.Set<Product>().Include(p => p.Category)
+        return DbContext.Products.Include(p => p.Category)
              .Select(p => new ProductSaleStatResponseDto()
              {
                  ProductName = p.Name,
@@ -51,14 +51,14 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     [HttpGet]
     public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
     {
-        var productsTotalCount = await DbContext.Set<Product>().CountAsync(cancellationToken);
+        var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
 
         if (productsTotalCount == 0)
         {
             return [];
         }
 
-        return await DbContext.Set<Category>()
+        return await DbContext.Categories
              .Select(c => new ProductPercentagePerCategoryResponseDto()
              {
                  CategoryName = c!.Name,
