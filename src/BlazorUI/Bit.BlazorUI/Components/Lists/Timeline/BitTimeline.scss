@@ -5,10 +5,35 @@
     display: flex;
     position: relative;
     height: max-content;
-    flex-direction: column;
     font-size: var(--bit-tln-font-size);
-    --bit-tln-dot-size: #{spacing(3.75)};
-    --bit-tln-font-size: #{spacing(1.75)};
+    flex-direction: var(--bit-tln-flexdir);
+    --bit-tln-flexdir: column;
+    --bit-tln-itm-flexdir: row;
+    --bit-tln-pcn-flexdir: row-reverse;
+    --bit-tln-scn-flexdir: row;
+    --bit-tln-cn-overflow: hidden;
+    --bit-tln-cn-justcon: unset;
+    --bit-tln-cn-padding: calc(var(--bit-tln-dot-size) / 2) 0;
+    --bit-tln-dvd-top: 0;
+    --bit-tln-dvd-height: 100%;
+    --bit-tln-dvd-width: #{spacing(0.25)};
+    --bit-tln-clr-dis: #{$clr-fg-dis};
+    --bit-tln-clr-bg-dis: #{$clr-bg-dis};
+    --bit-tln-clr-brd-dis: #{$clr-brd-dis};
+
+    &.bit-dis {
+        cursor: default;
+        user-select: none;
+        pointer-events: none;
+        color: var(--bit-tln-clr-dis);
+        --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
+    }
+}
+
+.bit-tln-rvs, .bit-tln-irv {
+    --bit-tln-itm-flexdir: row-reverse;
+    --bit-tln-pcn-flexdir: row;
+    --bit-tln-scn-flexdir: row-reverse;
 }
 
 .bit-tln-itm {
@@ -17,36 +42,36 @@
     min-height: 100%;
     position: relative;
     align-items: center;
-    --bit-tln-dot-size: #{spacing(3.75)};
-    --bit-tln-font-size: #{spacing(1.75)};
+    flex-direction: var(--bit-tln-itm-flexdir);
 
-    &.bit-tln-rvs {
-        flex-flow: row-reverse;
-
-        .bit-tln-scn {
-            flex-flow: row-reverse;
-        }
+    &.bit-tln-ids {
+        cursor: default;
+        user-select: none;
+        pointer-events: none;
+        color: var(--bit-tln-clr-dis);
+        --bit-tln-dot-ico-clr: #{$clr-fg-dis};
     }
 }
 
 .bit-tln-pcn,
 .bit-tln-scn {
     display: flex;
-    overflow: hidden;
     position: relative;
     align-items: center;
+    padding: var(--bit-tln-cn-padding);
     font-size: var(--bit-tln-font-size);
-    padding: calc(var(--bit-tln-dot-size) / 2) 0;
+    overflow: var(--bit-tln-cn-overflow);
+    justify-content: var(--bit-tln-cn-justcon);
     min-width: calc(50% - var(--bit-tln-dot-size));
     min-height: calc(50% - var(--bit-tln-dot-size));
 }
 
 .bit-tln-pcn {
-    flex-flow: row-reverse;
+    flex-flow: var(--bit-tln-pcn-flexdir);
+}
 
-    .bit-tln-rvs & {
-        flex-flow: row;
-    }
+.bit-tln-scn {
+    flex-flow: var(--bit-tln-scn-flexdir);
 }
 
 .bit-tln-ttx {
@@ -65,12 +90,12 @@
     padding: calc(var(--bit-tln-dot-size) / 2);
 
     &::before {
-        top: 0;
         content: "";
-        height: 100%;
         position: absolute;
-        width: spacing(0.25);
         background: $clr-brd-sec;
+        top: var(--bit-tln-dvd-top);
+        width: var(--bit-tln-dvd-width);
+        height: var(--bit-tln-dvd-height);
     }
 }
 
@@ -80,137 +105,124 @@
     border-radius: 50%;
     align-items: center;
     justify-content: center;
-    color: var(--bit-tln-clr);
+    color: var(--bit-tln-dot-clr);
     width: var(--bit-tln-dot-size);
     height: var(--bit-tln-dot-size);
     border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-color: var(--bit-tln-brd-clr);
-    background-color: var(--bit-tln-bg-clr);
+    border-color: var(--bit-tln-dot-clr-brd);
+    background-color: var(--bit-tln-dot-clr-bg);
 }
 
-.bit-tln-fil {
-    --bit-tln-clr: #{$clr-pri-text};
-    --bit-tln-bg-clr: #{$clr-pri};
-    --bit-tln-brd-clr: #{$clr-pri};
-
-    .bit-tln-ids {
-        --bit-tln-brd-clr: #{$clr-brd-dis};
-        --bit-tln-bg-clr: #{$clr-bg-dis};
-    }
-}
-
-.bit-tln-otl {
-    --bit-tln-clr: #{$clr-sec-text};
-    --bit-tln-brd-clr: #{$clr-sec-text};
-
-    .bit-tln-dot {
-        background-color: $clr-sec;
-        --bit-tln-brd-clr: var(--bit-tln-sec-brd-clr);
-    }
-
-    .bit-tln-ids .bit-tln-dot {
-        --bit-tln-brd-clr: #{$clr-brd-dis};
-    }
-
-    .bit-icon {
-        color: var(--bit-tln-sec-brd-clr);
-    }
-}
-
-.bit-tln-txt {
-    --bit-tln-clr: #{$clr-sec-text};
-    --bit-tln-brd-clr: #{$clr-brd-sec};
-
-    .bit-tln-dvd {
-        &::before {
-            background: var(--bit-tln-brd-clr);
-        }
-
-        .bit-tln-dot {
-            background-color: transparent;
-            --bit-tln-brd-clr: transparent;
-        }
-    }
-
-    .bit-icon {
-        --bit-tln-clr: var(--bit-tln-sec-brd-clr);
-        z-index: 1;
-        display: flex;
-        border-radius: 50%;
-        align-items: center;
-        justify-content: center;
-        color: var(--bit-tln-clr);
-        width: var(--bit-tln-dot-size);
-        height: var(--bit-tln-dot-size);
-        background-color: $clr-sec;
-    }
+.bit-tln-ico {
+    color: var(--bit-tln-dot-ico-clr);
 }
 
 .bit-tln-hrz {
     width: unset;
-    flex-direction: row;
+    --bit-tln-flexdir: row;
+    --bit-tln-itm-flexdir: column;
+    --bit-tln-cn-overflow: unset;
+    --bit-tln-cn-justcon: center;
+    --bit-tln-cn-padding: 0 calc(var(--bit-tln-dot-size) / 2);
+    --bit-tln-dvd-top: unset;
+    --bit-tln-dvd-height: #{spacing(0.25)};
+    --bit-tln-dvd-width: 100%;
 
-    .bit-tln-itm {
-        flex-direction: column;
-
-        &.bit-tln-rvs {
-            flex-flow: column-reverse;
-        }
+    &.bit-tln-rvs, .bit-tln-irv {
+        --bit-tln-itm-flexdir: column-reverse;
     }
+}
 
-    .bit-tln-pcn,
-    .bit-tln-scn {
-        overflow: unset;
+.bit-tln-fil {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: var(--bit-tln-clr);
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-fg);
+
+    &.bit-dis, .bit-tln-ids {
+        --bit-tln-dot-clr-bg: var(--bit-tln-clr-bg-dis);
+        --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+    }
+}
+
+.bit-tln-otl {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+
+    &.bit-dis, .bit-tln-ids {
+        --bit-tln-dot-clr-bg: #{$clr-bg-pri};
+        --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+    }
+}
+
+.bit-tln-txt {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: transparent;
+    --bit-tln-dot-clr-brd: transparent;
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
+    --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
+
+    .bit-tln-ico {
+        display: flex;
+        align-items: center;
         justify-content: center;
-        padding: 0 calc(var(--bit-tln-dot-size) / 2);
+        width: var(--bit-tln-dot-ico-width);
+        height: var(--bit-tln-dot-ico-height);
+        background-color: var(--bit-tln-dot-ico-clr-bg);
     }
+}
 
-    .bit-tln-dvd::before {
-        top: unset;
-        width: 100%;
-        height: spacing(0.25);
-    }
+.bit-tln-pri, .bit-tln-ipr {
+    --bit-tln-clr: #{$clr-pri};
+    --bit-tln-clr-fg: #{$clr-pri-text};
+    --bit-tln-clr-ico: #{$clr-pri-text};
+}
+
+.bit-tln-sec, .bit-tln-ise {
+    --bit-tln-clr: #{$clr-sec};
+    --bit-tln-clr-fg: #{$clr-sec-text};
+    --bit-tln-clr-ico: #{$clr-sec-text};
+}
+
+.bit-tln-ter, .bit-tln-ite {
+    --bit-tln-clr: #{$clr-ter};
+    --bit-tln-clr-fg: #{$clr-ter-text};
+    --bit-tln-clr-ico: #{$clr-ter-text};
 }
 
 .bit-tln-inf, .bit-tln-iin {
-    --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-inf};
-    --bit-tln-brd-clr: #{$clr-inf};
-    --bit-tln-sec-clr: #{$clr-inf};
-    --bit-tln-sec-brd-clr: #{$clr-inf};
+    --bit-tln-clr: #{$clr-inf};
+    --bit-tln-clr-fg: #{$clr-inf-text};
+    --bit-tln-clr-ico: #{$clr-inf-text};
 }
 
 .bit-tln-suc, .bit-tln-isu {
-    --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-suc};
-    --bit-tln-brd-clr: #{$clr-suc};
-    --bit-tln-sec-clr: #{$clr-suc};
-    --bit-tln-sec-brd-clr: #{$clr-suc};
+    --bit-tln-clr: #{$clr-suc};
+    --bit-tln-clr-fg: #{$clr-suc-text};
+    --bit-tln-clr-ico: #{$clr-suc-text};
 }
 
 .bit-tln-wrn, .bit-tln-iwr {
-    --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-wrn};
-    --bit-tln-brd-clr: #{$clr-wrn};
-    --bit-tln-sec-clr: #{$clr-wrn};
-    --bit-tln-sec-brd-clr: #{$clr-wrn};
+    --bit-tln-clr: #{$clr-wrn};
+    --bit-tln-clr-fg: #{$clr-wrn-text};
+    --bit-tln-clr-ico: #{$clr-wrn-text};
 }
 
 .bit-tln-swr, .bit-tln-isw {
-    --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-swr};
-    --bit-tln-brd-clr: #{$clr-swr};
-    --bit-tln-sec-clr: #{$clr-swr};
-    --bit-tln-sec-brd-clr: #{$clr-swr};
+    --bit-tln-clr: #{$clr-swr};
+    --bit-tln-clr-fg: #{$clr-swr-text};
+    --bit-tln-clr-ico: #{$clr-swr-text};
 }
 
 .bit-tln-err, .bit-tln-ier {
-    --bit-tln-clr: #{$clr-fg-pri};
-    --bit-tln-bg-clr: #{$clr-err};
-    --bit-tln-brd-clr: #{$clr-err};
-    --bit-tln-sec-clr: #{$clr-err};
-    --bit-tln-sec-brd-clr: #{$clr-err};
+    --bit-tln-clr: #{$clr-err};
+    --bit-tln-clr-fg: #{$clr-err-text};
+    --bit-tln-clr-ico: #{$clr-err-text};
 }
 
 .bit-tln-sm, .bit-tln-ism {
@@ -218,15 +230,12 @@
     --bit-tln-font-size: #{spacing(1.5)};
 }
 
+.bit-tln-md, .bit-tln-imd {
+    --bit-tln-dot-size: #{spacing(3.75)};
+    --bit-tln-font-size: #{spacing(1.75)};
+}
+
 .bit-tln-lg, .bit-tln-ilg {
     --bit-tln-dot-size: #{spacing(5.25)};
     --bit-tln-font-size: #{spacing(2)};
-}
-
-.bit-tln-ids {
-    cursor: default;
-    user-select: none;
-    pointer-events: none;
-    -webkit-user-select: none;
-    color: $clr-fg-dis;
 }

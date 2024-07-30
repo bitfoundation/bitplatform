@@ -69,6 +69,13 @@ public partial class BitTimelineDemo
         },
         new()
         {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses all of the timeline items direction.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",

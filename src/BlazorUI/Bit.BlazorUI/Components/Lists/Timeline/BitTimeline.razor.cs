@@ -60,6 +60,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
+    /// Reverses all of the timeline items direction.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
+
+    /// <summary>
     /// The size of timeline, Possible values: Small | Medium | Large
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -102,16 +108,6 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Horizontal ? "bit-tln-hrz" : string.Empty);
-
-        ClassBuilder.Register(() => Variant switch
-        {
-            BitVariant.Fill => "bit-tln-fil",
-            BitVariant.Outline => "bit-tln-otl",
-            BitVariant.Text => "bit-tln-txt",
-            _ => "bit-tln-fil"
-        });
-
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-tln-pri",
@@ -122,15 +118,27 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             BitColor.Warning => "bit-tln-wrn",
             BitColor.SevereWarning => "bit-tln-swr",
             BitColor.Error => "bit-tln-err",
-            _ => string.Empty
+            _ => "bit-tln-pri"
         });
+
+        ClassBuilder.Register(() => Horizontal ? "bit-tln-hrz" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? "bit-tln-rvs" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-tln-sm",
             BitSize.Medium => "bit-tln-md",
             BitSize.Large => "bit-tln-lg",
-            _ => string.Empty
+            _ => "bit-tln-md"
+        });
+
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-tln-fil",
+            BitVariant.Outline => "bit-tln-otl",
+            BitVariant.Text => "bit-tln-txt",
+            _ => "bit-tln-fil"
         });
     }
 
@@ -168,7 +176,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
                 BitColor.Warning => " bit-tln-iwr",
                 BitColor.SevereWarning => " bit-tln-isw",
                 BitColor.Error => " bit-tln-ier",
-                _ => string.Empty
+                _ => " bit-tln-ipr"
             });
         }
 
@@ -179,7 +187,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
                 BitSize.Small => " bit-tln-ism",
                 BitSize.Medium => " bit-tln-imd",
                 BitSize.Large => " bit-tln-ilg",
-                _ => string.Empty
+                _ => " bit-tln-imd"
             });
         }
 
@@ -195,7 +203,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         if (GetReversed(item))
         {
-            className.Append(" bit-tln-rvs");
+            className.Append(" bit-tln-irv");
         }
 
         return className.ToString();

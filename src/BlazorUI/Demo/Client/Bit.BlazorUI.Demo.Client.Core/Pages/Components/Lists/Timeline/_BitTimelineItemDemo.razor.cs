@@ -5,42 +5,21 @@ public partial class _BitTimelineItemDemo
     private List<BitTimelineItem> basicItems =
     [
         new() { PrimaryText = "Item 1" },
-        new() { PrimaryText = "Item 2" },
-        new() { PrimaryText = "Item 3" }
-    ];
-
-    private List<BitTimelineItem> basicItems1 =
-    [
-        new() { PrimaryText = "Item 1" },
         new() { PrimaryText = "Item 2", SecondaryText = "Item 2 Secondary" },
         new() { PrimaryText = "Item 3" }
     ];
 
-    private List<BitTimelineItem> disabledItems1 =
+    private List<BitTimelineItem> disabledItems =
     [
         new() { PrimaryText = "Item 1" },
-        new() { PrimaryText = "Item 2" },
-        new() { PrimaryText = "Item 3", IsEnabled = false }
-    ];
-
-    private List<BitTimelineItem> disabledItems2 =
-    [
-        new() { PrimaryText = "Item 1" },
-        new() { PrimaryText = "Item 2", IsEnabled = false },
-        new() { PrimaryText = "Item 3" }
-    ];
-
-    private List<BitTimelineItem> disabledItems3 =
-    [
-        new() { PrimaryText = "Item 1", IsEnabled = false },
-        new() { PrimaryText = "Item 2" },
+        new() { PrimaryText = "Item 2", SecondaryText = "Item 2 Secondary", IsEnabled = false },
         new() { PrimaryText = "Item 3" }
     ];
 
     private List<BitTimelineItem> iconItems =
     [
         new() { PrimaryText = "Item 1", IconName = BitIconName.Add },
-        new() { PrimaryText = "Item 2", IconName = BitIconName.Edit },
+        new() { PrimaryText = "Item 2", IconName = BitIconName.Edit, SecondaryText = "Item 2 Secondary", IsEnabled = false },
         new() { PrimaryText = "Item 3", IconName = BitIconName.Delete }
     ];
 
