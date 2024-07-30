@@ -1,6 +1,6 @@
-﻿@using Microsoft.AspNetCore.Mvc.ViewFeatures
-@inject IFileVersionProvider _fileVersionProvider
-@inject IHttpContextAccessor _httpContextAccessor;
+﻿@using Bit.Websites.Careers.Server.Services
+
+@inject FileVersionProvider _fileVersionProvider
 
 @code {
     [Parameter] public bool AppendVersion { get; set; } = true;
@@ -12,7 +12,7 @@
 
     protected override void OnInitialized()
     {
-        src = (Src is not null && AppendVersion) ? _fileVersionProvider.AddFileVersionToPath(_httpContextAccessor.HttpContext!.Request.PathBase, Src) : Src;
+        src = (Src is not null && AppendVersion) ? _fileVersionProvider.AddFileVersionToPath(Src) : Src;
     }
 }
 

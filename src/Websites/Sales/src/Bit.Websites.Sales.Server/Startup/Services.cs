@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Sales.Server.Services;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.Websites.Sales.Server.Startup;
 
@@ -21,6 +22,8 @@ public static class Services
         services.AddClientSharedServices();
 
         services.AddExceptionHandler<ApiExceptionHandler>();
+
+        services.TryAddSingleton(env.WebRootFileProvider);
 
         services.AddBlazor(configuration);
 

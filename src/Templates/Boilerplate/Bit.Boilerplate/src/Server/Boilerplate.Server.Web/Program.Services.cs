@@ -30,6 +30,7 @@ public static partial class Program
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
+        var env = builder.Environment;
 
         services.TryAddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
@@ -88,6 +89,8 @@ public static partial class Program
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
 
-        services.AddMvc();
+        services.AddMemoryCache();
+        services.TryAddSingleton(env.WebRootFileProvider)
+        services.TryAddTransient<FileVersionProvider>();
     }
 }

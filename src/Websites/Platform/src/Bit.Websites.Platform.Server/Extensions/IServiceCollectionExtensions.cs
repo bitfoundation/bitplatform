@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using Bit.Websites.Platform.Server;
 using Bit.Websites.Platform.Client.Services.HttpMessageHandlers;
+using Bit.Websites.Platform.Server.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -28,7 +28,8 @@ public static class IServiceCollectionExtensions
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
 
-        services.AddMvc();
+        services.AddMemoryCache();
+        services.TryAddTransient<FileVersionProvider>();
     }
 
     public static void AddSwaggerGen(this IServiceCollection services)
