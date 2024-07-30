@@ -53,7 +53,7 @@ public static partial class Program
 
         app.UseSwaggerUI(options =>
         {
-            options.InjectJavascript($"/scripts/swagger-utils.js?assetVer={Environment.TickCount64}");
+            options.InjectJavascript($"/scripts/swagger-utils.js?v={Environment.TickCount64}");
         });
 
         app.MapGet("/api/minimal-api-sample/{routeParameter}", (string routeParameter, [FromQuery] string queryStringParameter) => new

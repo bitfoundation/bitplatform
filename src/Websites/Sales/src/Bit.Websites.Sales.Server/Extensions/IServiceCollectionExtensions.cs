@@ -28,8 +28,7 @@ public static class IServiceCollectionExtensions
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
 
-        services.AddMemoryCache();
-        services.TryAddTransient<FileVersionProvider>();
+        services.AddMvc();
     }
 
     public static void AddSwaggerGen(this IServiceCollection services)

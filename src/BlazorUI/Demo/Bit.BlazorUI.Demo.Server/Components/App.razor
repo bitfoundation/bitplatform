@@ -76,7 +76,7 @@
                     webAssembly: {
                         loadBootResource: function (type, name, defaultUri, integrity) {
                             if (integrity != null && integrity != '')
-                                return `${defaultUri}?assetVer=${integrity}`;
+                                return `${defaultUri}?v=${integrity}`;
                             return null; // default blazor asset loading mechanism.
                         }
                     }

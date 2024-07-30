@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Careers.Server.Services;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.Websites.Careers.Server.Startup;
 
