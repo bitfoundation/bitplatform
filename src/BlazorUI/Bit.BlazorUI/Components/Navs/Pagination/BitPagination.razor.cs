@@ -18,12 +18,18 @@ public partial class BitPagination : BitComponentBase
     public int BoundaryCount { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitPagination.
+    /// Custom CSS classes for different parts of the pagination.
     /// </summary>
     [Parameter] public BitPaginationClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The number of pages.
+    /// The general color of the pagination.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The total number of pages.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetCount))]
@@ -35,34 +41,34 @@ public partial class BitPagination : BitComponentBase
     [Parameter] public int DefaultSelectedPage { get; set; }
 
     /// <summary>
-    /// Icon of first button.
+    /// The icon name of the first button.
     /// </summary>
     [Parameter] public string FirstIcon { get; set; } = "ChevronLeftEnd6";
 
     /// <summary>
-    /// Icon of last button.
+    /// The icon name of the last button.
     /// </summary>
     [Parameter] public string LastIcon { get; set; } = "ChevronRightEnd6";
 
     /// <summary>
-    /// The number of items in the middle of the pagination.
+    /// The number of items to render in the middle of the pagination.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetMiddleCount))]
     public int MiddleCount { get; set; }
 
     /// <summary>
-    /// Icon of next button.
+    /// The icon name of the next button.
     /// </summary>
     [Parameter] public string NextIcon { get; set; } = "ChevronRight";
 
     /// <summary>
-    /// Invokes the callback when selected page changes.
+    /// The event callback for when selected page changes.
     /// </summary>
     [Parameter] public EventCallback<int> OnChange { get; set; }
 
     /// <summary>
-    /// Icon of previous button.
+    /// The icon name of the previous button.
     /// </summary>
     [Parameter] public string PreviousIcon { get; set; } = "ChevronLeft";
 
@@ -73,39 +79,33 @@ public partial class BitPagination : BitComponentBase
     public int SelectedPage { get; set; }
 
     /// <summary>
-    /// The severity of the pagination.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitSeverity? Severity { get; set; }
-
-    /// <summary>
-    /// If true, the navigate to first page button is shown.
+    /// Determines whether to show the first button.
     /// </summary>
     [Parameter] public bool ShowFirstButton { get; set; }
 
     /// <summary>
-    /// If true, the navigate to last page button is shown.
+    /// Determines whether to show the last button.
     /// </summary>
     [Parameter] public bool ShowLastButton { get; set; }
 
     /// <summary>
-    /// If true, the navigate to next page button is shown.
+    /// Determines whether to show the next button.
     /// </summary>
     [Parameter] public bool ShowNextButton { get; set; } = true;
 
     /// <summary>
-    /// If true, the navigate to previous page button is shown.
+    /// Determines whether to show the previous button.
     /// </summary>
     [Parameter] public bool ShowPreviousButton { get; set; } = true;
 
     /// <summary>
-    /// The size of pagination buttons, Possible values: Small | Medium | Large
+    /// The size of the buttons.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitPagination.
+    /// Custom CSS styles for different parts of the pagination.
     /// </summary>
     [Parameter] public BitPaginationClassStyles? Styles { get; set; }
 
@@ -123,12 +123,25 @@ public partial class BitPagination : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-pgn-pri",
+            BitColor.Secondary => "bit-pgn-sec",
+            BitColor.Tertiary => "bit-pgn-ter",
+            BitColor.Info => "bit-pgn-inf",
+            BitColor.Success => "bit-pgn-suc",
+            BitColor.Warning => "bit-pgn-wrn",
+            BitColor.SevereWarning => "bit-pgn-swr",
+            BitColor.Error => "bit-pgn-err",
+            _ => "bit-pgn-pri"
+        });
+
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-pgn-sm",
             BitSize.Medium => "bit-pgn-md",
             BitSize.Large => "bit-pgn-lg",
-            _ => string.Empty
+            _ => "bit-pgn-md"
         });
     }
 
@@ -231,16 +244,6 @@ public partial class BitPagination : BitComponentBase
             BitVariant.Outline => "bit-pgn-otl",
             BitVariant.Text => "bit-pgn-txt",
             _ => "bit-pgn-fil"
-        });
-
-        className.Append(' ').Append(Severity switch
-        {
-            BitSeverity.Info => "bit-pgn-inf",
-            BitSeverity.Success => "bit-pgn-suc",
-            BitSeverity.Warning => "bit-pgn-wrn",
-            BitSeverity.SevereWarning => "bit-pgn-swr",
-            BitSeverity.Error => "bit-pgn-err",
-            _ => string.Empty
         });
 
         return className.ToString();

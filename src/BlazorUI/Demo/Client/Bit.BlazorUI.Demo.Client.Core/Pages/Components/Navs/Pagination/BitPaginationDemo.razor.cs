@@ -22,6 +22,15 @@ public partial class BitPaginationDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the pagination.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum"
+        },
+        new()
+        {
             Name = "Count",
             Type = "int",
             DefaultValue = "1",
@@ -92,15 +101,6 @@ public partial class BitPaginationDemo
         },
         new()
         {
-            Name = "Severity",
-            Type = "BitSeverity?",
-            DefaultValue = "null",
-            Description = "The severity of the pagination.",
-            LinkType = LinkType.Link,
-            Href = "#severity-enum"
-        },
-        new()
-        {
             Name = "ShowFirstButton",
             Type = "bool",
             DefaultValue = "false",
@@ -134,7 +134,7 @@ public partial class BitPaginationDemo
             DefaultValue = "null",
             Description = "The size of Pagination, Possible values: Small | Medium | Large",
             LinkType = LinkType.Link,
-            Href = "#pagination-size-enum",
+            Href = "#size-enum",
         },
         new()
         {
@@ -158,6 +158,90 @@ public partial class BitPaginationDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Info Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size.",
+                    Value="2",
+                }
+            ]
+        },
         new()
         {
             Id = "variant-enum",
@@ -185,72 +269,6 @@ public partial class BitPaginationDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "severity-enum",
-            Name = "BitSeverity",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Info",
-                    Description="Info styled Pagination.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success styled Pagination.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning styled Pagination.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="Severe Warning styled Pagination.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error styled Pagination.",
-                    Value="4",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "pagination-size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size Pagination.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size Pagination.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size Pagination.",
-                    Value="2",
-                }
-            ]
-        }
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -351,132 +369,7 @@ public partial class BitPaginationDemo
 
 
 
-    private int paginationSelectedPage = 1;
-
-
-
-    private readonly string example1RazorCode = @"
-<BitPagination Count=""4"" />";
-
-    private readonly string example2RazorCode = @"
-<BitPagination Count=""4"" Variant=""BitVariant.Fill"" />
-
-<BitPagination Count=""4"" Variant=""BitVariant.Outline"" />
-
-<BitPagination Count=""4"" Variant=""BitVariant.Text"" />";
-
-    private readonly string example3RazorCode = @"
-<BitPagination Count=""4"" />
-
-<BitPagination Count=""4"" IsEnabled=""false"" />";
-
-    private readonly string example4RazorCode = @"
-<BitPagination Count=""4"" Variant=""BitVariant.Outline"" />
-
-<BitPagination Count=""4"" Variant=""BitVariant.Outline"" IsEnabled=""false"" />";
-
-    private readonly string example5RazorCode = @"
-<BitPagination Count=""4"" Variant=""BitVariant.Text"" />
-
-<BitPagination Count=""4"" Variant=""BitVariant.Text"" IsEnabled=""false"" />";
-
-    private readonly string example6RazorCode = @"
-<BitPagination Count=""5"" DefaultSelectedPage=""3"" />";
-
-    private readonly string example7RazorCode = @"
-<BitPagination Count=""11"" DefaultSelectedPage=""6"" BoundaryCount=""1"" />";
-
-    private readonly string example8RazorCode = @"
-<BitPagination Count=""11"" MiddleCount=""3"" BoundaryCount=""1"" DefaultSelectedPage=""6"" />";
-
-    private readonly string example9RazorCode = @"
-<BitPagination Count=""4"" OnChange=""(int page) => paginationSelectedPage = page"" />
-<div>Changed page: <b>@paginationSelectedPage</b></div>";
-    private readonly string example9CsharpCode = @"
-private int paginationSelectedPage = 1;";
-
-    private readonly string example10RazorCode = @"
-<BitPagination Count=""24"" ShowFirstButton ShowLastButton />";
-
-    private readonly string example11RazorCode = @"
-<BitPagination Count=""4"" NextIcon=""@BitIconName.Next"" PreviousIcon=""@BitIconName.Previous"" />";
-
-    private readonly string example12RazorCode = @"
-<BitPagination Count=""5"" Severity=""BitSeverity.Info"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"" />
-
-<BitPagination Count=""5"" Severity=""BitSeverity.Success"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"" />
-
-<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"" />
-
-<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"" />
-
-<BitPagination Count=""5"" Severity=""BitSeverity.Error"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"" />";
-
-    private readonly string example13RazorCode = @"
-<BitPagination Count=""5"" Size=""BitSize.Small"" />
-<BitPagination Count=""5"" Size=""BitSize.Medium"" />
-<BitPagination Count=""5"" Size=""BitSize.Large"" />
-
-<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" />
-<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" />
-
-<BitPagination Count=""5"" Size=""BitSize.Small"" Variant=""BitVariant.Text"" />
-<BitPagination Count=""5"" Size=""BitSize.Medium"" Variant=""BitVariant.Text"" />
-<BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Text"" />";
-
-    private readonly string example14RazorCode = @"
-<style>
-    .custom-class {
-        margin-left: 1rem;
-        border-radius: 0.125rem;
-        box-shadow: aqua 0 0 0.5rem;
-        background-color: #00ffff7d;
-    }
-
-    .custom-root {
-        color: aqua;
-        margin-left: 1rem;
-    }
-
-    .custom-button {
-        border-radius: 50%;
-    }
-</style>
-
-
-<BitPagination Count=""4""
-               NextIcon=""@BitIconName.ChevronDown""
-               PreviousIcon=""@BitIconName.ChevronUp""
-               Style=""margin-left: 1rem; flex-flow: column;"" />
-
-<BitPagination Count=""4"" Class=""custom-class"" />
-
-
-<BitPagination Count=""4""
-               Styles=""@(new() { Root = ""margin-left: 1rem; gap: 1rem;"",
-                                 SelectedButton = ""background-color: tomato; color: #2e2e2e;"",
-                                 Button = ""border-color: transparent; background-color: #2e2e2e; color: tomato;"" })"" />
-
-<BitPagination Count=""4"" 
-               Variant=""BitVariant.Outline""
-               Classes=""@(new() { Root = ""custom-root"", Button = ""custom-button"" })"" />";
-
-    private readonly string example15RazorCode = @"
-<BitPagination Dir=""BitDir.Rtl"" Count=""4"" />
-
-<BitPagination Dir=""BitDir.Rtl"" Count=""4"" Variant=""BitVariant.Outline"" />
-
-<BitPagination Dir=""BitDir.Rtl"" Count=""4"" Variant=""BitVariant.Text"" />";
-
+    private int oneWaySelectedPage = 1;
+    private int twoWaySelectedPage = 2;
+    private int onChangeSelectedPage = 3;
 }
