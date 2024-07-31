@@ -30,7 +30,7 @@ public partial class _BitTimelineCustomDemo
     private List<TimelineActionItem> iconCustoms =
     [
         new() { FirstText = "Custom 1", Icon = BitIconName.Add },
-        new() { FirstText = "Custom 2", Icon = BitIconName.Edit, SecondText = "Item 2 Secondary", Disabled = true },
+        new() { FirstText = "Custom 2", Icon = BitIconName.Edit, SecondText = "Custom 2 Secondary", Disabled = true },
         new() { FirstText = "Custom 3", Icon = BitIconName.Delete }
     ];
 
