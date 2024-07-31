@@ -3,7 +3,7 @@
 [DtoResourceType(typeof(AppStrings))]
 public class UserDto : IValidatableObject
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.UserName))]

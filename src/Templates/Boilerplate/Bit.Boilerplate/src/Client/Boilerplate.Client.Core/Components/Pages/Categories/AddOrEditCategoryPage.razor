@@ -1,8 +1,8 @@
-﻿@attribute [Route(Urls.AddOrEditCategoryPage + "/{Id:int?}")]
+﻿@attribute [Route(Urls.AddOrEditCategoryPage + "/{Id:guid?}")]
 @inherits AppComponentBase
 
 <PageTitle>
-    @if (category.Id == 0)
+    @if (category.Id == default)
     {
         @Localizer[nameof(AppStrings.AddCategory)]
     }
@@ -19,7 +19,7 @@
                        IconName="@BitIconName.Back"
                        Title="@Localizer[nameof(AppStrings.Back)]" />
         <h1 class="page-title">
-            @if (category.Id == 0)
+            @if (category.Id == default)
             {
                 @Localizer[nameof(AppStrings.AddCategory)]
             }

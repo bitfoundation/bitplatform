@@ -13,7 +13,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasData([new()
         {
-            Id = 1,
+            Id = Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"),
             EmailConfirmed = true,
             LockoutEnabled = true,
             Gender = Gender.Other,
@@ -36,7 +36,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                               v => JsonSerializer.Deserialize<List<UserSession>>(v, (JsonSerializerOptions?)null)!);
         // You can also use builder.OwnsMany(u => u.Sessions, navBuilder => navBuilder.ToJson());
 
-        //#if (database == "Sqlite" || database == "SqlServer")
+        //#if (database == "Cosmos")
+        builder.Property(b => b.ConcurrencyStamp)
+            .IsETagConcurrency();
+        //#endif
+
+        //#if (database != "PostgreSQL")
         builder
             .HasIndex(b => b.Email)
             .HasFilter($"[{nameof(User.Email)}] IS NOT NULL")

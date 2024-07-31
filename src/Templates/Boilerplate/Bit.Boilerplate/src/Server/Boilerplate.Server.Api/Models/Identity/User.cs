@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Api.Models.Identity;
 
-public class User : IdentityUser<int>
+public class User : IdentityUser<Guid>
 {
     [PersonalData]
     public string? FullName { get; set; }

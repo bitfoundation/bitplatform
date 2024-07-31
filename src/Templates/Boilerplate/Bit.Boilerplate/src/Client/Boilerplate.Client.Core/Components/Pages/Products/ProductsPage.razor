@@ -20,8 +20,6 @@
     <div class="grid">
         <div class="grid-container">
             <BitDataGrid @ref="dataGrid" ItemsProvider="productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="pagination">
-                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Id)]" Property="p => p!.Id" Sortable="true" Class="id-col"
-                                           Align="BitDataGridAlign.Left" IsDefaultSort="BitDataGridSortDirection.Ascending" />
                 <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]" Property="p => p!.Name" Sortable="true" Class="column1">
                     <ColumnOptions>
                         <BitSearchBox @bind-Value="ProductNameFilter"
@@ -30,7 +28,7 @@
                     </ColumnOptions>
                 </BitDataGridPropertyColumn>
                 <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="p => p!.CategoryName" Sortable="true" Align="BitDataGridAlign.Left" />
-                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Price)]" Property="p => p!.Price" Sortable="true" Align="BitDataGridAlign.Left" />
+                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Price)]" Property="p => p!.Price" Sortable="true" Align="BitDataGridAlign.Left" Format="C2" />
                 <BitDataGridTemplateColumn Title="@Localizer[(nameof(AppStrings.Action))]" Align="BitDataGridAlign.Center" Context="product">
                     <BitIconButton IconName="@BitIconName.Edit" OnClick="() => EditProduct(product!)" Title="@Localizer[(nameof(AppStrings.Edit))]" />
                     <BitIconButton IconName="@BitIconName.Delete" OnClick="WrapHandled(() => DeleteProduct(product!))" Title="@Localizer[(nameof(AppStrings.Delete))]" />

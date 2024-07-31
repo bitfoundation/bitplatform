@@ -3,7 +3,7 @@
 [DtoResourceType(typeof(AppStrings))]
 public class ProductDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [MaxLength(64, ErrorMessage = nameof(AppStrings.MaxLengthAttribute_InvalidMaxLength))]
@@ -21,7 +21,7 @@ public class ProductDto
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Category))]
-    public int? CategoryId { get; set; }
+    public Guid? CategoryId { get; set; }
 
     [Display(Name = nameof(AppStrings.Category))]
     public string? CategoryName { get; set; }

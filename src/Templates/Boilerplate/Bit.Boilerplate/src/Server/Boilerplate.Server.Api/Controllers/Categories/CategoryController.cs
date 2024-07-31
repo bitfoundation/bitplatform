@@ -1,5 +1,5 @@
-﻿using Boilerplate.Shared.Controllers.Categories;
-using Boilerplate.Shared.Dtos.Categories;
+﻿using Boilerplate.Shared.Dtos.Categories;
+using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Server.Api.Controllers;
 
@@ -30,7 +30,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpGet("{id}")]
-    public async Task<CategoryDto> Get(int id, CancellationToken cancellationToken)
+    public async Task<CategoryDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
@@ -68,7 +68,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
         if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
         {

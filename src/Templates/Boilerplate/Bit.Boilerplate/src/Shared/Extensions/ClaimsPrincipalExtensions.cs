@@ -7,9 +7,9 @@ public static class ClaimsPrincipalExtensions
         return claimsPrincipal?.Identity?.IsAuthenticated is true;
     }
 
-    public static int GetUserId(this ClaimsPrincipal claimsPrincipal)
+    public static Guid GetUserId(this ClaimsPrincipal claimsPrincipal)
     {
-        return int.Parse((claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("nameid"))!.Value);
+        return Guid.Parse((claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier) ?? claimsPrincipal.FindFirst("nameid"))!.Value);
     }
 
     public static string GetUserName(this ClaimsPrincipal claimsPrincipal)
