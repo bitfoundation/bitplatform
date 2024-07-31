@@ -1,31 +1,4 @@
-﻿.pagination-container {
-    gap: 1rem;
-    display: flex;
-    flex-flow: column wrap;
-    max-width: max-content;
-}
-
-.pagination-container-grid {
-    gap: 2rem;
-    display: grid;
-}
-
-.custom-loading {
-    display: flex;
-    gap: 0.3125rem;
-    align-items: center;
-    justify-content: center;
-}
-
-.form-container {
-    max-width: 20rem;
-}
-
-::deep {
-    .validation-message {
-        color: red;
-    }
-
+﻿::deep {
     .custom-class {
         margin-left: 1rem;
         border-radius: 0.125rem;
