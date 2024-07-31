@@ -28,6 +28,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitTimelineClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the timeline.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// Defines whether to render timeline children horizontally.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -54,10 +60,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// The severity of the timeline.
+    /// Reverses all of the timeline items direction.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitSeverity? Severity { get; set; }
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// The size of timeline, Possible values: Small | Medium | Large
@@ -102,7 +108,30 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-tln-pri",
+            BitColor.Secondary => "bit-tln-sec",
+            BitColor.Tertiary => "bit-tln-ter",
+            BitColor.Info => "bit-tln-inf",
+            BitColor.Success => "bit-tln-suc",
+            BitColor.Warning => "bit-tln-wrn",
+            BitColor.SevereWarning => "bit-tln-swr",
+            BitColor.Error => "bit-tln-err",
+            _ => "bit-tln-pri"
+        });
+
         ClassBuilder.Register(() => Horizontal ? "bit-tln-hrz" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? "bit-tln-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-tln-sm",
+            BitSize.Medium => "bit-tln-md",
+            BitSize.Large => "bit-tln-lg",
+            _ => "bit-tln-md"
+        });
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -110,24 +139,6 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             BitVariant.Outline => "bit-tln-otl",
             BitVariant.Text => "bit-tln-txt",
             _ => "bit-tln-fil"
-        });
-
-        ClassBuilder.Register(() => Severity switch
-        {
-            BitSeverity.Info => "bit-tln-inf",
-            BitSeverity.Success => "bit-tln-suc",
-            BitSeverity.Warning => "bit-tln-wrn",
-            BitSeverity.SevereWarning => "bit-tln-swr",
-            BitSeverity.Error => "bit-tln-err",
-            _ => string.Empty
-        });
-
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tln-sm",
-            BitSize.Medium => "bit-tln-md",
-            BitSize.Large => "bit-tln-lg",
-            _ => string.Empty
         });
     }
 
@@ -153,16 +164,19 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         StringBuilder className = new StringBuilder();
 
-        if (GetSeverity(item) is not null)
+        if (GetColor(item) is not null)
         {
-            className.Append(GetSeverity(item) switch
+            className.Append(GetColor(item) switch
             {
-                BitSeverity.Info => " bit-tln-iin",
-                BitSeverity.Success => " bit-tln-isu",
-                BitSeverity.Warning => " bit-tln-iwr",
-                BitSeverity.SevereWarning => " bit-tln-isw",
-                BitSeverity.Error => " bit-tln-ier",
-                _ => string.Empty
+                BitColor.Primary => " bit-tln-ipr",
+                BitColor.Secondary => " bit-tln-ise",
+                BitColor.Tertiary => " bit-tln-ite",
+                BitColor.Info => " bit-tln-iin",
+                BitColor.Success => " bit-tln-isu",
+                BitColor.Warning => " bit-tln-iwr",
+                BitColor.SevereWarning => " bit-tln-isw",
+                BitColor.Error => " bit-tln-ier",
+                _ => " bit-tln-ipr"
             });
         }
 
@@ -173,7 +187,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
                 BitSize.Small => " bit-tln-ism",
                 BitSize.Medium => " bit-tln-imd",
                 BitSize.Large => " bit-tln-ilg",
-                _ => string.Empty
+                _ => " bit-tln-imd"
             });
         }
 
@@ -189,7 +203,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         if (GetReversed(item))
         {
-            className.Append(" bit-tln-rvs");
+            className.Append(" bit-tln-irv");
         }
 
         return className.ToString();
@@ -512,27 +526,27 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<BitSize?>(NameSelectors.Size.Name, null);
     }
 
-    private BitSeverity? GetSeverity(TItem? item)
+    private BitColor? GetColor(TItem? item)
     {
         if (item is null) return null;
 
         if (item is BitTimelineItem timelineItem)
         {
-            return timelineItem.Severity;
+            return timelineItem.Color;
         }
 
         if (item is BitTimelineOption timelineOption)
         {
-            return timelineOption.Severity;
+            return timelineOption.Color;
         }
 
         if (NameSelectors is null) return null;
 
-        if (NameSelectors.Severity.Selector is not null)
+        if (NameSelectors.Color.Selector is not null)
         {
-            return NameSelectors.Severity.Selector!(item);
+            return NameSelectors.Color.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitSeverity?>(NameSelectors.Severity.Name, null);
+        return item.GetValueFromProperty<BitColor?>(NameSelectors.Color.Name, null);
     }
 }

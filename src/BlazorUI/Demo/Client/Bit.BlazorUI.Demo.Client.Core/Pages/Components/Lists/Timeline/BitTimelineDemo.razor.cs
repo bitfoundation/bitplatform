@@ -22,6 +22,15 @@ public partial class BitTimelineDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the timeline.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
@@ -60,12 +69,10 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Name = "Severity",
-            Type = "BitSeverity?",
-            DefaultValue = "null",
-            Description = "The severity of the timeline.",
-            LinkType = LinkType.Link,
-            Href = "#severity-enum",
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses all of the timeline items direction.",
         },
         new()
         {
@@ -596,40 +603,58 @@ public partial class BitTimelineDemo
         },
         new()
         {
-            Id = "severity-enum",
-            Name = "BitSeverity",
-            Description = "",
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
             Items =
             [
                 new()
                 {
-                    Name= "Info",
-                    Description="Info styled timeline.",
+                    Name= "Primary",
+                    Description="Info Primary general color.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Success",
-                    Description="Success styled timeline.",
+                    Name= "Secondary",
+                    Description="Secondary general color.",
                     Value="1",
                 },
                 new()
                 {
-                    Name= "Warning",
-                    Description="Warning styled timeline.",
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
                     Value="2",
                 },
                 new()
                 {
-                    Name= "SevereWarning",
-                    Description="Severe Warning styled timeline.",
+                    Name= "Info",
+                    Description="Info general color.",
                     Value="3",
                 },
                 new()
                 {
-                    Name= "Error",
-                    Description="Error styled timeline.",
+                    Name= "Success",
+                    Description="Success general color.",
                     Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
                 }
             ]
         },
