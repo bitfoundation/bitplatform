@@ -16,7 +16,7 @@ public partial class BitPaginationDemo
             Name = "Classes",
             Type = "BitPaginationClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitPagination.",
+            Description = "Custom CSS classes for different parts of the pagination.",
             LinkType = LinkType.Link,
             Href = "#pagination-class-styles"
         },
@@ -34,7 +34,7 @@ public partial class BitPaginationDemo
             Name = "Count",
             Type = "int",
             DefaultValue = "1",
-            Description = "The number of pages."
+            Description = "The total number of pages."
         },
         new()
         {
@@ -48,42 +48,42 @@ public partial class BitPaginationDemo
             Name = "FirstIcon",
             Type = "string",
             DefaultValue = "ChevronLeftEnd6",
-            Description = "Icon of the first button."
+            Description = "The icon name of the first button."
         },
         new()
         {
             Name = "LastIcon",
             Type = "string",
             DefaultValue = "ChevronRightEnd6",
-            Description = "Icon of the last button."
+            Description = "The icon name of the last button."
         },
         new()
         {
             Name = "MiddleCount",
             Type = "int",
             DefaultValue = "3",
-            Description = "The number of items in the middle of the pagination."
+            Description = "The number of items to render in the middle of the pagination."
         },
         new()
         {
             Name = "NextIcon",
             Type = "string",
             DefaultValue = "ChevronRight",
-            Description = "Icon of the next button."
+            Description = "The icon name of the next button."
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<int>",
             DefaultValue = "null",
-            Description = "Invokes the callback when the selected page changes."
+            Description = "The event callback for when selected page changes."
         },
         new()
         {
             Name = "PreviousIcon",
             Type = "string",
             DefaultValue = "ChevronLeft",
-            Description = "Icon of the previous button."
+            Description = "The icon name of the previous button."
         },
         new()
         {
@@ -94,45 +94,38 @@ public partial class BitPaginationDemo
         },
         new()
         {
-            Name = "SelectedPageChanged",
-            Type = "EventCallback<int>",
-            DefaultValue = "null",
-            Description = "Invokes the callback when the selected page changes."
-        },
-        new()
-        {
             Name = "ShowFirstButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the navigate to the first page button is shown."
+            Description = "Determines whether to show the first button."
         },
         new()
         {
             Name = "ShowLastButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the navigate to the last page button is shown."
+            Description = "Determines whether to show the last button."
         },
         new()
         {
             Name = "ShowNextButton",
             Type = "bool",
             DefaultValue = "true",
-            Description = "If true, the navigate to the next page button is shown."
+            Description = "Determines whether to show the next button."
         },
         new()
         {
             Name = "ShowPreviousButton",
             Type = "bool",
             DefaultValue = "true",
-            Description = "If true, the navigate to the previous page button is shown."
+            Description = "Determines whether to show the previous button."
         },
         new()
         {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of Pagination, Possible values: Small | Medium | Large",
+            Description = "The size of the buttons.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
