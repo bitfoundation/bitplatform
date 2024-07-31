@@ -4,7 +4,8 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
     @if (IconName.HasValue() || Label.HasValue() || LabelTemplate is not null)
     {
         <div style="@Styles?.LabelContainer" class="bit-spb-lct @Classes?.LabelContainer">

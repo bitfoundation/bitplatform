@@ -622,4 +622,9 @@ private BitSpinButtonValidationModel ValidationModel = new();
 private async Task HandleValidSubmit() { }
 
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example11RazorCode = @"
+<BitSpinButton Dir=""BitDir.Rtl"" Label=""برچسب"" />
+
+<BitSpinButton Dir=""BitDir.Rtl"" LabelPosition=""BitLabelPosition.Start"" Label=""برچسب درخط"" />";
 }
