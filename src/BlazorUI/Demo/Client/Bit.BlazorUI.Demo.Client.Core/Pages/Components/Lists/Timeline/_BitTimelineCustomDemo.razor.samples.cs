@@ -372,7 +372,6 @@ private List<TimelineActionItem> iconCustoms =
                                Dot = ""background-color: dodgerblue;"" })"" />
 
 <BitTimeline Items=""iconCustoms"" NameSelectors=""nameSelectors""
-             Horizontal
              Variant=""BitVariant.Outline""
              Classes=""@(new() { Icon = ""custom-icon"",
                                 Divider = ""custom-divider"",

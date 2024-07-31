@@ -243,7 +243,6 @@ private List<BitTimelineItem> iconItems =
                                Dot = ""background-color: dodgerblue;"" })"" />
 
 <BitTimeline Items=""iconItems""
-             Horizontal
              Variant=""BitVariant.Outline""
              Classes=""@(new() { Icon = ""custom-icon"",
                                 Divider = ""custom-divider"",
