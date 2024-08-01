@@ -1,23 +1,21 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-ico {
-    display: inline-block;
-    font-size: spacing(2);
-    line-height: spacing(2);
-
     &.bit-dis {
         color: $clr-fg-dis;
     }
 }
 
-.bit-ico-sm {
-    font-size: spacing(1);
-    line-height: spacing(1);
+.bit-ico-pri {
+    color: $clr-pri;
 }
 
-.bit-ico-lg {
-    font-size: spacing(3);
-    line-height: spacing(3);
+.bit-ico-sec {
+    color: $clr-sec;
+}
+
+.bit-ico-ter {
+    color: $clr-ter;
 }
 
 .bit-ico-inf {
@@ -38,4 +36,17 @@
 
 .bit-ico-err {
     color: $clr-err;
+}
+
+
+.bit-ico-sm {
+    font-size: spacing(1.5);
+}
+
+.bit-ico-md {
+    font-size: spacing(2.5);
+}
+
+.bit-ico-lg {
+    font-size: spacing(3.5);
 }

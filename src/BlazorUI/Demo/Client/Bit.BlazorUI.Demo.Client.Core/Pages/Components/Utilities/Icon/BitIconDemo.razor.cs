@@ -6,21 +6,21 @@ public partial class BitIconDemo
     [
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the icon.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string",
             DefaultValue = "",
             Description = "The icon name for the icon shown",
             LinkType = LinkType.Link,
             Href = "/iconography",
-        },
-        new()
-        {
-            Name = "Severity",
-            Type = "BitSeverity?",
-            DefaultValue = "null",
-            Description = "The severity of the icon.",
-            LinkType = LinkType.Link,
-            Href = "#severity-enum",
         },
         new()
         {
@@ -37,40 +37,58 @@ public partial class BitIconDemo
     [
         new()
         {
-            Id = "severity-enum",
-            Name = "BitSeverity",
-            Description = "",
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
             Items =
             [
                 new()
                 {
-                    Name= "Info",
-                    Description="Info styled icon.",
+                    Name= "Primary",
+                    Description="Info Primary general color.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Success",
-                    Description="Success styled icon.",
+                    Name= "Secondary",
+                    Description="Secondary general color.",
                     Value="1",
                 },
                 new()
                 {
-                    Name= "Warning",
-                    Description="Warning styled icon.",
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
                     Value="2",
                 },
                 new()
                 {
-                    Name= "SevereWarning",
-                    Description="Severe Warning styled icon.",
+                    Name= "Info",
+                    Description="Info general color.",
                     Value="3",
                 },
                 new()
                 {
-                    Name= "Error",
-                    Description="Error styled icon.",
+                    Name= "Success",
+                    Description="Success general color.",
                     Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
                 }
             ]
         },
@@ -106,32 +124,15 @@ public partial class BitIconDemo
 
 
     private readonly string example1RazorCode = @"
-<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" />
-<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" />
-<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" />
+<BitIcon IconName=""@BitIconName.Accept"" />
+<BitIcon IconName=""@BitIconName.Bus"" />
+<BitIcon IconName=""@BitIconName.Pinned"" />
 
-<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" IsEnabled=""false"" />
-<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" IsEnabled=""false"" />";
+<BitIcon IconName=""@BitIconName.Accept"" IsEnabled=""false"" />
+<BitIcon IconName=""@BitIconName.Bus"" IsEnabled=""false"" />
+<BitIcon IconName=""@BitIconName.Pinned"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
-<style>
-    .icon-class {
-        color: #0081ef;
-        font-size: 3rem;
-        margin: 1rem 2rem;
-    }
-</style>
-
-<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" Class=""icon-class"" />
-<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" Class=""icon-class"" />
-<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Class=""icon-class"" />
-
-<BitIcon IconName=""@BitIconName.Accept"" AriaLabel=""accept"" Style=""font-size: 3rem; margin: 1rem 2rem; color: red;"" />
-<BitIcon IconName=""@BitIconName.Bus"" AriaLabel=""bus"" Style=""font-size: 3rem; margin: 1rem 2rem; color: green;"" />
-<BitIcon IconName=""@BitIconName.Pinned"" AriaLabel=""pinned"" Style=""font-size: 3rem; margin: 1rem 2rem; color: mediumpurple;"" />";
-
-    private readonly string example3RazorCode = @"
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Pinned"" />
@@ -144,24 +145,50 @@ public partial class BitIconDemo
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
 
-    private readonly string example4RazorCode = @"
-<BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Accept"" />
-<BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Bus"" />
-<BitIcon Severity=""BitSeverity.Info"" IconName=""@BitIconName.Pinned"" />
+    private readonly string example3RazorCode = @"
+<BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Pinned"" />
 
-<BitIcon Severity=""BitSeverity.Success"" IconName=""@BitIconName.Accept"" />
-<BitIcon Severity=""BitSeverity.Success"" IconName=""@BitIconName.Bus"" />
-<BitIcon Severity=""BitSeverity.Success"" IconName=""@BitIconName.Pinned"" />
-                
-<BitIcon Severity=""BitSeverity.Warning"" IconName=""@BitIconName.Accept"" />
-<BitIcon Severity=""BitSeverity.Warning"" IconName=""@BitIconName.Bus"" />
-<BitIcon Severity=""BitSeverity.Warning"" IconName=""@BitIconName.Pinned"" />
-                
-<BitIcon Severity=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Accept"" />
-<BitIcon Severity=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Bus"" />
-<BitIcon Severity=""BitSeverity.SevereWarning"" IconName=""@BitIconName.Pinned"" />
-                
-<BitIcon Severity=""BitSeverity.Error"" IconName=""@BitIconName.Accept"" />
-<BitIcon Severity=""BitSeverity.Error"" IconName=""@BitIconName.Bus"" />
-<BitIcon Severity=""BitSeverity.Error"" IconName=""@BitIconName.Pinned"" />";
+<BitIcon Color=""BitColor.Secondary"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Secondary"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Secondary"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.Tertiary"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Tertiary"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Tertiary"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Info"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Success"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Warning"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.SevereWarning"" IconName=""@BitIconName.Pinned"" />
+
+<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Accept"" />
+<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Bus"" />
+<BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />";
+
+    private readonly string example4RazorCode = @"
+<style>
+    .icon-class {
+        padding: 4px;
+        font-size: 3rem;
+        margin-left: 1rem;
+        background-color: aquamarine;
+    }
+</style>
+
+<BitIcon IconName=""@BitIconName.Accept"" Size=""BitSize.Large""
+         Style=""background-color: brown; border-radius: 4px"" />
+<BitIcon IconName=""@BitIconName.Accept"" Class=""icon-class"" />";
 }
