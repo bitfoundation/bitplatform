@@ -3,9 +3,6 @@ name: bit platform full CI
 on:
   workflow_dispatch:
 
-env:
-  ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
-
 jobs:
 
   build:
@@ -26,87 +23,34 @@ jobs:
       with:
         node-version: 20
 
-    - name: Prepare environment
+    - name: Install Bit.Boilerplate from local source
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
-        dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
-        ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
-    - name: Install sql server
-      uses: potatoqualitee/mssqlsuite@v1.7
-      with:
-        install: sqlengine
-        sa-password: P@ssw0rdP@ssw0rd
-        show-log: true
-
-    - name: Test Sqlite database option
+    - name: Release build todo sample + sqlite database
       run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite
-        cd TestSqlite/src/Server/TestSqlite.Server.Api/
+        dotnet workload install maui-tizen maui-android wasm-tools wasm-experimental
+        dotnet new bit-bp --name TodoBPSqlite --database Sqlite --sample Todo --pipeline None --serverUrl todo.bitplatform.dev
+        ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+        cd TodoBPSqlite/src/Server/TodoBPSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
-
-    - name: Test SqlServer database option
-      run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer
-        cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
-        dotnet tool restore
-        dotnet ef migrations add InitialMigration
-        dotnet ef database update 
-
-    - name: Test PostgreSQL, Cosmos, MySql, Other database options
-      run: |
-        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL
-        cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
-        dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestCosmos --database Cosmos
-        cd TestCosmos/src/Server/TestCosmos.Server.Api/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestMySql --database MySql
-        cd TestMySql/src/Server/TestMySql.Server.Api/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestOther --database Other
-        cd TestOther/src/Server/TestOther.Server.Api/
-        dotnet build
+        dotnet build TodoBPSqlite/TodoBPSqlite.sln -c Release -p:RunAOTCompilation=false
+        dotnet build TodoBPSqlite/src/Client/TodoBPSqlite.Client.Web/TodoBPSqlite.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true
 
-    - name: Test file storage options
+    - name: Release build empty sample + offline db + Win exe + No reCaptcha
       run: |
-        dotnet new bit-bp --name TestLocal --filesStorage Local
-        cd TestLocal/src/Server/TestLocal.Server.Api/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage
-        cd TestAzureBlobStorage/src/Server/TestAzureBlobStorage.Server.Api/
-        dotnet build
+        dotnet new bit-bp --name EmptyBP --database Other --sample None --pipeline Azure --offlineDb --windows --captcha None
+        dotnet build EmptyBP/EmptyBP.sln -c Release -p:RunAOTCompilation=false
 
-    - name: Test backend setup options
+    - name: Release build admin panel sample + PostgreSQL database
       run: |
-        dotnet new bit-bp --name TestSolo --serverDeploymentType Solo
-        cd TestSolo/src/Server/TestSolo.Server.Api/
-        dotnet build
-        cd ../
-        cd TestSolo.Server.Web/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestIndependent --serverDeploymentType Independent
-        cd TestIndependent/src/Server/TestIndependent.Server.Web/
-        dotnet build
-
-    - name: Test sample configuration 1
-      run: |
-        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --serverDeploymentType Solo --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb true --windows true --appInsights true --appCenter true
-        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PWA=true -p:BlazorWebAssemblyStandalone=true -p:Environment=Staging
-
-    - name: Test sample configuration 2
-      run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --serverDeploymentType Independent --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false
-        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PWA=false -p:BlazorWebAssemblyStandalone=false -p:Environment=Development
+        dotnet new bit-bp --name AdminBPSqlServer --database PostgreSQL --sample Admin --pipeline GitHub --serverUrl adminpanel.bitplatform.dev --appInsights --appCenter
+        dotnet build AdminBPSqlServer/AdminBPSqlServer.sln -c Release
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
@@ -115,17 +59,17 @@ jobs:
     - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release
 
-    - name: Build careers, platform, sales websites
+    - name: Release build careers, platform, sales websites
       run: |
-        dotnet build src/Websites/Platform/Bit.Websites.Platform.sln
-        dotnet build src/Websites/Careers/Bit.Websites.Careers.sln
-        dotnet build src/Websites/Sales/Bit.Websites.Sales.sln
+        dotnet build -c Release src/Websites/Platform/Bit.Websites.Platform.sln
+        dotnet build -c Release src/Websites/Careers/Bit.Websites.Careers.sln
+        dotnet build -c Release src/Websites/Sales/Bit.Websites.Sales.sln
 
     - name: Run bit blazor ui tests
-      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
+      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj -c Release
 
-    - name: Build bit blazor ui demo
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln
+    - name: Release build bit blazor ui demo
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln -c Release -p:RunAOTCompilation=false
 
     - name: Create projects from BlazorEmpty project template with different parameters
       run: |
@@ -135,7 +79,7 @@ jobs:
         dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
         dotnet new bit-empty --name SsrPerPage --interactivity None
 
-    - name: Build blazor empty based projects
+    - name: Release build blazor empty based projects
       run: |
-        dotnet build AutoGlobal/AutoGlobal.sln
-        dotnet build SsrPerPage/SsrPerPage.csproj
+        dotnet build AutoGlobal/AutoGlobal.sln -c Release
+        dotnet build SsrPerPage/SsrPerPage.csproj -c Release
