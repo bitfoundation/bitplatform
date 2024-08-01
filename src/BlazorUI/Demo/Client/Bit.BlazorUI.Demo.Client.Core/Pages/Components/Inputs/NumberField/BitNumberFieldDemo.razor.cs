@@ -385,6 +385,8 @@ public partial class BitNumberFieldDemo
     private int onDecrementCounter;
     private int onChangeCounter;
 
+    private int? classesValue;
+
     private string SuccessMessage = string.Empty;
     private BitNumberFieldValidationModel validationModel = new();
 
@@ -440,52 +442,98 @@ public partial class BitNumberFieldDemo
     private readonly string example4RazorCode = @"
 <style>
     .custom-class {
-        margin-left: 0.5rem;
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid brown;
+    }
+
+    .custom-class *, .custom-class *::after {
+        border: none;
+    }
+
+
+    .custom-root {
+        height: 3rem;
+        display: flex;
+        align-items: end;
+        position: relative;
+        margin-inline: 1rem;
+    }
+
+    .custom-label {
+        top: 0;
+        left: 0;
+        z-index: 1;
+        padding: 0;
+        font-size: 1rem;
+        color: darkgray;
+        position: absolute;
+        transform-origin: top left;
+        transform: translate(0, 22px) scale(1);
+        transition: color 200ms cubic-bezier(0, 0, 0.2, 1) 0ms, transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+    }
+
+    .custom-label-top {
+        transform: translate(0, 1.5px) scale(0.75);
     }
 
     .custom-input {
-        color: darkgreen;
-        font-weight: 900;
+        padding: 0;
         font-size: 1rem;
-        padding: 1rem;
-        height: 3rem;
-    }
-
-    .custom-focus .custom-label {
-        color: chartreuse;
+        font-weight: 900;
     }
 
     .custom-input-wrapper {
-        height: auto;
-        border-radius: 1rem;
-        background-color: tomato;
+        border-radius: 0;
+        position: relative;
+        border-width: 0 0 1px 0;
+    }
+
+    .custom-input-wrapper::after {
+        content: '';
+        width: 0;
+        height: 2px;
+        border: none;
+        position: absolute;
+        inset: 100% 0 0 50%;
+        background-color: blueviolet;
+        transition: width 0.3s ease, left 0.3s ease;
     }
 
     .custom-focus .custom-input-wrapper::after {
-        border-radius: 1rem;
-        border-width: 0.25rem;
-        border-color: rebeccapurple;
+        left: 0;
+        width: 100%;
+    }
+
+    .custom-focus .custom-label {
+        color: blueviolet;
+        transform: translate(0, 1.5px) scale(0.75);
     }
 </style>
 
-<BitNumberField Label=""Styled"" DefaultValue=""10"" Style=""background:lightskyblue;border-radius:1rem;padding:0.5rem"" />
 
-<BitNumberField Label=""Classed"" DefaultValue=""20"" Class=""custom-class"" />
+<BitNumberField DefaultValue=""10"" Style=""box-shadow: aqua 0 0 1rem; margin-inline: 1rem;"" />
+
+<BitNumberField DefaultValue=""20"" Class=""custom-class"" />
 
 
-<BitNumberField Label=""Styles"" DefaultValue=""1"" IconName=""@BitIconName.Microphone""
-                Styles=""@(new() { Root = ""background-color: pink;"",
-                                  Icon = ""color: red;"",
-                                  Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
-                                  Input = ""padding: 0.5rem; background-color: goldenrod"" })"" />
+<BitNumberField DefaultValue=""1""
+                Label=""Custom label style""
+                Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+                                  Focused = ""--focused-background: #b2b2b25a;"",
+                                  InputWrapper = ""background: var(--focused-background);"",
+                                  Label = ""text-shadow: aqua 0 0 1rem; font-weight: 900; font-size: 1.25rem;"",
+                                  Input = ""padding: 0.5rem;"" })"" />
 
-<BitNumberField Label=""Classes"" DefaultValue=""2""
-                Classes=""@(new() { Input = ""custom-input"",
-                                   Focused = ""custom-focus"",
-                                   Label = ""custom-label"",
-                                   InputWrapper = ""custom-input-wrapper"" })"" />";
+<BitNumberField TValue=""int?""
+                @bind-Value=""classesValue""
+                Label=""Custom label class""
+                Classes=""@(new() { Root = ""custom-root"",
+                                 InputWrapper = ""custom-input-wrapper"",
+                                 Focused = ""custom-focus"",
+                                 Input = ""custom-input"",
+                                 Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"" })"" />";
 
     private readonly string example5RazorCode = @"
 <BitNumberField Label=""N0"" DefaultValue=""1234567890d"" NumberFormat=""N0"" />
