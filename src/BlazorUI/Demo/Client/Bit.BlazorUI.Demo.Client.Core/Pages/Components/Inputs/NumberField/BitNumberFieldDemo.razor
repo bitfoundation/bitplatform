@@ -84,7 +84,7 @@
                 <div><b>Styles</b> & <b>Classes</b>:</div>
                 <br />
                 <BitNumberField DefaultValue="1"
-                                Label="Custom label style"
+                                Label="Styles"
                                 Styles="@(new() { Root = "margin-inline: 1rem;",
                                                   Focused = "--focused-background: #b2b2b25a;",
                                                   InputWrapper = "background: var(--focused-background);",
@@ -92,8 +92,8 @@
                                                   Input = "padding: 0.5rem;" })" />
                 <br />
                 <BitNumberField TValue="int?"
+                                Label="Classes"
                                 @bind-Value="classesValue"
-                                Label="Custom label class"
                                 Classes="@(new() { Root = "custom-root",
                                                  InputWrapper = "custom-input-wrapper",
                                                  Focused = "custom-focus",

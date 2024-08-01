@@ -519,7 +519,7 @@ public partial class BitNumberFieldDemo
 
 
 <BitNumberField DefaultValue=""1""
-                Label=""Custom label style""
+                Label=""Styles""
                 Styles=""@(new() { Root = ""margin-inline: 1rem;"",
                                   Focused = ""--focused-background: #b2b2b25a;"",
                                   InputWrapper = ""background: var(--focused-background);"",
@@ -527,8 +527,8 @@ public partial class BitNumberFieldDemo
                                   Input = ""padding: 0.5rem;"" })"" />
 
 <BitNumberField TValue=""int?""
+                Label=""Classes""
                 @bind-Value=""classesValue""
-                Label=""Custom label class""
                 Classes=""@(new() { Root = ""custom-root"",
                                  InputWrapper = ""custom-input-wrapper"",
                                  Focused = ""custom-focus"",
