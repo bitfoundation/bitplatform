@@ -13,7 +13,7 @@
                 disabled="@(SelectedPage == 1 || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.FirstButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.FirstButton @GetButtonClasses()">
-            <i style="@Styles?.FirstButtonIcon" class="bit-icon bit-icon--@FirstIcon @Styles?.FirstButtonIcon" />
+            <i style="@Styles?.FirstButtonIcon" class="bit-pgn-ico bit-icon bit-icon--@FirstIcon @Styles?.FirstButtonIcon" />
         </button>
     }
 
@@ -24,7 +24,7 @@
                 disabled="@(SelectedPage == 1 || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.PreviousButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.PreviousButton @GetButtonClasses()">
-            <i style="@Styles?.PreviousButtonIcon" class="bit-icon bit-icon--@PreviousIcon @Classes?.PreviousButtonIcon" />
+            <i style="@Styles?.PreviousButtonIcon" class="bit-pgn-ico bit-icon bit-icon--@PreviousIcon @Classes?.PreviousButtonIcon" />
         </button>
     }
 
@@ -41,7 +41,7 @@
                     aria-current="page"
                     aria-label="@($"Current page {currentPage}")"
                     style="@Styles?.Button @Styles?.SelectedButton"
-                    class="bit-pgn-btn bit-pgn-spg @Classes?.Button @Classes?.SelectedButton @GetButtonClasses()">
+                    class="bit-pgn-btn bit-pgn-sel @Classes?.Button @Classes?.SelectedButton @GetButtonClasses()">
                 @currentPage
             </button>
         }
@@ -64,7 +64,7 @@
                 disabled="@(SelectedPage == Count || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.NextButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.NextButton @GetButtonClasses()">
-            <i style="@Styles?.NextButtonIcon" class="bit-icon bit-icon--@NextIcon @Classes?.NextButtonIcon" />
+            <i style="@Styles?.NextButtonIcon" class="bit-pgn-ico bit-icon bit-icon--@NextIcon @Classes?.NextButtonIcon" />
         </button>
     }
 
@@ -75,7 +75,7 @@
                 disabled="@(SelectedPage == Count || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.LastButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.LastButton @GetButtonClasses()">
-            <i style="@Styles?.LastButtonIcon" class="bit-icon bit-icon--@LastIcon @Classes?.LastButtonIcon" />
+            <i style="@Styles?.LastButtonIcon" class="bit-pgn-ico bit-icon bit-icon--@LastIcon @Classes?.LastButtonIcon" />
         </button>
     }
 </div>

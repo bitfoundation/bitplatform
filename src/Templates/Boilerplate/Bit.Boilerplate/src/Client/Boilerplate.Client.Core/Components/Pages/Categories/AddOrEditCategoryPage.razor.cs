@@ -8,7 +8,7 @@ public partial class AddOrEditCategoryPage
 {
     [AutoInject] ICategoryController categoryController = default!;
 
-    [Parameter] public int? Id { get; set; }
+    [Parameter] public Guid? Id { get; set; }
 
     private bool isLoading;
     private bool isSaving;
@@ -56,7 +56,7 @@ public partial class AddOrEditCategoryPage
 
         try
         {
-            if (category.Id == 0)
+            if (category.Id == default)
             {
                 await categoryController.Create(category, CurrentCancellationToken);
             }

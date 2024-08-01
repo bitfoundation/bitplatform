@@ -4,7 +4,7 @@
     <div class="main-container">
         <div class="header">
             <span class="title">
-                @if (product.Id != 0)
+                @if (product.Id != default)
                 {
                     @Localizer[nameof(AppStrings.EditProduct)]
                 }
@@ -30,7 +30,7 @@
                 <BitDropdown @bind-Value="selectedCategoyId"
                              IsMultiSelect="false"
                              Items="allCategoryList"
-                             OnSelectItem="((BitDropdownItem<string> item) => { product.CategoryId = int.Parse(item.Value!); product.CategoryName = item.Text; })"
+                             OnSelectItem="((BitDropdownItem<string> item) => { product.CategoryId = Guid.Parse(item.Value!); product.CategoryName = item.Text; })"
                              Placeholder="@Localizer[(nameof(AppStrings.SelectCategory))]"
                              Label="@Localizer[(nameof(AppStrings.SelectCategory))]" />
                 <ValidationMessage For="@(() => product.CategoryId)" />
@@ -40,6 +40,7 @@
                 <BitNumberField @bind-Value="product.Price"
                                 Precision="2"
                                 Suffix="$"
+                                NumberFormat="C2"
                                 Label="@Localizer[(nameof(AppStrings.Price))]" />
                 <ValidationMessage For="() => product.Price" />
             </div>

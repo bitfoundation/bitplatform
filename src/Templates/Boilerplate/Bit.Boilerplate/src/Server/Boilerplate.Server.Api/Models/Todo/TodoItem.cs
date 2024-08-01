@@ -4,7 +4,7 @@ namespace Boilerplate.Server.Api.Models.Todo;
 
 public class TodoItem
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     [Required]
     public string? Title { get; set; }
@@ -13,5 +13,5 @@ public class TodoItem
 
     [ForeignKey(nameof(UserId))]
     public User? User { get; set; }
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
 }

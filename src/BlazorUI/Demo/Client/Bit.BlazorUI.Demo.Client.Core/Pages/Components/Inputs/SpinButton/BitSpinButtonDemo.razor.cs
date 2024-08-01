@@ -464,38 +464,6 @@ public partial class BitSpinButtonDemo
 <BitSpinButton Label=""Spread"" Mode=""BitSpinButtonMode.Spread"" />";
 
     private readonly string example3RazorCode = @"
-<style>
-    .custom-class {
-        padding: 1rem;
-        background: darkblue;
-        border-radius: 0.5rem;
-    }
-
-    .custom-input {
-        color: darkred;
-        font-size: 18px;
-    }
-
-    .custom-wrapper {
-        background-color: darkcyan;
-    }
-</style>
-
-<BitSpinButton Label=""Styled"" Style=""background:darkred;padding:1rem"" />
-
-<BitSpinButton Label=""Classed"" Class=""custom-class"" />
-
-
-
-<BitSpinButton Label=""Styles"" Styles=""@(new() { LabelContainer = ""background:darkred;padding:1.5rem"",
-                                                Label = ""font-size:22px;color:chartreuse"",
-                                                DecrementButton = ""background:blue"",
-                                                IncrementButton = ""background:green"" })"" />
-
-<BitSpinButton Label=""Classes"" Classes=""@(new() { Input = ""custom-input"",
-                                                  CompactButtonsWrapper = ""custom-wrapper"" })"" />";
-
-    private readonly string example4RazorCode = @"
 <BitSpinButton Label=""Top (default)"" />
 <BitSpinButton Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
 <BitSpinButton Label=""End"" LabelPosition=""BitLabelPosition.End"" />
@@ -510,7 +478,7 @@ public partial class BitSpinButtonDemo
     </LabelTemplate>
 </BitSpinButton>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitSpinButton Label=""Icon"" IconName=""@BitIconName.Lightbulb"" />
 
 
@@ -527,6 +495,67 @@ public partial class BitSpinButtonDemo
                Mode=""BitSpinButtonMode.Spread""
                IncrementIconName=""@BitIconName.CalculatorAddition""
                DecrementIconName=""@BitIconName.CalculatorSubtract"" />";
+
+    private readonly string example5RazorCode = @"
+<style>
+    .custom-class {
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid brown;
+    }
+
+    .custom-class * {
+        border: none;
+    }
+
+
+    .custom-root {
+        width: 7rem;
+    }
+
+    .custom-container {
+        border: none;
+    }
+
+    .custom-dec-button {
+        color: firebrick;
+        border-radius: 50%;
+        background-color: lightpink;
+    }
+
+    .custom-inc-button {
+        color: darkgreen;
+        border-radius: 50%;
+        background-color: palegreen;
+    }
+
+    .custom-icon {
+        font-size: 1rem;
+        font-weight: bold;
+    }
+</style>
+
+
+<BitSpinButton Style=""box-shadow: aqua 0 0 1rem; margin-inline: 1rem;"" />
+
+<BitSpinButton Class=""custom-class"" />
+
+
+<BitSpinButton Label=""Styles"" Mode=""BitSpinButtonMode.Inline""
+               Styles=""@(new() { Input = ""background-color: #b2b2b25a;"",
+                                 Container = ""border-width: 0 0 1px 0; background-color: #b2b2b25a;"",
+                                 IncrementButton = ""border-inline-start: 1px solid gray;"" })"" />
+
+<BitSpinButton Label=""Classes"" Mode=""BitSpinButtonMode.Spread""
+               IncrementIconName=""@BitIconName.CalculatorAddition""
+               DecrementIconName=""@BitIconName.CalculatorSubtract""
+               Classes=""@(new() { Root = ""custom-root"",
+                                  IncrementIcon = ""custom-icon"",
+                                  DecrementIcon = ""custom-icon"",
+                                  Container = ""custom-container"",
+                                  IncrementButton = ""custom-inc-button"",
+                                  DecrementButton = ""custom-dec-button"" })"" />";
 
     private readonly string example6RazorCode = @"
 <BitSpinButton Label=""Height"" DefaultValue=""150"" Suffix="" cm"" />
@@ -593,4 +622,9 @@ private BitSpinButtonValidationModel ValidationModel = new();
 private async Task HandleValidSubmit() { }
 
 private void HandleInvalidSubmit() { }";
+
+    private readonly string example11RazorCode = @"
+<BitSpinButton Dir=""BitDir.Rtl"" Label=""برچسب"" />
+
+<BitSpinButton Dir=""BitDir.Rtl"" LabelPosition=""BitLabelPosition.Start"" Label=""برچسب درخط"" />";
 }

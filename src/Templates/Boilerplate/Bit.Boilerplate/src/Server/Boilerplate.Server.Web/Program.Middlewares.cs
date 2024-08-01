@@ -44,9 +44,12 @@ public static partial class Program
         else
         {
             app.UseHttpsRedirection();
-            app.UseResponseCaching();
             app.UseResponseCompression();
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
         }
+
+        app.UseResponseCaching();
 
         Configure_401_403_404_Pages(app);
 
@@ -59,13 +62,17 @@ public static partial class Program
         {
             app.Use(async (context, next) =>
             {
-                if (context.Request.Query.Any(q => q.Key == "v"))
+                if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
+                    env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                 {
-                    context.Response.GetTypedHeaders().CacheControl = new()
+                    context.Response.OnStarting(async () =>
                     {
-                        MaxAge = TimeSpan.FromDays(7),
-                        Public = true
-                    };
+                        context.Response.GetTypedHeaders().CacheControl = new()
+                        {
+                            MaxAge = TimeSpan.FromDays(7),
+                            Public = true
+                        };
+                    });
                 }
                 await next.Invoke();
             });

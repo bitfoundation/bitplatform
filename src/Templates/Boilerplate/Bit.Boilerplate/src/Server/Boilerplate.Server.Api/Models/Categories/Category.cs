@@ -4,7 +4,7 @@ namespace Boilerplate.Server.Api.Models.Categories;
 
 public class Category
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     [Required, MaxLength(64)]
     public string? Name { get; set; }

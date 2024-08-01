@@ -10,7 +10,7 @@ public class BitTimelineItem
     /// <summary>
     /// The severity of the timeline item.
     /// </summary>
-    public BitSeverity? Severity { get; set; }
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The custom template for the timeline item's dot.

@@ -6,7 +6,7 @@ namespace Boilerplate.Shared.Controllers.Product;
 public interface IProductController : IAppController
 {
     [HttpGet("{id}")]
-    Task<ProductDto> Get(int id, CancellationToken cancellationToken);
+    Task<ProductDto> Get(Guid id, CancellationToken cancellationToken);
 
     [HttpPost]
     Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken);
@@ -15,7 +15,7 @@ public interface IProductController : IAppController
     Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken);
 
     [HttpDelete("{id}")]
-    Task Delete(int id, CancellationToken cancellationToken);
+    Task Delete(Guid id, CancellationToken cancellationToken);
 
     [HttpGet]
     Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;

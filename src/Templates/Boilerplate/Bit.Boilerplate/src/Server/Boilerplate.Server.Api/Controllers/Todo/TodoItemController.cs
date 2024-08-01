@@ -1,5 +1,6 @@
-﻿using Boilerplate.Shared.Controllers.Todo;
-using Boilerplate.Shared.Dtos.Todo;
+﻿using Boilerplate.Shared.Dtos.Todo;
+using Boilerplate.Server.Api.Models.Todo;
+using Boilerplate.Shared.Controllers.Todo;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;
 
@@ -33,7 +34,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpGet("{id}")]
-    public async Task<TodoItemDto> Get(int id, CancellationToken cancellationToken)
+    public async Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
@@ -75,7 +76,7 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
         DbContext.TodoItems.Remove(new() { Id = id });
 

@@ -1,5 +1,5 @@
-﻿using Boilerplate.Shared.Controllers.Product;
-using Boilerplate.Shared.Dtos.Products;
+﻿using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Controllers.Product;
 
 namespace Boilerplate.Server.Api.Controllers;
 
@@ -30,7 +30,7 @@ public partial class ProductController : AppControllerBase, IProductController
     }
 
     [HttpGet("{id}")]
-    public async Task<ProductDto> Get(int id, CancellationToken cancellationToken)
+    public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
@@ -68,7 +68,7 @@ public partial class ProductController : AppControllerBase, IProductController
     }
 
     [HttpDelete("{id}")]
-    public async Task Delete(int id, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, CancellationToken cancellationToken)
     {
         DbContext.Products.Remove(new() { Id = id });
 
