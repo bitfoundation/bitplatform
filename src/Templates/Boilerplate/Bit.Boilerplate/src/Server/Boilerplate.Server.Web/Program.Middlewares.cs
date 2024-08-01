@@ -98,7 +98,7 @@ public static partial class Program
 
         app.UseAntiforgery();
 
-        //#if (backendSetup == "Dual")
+        //#if (serverDeploymentType == "Solo")
         app.UseSwagger();
 
         app.UseSwaggerUI(options =>

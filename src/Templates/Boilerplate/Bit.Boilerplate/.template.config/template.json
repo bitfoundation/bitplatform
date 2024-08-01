@@ -87,22 +87,21 @@
             ],
             "description": "Boilerplate's API uses Fluent Storage. You can use any other fluent storage provider (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
         },
-        "backendSetup": {
-            "displayName": "Backend setup",
+        "serverDeploymentType": {
+            "displayName": "Server deployment type",
             "type": "parameter",
             "datatype": "choice",
-            "defaultValue": "Single",
+            "defaultValue": "Solo",
             "choices": [
                 {
-                    "choice": "Single",
-                    "description": "Server.Web project will run both blazor and api."
+                    "choice": "Solo",
+                    "description": "One server deployment that serves both restful services and server side blazor components."
                 },
                 {
-                    "choice": "Dual",
-                    "description": "Server.Web project will run blazor only, Server.Api has to be ran to serve restful services to the client."
+                    "choice": "Independent",
+                    "description": "One server deployment serves restful services only, while another runs server side blazor components."
                 }
-            ],
-            "description": "Boilerplate's API uses Fluent Storage. You can use any other fluent storage provider (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
+            ]
         },
         "captcha": {
             "displayName": "Captcha",

@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (backendSetup == "Dual")
+//#if (serverDeploymentType == "Solo")
 using Boilerplate.Server.Api.Data;
 //#endif
 
@@ -29,7 +29,7 @@ public static partial class Program
 
         var app = builder.Build();
 
-        //#if (backendSetup == "Dual")
+        //#if (serverDeploymentType == "Solo")
         if (AppEnvironment.IsDev())
         {
             await using var scope = app.Services.CreateAsyncScope();

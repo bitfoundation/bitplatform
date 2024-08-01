@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Condition=" '$(backendSetup)' == 'Dual' OR '$(backendSetup)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
+        <ProjectReference Condition=" '$(serverDeploymentType)' == 'Solo' OR '$(serverDeploymentType)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
     </ItemGroup>
 

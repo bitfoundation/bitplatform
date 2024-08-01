@@ -19,7 +19,7 @@
             "id": "filesStorage"
         },
         {
-            "id": "backendSetup",
+            "id": "serverDeploymentType",
             "isVisible": false
         },
         {

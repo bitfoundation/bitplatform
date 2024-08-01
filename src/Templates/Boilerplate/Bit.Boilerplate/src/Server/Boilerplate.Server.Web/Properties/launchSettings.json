@@ -9,7 +9,7 @@
             "dotnetRunMessages": true,
             "applicationUrl": "http://localhost:5030"
         },
-        //#if (backendSetup == "Dual")
+        //#if (serverDeploymentType == "Sol")
         "Boilerplate.Server.Web-Swagger": {
             "commandName": "Project",
             "launchBrowser": true,

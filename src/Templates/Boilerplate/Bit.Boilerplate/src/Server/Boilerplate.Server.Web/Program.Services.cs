@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Options;
-//#if (backendSetup == "Dual")
+//#if (serverDeploymentType == "Solo")
 using Boilerplate.Server.Api;
 //#endif
 using Boilerplate.Client.Web;
@@ -23,7 +23,7 @@ public static partial class Program
 
         services.AddHttpContextAccessor();
 
-        //#if (backendSetup == "Dual")
+        //#if (serverDeploymentType == "Solo")
         builder.ConfigureApiServices();
         //#endif
 
