@@ -19,6 +19,10 @@
             "id": "filesStorage"
         },
         {
+            "id": "backendSetup",
+            "isVisible": false
+        },
+        {
             "id": "captcha"
         },
         {

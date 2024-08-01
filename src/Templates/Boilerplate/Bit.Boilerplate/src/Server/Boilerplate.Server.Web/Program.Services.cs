@@ -1,7 +1,9 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Options;
+//#if (backendSetup == "Dual")
 using Boilerplate.Server.Api;
+//#endif
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Boilerplate.Client.Core.Services.Contracts;
@@ -21,7 +23,9 @@ public static partial class Program
 
         services.AddHttpContextAccessor();
 
+        //#if (backendSetup == "Dual")
         builder.ConfigureApiServices();
+        //#endif
 
         services.AddClientWebProjectServices();
     }
