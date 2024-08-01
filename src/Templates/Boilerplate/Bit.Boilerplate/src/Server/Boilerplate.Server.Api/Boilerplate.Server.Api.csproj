@@ -37,7 +37,7 @@
         <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.7" PrivateAssets="all" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.7" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.1.0" />
