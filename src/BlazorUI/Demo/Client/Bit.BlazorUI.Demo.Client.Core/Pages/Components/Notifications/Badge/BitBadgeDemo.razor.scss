@@ -1,10 +1,6 @@
-﻿.badges-container {
+﻿.example-content {
     gap: 3rem;
     display: flex;
-    padding: 1rem;
-    flex-flow: row wrap;
-    align-items: center;
-    max-width: max-content;
 }
 
 ::deep {
@@ -24,7 +20,7 @@
     }
 
     .custom-wrapper {
-        padding: 1.25rem;
+        padding: 1rem;
     }
 
     .custom-badge {

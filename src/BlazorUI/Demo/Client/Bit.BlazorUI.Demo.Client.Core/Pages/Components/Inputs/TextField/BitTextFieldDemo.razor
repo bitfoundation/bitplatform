@@ -207,8 +207,7 @@
                 <br /><br /><br />
                 <div>Styles & Classes:</div>
                 <br />
-                <BitTextField Label="Custom label style"
-                              IconName="@BitIconName.Microphone"
+                <BitTextField Label="Styles"
                               Styles="@(new() { Root = "margin-inline: 1rem;",
                                                 Focused = "--focused-background: #b2b2b25a;",
                                                 FieldGroup = "background: var(--focused-background);",
@@ -216,7 +215,7 @@
                                                 Input = "padding: 0.5rem;" })" />
                 <br />
                 <BitTextField @bind-Value="classesValue"
-                              Label="Custom label class"
+                              Label="Classes"
                               Classes="@(new() { Root = "custom-root",
                                                  FieldGroup = "custom-field",
                                                  Focused = "custom-focus",
