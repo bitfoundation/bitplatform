@@ -224,7 +224,7 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
-            <div>
+            <div dir="rtl">
                 <BitButton Dir="BitDir.Rtl" OnClick="@(() => IsOpen10 = true)">باز کردن پنجره پیام</BitButton>
                 <BitDialog @bind-IsOpen="IsOpen10"
                            Dir="BitDir.Rtl"
@@ -236,37 +236,3 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private bool IsOpen = false;
-
-    private BitDialog dialogRef = default!;
-    private BitDialog customDialogRef = default!;
-
-    private bool IsOpen1 = false;
-
-    private bool IsOpen2 = false;
-    private string? optionValue;
-    private bool IsOpen3 = false;
-
-    private bool IsOpen4 = false;
-    private bool IsOpen5 = false;
-
-    private bool IsOpen6 = false;
-    private bool IsOpen7 = false;
-
-    private bool IsOpenInPosition = false;
-    private BitDialogPosition position;
-
-    private bool IsDraggable = false;
-    private bool IsOpen8 = false;
-    private bool IsOpen9 = false;
-
-    private bool IsOpen10 = false;
-
-    private void OpenDialogInPosition(BitDialogPosition positionValue)
-    {
-        IsOpenInPosition = true;
-        position = positionValue;
-    }
-}
