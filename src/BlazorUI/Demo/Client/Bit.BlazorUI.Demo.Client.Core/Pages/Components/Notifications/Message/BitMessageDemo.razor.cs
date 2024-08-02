@@ -130,8 +130,8 @@ public partial class BitMessageDemo
         new()
         {
             Id = "color-enum",
-            Name = "BitSeverity",
-            Description = "Determines the severity of the content that controls the colors of the rendered element(s).",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
             Items =
             [
                 new()
@@ -179,7 +179,7 @@ public partial class BitMessageDemo
                 new()
                 {
                     Name = "Error",
-                    Description = "Error styled severity.",
+                    Description = "Error general color.",
                     Value = "7",
                 },
             ]

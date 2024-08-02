@@ -120,10 +120,10 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "Severity",
-                   Type = "BitSeverity?",
+                   Name = "Color",
+                   Type = "BitColor?",
                    DefaultValue = "null",
-                   Description = "The color of the item."
+                   Description = "The general color of the item."
                },
                new()
                {
@@ -240,10 +240,10 @@ public partial class BitTimelineDemo
                },
                new()
                {
-                   Name = "Severity",
-                   Type = "BitSeverity?",
+                   Name = "Color",
+                   Type = "BitColor?",
                    DefaultValue = "null",
-                   Description = "The color of the option."
+                   Description = "The general color of the option."
                },
                new()
                {
