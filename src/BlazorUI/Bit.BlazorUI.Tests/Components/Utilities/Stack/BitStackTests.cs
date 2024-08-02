@@ -1,8 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Bunit;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System;
+using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Stack;
 
