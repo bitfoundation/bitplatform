@@ -142,3 +142,12 @@ main {
         scroll-margin-top: calc($headerHeight + env(safe-area-inset-top) + 1px);
     }
 }
+
+::deep .loading-container {
+    text-align: center;
+    //width: 100%;
+    //height: 100%;
+    //display: flex;
+    //align-items: center;
+    //justify-content: center;
+}
