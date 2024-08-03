@@ -76,7 +76,7 @@ public partial class Templates03GettingStartedPage
             command:"\"%ProgramFiles%\\dotnet\\dotnet.exe\" workload install wasm-tools wasm-experimental"),
 
             (text:@":: Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates",
-            command:"\"%ProgramFiles%\\dotnet\\dotnet.exe\" new install Bit.Boilerplate::8.10.0-pre-03"),
+            command:"\"%ProgramFiles%\\dotnet\\dotnet.exe\" new install Bit.Boilerplate::8.10.0-pre-04"),
         ],
 
         [CommandGroup.Additional] =
