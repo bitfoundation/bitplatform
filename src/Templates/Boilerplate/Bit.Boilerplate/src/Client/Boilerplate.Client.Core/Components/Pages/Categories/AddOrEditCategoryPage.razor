@@ -36,7 +36,7 @@
         @if (isLoading)
         {
             <div class="loading-container">
-                <BitRippleLoading />
+                <BitRingLoading />
             </div>
         }
 
@@ -64,14 +64,16 @@
                                 type="button" />
                     }
                 </div>
-                <div>
-                    <BitButton Variant="BitVariant.Outline" ButtonType="BitButtonType.Button" OnClick=@ToggleColorPicker>
-                        <div class="custom-color-container">
-                            <div class="color-square" style="background-color: @category.Color"></div>
-                            @Localizer[(nameof(AppStrings.CustomColor))]
-                        </div>
-                    </BitButton>
-                </div>
+                <BitStack Horizontal Gap="1rem">
+                    <div class="custom-color-container">
+                        <div class="color-square" style="background-color: @category.Color"></div>
+                    </div>
+                    <BitToggleButton @bind-bind-IsChecked="isColorPickerOpen"
+                                     Variant="BitVariant.Outline"
+                                     OnClick=@ToggleColorPicker>
+                        @Localizer[(nameof(AppStrings.CustomColor))]
+                    </BitToggleButton>
+                </BitStack>
                 @if (isColorPickerOpen)
                 {
                     <div class="color-picker-container">

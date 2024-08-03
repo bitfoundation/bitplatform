@@ -16,7 +16,7 @@
     @if (isWaiting)
     {
         <div class="loading-container">
-            <BitRippleLoading />
+            <BitRingLoading />
         </div>
     }
     else
@@ -43,10 +43,11 @@
                         </a>
                         <div class="tfa-key-container">
                             <div class="tfa-key">@sharedKey</div>
-                            <BitButton OnClick="WrapHandled(CopySharedKeyToClipboard)"
-                                       IconName="@(isKeyCopiedShown ? "" : BitIconName.Copy)"
-                                       Title="Copy" Style="padding:0"
-                                       Variant="BitVariant.Outline">
+                            <BitButton Title="Copy"
+                                       Style="padding:0"
+                                       Variant="BitVariant.Text"
+                                       OnClick="WrapHandled(CopySharedKeyToClipboard)"
+                                       IconName="@(isKeyCopiedShown ? "" : BitIconName.Copy)">
                                 @(isKeyCopiedShown ? "Copied" : "")
                             </BitButton>
                         </div>

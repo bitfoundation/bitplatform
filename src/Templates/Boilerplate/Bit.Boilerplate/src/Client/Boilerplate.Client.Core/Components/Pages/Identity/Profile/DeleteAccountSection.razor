@@ -1,6 +1,6 @@
 @inherits AppComponentBase
 
-<BitTypography Variant="BitTypographyVariant.H5" Style="color: #dc0000;border-bottom: 1px solid #dc0000">
+<BitTypography Variant="BitTypographyVariant.H5" Class="@BitCss.Class.Color.Error.Main">
     @Localizer[nameof(AppStrings.DeleteAccount)]
 </BitTypography>
 <br />
@@ -10,9 +10,8 @@
 </BitTypography>
 <br />
 <br />
-<BitButton Variant="BitVariant.Outline"
-           Style=" color: #dc0000; border-color: #dc0000"
-           Title="@Localizer[nameof(AppStrings.DeleteAccount)]"
+<BitButton Color="BitColor.Error"
+           Variant="BitVariant.Outline"
            OnClick="() => isDeleteAccountConfirmModalOpen = true">
     @Localizer[nameof(AppStrings.DeleteAccount)]
 </BitButton>

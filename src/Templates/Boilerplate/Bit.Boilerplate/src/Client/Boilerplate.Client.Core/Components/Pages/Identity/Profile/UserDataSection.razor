@@ -17,7 +17,7 @@
     @if (Loading)
     {
         <div class="loading-container">
-            <BitRippleLoading />
+            <BitRingLoading />
         </div>
     }
     else
@@ -52,7 +52,7 @@
                            OnUploadFailed="() => profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]" />
             @if (isUploading)
             {
-                <BitRippleLoading />
+                <BitRingLoading />
             }
             <div class="form-input-error">@profileImageError</div>
         </div>
