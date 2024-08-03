@@ -15,24 +15,6 @@
                     <span>@copyCodeMessage</span>
                 }
             </BitActionButton>
-            @* @if (isCodeCopied)
-    {
-    <BitButton Class="copy-btn copied"
-    IconName="@codeIcon"
-    Title="@copyCodeMessage"
-    Variant="BitVariant.Text"
-    OnClick="@CopyCodeToClipboard">
-    <span>@copyCodeMessage</span>
-    </BitButton>
-    }
-    else
-    {
-    <BitButton Class="copy-btn"
-    IconName="@codeIcon"
-    Title="@copyCodeMessage"
-    Variant="BitVariant.Text"
-    OnClick="@CopyCodeToClipboard" />
-    } *@
         }
 
         <pre @ref="preElementRefrence"
