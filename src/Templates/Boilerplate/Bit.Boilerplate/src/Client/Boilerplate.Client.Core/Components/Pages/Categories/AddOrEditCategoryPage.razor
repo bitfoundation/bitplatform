@@ -55,8 +55,8 @@
 
             <div class="form-input-container">
                 <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
-                <div class="color-container">
-                    <div class="color-btn-container">
+                <BitStack Gap="1rem">
+                    <BitStack Horizontal Gap="1rem">
                         @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
                         {
                             <button @onclick="() => SetCategoryColor(color)"
@@ -64,11 +64,10 @@
                                     style="background-color: @color"
                                     type="button" />
                         }
-                    </div>
+                    </BitStack>
+                    <div />
                     <BitStack Horizontal Gap="1rem">
-                        <div class="custom-color-container">
-                            <div class="color-square" style="background-color: @category.Color"></div>
-                        </div>
+                        <div class="color-square selected" style="background-color: @category.Color"></div>
                         <BitToggleButton @bind-bind-IsChecked="isColorPickerOpen"
                                          Variant="BitVariant.Outline"
                                          OnClick=@ToggleColorPicker>
@@ -83,7 +82,7 @@
                             </BitColorPicker>
                         </div>
                     }
-                </div>
+                </BitStack>
                 <ValidationMessage For="() => category.Color" />
             </div>
 

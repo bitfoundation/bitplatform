@@ -55,19 +55,6 @@
     margin-bottom: rem2(24px);
 }
 
-.color-container {
-    gap: 1rem;
-    display: flex;
-    flex-flow: column wrap;
-    justify-content: flex-start;
-}
-
-.color-btn-container {
-    gap: 0.75rem;
-    display: flex;
-    flex-flow: row wrap;
-}
-
 .color-btn {
     border: none;
     outline: none;
@@ -89,13 +76,10 @@
     height: rem2(32px);
     display: inline-block;
     border-radius: rem2(2px);
-}
 
-.custom-color-container {
-    gap: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    &.selected {
+        width: rem2(80px);
+    }
 }
 
 ::deep .validation-message {

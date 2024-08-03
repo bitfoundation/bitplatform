@@ -35,8 +35,9 @@
                                    Variant="BitVariant.Text"
                                    OnClick="() => EditProduct(product!)"
                                    Title="@Localizer[(nameof(AppStrings.Edit))]" />
-                        <BitButton IconName="@BitIconName.Delete"
+                        <BitButton Color="BitColor.Error"
                                    Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Delete"
                                    OnClick="WrapHandled(() => DeleteProduct(product!))"
                                    Title="@Localizer[(nameof(AppStrings.Delete))]" />
                     </BitDataGridTemplateColumn>

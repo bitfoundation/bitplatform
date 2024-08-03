@@ -38,8 +38,9 @@
                                    Variant="BitVariant.Text"
                                    Title="@Localizer[(nameof(AppStrings.Edit))]"
                                    OnClick="() => EditCategory(category!)" />
-                        <BitButton IconName="@BitIconName.Delete"
+                        <BitButton Color="BitColor.Error"
                                    Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Delete"
                                    Title="@Localizer[(nameof(AppStrings.Delete))]"
                                    OnClick="WrapHandled(() => DeleteCategory(category!))" />
                     </BitDataGridTemplateColumn>
