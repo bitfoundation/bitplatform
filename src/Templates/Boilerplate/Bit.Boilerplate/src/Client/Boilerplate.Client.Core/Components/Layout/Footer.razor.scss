@@ -55,14 +55,8 @@
     }
 }
 
-.text--red {
-    color: $bit-color-requried;
-}
-
-::deep {
-    .culture-drp {
-        width: rem2(104px);
-    }
+::deep .culture-drp {
+    width: rem2(104px);
 }
 
 .theme-container {
