@@ -38,12 +38,12 @@ dotnet new bit-bp –-name MyFirstProject
             The subsequent sections will provide detailed information about these files.
             <br />
             <br />
-            In addition to the .editorconfig and .gitignore files, which have clear purposes,
-            there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove any extra files from your project when you close the IDE.
+            In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank">.gitignore</a> files,
+            which have clear purposes, there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove any extra files from your project when you close the IDE.
             To understand which files will be removed, please refer to the comments within these scripts.
             <br />
             <br />
-            There is also a file named global.json, which mitigates potential issues arising from the use of different .NET SDK versions by team members.
+            There is also a file named <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-json" target="_blank">global.json</a>, which mitigates potential issues arising from the use of different .NET SDK versions by team members.
         </div>
     </section>
 
@@ -58,23 +58,33 @@ dotnet new bit-bp –-name MyFirstProject
                 <li>
                     <b>PropertyGroup:</b> This section specifies properties such as TargetFramework. For instance, the following line indicates that the project uses .NET 8:
                     <br />
-                    <CodeBox>
-&lt;TargetFramework>net8.0&lt;/TargetFramework>
-                    </CodeBox>
+                    <br />
+                    <code>
+                        &lt;TargetFramework>net8.0&lt;/TargetFramework>
+                    </code>
+                    <br />
+                    <br />
                 </li>
                 <li>
                     <b>ItemGroup:</b> This section details items such as NuGet packages used in the project. For example:
-                    <CodeBox>
-&lt;PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
-                    </CodeBox>
+                    <br />
+                    <br />
+                    <code>
+                        &lt;PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
+                    </code>
+                    <br />
+                    <br />
                 </li>
             </ul>
             The Directory.Build.props file also contains PropertyGroup and ItemGroup sections.
             Any settings specified in this file are implicitly applied to all .csproj files within the directory. For instance:
             <br />
-            <CodeBox>
-&lt;LangVersion>12.0&lt;/langVersion>
-            </CodeBox>
+            <br />
+            <code>
+                &lt;LangVersion>12.0&lt;/langVersion>
+            </code>
+            <br />
+            <br />
             This setting enforces the use of C# 12 across all projects.
 
             The following sections will provide further details on the Directory.Build.props file and .csproj files.
@@ -127,12 +137,18 @@ dotnet new bit-bp –-name MyFirstProject
             On the client side, the Client.Core project contains various components, including Layouts, Pages, and other essential elements.
             <br />
             <br />
+            The Client.Maui project enables the development of applications with comprehensive access to the full range of operating system features. 
+            Additionally, it supports the use of libraries in Swift, Kotlin, Java, and Objective-C across Android, iOS, Windows, and macOS platforms.
+            <br />
+            <br />
             In contrast to Client.Maui, which is applicable only to Windows 10 and 11, the Client.Windows project is designed to run on Windows 7, 8, 10, and 11.
             Additionally, it features an auto-update capability.
             <br />
             <br />
             If you set BlazorWebAssemblyStandalone to true in the Directory.Build.props file, the Client.Web project can be published as a
-            Blazor WebAssembly Standalone application on platforms such as Cloudflare Pages, Azure Static Web Apps, GitHub Pages, and others, without requiring ASP.NET Core.
+            Blazor WebAssembly Standalone application on platforms such as <a href="https://pages.cloudflare.com/" target="_blank">Cloudflare Pages</a>, 
+            <a href="https://azure.microsoft.com/en-us/products/app-service/static" target="_blank">Azure Static Web Apps</a>, 
+            <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>, and others, without requiring ASP.NET Core.
             <br />
             <br />
             We recommend keeping BlazorWebAssemblyStandalone set to false during development and only enabling it during the publishing process.
