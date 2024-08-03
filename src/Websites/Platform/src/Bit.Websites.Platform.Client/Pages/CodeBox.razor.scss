@@ -51,14 +51,14 @@
 }
 
 ::deep .copy-btn {
+    padding: 0;
     top: rem2(8px);
     right: rem2(8px);
     width: rem2(32px);
     height: rem2(32px);
     position: absolute;
+    padding-left: rem2(8px);
     transition: width 0.2s ease-in-out;
-    padding: 0;
-    padding-left: 5px;
 
     &:hover {
         background-color: $bit-color-background-primary;
