@@ -8,7 +8,7 @@
     @if (isLoading)
     {
         <div class="loading-container">
-            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            <BitRippleLoading />
         </div>
     }
 
@@ -33,10 +33,14 @@
                     <span class="color-box" style="background-color:@(category!.Color)"></span>
                 </BitDataGridTemplateColumn>
                 <BitDataGridTemplateColumn Title="@Localizer[nameof(AppStrings.Action)]" Align="BitDataGridAlign.Center" Context="category">
-                    <BitIconButton IconName="@BitIconName.Edit" Title="@Localizer[(nameof(AppStrings.Edit))]"
-                                   OnClick="() => EditCategory(category!)" />
-                    <BitIconButton IconName="@BitIconName.Delete" Title="@Localizer[(nameof(AppStrings.Delete))]"
-                                   OnClick="WrapHandled(() => DeleteCategory(category!))" />
+                    <BitButton IconName="@BitIconName.Edit"
+                               Variant="BitVariant.Text"
+                               Title="@Localizer[(nameof(AppStrings.Edit))]"
+                               OnClick="() => EditCategory(category!)" />
+                    <BitButton IconName="@BitIconName.Delete"
+                               Variant="BitVariant.Text"
+                               Title="@Localizer[(nameof(AppStrings.Delete))]"
+                               OnClick="WrapHandled(() => DeleteCategory(category!))" />
                 </BitDataGridTemplateColumn>
             </BitDataGrid>
         </div>

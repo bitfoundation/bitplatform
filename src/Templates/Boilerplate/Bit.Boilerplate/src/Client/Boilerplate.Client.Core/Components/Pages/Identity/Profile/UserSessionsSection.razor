@@ -3,7 +3,7 @@
 <div @ref="messageRef" class="form-message-bar">
     @if (string.IsNullOrEmpty(message) is false)
     {
-        <BitMessage Multiline Severity="severity" OnDismiss="() => message = null">@message</BitMessage>
+        <BitMessage Multiline Color="messageColor" OnDismiss="() => message = null">@message</BitMessage>
     }
 </div>
 
@@ -16,7 +16,7 @@
 @if (isLoading)
 {
     <div class="loading-container">
-        <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>
+        <BitRippleLoading />
     </div>
 }
 else
@@ -51,7 +51,9 @@ else
                             Styles="@(new() { Image = "width:50%;height:50%" })"
                             ImageInitials="@(session.IsValid ? "✓" : "✘")"
                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />
-                <BitIconButton IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" OnClick="() => RevokeSession(session)" />
+                <BitButton IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)"
+                           OnClick="() => RevokeSession(session)"
+                           Variant="BitVariant.Text" />
             </BitStack>
         }
     </BitStack>

@@ -21,9 +21,7 @@
                           Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]" />
             <BitButton IsLoading="isAdding"
                        OnClick="WrapHandled(AddTodoItem)"
-                       Class="add-todo-button"
                        Title="@Localizer[nameof(AppStrings.Add)]"
-                       AriaLabel="@Localizer[nameof(AppStrings.Add)]"
                        IsEnabled="(string.IsNullOrWhiteSpace(newTodoTitle) is false)">
                 @Localizer[nameof(AppStrings.Add)]
             </BitButton>
@@ -53,7 +51,7 @@
                 @if (isLoading)
                 {
                     <div class="todo-list-spinner">
-                        <BitSpinner />
+                        <BitRippleLoading />
                     </div>
                 }
                 else
@@ -76,15 +74,12 @@
                                     {
                                         <BitTextField Class="todo-input" @bind-Value="underEditTodoItemTitle" />
                                         <div class="edit-btn-group">
-                                            <BitButton Title="@Localizer[nameof(AppStrings.Edit)]"
-                                                       AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
-                                                       OnClick="WrapHandled(() => SaveTodoItem(todo))">
+                                            <BitButton Title="@Localizer[nameof(AppStrings.Edit)]" OnClick="WrapHandled(() => SaveTodoItem(todo))">
                                                 @Localizer[nameof(AppStrings.Save)]
                                             </BitButton>
-                                            <BitButton ButtonStyle="BitButtonStyle.Standard"
+                                            <BitButton Variant="BitVariant.Outline"
                                                        Class="todo-button"
                                                        Title="@Localizer[nameof(AppStrings.Cancel)]"
-                                                       AriaLabel="@Localizer[nameof(AppStrings.Cancel)]"
                                                        OnClick="WrapHandled(() => ToggleEditMode(todo))">
                                                 @Localizer[nameof(AppStrings.Cancel)]
                                             </BitButton>
@@ -103,15 +98,15 @@
                                         </div>
 
                                         <div class="todo-btn-group">
-                                            <BitIconButton IconName="@BitIconName.Edit"
-                                                           Title="@Localizer[nameof(AppStrings.Edit)]"
-                                                           AriaLabel="@Localizer[nameof(AppStrings.Edit)]"
-                                                           OnClick="WrapHandled(() => ToggleEditMode(todo))" />
+                                            <BitButton IconName="@BitIconName.Edit"
+                                                       Variant="BitVariant.Text"
+                                                       Title="@Localizer[nameof(AppStrings.Edit)]"
+                                                       OnClick="WrapHandled(() => ToggleEditMode(todo))" />
 
-                                            <BitIconButton IconName="@BitIconName.Delete"
-                                                           Title="@Localizer[nameof(AppStrings.Remove)]"
-                                                           AriaLabel="@Localizer[nameof(AppStrings.Remove)]"
-                                                           OnClick="WrapHandled(() => DeleteTodoItem(todo))" />
+                                            <BitButton IconName="@BitIconName.Delete"
+                                                       Variant="BitVariant.Text"
+                                                       Title="@Localizer[nameof(AppStrings.Remove)]"
+                                                       OnClick="WrapHandled(() => DeleteTodoItem(todo))" />
                                         </div>
                                     }
                                 </div>

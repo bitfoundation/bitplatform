@@ -9,7 +9,7 @@
         <div @ref="messageRef" class="form-message-bar">
             @if (string.IsNullOrEmpty(message) is false)
             {
-                <BitMessage Multiline Severity="BitSeverity.Error" OnDismiss="() => message = null">
+                <BitMessage Multiline Color="BitColor.Error" OnDismiss="() => message = null">
                     @message
                 </BitMessage>
             }
@@ -23,7 +23,7 @@
                    IsLoading="isWaiting"
                    ButtonType="BitButtonType.Button"
                    OnClick="WrapHandled(GoogleSignUp)"
-                   ButtonStyle="BitButtonStyle.Standard">
+                   Variant="BitVariant.Outline">
             @Localizer[AppStrings.GoogleSignUpButtonText]
         </BitButton>
         <br />
@@ -31,7 +31,7 @@
                    IsLoading="isWaiting"
                    ButtonType="BitButtonType.Button"
                    OnClick="WrapHandled(GitHubSignUp)"
-                   ButtonStyle="BitButtonStyle.Standard">
+                   Variant="BitVariant.Outline">
             @Localizer[AppStrings.GitHubSignUpButtonText]
         </BitButton>
         <br />
@@ -39,7 +39,7 @@
                    IsLoading="isWaiting"
                    ButtonType="BitButtonType.Button"
                    OnClick="WrapHandled(TwitterSignUp)"
-                   ButtonStyle="BitButtonStyle.Standard">
+                   Variant="BitVariant.Outline">
             @Localizer[AppStrings.TwitterSignUpButtonText]
         </BitButton>
         <br /><br />
@@ -97,7 +97,8 @@
             <br />
             <br />
             <div>
-                @Localizer[nameof(AppStrings.SignInMessageInSignUp)] <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                @Localizer[nameof(AppStrings.SignInMessageInSignUp)]
+                <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
             </div>
             <br />
             <div>

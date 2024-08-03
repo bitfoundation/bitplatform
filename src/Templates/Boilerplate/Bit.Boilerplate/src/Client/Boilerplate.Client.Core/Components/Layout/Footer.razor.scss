@@ -56,7 +56,7 @@
 }
 
 .text--red {
-    color: $bit-color-state-required;
+    color: $bit-color-requried;
 }
 
 ::deep {
@@ -78,7 +78,7 @@
     border-radius: 50%;
     min-width: rem2(35px);
     color: $bit-color-primary-text;
-    background-color: $bit-color-primary-main;
+    background-color: $bit-color-primary;
 
     .icon-container {
         height: 100%;

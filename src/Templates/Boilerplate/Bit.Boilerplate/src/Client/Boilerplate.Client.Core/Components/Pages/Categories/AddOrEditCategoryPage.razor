@@ -14,10 +14,11 @@
 
 <div class="page-container">
     <div class="page-header">
-        <BitIconButton Class="back-btn"
-                       Href="@Urls.CategoriesPage"
-                       IconName="@BitIconName.Back"
-                       Title="@Localizer[nameof(AppStrings.Back)]" />
+        <BitButton Class="back-btn"
+                   Variant="BitVariant.Text"
+                   Href="@Urls.CategoriesPage"
+                   IconName="@BitIconName.Back"
+                   Title="@Localizer[nameof(AppStrings.Back)]" />
         <h1 class="page-title">
             @if (category.Id == default)
             {
@@ -34,14 +35,14 @@
 
         @if (isLoading)
         {
-            <div class="loading-continaer">
-                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            <div class="loading-container">
+                <BitRippleLoading />
             </div>
         }
 
         @if (string.IsNullOrEmpty(saveMessage) is false)
         {
-            <BitMessage Severity="@saveMessageSeverity" OnDismiss="() => saveMessage = null">@saveMessage</BitMessage>
+            <BitMessage Color="@saveMessageColor" OnDismiss="() => saveMessage = null">@saveMessage</BitMessage>
         }
 
         <div class="form-input-container">
@@ -64,7 +65,7 @@
                     }
                 </div>
                 <div>
-                    <BitButton ButtonStyle="BitButtonStyle.Standard" ButtonType="BitButtonType.Button" OnClick=@ToggleColorPicker>
+                    <BitButton Variant="BitVariant.Outline" ButtonType="BitButtonType.Button" OnClick=@ToggleColorPicker>
                         <div class="custom-color-container">
                             <div class="color-square" style="background-color: @category.Color"></div>
                             @Localizer[(nameof(AppStrings.CustomColor))]
@@ -74,9 +75,7 @@
                 @if (isColorPickerOpen)
                 {
                     <div class="color-picker-container">
-                        <BitColorPicker @bind-Color="category.Color"
-                                        id="catColorInput"
-                                        ShowPreview="true">
+                        <BitColorPicker @bind-Color="category.Color" Id="catColorInput" ShowPreview="true">
                             @Localizer[nameof(AppStrings.DefaultColorPicker)]
                         </BitColorPicker>
                     </div>
@@ -85,10 +84,7 @@
             <ValidationMessage For="() => category.Color" />
         </div>
 
-        <BitButton IsLoading="isSaving"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   ButtonType="BitButtonType.Submit"
-                   AriaLabel="Category">
+        <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
             @Localizer[nameof(AppStrings.Save)]
         </BitButton>
 

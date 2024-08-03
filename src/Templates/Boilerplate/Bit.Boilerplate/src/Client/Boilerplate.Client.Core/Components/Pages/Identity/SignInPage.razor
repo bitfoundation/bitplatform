@@ -11,7 +11,7 @@
         <div @ref="messageRef" class="form-message-bar">
             @if (string.IsNullOrEmpty(message) is false)
             {
-                <BitMessage Multiline Severity="@messageSeverity" OnDismiss="() => message = null">@message</BitMessage>
+                <BitMessage Multiline Color="messageColor" OnDismiss="() => message = null">@message</BitMessage>
             }
         </div>
 
@@ -21,12 +21,14 @@
 
         @if (requiresTwoFactor is false)
         {
-            <br /><br />
+            <br />
+
+            <br />
             <BitButton Style="width:300px"
                        IsLoading="isWaiting"
                        ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(GoogleSignIn)"
-                       ButtonStyle="BitButtonStyle.Standard">
+                       Variant="BitVariant.Outline">
                 @Localizer[AppStrings.GoogleSignInButtonText]
             </BitButton>
             <br />
@@ -34,7 +36,7 @@
                        IsLoading="isWaiting"
                        ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(GitHubSignIn)"
-                       ButtonStyle="BitButtonStyle.Standard">
+                       Variant="BitVariant.Outline">
                 @Localizer[AppStrings.GitHubSignInButtonText]
             </BitButton>
             <br />
@@ -42,10 +44,12 @@
                        IsLoading="isWaiting"
                        ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(TwitterSignIn)"
-                       ButtonStyle="BitButtonStyle.Standard">
+                       Variant="BitVariant.Outline">
                 @Localizer[AppStrings.TwitterSignInButtonText]
             </BitButton>
-            <br /><br />
+            <br />
+
+            <br />
             <BitSeparator Style="width:100%">Or</BitSeparator>
             <br />
             <div class="form-input-container">
@@ -80,9 +84,9 @@
                 <ValidationMessage For="@(() => model.Otp)" />
                 <BitButton IsLoading="isSendingOtp"
                            OnClick="WrapHandled(SendOtp)"
-                           Style="padding:0;margin-top:4px"
+                           Style="margin-top:4px"
                            ButtonType="BitButtonType.Button"
-                           ButtonStyle="BitButtonStyle.Standard">
+                           Variant="BitVariant.Outline">
                     @Localizer[nameof(AppStrings.SendOtpButtonText)]
                 </BitButton>
             </div>
@@ -129,20 +133,19 @@
             </div>
         }
         <br />
-        <BitButton IsLoading="isWaiting"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   Title="@Localizer[nameof(AppStrings.SignIn)]"
-                   AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
-                   ButtonType="BitButtonType.Submit">
+        <BitButton IsLoading="isWaiting" Title="@Localizer[nameof(AppStrings.SignIn)]" ButtonType="BitButtonType.Submit">
             @Localizer[nameof(AppStrings.SignIn)]
         </BitButton>
         <br />
         <div>
-            <BitLink Href="@Urls.ForgotPasswordPage">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+            <BitLink Href="@Urls.ForgotPasswordPage">
+                @Localizer[nameof(AppStrings.ForgotPasswordLink)]
+            </BitLink>
         </div>
         <br />
         <div>
-            @Localizer[nameof(AppStrings.DontHaveAccountMessage)] <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+            @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
+            <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
         </div>
     </EditForm>
 </div>

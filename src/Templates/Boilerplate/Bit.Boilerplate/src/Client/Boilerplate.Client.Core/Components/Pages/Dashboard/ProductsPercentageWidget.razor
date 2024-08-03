@@ -5,12 +5,14 @@
         <div class="title">
             @Localizer[nameof(AppStrings.ProductsPercentagePerCategory)]
         </div>
-        <div class="subtitle">@Localizer[nameof(AppStrings.ProductsPercentagePerCategoryText)]</div>
+        <div class="subtitle">
+            @Localizer[nameof(AppStrings.ProductsPercentagePerCategoryText)]
+        </div>
     </div>
     <div class="card-body">
         @if (isLoading)
         {
-            <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
+            <BitRippleLoading />
         }
         else
         {
