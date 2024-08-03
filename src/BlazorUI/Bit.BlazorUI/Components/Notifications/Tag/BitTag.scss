@@ -5,13 +5,13 @@
     overflow: hidden;
     align-items: center;
     display: inline-flex;
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
     border-style: $shp-border-style;
     border-width: $shp-border-width;
     border-radius: $shp-border-radius;
-    padding: spacing(0.75) spacing(1.5);
+    font-size: var(--bit-tag-fontsize);
+    padding: var(--bit-tag-padding);
 
     &.bit-dis {
         cursor: default;
@@ -103,4 +103,19 @@
 .bit-tag-err {
     --bit-tag-clr: #{$clr-err};
     --bit-tag-clr-txt: #{$clr-err-text};
+}
+
+.bit-tag-sm {
+    --bit-tag-fontsize: #{spacing(1.5)};
+    --bit-tag-padding: #{spacing(0.5)} #{spacing(1)};
+}
+
+.bit-tag-md {
+    --bit-tag-fontsize: #{spacing(1.75)};
+    --bit-tag-padding: #{spacing(0.75)} #{spacing(1.5)};
+}
+
+.bit-tag-lg {
+    --bit-tag-fontsize: #{spacing(2)};
+    --bit-tag-padding: #{spacing(1)} #{spacing(2)};
 }
