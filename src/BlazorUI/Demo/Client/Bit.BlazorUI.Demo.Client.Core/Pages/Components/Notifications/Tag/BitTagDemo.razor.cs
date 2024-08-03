@@ -16,7 +16,7 @@ public partial class BitTagDemo
             Name = "Classes",
             Type = "BitTagClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitTag.",
+            Description = "Custom CSS classes for different parts of the tag.",
             LinkType = LinkType.Link,
             Href = "#tag-class-styles"
         },
@@ -52,10 +52,19 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the tag.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitTagClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitTag.",
+            Description = "Custom CSS styles for different parts of the tag.",
             LinkType = LinkType.Link,
             Href = "#tag-class-styles"
         },
@@ -185,6 +194,33 @@ public partial class BitTagDemo
         },
         new()
         {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
             Id = "variant-enum",
             Name = "BitVariant",
             Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
@@ -275,6 +311,19 @@ private bool isDismissed;";
 <BitTag Text=""Error"" IconName=""@BitIconName.Calendar"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" />";
 
     private readonly string example6RazorCode = @"
+<BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Fill"" />
+<BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Small"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Small"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""Medium"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" />
+<BitTag Text=""Medium"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Medium"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Medium"" Variant=""BitVariant.Text"" />
+
+<BitTag Text=""Large"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Large"" Variant=""BitVariant.Fill"" />
+<BitTag Text=""Large"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" />
+<BitTag Text=""Large"" IconName=""@BitIconName.Calendar"" Size=""BitSize.Large"" Variant=""BitVariant.Text"" />";
+
+    private readonly string example7RazorCode = @"
 <BitTag>
     <BitStack Horizontal Gap=""0.5rem"" Style=""padding-inline: 0.5rem;"">
         <BitLabel>Custom content</BitLabel>
@@ -282,7 +331,7 @@ private bool isDismissed;";
     </BitStack>
 </BitTag>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         border-radius: 0.25rem;
