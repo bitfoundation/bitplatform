@@ -1,8 +1,8 @@
-﻿@import '../Styles/bit-css-variables.scss';
-@import '../Styles/abstracts/_vars.scss';
+﻿@import '../Styles/abstracts/_vars.scss';
 @import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .main-header {
     top: 0;
@@ -76,15 +76,15 @@
     color: $bit-color-foreground-secondary;
 
     &:hover {
-        color: $bit-color-action-hover-foreground-secondary;
+        color: $bit-color-foreground-secondary-hover;
     }
 }
 
 .header-link--active {
-    color: $bit-color-primary-main;
+    color: $bit-color-primary;
 
     &:hover {
-        color: $bit-color-primary-main;
+        color: $bit-color-primary;
     }
 }
 
@@ -124,7 +124,7 @@
     border-radius: 50%;
     min-width: rem2(35px);
     color: $bit-color-primary-text;
-    background-color: $bit-color-primary-main;
+    background-color: $bit-color-primary;
 
     .icon-container {
         height: 100%;
@@ -195,7 +195,7 @@
 }
 
 .header-nav-link--active {
-    color: $bit-color-primary-main;
+    color: $bit-color-primary;
 }
 
 ::deep {
@@ -206,7 +206,7 @@
         width: rem2(44px);
         height: rem2(44px);
         position: absolute;
-        color: $bit-color-primary-main;
+        color: $bit-color-primary;
     }
 
     .header-action-button {
@@ -267,7 +267,7 @@
     .col-header {
         font-weight: 700;
         font-size: rem2(16px);
-        color: $bit-color-primary-main;
+        color: $bit-color-primary;
         padding: rem2(8px) rem2(16px) rem2(20px);
     }
 
@@ -283,12 +283,12 @@
         transition: background-color 150ms cubic-bezier(.4,0,.2,1) 0ms;
 
         &:hover {
-            background-color: $bit-color-action-hover-background-primary;
+            background-color: $bit-color-background-primary-hover;
         }
 
         &.active {
             .item-title {
-                color: $bit-color-primary-main;
+                color: $bit-color-primary;
             }
         }
     }

@@ -1,6 +1,6 @@
-﻿@import '../Styles/bit-css-variables.scss';
-@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .container {
     height: 3rem;
@@ -26,7 +26,7 @@
     outline: none;
     display: flex;
     align-items: center;
-    color: $bit-color-primary-main;
+    color: $bit-color-primary;
 
     .right {
         padding-right: 0.5rem;

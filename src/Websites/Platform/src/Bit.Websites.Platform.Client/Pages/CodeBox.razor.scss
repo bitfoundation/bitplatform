@@ -1,7 +1,7 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .code-box {
     position: relative;
@@ -17,7 +17,7 @@
     margin-bottom: rem2(32px);
     padding: rem2(12px) rem2(48px) rem2(12px) rem2(16px);
     background-color: $bit-color-background-secondary;
-    border-left: rem2(2px) solid $bit-color-primary-main;
+    border-left: rem2(2px) solid $bit-color-primary;
     font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 
     &::-webkit-scrollbar {
