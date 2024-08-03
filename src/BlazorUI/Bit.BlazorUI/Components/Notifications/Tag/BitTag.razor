@@ -13,17 +13,15 @@
     }
     else
     {
-        <div style="@Styles?.Content" class="bit-tag-ctn @Classes?.Content">
-            @if (IconName is not null)
-            {
-                <i style="@Styles?.Icon" class="bit-tag-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
-            }
+        @if (IconName is not null)
+        {
+            <i style="@Styles?.Icon" class="bit-tag-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+        }
 
-            @if (Text is not null)
-            {
-                <span style="@Styles?.Text" class="bit-tag-tex @Classes?.Text">@Text</span>
-            }
-        </div>
+        @if (Text is not null)
+        {
+            <span style="@Styles?.Text" class="bit-tag-tex @Classes?.Text">@Text</span>
+        }
     }
 
     @if (OnDismiss.HasDelegate)

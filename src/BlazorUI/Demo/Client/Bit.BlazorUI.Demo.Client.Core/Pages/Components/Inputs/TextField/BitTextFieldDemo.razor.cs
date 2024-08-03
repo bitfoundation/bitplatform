@@ -630,16 +630,14 @@ private string notTrimmedValue;";
         transition: width 0.3s ease, left 0.3s ease;
     }
 
-    .custom-focus {
-        .custom-field::after {
-            left: 0;
-            width: 100%;
-        }
+    .custom-focus .custom-field::after {
+        left: 0;
+        width: 100%;
+    }
 
-        .custom-label {
-            color: blueviolet;
-            transform: translate(0, 1.5px) scale(0.75);
-        }
+    .custom-focus .custom-label {
+        color: blueviolet;
+        transform: translate(0, 1.5px) scale(0.75);
     }
 </style>
 
@@ -649,8 +647,7 @@ private string notTrimmedValue;";
 <BitTextField Class=""custom-class"" />
 
 
-<BitTextField Label=""Custom label style""
-              IconName=""@BitIconName.Microphone""
+<BitTextField Label=""Styles""
               Styles=""@(new() { Root = ""margin-inline: 1rem;"",
                                 Focused = ""--focused-background: #b2b2b25a;"",
                                 FieldGroup = ""background: var(--focused-background);"",
@@ -658,7 +655,7 @@ private string notTrimmedValue;";
                                 Input = ""padding: 0.5rem;"" })"" />
 
 <BitTextField @bind-Value=""classesValue""
-              Label=""Custom label class""
+              Label=""Classes""
               Classes=""@(new() { Root = ""custom-root"",
                                  FieldGroup = ""custom-field"",
                                  Focused = ""custom-focus"",

@@ -11,8 +11,8 @@
 
     @if (Hidden is false)
     {
-        <span style="@Styles?.BadgeWrapper" class="bit-bdg-wrp @GetBadgePositionClasses() @Classes?.BadgeWrapper">
-            <span style="@Styles?.Badge" class="bit-bdg-ctn @GetBadgeClasses() @Classes?.Badge" @onclick="HandleOnClick">
+        <span style="@Styles?.BadgeWrapper" class="bit-bdg-wrp @Classes?.BadgeWrapper">
+            <span style="@Styles?.Badge" class="bit-bdg-ctn @Classes?.Badge" @onclick="HandleOnClick">
                 @if (Dot is false)
                 {
                     if (IconName.HasValue())

@@ -10,135 +10,114 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <div>To create an Icon you can use a BitIcon component.</div>
-            <div>
-                <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" />
-                &nbsp;
-                <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" />
-                &nbsp;
-                <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" />
-
-                <br /><br />
-
-                <div>Disabled:</div>
-                <br />
-                <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" IsEnabled="false" />
-                &nbsp;
-                <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" IsEnabled="false" />
-                &nbsp;
-                <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" IsEnabled="false" />
-            </div>
+            <BitIcon IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Disabled</div><br />
+            <BitIcon IconName="@BitIconName.Accept" IsEnabled="false" />
+            &nbsp;
+            <BitIcon IconName="@BitIconName.Bus" IsEnabled="false" />
+            &nbsp;
+            <BitIcon IconName="@BitIconName.Pinned" IsEnabled="false" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Size" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
-            <div>
-                <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" Class="icon-class" />
-                <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" Class="icon-class" />
-                <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" Class="icon-class" />
-            </div>
-
-            <br /><br />
-
-            <div>
-                <BitIcon IconName="@BitIconName.Accept" AriaLabel="accept" Style="font-size: 3rem; margin: 1rem 2rem; color: red;" />
-                <BitIcon IconName="@BitIconName.Bus" AriaLabel="bus" Style="font-size: 3rem; margin: 1rem 2rem; color: green;" />
-                <BitIcon IconName="@BitIconName.Pinned" AriaLabel="pinned" Style="font-size: 3rem; margin: 1rem 2rem; color: mediumpurple;" />
-            </div>
+            <div>Small</div><br />
+            <BitIcon Size="BitSize.Small" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Size="BitSize.Small" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Size="BitSize.Small" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Medium</div><br />
+            <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Large</div><br />
+            <BitIcon Size="BitSize.Large" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Size="BitSize.Large" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Size="BitSize.Large" IconName="@BitIconName.Pinned" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Color" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
-            <div class="example-box">
-                <div>Small:</div>
-                <br />
-                <BitIcon Size="BitSize.Small" IconName="@BitIconName.Accept" />
-                &nbsp;
-                <BitIcon Size="BitSize.Small" IconName="@BitIconName.Bus" />
-                &nbsp;
-                <BitIcon Size="BitSize.Small" IconName="@BitIconName.Pinned" />
-
-                <br /><br />
-
-                <div>Medium:</div>
-                <br />
-                <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Accept" />
-                &nbsp;
-                <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Bus" />
-                &nbsp;
-                <BitIcon Size="BitSize.Medium" IconName="@BitIconName.Pinned" />
-
-                <br /><br />
-
-                <div>Large:</div>
-                <br />
-                <BitIcon Size="BitSize.Large" IconName="@BitIconName.Accept" />
-                &nbsp;
-                <BitIcon Size="BitSize.Large" IconName="@BitIconName.Bus" />
-                &nbsp;
-                <BitIcon Size="BitSize.Large" IconName="@BitIconName.Pinned" />
-            </div>
+            <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
+            <br /><br /><br />
+            <div>Primary</div><br />
+            <BitIcon Color="BitColor.Primary" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Color="BitColor.Primary" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Color="BitColor.Primary" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Secondary</div><br />
+            <BitIcon Color="BitColor.Secondary" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Color="BitColor.Secondary" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Color="BitColor.Secondary" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Tertiary</div><br />
+            <BitIcon Color="BitColor.Tertiary" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Color="BitColor.Tertiary" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Color="BitColor.Tertiary" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Info</div><br />
+            <BitIcon Color="BitColor.Info" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Color="BitColor.Info" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Color="BitColor.Info" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Success</div><br />
+            <BitIcon Color="BitColor.Success" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Color="BitColor.Success" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Color="BitColor.Success" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Warning</div><br />
+            <BitIcon Color="BitColor.Warning" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Color="BitColor.Warning" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Color="BitColor.Warning" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>SevereWarning</div><br />
+            <BitIcon Color="BitColor.SevereWarning" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Color="BitColor.SevereWarning" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Color="BitColor.SevereWarning" IconName="@BitIconName.Pinned" />
+            <br /><br /><br /><br />
+            <div>Error</div><br />
+            <BitIcon Color="BitColor.Error" IconName="@BitIconName.Accept" />
+            &nbsp;
+            <BitIcon Color="BitColor.Error" IconName="@BitIconName.Bus" />
+            &nbsp;
+            <BitIcon Color="BitColor.Error" IconName="@BitIconName.Pinned" />
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Severity" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>
-                Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.
-            </div>
-            <br />
-            <div class="buttons-container-grid">
-                <div>Info:</div>
-                <br />
-                <div>
-                    <BitIcon Severity="BitSeverity.Info" IconName="@BitIconName.Accept" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.Info" IconName="@BitIconName.Bus" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.Info" IconName="@BitIconName.Pinned" />
-                </div>
-                <br />
-                <div>Success:</div>
-                <br />
-                <div>
-                    <BitIcon Severity="BitSeverity.Success" IconName="@BitIconName.Accept" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.Success" IconName="@BitIconName.Bus" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.Success" IconName="@BitIconName.Pinned" />
-                </div>
-                <br />
-                <div>Warning:</div>
-                <br />
-                <div>
-                    <BitIcon Severity="BitSeverity.Warning" IconName="@BitIconName.Accept" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.Warning" IconName="@BitIconName.Bus" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.Warning" IconName="@BitIconName.Pinned" />
-                </div>
-                <br />
-                <div>SevereWarning:</div>
-                <br />
-                <div>
-                    <BitIcon Severity="BitSeverity.SevereWarning" IconName="@BitIconName.Accept" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.SevereWarning" IconName="@BitIconName.Bus" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.SevereWarning" IconName="@BitIconName.Pinned" />
-                </div>
-                <br />
-                <div>Error:</div>
-                <br />
-                <div>
-                    <BitIcon Severity="BitSeverity.Error" IconName="@BitIconName.Accept" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.Error" IconName="@BitIconName.Bus" />
-                    &nbsp;
-                    <BitIcon Severity="BitSeverity.Error" IconName="@BitIconName.Pinned" />
-                </div>
+                <BitIcon IconName="@BitIconName.Accept" Size="BitSize.Large"
+                         Style="background-color: brown; border-radius: 4px" />
+                <BitIcon IconName="@BitIconName.Accept" Class="icon-class" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
