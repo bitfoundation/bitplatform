@@ -34,7 +34,7 @@
         <div class="form-input-container">
             @if (user.ProfileImageName is not null)
             {
-                <BitButton IsLoading="isRemoving" OnClick="RemoveProfileImage">
+                <BitButton IsLoading="isRemoving" OnClick="RemoveProfileImage" Color="BitColor.Error">
                     @Localizer[nameof(AppStrings.Remove)]
                 </BitButton>
             }

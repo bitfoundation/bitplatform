@@ -103,8 +103,9 @@
                                                        Title="@Localizer[nameof(AppStrings.Edit)]"
                                                        OnClick="WrapHandled(() => ToggleEditMode(todo))" />
 
-                                            <BitButton IconName="@BitIconName.Delete"
+                                            <BitButton Color="BitColor.Error"
                                                        Variant="BitVariant.Text"
+                                                       IconName="@BitIconName.Delete"
                                                        Title="@Localizer[nameof(AppStrings.Remove)]"
                                                        OnClick="WrapHandled(() => DeleteTodoItem(todo))" />
                                         </div>
