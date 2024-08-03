@@ -55,14 +55,8 @@
     }
 }
 
-.text--red {
-    color: $bit-color-state-required;
-}
-
-::deep {
-    .culture-drp {
-        width: rem2(104px);
-    }
+::deep .culture-drp {
+    width: rem2(104px);
 }
 
 .theme-container {
@@ -78,7 +72,7 @@
     border-radius: 50%;
     min-width: rem2(35px);
     color: $bit-color-primary-text;
-    background-color: $bit-color-primary-main;
+    background-color: $bit-color-primary;
 
     .icon-container {
         height: 100%;
