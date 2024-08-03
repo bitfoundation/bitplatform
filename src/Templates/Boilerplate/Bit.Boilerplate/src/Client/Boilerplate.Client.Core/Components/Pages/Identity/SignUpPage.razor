@@ -50,7 +50,6 @@
         <br />
         <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)">
             <AppDataAnnotationsValidator />
-
             <div class="form-input-container">
                 <BitTextField @bind-Value="signUpModel.Email"
                               Type="BitTextFieldType.Email"
@@ -58,7 +57,6 @@
                               Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                 <ValidationMessage For="@(() => signUpModel.Email)" />
             </div>
-
             <div class="form-input-container">
                 <BitTextField @bind-Value="signUpModel.PhoneNumber"
                               Type="BitTextFieldType.Tel"
@@ -66,7 +64,6 @@
                               Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                 <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
             </div>
-
             <div class="form-input-container">
                 <BitTextField @bind-Value="signUpModel.Password"
                               CanRevealPassword="true"
@@ -76,7 +73,6 @@
                               Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
                 <ValidationMessage For="@(() => signUpModel.Password)" />
             </div>
-
             <div class="form-input-container">
                 <BitCheckbox Class="form-checkbox" @bind-Value="signUpModel.TermsAccepted">
                     <LabelTemplate>
@@ -97,8 +93,7 @@
                        ButtonType="BitButtonType.Submit">
                 @Localizer[nameof(AppStrings.SignUp)]
             </BitButton>
-            <br />
-            <br />
+            <br /><br />
             <div>
                 @Localizer[nameof(AppStrings.SignInMessageInSignUp)]
                 <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
@@ -110,7 +105,6 @@
                     @Localizer[nameof(AppStrings.Confirm)]
                 </BitLink>
             </div>
-
         </EditForm>
     </div>
 </div>
