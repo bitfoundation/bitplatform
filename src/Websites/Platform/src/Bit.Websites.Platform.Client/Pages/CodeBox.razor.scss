@@ -57,6 +57,12 @@
     height: rem2(32px);
     position: absolute;
     transition: width 0.2s ease-in-out;
+    padding: 0;
+    padding-left: 5px;
+
+    &:hover {
+        background-color: $bit-color-background-primary;
+    }
 
     &.copied {
         overflow: hidden;
