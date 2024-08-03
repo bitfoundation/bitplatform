@@ -51,20 +51,12 @@
 }
 
 ::deep .copy-btn {
-    z-index: 1;
-    display: flex;
     top: rem2(8px);
-    min-width: unset;
     right: rem2(8px);
     width: rem2(32px);
     height: rem2(32px);
     position: absolute;
-    border-radius: rem2(16px);
-    align-items: center;
-    justify-content: center;
     transition: width 0.2s ease-in-out;
-    background-color: $bit-color-background-secondary;
-    border: rem2(1px) solid $bit-color-border-secondary;
 
     &.copied {
         overflow: hidden;
