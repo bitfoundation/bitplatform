@@ -21,9 +21,7 @@
 
         @if (requiresTwoFactor is false)
         {
-            <br />
-
-            <br />
+            <br /><br />
             <BitButton Style="width:300px"
                        IsLoading="isWaiting"
                        Color="BitColor.Tertiary"
@@ -50,9 +48,7 @@
                        OnClick="WrapHandled(TwitterSignIn)">
                 @Localizer[AppStrings.TwitterSignInButtonText]
             </BitButton>
-            <br />
-
-            <br />
+            <br /><br />
             <BitSeparator Style="width:100%">Or</BitSeparator>
             <br />
             <div class="form-input-container">
@@ -68,7 +64,6 @@
                               Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                 <ValidationMessage For="@(() => model.PhoneNumber)" />
             </div>
-
             <div class="form-input-container">
                 <BitTextField @bind-Value="model.Password"
                               CanRevealPassword="true"
@@ -93,7 +88,6 @@
                     @Localizer[nameof(AppStrings.SendOtpButtonText)]
                 </BitButton>
             </div>
-
             <div class="form-input-container form-input-container--no-margin">
                 <BitCheckbox Class="form-checkbox" @bind-Value="model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
             </div>
@@ -101,27 +95,21 @@
         else
         {
             <h3 class="form-title">@Localizer[nameof(AppStrings.TwoFactorAuthTitle)]</h3>
-
             <div>@Localizer[nameof(AppStrings.TfaProtectedSignInSubtitle)]</div>
-
             <br />
-
             <div class="form-input-container">
                 <div>@Localizer[nameof(AppStrings.TfaEnterCodeInSignInMessage)]</div>
                 <BitTextField @bind-Value="model.TwoFactorCode"
                               AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
             </div>
-
             <div class="form-input-container">
                 <div>@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]</div>
                 <BitTextField @bind-Value="model.TwoFactorRecoveryCode"
                               AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                               Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
             </div>
-
             <br />
-
             <div class="form-input-container tfa-token-container">
                 <div>@Localizer[nameof(AppStrings.TfaTokenSignInTitle)]</div>
                 <BitButton Style="padding:0"
