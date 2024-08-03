@@ -8,7 +8,7 @@ public partial class BitTag : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitTag.
+    /// Custom CSS classes for different parts of the tag.
     /// </summary>
     [Parameter] public BitTagClassStyles? Classes { get; set; }
 
@@ -34,7 +34,13 @@ public partial class BitTag : BitComponentBase
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitTag.
+    /// The size of the tag.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the tag.
     /// </summary>
     [Parameter] public BitTagClassStyles? Styles { get; set; }
 
@@ -68,6 +74,14 @@ public partial class BitTag : BitComponentBase
             BitColor.SevereWarning => "bit-tag-swr",
             BitColor.Error => "bit-tag-err",
             _ => "bit-tag-pri"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-tag-sm",
+            BitSize.Medium => "bit-tag-md",
+            BitSize.Large => "bit-tag-lg",
+            _ => "bit-tag-md"
         });
 
         ClassBuilder.Register(() => Variant switch

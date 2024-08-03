@@ -26,29 +26,41 @@
     }
 
     .custom-class {
-        padding: 1rem;
-        border-radius: 4px;
-        background-color: midnightblue;
+        margin-inline: 1rem;
+        box-shadow: dodgerblue 0 0 0.5rem;
+        text-shadow: dodgerblue 0 0 0.5rem;
     }
 
     .custom-fruit {
-        border-top: 1px solid gray;
-        background-color: darkslateblue;
+        background-color: #a5104457;
     }
 
     .custom-veg {
-        font-size: 18px;
-        text-decoration: overline underline line-through;
+        background-color: #1c73324d;
     }
 
-    .custom-label {
-        color: darkred;
-        font-size: 12px;
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
     }
 
-    .custom-text {
-        color: darkblue;
-        font-size: 16px;
+    .custom-container, .custom-container:after {
+        border-radius: 1rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-scroll-container div:last-child .custom-item-button {
+        border-bottom: none;
     }
 
     .validation-message {
