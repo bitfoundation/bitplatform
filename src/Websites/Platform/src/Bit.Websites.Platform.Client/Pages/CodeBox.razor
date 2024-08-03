@@ -5,16 +5,34 @@
     <div class="code-box">
         @if (HideCopyButton is false)
         {
-            <BitButton Class="@($"copy-btn {(isCodeCopied ? "copied" : string.Empty)}")"
-                       Variant="BitVariant.Text"
-                       Title="@copyCodeMessage"
-                       IconName="@codeIcon"
-                       OnClick="@CopyCodeToClipboard">
+            <BitActionButton Class="@($"copy-btn {(isCodeCopied ? "copied" : string.Empty)}")"
+                             Styles="@(new() { Content = (isCodeCopied ? string.Empty : "margin: unset") })"
+                             Title="@copyCodeMessage"
+                             IconName="@codeIcon"
+                             OnClick="@CopyCodeToClipboard">
                 @if (isCodeCopied)
                 {
                     <span>@copyCodeMessage</span>
                 }
-            </BitButton>
+            </BitActionButton>
+            @* @if (isCodeCopied)
+    {
+    <BitButton Class="copy-btn copied"
+    IconName="@codeIcon"
+    Title="@copyCodeMessage"
+    Variant="BitVariant.Text"
+    OnClick="@CopyCodeToClipboard">
+    <span>@copyCodeMessage</span>
+    </BitButton>
+    }
+    else
+    {
+    <BitButton Class="copy-btn"
+    IconName="@codeIcon"
+    Title="@copyCodeMessage"
+    Variant="BitVariant.Text"
+    OnClick="@CopyCodeToClipboard" />
+    } *@
         }
 
         <pre @ref="preElementRefrence"
