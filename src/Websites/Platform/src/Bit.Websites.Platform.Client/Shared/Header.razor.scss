@@ -210,11 +210,6 @@
     }
 
     .header-menu-btn {
-        border-radius: 50%;
-        min-width: rem2(30px);
-        max-width: rem2(30px);
-        min-height: rem2(30px);
-        max-height: rem2(30px);
         margin-right: rem2(16px);
 
         @include gt-md {

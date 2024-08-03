@@ -76,15 +76,13 @@
                             </li>
                             <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                 <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                <CodeBox>
-                                    wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-                                    mkdir -p $HOME/.dotnet
-                                    tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-                                    echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-                                    export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-                                    dotnet dev-certs https --trust
-                                    rm dotnet.tar.gz
-                                </CodeBox>
+                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+mkdir -p $HOME/.dotnet
+tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+dotnet dev-certs https --trust
+rm dotnet.tar.gz</CodeBox>
                             </BitAccordion>
                             <br />
                             <li>Install <a href="https://nodejs.org/en/download/" title="Node.js" rel="nofollow">Node.js</a></li>
@@ -126,17 +124,17 @@
                             </li>
                             <li>
                                 <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
-                                <CodeBox>dotnet new install Bit.Boilerplate::8.10.0-pre-04 <BitButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                <CodeBox>dotnet new install Bit.Boilerplate::8.10.0-pre-04 <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
                             </li>
                             @if (showCrossPlatform)
                             {
                                 <li>
                                     Enable long paths files in Windows
-                                    <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                    <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
                                 </li>
                                 <li>
                                     Enable Windows developer mode
-                                    <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                    <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
                                 </li>
                             }
                         </ol>
@@ -193,26 +191,22 @@
                         <BitAccordion Title="Install extensions commands">
                             @if (showCrossPlatform)
                             {
-                                <CodeBox>
-                                    code --install-extension ms-dotnettools.csdevkit
-                                    code --install-extension ms-dotnettools.blazorwasm-companion
-                                    code --install-extension glenn2223.live-sass
-                                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-                                    code --install-extension ms-dotnettools.dotnet-maui
-                                    code --install-extension yy0931.vscode-sqlite3-editor
-                                    code --install-extension DominicVonk.vscode-resx-editor
-                                </CodeBox>
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension ms-dotnettools.dotnet-maui
+code --install-extension yy0931.vscode-sqlite3-editor
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                             else
                             {
-                                <CodeBox>
-                                    code --install-extension ms-dotnettools.csdevkit
-                                    code --install-extension ms-dotnettools.blazorwasm-companion
-                                    code --install-extension glenn2223.live-sass
-                                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-                                    code --install-extension yy0931.vscode-sqlite3-editor
-                                    code --install-extension DominicVonk.vscode-resx-editor
-                                </CodeBox>
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension yy0931.vscode-sqlite3-editor
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                         </BitAccordion>
                     </div>
