@@ -47,13 +47,18 @@
 
                     <div style="display:flex;justify-content:center">
                         <div style="flex-grow:1">
-                            <BitButton IsLoading="isSending"
-                                       ButtonType="BitButtonType.Submit">Send</BitButton>
+                            <BitButton IsLoading="isSending" ButtonType="BitButtonType.Submit">
+                                Send
+                            </BitButton>
                         </div>
 
-                        <BitIconButton IconName="@BitIconName.Reset" Title="Reset form"
-                                       ButtonType="BitButtonType.Button"
-                                       OnClick="() => contactUsModel = new()">Reset</BitIconButton>
+                        <BitButton Title="Reset form"
+                                   Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Reset"
+                                   ButtonType="BitButtonType.Button"
+                                   OnClick="() => contactUsModel = new()">
+                            Reset
+                        </BitButton>
                     </div>
                 </EditForm>
             </div>
