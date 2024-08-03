@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Options;
-//#if (serverDeploymentType == "Solo")
+//#if (api == "Integrated")
 using Boilerplate.Server.Api;
 //#endif
 using Boilerplate.Client.Web;
@@ -23,7 +23,7 @@ public static partial class Program
 
         services.AddHttpContextAccessor();
 
-        //#if (serverDeploymentType == "Solo")
+        //#if (api == "Integrated")
         builder.ConfigureApiServices();
         //#endif
 

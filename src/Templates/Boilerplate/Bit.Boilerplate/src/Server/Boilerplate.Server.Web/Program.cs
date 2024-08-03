@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-//#if (serverDeploymentType == "Solo")
+//#if (api == "Integrated")
 using Boilerplate.Server.Api.Data;
 //#endif
 
@@ -29,7 +29,7 @@ public static partial class Program
 
         var app = builder.Build();
 
-        //#if (serverDeploymentType == "Solo")
+        //#if (api == "Integrated")
         if (AppEnvironment.IsDev())
         {
             await using var scope = app.Services.CreateAsyncScope();

@@ -9,7 +9,7 @@
             "dotnetRunMessages": true,
             "applicationUrl": "http://localhost:5030"
         },
-        //#if (serverDeploymentType == "Sol")
+        //#if (api == "Integrated")
         "Boilerplate.Server.Web-Swagger": {
             "commandName": "Project",
             "launchBrowser": true,

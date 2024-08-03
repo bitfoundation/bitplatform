@@ -87,25 +87,25 @@ jobs:
 
     - name: Test backend setup options
       run: |
-        dotnet new bit-bp --name TestSolo --serverDeploymentType Solo
-        cd TestSolo/src/Server/TestSolo.Server.Api/
+        dotnet new bit-bp --name TestStandalone --api Standalone
+        cd TestStandalone/src/Server/TestStandalone.Server.Api/
         dotnet build
         cd ../
-        cd TestSolo.Server.Web/
+        cd TestStandalone.Server.Web/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestIndependent --serverDeploymentType Independent
-        cd TestIndependent/src/Server/TestIndependent.Server.Web/
+        dotnet new bit-bp --name TestIntegrated --api Integrated
+        cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
         dotnet build
 
     - name: Test sample configuration 1
       run: |
-        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --serverDeploymentType Solo --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb true --windows true --appInsights true --appCenter true
+        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb true --windows true --appInsights true --appCenter true
         dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PWA=true -p:BlazorWebAssemblyStandalone=true -p:Environment=Staging
 
     - name: Test sample configuration 2
       run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --serverDeploymentType Independent --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false
         dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PWA=false -p:BlazorWebAssemblyStandalone=false -p:Environment=Development
 
     - name: Run BeforeBuildTasks

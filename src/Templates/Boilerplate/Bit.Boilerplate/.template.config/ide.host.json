@@ -19,7 +19,7 @@
             "id": "filesStorage"
         },
         {
-            "id": "serverDeploymentType",
+            "id": "api",
             "isVisible": false
         },
         {

@@ -98,7 +98,7 @@ public static partial class Program
 
         app.UseAntiforgery();
 
-        //#if (serverDeploymentType == "Solo")
+        //#if (api == "Integrated")
         app.UseSwagger();
 
         app.UseSwaggerUI(options =>

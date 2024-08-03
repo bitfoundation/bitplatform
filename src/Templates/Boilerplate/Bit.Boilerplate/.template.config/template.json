@@ -87,19 +87,19 @@
             ],
             "description": "Boilerplate's API uses Fluent Storage. You can use any other fluent storage provider (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
         },
-        "serverDeploymentType": {
-            "displayName": "Server deployment type",
+        "api": {
+            "displayName": "Api deployment structure",
             "type": "parameter",
             "datatype": "choice",
-            "defaultValue": "Solo",
+            "defaultValue": "Integrated",
             "choices": [
                 {
-                    "choice": "Solo",
-                    "description": "One server deployment that serves both restful services and server side blazor components."
+                    "choice": "Integrated",
+                    "description": "One deployment that serves both restful services and server side blazor components."
                 },
                 {
-                    "choice": "Independent",
-                    "description": "One server deployment serves restful services only, while another runs server side blazor components."
+                    "choice": "Standalone",
+                    "description": "One deployment serves restful services only, while another runs server side blazor components."
                 }
             ]
         },
