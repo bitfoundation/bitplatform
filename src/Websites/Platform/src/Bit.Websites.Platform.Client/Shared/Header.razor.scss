@@ -209,13 +209,6 @@
         color: $bit-color-primary;
     }
 
-    .header-action-button {
-        &.bit-acb {
-            height: 100%;
-            flex-grow: 1;
-        }
-    }
-
     .header-menu-btn {
         border-radius: 50%;
         min-width: rem2(30px);

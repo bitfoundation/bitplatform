@@ -5,7 +5,10 @@
         <div class="header-content-container">
             @if (isDocsRoute)
             {
-                <BitIconButton Class="header-menu-btn" IconName="@BitIconName.CollapseMenu" OnClick=@WrapHandled(ToggleMenu) AriaLabel="Header menu button" />
+                <BitButton Class="header-menu-btn"
+                           Variant="BitVariant.Text"
+                           OnClick=@WrapHandled(ToggleMenu)
+                           IconName="@BitIconName.CollapseMenu" />
             }
             <a class="header-logo" href="@Urls.HomePage" aria-label="Home page" />
             <div class="header-link header-ps-btn @(isDocsRoute ? "header-link--active" : null)">
@@ -93,7 +96,10 @@
 @if (isHeaderMenuOpen)
 {
     <nav class="header-nav">
-        <BitIconButton Class="header-nav-close-btn" IconName="@BitIconName.Cancel" OnClick="@WrapHandled(ToggleHeaderMenu)" />
+        <BitButton Class="header-nav-close-btn"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.Cancel"
+                   OnClick="@WrapHandled(ToggleHeaderMenu)" />
         <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
             Products
             <div class="header-menu-popup">
