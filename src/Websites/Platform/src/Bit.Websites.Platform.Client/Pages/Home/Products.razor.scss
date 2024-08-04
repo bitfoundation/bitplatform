@@ -1,6 +1,5 @@
 @import '../../Styles/abstracts/_mixins.scss';
 @import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep .accordion {
     border: none;
@@ -217,7 +216,7 @@
     flex-flow: row nowrap;
     line-height: rem2(32px);
     transition: all 0.2s linear;
-    color: $bit-color-primary-main;
+    color: $bit-color-primary;
 
     .template-link-arrow {
         width: rem2(16px);

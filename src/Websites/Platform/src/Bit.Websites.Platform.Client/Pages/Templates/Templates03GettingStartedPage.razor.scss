@@ -25,13 +25,13 @@
 
 ::deep {
     a {
-        color: $bit-color-primary-main;
+        color: $bit-color-primary;
     }
 
-    .nuget-link-btn {
-        width: rem2(24px);
-        height: rem2(24px);
-        font-size: rem2(12px);
-        margin-left: rem2(16px);
+    .link-btn {
+        padding: 0;
+        width: 2rem;
+        height: 2rem;
+        padding-top: 2px;
     }
 }

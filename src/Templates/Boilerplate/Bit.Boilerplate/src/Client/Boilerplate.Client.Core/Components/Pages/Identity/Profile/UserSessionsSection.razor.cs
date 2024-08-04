@@ -11,7 +11,7 @@ public partial class UserSessionsSection
     private string? currentSessionId;
     private UserSessionDto? currentSession;
     private ElementReference messageRef = default!;
-    private BitSeverity severity = BitSeverity.Error;
+    private BitColor messageColor = BitColor.Error;
     private IEnumerable<UserSessionDto> otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
@@ -54,14 +54,14 @@ public partial class UserSessionsSection
             await userController.RevokeSession(session.SessionUniqueId, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)];
-            severity = BitSeverity.Success;
+            messageColor = BitColor.Success;
 
             await LoadSessions();
         }
         catch (KnownException e)
         {
             message = e.Message;
-            severity = BitSeverity.Error;
+            messageColor = BitColor.Error;
         }
         finally
         {

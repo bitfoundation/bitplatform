@@ -1,5 +1,4 @@
-﻿@import '../Styles/bit-css-variables.scss';
-@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
@@ -29,7 +28,7 @@
     padding-right: rem2(20px);
 
     a {
-        color: $bit-color-primary-main;
+        color: $bit-color-primary;
     }
 }
 
@@ -69,6 +68,6 @@
         text-align: left;
         font-size: rem2(12px);
         margin-top: rem2(-25px);
-        color: $bit-color-state-error;
+        color: $bit-color-error;
     }
 }

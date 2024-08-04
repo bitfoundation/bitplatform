@@ -124,17 +124,17 @@ rm dotnet.tar.gz</CodeBox>
                             </li>
                             <li>
                                 <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
-                                <CodeBox>dotnet new install Bit.Boilerplate::8.10.0-pre-04 <BitIconButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" /></CodeBox>
+                                <CodeBox>dotnet new install Bit.Boilerplate::8.10.0-pre-04 <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
                             </li>
                             @if (showCrossPlatform)
                             {
                                 <li>
                                     Enable long paths files in Windows
-                                    <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitIconButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" /></CodeBox>
+                                    <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
                                 </li>
                                 <li>
                                     Enable Windows developer mode
-                                    <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitIconButton Class="nuget-link-btn" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" /></CodeBox>
+                                    <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
                                 </li>
                             }
                         </ol>

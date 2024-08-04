@@ -46,7 +46,7 @@
         display: none;
 
         @include lt-lg {
-            display: block;
+            display: flex;
         }
     }
 

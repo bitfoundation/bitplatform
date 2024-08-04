@@ -61,10 +61,7 @@ public static class IServiceCollectionExtensions
         });
         //#endif
 
-        System.Reflection.Assembly.Load("Boilerplate.Shared")!
-            .GetType("Microsoft.Extensions.DependencyInjection.IHttpClientServiceCollectionExtensions")!
-            .GetMethod("AddTypedHttpClients")!
-            .Invoke(null, [services]);
+        services.AddTypedHttpClients();
 
         services.AddSharedProjectServices();
         return services;

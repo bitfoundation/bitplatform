@@ -31,16 +31,20 @@
         box-shadow: $bit-box-shadow-callout;
     }
 
+    &.tfa-panel {
+        box-shadow: $bit-box-shadow-callout;
+    }
+
     &.email-panel {
         text-align: center;
         box-shadow: $bit-box-shadow-callout;
     }
 
-    &.tfa-panel {
+    &.sessions-panel {
         box-shadow: $bit-box-shadow-callout;
     }
 
     &.danger-panel {
-        border: 2px solid darkred;
+        border: 2px solid $bit-color-error;
     }
 }

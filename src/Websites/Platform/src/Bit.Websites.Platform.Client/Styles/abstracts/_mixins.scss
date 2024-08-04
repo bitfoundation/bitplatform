@@ -2,7 +2,7 @@
 @import '_colors.scss';
 @import '_functions.scss';
 @import '_media-queries.scss';
-@import '../bit-css-variables.scss';
+@import '_bit-css-variables.scss';
 
 @mixin PageContainer {
     width: 100%;

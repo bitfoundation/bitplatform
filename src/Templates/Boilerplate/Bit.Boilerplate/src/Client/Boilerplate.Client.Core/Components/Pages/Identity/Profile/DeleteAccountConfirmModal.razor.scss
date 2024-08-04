@@ -1,5 +1,7 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 @import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
 
 .modal-body {
     display: flex;
@@ -21,9 +23,9 @@
 }
 
 .modal-title {
-    color: #dc0000;
     font-weight: 600;
     font-size: rem2(24px);
+    color: $bit-color-error;
     line-height: rem2(40px);
     margin-bottom: rem2(12px);
 }
