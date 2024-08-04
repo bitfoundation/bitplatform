@@ -17,37 +17,39 @@
             <CodeBox>
 dotnet new bit-bp –-name MyFirstProject
             </CodeBox>
-            You will find two solution files in your project: MyFirstProject.sln and MyFirstProject.Web.slnf.
-            The MyFirstProject.Web.slnf file is designed to enhance your development efficiency by providing faster compilation,
-            as it only includes the Backend API and the web version of your application. Conversely, the MyFirstProject.sln file encompasses all projects,
-            such as Android and Windows, and may result in slower opening and compilation times.
         </div>
-        <section class="section-card-txt">
-            You will see the following structure upon opening MyFirstProject.sln:
-        </section>
-        <div class="image-container">
+        <div class="row-section-container">
+            <div>
+                <div class="section-card-txt">
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Solution files</BitTypography>
+                    You will find two solution files in your project: MyFirstProject.sln and MyFirstProject.Web.slnf.
+                    The MyFirstProject.Web.slnf file is designed to enhance your development efficiency by providing faster compilation,
+                    as it only includes the Backend API and the web version of your application. Conversely, the MyFirstProject.sln file encompasses all projects,
+                    such as Android and Windows, and may result in slower opening and compilation times.
+                    You will see the structure displayed in the image on the right.
+                    <br />
+                    <br />
+                </div>
+                <div class="section-card-txt">
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Solution items</BitTypography>
+                    When navigating to the MyFirstProject folder, open the .github directory.
+                    Here, you will find the workflows responsible for managing the CI/CD pipeline.
+                    The subsequent sections will provide detailed information about these files.
+                    <br />
+                    <br />
+                    In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank">.gitignore</a> files,
+                    which have clear purposes, there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove any extra files from your project when you close the IDE.
+                    To understand which files will be removed, please refer to the comments within these scripts.
+                    <br />
+                    <br />
+                    There is also a file named <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-json" target="_blank">global.json</a>, which mitigates potential issues arising from the use of different .NET SDK versions by team members.
+                    <br />
+                    <br />
+                </div>
+            </div>
+         
             <img class="image" alt="Boilerplate solution" src="/images/templates/project-structure.webp" />
         </div>
-    </section>
-
-    <section class="section-card">
-        <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>.SolutionItems</BitTypography>
-            When navigating to the MyFirstProject folder, open the .github directory.
-            Here, you will find the workflows responsible for managing the CI/CD pipeline.
-            The subsequent sections will provide detailed information about these files.
-            <br />
-            <br />
-            In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank">.gitignore</a> files,
-            which have clear purposes, there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove any extra files from your project when you close the IDE.
-            To understand which files will be removed, please refer to the comments within these scripts.
-            <br />
-            <br />
-            There is also a file named <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-json" target="_blank">global.json</a>, which mitigates potential issues arising from the use of different .NET SDK versions by team members.
-        </div>
-    </section>
-
-    <section class="section-card">
         <div class="section-card-txt">
             <BitTypography Variant="BitTypographyVariant.H5" Gutter>Directory.Build.props</BitTypography>
             In the src folder, which serves as the source of the project, you will find three directories: Client, Server, and Shared, as well as a Directory.Build.props file.
@@ -88,6 +90,8 @@ dotnet new bit-bp –-name MyFirstProject
             This setting enforces the use of C# 12 across all projects.
 
             The following sections will provide further details on the Directory.Build.props file and .csproj files.
+            <br />
+            <br />
         </div>
     </section>
 
@@ -137,7 +141,7 @@ dotnet new bit-bp –-name MyFirstProject
             On the client side, the Client.Core project contains various components, including Layouts, Pages, and other essential elements.
             <br />
             <br />
-            The Client.Maui project enables the development of applications with comprehensive access to the full range of operating system features. 
+            The Client.Maui project enables the development of applications with comprehensive access to the full range of operating system features.
             Additionally, it supports the use of libraries in Swift, Kotlin, Java, and Objective-C across Android, iOS, Windows, and macOS platforms.
             <br />
             <br />
@@ -146,8 +150,8 @@ dotnet new bit-bp –-name MyFirstProject
             <br />
             <br />
             If you set BlazorWebAssemblyStandalone to true in the Directory.Build.props file, the Client.Web project can be published as a
-            Blazor WebAssembly Standalone application on platforms such as <a href="https://pages.cloudflare.com/" target="_blank">Cloudflare Pages</a>, 
-            <a href="https://azure.microsoft.com/en-us/products/app-service/static" target="_blank">Azure Static Web Apps</a>, 
+            Blazor WebAssembly Standalone application on platforms such as <a href="https://pages.cloudflare.com/" target="_blank">Cloudflare Pages</a>,
+            <a href="https://azure.microsoft.com/en-us/products/app-service/static" target="_blank">Azure Static Web Apps</a>,
             <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>, and others, without requiring ASP.NET Core.
             <br />
             <br />

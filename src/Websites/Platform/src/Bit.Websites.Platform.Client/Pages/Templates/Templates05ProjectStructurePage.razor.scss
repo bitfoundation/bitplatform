@@ -34,8 +34,8 @@
     font-weight: bold;
 }
 
-.image-container {
-    @include ImageContainer;
+.row-section-container{
+    display:flex;
 }
 
 .image {
