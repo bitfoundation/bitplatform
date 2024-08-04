@@ -95,11 +95,11 @@
             "choices": [
                 {
                     "choice": "Integrated",
-                    "description": "One deployment that serves both restful services and server side blazor components."
+                    "description": "A single-deployment configuration that serves API controllers and Blazor web server together"
                 },
                 {
                     "choice": "Standalone",
-                    "description": "One deployment serves restful services only, while another runs server side blazor components."
+                    "description": "A multi-server deployment configuration in which the API controllers are separate from the Blazor server"
                 }
             ]
         },
@@ -118,28 +118,6 @@
                     "description": "None"
                 }
             ]
-        },
-        "serverUrl": {
-            "displayName": "Server url",
-            "type": "parameter",
-            "datatype": "string",
-            "defaultValue": "use-your-server-url-here.com",
-            "description": "The backend server url. You can change its value later if needed."
-        },
-        "normalizedServerUrl": {
-            "type": "generated",
-            "generator": "regex",
-            "dataType": "string",
-            "parameters": {
-                "source": "serverUrl",
-                "steps": [
-                    {
-                        "regex": "^(https|http):\/\/",
-                        "replacement": ""
-                    }
-                ]
-            },
-            "replaces": "use-your-server-url-here.com"
         },
         "pipeline": {
             "displayName": "CI-CD pipeline",
@@ -272,9 +250,42 @@
                 "high": 4300
             },
             "replaces": "4030"
+        },
+        "serverUrl": {
+            "displayName": "Server url",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "use-your-server-url-here.com",
+            "description": "The backend server url. You can change its value later if needed."
+        },
+        "normalizedServerUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "serverUrl",
+                "steps": [
+                    {
+                        "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    }
+                ]
+            },
+            "replaces": "use-your-server-url-here.com"
         }
     },
-    "postActions": [],
+    "postActions": [
+        {
+            "description": "restore project dependencies",
+            "manualInstructions": [
+                {
+                    "text": "Run 'dotnet restore'"
+                }
+            ],
+            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+            "continueOnError": true
+        }
+    ],
     "primaryOutputs": [
         {
             "path": "Boilerplate.sln"
