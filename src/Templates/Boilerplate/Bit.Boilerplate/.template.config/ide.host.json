@@ -19,6 +19,9 @@
             "id": "filesStorage"
         },
         {
+            "id": "api"
+        },
+        {
             "id": "captcha"
         },
         {

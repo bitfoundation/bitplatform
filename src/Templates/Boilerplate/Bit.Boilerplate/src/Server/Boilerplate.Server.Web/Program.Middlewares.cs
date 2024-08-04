@@ -98,6 +98,7 @@ public static partial class Program
 
         app.UseAntiforgery();
 
+        //#if (api == "Integrated")
         app.UseSwagger();
 
         app.UseSwaggerUI(options =>
@@ -111,9 +112,11 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
+        app.MapControllers().RequireAuthorization();
+        //#endif
+
         app.UseSiteMap();
 
-        app.MapControllers().RequireAuthorization();
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()
