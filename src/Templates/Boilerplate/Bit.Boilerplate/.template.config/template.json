@@ -95,7 +95,7 @@
             "description": "Boilerplate's API uses Fluent Storage. You can use any other fluent storage provider (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
         },
         "api": {
-            "displayName": "Api deployment configuration",
+            "displayName": "API deployment configuration",
             "type": "parameter",
             "datatype": "choice",
             "defaultValue": "Integrated",
