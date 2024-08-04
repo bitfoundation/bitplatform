@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-03" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-03" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0-pre-05" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.10.0-pre-05" PrivateAssets="all" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
         <PackageReference Include="Humanizer" Version="2.14.1" />
     </ItemGroup>
@@ -39,7 +39,7 @@
         <PackageReference Condition=" '$(database)' == 'Cosmos' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Cosmos" Version="8.0.7" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.7" PrivateAssets="all" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.7" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.1.0" />

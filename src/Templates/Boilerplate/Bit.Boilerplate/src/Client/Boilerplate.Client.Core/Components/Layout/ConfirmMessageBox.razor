@@ -4,20 +4,17 @@
     <div class="main-container">
         <div class="header">
             <span class="title">@title</span>
-            <BitIconButton IconName="@BitIconName.ChromeClose" OnClick="@(() => Confirm(false))" />
+            <BitButton IconName="@BitIconName.ChromeClose" OnClick="@(() => Confirm(false))" Variant="BitVariant.Text" />
         </div>
         <div class="body">
             @message
         </div>
         <div class="btn-group">
-            <BitButton ButtonStyle="BitButtonStyle.Primary"
-                       Style="margin-inline-end: 0.5rem"
-                       OnClick="@(() => Confirm(true))">
+            <BitButton Style="margin-inline-end: 0.5rem" OnClick="@(() => Confirm(true))">
                 @Localizer[nameof(AppStrings.Yes)]
             </BitButton>
 
-            <BitButton ButtonStyle="BitButtonStyle.Standard"
-                       OnClick="@(() => Confirm(false))">
+            <BitButton Variant="BitVariant.Outline" OnClick="@(() => Confirm(false))">
                 @Localizer[nameof(AppStrings.No)]
             </BitButton>
         </div>

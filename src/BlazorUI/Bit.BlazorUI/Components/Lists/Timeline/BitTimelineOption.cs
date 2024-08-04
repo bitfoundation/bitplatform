@@ -9,82 +9,82 @@ public partial class BitTimelineOption : ComponentBase, IDisposable
 
 
     /// <summary>
-    /// The custom CSS classes of the option.
+    /// The custom CSS classes of the timeline option.
     /// </summary>
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
-    /// The severity of the option.
+    /// The general color of the timeline option.
     /// </summary>
     [Parameter] public BitColor? Color { get; set; }
 
     /// <summary>
-    /// The custom template for the item's dot.
+    /// The custom template for the timeline option's dot.
     /// </summary>
     [Parameter] public RenderFragment<BitTimelineOption>? DotTemplate { get; set; }
 
     /// <summary>
-    /// Hides the item's dot.
+    /// Hides the timeline option's dot.
     /// </summary>
     [Parameter] public bool HideDot { get; set; }
 
     /// <summary>
-    /// Name of an icon to render in the option.
+    /// Name of an icon to render in the timeline option.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the option is enabled.
+    /// Whether or not the timeline option is enabled.
     /// </summary>
     [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// A unique value to use as a key of the option
+    /// A unique value to use as a key of the timeline option
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
     /// <summary>
-    /// Click event handler of the option.
+    /// Click event handler of the timeline option.
     /// </summary>
     [Parameter] public EventCallback<BitTimelineOption> OnClick { get; set; }
 
     /// <summary>
-    /// The primary content of the option.
+    /// The primary content of the timeline option.
     /// </summary>
     [Parameter] public RenderFragment<BitTimelineOption>? PrimaryContent { get; set; }
 
     /// <summary>
-    /// The primary text of the option.
+    /// The primary text of the timeline option.
     /// </summary>
     [Parameter] public string? PrimaryText { get; set; }
 
     /// <summary>
-    /// Reverses the option direction.
+    /// Reverses the timeline option direction.
     /// </summary>
     [Parameter] public bool Reversed { get; set; }
 
     /// <summary>
-    /// The secondary content of the option.
+    /// The secondary content of the timeline option.
     /// </summary>
     [Parameter] public RenderFragment<BitTimelineOption>? SecondaryContent { get; set; }
 
     /// <summary>
-    /// The secondary text of the option.
+    /// The secondary text of the timeline option.
     /// </summary>
     [Parameter] public string? SecondaryText { get; set; }
 
     /// <summary>
-    /// The custom value for the style attribute of the option.
+    /// The custom value for the style attribute of the timeline option.
     /// </summary>
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
-    /// The size of the option.
+    /// The size of the timeline option.
     /// </summary>
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
-    /// The custom template for the option.
+    /// The custom template for the timeline option.
     /// </summary>
     [Parameter] public RenderFragment<BitTimelineOption>? Template { get; set; }
 

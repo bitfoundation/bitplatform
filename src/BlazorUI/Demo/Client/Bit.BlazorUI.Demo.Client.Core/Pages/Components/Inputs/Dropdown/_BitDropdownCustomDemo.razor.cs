@@ -85,13 +85,13 @@ public partial class _BitDropdownCustomDemo
     private ICollection<BitDropdownCustom>? dropDirectionCustoms;
     private List<BitDropdownCustom> GetStyleClassCustoms() => new()
     {
-        new() { Type = BitDropdownItemType.Header, Text = "Fruits", CssStyle = "background-color:darkred" },
+        new() { Type = BitDropdownItemType.Header, Text = "Fruits", CssStyle = "text-align: center;" },
         new() { Text = "Apple", Value = "f-app", CssClass = "custom-fruit" },
         new() { Text = "Banana", Value = "f-ban", CssClass = "custom-fruit" },
         new() { Text = "Orange", Value = "f-ora", Disabled = true, CssClass = "custom-fruit" },
         new() { Text = "Grape", Value = "f-gra", CssClass = "custom-fruit" },
-        new() { Type = BitDropdownItemType.Divider, CssStyle = "padding:5px; background:darkgreen" },
-        new() { Type = BitDropdownItemType.Header, Text = "Vegetables", CssStyle = "background-color:darkblue" },
+        new() { Type = BitDropdownItemType.Divider, CssStyle = "padding: 0 0.25rem;" },
+        new() { Type = BitDropdownItemType.Header, Text = "Vegetables", CssStyle = "text-align: center;" },
         new() { Text = "Broccoli", Value = "v-bro", CssClass = "custom-veg" },
         new() { Text = "Carrot", Value = "v-car", CssClass = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", CssClass = "custom-veg" }

@@ -43,13 +43,13 @@ public partial class _BitDropdownOptionDemo
     private ICollection<BitDropdownItem<string>> dropDirectionItems = default!;
     private readonly List<BitDropdownItem<string>> styleClassItems =
     [
-        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits", Style = "background-color:darkred" },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits", Style = "text-align: center;" },
         new() { Text = "Apple", Value = "f-app", Class = "custom-fruit" },
         new() { Text = "Banana", Value = "f-ban", Class = "custom-fruit" },
         new() { Text = "Orange", Value = "f-ora", IsEnabled = false, Class = "custom-fruit" },
         new() { Text = "Grape", Value = "f-gra", Class = "custom-fruit" },
-        new() { ItemType = BitDropdownItemType.Divider, Style = "padding:5px; background:darkgreen" },
-        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables", Style = "background-color:darkblue" },
+        new() { ItemType = BitDropdownItemType.Divider, Style = "padding: 0 0.25rem;" },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables", Style = "text-align: center;" },
         new() { Text = "Broccoli", Value = "v-bro", Class = "custom-veg" },
         new() { Text = "Carrot", Value = "v-car", Class = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", Class = "custom-veg" }

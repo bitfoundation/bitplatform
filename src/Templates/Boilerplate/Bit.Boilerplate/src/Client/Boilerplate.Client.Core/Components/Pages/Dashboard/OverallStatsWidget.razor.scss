@@ -48,7 +48,7 @@
         font-size: rem2(32px);
         line-height: rem2(40px);
         margin-bottom: rem2(24px);
-        color: $bit-color-primary-main;
+        color: $bit-color-primary;
 
         @include md {
             font-size: rem2(28px);
@@ -83,15 +83,15 @@
 
     &:hover {
         background-size: rem2(128px) 100%;
-        background-color: $bit-color-primary-main;
+        background-color: $bit-color-primary;
         background-image: url('images/stat-card-bg-hover.svg');
 
         .card-num {
-            color: $bit-color-secondary-main;
+            color: $bit-color-primary-text;
         }
 
         .card-title {
-            color: $bit-color-secondary-main;
+            color: $bit-color-primary-text;
         }
     }
 

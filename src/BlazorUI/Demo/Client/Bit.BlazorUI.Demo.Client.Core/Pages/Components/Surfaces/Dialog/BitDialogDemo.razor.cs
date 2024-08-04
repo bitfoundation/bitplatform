@@ -321,6 +321,40 @@ public partial class BitDialogDemo
 
 
 
+    private bool IsOpen = false;
+
+    private BitDialog dialogRef = default!;
+    private BitDialog customDialogRef = default!;
+
+    private bool IsOpen1 = false;
+
+    private bool IsOpen2 = false;
+    private string? optionValue;
+    private bool IsOpen3 = false;
+
+    private bool IsOpen4 = false;
+    private bool IsOpen5 = false;
+
+    private bool IsOpen6 = false;
+    private bool IsOpen7 = false;
+
+    private bool IsOpenInPosition = false;
+    private BitDialogPosition position;
+
+    private bool IsDraggable = false;
+    private bool IsOpen8 = false;
+    private bool IsOpen9 = false;
+
+    private bool IsOpen10 = false;
+
+    private void OpenDialogInPosition(BitDialogPosition positionValue)
+    {
+        IsOpenInPosition = true;
+        position = positionValue;
+    }
+
+
+
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""@(() => IsOpen = true)"">Open Dialog</BitButton>
 <BitDialog @bind-IsOpen=""IsOpen"" Title=""Missing Subject"" Message=""Do you want to send this message without a subject?"" />";

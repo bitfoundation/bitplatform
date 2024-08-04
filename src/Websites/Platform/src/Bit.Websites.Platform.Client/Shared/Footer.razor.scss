@@ -1,7 +1,7 @@
-﻿@import '../Styles/bit-css-variables.scss';
-@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 footer {
     width: 100%;
@@ -84,7 +84,7 @@ footer {
     background-color: $bit-color-background-secondary;
 
     &:hover {
-        background-color: $bit-color-action-hover-background-secondary;
+        background-color: $bit-color-background-secondary-hover;
     }
 }
 
@@ -108,10 +108,10 @@ footer {
     }
 
     .address, .tel {
-        color: $bit-color-primary-main;
+        color: $bit-color-primary;
 
         &:hover {
-            color: $bit-color-action-hover-primary;
+            color: $bit-color-primary-hover;
         }
     }
 
@@ -152,7 +152,7 @@ footer {
     font-size: rem2(14px);
     text-decoration: none;
     margin-top: rem2(10px);
-    color: $bit-color-primary-main;
+    color: $bit-color-primary;
 
     &:hover {
         text-decoration: underline;

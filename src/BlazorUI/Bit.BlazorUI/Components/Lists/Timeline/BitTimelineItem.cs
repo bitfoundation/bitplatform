@@ -8,7 +8,7 @@ public class BitTimelineItem
     public string? Class { get; set; }
 
     /// <summary>
-    /// The severity of the timeline item.
+    /// The general color of the timeline item.
     /// </summary>
     public BitColor? Color { get; set; }
 

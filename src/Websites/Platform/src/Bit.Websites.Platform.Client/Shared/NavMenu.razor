@@ -20,9 +20,8 @@
         }
     </div>
     <div class="nav-menu-list">
-        <BitNav Class="@GetNavMenuClass()"
-                Items="filteredNavItems"
-                AriaLabel="bit project templates doc nav"
+        <BitNav Items="filteredNavItems"
+                Class="@GetNavMenuClass()"
                 OnItemClick="WrapHandled<BitNavItem>(HandleOnItemClick)" />
         <div style="height:50px"></div>
     </div>

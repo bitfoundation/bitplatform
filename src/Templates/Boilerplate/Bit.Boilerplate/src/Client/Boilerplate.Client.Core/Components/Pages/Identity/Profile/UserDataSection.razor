@@ -4,7 +4,7 @@
     <div @ref="messageRef" class="form-message-bar">
         @if (string.IsNullOrEmpty(message) is false)
         {
-            <BitMessage Multiline Severity="messageSeverity" OnDismiss="() => message = null">@message</BitMessage>
+            <BitMessage Multiline Color="messageColor" OnDismiss="() => message = null">@message</BitMessage>
         }
     </div>
 
@@ -17,7 +17,7 @@
     @if (Loading)
     {
         <div class="loading-container">
-            <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>
+            <BitRingLoading />
         </div>
     }
     else
@@ -34,9 +34,7 @@
         <div class="form-input-container">
             @if (user.ProfileImageName is not null)
             {
-                <BitButton IsLoading="isRemoving"
-                           ButtonStyle="BitButtonStyle.Standard"
-                           OnClick="RemoveProfileImage">
+                <BitButton IsLoading="isRemoving" OnClick="RemoveProfileImage" Color="BitColor.Error">
                     @Localizer[nameof(AppStrings.Remove)]
                 </BitButton>
             }
@@ -52,7 +50,10 @@
                            OnUploading="() => isUploading = true"
                            OnUploadComplete="WrapHandled(HandleOnUploadComplete)"
                            OnUploadFailed="() => profileImageError = Localizer[nameof(AppStrings.FileUploadFailed)]" />
-            <BitSpinner Visibility="isUploading ? BitVisibility.Visible : BitVisibility.Collapsed" />
+            @if (isUploading)
+            {
+                <BitRingLoading />
+            }
             <div class="form-input-error">@profileImageError</div>
         </div>
 
@@ -76,27 +77,22 @@
             </div>
 
             <div class="form-input-container">
-                <BitChoiceGroup @bind-Value="editUserDto.GenderAsString"
-                                TItem="BitChoiceGroupOption<string?>" TValue="string"
-                                LayoutFlow="BitLayoutFlow.Horizontal"
+                <BitChoiceGroup Horizontal
+                                @bind-Value="editUserDto.GenderAsString"
+                                TItem="BitChoiceGroupOption<string>" TValue="string"
                                 Label="@Localizer[nameof(AppStrings.Gender)]">
                     <BitChoiceGroupOption Value="@Gender.Male.ToString()"
-                                          Text="@Localizer[nameof(AppStrings.GenderMale)]"
-                                          AriaLabel="@Localizer[nameof(AppStrings.GenderMale)]" />
+                                          Text="@Localizer[nameof(AppStrings.GenderMale)]" />
                     <BitChoiceGroupOption Value="@Gender.Female.ToString()"
-                                          Text="@Localizer[nameof(AppStrings.GenderFemale)]"
-                                          AriaLabel="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                                          Text="@Localizer[nameof(AppStrings.GenderFemale)]" />
                     <BitChoiceGroupOption Value="@Gender.Other.ToString()"
-                                          Text="@Localizer[nameof(AppStrings.GenderOther)]"
-                                          AriaLabel="@Localizer[nameof(AppStrings.GenderOther)]" />
+                                          Text="@Localizer[nameof(AppStrings.GenderOther)]" />
                 </BitChoiceGroup>
             </div>
 
             <BitButton IsLoading="isSaving"
                        ButtonType="BitButtonType.Submit"
-                       ButtonStyle="BitButtonStyle.Primary"
-                       Title="@Localizer[nameof(AppStrings.Save)]"
-                       AriaLabel="@Localizer[nameof(AppStrings.Save)]">
+                       Title="@Localizer[nameof(AppStrings.Save)]">
                 @Localizer[nameof(AppStrings.Save)]
             </BitButton>
         </EditForm>

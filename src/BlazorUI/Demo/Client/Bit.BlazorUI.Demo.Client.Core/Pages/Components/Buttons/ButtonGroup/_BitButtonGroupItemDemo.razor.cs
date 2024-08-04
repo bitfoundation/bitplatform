@@ -105,25 +105,25 @@ private List<BitButtonGroupItem> disabledItems = new()
 <BitButtonGroup Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
 <BitButtonGroup Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Info"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Info"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Info"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Info"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Success"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Success"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Success"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Warning"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Warning"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Warning"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Warning"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.SevereWarning"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.SevereWarning"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"" Items=""basicItems"" />
 
-<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup Severity=""BitSeverity.Error"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
+<BitButtonGroup Color=""BitColor.Error"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
     private readonly string example3CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = new()
 {

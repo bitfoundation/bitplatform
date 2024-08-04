@@ -1,12 +1,12 @@
 :root[bit-theme="dark"] {
-    --bit-clr-bg-primary: #060E2D;
-    --bit-clr-bg-secondary: #0a153d;
-    --bit-clr-secondary-main: transparent;
-    --bit-clr-act-hover-sec: #061342;
-    --bit-clr-act-hover-bg-pri: #07154a;
-    --bit-clr-act-active-bg-pri: #061241;
-    --bit-clr-act-hover-bg-sec: #07154a;
-    --bit-clr-fg-secondary: #dddddd;
+    --bit-clr-sec: transparent;
+    --bit-clr-sec-hover: #061342;
+    --bit-clr-bg-pri: #060E2D;
+    --bit-clr-bg-sec: #0a153d;
+    --bit-clr-bg-pri-hover: #07154a;
+    --bit-clr-bg-pri-active: #061241;
+    --bit-clr-bg-sec-hover: #07154a;
+    --bit-clr-fg-sec: #dddddd;
 }
 
 * {
