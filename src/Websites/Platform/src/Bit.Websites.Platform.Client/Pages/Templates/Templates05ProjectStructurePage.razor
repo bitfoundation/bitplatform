@@ -22,11 +22,11 @@ dotnet new bit-bp –-name MyFirstProject
             <div>
                 <div class="section-card-txt">
                     <BitTypography Variant="BitTypographyVariant.H5" Gutter>Solution files</BitTypography>
+                    The image on the right displays project structure.
                     You will find two solution files in your project: MyFirstProject.sln and MyFirstProject.Web.slnf.
                     The MyFirstProject.Web.slnf file is designed to enhance your development efficiency by providing faster compilation,
                     as it only includes the Backend API and the web version of your application. Conversely, the MyFirstProject.sln file encompasses all projects,
                     such as Android and Windows, and may result in slower opening and compilation times.
-                    You will see the structure displayed in the image on the right.
                     <br />
                     <br />
                 </div>
@@ -38,7 +38,7 @@ dotnet new bit-bp –-name MyFirstProject
                     <br />
                     <br />
                     In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank">.gitignore</a> files,
-                    which have clear purposes, there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove any extra files from your project when you close the IDE.
+                    which have clear purposes, there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove all auto-generated files from your project.
                     To understand which files will be removed, please refer to the comments within these scripts.
                     <br />
                     <br />
@@ -53,8 +53,7 @@ dotnet new bit-bp –-name MyFirstProject
         <div class="section-card-txt">
             <BitTypography Variant="BitTypographyVariant.H5" Gutter>Directory.Build.props</BitTypography>
             In the src folder, which serves as the source of the project, you will find three directories: Client, Server, and Shared, as well as a Directory.Build.props file.
-
-            Each .csproj file consists of two primary sections: PropertyGroup and ItemGroup.
+            Just like csproj files, Directory.Build.props consists of two primary sections: PropertyGroup and ItemGroup.
 
             <ul>
                 <li>
@@ -78,7 +77,6 @@ dotnet new bit-bp –-name MyFirstProject
                     <br />
                 </li>
             </ul>
-            The Directory.Build.props file also contains PropertyGroup and ItemGroup sections.
             Any settings specified in this file are implicitly applied to all .csproj files within the directory. For instance:
             <br />
             <br />
