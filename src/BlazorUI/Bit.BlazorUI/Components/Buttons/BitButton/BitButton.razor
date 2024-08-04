@@ -26,7 +26,8 @@
             {
                 <i style="@Styles?.Icon" class="bit-btn-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
             }
-            @if (hasPrimary || hasSecondary)
+
+            @if (IconOnly is false && (hasPrimary || hasSecondary))
             {
                 <div style="@Styles?.Container" class="bit-btn-tcn @Classes?.Container">
                     @if (hasPrimary)
