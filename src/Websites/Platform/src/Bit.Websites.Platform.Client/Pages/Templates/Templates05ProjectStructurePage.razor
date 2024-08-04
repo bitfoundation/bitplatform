@@ -97,24 +97,24 @@ dotnet new bit-bp –-name MyFirstProject
         <div class="section-card-txt">
             <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server Projects</BitTypography>
 
-            Inside the src/Server folder, there are two projects: MyFirstProject.Server.Api and MyFirstProject.Server.Web.
+            Inside the src/Server folder, there are two projects: Server.Api and Server.Web.
             <ul>
                 <li>
-                    <b>MyFirstProject.Server.Api:</b> This project is built on Web API, ASP.NET Core Identity,
-                    and Entity Framework Core. It includes robust backend features such as Identity, two-factor authentication (2FA), Magic Link, and OTP.
+                    <b>Server.Api:</b> This project is built on Web API, ASP.NET Core Identity,
+                    and Entity Framework Core. It includes robust backend features such as social sign-in, two-factor authentication (2FA), Magic Link, and OTP.
                     Despite these advanced features, the architecture remains straightforward, allowing for easy customization similar to a basic ASP.NET Core setup.
                 </li>
                 <li>
-                    <b>MyFirstProject.Server.Web:</b> This project references MyFirstProject.Server.Api by default.
-                    Running this project will make the controllers available on port 5000, and it will also provide access to Swagger for API documentation and testing.
+                    <b>Server.Web:</b> This project references Server.Api by default.
+                    Running this project will make the features mentioned in Server.Api section available on port 5000 as well as server components for Blazor pre-rendering and Blazor Server.
                 </li>
             </ul>
 
-            With MyFirstProject.Server.Web project, you can run the application in various modes: Blazor Server, Blazor WebAssembly, Blazor Auto, and with or without pre-rendering.
+            With Server.Web project, you can run the application in various modes: Blazor Server, Blazor WebAssembly, Blazor Auto, and with or without pre-rendering.
             Additionally, Blazor Static SSR is available.
 
             When publishing this project, you can choose to output it as either a ZIP file or a Docker image.
-            Note that since this project references MyFirstProject.Server.Api, it will be published alongside it.
+            Note that since this project references Server.Api, it will be published alongside it.
             If you do not require this reference, we will provide guidance on how to exclude it when creating the project.
 
             <br />
