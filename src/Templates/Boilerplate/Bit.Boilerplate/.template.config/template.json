@@ -16,6 +16,13 @@
     "sourceName": "Boilerplate",
     "preferNameDirectory": true,
     "symbols": {
+        "helpUrl": {
+            "displayName": "More info at",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "https://bitplatform.dev/templates/create-project",
+            "description": "Open the following url in order to get more information about the following parameters."
+        },
         //Guid generator for App Id
         "ApplicationIdGuid": {
             "type": "generated",
@@ -88,7 +95,7 @@
             "description": "Boilerplate's API uses Fluent Storage. You can use any other fluent storage provider (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
         },
         "api": {
-            "displayName": "Api deployment structure",
+            "displayName": "Api deployment configuration",
             "type": "parameter",
             "datatype": "choice",
             "defaultValue": "Integrated",

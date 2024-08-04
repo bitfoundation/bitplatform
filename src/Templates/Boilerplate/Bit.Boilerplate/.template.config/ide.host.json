@@ -9,8 +9,7 @@
     ],
     "symbolInfo": [
         {
-            "id": "serverUrl",
-            "isVisible": false
+            "id": "helpUrl"
         },
         {
             "id": "database"
@@ -41,6 +40,10 @@
         },
         {
             "id": "appCenter"
+        },
+        {
+            "id": "serverUrl",
+            "isVisible": false
         }
     ]
 }
