@@ -17,7 +17,7 @@ public partial class UserDataSection
     private readonly EditUserDto editUserDto = new();
 
     private string? message;
-    private BitSeverity messageSeverity;
+    private BitColor messageColor;
     private ElementReference messageRef = default!;
 
 
@@ -66,14 +66,14 @@ public partial class UserDataSection
 
             PublishUserDataUpdated();
 
-            messageSeverity = BitSeverity.Success;
+            messageColor = BitColor.Success;
             message = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
             await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -99,7 +99,7 @@ public partial class UserDataSection
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -121,7 +121,7 @@ public partial class UserDataSection
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally

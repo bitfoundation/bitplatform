@@ -13,7 +13,7 @@ public partial class SignInPage
     private readonly SignInRequestDto model = new();
 
     private string? message;
-    private BitSeverity messageSeverity;
+    private BitColor messageColor;
     private ElementReference messageRef = default!;
 
 
@@ -66,7 +66,7 @@ public partial class SignInPage
         if (string.IsNullOrEmpty(ErrorQueryString) is false)
         {
             message = ErrorQueryString;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
         }
     }
 
@@ -94,7 +94,7 @@ public partial class SignInPage
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -116,13 +116,13 @@ public partial class SignInPage
             await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.OtpSentMessage)];
-            messageSeverity = BitSeverity.Success;
+            messageColor = BitColor.Success;
             await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -143,13 +143,13 @@ public partial class SignInPage
             await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.TfaTokenSentMessage)];
-            messageSeverity = BitSeverity.Success;
+            messageColor = BitColor.Success;
             await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -193,7 +193,7 @@ public partial class SignInPage
             isWaiting = false;
 
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
 
             await messageRef.ScrollIntoView();
         }

@@ -14,10 +14,11 @@
 
 <div class="page-container">
     <div class="page-header">
-        <BitIconButton Class="back-btn"
-                       Href="@Urls.CategoriesPage"
-                       IconName="@BitIconName.Back"
-                       Title="@Localizer[nameof(AppStrings.Back)]" />
+        <BitButton Class="back-btn"
+                   Variant="BitVariant.Text"
+                   Href="@Urls.CategoriesPage"
+                   IconName="@BitIconName.Back"
+                   Title="@Localizer[nameof(AppStrings.Back)]" />
         <h1 class="page-title">
             @if (category.Id == default)
             {
@@ -32,66 +33,63 @@
     <EditForm Model="category" OnValidSubmit="WrapHandled(Save)">
         <AppDataAnnotationsValidator />
 
-        @if (isLoading)
-        {
-            <div class="loading-continaer">
-                <BitSpinner Size="BitSpinnerSize.Large"></BitSpinner>
-            </div>
-        }
-
         @if (string.IsNullOrEmpty(saveMessage) is false)
         {
-            <BitMessage Severity="@saveMessageSeverity" OnDismiss="() => saveMessage = null">@saveMessage</BitMessage>
+            <BitMessage Color="@saveMessageColor" OnDismiss="() => saveMessage = null">@saveMessage</BitMessage>
         }
 
-        <div class="form-input-container">
-            <BitTextField @bind-Value="category.Name"
-                          Label="@Localizer[nameof(AppStrings.Name)]"
-                          Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
-            <ValidationMessage For="() => category.Name" />
-        </div>
-
-        <div class="form-input-container">
-            <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
-            <div class="color-container">
-                <div class="color-btn-container">
-                    @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
-                    {
-                        <button @onclick="() => SetCategoryColor(color)"
-                                class="color-btn @(category.Color == color ? "color-btn--active" : null)"
-                                style="background-color: @color"
-                                type="button" />
-                    }
-                </div>
-                <div>
-                    <BitButton ButtonStyle="BitButtonStyle.Standard" ButtonType="BitButtonType.Button" OnClick=@ToggleColorPicker>
-                        <div class="custom-color-container">
-                            <div class="color-square" style="background-color: @category.Color"></div>
-                            @Localizer[(nameof(AppStrings.CustomColor))]
-                        </div>
-                    </BitButton>
-                </div>
-                @if (isColorPickerOpen)
-                {
-                    <div class="color-picker-container">
-                        <BitColorPicker @bind-Color="category.Color"
-                                        id="catColorInput"
-                                        ShowPreview="true">
-                            @Localizer[nameof(AppStrings.DefaultColorPicker)]
-                        </BitColorPicker>
-                    </div>
-                }
+        @if (isLoading)
+        {
+            <div class="loading-container">
+                <BitRingLoading />
             </div>
-            <ValidationMessage For="() => category.Color" />
-        </div>
+        }
+        else
+        {
+            <div class="form-input-container">
+                <BitTextField @bind-Value="category.Name"
+                              Label="@Localizer[nameof(AppStrings.Name)]"
+                              Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
+                <ValidationMessage For="() => category.Name" />
+            </div>
 
-        <BitButton IsLoading="isSaving"
-                   ButtonStyle="BitButtonStyle.Primary"
-                   ButtonType="BitButtonType.Submit"
-                   AriaLabel="Category">
-            @Localizer[nameof(AppStrings.Save)]
-        </BitButton>
+            <div class="form-input-container">
+                <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
+                <BitStack Gap="1rem">
+                    <BitStack Horizontal Gap="1rem">
+                        @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
+                        {
+                            <button @onclick="() => SetCategoryColor(color)"
+                                    class="color-btn @(category.Color == color ? "color-btn--active" : null)"
+                                    style="background-color: @color"
+                                    type="button" />
+                        }
+                    </BitStack>
+                    <div />
+                    <BitStack Horizontal Gap="1rem">
+                        <div class="color-square selected" style="background-color: @category.Color"></div>
+                        <BitToggleButton @bind-bind-IsChecked="isColorPickerOpen"
+                                         Variant="BitVariant.Outline"
+                                         OnClick=@ToggleColorPicker>
+                            @Localizer[(nameof(AppStrings.CustomColor))]
+                        </BitToggleButton>
+                    </BitStack>
+                    @if (isColorPickerOpen)
+                    {
+                        <div class="color-picker-container">
+                            <BitColorPicker @bind-Color="category.Color" Id="catColorInput" ShowPreview="true">
+                                @Localizer[nameof(AppStrings.DefaultColorPicker)]
+                            </BitColorPicker>
+                        </div>
+                    }
+                </BitStack>
+                <ValidationMessage For="() => category.Color" />
+            </div>
 
+            <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+                @Localizer[nameof(AppStrings.Save)]
+            </BitButton>
+        }
     </EditForm>
 </div>
 

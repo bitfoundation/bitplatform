@@ -4,10 +4,16 @@
 <AuthorizeView>
     <div class="main">
         <div><img src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" /></div>
-        <h2 class="title">@Localizer[nameof(AppStrings.ForbiddenException)]</h2>
-        <h4 class="description">@Localizer[nameof(AppStrings.YouAreSignInAs)] @user.GetDisplayName()</h4>
+        <h2 class="title">
+            @Localizer[nameof(AppStrings.ForbiddenException)]
+        </h2>
+        <h4 class="description">
+            @Localizer[nameof(AppStrings.YouAreSignInAs)] @user.GetDisplayName()
+        </h4>
         <div class="buttons">
-            <BitButton OnClick="WrapHandled(SignIn)">@Localizer[nameof(AppStrings.SignInAsDifferentUser)]</BitButton>
+            <BitButton OnClick="WrapHandled(SignIn)">
+                @Localizer[nameof(AppStrings.SignInAsDifferentUser)]
+            </BitButton>
         </div>
     </div>
 </AuthorizeView>

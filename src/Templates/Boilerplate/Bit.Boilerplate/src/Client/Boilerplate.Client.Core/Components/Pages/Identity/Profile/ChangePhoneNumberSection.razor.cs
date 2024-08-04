@@ -7,7 +7,7 @@ public partial class ChangePhoneNumberSection
 {
     private bool isWaiting;
     private string? message;
-    private BitSeverity severity;
+    private BitColor messageColor;
     private bool showConfirmation;
     private bool isPhoneNumberUnavailable = true;
     private ElementReference messageRef = default!;
@@ -65,14 +65,14 @@ public partial class ChangePhoneNumberSection
             isPhoneNumberUnavailable = false;
             changeModel.PhoneNumber = sendModel.PhoneNumber;
 
-            severity = BitSeverity.Success;
+            messageColor = BitColor.Success;
             message = Localizer[nameof(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)];
             await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
-            severity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -97,7 +97,7 @@ public partial class ChangePhoneNumberSection
         catch (KnownException e)
         {
             message = e.Message;
-            severity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
