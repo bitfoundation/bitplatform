@@ -65,9 +65,9 @@ public abstract class BitLoadingBase : BitComponentBase
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(CustomSize):
-                    var dim = (int?)parameter.Value;
-                    if (CustomSize != dim) StyleBuilder.Reset();
-                    CustomSize = dim;
+                    var customSize = (int?)parameter.Value;
+                    if (CustomSize != customSize) StyleBuilder.Reset();
+                    CustomSize = customSize;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Size):
@@ -106,7 +106,7 @@ public abstract class BitLoadingBase : BitComponentBase
         StyleBuilder.Register(() => $"--bit-ldn-size:{GetSize()}px");
     }
 
-    protected virtual int OriginalSize { get; set; } = 80;
+    protected virtual int OriginalSize => 80;
 
     protected string Convert(double value)
     {
