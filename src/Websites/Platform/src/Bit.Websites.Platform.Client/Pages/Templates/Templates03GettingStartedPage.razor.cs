@@ -77,7 +77,7 @@ public partial class Templates03GettingStartedPage
             command:"winget install OpenJS.NodeJS --accept-source-agreements --accept-package-agreements;"),
 
             (text:@"echo 'Install WebAssembly workloads https://learn.microsoft.com/en-us/aspnet/core/blazor/webassembly-build-tools-and-aot#net-webassembly-build-tools';",
-            command:"dotnet workload install wasm-tools wasm-experimental;"),
+            command:"dotnet nuget add source \"https://api.nuget.org/v3/index.json\" --name \"nuget.org\"; dotnet workload install wasm-tools wasm-experimental;"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
             command:"dotnet new install Bit.Boilerplate::8.10.0-pre-05;"),
