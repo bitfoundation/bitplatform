@@ -83,6 +83,18 @@
         <Content Remove="package*.json" />
         <Content Remove="tsconfig.json" />
         <None Include="package*json" />
+        <ScssFiles Remove="Components\Progress\Loading\BitBarsLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitCircleLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitDotsRingLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitDualRingLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitEllipsisLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitGridLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitHeartLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitHourglassLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitRingLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitRippleLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitRollerLoading.scss" />
+        <ScssFiles Remove="components\progress\loading\BitSpinnerLoading.scss" />
         <None Include="tsconfig.json" />
     </ItemGroup>
 

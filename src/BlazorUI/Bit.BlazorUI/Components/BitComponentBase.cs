@@ -46,7 +46,7 @@ public abstract partial class BitComponentBase : ComponentBase
     /// <summary>
     /// Capture and render additional attributes in addition to the component's parameters.
     /// </summary>
-    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = new Dictionary<string, object>();
+    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = [];
 
     /// <summary>
     /// Custom id attribute for the root element. if null the UniqueId will be used instead.
