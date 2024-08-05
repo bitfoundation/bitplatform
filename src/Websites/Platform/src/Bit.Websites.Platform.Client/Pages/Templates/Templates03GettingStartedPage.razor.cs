@@ -30,21 +30,17 @@ public partial class Templates03GettingStartedPage
                 selectedCommandGroups.AddRange(commandGroups[CommandGroup.VS]);
         }
 
-        selectedCommandGroups.Add(("# Done", "echo Done!"));
-
         return selectedCommandGroups;
     }
 
     private string GetReadyToRunSelectedCommands()
     {
-        return string.Join(" ", GetSelectedComands().Select(c => c.command));
+        return string.Join(" ", GetSelectedComands().Select(c => $"{c.text} {c.command}"));
     }
 
     private string GetDisplayableSelectedCommands()
     {
-        return string.Join($"{Environment.NewLine}", GetSelectedComands()[..^1].Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"))
-            .Replace("dotnet", "dotnet")
-            .Replace("code", "code");
+        return string.Join($"{Environment.NewLine}", GetSelectedComands()[..^1].Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"));
     }
 
     private async Task CopyCommandsToClipboard()
@@ -55,84 +51,86 @@ public partial class Templates03GettingStartedPage
     }
 
 
-
     private Dictionary<CommandGroup, List<(string text, string command)>> commandGroups = new()
     {
         [CommandGroup.Core] =
         [
-            (text:@"# Enable long paths files in Windows https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation",
+            (text:"echo 'Set execution policy';",
+            command:"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force;"),
+
+            (text:@"echo 'Enable long paths files in Windows https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation';",
             command:@"New-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"" -Name ""LongPathsEnabled"" -Value 1 -PropertyType DWORD -Force;"),
 
-            (text:@"# Enable Windows developer mode https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging#use-regedit-to-enable-your-device",
+            (text:@"echo 'Enable Windows developer mode https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging#use-regedit-to-enable-your-device';",
             command:@"New-ItemProperty -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"" -Name ""AllowDevelopmentWithoutDevLicense"" -Value 1 -PropertyType DWORD -Force;"),
 
-            (text:"Install - Update winget",
-            command:"Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile winget.msixbundle; Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx; Invoke-WebRequest -Uri https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx -OutFile Microsoft.UI.Xaml.2.8.x64.appx; Write-Output Y | Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx; Write-Output Y | Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx; Write-Output Y | Add-AppxPackage winget.msixbundle;"),
+            (text:"echo 'Install - Update winget';",
+            command:"$ProgressPreference = 'SilentlyContinue'; Install-PackageProvider -Name \"NuGet\" -Force; Set-PSRepository -Name \"PSGallery\" -InstallationPolicy Trusted; Install-Script winget-install -Force; winget-install -Force;"),
 
-            (text:@"# Discover installed WinGet",
-            command:"$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),
+            //(text:@"echo 'Discover installed WinGet';",
+            //command:"$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),
 
-            (text:@"# Install .NET SDK https://dotnet.microsoft.com/en-us/download",
+            (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
             command:"winget install Microsoft.DotNet.SDK.8 -v 8.0.303 --accept-source-agreements --accept-package-agreements;"),
 
-            (text:@"# Discover installed .NET SDK",
+            (text:@"echo 'Discover installed .NET SDK';",
             command:"$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),
 
-            (text:@"# Install Node.js https://nodejs.org/en/download/package-manager/all#windows-1",
+            (text:@"echo 'Install Node.js https://nodejs.org/en/download/package-manager/all#windows-1';",
             command:"winget install OpenJS.NodeJS --accept-source-agreements --accept-package-agreements;"),
 
-            (text:@"# Install WebAssembly workloads https://learn.microsoft.com/en-us/aspnet/core/blazor/webassembly-build-tools-and-aot#net-webassembly-build-tools",
+            (text:@"echo 'Install WebAssembly workloads https://learn.microsoft.com/en-us/aspnet/core/blazor/webassembly-build-tools-and-aot#net-webassembly-build-tools';",
             command:"dotnet workload install wasm-tools wasm-experimental;"),
 
-            (text:@"# Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates",
+            (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
             command:"dotnet new install Bit.Boilerplate::8.10.0-pre-05;"),
         ],
 
         [CommandGroup.Additional] =
         [
-            (text:@"# Install MAUI workloads https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?tabs=visual-studio-code#install-net-and-net-maui-workloads",
+            (text:@"echo 'Install MAUI workloads https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?tabs=visual-studio-code#install-net-and-net-maui-workloads';",
             command:"dotnet workload install maui;")
         ],
 
         [CommandGroup.VS] =
         [
-            (text:@"# Install Visual Studio 2022 Community Edition https://visualstudio.microsoft.com/downloads/",
+            (text:@"echo 'Install Visual Studio 2022 Community Edition https://visualstudio.microsoft.com/downloads/';",
             command:"winget install --id Microsoft.VisualStudio.2022.Community --exact --silent --custom \"--add Microsoft.VisualStudio.Workload.NetWeb\" --accept-source-agreements --accept-package-agreements --disable-interactivity;")
         ],
 
         [CommandGroup.AdditionalVS] =
         [
-            (text:@"# Install Visual Studio 2022 Community Edition https://visualstudio.microsoft.com/downloads/",
+            (text:@"echo 'Install Visual Studio 2022 Community Edition https://visualstudio.microsoft.com/downloads/';",
             command:"winget install --id Microsoft.VisualStudio.2022.Community --exact --silent --custom \"--add Microsoft.VisualStudio.Workload.NetCrossPlat --add Microsoft.VisualStudio.Workload.NetWeb --add Component.Android.SDK.MAUI\" --accept-source-agreements --accept-package-agreements --disable-interactivity;")
         ],
 
         [CommandGroup.VSCode] =
         [
-            (text:@"# Install Visual Studio Code https://code.visualstudio.com/download",
+            (text:@"echo 'Install Visual Studio Code https://code.visualstudio.com/download';",
             command:"winget install -e --id Microsoft.VisualStudioCode --scope machine --accept-source-agreements --accept-package-agreements;"),
 
-            (text:@"# Discover installed Visual Studio Code",
+            (text:@"echo 'Discover installed Visual Studio Code';",
             command:"$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),
 
-            (text:@"# Install the C# Dev Kit extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit",
+            (text:@"echo 'Install the C# Dev Kit extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit';",
             command:"code --install-extension ms-dotnettools.csdevkit;"),
 
-            (text:@"# Install the Blazor WASM Companion extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion",
+            (text:@"echo 'Install the Blazor WASM Companion extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion';",
             command:"code --install-extension ms-dotnettools.blazorwasm-companion;"),
 
-            (text:@"# Install the Live Sass Compiler extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass",
+            (text:@"echo 'Install the Live Sass Compiler extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass';",
             command:"code --install-extension glenn2223.live-sass;"),
 
-            (text:@"# Install the ASP.NET Core Razor IntelliSense for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=kevin-chatham.aspnetcorerazor-html-css-class-completion",
+            (text:@"echo 'Install the ASP.NET Core Razor IntelliSense for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=kevin-chatham.aspnetcorerazor-html-css-class-completion';",
             command:"code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion;"),
 
-            (text:@"# Install the .NET MAUI extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui",
+            (text:@"echo 'Install the .NET MAUI extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui';",
             command:"code --install-extension ms-dotnettools.dotnet-maui;"),
 
-            (text:@"# Install the SQLite3 Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor",
+            (text:@"echo 'Install the SQLite3 Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor';",
             command:"code --install-extension yy0931.vscode-sqlite3-editor;"),
 
-            (text:@"# Install the RESX Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor",
+            (text:@"echo 'Install the RESX Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor';",
             command:"code --install-extension DominicVonk.vscode-resx-editor;"),
         ]
     };
