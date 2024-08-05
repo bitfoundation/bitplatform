@@ -698,8 +698,11 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
 <style>
     .custom-class {
         margin: 1rem;
-        box-shadow: aqua 0 0 1rem;
+        background: #8a2be270;
+        border-radius: 1rem;
+        box-shadow: blueviolet 0 0 1rem;
     }
+
 
     .custom-root {
         margin: 1rem;
@@ -751,28 +754,26 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
         border-end-end-radius: 0.5rem;
         border-start-end-radius: 0.5rem;
     }
-
-    .custom-increase-btn {
-        background-color: #48900f;
-    }
-
-    .custom-decrease-btn {
-        background-color: #c70505;
-    }
 </style>
 
 
-<BitCalendar Style=""margin: 1rem; background: purple;"" />
+<BitCalendar Style=""margin: 1rem; border-radius: 1rem; background: #a5104457;"" />
+
 <BitCalendar Class=""custom-class"" />
 
-<BitCalendar Styles=""@(new() { Root = ""margin: 1rem; border: 1px solid gold;"",
-                               Divider = ""border-color: green;"",
-                               DayPickerMonth = ""color: red;"",
-                               TodayDayButton = ""background-color: red;"",
-                               SelectedDayButton = ""background-color: purple;"",
-                               YearPickerToggleButton = ""color: blue;"" })"" />
+
 <BitCalendar ShowTimePicker=""true""
-             Classes=""@(new() { Root = ""custom-root"",
+             Styles=""@(new() { Root = ""margin: 1rem; border: 1px solid mediumseagreen; background: #1c73324d;"",
+                               Divider = ""border-color: mediumseagreen;"",
+                               DayPickerMonth = ""color: darkgreen;"",
+                               TodayDayButton = ""background-color: green;"",
+                               SelectedDayButton = ""background-color: limegreen;"",
+                               TimePickerIncreaseHourButton = ""background-color: limegreen;"",
+                               TimePickerIncreaseMinuteButton = ""background-color: limegreen;"",
+                               TimePickerDecreaseHourButton = ""background-color: limegreen;"",
+                               TimePickerDecreaseMinuteButton = ""background-color: limegreen;"" })"" />
+
+<BitCalendar Classes=""@(new() { Root = ""custom-root"",
                              DayPickerWrapper = ""custom-day-picker"",
                              DayButton = ""custom-day"",
                              TodayDayButton = ""custom-today-day"",
@@ -781,11 +782,7 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
                              DayPickerMonth = ""custom-day-month"",
                              DayPickerHeader = ""custom-day-header"",
                              WeekNumbersHeader = ""custom-week-header"",
-                             YearMonthPickerWrapper = ""custom-year-picker"",
-                             TimePickerIncreaseHourButton = ""custom-increase-btn"",
-                             TimePickerIncreaseMinuteButton = ""custom-increase-btn"",
-                             TimePickerDecreaseHourButton = ""custom-decrease-btn"",
-                             TimePickerDecreaseMinuteButton = ""custom-decrease-btn"" })"" />";
+                             YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
 
     private readonly string example4RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDate"" />
