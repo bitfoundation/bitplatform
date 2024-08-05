@@ -96,7 +96,7 @@ public partial class BitActionButtonDemo
 <BitActionButton IconName=""@BitIconName.AddFriend"">
     <div style=""display:flex;gap:0.5rem;"">
         <div>This is a custom template</div>
-        <BitSpinnerLoading Size=""20"" />
+        <BitSpinnerLoading CustomSize=""20"" />
     </div>
 </BitActionButton>";
 
