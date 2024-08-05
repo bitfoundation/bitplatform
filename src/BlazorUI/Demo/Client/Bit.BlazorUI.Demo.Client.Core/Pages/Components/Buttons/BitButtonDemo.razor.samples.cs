@@ -185,9 +185,9 @@ private async Task HandleValidSubmit()
 
 
 <BitButton Class=""custom-content"">
-    <BitIcon IconName=""@BitIconName.Airplane"" />
+    <BitIcon IconName=""@BitIconName.Airplane"" Color=""BitColor.Tertiary"" />
     <span>A primary template</span>
-    <BitRippleLoading Size=""20"" />
+    <BitRippleLoading CustomSize=""20"" Color=""BitColor.Tertiary"" />
 </BitButton>
 
 <BitButton Class=""custom-content"" Variant=""BitVariant.Outline"">
@@ -195,7 +195,7 @@ private async Task HandleValidSubmit()
     <SecondaryTemplate>
         <BitIcon IconName=""@BitIconName.Accept"" />
         <span>A secondary template</span>
-        <BitRollerLoading Size=""20"" />
+        <BitRollerLoading CustomSize=""20"" />
     </SecondaryTemplate>
 </BitButton>
 
@@ -208,7 +208,7 @@ private async Task HandleValidSubmit()
     <SecondaryTemplate>
         <BitIcon IconName=""@BitIconName.Accept"" />
         <span>A secondary template</span>
-        <BitRollerLoading Size=""20"" />
+        <BitRollerLoading CustomSize=""20"" />
     </SecondaryTemplate>
 </BitButton>
 
@@ -216,7 +216,7 @@ private async Task HandleValidSubmit()
     <PrimaryTemplate>Click me</PrimaryTemplate>
     <LoadingTemplate>
         <div style=""display:flex;align-items:center;"">
-            <BitEllipsisLoading Size=""32"" />
+            <BitEllipsisLoading CustomSize=""32"" Color=""BitColor.Tertiary"" />
             <span>Wait...</span>
         </div>
     </LoadingTemplate>

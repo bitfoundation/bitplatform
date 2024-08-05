@@ -204,7 +204,7 @@ private List<TimelineActionItem> templateItems =
                                              Presence=""@BitPersonaPresence.Online""
                                              ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />),
 
-        DotContent = (item => @<div class=""dot-template""><BitRingLoading Size=""30"" /></div>),
+        DotContent = (item => @<div class=""dot-template""><BitRingLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 
         SecondContent = (item => @<div style=""display: flex; align-items: center; gap: 1rem;"">
                                       <BitIcon IconName=""Accept"" Style=""color: limegreen;"" />
@@ -217,7 +217,7 @@ private List<TimelineActionItem> templateItems =
                                              Size=""@BitPersonaSize.Size32""
                                              Presence=""@BitPersonaPresence.Online"" />),
 
-        DotContent = (item => @<div class=""dot-template""><BitSpinnerLoading Size=""30"" /></div>),
+        DotContent = (item => @<div class=""dot-template""><BitSpinnerLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 
         SecondContent = (item => @<div style=""display: flex; align-items: center; gap: 1rem;"">
                                       <BitIcon IconName=""Accept"" Style=""color: limegreen;"" />
@@ -232,7 +232,7 @@ private List<TimelineActionItem> templateItems =
                                              Presence=""@BitPersonaPresence.Online""
                                              ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />),
 
-        DotContent = (item => @<div class=""dot-template""><BitRollerLoading Size=""30"" /></div>),
+        DotContent = (item => @<div class=""dot-template""><BitRollerLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 
         SecondContent = (item => @<div style=""display: flex; align-items: center; gap: 1rem;"">
                                       <BitIcon IconName=""Accept"" Style=""color: limegreen;"" />

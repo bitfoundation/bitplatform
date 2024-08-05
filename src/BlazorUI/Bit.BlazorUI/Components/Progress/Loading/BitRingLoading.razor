@@ -1,51 +1,10 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitLoadingComponentBase
+@inherits BitLoadingBase
 
-<style>
-    .bit-ldn-Ring {
-        display: inline-block;
-        position: relative;
-        width: @(Size)px;
-        height: @(Size)px;
-    }
-
-        .bit-ldn-Ring div {
-            display: block;
-            position: absolute;
-            border-radius: 50%;
-            box-sizing: border-box;
-            margin: @(Convert(8))px;
-            width: @(Convert(64))px;
-            height: @(Convert(64))px;
-            animation: bit-ldn-Ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            border: @(Convert(8))px solid @(Color ?? "var(--bit-clr-fg-pri)");
-            border-color: @(Color ?? "var(--bit-clr-fg-pri)") transparent transparent transparent;
-        }
-
-            .bit-ldn-Ring div:nth-child(1) {
-                animation-delay: -0.45s;
-            }
-
-            .bit-ldn-Ring div:nth-child(2) {
-                animation-delay: -0.3s;
-            }
-
-            .bit-ldn-Ring div:nth-child(3) {
-                animation-delay: -0.15s;
-            }
-
-    @@keyframes bit-ldn-Ring {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-</style>
-
-<div style="@Style" class="bit-ldn-Ring @Class">
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
     @for (int i = 0; i < 4; i++)
     {
         <div style="@ChildStyle" class="@ChildClass"></div>

@@ -1,6 +1,6 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
-::deep .container {
+.container {
     height: 100%;
     display: flex;
     flex-wrap: wrap;
@@ -8,7 +8,7 @@
     justify-content: space-evenly;
 }
 
-::deep .wrapper {
+.wrapper {
     display: flex;
     height: rem2(176px);
     align-items: center;
