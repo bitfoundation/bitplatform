@@ -4,7 +4,7 @@
         {
             "label": "dotnet build",
             "type": "shell",
-            "command": "dotnet build Boilerplate.Web.slnf -t:BeforeBuildTasks -m:1",
+            "command": "dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks",
             "runOptions": {
                 "runOn": "folderOpen"
             }
