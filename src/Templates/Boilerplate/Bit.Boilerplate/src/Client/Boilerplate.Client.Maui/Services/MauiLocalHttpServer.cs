@@ -24,7 +24,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
+                    var url = new Uri(configuration.GetServerAddress(), $"api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
 
                     ctx.Redirect(url);
 

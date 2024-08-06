@@ -22,12 +22,7 @@ public static partial class Program
 
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
-        Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out var serverAddress);
-
-        if (serverAddress!.IsAbsoluteUri is false)
-        {
-            serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
-        }
+        var serverAddress = configuration.GetServerAddress(baseUrl: new Uri(builder.HostEnvironment.BaseAddress, UriKind.Absolute));
 
         services.TryAddSingleton(sp => new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler")) { BaseAddress = serverAddress });
 

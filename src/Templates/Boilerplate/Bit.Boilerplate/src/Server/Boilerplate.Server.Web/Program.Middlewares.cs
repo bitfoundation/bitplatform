@@ -112,6 +112,8 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
+        app.MapHub<Api.Hubs.IdentityHub>("/identity-hub");
+
         app.MapControllers().RequireAuthorization();
         //#endif
 

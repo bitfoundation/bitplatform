@@ -1,4 +1,5 @@
 ﻿//-:cnd:noEmit
+using Microsoft.AspNetCore.SignalR.Client;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
@@ -9,7 +10,8 @@ public partial class ProfilePage
 {
     private UserDto? user;
     private bool isLoading;
-
+    private HubConnection? hubConnection;
+    private BitSnackBar snackBar = default!;
 
     [AutoInject] private IUserController userController = default!;
 
@@ -28,5 +30,38 @@ public partial class ProfilePage
         }
 
         await base.OnInitAsync();
+    }
+
+    protected async override Task OnAfterFirstRenderAsync()
+    {
+        await base.OnAfterFirstRenderAsync();
+
+        var access_token = await AuthTokenProvider.GetAccessTokenAsync();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(new Uri(Configuration.GetServerAddress(), $"identity-hub?access_token={access_token}"))
+            .Build();
+
+        hubConnection.On<UserSessionDto>("NewUserSession", async (userSession) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await snackBar.Info("New user session", userSession.Device);
+
+                StateHasChanged();
+            });
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

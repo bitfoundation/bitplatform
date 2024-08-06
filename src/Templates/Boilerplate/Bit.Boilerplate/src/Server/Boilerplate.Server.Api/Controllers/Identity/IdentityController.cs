@@ -1,8 +1,10 @@
 ﻿//+:cnd:noEmit
 using Humanizer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Boilerplate.Server.Api.Hubs;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
@@ -24,6 +26,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
     [AutoInject] private IUserClaimsPrincipalFactory<User> userClaimsPrincipalFactory = default!;
+    [AutoInject] private IHubContext<IdentityHub> identityHubContext = default!;
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -220,6 +223,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (addUserSessionResult.Succeeded is false)
             throw new ResourceValidationException(addUserSessionResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
+        await identityHubContext.Clients.User(user.Id.ToString()).SendAsync("NewUserSession", userSession, cancellationToken);
+
         return Empty;
     }
 
@@ -293,7 +298,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             // Return 401 if refresh token is either invalid or expired.
             throw new UnauthorizedException();
         }
-        
+
         ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", currentSessionId.ToString()));
 
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);

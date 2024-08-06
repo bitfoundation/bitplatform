@@ -17,13 +17,12 @@ public static partial class Program
         var configuration = configurationBuilder.Build();
         services.TryAddTransient<IConfiguration>(sp => configuration);
 
-        Uri.TryCreate(configuration.GetServerAddress(), UriKind.Absolute, out var serverAddress);
         services.TryAddSingleton(sp =>
         {
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
-                BaseAddress = serverAddress
+                BaseAddress = configuration.GetServerAddress()
             };
             return httpClient;
         });

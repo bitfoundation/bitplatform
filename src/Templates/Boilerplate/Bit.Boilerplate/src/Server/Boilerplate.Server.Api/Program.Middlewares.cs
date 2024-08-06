@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Microsoft.Net.Http.Headers;
 
 namespace Boilerplate.Server.Api;
 
@@ -64,6 +63,8 @@ public static partial class Program
             RouteParameter = routeParameter,
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
+
+        app.MapHub<Hubs.IdentityHub>("/identity-hub");
 
         app.MapControllers().RequireAuthorization();
     }

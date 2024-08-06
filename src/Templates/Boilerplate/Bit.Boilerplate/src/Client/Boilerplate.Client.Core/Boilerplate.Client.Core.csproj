@@ -22,6 +22,7 @@
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.10.0-pre-05" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.10.0-pre-05" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.7" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
         <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.10.0-pre-05" />
         <!--/-:msbuild-conditional:noEmit -->
@@ -86,7 +87,7 @@
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles-&gt;Replace('.scss', '.css'))">
         <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 

@@ -107,7 +107,7 @@ public partial class NavMenu
 
         var serverAddress = Configuration.GetServerAddress();
         var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
-        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
+        profileImageUrl = new Uri(serverAddress, $"api/Attachment/GetProfileImage?access_token={access_token}").ToString();
     }
 
     private async Task DoSignOut()

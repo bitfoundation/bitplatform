@@ -8,8 +8,13 @@ public static class IConfigurationExtensions
             .GetValue<T>(name ?? throw new ArgumentNullException(nameof(name))) ?? throw new InvalidOperationException($"{name} config could not be found");
     }
 
-    public static string GetServerAddress(this IConfiguration configuration)
+    private static Uri? serverAddressUri;
+
+    public static Uri GetServerAddress(this IConfiguration configuration, Uri? baseUrl = null)
     {
+        if (serverAddressUri is not null)
+            return serverAddressUri;
+
         var serverAddress = configuration.GetRequiredValue<string>("ServerAddress");
 
         if (AppEnvironment.IsDev() &&
@@ -21,8 +26,14 @@ public static class IConfigurationExtensions
             serverAddress = serverAddress.Replace("localhost", androidEmulatorDevMachineIP, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        return Uri.TryCreate(serverAddress, UriKind.RelativeOrAbsolute, out _)
-            ? serverAddress.TrimEnd('/')
-            : throw new InvalidOperationException($"Api server address {serverAddress} is invalid");
+        if (Uri.TryCreate(serverAddress, UriKind.RelativeOrAbsolute, out var uri) is false)
+            throw new InvalidOperationException($"Api server address {serverAddress} is invalid");
+
+        if (uri.IsAbsoluteUri is false)
+        {
+            uri = new Uri(baseUrl!, uri);
+        }
+
+        return serverAddressUri = uri;
     }
 }
