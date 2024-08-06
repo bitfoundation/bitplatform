@@ -16,6 +16,13 @@
     "sourceName": "Boilerplate",
     "preferNameDirectory": true,
     "symbols": {
+        "helpUrl": {
+            "displayName": "More info at",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "https://bitplatform.dev/templates/create-project",
+            "description": "Open the following url in order to get more information about the following parameters."
+        },
         //Guid generator for App Id
         "ApplicationIdGuid": {
             "type": "generated",
@@ -87,6 +94,22 @@
             ],
             "description": "Boilerplate's API uses Fluent Storage. You can use any other fluent storage provider (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)"
         },
+        "api": {
+            "displayName": "API deployment configuration",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "Integrated",
+            "choices": [
+                {
+                    "choice": "Integrated",
+                    "description": "A single-deployment configuration that serves API controllers and Blazor web server together"
+                },
+                {
+                    "choice": "Standalone",
+                    "description": "A multi-server deployment configuration in which the API controllers are separate from the Blazor server"
+                }
+            ]
+        },
         "captcha": {
             "displayName": "Captcha",
             "type": "parameter",
@@ -102,28 +125,6 @@
                     "description": "None"
                 }
             ]
-        },
-        "serverUrl": {
-            "displayName": "Server url",
-            "type": "parameter",
-            "datatype": "string",
-            "defaultValue": "use-your-server-url-here.com",
-            "description": "The backend server url. You can change its value later if needed."
-        },
-        "normalizedServerUrl": {
-            "type": "generated",
-            "generator": "regex",
-            "dataType": "string",
-            "parameters": {
-                "source": "serverUrl",
-                "steps": [
-                    {
-                        "regex": "^(https|http):\/\/",
-                        "replacement": ""
-                    }
-                ]
-            },
-            "replaces": "use-your-server-url-here.com"
         },
         "pipeline": {
             "displayName": "CI-CD pipeline",
@@ -256,10 +257,59 @@
                 "high": 4300
             },
             "replaces": "4030"
+        },
+        "serverUrl": {
+            "displayName": "Server url",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "use-your-server-url-here.com",
+            "description": "The backend server url. You can change its value later if needed."
+        },
+        "normalizedServerUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "serverUrl",
+                "steps": [
+                    {
+                        "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    }
+                ]
+            },
+            "replaces": "use-your-server-url-here.com"
         }
     },
-    "postActions": [],
+    "postActions": [
+        {
+            "description": "restore project dependencies",
+            "manualInstructions": [
+                {
+                    "text": "Run 'dotnet restore'"
+                }
+            ],
+            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+            "args": {
+                "files": [ "Boilerplate.Web.slnf" ]
+            },
+            "continueOnError": true
+        },
+        {
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+            "description": "Opens README.md in the editor",
+            "manualInstructions": [],
+            "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+            "args": {
+                "files": "0" // "README.md"
+            },
+            "continueOnError": true
+        }
+    ],
     "primaryOutputs": [
+        {
+            "path": "README.md"
+        },
         {
             "path": "Boilerplate.sln"
         }

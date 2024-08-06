@@ -13,7 +13,7 @@
                     @Localizer[nameof(AppStrings.AddProduct)]
                 }
             </span>
-            <BitIconButton IconName="@BitIconName.ChromeClose" OnClick="OnCloseClick" />
+            <BitButton IconName="@BitIconName.ChromeClose" OnClick="OnCloseClick" Variant="BitVariant.Text" />
         </div>
         <EditForm Model="product" OnValidSubmit="WrapHandled(Save)" style="width: 100%; display: flex; flex-direction: column;align-items: center">
             <AppDataAnnotationsValidator />

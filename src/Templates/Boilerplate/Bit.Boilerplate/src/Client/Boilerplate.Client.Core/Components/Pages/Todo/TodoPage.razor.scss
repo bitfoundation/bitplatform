@@ -158,18 +158,12 @@
         flex-grow: 1;
     }
 
-    .add-todo-button {
-        line-height: 1;
-        min-width: rem2(70px);
-        min-height: rem2(32px);
-    }
-
     .sort-todo-drp {
         width: rem2(136px);
         height: rem2(32px);
 
         .sort-todo-icn {
-            color: $bit-color-primary-main;
+            color: $bit-color-primary;
         }
 
         .bit-drp-iwp .bit-drp-rsp-lbl-ctn {

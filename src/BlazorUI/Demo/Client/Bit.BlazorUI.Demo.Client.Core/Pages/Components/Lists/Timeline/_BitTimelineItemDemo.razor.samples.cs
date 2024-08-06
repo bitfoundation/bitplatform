@@ -107,7 +107,7 @@ private List<BitTimelineItem> templateItems =
         Presence=""@BitPersonaPresence.Online""
         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />),
 
-        DotTemplate = (item => @<div class=""dot-template""><BitRingLoading Size=""30"" /></div>),
+        DotTemplate = (item => @<div class=""dot-template""><BitRingLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 
         SecondaryContent = (item => @<div style=""display: flex; align-items: center; gap: 1rem;"">
                                         <BitIcon IconName=""Accept"" Style=""color: limegreen;"" />
@@ -120,7 +120,7 @@ private List<BitTimelineItem> templateItems =
         Size=""@BitPersonaSize.Size32""
         Presence=""@BitPersonaPresence.Online"" />),
 
-        DotTemplate = (item => @<div class=""dot-template""><BitSpinnerLoading Size=""30"" /></div>),
+        DotTemplate = (item => @<div class=""dot-template""><BitSpinnerLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 
         SecondaryContent = (item => @<div style=""display: flex; align-items: center; gap: 1rem;"">
                                         <BitIcon IconName=""Accept"" Style=""color: limegreen;"" />
@@ -135,7 +135,7 @@ private List<BitTimelineItem> templateItems =
         Presence=""@BitPersonaPresence.Online""
         ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />),
 
-        DotTemplate = (item => @<div class=""dot-template""><BitRollerLoading Size=""30"" /></div>),
+        DotTemplate = (item => @<div class=""dot-template""><BitRollerLoading CustomSize=""30"" Color=""BitColor.Tertiary"" /></div>),
 
         SecondaryContent = (item => @<div style=""display: flex; align-items: center; gap: 1rem;"">
                                         <BitIcon IconName=""Accept"" Style=""color: limegreen;"" />

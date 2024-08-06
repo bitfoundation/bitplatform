@@ -491,6 +491,13 @@ public partial class BitChoiceGroupDemo
                },
                new()
                {
+                   Name = "ItemChecked",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the checked item of the BitChoiceGroup.",
+               },
+               new()
+               {
                    Name = "ItemContainer",
                    Type = "string?",
                    DefaultValue = "null",

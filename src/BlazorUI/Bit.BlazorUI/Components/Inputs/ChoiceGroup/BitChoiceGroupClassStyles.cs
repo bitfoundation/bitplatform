@@ -23,6 +23,11 @@ public class BitChoiceGroupClassStyles
     public string? Container { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the checked item of the BitChoiceGroup.
+    /// </summary>
+    public string? ItemChecked { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the container of each item of the BitChoiceGroup.
     /// </summary>
     public string? ItemContainer { get; set; }

@@ -68,16 +68,12 @@ public partial class BitStack : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(register =>
-        {
-            register($"flex-direction:{(Horizontal ? "row" : "column")}{(Reversed ? "-reverse" : "")}");
+        StyleBuilder.Register(() => $"flex-direction:{(Horizontal ? "row" : "column")}{(Reversed ? "-reverse" : string.Empty)}");
 
-            register($"align-items:{_AlignmentMap[Horizontal ? VerticalAlign : HorizontalAlign]}");
-            register($"justify-content:{_AlignmentMap[Horizontal ? HorizontalAlign : VerticalAlign]}");
+        StyleBuilder.Register(() => $"align-items:{_AlignmentMap[Horizontal ? VerticalAlign : HorizontalAlign]}");
 
-            return string.Empty;
-        });
-
+        StyleBuilder.Register(() => $"justify-content:{_AlignmentMap[Horizontal ? HorizontalAlign : VerticalAlign]}");
+        
         StyleBuilder.Register(() => Gap.HasValue() ? $"gap:{Gap}" : string.Empty);
 
         StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow:{(Grow.HasValue() ? Grow : "1")}" : string.Empty);

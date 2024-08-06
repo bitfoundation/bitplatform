@@ -1,76 +1,10 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitLoadingComponentBase
+@inherits BitLoadingBase
 
-<style>
-    .bit-ldn-Ellipsis {
-        display: inline-block;
-        position: relative;
-        width: @(Size)px;
-        height: @(Size)px;
-    }
-
-        .bit-ldn-Ellipsis div {
-            position: absolute;
-            border-radius: 50%;
-            top: @(Convert(33))px;
-            width: @(Convert(13))px;
-            height: @(Convert(13))px;
-            background: @(Color ?? "var(--bit-clr-fg-pri)");
-            animation-timing-function: cubic-bezier(0, 1, 1, 0);
-        }
-
-            .bit-ldn-Ellipsis div:nth-child(1) {
-                left: @(Convert(8))px;
-                animation: bit-ldn-Ellipsis1 0.6s infinite;
-            }
-
-            .bit-ldn-Ellipsis div:nth-child(2) {
-                left: @(Convert(8))px;
-                animation: bit-ldn-Ellipsis2 0.6s infinite;
-            }
-
-            .bit-ldn-Ellipsis div:nth-child(3) {
-                left: @(Convert(32))px;
-                animation: bit-ldn-Ellipsis2 0.6s infinite;
-            }
-
-            .bit-ldn-Ellipsis div:nth-child(4) {
-                left: @(Convert(56))px;
-                animation: bit-ldn-Ellipsis3 0.6s infinite;
-            }
-
-    @@keyframes bit-ldn-Ellipsis1 {
-        0% {
-            transform: scale(0);
-        }
-
-        100% {
-            transform: scale(1);
-        }
-    }
-
-    @@keyframes bit-ldn-Ellipsis3 {
-        0% {
-            transform: scale(1);
-        }
-
-        100% {
-            transform: scale(0);
-        }
-    }
-
-    @@keyframes bit-ldn-Ellipsis2 {
-        0% {
-            transform: translate(0, 0);
-        }
-
-        100% {
-            transform: translate(@(Convert(24))px, 0);
-        }
-    }
-</style>
-
-<div style="@Style" class="bit-ldn-Ellipsis @Class">
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
     @for (int i = 0; i < 4; i++)
     {
         <div style="@ChildStyle" class="@ChildClass"></div>

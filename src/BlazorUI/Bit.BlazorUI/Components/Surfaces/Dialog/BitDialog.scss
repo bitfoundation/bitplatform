@@ -114,7 +114,7 @@
     }
 }
 
-.bit-dlg-pri {
+.bit-dlg-okb {
     color: $clr-pri-text;
     border-color: $clr-pri;
     background-color: $clr-pri;
@@ -132,19 +132,23 @@
     }
 }
 
-.bit-dlg-std {
-    color: $clr-sec-text;
-    border-color: $clr-brd-pri;
-    background-color: $clr-sec;
+.bit-dlg-cnb {
+    color: $clr-pri;
+    border-color: $clr-pri;
+    background-color: transparent;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-sec-hover;
+            color: $clr-pri-text;
+            border-color: $clr-pri-hover;
+            background-color: $clr-pri-hover;
         }
     }
 
     &:active {
-        background-color: $clr-sec-active;
+        color: $clr-pri-text;
+        border-color: $clr-pri-active;
+        background-color: $clr-pri-active;
     }
 }
 

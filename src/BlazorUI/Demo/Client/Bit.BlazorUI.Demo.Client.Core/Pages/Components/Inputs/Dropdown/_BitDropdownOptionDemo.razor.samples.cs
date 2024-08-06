@@ -64,44 +64,57 @@ private readonly List<BitDropdownItem<string>> basicItems =
     private readonly string example2RazorCode = @"
 <style>
     .custom-class {
-        padding: 1rem;
-        border-radius: 4px;
-        background-color: midnightblue;
+        margin-inline: 1rem;
+        box-shadow: dodgerblue 0 0 0.5rem;
+        text-shadow: dodgerblue 0 0 0.5rem;
     }
 
+
     .custom-fruit {
-        border-top: 1px solid gray;
-        background-color: darkslateblue;
+        background-color: #a5104457;
     }
 
     .custom-veg {
-        font-size: 18px;
-        text-decoration: overline underline line-through;
+        background-color: #1c73324d;
     }
 
-    .custom-label {
-        color: darkred;
-        font-size: 12px;
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
     }
 
-    .custom-text {
-        color: darkblue;
-        font-size: 16px;
+    .custom-container, .custom-container:after {
+        border-radius: 1rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-scroll-container div:last-child .custom-item-button {
+        border-bottom: none;
     }
 </style>
 
-<BitDropdown Label=""Styled Dropdown""
-             Placeholder=""Select an item""
+
+<BitDropdown Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             Style=""padding: 1rem;border-radius: 4px;background-color: darkred;"">
+             Style=""margin: 1rem; box-shadow: aqua 0 0 0.5rem; text-shadow: aqua 0 0 0.5rem;"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
 
-<BitDropdown Label=""Classed Dropdown""
-             Placeholder=""Select an item""
+<BitDropdown Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string""
              Class=""custom-class"">
     @foreach (var item in basicItems)
@@ -109,7 +122,6 @@ private readonly List<BitDropdownItem<string>> basicItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-
 
 
 <BitDropdown Placeholder=""Select an item""
@@ -121,11 +133,14 @@ private readonly List<BitDropdownItem<string>> basicItems =
 </BitDropdown>
 
 
-
 <BitDropdown Label=""Styles""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             Styles=""@(new() { Label = ""font-size:18px;color:darkblue"", ItemText = ""color:darkred"" })"">
+             Styles=""@(new() { Label = ""text-shadow: dodgerblue 0 0 0.5rem;"",
+                               Container = ""box-shadow: dodgerblue 0 0 0.5rem; border-color: lightskyblue; color: lightskyblue;"",
+                               ItemHeader = ""color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;"",
+                               ItemButton = ""color: lightskyblue"",
+                               Callout = ""border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;"" })"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
@@ -135,7 +150,10 @@ private readonly List<BitDropdownItem<string>> basicItems =
 <BitDropdown Label=""Classes""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             Classes=""@(new() { Label = ""custom-label"", ItemText = ""custom-text"" })"">
+             Classes=""@(new() { Callout = ""custom-callout"",
+                                Container = ""custom-container"",
+                                ItemButton = ""custom-item-button"",
+                                ScrollContainer = ""custom-scroll-container"" })"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
@@ -158,13 +176,13 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
 private readonly List<BitDropdownItem<string>> styleClassItems =
 [
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"", Style = ""background-color:darkred"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"", Style = ""text-align: center;"" },
     new() { Text = ""Apple"", Value = ""f-app"", Class = ""custom-fruit"" },
     new() { Text = ""Banana"", Value = ""f-ban"", Class = ""custom-fruit"" },
     new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false, Class = ""custom-fruit"" },
     new() { Text = ""Grape"", Value = ""f-gra"", Class = ""custom-fruit"" },
-    new() { ItemType = BitDropdownItemType.Divider, Style = ""padding:5px; background:darkgreen"" },
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"", Style = ""background-color:darkblue"" },
+    new() { ItemType = BitDropdownItemType.Divider, Style = ""padding: 0 0.25rem;"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"", Style = ""text-align: center;"" },
     new() { Text = ""Broccoli"", Value = ""v-bro"", Class = ""custom-veg"" },
     new() { Text = ""Carrot"", Value = ""v-car"", Class = ""custom-veg"" },
     new() { Text = ""Lettuce"", Value = ""v-let"", Class = ""custom-veg"" }
@@ -524,7 +542,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
-             Label=""Single select combo box""
+             Label=""Single select combo box & chips""
              Placeholder=""Select an option""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
@@ -536,7 +554,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
-             Label=""Single select combo box""
+             Label=""Single select combo box & dynamic""
              Placeholder=""Select an option""
              DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
@@ -550,7 +568,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
 <BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
-             Label=""Single select combo box""
+             Label=""Single select combo box, chips & dynamic""
              Placeholder=""Select an option""
              IsResponsive=""true""
              DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
@@ -565,7 +583,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
 <BitDropdown @bind-Values=""comboBoxValues""
                 Combo Chips Dynamic
-                Label=""Multi select combo box""
+                Label=""Multi select combo box, chips & dynamic""
                 Placeholder=""Select options""
                 IsMultiSelect=""true""
                 IsResponsive=""true""

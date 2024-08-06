@@ -8,11 +8,6 @@ public class BitTagClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the content of the BitTag.
-    /// </summary>
-    public string? Content { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the text of the BitTag.
     /// </summary>
     public string? Text { get; set; }

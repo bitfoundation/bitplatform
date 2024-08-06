@@ -64,6 +64,11 @@ public partial class BitButton : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// Determines that only the icon should be rendered.
+    /// </summary>
+    [Parameter] public bool IconOnly { get; set; }
+
+    /// <summary>
     /// Determines whether the button is in loading mode or not.
     /// </summary>        
     [Parameter] public bool IsLoading { get; set; }
@@ -147,10 +152,11 @@ public partial class BitButton : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => (PrimaryTemplate ?? ChildContent) is null &&
-                                    SecondaryText.HasNoValue() &&
-                                    SecondaryTemplate is null
-                                        ? "bit-btn-ntx" : string.Empty);
+        ClassBuilder.Register(() => ((PrimaryTemplate ?? ChildContent) is null &&
+                                    SecondaryText.HasNoValue() && SecondaryTemplate is null) ||
+                                    IconOnly
+                                        ? "bit-btn-ntx"
+                                        : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {

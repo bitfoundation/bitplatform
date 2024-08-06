@@ -1,0 +1,4 @@
+{
+    "liveSassCompile.settings.watchOnLaunch": true,
+    "dotnet.defaultSolution": "Boilerplate.Web.slnf"
+}

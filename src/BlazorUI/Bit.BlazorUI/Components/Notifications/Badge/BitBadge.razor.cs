@@ -19,6 +19,12 @@ public partial class BitBadge : BitComponentBase
     [Parameter] public BitBadgeClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the badge.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// Content you want inside the badge. Supported types are string and integer.
     /// </summary>
     [Parameter] public object? Content { get; set; }
@@ -26,7 +32,8 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// Reduces the size of the badge and hide any of its content.
     /// </summary>
-    [Parameter] public bool Dot { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Dot { get; set; }
 
     /// <summary>
     /// The visibility of the badge.
@@ -41,7 +48,7 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// Max value to display when content is integer type.
     /// </summary>
-    [Parameter] public int Max { get; set; } = 99;
+    [Parameter] public int? Max { get; set; }
 
     /// <summary>
     /// Button click event if set.
@@ -51,19 +58,14 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// Overlaps the badge on top of the child content.
     /// </summary>
-    [Parameter] public bool Overlap { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Overlap { get; set; }
 
     /// <summary>
     /// The position of the badge.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitBadgePosition Position { get; set; }
-
-    /// <summary>
-    /// The severity of the badge.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitSeverity? Severity { get; set; }
+    public BitBadgePosition? Position { get; set; }
 
     /// <summary>
     /// The size of badge, Possible values: Small | Medium | Large
@@ -89,6 +91,53 @@ public partial class BitBadge : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-bdg-pri",
+            BitColor.Secondary => "bit-bdg-sec",
+            BitColor.Tertiary => "bit-bdg-ter",
+            BitColor.Info => "bit-bdg-inf",
+            BitColor.Success => "bit-bdg-suc",
+            BitColor.Warning => "bit-bdg-wrn",
+            BitColor.SevereWarning => "bit-bdg-swr",
+            BitColor.Error => "bit-bdg-err",
+            _ => "bit-bdg-pri"
+        });
+
+        ClassBuilder.Register(() => Dot ? "bit-bdg-dot" : string.Empty);
+
+        ClassBuilder.Register(() => Overlap ? "bit-bdg-orp" : string.Empty);
+
+        ClassBuilder.Register(() => Position switch
+        {
+            BitBadgePosition.TopRight => "bit-bdg-trg",
+            BitBadgePosition.TopCenter => "bit-bdg-tcr",
+            BitBadgePosition.TopLeft => "bit-bdg-tlf",
+            BitBadgePosition.CenterLeft => "bit-bdg-clf",
+            BitBadgePosition.BottomLeft => "bit-bdg-blf",
+            BitBadgePosition.BottomCenter => "bit-bdg-bcr",
+            BitBadgePosition.BottomRight => "bit-bdg-brg",
+            BitBadgePosition.CenterRight => "bit-bdg-crg",
+            BitBadgePosition.Center => "bit-bdg-ctr",
+            _ => "bit-bdg-trg"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-bdg-sm",
+            BitSize.Medium => "bit-bdg-md",
+            BitSize.Large => "bit-bdg-lg",
+            _ => "bit-bdg-md"
+        });
+
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-bdg-fil",
+            BitVariant.Outline => "bit-bdg-otl",
+            BitVariant.Text => "bit-bdg-txt",
+            _ => "bit-bdg-fil"
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -104,7 +153,7 @@ public partial class BitBadge : BitComponentBase
         }
         else if (Content is int numberContent)
         {
-            if (numberContent > Max)
+            if (Max.HasValue && numberContent > Max)
             {
                 _content = Max + "+";
             }
@@ -119,73 +168,12 @@ public partial class BitBadge : BitComponentBase
         }
     }
 
-    protected virtual async Task HandleOnClick(MouseEventArgs e)
+
+
+    private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
-    }
+        if (IsEnabled is false) return;
 
-
-    private string GetBadgePositionClasses()
-    {
-        return Position switch
-        {
-            BitBadgePosition.TopRight => "bit-bdg-trg",
-            BitBadgePosition.TopCenter => "bit-bdg-tcr",
-            BitBadgePosition.TopLeft => "bit-bdg-tlf",
-            BitBadgePosition.CenterLeft => "bit-bdg-clf",
-            BitBadgePosition.BottomLeft => "bit-bdg-blf",
-            BitBadgePosition.BottomCenter => "bit-bdg-bcr",
-            BitBadgePosition.BottomRight => "bit-bdg-brg",
-            BitBadgePosition.CenterRight => "bit-bdg-crg",
-            BitBadgePosition.Center => "bit-bdg-ctr",
-            _ => "bit-bdg-trg"
-        };
-    }
-
-    private string GetBadgeClasses()
-    {
-        StringBuilder className = new StringBuilder();
-
-        className.Append(Dot ? "bit-bdg-dot" : string.Empty);
-
-        className.Append(Overlap ? " bit-bdg-orp" : string.Empty);
-
-        if (IconName.HasValue() && Dot is false)
-        {
-            className.Append(" bit-bdg-icn");
-        }
-
-        className.Append(' ').Append(Variant switch
-        {
-            BitVariant.Fill => "bit-bdg-fil",
-            BitVariant.Outline => "bit-bdg-otl",
-            BitVariant.Text => "bit-bdg-txt",
-            _ => "bit-bdg-fil"
-        });
-
-        className.Append(' ').Append(Severity switch
-        {
-            BitSeverity.Info => "bit-bdg-inf",
-            BitSeverity.Success => "bit-bdg-suc",
-            BitSeverity.Warning => "bit-bdg-wrn",
-            BitSeverity.SevereWarning => "bit-bdg-swr",
-            BitSeverity.Error => "bit-bdg-err",
-            _ => string.Empty
-        });
-
-        className.Append(' ').Append(Size switch
-        {
-            BitSize.Small => "bit-bdg-sm",
-            BitSize.Medium => "bit-bdg-md",
-            BitSize.Large => "bit-bdg-lg",
-            _ => string.Empty
-        });
-
-        className.Append(' ').Append(GetBadgePositionClasses());
-
-        return className.ToString();
+        await OnClick.InvokeAsync(e);
     }
 }

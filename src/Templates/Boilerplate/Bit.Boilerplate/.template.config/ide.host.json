@@ -9,14 +9,16 @@
     ],
     "symbolInfo": [
         {
-            "id": "serverUrl",
-            "isVisible": false
+            "id": "helpUrl"
         },
         {
             "id": "database"
         },
         {
             "id": "filesStorage"
+        },
+        {
+            "id": "api"
         },
         {
             "id": "captcha"
@@ -38,6 +40,10 @@
         },
         {
             "id": "appCenter"
+        },
+        {
+            "id": "serverUrl",
+            "isVisible": false
         }
     ]
 }

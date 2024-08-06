@@ -1,52 +1,10 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitLoadingComponentBase
+@inherits BitLoadingBase
 
-<style>
-    .bit-ldn-Bars {
-        display: inline-block;
-        position: relative;
-        width: @(Size)px;
-        height: @(Size)px;
-    }
-
-        .bit-ldn-Bars div {
-            display: inline-block;
-            position: absolute;
-            left: @(Convert(8))px;
-            width: @(Convert(16))px;
-            background: @(Color ?? "var(--bit-clr-fg-pri)");
-            animation: bit-ldn-Bars 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
-        }
-
-            .bit-ldn-Bars div:nth-child(1) {
-                left: @(Convert(8))px;
-                animation-delay: -0.24s;
-            }
-
-            .bit-ldn-Bars div:nth-child(2) {
-                left: @(Convert(32))px;
-                animation-delay: -0.12s;
-            }
-
-            .bit-ldn-Bars div:nth-child(3) {
-                left: @(Convert(56))px;
-                animation-delay: 0;
-            }
-
-    @@keyframes bit-ldn-Bars {
-        0% {
-            top: @(Convert(8))px;
-            height: @(Convert(64))px;
-        }
-
-        50%, 100% {
-            top: @(Convert(24))px;
-            height: @(Convert(32))px;
-        }
-    }
-</style>
-
-<div style="@Style" class="bit-ldn-Bars @Class">
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value">
     @for (int i = 0; i < 3; i++)
     {
         <div style="@ChildStyle" class="@ChildClass"></div>

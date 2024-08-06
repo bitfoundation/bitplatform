@@ -69,9 +69,16 @@ public partial class BitButtonDemo
         new()
         {
             Name = "IconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "null",
             Description = "The name of the icon to render inside the button."
+        },
+        new()
+        {
+            Name = "IconOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines that only the icon should be rendered."
         },
         new()
         {

@@ -1,7 +1,7 @@
 ﻿@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/bit-css-variables.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 .code-box {
     position: relative;
@@ -17,7 +17,7 @@
     margin-bottom: rem2(32px);
     padding: rem2(12px) rem2(48px) rem2(12px) rem2(16px);
     background-color: $bit-color-background-secondary;
-    border-left: rem2(2px) solid $bit-color-primary-main;
+    border-left: rem2(2px) solid $bit-color-primary;
     font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 
     &::-webkit-scrollbar {
@@ -51,20 +51,18 @@
 }
 
 ::deep .copy-btn {
-    z-index: 1;
-    display: flex;
+    padding: 0;
     top: rem2(8px);
-    min-width: unset;
     right: rem2(8px);
     width: rem2(32px);
     height: rem2(32px);
     position: absolute;
-    border-radius: rem2(16px);
-    align-items: center;
-    justify-content: center;
+    padding-left: rem2(8px);
     transition: width 0.2s ease-in-out;
-    background-color: $bit-color-background-secondary;
-    border: rem2(1px) solid $bit-color-border-secondary;
+
+    &:hover {
+        background-color: $bit-color-background-primary;
+    }
 
     &.copied {
         overflow: hidden;

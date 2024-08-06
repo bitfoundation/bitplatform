@@ -1,0 +1,64 @@
+.bit-ldn-hrt {
+    position: relative;
+    display: inline-block;
+    transform: rotate(45deg);
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+    transform-origin: var(--bit-ldn-hrt-40) var(--bit-ldn-hrt-40);
+}
+
+.bit-ldn-hrt div {
+    position: absolute;
+    top: var(--bit-ldn-hrt-32);
+    left: var(--bit-ldn-hrt-32);
+    width: var(--bit-ldn-hrt-32);
+    height: var(--bit-ldn-hrt-32);
+    background: var(--bit-ldn-color);
+    animation: bit-ldn-hrt-anm 1.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.bit-ldn-hrt div:after,
+.bit-ldn-hrt div:before {
+    content: " ";
+    display: block;
+    position: absolute;
+    width: var(--bit-ldn-hrt-32);
+    height: var(--bit-ldn-hrt-32);
+    background: var(--bit-ldn-color);
+}
+
+.bit-ldn-hrt div:before {
+    border-radius: 50% 0 0 50%;
+    left: calc(-1 * var(--bit-ldn-hrt-24));
+}
+
+.bit-ldn-hrt div:after {
+    border-radius: 50% 50% 0 0;
+    top: calc(-1 * var(--bit-ldn-hrt-24));
+}
+
+@keyframes bit-ldn-hrt-anm {
+    0% {
+        transform: scale(0.95);
+    }
+
+    5% {
+        transform: scale(1.1);
+    }
+
+    39% {
+        transform: scale(0.85);
+    }
+
+    45% {
+        transform: scale(1);
+    }
+
+    60% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(0.9);
+    }
+}

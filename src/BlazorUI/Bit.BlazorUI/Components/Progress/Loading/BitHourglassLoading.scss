@@ -1,0 +1,35 @@
+.bit-ldn-hgl {
+    position: relative;
+    display: inline-block;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+}
+
+.bit-ldn-hgl:after {
+    width: 0;
+    height: 0;
+    content: " ";
+    display: block;
+    border-radius: 50%;
+    box-sizing: border-box;
+    margin: var(--bit-ldn-hgl-8);
+    animation: bit-ldn-hgl-anm 1.2s infinite;
+    border: var(--bit-ldn-hgl-32) solid var(--bit-ldn-color);
+    border-color: var(--bit-ldn-color) transparent var(--bit-ldn-color) transparent;
+}
+
+@keyframes bit-ldn-hgl-anm {
+    0% {
+        transform: rotate(0);
+        animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+    }
+
+    50% {
+        transform: rotate(900deg);
+        animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+
+    100% {
+        transform: rotate(1800deg);
+    }
+}

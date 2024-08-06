@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
+//#if (api == "Integrated")
 using Boilerplate.Server.Api.Data;
-using Microsoft.EntityFrameworkCore;
+//#endif
 
 namespace Boilerplate.Server.Web;
 
@@ -28,12 +29,14 @@ public static partial class Program
 
         var app = builder.Build();
 
+        //#if (api == "Integrated")
         if (AppEnvironment.IsDev())
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Database.EnsureCreatedAsync();
         }
+        //#endif
 
         app.ConfiureMiddlewares();
 

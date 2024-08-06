@@ -15,22 +15,24 @@
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <BitButton>Button</BitButton>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Primary & Secondary" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
             <div class="example-content">
-                <BitButton>Button</BitButton>
+                <BitButton>Primary text</BitButton>
+                <BitButton SecondaryText="secondary text" />
             </div>
             <br />
             <div class="example-content">
                 <BitButton SecondaryText="this is the secondary text">Primary text</BitButton>
             </div>
-            <br />
-            <div class="example-content">
-                <BitButton IconName="@BitIconName.Calendar" />
-                <BitButton IconName="@BitIconName.SecondaryNav" SecondaryText="secondary text" />
-            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Variant" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div>The Button offers three style variants: Fill (default), Outline, and Text.</div>
             <br />
@@ -60,7 +62,229 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Icon" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div>BitButton has an icon slot that, if specified, renders an icon that can be set at the start (default) or revered positioned at the end of component.</div>
+            <br />
+            <div class="example-content">
+                <BitButton IconName="@BitIconName.EmojiNeutral" Variant="BitVariant.Fill" />
+                <BitButton IconName="@BitIconName.EmojiNeutral" Variant="BitVariant.Outline" />
+                <BitButton IconName="@BitIconName.EmojiNeutral" Variant="BitVariant.Text" />
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Fill">Start</BitButton>
+                <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Outline">Start</BitButton>
+                <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Text">Start</BitButton>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Fill">Start</BitButton>
+                <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Outline">Start</BitButton>
+                <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Text">Start</BitButton>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" ReversedIcon>End</BitButton>
+                <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
+                <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" ReversedIcon>End</BitButton>
+                <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
+                <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Loading" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div>Demonstrate the dynamic loading state of buttons using the "IsLoading" property. Customize the loading label to provide users with feedback on ongoing processes.</div>
+            <br />
+            <div class="example-content">
+                <BitButton IsLoading="fillIsLoading" Variant="BitVariant.Fill" Style="min-width: 11rem" OnClick="LoadingFillClick">
+                    Click me
+                </BitButton>
+
+                <BitButton IsLoading="outlineIsLoading" Variant="BitVariant.Outline" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
+                    Click me
+                </BitButton>
+
+                <BitButton IsLoading="textIsLoading" Variant="BitVariant.Text" Style="min-width: 11rem" OnClick="LoadingTextClick">
+                    Click me
+                </BitButton>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitButton IsLoading="fillIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" Style="min-width: 11rem" OnClick="LoadingFillClick">
+                    Click me
+                </BitButton>
+
+                <BitButton IsLoading="outlineIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
+                    Click me
+                </BitButton>
+
+                <BitButton IsLoading="textIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Text" Style="min-width: 11rem" OnClick="LoadingTextClick">
+                    Click me
+                </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Loading Label" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div>Explore customizing the loading label and its different positions, including start, end, bottom, and top.</div>
+            <br />
+            <div class="example-content">
+                <BitButton IsLoading="true"
+                           LoadingLabel="End..."
+                           Style="min-width: 6.5rem;"
+                           Variant="BitVariant.Outline"
+                           LoadingLabelPosition="BitLabelPosition.End">
+                    End
+                </BitButton>
+
+                <BitButton IsLoading="true"
+                           LoadingLabel="Start..."
+                           Style="min-width: 6.5rem;"
+                           Variant="BitVariant.Outline"
+                           LoadingLabelPosition="BitLabelPosition.Start">
+                    Start
+                </BitButton>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitButton IsLoading="true"
+                           LoadingLabel="Bottom..."
+                           Style="min-width: 6.5rem;"
+                           Variant="BitVariant.Outline"
+                           LoadingLabelPosition="BitLabelPosition.Bottom">
+                    Bottom
+                </BitButton>
+
+                <BitButton IsLoading="true"
+                           LoadingLabel="Top..."
+                           Style="min-width: 6.5rem;"
+                           Variant="BitVariant.Outline"
+                           LoadingLabelPosition="BitLabelPosition.Top">
+                    Top
+                </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Href" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div>Use BitButton as a hyperlink to external URLs, opening either in a new tab or the same tab.</div>
+            <br />
+            <div class="example-content">
+                <BitButton Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+                    Open bitplatform.dev
+                </BitButton>
+
+                <BitButton Href="https://github.com/bitfoundation/bitplatform" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+                    Go to bitplatform GitHub
+                </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Button Type" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ExamplePreview>
+            <div>BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.</div>
+            <br />
+            <div class="form-container">
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
+                        <DataAnnotationsValidator />
+
+                        <BitTextField Label="Required" Required @bind-Value="buttonValidationModel.RequiredText" />
+                        <ValidationMessage For="() => buttonValidationModel.RequiredText" style="color:red" />
+                        <br />
+                        <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />
+                        <br />
+                        <div>
+                            <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                            <BitButton ButtonType="BitButtonType.Reset">Reset</BitButton>
+                            <BitButton ButtonType="BitButtonType.Button">Button</BitButton>
+                        </div>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessage Color="BitColor.Success">
+                        The form submitted successfully.
+                    </BitMessage>
+                }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <ExamplePreview>
+            <div>Here are some examples of customizing the button content.</div>
+            <br />
+            <div>
+                <BitButton Class="custom-content">
+                    <BitIcon IconName="@BitIconName.Airplane" Color="BitColor.Tertiary" />
+                    <span>A primary template</span>
+                    <BitRippleLoading CustomSize="20" Color="BitColor.Tertiary" />
+                </BitButton>
+                <br />
+                <BitButton Class="custom-content" Variant="BitVariant.Outline">
+                    <PrimaryTemplate>Primary text</PrimaryTemplate>
+                    <SecondaryTemplate>
+                        <BitIcon IconName="@BitIconName.Accept" />
+                        <span>A secondary template</span>
+                        <BitRollerLoading CustomSize="20" />
+                    </SecondaryTemplate>
+                </BitButton>
+                <br />
+                <BitButton Class="custom-content" Variant="BitVariant.Text">
+                    <PrimaryTemplate>
+                        <BitIcon IconName="@BitIconName.Airplane" />
+                        <span>A primary template</span>
+                        <BitRippleLoading CustomSize="20" />
+                    </PrimaryTemplate>
+                    <SecondaryTemplate>
+                        <BitIcon IconName="@BitIconName.Accept" />
+                        <span>A secondary template</span>
+                        <BitRollerLoading CustomSize="20" />
+                    </SecondaryTemplate>
+                </BitButton>
+            </div>
+            <br /><br />
+            <div>Utilize the "LoadingTemplate" feature to design personalized loading indicators and messages, providing a unique visual experience during loading states.</div>
+            <br />
+            <div class="example-content">
+                <BitButton IsLoading="!templateIsLoading" OnClick="LoadingTemplateClick">
+                    <PrimaryTemplate>Click me</PrimaryTemplate>
+                    <LoadingTemplate>
+                        <div style="display:flex;align-items:center;">
+                            <BitEllipsisLoading CustomSize="32" Color="BitColor.Tertiary" />
+                            <span>Wait...</span>
+                        </div>
+                    </LoadingTemplate>
+                </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <ExamplePreview>
+            <div>
+                Managing button click event (OnClick).
+            </div>
+            <br />
+            <div class="example-content">
+                <BitButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Size" RazorCode="@example11RazorCode" Id="example11">
         <ExamplePreview>
             <div>Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
             <br />
@@ -102,7 +326,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Color" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
             <br />
@@ -204,7 +428,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <ExamplePreview>
             <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
             <br /><br />
@@ -243,262 +467,6 @@
                                               Spinner = "custom-spinner" })">
                     Click me
                 </BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Icon" RazorCode="@example6RazorCode" Id="example6">
-        <ExamplePreview>
-            <div>BitButton has an icon slot that, if specified, renders an icon that can be set at the start (default) or revered positioned at the end of component.</div>
-            <br />
-            <div class="example-content">
-                <BitButton IconName="@BitIconName.EmojiNeutral" Variant="BitVariant.Fill" />
-                <BitButton IconName="@BitIconName.EmojiNeutral" Variant="BitVariant.Outline" />
-                <BitButton IconName="@BitIconName.EmojiNeutral" Variant="BitVariant.Text" />
-            </div>
-            <br /><br />
-            <div class="example-content">
-                <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Fill">Start</BitButton>
-                <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Outline">Start</BitButton>
-                <BitButton IconName="@BitIconName.Emoji" Variant="BitVariant.Text">Start</BitButton>
-            </div>
-            <br />
-            <div class="example-content">
-                <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Fill">Start</BitButton>
-                <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Outline">Start</BitButton>
-                <BitButton IconName="@BitIconName.Emoji" SecondaryText="this is the secondary text" Variant="BitVariant.Text">Start</BitButton>
-            </div>
-            <br />
-            <div class="example-content">
-                <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" ReversedIcon>End</BitButton>
-                <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
-                <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
-            </div>
-            <br />
-            <div class="example-content">
-                <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" ReversedIcon>End</BitButton>
-                <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" ReversedIcon>End</BitButton>
-                <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text" Variant="BitVariant.Text" ReversedIcon>End</BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" Id="example7">
-        <ExamplePreview>
-            <div>Here are some examples of customizing the button content.</div>
-            <br />
-            <div>
-                <BitButton Class="custom-content">
-                    <BitIcon IconName="@BitIconName.Airplane" />
-                    <span>A primary template</span>
-                    <BitRippleLoading Size="20" />
-                </BitButton>
-                <br />
-                <BitButton Class="custom-content" Variant="BitVariant.Outline">
-                    <PrimaryTemplate>Primary text</PrimaryTemplate>
-                    <SecondaryTemplate>
-                        <BitIcon IconName="@BitIconName.Accept" />
-                        <span>A secondary template</span>
-                        <BitRollerLoading Size="20" />
-                    </SecondaryTemplate>
-                </BitButton>
-                <br />
-                <BitButton Class="custom-content" Variant="BitVariant.Text">
-                    <PrimaryTemplate>
-                        <BitIcon IconName="@BitIconName.Airplane" />
-                        <span>A primary template</span>
-                        <BitRippleLoading Size="20" />
-                    </PrimaryTemplate>
-                    <SecondaryTemplate>
-                        <BitIcon IconName="@BitIconName.Accept" />
-                        <span>A secondary template</span>
-                        <BitRollerLoading Size="20" />
-                    </SecondaryTemplate>
-                </BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <ExamplePreview>
-            <div>
-                Managing button click event (OnClick).
-            </div>
-            <br />
-            <div class="example-content">
-                <BitButton OnClick="() => clickCounter++">Click me (@clickCounter)</BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Loading" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <ExamplePreview>
-            <div>Demonstrate the dynamic loading state of buttons using the "IsLoading" property. Customize the loading label to provide users with feedback on ongoing processes.</div>
-            <br />
-            <div class="example-content">
-                <BitButton IsLoading="fillIsLoading" Variant="BitVariant.Fill" Style="min-width: 11rem" OnClick="LoadingFillClick">
-                    Click me
-                </BitButton>
-
-                <BitButton IsLoading="outlineIsLoading" Variant="BitVariant.Outline" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
-                    Click me
-                </BitButton>
-
-                <BitButton IsLoading="textIsLoading" Variant="BitVariant.Text" Style="min-width: 11rem" OnClick="LoadingTextClick">
-                    Click me
-                </BitButton>
-            </div>
-            <br />
-            <div class="example-content">
-                <BitButton IsLoading="fillIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" Style="min-width: 11rem" OnClick="LoadingFillClick">
-                    Click me
-                </BitButton>
-
-                <BitButton IsLoading="outlineIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
-                    Click me
-                </BitButton>
-
-                <BitButton IsLoading="textIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Text" Style="min-width: 11rem" OnClick="LoadingTextClick">
-                    Click me
-                </BitButton>
-            </div>
-            <br />
-            <div class="example-content">
-                <BitButton IsLoading="fillIsLoading" Variant="BitVariant.Fill" Color="BitColor.Secondary" Style="min-width: 11rem" OnClick="LoadingFillClick">
-                    Click me
-                </BitButton>
-
-                <BitButton IsLoading="outlineIsLoading" Variant="BitVariant.Outline" Color="BitColor.Secondary" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
-                    Click me
-                </BitButton>
-
-                <BitButton IsLoading="textIsLoading" Variant="BitVariant.Text" Color="BitColor.Secondary" Style="min-width: 11rem" OnClick="LoadingTextClick">
-                    Click me
-                </BitButton>
-            </div>
-            <br />
-            <div class="example-content">
-                <BitButton IsLoading="fillIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Fill" Color="BitColor.Secondary" Style="min-width: 11rem" OnClick="LoadingFillClick">
-                    Click me
-                </BitButton>
-
-                <BitButton IsLoading="outlineIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Outline" Color="BitColor.Secondary" Style="min-width: 11rem" OnClick="LoadingOutlineClick">
-                    Click me
-                </BitButton>
-
-                <BitButton IsLoading="textIsLoading" SecondaryText="this is the secondary text" Variant="BitVariant.Text" Color="BitColor.Secondary" Style="min-width: 11rem" OnClick="LoadingTextClick">
-                    Click me
-                </BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Loading Label" RazorCode="@example10RazorCode" Id="example10">
-        <ExamplePreview>
-            <div>Explore customizing the loading label and its different positions, including start, end, bottom, and top.</div>
-            <br />
-            <div class="example-content">
-                <BitButton IsLoading="true"
-                           LoadingLabel="End..."
-                           Style="min-width: 6.5rem;"
-                           Variant="BitVariant.Outline"
-                           LoadingLabelPosition="BitLabelPosition.End">
-                    End
-                </BitButton>
-
-                <BitButton IsLoading="true"
-                           LoadingLabel="Start..."
-                           Style="min-width: 6.5rem;"
-                           Variant="BitVariant.Outline"
-                           LoadingLabelPosition="BitLabelPosition.Start">
-                    Start
-                </BitButton>
-            </div>
-            <br />
-            <div class="example-content">
-                <BitButton IsLoading="true"
-                           LoadingLabel="Bottom..."
-                           Style="min-width: 6.5rem;"
-                           Variant="BitVariant.Outline"
-                           LoadingLabelPosition="BitLabelPosition.Bottom">
-                    Bottom
-                </BitButton>
-
-                <BitButton IsLoading="true"
-                           LoadingLabel="Top..."
-                           Style="min-width: 6.5rem;"
-                           Variant="BitVariant.Outline"
-                           LoadingLabelPosition="BitLabelPosition.Top">
-                    Top
-                </BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Loading Template" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <ExamplePreview>
-            <div>Utilize the "LoadingTemplate" feature to design personalized loading indicators and messages, providing a unique visual experience during loading states.</div>
-            <br />
-            <div class="example-content">
-                <BitButton IsLoading="!templateIsLoading" OnClick="LoadingTemplateClick">
-                    <PrimaryTemplate>
-                        Click me
-                    </PrimaryTemplate>
-                    <LoadingTemplate>
-                        <div style="display:flex;align-items:center;">
-                            <BitEllipsisLoading Size="32" />
-                            <span>Wait...</span>
-                        </div>
-                    </LoadingTemplate>
-                </BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Href" RazorCode="@example12RazorCode" Id="example12">
-        <ExamplePreview>
-            <div>Use BitButton as a hyperlink to external URLs, opening either in a new tab or the same tab.</div>
-            <br />
-            <div class="example-content">
-                <BitButton Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
-                    Open bitplatform.dev
-                </BitButton>
-
-                <BitButton Href="https://github.com/bitfoundation/bitplatform" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
-                    Go to bitplatform GitHub
-                </BitButton>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Button Type" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-        <ExamplePreview>
-            <div>BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.</div>
-            <br />
-            <div class="form-container">
-                @if (formIsValidSubmit is false)
-                {
-                    <EditForm Model="buttonValidationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
-                        <DataAnnotationsValidator />
-
-                        <BitTextField Label="Required" Required @bind-Value="buttonValidationModel.RequiredText" />
-                        <ValidationMessage For="() => buttonValidationModel.RequiredText" style="color:red" />
-                        <br />
-                        <BitTextField Label="Non Required" @bind-Value="buttonValidationModel.NonRequiredText" />
-                        <br />
-                        <div>
-                            <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                            <BitButton ButtonType="BitButtonType.Reset">Reset</BitButton>
-                            <BitButton ButtonType="BitButtonType.Button">Button</BitButton>
-                        </div>
-                    </EditForm>
-                }
-                else
-                {
-                    <BitMessage Color="BitColor.Success">
-                        The form submitted successfully.
-                    </BitMessage>
-                }
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

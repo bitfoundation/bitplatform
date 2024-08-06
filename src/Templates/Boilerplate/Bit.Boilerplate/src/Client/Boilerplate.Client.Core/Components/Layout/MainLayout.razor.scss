@@ -118,7 +118,7 @@ main {
         text-align: start;
         font-size: rem2(12px);
         line-height: rem2(16px);
-        color: $bit-color-state-error;
+        color: $bit-color-error;
     }
 
     .form-submit-button {
@@ -141,4 +141,8 @@ main {
     ::deep .form-message-bar {
         scroll-margin-top: calc($headerHeight + env(safe-area-inset-top) + 1px);
     }
+}
+
+::deep .loading-container {
+    text-align: center;
 }
