@@ -8,54 +8,284 @@
             Description="create project of the project templates of the bit platform" />
 
 <div class="page-container">
+
     <BitTypography Variant="BitTypographyVariant.H3" Gutter>Create Project</BitTypography>
     <br />
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
         Let's make our next web project a success with Bit.Boilerplate.
     </BitTypography>
     <br />
+    <br />
+    <CodeBox>
+        @GetFinalCommand()
+    </CodeBox>
+    <br />
+    <br />
 
-    <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CLI</BitTypography>
-        <div class="section-card-txt">
-            Create a new project using dotnet new command:
-            <CodeBox>dotnet new bit-bp</CodeBox>
+    <div class="params-container">
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Name</BitTypography>
+                <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetNameCommand()
+            </CodeBox>
+            <br />
+            It is required to specify a name for your project.
         </div>
-        <div class="section-card-txt">
-            <b>Note</b>: bit project templates accept the following parameters:
-            <ul>
-                <li>--name (default is current folder name)</li>
-                <li>--api defaults to true: '--api true' adds support for aspnetcore identity, webapi, odata, ef core and fluent email.</li>
-                <li>--database default to <i>SqlServer</i> among following options: <i>SqlServer</i> <i>Sqlite</i>, <i>Other</i></li>
-                <li>--captcha default to <i>reCaptcha</i> among following options: <i>reCaptcha</i> <i>None</i></li>
-                <li>--serverUrl The backend server url. You can change its value later if needed.</li>
-                <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>None</i></li>
-                <li>--sample default to <i>None</i> among the following options: <i>Admin</i>, <i>Todo</i>, <i>None</i></li>
-                <li>--offlineDb defaults to false: '--offlineDb true' adds sqlite database support to the client mobile, web and desktop apps</li>
-                <li>--windows default to false: '--windows true' adds support for exe output for windows 7+</li>
-                <li>--appInsights defaults to false: '--appInsights true' adds support for Azure application insights in all clients (Android, iOS, Windows, macOS, Web)</li>
-                <li>--appCenter defaults to false: '--appCenter true' adds support for Visual Studio AppCenter in hybrid clients (Android, iOS, Windows, macOS)</li>
-            </ul>
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Captcha</BitTypography>
+                <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Selected" OnChange="(string selected) => OnChangeParameter(captcha)"></BitDropdown>
+            </div>
+            <div class="default-txt">Default: None</div>
+            <br />
+            @if (captcha.IsChanged)
+            {
+                <CodeBox>
+                    @GetCaptchaCommand()
+                </CodeBox>
+            }
+            <br />
+            To integrate Google reCAPTCHA into the Sign Up page, include --captcha reCaptcha in the dotnet new command.
         </div>
-        Examples:
-        <br />
-        <br />
-        1- Create a cross-platform AdminPanel app for mobile, desktop and web with Azure DevOps pipelines and a SqlServer database:
-        <CodeBox>dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin</CodeBox>
 
-        2- Create a cross-platform Todo app for mobile, desktop and web with GitHub Actions and a SQLite database:
-        <CodeBox>dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo --serverUrl todo.bitplatform.dev</CodeBox>
-
-        3- Create a mobile, desktop and web app without sample pages, integrating GitHub Actions and a SQL Server database:
-        <CodeBox>dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --serverUrl app.mycompany.com</CodeBox>
-
-        4- Create an offline capable mobile, desktop and web app:
-        <CodeBox>dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --offlineDb</CodeBox>
-
-        <div class="section-card-txt">
-            <b>Note</b>: We recommend to create the project in a path that is not too long without space character in the folder names.
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Pipeline</BitTypography>
+                <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Selected" OnChange="(string selected) => OnChangeParameter(pipeline)"></BitDropdown>
+            </div>
+            <div class="default-txt">Default: GitHub</div>
+            <br />
+            @if (pipeline.IsChanged)
+            {
+                <CodeBox>
+                    @GetPipelineCommand()
+                </CodeBox>
+            }
+            <br />
+            If you specify --pipeline GitHub or --pipeline Azure, CI/CD pipelines will be set up using GitHub
+            Actions or Azure DevOps Pipelines, respectively.
         </div>
-    </section>
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Sample</BitTypography>
+                <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Selected" OnChange="(string selected) => OnChangeParameter(sample)"></BitDropdown>
+            </div>
+            <div class="default-txt">Default: None</div>
+            <br />
+            @if (sample.IsChanged)
+            {
+                <CodeBox>
+                    @GetSampleCommand()
+                </CodeBox>
+            }
+            To initialize the project with sample code, use the --sample parameter. You can set this parameter to Admin to
+            include sample code for <a href="https://adminpanel.bitplatform.dev/" target="_blank">AdminPanel</a>, or <a href="https://todo.bitplatform.dev/" target="_blank">Todo</a> to include a Todo demo page.
+        </div>
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Windows</BitTypography>
+                <BitToggle @bind-IsChecked="windows.SelectedBoolean" OnText="true" OffText="false" OnChange="(bool selected) => OnChangeParameter(windows)" />
+            </div>
+            <div class="default-txt">Default: True</div>
+            <br />
+            @if (windows.IsChanged)
+            {
+                <CodeBox>
+                    @GetWindowsCommand()
+                </CodeBox>
+            }
+            If you set the windows parameter to false, the Maui project will still be created,
+            but no separate Windows application will be included.
+        </div>
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>App Center</BitTypography>
+                <BitToggle @bind-IsChecked="appCenter.SelectedBoolean" OnText="true" OffText="false" OnChange="(bool selected) => OnChangeParameter(appCenter)" />
+            </div>
+            <div class="default-txt">Default: false</div>
+            <br />
+            @if (appCenter.IsChanged)
+            {
+                <CodeBox>
+                    @GetAppCenterCommand()
+                </CodeBox>
+            }
+            By adding the --appCenter true parameter to the dotnet new command, App Center will be integrated for macOS,
+            Windows, iOS, and Android platforms.
+        </div>
+
+    </div>
+    <div class="params-container">
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Database</BitTypography>
+                <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Selected" OnChange="(string selected) => OnChangeParameter(database)"></BitDropdown>
+            </div>
+            <div class="default-txt">Default: SqlServer</div>
+            <br />
+            @if (database.IsChanged)
+            {
+                <CodeBox>
+                    @GetDatabaseCommand()
+                </CodeBox>
+            }
+
+            The API project requires an Entity Framework Core DbContext for tables such as ASP.NET Core Identity.
+            Therefore, we support only those databases commonly used by .NET developers with Entity Framework Core.
+            <br />
+            <br />
+            Supported options include SqlServer, PostgreSQL, MySQL, Cosmos, and Other.
+            If you require a database not listed among the options, select Other. After project initialization, you can add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a>
+            package and configure it in the AddDbContextPool method, which is located in the Program.Services.cs file within the Server.Api project.
+            <br />
+            <br />
+            @if (database.Details.TryGetValue(database.Selected, out var databaseValue))
+            {
+                <div>
+                    Download and install @database.Selected <a href="@databaseValue.reference">here</a>.
+                    @if (databaseValue.installCommand is not null)
+                    {
+                        <div>
+                            Alternatively, use the following command:
+                            <br />
+                            <CodeBox>
+                                @databaseValue.installCommand
+                            </CodeBox>
+                        </div>
+                    }
+                    @if (databaseValue.text is not null)
+                    {
+                        <div>
+                            @databaseValue.text
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>File Storage</BitTypography>
+                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Selected" OnChange="(string selected) => OnChangeParameter(fileStorage)"></BitDropdown>
+            </div>
+            <div class="default-txt">Default: Local</div>
+            <br />
+            @if (fileStorage.IsChanged)
+            {
+                <CodeBox>
+                    @GetFileStorageCommand()
+                </CodeBox>
+            }
+
+            The API project includes an Attachment Controller responsible for handling user images,
+            including resizing and saving them in the WebP format. The <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a> project is utilized for file storage,
+            and various implementations of this project can be applied.
+            <br />
+            <br />
+            Notably, one implementation is FluentStorage.AWS, which supports Amazon S3.
+            This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces.
+            <br />
+            <br />
+            To configure file storage to use your local hard drive, use the Local value. Other available options include
+            AzureBlobStorage and Other. If you choose Other, you may select any FluentStorage package of your preference.
+            <br />
+            <br />
+            @if (fileStorage.Details.TryGetValue(fileStorage.Selected, out var fileStorageValue))
+            {
+                <div>
+                    Download and install @fileStorage.Selected <a href="@fileStorageValue.reference">here</a>.
+                    <br />
+                    @if (fileStorageValue.installCommand is not null)
+                    {
+                        <div>
+                            Alternatively, use the following command:
+                            <br />
+                            <CodeBox>
+                                @fileStorageValue.installCommand
+                            </CodeBox>
+                        </div>
+                    }
+                    @if (databaseValue.text is not null)
+                    {
+                        <div>
+                            @databaseValue.text
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Api</BitTypography>
+                <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Selected" OnChange="(string selected) => OnChangeParameter(api)"></BitDropdown>
+            </div>
+            <div class="default-txt">Default: Integrated</div>
+            <br />
+            @if (api.IsChanged)
+            {
+                <CodeBox>
+                    @GetApiCommand()
+                </CodeBox>
+            }
+            If this parameter is set to Integrated, the Server.Web project will encompass all features of the
+            Api project, hence provides options for various modes such as Blazor Auto, Blazor Server, pre-rendering,
+            and static SSR.
+            <br />
+            <br />
+            Conversely, if the parameter is set to Standalone, you will need to separately run and publish
+            both the Server.Api and Server.Web projects.
+        </div>
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>OfflineDb</BitTypography>
+                <BitToggle @bind-IsChecked="offlineDb.SelectedBoolean" OnText="true" OffText="false" OnChange="(bool selected) => OnChangeParameter(offlineDb)" />
+            </div>
+            <div class="default-txt">Default: false</div>
+            <br />
+            @if (offlineDb.IsChanged)
+            {
+                <CodeBox>
+                    @GetOfflineDbCommand()
+                </CodeBox>
+            }
+            Setting this parameter to True enables SQLite and Entity Framework Core,
+            allowing for the development of an offline-capable web application. This feature, in conjunction with Progressive
+            Web App (PWA) capabilities, supports functionality within a browser environment.
+            <br />
+            <br />
+            Note: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce performance.
+        </div>
+
+        <div class="params-item-card">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>AppInsights</BitTypography>
+                <BitToggle @bind-IsChecked="appInsight.SelectedBoolean" OnText="true" OffText="false" OnChange="(bool selected) => OnChangeParameter(appInsight)" />
+            </div>
+            <div class="default-txt">Default: false</div>
+            <br />
+            @if (appInsight.IsChanged)
+            {
+                <CodeBox>
+                    @GetAppInsightsCommand()
+                </CodeBox>
+            }
+            To enable Azure Application Insights for both server and client-side applications (including web),
+            set the appinsights parameter to true. This option will configure the application to store logs such as
+            errors and informational messages.
+        </div>
+    </div>
+
     <section class="section-card">
         <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
         <br />
