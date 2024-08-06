@@ -51,7 +51,7 @@ public partial class ProfilePage
         {
             await InvokeAsync(async () =>
             {
-                await snackBar.Info("New user session", userSession.Device);
+                await snackBar.Info(Localizer[nameof(AppStrings.NewUserSessionSnackbarTitle)], Localizer[nameof(AppStrings.DeviceDetails), userSession.Device!]);
 
                 StateHasChanged();
             });
