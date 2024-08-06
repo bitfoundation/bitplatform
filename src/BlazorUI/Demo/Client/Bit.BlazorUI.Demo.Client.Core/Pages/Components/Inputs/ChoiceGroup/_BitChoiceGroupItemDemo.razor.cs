@@ -56,10 +56,10 @@ public partial class _BitChoiceGroupItemDemo
     };
     private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
     {
-        new() { Text = "Item A", Value = "A" },
-        new() { Text = "Item B", Value = "B", Style = "color:red" },
+        new() { Text = "Item A", Value = "A", Class = "custom-item" },
+        new() { Text = "Item B", Value = "B", Style = "padding: 8px; border-radius: 20px; border: 1px solid gray;" },
         new() { Text = "Item C", Value = "C", Class = "custom-item" },
-        new() { Text = "Item D", Value = "D", Style = "color:green" }
+        new() { Text = "Item D", Value = "D", Class = "custom-item" }
     };
     private readonly List<BitChoiceGroupItem<string>> itemTemplateItems = new()
     {
@@ -203,26 +203,45 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
     private readonly string example5RazorCode = @"
 <style>
     .custom-class {
-        width: 17rem;
-        padding: 2rem;
-        border-radius: 25%;
-        background-color: red;
+        margin-inline: 16px;
+        text-shadow: dodgerblue 0 0 8px;
     }
+
 
     .custom-item {
-        color: brown;
+        padding: 8px;
+        border-radius: 20px;
+        border: 1px solid gray;
     }
 
-    .custom-label {
-        color: red;
-        font-size: 18px;
-        font-weight: bold;
+
+    .custom-root {
+        margin-inline: 16px;
     }
 
     .custom-text {
-        color: blue;
-        font-size: 16px;
         font-weight: bold;
+    }
+
+    .custom-label-wrapper::after {
+        width: 8px;
+        height: 8px;
+        border: none;
+        inset-block-start: 6px;
+        inset-inline-start: 6px;
+        background-color: whitesmoke;
+    }
+
+    .custom-checked .custom-label-wrapper::after {
+        background-color: whitesmoke;
+    }
+
+    .custom-label-wrapper::before {
+        background-color: whitesmoke;
+    }
+
+    .custom-checked .custom-label-wrapper::before {
+        background-color: dodgerblue;
     }
 </style>
 
@@ -230,7 +249,7 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
 <BitChoiceGroup Label=""Styled ChoiceGroup""
                 Items=""basicItems""
                 DefaultValue=""basicItems[1].Value""
-                Style=""width:200px;height:200px;background-color:#888;padding:1rem;border-radius:1rem;"" />
+                Style=""margin-inline: 16px; text-shadow: red 0 0 8px;"" />
 
 <BitChoiceGroup Label=""Classed ChoiceGroup""
                 Items=""basicItems""
@@ -238,21 +257,24 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
                 Class=""custom-class"" />
 
 
-<BitChoiceGroup Items=""itemStyleClassItems""
-                DefaultValue=""itemStyleClassItems[1].Value"" />
+<BitChoiceGroup Items=""itemStyleClassItems"" DefaultValue=""itemStyleClassItems[1].Value"" />
 
 
 <BitChoiceGroup Label=""Styles""
                 Items=""basicItems""
                 DefaultValue=""basicItems[1].Value""
-                Styles=""@(new() { Label = ""color:tomato"",
-                                  ItemIcon = ""color:red"" ,
-                                  ItemText = ""color:yellowgreen;font-size:12px;font-weight:bold"" })"" />
+                Styles=""@(new() { Root = ""margin-inline: 16px; --item-background: #d3d3d347; --item-border: 1px solid gray;"",
+                                  ItemLabel = ""width: 100%; cursor: pointer;"",
+                                  ItemChecked = ""--item-background: #87cefa24; --item-border: 1px solid dodgerblue;"",
+                                  ItemContainer = ""padding: 8px; border-radius: 2px; background-color: var(--item-background); border: var(--item-border);"" })"" />
 
 <BitChoiceGroup Label=""Classes""
                 Items=""basicItems""
                 DefaultValue=""basicItems[1].Value""
-                Classes=""@(new() { Label = ""custom-label"" , ItemText = ""custom-text"" })"" />";
+                Classes=""@(new() { Root = ""custom-root"",
+                                   ItemText = ""custom-text"",
+                                   ItemChecked = ""custom-checked"",
+                                   ItemLabelWrapper = ""custom-label-wrapper"" })"" />";
     private readonly string example5CsharpCode = @"
 private readonly List<BitChoiceGroupItem> basicItems<string> = new()
 {
@@ -264,10 +286,10 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
 
 private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
 {
-    new() { Text = ""Item A"", Value = ""A"" },
-    new() { Text = ""Item B"", Value = ""B"", Style = ""color:red"" },
+    new() { Text = ""Item A"", Value = ""A"", Class = ""custom-item"" },
+    new() { Text = ""Item B"", Value = ""B"", Style = ""padding: 8px; border-radius: 20px; border: 1px solid gray;"" },
     new() { Text = ""Item C"", Value = ""C"", Class = ""custom-item"" },
-    new() { Text = ""Item D"", Value = ""D"", Style = ""color:green"" }
+    new() { Text = ""Item D"", Value = ""D"", Style = ""custom-item"" }
 };";
 
     private readonly string example6RazorCode = @"
