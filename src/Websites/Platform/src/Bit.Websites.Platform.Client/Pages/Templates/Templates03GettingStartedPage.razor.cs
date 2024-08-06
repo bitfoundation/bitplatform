@@ -12,8 +12,6 @@ public partial class Templates03GettingStartedPage
     private string copyButtonText = "Copy commands";
     private bool showCrossPlatform;
 
-
-
     private List<(string text, string command)> GetSelectedComands()
     {
         List<(string text, string command)> selectedCommandGroups = [.. commandGroups[CommandGroup.Core]];
@@ -42,9 +40,7 @@ public partial class Templates03GettingStartedPage
 
     private string GetDisplayableSelectedCommands()
     {
-        return string.Join($"{Environment.NewLine}{Environment.NewLine}", GetSelectedComands()[..^1].Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"))
-            .Replace("\"%ProgramFiles%\\dotnet\\dotnet.exe\"", "dotnet")
-            .Replace("\"%LocalAppData%\\Programs\\Microsoft VS Code\\bin\\code.cmd\"", "code");
+        return string.Join($"{Environment.NewLine}", GetSelectedComands().Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"));
     }
 
     private async Task CopyCommandsToClipboard()
