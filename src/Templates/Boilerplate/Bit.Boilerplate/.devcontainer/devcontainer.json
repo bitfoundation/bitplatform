@@ -3,7 +3,7 @@
     "hostRequirements": {
         "cpus": 4
     },
-    "onCreateCommand": "wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && dotnet dev-certs https --trust",
+    "onCreateCommand": "wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && dotnet dev-certs https --trust && sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {
@@ -16,7 +16,8 @@
                 "glenn2223.live-sass",
                 "kevin-chatham.aspnetcorerazor-html-css-class-completion",
                 "DominicVonk.vscode-resx-editor",
-                "ms-dotnetools.csharp"
+                "ms-dotnetools.csharp",
+                "ms-dotnettools.vscode-dotnet-runtime"
             ]
         }
     },
