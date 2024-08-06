@@ -145,11 +145,11 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Indeterminate ? "bit-chb-ind" : string.Empty);
-
         ClassBuilder.Register(() => CurrentValue ? "bit-chb-ckd" : string.Empty);
 
-        ClassBuilder.Register(() => Reversed ? "bit-chb-end" : string.Empty);
+        ClassBuilder.Register(() => Indeterminate ? "bit-chb-ind" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? "bit-chb-rvs" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
