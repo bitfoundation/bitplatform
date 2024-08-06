@@ -179,7 +179,7 @@ private bool example52Value;";
 <BitToggleButton Class=""custom-content"">
     <BitIcon IconName=""@BitIconName.Airplane"" />
     <span>Custom template</span>
-    <BitRollerLoading Size=""20"" />
+    <BitRollerLoading CustomSize=""20"" Color=""BitColor.Tertiary"" />
 </BitToggleButton>";
 
     private readonly string example8RazorCode = @"

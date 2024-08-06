@@ -1,0 +1,27 @@
+.bit-ldn-dur {
+    display: inline-block;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+}
+
+.bit-ldn-dur:after {
+    content: " ";
+    display: block;
+    border-radius: 50%;
+    margin: var(--bit-ldn-dur-8);
+    width: var(--bit-ldn-dur-64);
+    height: var(--bit-ldn-dur-64);
+    animation: bit-ldn-dur-anm 1.2s linear infinite;
+    border: var(--bit-ldn-dur-6) solid var(--bit-ldn-color);
+    border-color: var(--bit-ldn-color) transparent var(--bit-ldn-color) transparent;
+}
+
+@keyframes bit-ldn-dur-anm {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

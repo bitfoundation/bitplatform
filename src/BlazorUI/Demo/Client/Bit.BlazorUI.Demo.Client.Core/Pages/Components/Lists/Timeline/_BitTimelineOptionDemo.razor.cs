@@ -112,7 +112,7 @@ public partial class _BitTimelineOptionDemo
         </PrimaryContent>
         <DotTemplate>
             <div class=""dot-template"">
-                <BitRingLoading Size=""30"" />
+                <BitRingLoading CustomSize=""30"" Color=""BitColor.Tertiary"" />
             </div>
         </DotTemplate>
         <SecondaryContent>
@@ -130,7 +130,7 @@ public partial class _BitTimelineOptionDemo
         </PrimaryContent>
         <DotTemplate>
             <div class=""dot-template"">
-                <BitSpinnerLoading Size=""30"" />
+                <BitSpinnerLoading CustomSize=""30"" Color=""BitColor.Tertiary"" />
             </div>
         </DotTemplate>
         <SecondaryContent>
@@ -149,7 +149,7 @@ public partial class _BitTimelineOptionDemo
         </PrimaryContent>
         <DotTemplate>
             <div class=""dot-template"">
-                <BitRollerLoading Size=""30"" />
+                <BitRollerLoading CustomSize=""30"" Color=""BitColor.Tertiary"" />
             </div>
         </DotTemplate>
         <SecondaryContent>

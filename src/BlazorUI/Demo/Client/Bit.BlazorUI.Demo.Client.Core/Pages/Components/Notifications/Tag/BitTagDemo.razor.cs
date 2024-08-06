@@ -327,7 +327,7 @@ private bool isDismissed;";
 <BitTag>
     <BitStack Horizontal Gap=""0.5rem"" Style=""padding-inline: 0.5rem;"">
         <BitLabel>Custom content</BitLabel>
-        <BitRollerLoading Size=""32"" />
+        <BitRollerLoading CustomSize=""32"" Color=""BitColor.Tertiary"" />
     </BitStack>
 </BitTag>";
 

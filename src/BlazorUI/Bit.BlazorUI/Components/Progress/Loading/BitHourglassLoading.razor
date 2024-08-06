@@ -1,42 +1,7 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitLoadingComponentBase
+@inherits BitLoadingBase
 
-<style>
-    .bit-ldn-Hourglass {
-        display: inline-block;
-        position: relative;
-        width: @(Size)px;
-        height: @(Size)px;
-    }
-
-        .bit-ldn-Hourglass:after {
-            content: " ";
-            width: 0;
-            height: 0;
-            display: block;
-            border-radius: 50%;
-            box-sizing: border-box;
-            margin: @(Convert(8))px;
-            animation: bit-ldn-Hourglass 1.2s infinite;
-            border: @(Convert(32))px solid @(Color ?? "var(--bit-clr-fg-pri)");
-            border-color: @(Color ?? "var(--bit-clr-fg-pri)") transparent @(Color ?? "var(--bit-clr-fg-pri)") transparent;
-        }
-
-    @@keyframes bit-ldn-Hourglass {
-        0% {
-            transform: rotate(0);
-            animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-        }
-
-        50% {
-            transform: rotate(900deg);
-            animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-        }
-
-        100% {
-            transform: rotate(1800deg);
-        }
-    }
-</style>
-
-<div style="@Style" class="bit-ldn-Hourglass @Class"></div>
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"></div>

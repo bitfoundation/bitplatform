@@ -1,0 +1,104 @@
+.bit-ldn-rol {
+    position: relative;
+    display: inline-block;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+}
+
+.bit-ldn-rol div {
+    transform-origin: var(--bit-ldn-rol-40) var(--bit-ldn-rol-40);
+    animation: bit-ldn-rol-anm 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.bit-ldn-rol div:after {
+    content: " ";
+    display: block;
+    position: absolute;
+    border-radius: 50%;
+    width: var(--bit-ldn-rol-7);
+    height: var(--bit-ldn-rol-7);
+    background: var(--bit-ldn-color);
+    margin: calc(-1 * var(--bit-ldn-rol-4)) 0 0 calc(-1 * var(--bit-ldn-rol-4));
+}
+
+.bit-ldn-rol div:nth-child(1) {
+    animation-delay: -0.036s;
+}
+
+.bit-ldn-rol div:nth-child(1):after {
+    top: var(--bit-ldn-rol-63);
+    left: var(--bit-ldn-rol-63);
+}
+
+.bit-ldn-rol div:nth-child(2) {
+    animation-delay: -0.072s;
+}
+
+.bit-ldn-rol div:nth-child(2):after {
+    top: var(--bit-ldn-rol-68);
+    left: var(--bit-ldn-rol-56);
+}
+
+.bit-ldn-rol div:nth-child(3) {
+    animation-delay: -0.108s;
+}
+
+.bit-ldn-rol div:nth-child(3):after {
+    top: var(--bit-ldn-rol-71);
+    left: var(--bit-ldn-rol-48);
+}
+
+.bit-ldn-rol div:nth-child(4) {
+    animation-delay: -0.144s;
+}
+
+.bit-ldn-rol div:nth-child(4):after {
+    top: var(--bit-ldn-rol-72);
+    left: var(--bit-ldn-rol-40);
+}
+
+.bit-ldn-rol div:nth-child(5) {
+    animation-delay: -0.18s;
+}
+
+.bit-ldn-rol div:nth-child(5):after {
+    top: var(--bit-ldn-rol-71);
+    left: var(--bit-ldn-rol-32);
+}
+
+.bit-ldn-rol div:nth-child(6) {
+    animation-delay: -0.216s;
+}
+
+.bit-ldn-rol div:nth-child(6):after {
+    top: var(--bit-ldn-rol-68);
+    left: var(--bit-ldn-rol-24);
+}
+
+.bit-ldn-rol div:nth-child(7) {
+    animation-delay: -0.252s;
+}
+
+.bit-ldn-rol div:nth-child(7):after {
+    top: var(--bit-ldn-rol-63);
+    left: var(--bit-ldn-rol-17);
+}
+
+.bit-ldn-rol div:nth-child(8) {
+    animation-delay: -0.288s;
+}
+
+.bit-ldn-rol div:nth-child(8):after {
+    top: var(--bit-ldn-rol-56);
+    left: var(--bit-ldn-rol-12);
+}
+
+@keyframes bit-ldn-rol-anm {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

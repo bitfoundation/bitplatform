@@ -142,7 +142,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Boilerplate", "Boilerplate"
 		Templates\Boilerplate\Bit.Boilerplate\Clean.bat = Templates\Boilerplate\Bit.Boilerplate\Clean.bat
 		Templates\Boilerplate\Bit.Boilerplate\src\Directory.Build.props = Templates\Boilerplate\Bit.Boilerplate\src\Directory.Build.props
 		Templates\Boilerplate\Bit.Boilerplate\global.json = Templates\Boilerplate\Bit.Boilerplate\global.json
-		Templates\Boilerplate\Readme.md = Templates\Boilerplate\Readme.md
+		Templates\Boilerplate\README.md = Templates\Boilerplate\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{D08A374C-FB7C-4C29-86B8-3C16344BCBD2}"
