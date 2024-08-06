@@ -1,4 +1,5 @@
-﻿@attribute [Route(Urls.ProfilePage)]
+﻿@*+:cnd:noEmit*@
+@attribute [Route(Urls.ProfilePage)]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.ProfileTitle)]</PageTitle>
@@ -39,4 +40,6 @@
     </div>
 </div>
 
+@*#if (signalr == true)*@
 <BitSnackBar @ref="snackBar" />
+@*#endif*@

@@ -83,7 +83,9 @@ public static partial class Program
                 };
             });
 
+        //#if (signalr == true)
         services.AddSignalR();
+        //#endif
 
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
         services.AddDbContextPool<AppDbContext>(AddDbContext);

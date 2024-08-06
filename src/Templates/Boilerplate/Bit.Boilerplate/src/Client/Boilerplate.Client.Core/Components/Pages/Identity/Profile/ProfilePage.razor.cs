@@ -1,5 +1,7 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
+//#if (signalr == true)
 using Microsoft.AspNetCore.SignalR.Client;
+//#endif
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
@@ -10,8 +12,10 @@ public partial class ProfilePage
 {
     private UserDto? user;
     private bool isLoading;
+    //#if (signalr == true)
     private HubConnection? hubConnection;
     private BitSnackBar snackBar = default!;
+    //#endif
 
     [AutoInject] private IUserController userController = default!;
 
@@ -32,6 +36,7 @@ public partial class ProfilePage
         await base.OnInitAsync();
     }
 
+    //#if (signalr == true)
     protected async override Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
@@ -64,4 +69,5 @@ public partial class ProfilePage
 
         await base.DisposeAsync(disposing);
     }
+    //#endif
 }
