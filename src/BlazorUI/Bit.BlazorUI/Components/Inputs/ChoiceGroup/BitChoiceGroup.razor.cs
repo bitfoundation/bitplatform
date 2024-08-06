@@ -192,10 +192,42 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
 
+    private string GetItemContainerCssStyles(TItem item)
+    {
+        StringBuilder cssStyle = new();
+
+        if (string.IsNullOrEmpty(GetStyle(item)) is false)
+        {
+            cssStyle.Append(GetStyle(item));
+        }
+
+        if (string.IsNullOrEmpty(Styles?.ItemContainer) is false)
+        {
+            cssStyle.Append(' ').Append(Styles?.ItemContainer);
+        }
+
+        if (GetIsCheckedItem(item))
+        {
+            cssStyle.Append(' ').Append(Styles?.ItemChecked);
+        }
+
+        return cssStyle.ToString();
+    }
+
     private string GetItemContainerCssClasses(TItem item)
     {
         StringBuilder cssClass = new(RootElementClass);
         cssClass.Append("-icn");
+
+        if (string.IsNullOrEmpty(GetClass(item)) is false)
+        {
+            cssClass.Append(' ').Append(GetClass(item));
+        }
+
+        if (string.IsNullOrEmpty(Classes?.ItemContainer) is false)
+        {
+            cssClass.Append(' ').Append(Classes?.ItemContainer);
+        }
 
         if (ItemTemplate is not null) return cssClass.ToString();
 
@@ -204,6 +236,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             cssClass.Append(' ')
                     .Append(RootElementClass)
                     .Append("-ich");
+
+            cssClass.Append(' ').Append(Classes?.ItemChecked);
         }
 
         if (ItemLabelTemplate is not null) return cssClass.ToString();
