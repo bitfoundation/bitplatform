@@ -289,7 +289,7 @@ private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
     new() { Text = ""Item A"", Value = ""A"", Class = ""custom-item"" },
     new() { Text = ""Item B"", Value = ""B"", Style = ""padding: 8px; border-radius: 20px; border: 1px solid gray;"" },
     new() { Text = ""Item C"", Value = ""C"", Class = ""custom-item"" },
-    new() { Text = ""Item D"", Value = ""D"", Style = ""custom-item"" }
+    new() { Text = ""Item D"", Value = ""D"", Class = ""custom-item"" }
 };";
 
     private readonly string example6RazorCode = @"

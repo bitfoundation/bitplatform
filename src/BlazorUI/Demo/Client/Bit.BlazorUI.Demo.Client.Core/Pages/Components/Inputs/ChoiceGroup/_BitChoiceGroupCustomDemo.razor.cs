@@ -391,7 +391,7 @@ private readonly List<ChoiceModel> itemStyleClassCustoms = new()
     new() { Name = ""Custom A"", ItemValue = ""A"", Class = ""custom-item"" },
     new() { Name = ""Custom B"", ItemValue = ""B"", Style = ""padding: 8px; border-radius: 20px; border: 1px solid gray;"" },
     new() { Name = ""Custom C"", ItemValue = ""C"", Class = ""custom-item"" },
-    new() { Name = ""Custom D"", ItemValue = ""D"", Style = ""custom-item"" }
+    new() { Name = ""Custom D"", ItemValue = ""D"", Class = ""custom-item"" }
 };";
 
     private readonly string example6RazorCode = @"
