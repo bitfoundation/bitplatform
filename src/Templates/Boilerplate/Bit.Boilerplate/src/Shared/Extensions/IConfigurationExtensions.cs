@@ -8,8 +8,6 @@ public static class IConfigurationExtensions
             .GetValue<T>(name ?? throw new ArgumentNullException(nameof(name))) ?? throw new InvalidOperationException($"{name} config could not be found");
     }
 
-    private static Uri? serverAddressUri;
-
     public static string GetServerAddress(this IConfiguration configuration)
     {
         var serverAddress = configuration.GetRequiredValue<string>("ServerAddress");
