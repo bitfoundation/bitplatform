@@ -44,8 +44,12 @@ public static partial class Program
             // Additionally, forwarded headers are handled to ensure proper forwarding, if the backend is hosted behind a CDN. 
             // User agent and referrer headers are also included to provide the API with necessary request context. 
 
+            Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out var serverAddress);
             var currentRequest = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request;
-            var serverAddress = configuration.GetServerAddress(baseUrl: currentRequest.GetBaseUrl());
+            if (serverAddress!.IsAbsoluteUri is false)
+            {
+                serverAddress = new Uri(currentRequest.GetBaseUrl(), serverAddress);
+            }
 
             var httpClient = new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler"))
             {

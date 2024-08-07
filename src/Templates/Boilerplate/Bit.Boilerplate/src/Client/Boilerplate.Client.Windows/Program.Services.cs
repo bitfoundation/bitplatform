@@ -22,7 +22,7 @@ public static partial class Program
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
-                BaseAddress = configuration.GetServerAddress()
+                BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
             return httpClient;
         });

@@ -126,13 +126,6 @@
                 }
             ]
         },
-        "signalr": {
-            "displayName": "Add SignalR?",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "false",
-            "description": "Add SignalR sample."
-        },
         "pipeline": {
             "displayName": "CI-CD pipeline",
             "type": "parameter",
@@ -172,6 +165,13 @@
                     "description": "None"
                 }
             ]
+        },
+        "signalr": {
+            "displayName": "Add SignalR?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Add SignalR sample."
         },
         "offlineDb": {
             "displayName": "Add Offline db?",

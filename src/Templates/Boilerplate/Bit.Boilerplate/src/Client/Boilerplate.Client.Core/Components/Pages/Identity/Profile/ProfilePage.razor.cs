@@ -44,17 +44,18 @@ public partial class ProfilePage
         var access_token = await AuthTokenProvider.GetAccessTokenAsync();
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(new Uri(Configuration.GetServerAddress(), $"identity-hub?access_token={access_token}"))
+            .WithUrl($"{Configuration.GetServerAddress()}/identity-hub?access_token={access_token}")
             .Build();
 
         hubConnection.On<UserSessionDto>("NewUserSession", async (userSession) =>
         {
-            await InvokeAsync(async () =>
-            {
-                await snackBar.Info(Localizer[nameof(AppStrings.NewUserSessionSnackbarTitle)], Localizer[nameof(AppStrings.DeviceDetails), userSession.Device!]);
+            await snackBar.Info(Localizer[nameof(AppStrings.NewUserSessionSnackbarTitle)], Localizer[nameof(AppStrings.DeviceDetails), userSession.Device!]);
 
+            // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
+            /*await InvokeAsync(async () =>
+            {
                 StateHasChanged();
-            });
+            });*/
         });
 
         await hubConnection.StartAsync();

@@ -45,8 +45,8 @@ public partial class UserDataSection
         removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
 
         var serverAddress = Configuration.GetServerAddress();
-        profileImageUrl = new Uri(serverAddress, $"api/Attachment/GetProfileImage?access_token={access_token}").ToString();
-        profileImageUploadUrl = new Uri(serverAddress, $"api/Attachment/UploadProfileImage?access_token={access_token}").ToString();
+        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
+        profileImageUploadUrl = $"{serverAddress}/api/Attachment/UploadProfileImage?access_token={access_token}";
 
         await base.OnInitAsync();
     }

@@ -24,13 +24,13 @@
             "id": "captcha"
         },
         {
-            "id": "signalr"
-        },
-        {
             "id": "pipeline"
         },
         {
             "id": "sample"
+        },
+        {
+            "id": "signalr"
         },
         {
             "id": "offlineDb"

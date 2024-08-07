@@ -34,7 +34,7 @@ public static partial class MauiProgram
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
-                BaseAddress = configuration.GetServerAddress()
+                BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
             return httpClient;
         });
