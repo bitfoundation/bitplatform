@@ -9,6 +9,8 @@
 
 <ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
+        <div>Illustrates how to disable the entire BitChoiceGroup and individual items.</div>
+        <br />
         <div class="example-content">
             <BitChoiceGroup Label="Disabled ChoiceGroup"
                             IsEnabled="false"
@@ -28,6 +30,8 @@
 
 <ComponentExampleBox Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
+        <div>Showcases BitChoiceGroup with image and icon items.</div>
+        <br />
         <div class="example-content">
             <BitChoiceGroup Label="Image Customs"
                             DefaultValue="@("Bar")"
@@ -52,6 +56,8 @@
 
 <ComponentExampleBox Title="Horizontal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
+        <div>Displays the BitChoiceGroup component in a horizontal layout, demonstrating various configurations.</div>
+        <br />
         <div class="example-content column">
             <BitChoiceGroup Label="Basic"
                             Horizontal
@@ -91,13 +97,15 @@
 
 <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
+        <div>Explores styling and class customization for BitChoiceGroup, including component styles, custom classes, and detailed style items.</div>
+        <br /><br />
         <div>Component's Style & Class:</div>
         <br />
-        <div class="example-content">
+        <div class="example-content column">
             <BitChoiceGroup Label="Styled ChoiceGroup"
                             Items="basicCustoms"
                             DefaultValue="basicCustoms[1].ItemValue"
-                            Style="width:200px;height:200px;background-color:#888;padding:1rem;border-radius:1rem;"
+                            Style="margin-inline: 16px; text-shadow: red 0 0 8px;"
                             NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
 
             <BitChoiceGroup Label="Classed ChoiceGroup"
@@ -109,7 +117,7 @@
         <br /><br /><br /><br />
         <div>Item's Style & Class:</div>
         <br />
-        <div class="example-content">
+        <div class="example-content column">
             <BitChoiceGroup Items="itemStyleClassCustoms"
                             DefaultValue="itemStyleClassCustoms[1].ItemValue"
                             NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
@@ -120,19 +128,23 @@
         <br /><br /><br /><br />
         <div><b>Styles</b> & <b>Classes</b>:</div>
         <br />
-        <div class="example-content">
+        <div class="example-content column">
             <BitChoiceGroup Label="Styles"
                             Items="basicCustoms"
                             DefaultValue="basicCustoms[1].ItemValue"
-                            Styles="@(new() { Label = "color:tomato",
-                                              ItemIcon = "color:red" ,
-                                              ItemText = "color:yellowgreen;font-size:12px;font-weight:bold" })"
+                            Styles="@(new() { Root = "margin-inline: 16px; --item-background: #d3d3d347; --item-border: 1px solid gray;",
+                                              ItemLabel = "width: 100%; cursor: pointer;",
+                                              ItemChecked = "--item-background: #87cefa24; --item-border: 1px solid dodgerblue;",
+                                              ItemContainer = "padding: 8px; border-radius: 2px; background-color: var(--item-background); border: var(--item-border);" })"
                             NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
 
             <BitChoiceGroup Label="Classes"
                             Items="basicCustoms"
                             DefaultValue="basicCustoms[1].ItemValue"
-                            Classes="@(new() { Label = "custom-label" , ItemText = "custom-text" })"
+                            Classes="@(new() { Root = "custom-root",
+                                               ItemText = "custom-text",
+                                               ItemChecked = "custom-checked",
+                                               ItemLabelWrapper = "custom-label-wrapper" })"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })" />
         </div>
     </ExamplePreview>
@@ -140,6 +152,8 @@
 
 <ComponentExampleBox Title="LabelTemplate" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
+        <div>Demonstrates how to customize the label of the BitChoiceGroup using a template.</div>
+        <br />
         <BitChoiceGroup Items="basicCustoms"
                         DefaultValue="@("A")"
                         NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })">
@@ -154,6 +168,8 @@
 
 <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
+        <div>Shows how to use one-way and two-way data binding with BitChoiceGroup.</div>
+        <br />
         <div class="example-content">
             <div>
                 <BitChoiceGroup Label="One-way" Value="@oneWayValue"
@@ -175,6 +191,8 @@
 
 <ComponentExampleBox Title="Item templates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
+        <div>Illustrates how to customize the appearance of BitChoiceGroup options using item templates.</div>
+        <br />
         <div class="example-content">
             <BitChoiceGroup Label="ItemPrefixTemplate" Items="basicCustoms" DefaultValue="@string.Empty"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name},
@@ -219,7 +237,9 @@
 
 <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
-        <div style="direction:rtl" class="example-content">
+        <div>Use BitChoiceGroup in right-to-left (RTL).</div>
+        <br />
+        <div dir="rtl" class="example-content">
             <BitChoiceGroup Label="ساده"
                             Dir="BitDir.Rtl"
                             DefaultValue="@("A")"
@@ -238,6 +258,8 @@
 
 <ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
+        <div>Shows how to use data annotations for validating the selected value in BitChoiceGroup.</div>
+        <br />
         @if (string.IsNullOrEmpty(successMessage))
         {
             <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
