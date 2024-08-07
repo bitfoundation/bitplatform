@@ -4,33 +4,52 @@
     .example-content {
         gap: 2rem;
         display: flex;
+        flex-wrap: wrap;
 
         &.column {
+            max-width: 19rem;
             flex-direction: column;
         }
     }
 
     .custom-class {
-        width: 17rem;
-        padding: 2rem;
-        border-radius: 25%;
-        background-color: red;
+        margin-inline: 16px;
+        text-shadow: dodgerblue 0 0 8px;
     }
 
     .custom-item {
-        color: brown;
+        padding: 8px;
+        border-radius: 20px;
+        border: 1px solid gray;
     }
 
-    .custom-label {
-        color: red;
-        font-weight: bold;
-        font-size: rem2(18px);
+    .custom-root {
+        margin-inline: 16px;
     }
 
     .custom-text {
-        color: blue;
         font-weight: bold;
-        font-size: rem2(16px);
+    }
+
+    .custom-label-wrapper::after {
+        width: 8px;
+        height: 8px;
+        border: none;
+        inset-block-start: 6px;
+        inset-inline-start: 6px;
+        background-color: whitesmoke;
+    }
+
+    .custom-checked .custom-label-wrapper::after {
+        background-color: whitesmoke;
+    }
+
+    .custom-label-wrapper::before {
+        background-color: whitesmoke;
+    }
+
+    .custom-checked .custom-label-wrapper::before {
+        background-color: dodgerblue;
     }
 
     .custom-container {
