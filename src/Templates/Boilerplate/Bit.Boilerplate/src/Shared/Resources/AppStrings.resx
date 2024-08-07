@@ -234,6 +234,14 @@
     <value>Offline Edit profile</value>
   </data>
     <!--#endif-->
+    <!--#if (signalr == true) -->
+    <data name="NewUserSessionSnackbarTitle" xml:space="preserve">
+    <value>New session!</value>
+  </data>
+    <data name="DeviceDetails" xml:space="preserve">
+    <value>Device: {0}</value>
+  </data>
+    <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>FullName</value>
   </data>

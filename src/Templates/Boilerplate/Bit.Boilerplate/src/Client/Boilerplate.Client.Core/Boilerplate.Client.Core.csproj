@@ -22,6 +22,7 @@
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.10.0-pre-05" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.10.0-pre-05" />
+        <PackageReference Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.7" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
         <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.10.0-pre-05" />
         <!--/-:msbuild-conditional:noEmit -->

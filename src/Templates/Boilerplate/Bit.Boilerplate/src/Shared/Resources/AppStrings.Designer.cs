@@ -565,6 +565,15 @@ namespace Boilerplate.Shared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Device: {0}.
+        /// </summary>
+        public static string DeviceDetails {
+            get {
+                return ResourceManager.GetString("DeviceDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don’t have an account?.
         /// </summary>
         public static string DontHaveAccountMessage {
@@ -1101,6 +1110,15 @@ namespace Boilerplate.Shared.Resources {
         public static string NewPhoneNumberPlaceholder {
             get {
                 return ResourceManager.GetString("NewPhoneNumberPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New session!.
+        /// </summary>
+        public static string NewUserSessionSnackbarTitle {
+            get {
+                return ResourceManager.GetString("NewUserSessionSnackbarTitle", resourceCulture);
             }
         }
         

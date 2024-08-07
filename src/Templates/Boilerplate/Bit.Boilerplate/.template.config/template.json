@@ -44,7 +44,7 @@
             "displayName": "Backend database",
             "type": "parameter",
             "datatype": "choice",
-            "defaultValue": "SqlServer",
+            "defaultValue": "Sqlite",
             "choices": [
                 {
                     "choice": "SqlServer",
@@ -64,7 +64,7 @@
                 },
                 {
                     "choice": "MySql",
-                    "description": "MySql"
+                    "description": "MySql - MariaDB"
                 },
                 {
                     "choice": "Other",
@@ -165,6 +165,13 @@
                     "description": "None"
                 }
             ]
+        },
+        "signalr": {
+            "displayName": "Add SignalR?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Add SignalR sample."
         },
         "offlineDb": {
             "displayName": "Add Offline db?",
@@ -389,6 +396,12 @@
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Offline/**"
+                    ]
+                },
+                {
+                    "condition": "(signalr != true)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Hubs/**"
                     ]
                 },
                 {

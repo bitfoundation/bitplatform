@@ -45,9 +45,7 @@ public static partial class Program
             // User agent and referrer headers are also included to provide the API with necessary request context. 
 
             Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out var serverAddress);
-
             var currentRequest = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request;
-
             if (serverAddress!.IsAbsoluteUri is false)
             {
                 serverAddress = new Uri(currentRequest.GetBaseUrl(), serverAddress);
