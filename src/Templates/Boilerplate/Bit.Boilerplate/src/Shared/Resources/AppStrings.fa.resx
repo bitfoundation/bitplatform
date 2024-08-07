@@ -234,6 +234,14 @@
     <value>ویرایش پروفایل آفلاین</value>
   </data>
     <!--#endif-->
+    <!--#if (signalr == true) -->
+    <data name="NewUserSessionSnackbarTitle" xml:space="preserve">
+    <value>لاگین جدید</value>
+  </data>
+    <data name="DeviceDetails" xml:space="preserve">
+    <value>دستگاه: {0}</value>
+  </data>
+    <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>نام کامل</value>
   </data>

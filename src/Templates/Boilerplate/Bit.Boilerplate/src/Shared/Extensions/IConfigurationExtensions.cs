@@ -17,7 +17,6 @@ public static class IConfigurationExtensions
             OperatingSystem.IsAndroid())
         {
             const string androidEmulatorDevMachineIP = "10.0.2.2"; // Special alias to your host loopback interface in Android Emulators (127.0.0.1 on your development machine)
-
             serverAddress = serverAddress.Replace("localhost", androidEmulatorDevMachineIP, StringComparison.InvariantCultureIgnoreCase);
         }
 

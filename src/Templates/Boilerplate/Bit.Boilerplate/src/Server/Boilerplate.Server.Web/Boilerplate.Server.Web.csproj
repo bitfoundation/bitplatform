@@ -23,18 +23,6 @@
         <Using Include="Boilerplate.Shared.Enums" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Compile Update="**\*.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
-        </Compile>
-        <EmbeddedResource Update="**\*.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-    </ItemGroup>
-
     <!--
     https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
     https://learn.microsoft.com/en-us/visualstudio/containers/container-msbuild-properties
