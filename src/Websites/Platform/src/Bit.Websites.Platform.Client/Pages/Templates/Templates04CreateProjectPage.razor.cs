@@ -32,8 +32,8 @@ public partial class Templates04CreateProjectPage
 
     private Parameter captcha = new()
     {
-        Selected = "None",
-        Default = "None",
+        Selected = "reCaptcha",
+        Default = "reCaptcha",
         Items = [
             new() { Text = "None", Value = "None" },
             new() { Text = "reCaptcha", Value = "reCaptcha" },
