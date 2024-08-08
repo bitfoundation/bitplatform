@@ -1,0 +1,174 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ExamplePreview>
+        <div class="example-box">
+            <div>
+                <BitLabel>Basic</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors" />
+            </div>
+            <div>
+                <BitLabel>Disabled</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               IsEnabled="false" />
+            </div>
+            <div>
+                <BitLabel>Item Disabled</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItemsDisabled"
+                               NameSelectors="nameSelectors" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="MaxDisplayedItems & OverflowIndex" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div class="example-desc">
+            You can specify how many items are displayed among the items you have and the rest of the items are displayed as overflow.
+            You can also choose which index the overflow icon should be placed in.
+        </div>
+        <div class="example-box">
+            <div>
+                <BitLabel>MaxDisplayedItems (1)</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="1" />
+            </div>
+            <div>
+                <BitLabel>MaxDisplayedItems (2)</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="2" />
+            </div>
+            <div>
+                <BitLabel>MaxDisplayedItems (3)</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="3" />
+            </div>
+            <div>
+                <BitLabel>MaxDisplayedItems (3), OverflowIndex (0)</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="0" />
+            </div>
+            <div>
+                <BitLabel>MaxDisplayedItems (3), OverflowIndex (1)</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="1" />
+            </div>
+            <div>
+                <BitLabel>MaxDisplayedItems (3), OverflowIndex (2)</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="OverflowIcon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ExamplePreview>
+        <div class="example-box">
+            <div>
+                <BitLabel>BitIconName (ChevronDown)</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               OverflowIconName="@BitIconName.ChevronDown" />
+            </div>
+            <div>
+                <BitLabel>BitIconName (CollapseMenu)</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2"
+                               OverflowIconName="@BitIconName.CollapseMenu" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Class & Style" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div class="example-box">
+            <div>
+                <BitLabel>Items Class</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass"
+                               NameSelectors="nameSelectors" />
+            </div>
+            <div>
+                <BitLabel>Items Style</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithStyle"
+                               NameSelectors="nameSelectors" />
+            </div>
+            <div>
+                <BitLabel>Selected Item Class</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               SelectedItemClass="custom-selected-item" />
+            </div>
+            <div>
+                <BitLabel>Selected Item Style</BitLabel>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               SelectedItemStyle="color:red;background:lightgreen" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Controlled BitBreadcrumb" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div class="example-desc">By clicking on the items, the selected item will change and match the SelectedItemStyle.</div>
+        <div class="example-box">
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithControlled"
+                           NameSelectors="nameSelectors"
+                           MaxDisplayedItems="3"
+                           OverflowIndex="2"
+                           OnItemClick="(PageInfoModel model) => HandleOnCustomClick(model)"
+                           SelectedItemStyle="color:red;background:lightgreen" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Customizations" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ExamplePreview>
+        <div class="example-box">
+            <div>
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithCustomized"
+                               NameSelectors="nameSelectors"
+                               MaxDisplayedItems="@MaxDisplayedItems"
+                               OverflowIndex="@OverflowIndex"
+                               OnItemClick="(PageInfoModel model) => HandleOnCustomizedCustomClick(model)" />
+            </div>
+            <div class="operators">
+                <div>
+                    <BitButton OnClick="AddCustomItem">Add Item</BitButton>
+                    <BitButton OnClick="RemoveCustomItem">Remove Item</BitButton>
+                </div>
+                <div>
+                    <BitNumberField @bind-Value="MaxDisplayedItems" Label="MaxDisplayedItems" ShowButtons="true" />
+                    <BitNumberField @bind-Value="OverflowIndex" Label="OverflowIndex" ShowButtons="true" />
+                </div>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div class="example-box">
+            <BitBreadcrumb Dir="BitDir.Rtl"
+                           OverflowIndex="2"
+                           MaxDisplayedItems="3"
+                           Items="RtlCustomBreadcrumbItems"
+                           NameSelectors="nameSelectors" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
