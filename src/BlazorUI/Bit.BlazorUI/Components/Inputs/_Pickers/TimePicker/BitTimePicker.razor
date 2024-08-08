@@ -70,7 +70,8 @@
                aria-label="@AriaLabel"
                class="bit-input-hidden"
                value="@CurrentValueAsString"
-               disabled="@(IsEnabled is false)" />
+               disabled="@(IsEnabled is false)"
+               readonly="@(AllowTextInput is false)" />
     }
 
     <div style="@Styles?.Callout" class="bit-tpc-cal @Classes?.Callout" id="@_calloutId">
