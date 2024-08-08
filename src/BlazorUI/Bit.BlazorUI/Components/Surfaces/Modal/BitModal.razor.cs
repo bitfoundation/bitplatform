@@ -156,7 +156,13 @@ public partial class BitModal : BitComponentBase, IDisposable
         StateHasChanged();
     }
 
-
+    private async Task HandleOnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await CloseModal(new MouseEventArgs());
+        }
+    }
 
     private async Task CloseModal(MouseEventArgs e)
     {

@@ -238,5 +238,20 @@ public class BitModalTests : BunitTestContext
         Assert.IsTrue(modalElement.ClassList.Contains(positionClass));
     }
 
+    [TestMethod]
+    public void BitModalEscapeKeyPressTest()
+    {
+        var isOpen = true;
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, newValue => isOpen = newValue);
+        });
+
+        var modalElement = com.Find(".bit-mdl");
+        modalElement.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(isOpen);
+    }
+
     private void HandleIsOpenChanged(bool isOpen) => isModalOpen = isOpen;
 }
