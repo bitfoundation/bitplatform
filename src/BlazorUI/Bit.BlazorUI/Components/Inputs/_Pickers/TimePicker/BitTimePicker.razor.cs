@@ -277,7 +277,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         ClassBuilder.Register(() => HasBorder is false ? "bit-tpc-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => Standalone ? "bit-tpc-sal" : string.Empty);
+        ClassBuilder.Register(() => Standalone ? "bit-tpc-sta" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
     }
