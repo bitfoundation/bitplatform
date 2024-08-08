@@ -52,50 +52,51 @@ dotnet new bit-bp –-name MyFirstProject
                     <br />
                     <br />
                 </div>
+
+                <div class="section-card-txt">
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Directory.Build.props</BitTypography>
+                    In the src folder, which serves as the source of the project, you will find three directories: Client, Server, and Shared, as well as a Directory.Build.props file.
+                    Just like csproj files, Directory.Build.props consists of two primary sections: PropertyGroup and ItemGroup.
+
+                    <ul>
+                        <li>
+                            <b>PropertyGroup:</b> This section specifies properties such as TargetFramework. For instance, the following line indicates that the project uses .NET 8:
+                            <br />
+                            <br />
+                            <code>
+                                &lt;TargetFramework>net8.0&lt;/TargetFramework>
+                            </code>
+                            <br />
+                            <br />
+                        </li>
+                        <li>
+                            <b>ItemGroup:</b> This section details items such as NuGet packages used in the project. For example:
+                            <br />
+                            <br />
+                            <code>
+                                &lt;PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
+                            </code>
+                            <br />
+                            <br />
+                        </li>
+                    </ul>
+                    Any settings specified in this file are implicitly applied to all .csproj files within the directory. For instance:
+                    <br />
+                    <br />
+                    <code>
+                        &lt;LangVersion>12.0&lt;/langVersion>
+                    </code>
+                    <br />
+                    <br />
+                    This setting enforces the use of C# 12 across all projects.
+
+                    The following sections will provide further details on the Directory.Build.props file and .csproj files.
+                    <br />
+                    <br />
+                </div>
             </div>
          
             <img class="image" alt="Boilerplate solution" src="/images/templates/project-structure.webp" />
-        </div>
-        <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Directory.Build.props</BitTypography>
-            In the src folder, which serves as the source of the project, you will find three directories: Client, Server, and Shared, as well as a Directory.Build.props file.
-            Just like csproj files, Directory.Build.props consists of two primary sections: PropertyGroup and ItemGroup.
-
-            <ul>
-                <li>
-                    <b>PropertyGroup:</b> This section specifies properties such as TargetFramework. For instance, the following line indicates that the project uses .NET 8:
-                    <br />
-                    <br />
-                    <code>
-                        &lt;TargetFramework>net8.0&lt;/TargetFramework>
-                    </code>
-                    <br />
-                    <br />
-                </li>
-                <li>
-                    <b>ItemGroup:</b> This section details items such as NuGet packages used in the project. For example:
-                    <br />
-                    <br />
-                    <code>
-                        &lt;PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
-                    </code>
-                    <br />
-                    <br />
-                </li>
-            </ul>
-            Any settings specified in this file are implicitly applied to all .csproj files within the directory. For instance:
-            <br />
-            <br />
-            <code>
-                &lt;LangVersion>12.0&lt;/langVersion>
-            </code>
-            <br />
-            <br />
-            This setting enforces the use of C# 12 across all projects.
-
-            The following sections will provide further details on the Directory.Build.props file and .csproj files.
-            <br />
-            <br />
         </div>
     </section>
 
@@ -113,10 +114,6 @@ dotnet new bit-bp –-name MyFirstProject
                 <li>
                     <b>Server.Web:</b> This project references Server.Api by default.
                     Running this project will make the features mentioned in Server.Api section available on port 5000 as well as server components for Blazor pre-rendering and Blazor Server.
-                </li>
-                <li>
-                    <b>Server.Test:</b> A sample test project is provided to demonstrate how to add integration tests to your project in a way that replicates the real 
-                    behavior of a server, such as using SignalR. Additionally, it offers guidance on using dependency injection to mock server behavior and logic when needed.
                 </li>
             </ul>
 
@@ -168,6 +165,14 @@ dotnet new bit-bp –-name MyFirstProject
             <CodeBox>
 dotnet publish MyFirstProject.Client.Web -c Release -p:BlazorWebAssemblyStandalone=true
             </CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Test Project</BitTypography>
+            A sample test project is provided to demonstrate how to add integration tests to your project in a way that replicates the real
+            behavior of a server, such as using SignalR. Additionally, it offers guidance on using dependency injection to mock server behavior and logic when needed.
         </div>
     </section>
 </div>

@@ -40,8 +40,7 @@
 
 .image {
     @include Image;
-    width: 69%;
-    max-width: 400px;
+    width: rem2(300px);
 }
 
 ::deep a {
