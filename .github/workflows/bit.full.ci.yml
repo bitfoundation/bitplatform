@@ -48,6 +48,8 @@ jobs:
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
+        cd ../../Tests
+        dotnet test
 
     - name: Test SqlServer database option
       run: |
@@ -56,6 +58,8 @@ jobs:
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update 
+        cd ../../Tests
+        dotnet test
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
       run: |

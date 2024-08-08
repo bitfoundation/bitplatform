@@ -6,7 +6,8 @@
       "src\\Server\\Boilerplate.Server.Api\\Boilerplate.Server.Api.csproj",
       "src\\Shared\\Boilerplate.Shared.csproj",
       "src\\Client\\Boilerplate.Client.Core\\Boilerplate.Client.Core.csproj",
-      "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj"
+      "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj",
+      "src\\Tests\\Boilerplate.Tests.csproj"
     ]
   }
 }

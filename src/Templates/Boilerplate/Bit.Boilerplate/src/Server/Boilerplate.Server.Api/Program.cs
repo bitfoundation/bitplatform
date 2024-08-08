@@ -1,8 +1,4 @@
 ﻿//+:cnd:noEmit
-
-using System;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
